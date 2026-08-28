@@ -1,0 +1,4 @@
+# El motor corre con la libreria estandar de Python 3.9+.
+# Nada obligatorio. Lo de abajo es opcional, solo para el servidor.
+# fastapi>=0.110
+# uvicorn>=0.29
