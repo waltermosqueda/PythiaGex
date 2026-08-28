@@ -1,0 +1,405 @@
+<title>Gamma Desk</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+:root{
+  --ground:#F4F6F8; --surf:#FFFFFF; --surf2:#EDF1F5; --line:#D4DBE3;
+  --tx:#0E1620; --tx2:#5A6878; --tx3:#8996A6;
+  --acc:#B07D14; --acc-dim:#C99B3A;
+  --pos:#1B8A56; --neg:#C33338; --pos-bg:#E4F3EC; --neg-bg:#FBE9EA;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Archivo',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0A0E13; --surf:#141B24; --surf2:#1C252F; --line:#2A3542;
+  --tx:#E8EDF2; --tx2:#8A97A6; --tx3:#5D6B7A;
+  --acc:#E8B33C; --acc-dim:#A8822C;
+  --pos:#3FBF7F; --neg:#E5484D; --pos-bg:#12291F; --neg-bg:#2B1518;
+}}
+:root[data-theme="dark"]{
+  --ground:#0A0E13; --surf:#141B24; --surf2:#1C252F; --line:#2A3542;
+  --tx:#E8EDF2; --tx2:#8A97A6; --tx3:#5D6B7A;
+  --acc:#E8B33C; --acc-dim:#A8822C;
+  --pos:#3FBF7F; --neg:#E5484D; --pos-bg:#12291F; --neg-bg:#2B1518;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--tx);font-family:var(--sans);
+     font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 18px 48px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.lbl{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--tx3);font-weight:600}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;
+     padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.brand{display:flex;align-items:baseline;gap:12px}
+.brand h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.02em}
+.tick{font-family:var(--mono);font-size:13px;color:var(--acc);font-weight:700;
+      border:1px solid var(--acc-dim);padding:2px 7px;border-radius:3px}
+.spot{font-family:var(--mono);font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.stamp{font-size:11px;color:var(--tx3);font-family:var(--mono)}
+.reg{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:3px;
+     font-size:11px;font-weight:700;letter-spacing:.06em}
+.reg.p{background:var(--pos-bg);color:var(--pos)} .reg.n{background:var(--neg-bg);color:var(--neg)}
+.reg::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:1px;
+      background:var(--line);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-bottom:18px}
+.kpi{background:var(--surf);padding:11px 13px}
+.kpi .v{font-family:var(--mono);font-size:19px;font-weight:700;letter-spacing:-.02em;margin-top:3px}
+.kpi .s{font-size:10px;color:var(--tx3);margin-top:2px}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
+
+/* grid */
+.grid{display:grid;grid-template-columns:1fr 340px;gap:16px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.card>header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+             padding:11px 14px;border-bottom:1px solid var(--line);background:var(--surf2)}
+.card>header h2{margin:0;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.body{padding:14px}
+
+/* tabs */
+.tabs{display:flex;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.tabs button{background:var(--surf);border:0;color:var(--tx2);font-family:var(--sans);
+  font-size:10.5px;font-weight:600;letter-spacing:.05em;padding:5px 9px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--acc);color:#0A0E13}
+.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+
+canvas{display:block;width:100%}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px;
+      font-variant-numeric:tabular-nums;white-space:nowrap}
+th{position:sticky;top:0;background:var(--surf2);color:var(--tx3);font-size:9.5px;letter-spacing:.06em;
+   text-transform:uppercase;font-weight:700;padding:7px 9px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{padding:5px 9px;text-align:right;border-bottom:1px solid var(--line);color:var(--tx2)}
+tr:hover td{background:var(--surf2)}
+td.k{color:var(--tx);font-weight:700}
+tr.here td{background:var(--neg-bg)}
+tr.here td.k{color:var(--neg)}
+.bar{display:inline-block;height:9px;border-radius:1px;vertical-align:middle}
+.vlist{display:flex;flex-direction:column}
+.v{display:grid;grid-template-columns:1fr auto;gap:3px 10px;padding:9px 14px;border-bottom:1px solid var(--line)}
+.v:last-child{border-bottom:0}
+.v .f{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--tx)}
+.v .d{font-size:10px;color:var(--tx3)}
+.v .g{font-family:var(--mono);font-size:13px;font-weight:700;text-align:right}
+.v .oi{font-family:var(--mono);font-size:10px;color:var(--tx3);text-align:right}
+.v .track{grid-column:1/-1;height:3px;background:var(--surf2);border-radius:2px;overflow:hidden;margin-top:3px}
+.v .fill{height:100%;border-radius:2px}
+.note{font-size:11px;color:var(--tx3);line-height:1.55;padding:11px 14px;border-top:1px solid var(--line)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:var(--tx3)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+</style>
+
+<div class="wrap">
+
+<div class="top">
+  <div>
+    <div class="brand">
+      <h1>Gamma Desk</h1>
+      <span class="tick" id="sym">SPX</span>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </div>
+  <div style="text-align:right">
+    <div class="lbl">Underlying</div>
+    <div class="spot" id="spot">—</div>
+  </div>
+  <div style="text-align:right">
+    <div class="lbl" style="margin-bottom:5px">Gamma Regime</div>
+    <span class="reg" id="reg">—</span>
+  </div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<div class="grid">
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <div class="card">
+      <header>
+        <h2>Exposición por strike</h2>
+        <div class="tabs" id="tabs" role="tablist">
+          <button role="tab" data-m="g"  aria-selected="true">GEX</button>
+          <button role="tab" data-m="dx" aria-selected="false">DEX</button>
+          <button role="tab" data-m="vx" aria-selected="false">VEX</button>
+          <button role="tab" data-m="cx" aria-selected="false">CHEX</button>
+          <button role="tab" data-m="tx" aria-selected="false">TEX</button>
+          <button role="tab" data-m="oi" aria-selected="false">OI</button>
+          <button role="tab" data-m="g0" aria-selected="false">0DTE</button>
+        </div>
+      </header>
+      <div class="body">
+        <canvas id="hist" height="520"></canvas>
+        <div class="legend" style="margin-top:11px">
+          <span><i style="background:var(--pos)"></i>positivo · la mesa amortigua</span>
+          <span><i style="background:var(--neg)"></i>negativo · la mesa amplifica</span>
+          <span><i style="background:var(--acc)"></i>spot</span>
+          <span><i style="background:var(--tx3)"></i>gamma flip</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <header><h2>Curva de gamma · dónde cambia el régimen</h2></header>
+      <div class="body"><canvas id="curva" height="200"></canvas></div>
+      <div class="note" id="notaCurva"></div>
+    </div>
+
+    <div class="card">
+      <header>
+        <h2>Cadena completa</h2>
+        <div class="legend"><span id="cnt"></span></div>
+      </header>
+      <div class="scroll" style="max-height:420px;overflow-y:auto">
+        <table>
+          <thead><tr>
+            <th>Strike</th><th>Dist</th><th>GEX</th><th>0DTE</th><th>DEX</th>
+            <th>VEX</th><th>CHEX</th><th>OI call</th><th>OI put</th><th>P/C</th><th>IV</th>
+          </tr></thead>
+          <tbody id="tb"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <div class="card">
+      <header><h2>Niveles clave</h2></header>
+      <div id="niveles"></div>
+    </div>
+
+    <div class="card">
+      <header><h2>Vencimientos</h2></header>
+      <div class="vlist" id="vencs"></div>
+      <div class="note">El <strong>Open Interest</strong> es de ayer en todas las fuentes: la cámara lo consolida de noche. Lo que cambia intradía es el precio, no el inventario.</div>
+    </div>
+
+    <div class="card">
+      <header><h2>Fuente</h2></header>
+      <div class="note" style="border-top:0" id="fuente"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+window.__FUENTES__ = ['datos.json','ejemplo.json'];
+</script>
+<script>
+async function arrancar(){
+  let D = null;
+  for(const f of window.__FUENTES__){
+    try{ const r = await fetch(f, {cache:'no-store'}); if(r.ok){ D = await r.json(); break; } }catch(e){}
+  }
+  if(!D){ document.body.innerHTML = '<div style="padding:40px;font-family:system-ui">'
+    + '<h1>Sin datos</h1><p>Corré <code>python cli.py SPX --panel</code> para generar '
+    + '<code>panel/datos.json</code>, y servi esta carpeta con <code>python -m http.server</code>.</p></div>'; return; }
+  window.__GEX__ = D;
+  // el CLI escribe nombres largos; el panel usa cortos
+  if(D.strikes && D.strikes.length && D.strikes[0].strike !== undefined){
+    D.sym  = (D.simbolo||'SPX').replace('^','');
+    D.ts   = D.timestamp; D.gen = D.generado;
+    D.flip = D.gamma_flip; D.em = D.expected_move; D.reg = D.regimen;
+    D.tot  = D.totales;
+    D.tot.put_call_ratio = D.tot.put_call_oi;
+    D.strikes = D.strikes.map(s=>({k:s.strike,d:s.dist,g:s.gex,g0:s.gex_0dte,
+      dx:s.dex,vx:s.vex,cx:s.chex,tx:s.tex,oc:s.oi_call,op:s.oi_put,
+      vc:s.vol_call,vp:s.vol_put,ic:s.iv_call,ip:s.iv_put}));
+    D.vencs = D.vencimientos.map(v=>({f:v.fecha,d:v.dias,oi:v.oi,g:v.gex,
+      dx:v.dex,oc:v.oi_call,op:v.oi_put}));
+  }
+
+const $ = s => document.querySelector(s);
+const cs = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+const nf = (v,d=1) => (v>=0?'+':'\u2212') + Math.abs(v).toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const ni = v => Math.round(v).toLocaleString('es-AR');
+
+$('#sym').textContent = D.sym;
+$('#spot').textContent = D.spot.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+$('#stamp').textContent = 'CBOE \u00b7 dato ' + D.ts + ' \u00b7 calculado ' + D.gen.replace('T',' ').replace('+00:00','') + ' UTC';
+const espos = D.tot.net_gex_B > 0;
+const reg = $('#reg');
+reg.className = 'reg ' + (espos?'p':'n');
+reg.textContent = espos ? 'LONG GAMMA \u00b7 amortigua' : 'SHORT GAMMA \u00b7 amplifica';
+
+const T = D.tot;
+const kpis = [
+  ['Net GEX', nf(T.net_gex_B,2)+' B', T.net_gex_B>0?'pos':'neg', 'por cada 1% de movimiento'],
+  ['Gamma Flip', D.flip.toLocaleString('es-AR'), D.spot>D.flip?'pos':'neg',
+   (D.spot>D.flip?'est\u00e1s arriba +':'est\u00e1s abajo ')+Math.abs(D.spot-D.flip).toFixed(1)+' pts'],
+  ['Expected Move', '\u00b1'+D.em, '', (D.spot-D.em).toFixed(0)+' \u2013 '+(D.spot+D.em).toFixed(0)],
+  ['Net DEX', nf(T.net_dex_B,1)+' B', T.net_dex_B>0?'pos':'neg', 'exposici\u00f3n direccional'],
+  ['Net VEX', nf(T.net_vex_B,2)+' B', T.net_vex_B>0?'pos':'neg', 'vanna \u00b7 por 1% de IV'],
+  ['Net CHEX', nf(T.net_chex_B,2)+' B', T.net_chex_B>0?'pos':'neg', 'charm \u00b7 por d\u00eda'],
+  ['Net TEX', nf(T.net_tex_M,0)+' M', T.net_tex_M>0?'pos':'neg', 'theta \u00b7 decaimiento'],
+  ['Open Interest', ni(T.oi_total), '', ni(T.oi_call)+' C / '+ni(T.oi_put)+' P'],
+  ['Put/Call', T.put_call_ratio.toFixed(2), T.put_call_ratio>1?'neg':'pos', 'ratio de OI']
+];
+$('#kpis').innerHTML = kpis.map(function(a){
+  return '<div class="kpi"><div class="lbl">'+a[0]+'</div><div class="v '+a[2]+'">'+a[1]+'</div><div class="s">'+a[3]+'</div></div>';
+}).join('');
+
+const MODOS = {g:'GEX',dx:'DEX',vx:'VEX',cx:'CHEX',tx:'TEX',oi:'OI',g0:'GEX 0DTE'};
+let modo = 'g';
+const cv = $('#hist'), ctx = cv.getContext('2d');
+function val(s){ return modo==='oi' ? (s.oc - s.op) : s[modo]; }
+
+function dibHist(){
+  const dpr = window.devicePixelRatio||1;
+  const W = cv.clientWidth, H = 520;
+  cv.width = W*dpr; cv.height = H*dpr; cv.style.height = H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const SS = D.strikes;
+  const max = Math.max.apply(null, SS.map(function(s){return Math.abs(val(s));})) || 1;
+  const padL = 58, padR = 14, padT = 8, padB = 8;
+  const zero = padL + (W-padL-padR)*0.42;
+  const bh = Math.max(3, (H-padT-padB)/SS.length - 1.4);
+  const kmin = SS[0].k, kmax = SS[SS.length-1].k;
+  const yOf = function(k){ return padT + (H-padT-padB) * (1 - (k-kmin)/(kmax-kmin)); };
+
+  ctx.strokeStyle = cs('--line'); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(zero,padT); ctx.lineTo(zero,H-padB); ctx.stroke();
+
+  SS.forEach(function(s){
+    const v = val(s), y = yOf(s.k) - bh/2;
+    const w = (Math.abs(v)/max) * (v>=0 ? (W-padR-zero) : (zero-padL)) * 0.94;
+    ctx.fillStyle = v>=0 ? cs('--pos') : cs('--neg');
+    ctx.globalAlpha = 0.9;
+    if(v>=0){ ctx.fillRect(zero+1, y, w, bh); } else { ctx.fillRect(zero-1-w, y, w, bh); }
+    ctx.globalAlpha = 1;
+  });
+
+  ctx.font = '10px monospace'; ctx.textAlign='right'; ctx.fillStyle = cs('--tx3');
+  SS.forEach(function(s){
+    if(s.k % 25 === 0){
+      ctx.fillText(s.k, padL-8, yOf(s.k)+3);
+      ctx.strokeStyle=cs('--line'); ctx.globalAlpha=0.35;
+      ctx.beginPath(); ctx.moveTo(padL-4,yOf(s.k)); ctx.lineTo(W-padR,yOf(s.k)); ctx.stroke();
+      ctx.globalAlpha=1;
+    }
+  });
+
+  const ys = yOf(D.spot);
+  ctx.strokeStyle = cs('--acc'); ctx.lineWidth = 1.5; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.moveTo(padL,ys); ctx.lineTo(W-padR,ys); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = cs('--acc'); ctx.textAlign='left'; ctx.font='700 10px monospace';
+  ctx.fillText('SPOT '+D.spot.toFixed(0), padL+4, ys-5);
+
+  const yf = yOf(D.flip);
+  if(yf>padT && yf<H-padB){
+    ctx.strokeStyle = cs('--tx3'); ctx.lineWidth=1; ctx.setLineDash([2,3]);
+    ctx.beginPath(); ctx.moveTo(padL,yf); ctx.lineTo(W-padR,yf); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = cs('--tx3'); ctx.fillText('FLIP '+D.flip, padL+4, yf+12);
+  }
+}
+
+$('#tabs').addEventListener('click', function(e){
+  const b = e.target.closest('button'); if(!b) return;
+  modo = b.dataset.m;
+  Array.prototype.forEach.call($('#tabs').children, function(x){ x.setAttribute('aria-selected', x===b); });
+  dibHist();
+});
+
+function dibCurva(){
+  const c = $('#curva'), g = c.getContext('2d'), dpr = window.devicePixelRatio||1;
+  const W = c.clientWidth, H = 200;
+  c.width=W*dpr; c.height=H*dpr; c.style.height=H+'px'; g.setTransform(dpr,0,0,dpr,0,0);
+  g.clearRect(0,0,W,H);
+  const P = D.curva, padl=52, padr=14, padt=14, padb=26;
+  const xs = P.map(function(p){return p[0];}), ys = P.map(function(p){return p[1];});
+  const x0=Math.min.apply(null,xs), x1=Math.max.apply(null,xs);
+  const y0=Math.min.apply(null,ys.concat([0])), y1=Math.max.apply(null,ys.concat([0]));
+  const X = function(v){ return padl + (W-padl-padr)*(v-x0)/(x1-x0); };
+  const Y = function(v){ return padt + (H-padt-padb)*(1-(v-y0)/(y1-y0)); };
+  g.strokeStyle=cs('--line'); g.lineWidth=1;
+  g.beginPath(); g.moveTo(padl,Y(0)); g.lineTo(W-padr,Y(0)); g.stroke();
+  g.beginPath(); g.moveTo(X(P[0][0]),Y(0));
+  P.forEach(function(p){ g.lineTo(X(p[0]),Y(p[1])); });
+  g.lineTo(X(P[P.length-1][0]),Y(0)); g.closePath();
+  const grd = g.createLinearGradient(0,padt,0,H-padb);
+  grd.addColorStop(0, cs('--pos')+'44'); grd.addColorStop(1, cs('--neg')+'44');
+  g.fillStyle=grd; g.fill();
+  g.beginPath();
+  P.forEach(function(p,i){ if(i){ g.lineTo(X(p[0]),Y(p[1])); } else { g.moveTo(X(p[0]),Y(p[1])); } });
+  g.strokeStyle=cs('--tx'); g.lineWidth=1.6; g.stroke();
+  [[D.spot,cs('--acc'),'SPOT'],[D.flip,cs('--tx3'),'FLIP']].forEach(function(a){
+    const v=a[0], col=a[1], t=a[2];
+    if(v<x0||v>x1) return;
+    g.strokeStyle=col; g.setLineDash([4,3]); g.lineWidth=1.2;
+    g.beginPath(); g.moveTo(X(v),padt); g.lineTo(X(v),H-padb); g.stroke(); g.setLineDash([]);
+    g.fillStyle=col; g.font='700 9px monospace'; g.textAlign='center';
+    g.fillText(t, X(v), padt-3);
+  });
+  g.fillStyle=cs('--tx3'); g.font='9px monospace'; g.textAlign='right';
+  g.fillText(y1.toFixed(1)+'B', padl-6, Y(y1)+3);
+  g.fillText('0', padl-6, Y(0)+3);
+  g.fillText(y0.toFixed(1)+'B', padl-6, Y(y0)+3);
+  g.textAlign='center';
+  [x0,(x0+x1)/2,x1].forEach(function(v){ g.fillText(v.toFixed(0), X(v), H-8); });
+}
+
+$('#notaCurva').innerHTML = 'La curva cruza cero en <strong>'+D.flip+'</strong>. Arriba de ese precio la mesa frena los movimientos; abajo los agranda. El spot est\u00e1 en <strong>'+D.spot.toFixed(1)+'</strong>, '+(D.spot>D.flip?'<span style="color:var(--pos)">del lado que amortigua</span>':'<span style="color:var(--neg)">del lado que amplifica</span>')+'.';
+
+const mx = Math.max.apply(null, D.strikes.map(function(s){return Math.abs(s.g);})) || 1;
+$('#cnt').textContent = D.strikes.length + ' strikes \u00b7 \u00b13% del spot';
+$('#tb').innerHTML = D.strikes.slice().reverse().map(function(s){
+  const aqui = Math.abs(s.k-D.spot) < 2.5;
+  const w = Math.round(Math.abs(s.g)/mx*46);
+  const bar = '<span class="bar" style="width:'+w+'px;background:'+(s.g>=0?'var(--pos)':'var(--neg)')+'"></span>';
+  const pc = s.oc ? (s.op/s.oc) : null;
+  const iv = (s.ic!==null && s.ic!==undefined) ? s.ic : s.ip;
+  return '<tr class="'+(aqui?'here':'')+'">'
+   + '<td class="k">'+s.k+'</td>'
+   + '<td>'+(s.d>0?'+':'')+s.d+'</td>'
+   + '<td class="'+(s.g>=0?'pos':'neg')+'">'+bar+' '+nf(s.g,0)+'</td>'
+   + '<td class="'+(s.g0>=0?'pos':'neg')+'">'+(s.g0?nf(s.g0,0):'\u00b7')+'</td>'
+   + '<td class="'+(s.dx>=0?'pos':'neg')+'">'+nf(s.dx,0)+'</td>'
+   + '<td class="'+(s.vx>=0?'pos':'neg')+'">'+nf(s.vx,0)+'</td>'
+   + '<td class="'+(s.cx>=0?'pos':'neg')+'">'+nf(s.cx,0)+'</td>'
+   + '<td>'+ni(s.oc)+'</td><td>'+ni(s.op)+'</td>'
+   + '<td>'+(pc!==null?pc.toFixed(2):'\u00b7')+'</td>'
+   + '<td>'+(iv?(iv*100).toFixed(1)+'%':'\u00b7')+'</td></tr>';
+}).join('');
+
+const arriba = D.strikes.filter(function(s){return s.k>D.spot;}).sort(function(a,b){return b.g-a.g;})[0];
+const abajo  = D.strikes.filter(function(s){return s.k<D.spot;}).sort(function(a,b){return a.g-b.g;})[0];
+const pin    = D.strikes.slice().sort(function(a,b){return Math.abs(a.k-D.spot)-Math.abs(b.k-D.spot);})
+                 .filter(function(s){return Math.abs(s.g)>50;})[0];
+const niv = [
+  ['Call Wall', arriba, 'el techo: ah\u00ed la mesa frena las subas'],
+  ['Gamma Pin', pin,    'el im\u00e1n: el strike grande m\u00e1s cercano'],
+  ['Put Wall',  abajo,  'el piso: ah\u00ed la mesa frena las bajas']
+].filter(function(n){return n[1];});
+$('#niveles').innerHTML = niv.map(function(n){
+  const t=n[0], s=n[1], d=n[2];
+  return '<div class="v"><div><div class="f">'+t+'</div><div class="d">'+d+'</div></div>'
+   + '<div><div class="g '+(s.g>=0?'pos':'neg')+'">'+s.k+'</div>'
+   + '<div class="oi">'+nf(s.g,0)+' M \u00b7 '+(s.d>0?'+':'')+s.d+' pts</div></div></div>';
+}).join('');
+
+const mo = Math.max.apply(null, D.vencs.map(function(v){return v.oi;})) || 1;
+$('#vencs').innerHTML = D.vencs.map(function(v){
+  const dd = v.d<1 ? 'vence hoy' : (v.d<2 ? 'ma\u00f1ana' : Math.round(v.d)+' d\u00edas');
+  return '<div class="v">'
+   + '<div><div class="f">'+v.f+'</div><div class="d">'+dd+' \u00b7 '+ni(v.oi)+' OI</div></div>'
+   + '<div><div class="g '+(v.g>=0?'pos':'neg')+'">'+nf(v.g,0)+'</div><div class="oi">M</div></div>'
+   + '<div class="track"><div class="fill" style="width:'+(v.oi/mo*100)+'%;background:'+(v.g>=0?'var(--pos)':'var(--neg)')+'"></div></div>'
+   + '</div>';
+}).join('');
+
+$('#fuente').innerHTML = 'Cadena completa de <strong>'+D.sym+'</strong> desde el CDN p\u00fablico de <strong>CBOE</strong>, sin API key. La gamma viene calculada por la bolsa; vanna y charm se derivan ac\u00e1 desde la IV de cada contrato.<br><br><strong>Vanna</strong> est\u00e1 normalizada por cada 1% de cambio de volatilidad y <strong>charm</strong> por d\u00eda, que es como las publica la industria.';
+
+function todo(){ dibHist(); dibCurva(); }
+todo();
+addEventListener('resize', todo);
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change', todo);
+}
+arrancar();
+</script>
