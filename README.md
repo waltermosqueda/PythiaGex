@@ -59,6 +59,8 @@ errores más caros.
 | **Expected Move** | el rango de 1 sigma implícito en la cadena |
 | **Max Change** | los strikes donde más se movió el GEX entre corridas |
 | **Skew 0DTE** | IV de calls contra IV de puts alrededor del dinero |
+| **Matriz Strike × DTE** | de qué vencimiento viene la gamma de cada strike |
+| **Concentración** | qué porcentaje de un nivel pesa hoy y cuánto es inventario lejano |
 
 ---
 
@@ -87,9 +89,29 @@ python cli.py SPX --venc next      # solo el siguiente
 python cli.py SPX --dias 90        # todo el complejo
 python cli.py NDX --base 12.28     # convierte los niveles a precio de futuro
 python cli.py SPX --panel          # además escribe panel/datos.json
+python cli.py SPX --matriz         # agrega la matriz strike × vencimiento
 ```
 
 Sin dependencias: corre con la librería estándar de Python 3.9+.
+
+---
+
+## La matriz Strike × DTE
+
+Un strike puede tener mucha gamma y no mover nada hoy, si esa gamma vence
+dentro de tres semanas. La matriz cruza cada strike contra cada vencimiento
+y responde: **este nivel, ¿cuándo pesa?**
+
+```
+concentracion (donde pesa cada nivel):
+      7800     4172M    69% en 2026-09-18 (21d)
+      7900     3463M    65% en 2026-09-18 (21d)
+      7715      774M    62% en 2026-08-31 (3d)
+```
+
+Los primeros dos son los muros más grandes del mapa, pero casi toda su
+gamma está en el vencimiento trimestral: hoy son decorativos. El tercero
+es mucho más chico y pesa esta semana.
 
 ---
 

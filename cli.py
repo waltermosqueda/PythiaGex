@@ -15,6 +15,7 @@ from pythiagex.fuentes    import bajar, normalizar
 from pythiagex.exposicion import calcular
 from pythiagex.niveles    import (curva_gamma, expected_move, niveles_clave,
                                   skew_0dte, cambio_vs, alertas)
+from pythiagex.matriz     import construir as matriz_construir, concentracion
 
 SALIDA = "datos/salida"
 
@@ -41,6 +42,8 @@ def main():
     ap.add_argument("--panel", action="store_true", help="escribe panel/datos.json")
     ap.add_argument("--rango", type=float, default=0.03,
                     help="ancho de strikes alrededor del spot, en tanto por uno")
+    ap.add_argument("--matriz", action="store_true",
+                    help="agrega la matriz strike x vencimiento")
     a = ap.parse_args()
 
     sym = normalizar(a.simbolo)
@@ -87,12 +90,20 @@ def main():
                        iv_call=s["iv_call"], iv_put=s["iv_put"])
                   for k, s in sorted(st.items())
                   if abs(k - S) / S <= a.rango],
+      "atm_strike": min(st.keys(), key=lambda k: abs(k - S)) if st else None,
+      "horizonte": {"dias": a.dias, "vencimientos": len(r["vencimientos"])},
+      "regimen_label": "Dampening" if T["gex"] > 0 else "Amplifying",
       "vencimientos": [dict(v, gex=M(v["gex"]), dex=M(v["dex"]),
                             oi=int(v["oi"]), vol=int(v["vol"]),
                             oi_call=int(v["oi_call"]), oi_put=int(v["oi_put"]))
                        for v in sorted(r["vencimientos"].values(),
                                        key=lambda z: z["dias"])],
     }
+
+    if a.matriz:
+        mz = matriz_construir(crudo, "gex", dias_max=max(a.dias, 30), ancho=a.rango)
+        out["matriz"] = mz
+        out["concentracion"] = concentracion(mz, top=8)
 
     os.makedirs(SALIDA, exist_ok=True)
     with open(f"{SALIDA}/{sym}.json", "w", encoding="utf-8") as f:
@@ -117,6 +128,10 @@ def main():
           f"pin {n['gamma_pin']}  maj+ {n['major_positive']}  maj- {n['major_negative']}")
     if ale:  print(f"  ALERTA: spot pegado a {', '.join(x['nivel'] for x in ale)}")
     if cam:  print(f"  max change: " + " · ".join(f"{c['strike']}({c['delta_gex']:+})" for c in cam[:4]))
+    if a.matriz:
+        print("  concentracion (donde pesa cada nivel):")
+        for x in out["concentracion"][:5]:
+            print(f"    {x['strike']:>8.0f}  {x['total']:>7}M   {x['concentracion_pct']:>3}% en {x['vencimiento_dominante']} ({x['dte']}d)")
     print(f"  -> {SALIDA}/{sym}.json")
 
 if __name__ == "__main__":
