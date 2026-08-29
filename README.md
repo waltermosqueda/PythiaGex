@@ -20,14 +20,6 @@ python cli.py SPX --dias 18 --panel
 
 ---
 
-## Por qué existe
-
-Los tableros de GEX cuestan entre 30 y 200 dólares por mes, y ninguno
-muestra de dónde saca los números. Este calcula todo desde la cadena que
-publica la bolsa, con el método a la vista.
-
-**No hay suscripción, no hay API key, no hay tarjeta.**
-
 ---
 
 ## La fuente
