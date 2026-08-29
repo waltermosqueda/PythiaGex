@@ -1,0 +1,64 @@
+name: Actualizar datos
+
+# Horario de mercado de Estados Unidos.
+# 9:30 a 16:00 ET son 13:30-20:00 UTC en verano y 14:30-21:00 en invierno,
+# asi que se cubre 13:00-21:00 para no depender del cambio de hora.
+on:
+  schedule:
+    - cron: '*/15 13-21 * * 1-5'   # cada 15 min, dias habiles
+    - cron: '5 11 * * 1-5'         # una corrida temprana con el mapa del dia
+  workflow_dispatch:                # y a mano cuando haga falta
+
+concurrency:
+  group: datos
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  correr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Calcular exposiciones
+        run: |
+          for S in SPX NDX RUT; do
+            echo "--- $S ---"
+            python cli.py "$S" --dias 18 --matriz --rango 0.03 || echo "fallo $S"
+            sleep 3
+          done
+
+      - name: Copiar al panel
+        run: |
+          mkdir -p panel/datos
+          for S in _SPX _NDX _RUT; do
+            [ -f "datos/salida/$S.json" ] && cp "datos/salida/$S.json" "panel/datos/$S.json"
+          done
+          # el panel abre SPX por defecto
+          [ -f panel/datos/_SPX.json ] && cp panel/datos/_SPX.json panel/datos.json
+          ls -la panel/datos/
+
+      - name: Podar historico viejo
+        run: |
+          # se guardan 30 dias; lo anterior se borra para que el repo no crezca
+          find datos/historico -name '*.jsonl' -mtime +30 -delete 2>/dev/null || true
+          du -sh datos/ 2>/dev/null || true
+
+      - name: Guardar
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add panel/datos.json panel/datos datos/historico 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "sin cambios"
+          else
+            git commit -m "datos: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git pull --rebase --autostash origin main
+            git push origin main
+          fi

@@ -91,13 +91,19 @@ tr.here td.k{color:var(--neg)}
 .note{font-size:11px;color:var(--tx3);line-height:1.55;padding:11px 14px;border-top:1px solid var(--line)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:var(--tx3)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+.simbolos{display:flex;gap:1px;margin-bottom:10px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;width:max-content}
+.simbolos .sm{background:var(--surf);color:var(--tx2);font-size:11px;font-weight:600;letter-spacing:.05em;padding:5px 13px;text-decoration:none;font-family:var(--mono)}
+.simbolos .sm.on{background:var(--acc);color:#0A0E13}
+.simbolos .sm:hover:not(.on){background:var(--surf2);color:var(--tx)}
 </style>
 
 <div class="wrap">
 
 <div class="top">
   <div>
-    <div class="brand">
+    <div class="simbolos" id="simbolos"></div>
+<div class="brand">
       <h1>Gamma Desk</h1>
       <span class="tick" id="sym">SPX</span>
     </div>
@@ -189,7 +195,12 @@ tr.here td.k{color:var(--neg)}
 </div>
 
 <script>
-window.__FUENTES__ = ['datos.json','ejemplo.json'];
+(function(){
+  var q = new URLSearchParams(location.search).get('s');
+  var sym = (q || 'SPX').toUpperCase().replace(/^[_^]/,'');
+  window.__SIMBOLO__ = sym;
+  window.__FUENTES__ = ['datos/_'+sym+'.json','datos/'+sym+'.json','datos.json','ejemplo.json'];
+})();
 </script>
 <script>
 async function arrancar(){
@@ -221,6 +232,13 @@ const nf = (v,d=1) => (v>=0?'+':'\u2212') + Math.abs(v).toLocaleString('es-AR',{
 const ni = v => Math.round(v).toLocaleString('es-AR');
 
 $('#sym').textContent = D.sym;
+  (function(){
+    var el = document.getElementById('simbolos'); if(!el) return;
+    var act = (window.__SIMBOLO__||'SPX');
+    el.innerHTML = ['SPX','NDX','RUT'].map(function(x){
+      return '<a href="?s='+x+'" class="sm'+(x===act?' on':'')+'">'+x+'</a>';
+    }).join('');
+  })();
 $('#spot').textContent = D.spot.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
 $('#stamp').textContent = 'CBOE \u00b7 dato ' + D.ts + ' \u00b7 calculado ' + D.gen.replace('T',' ').replace('+00:00','') + ' UTC';
 const espos = D.tot.net_gex_B > 0;

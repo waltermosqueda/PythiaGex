@@ -3,7 +3,13 @@ __pycache__/
 .venv/
 venv/
 .env
-datos/cache/
-datos/salida/
-*.log
 .DS_Store
+*.log
+
+# el crudo de CBOE es pesado y se puede volver a bajar: no va al repo
+datos/cache/
+# la salida intermedia tampoco; lo que se publica esta en panel/
+datos/salida/
+
+# el historico SI va: es lo que habilita lookbacks e intradia
+!datos/historico/
