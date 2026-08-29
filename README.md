@@ -61,6 +61,13 @@ errores más caros.
 | **Skew 0DTE** | IV de calls contra IV de puts alrededor del dinero |
 | **Matriz Strike × DTE** | de qué vencimiento viene la gamma de cada strike |
 | **Concentración** | qué porcentaje de un nivel pesa hoy y cuánto es inventario lejano |
+| **Skew** | cuánto más caro está el seguro de baja que el de suba |
+| **Term structure** | si el miedo está en el corto o en el largo plazo |
+| **Superficie de IV** | volatilidad por strike y por vencimiento a la vez |
+| **Hottest chains** | los contratos con más volumen sobre interés abierto |
+| **Posición nueva** | strikes donde hoy se operó más de lo que había vivo |
+| **Lookbacks** | el estado de hace 10, 20 y 30 minutos, para superponer |
+| **Intradía** | evolución de las métricas a lo largo de la jornada |
 
 ---
 

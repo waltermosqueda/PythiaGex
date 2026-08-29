@@ -16,6 +16,9 @@ from pythiagex.exposicion import calcular
 from pythiagex.niveles    import (curva_gamma, expected_move, niveles_clave,
                                   skew_0dte, cambio_vs, alertas)
 from pythiagex.matriz     import construir as matriz_construir, concentracion
+from pythiagex.historico  import guardar as hist_guardar, lookbacks, intradia, cambio as hist_cambio
+from pythiagex.volatilidad import skew, term, superficie
+from pythiagex.flujo       import hottest, actividad_por_strike, resumen_actividad
 
 SALIDA = "datos/salida"
 
@@ -44,6 +47,8 @@ def main():
                     help="ancho de strikes alrededor del spot, en tanto por uno")
     ap.add_argument("--matriz", action="store_true",
                     help="agrega la matriz strike x vencimiento")
+    ap.add_argument("--sin-historico", action="store_true",
+                    help="no guardar esta corrida en el historico")
     a = ap.parse_args()
 
     sym = normalizar(a.simbolo)
@@ -58,6 +63,20 @@ def main():
     cam = cambio_vs(anterior(sym), st)
     ale = alertas(S, niv)
     T   = r["totales"]
+
+    # historico: habilita lookbacks e intradia
+    lb = lookbacks(sym)
+    if not a.sin_historico:
+        hist_guardar(sym, {"spot": S, "net_gex_B": B(T["gex"]),
+                           "net_dex_B": B(T["dex"]), "net_vex_B": B(T["vex"]),
+                           "net_chex_B": B(T["chex"]), "gamma_flip": flip,
+                           "expected_move": em}, st)
+    out_lb = {}
+    for etq, snap in lb.items():
+        out_lb[etq] = {"edad_min": snap["edad_min"], "spot": snap["spot"],
+                       "gex": snap["gex"], "flip": snap["flip"],
+                       "k": {k: v[0] for k, v in snap["k"].items()}}
+    prev = lb.get("10m") or lb.get("20m") or lb.get("30m")
 
     conv = (lambda x: round(x + a.base, 2)) if a.base is not None else (lambda x: x)
 
@@ -79,6 +98,14 @@ def main():
       "niveles_indice": niv,
       "alertas": ale,
       "max_change": cam,
+      "lookbacks": out_lb,
+      "cambio": hist_cambio(st, prev, top=12) if prev else [],
+      "intradia": intradia(sym),
+      "skew": skew(crudo),
+      "term": term(crudo),
+      "actividad": actividad_por_strike(crudo, ancho=a.rango),
+      "posicion_nueva": resumen_actividad(actividad_por_strike(crudo, ancho=a.rango)),
+      "hottest": hottest(crudo, top=15),
       "skew_0dte": skew_0dte(st, S),
       "curva": curva,
       "strikes": [dict(strike=k, dist=round(k - S, 1),
@@ -104,6 +131,7 @@ def main():
         mz = matriz_construir(crudo, "gex", dias_max=max(a.dias, 30), ancho=a.rango)
         out["matriz"] = mz
         out["concentracion"] = concentracion(mz, top=8)
+        out["superficie"] = superficie(crudo, ancho=a.rango)
 
     os.makedirs(SALIDA, exist_ok=True)
     with open(f"{SALIDA}/{sym}.json", "w", encoding="utf-8") as f:
@@ -132,6 +160,12 @@ def main():
         print("  concentracion (donde pesa cada nivel):")
         for x in out["concentracion"][:5]:
             print(f"    {x['strike']:>8.0f}  {x['total']:>7}M   {x['concentracion_pct']:>3}% en {x['vencimiento_dominante']} ({x['dte']}d)")
+    sk, tm = out["skew"], out["term"]
+    if sk.get("pendiente_pp") is not None:
+        print(f"  skew {sk['pendiente_pp']:+} pp ({sk['vencimiento']})   term {tm.get('forma')}")
+    pn = out["posicion_nueva"]
+    if pn:
+        print("  posicion nueva: " + " · ".join(f"{x['strike']:.0f}({x['vol_oi']}x)" for x in pn[:5]))
     print(f"  -> {SALIDA}/{sym}.json")
 
 if __name__ == "__main__":
