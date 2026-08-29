@@ -1,5 +1,10 @@
 # PythiaGex
 
+**Panel en vivo: https://waltermosqueda.github.io/PythiaGex/**
+
+Corre solo en GitHub Actions cada 15 minutos en horario de mercado.
+No depende de ninguna máquina encendida.
+
 Exposición de opciones (GEX, DEX, vanna, charm, theta) calculada desde
 **fuentes públicas, sin API key y sin costo**.
 
@@ -68,6 +73,30 @@ errores más caros.
 | **Posición nueva** | strikes donde hoy se operó más de lo que había vivo |
 | **Lookbacks** | el estado de hace 10, 20 y 30 minutos, para superponer |
 | **Intradía** | evolución de las métricas a lo largo de la jornada |
+
+---
+
+## Corre solo
+
+Dos workflows lo mantienen vivo sin intervención:
+
+**`actualizar.yml`** — cada 15 minutos entre las 13:00 y las 21:00 UTC de
+lunes a viernes (cubre 9:30–16:00 ET en verano y en invierno). Calcula SPX,
+NDX y RUT, guarda el histórico y commitea. Además hay una corrida temprana
+que deja el mapa del día antes de la apertura.
+
+**`pages.yml`** — publica el panel cada vez que cambian los datos.
+
+Los dos se pueden disparar a mano desde la pestaña Actions.
+
+| Símbolo | Panel |
+|---|---|
+| SPX | https://waltermosqueda.github.io/PythiaGex/?s=SPX |
+| NDX | https://waltermosqueda.github.io/PythiaGex/?s=NDX |
+| RUT | https://waltermosqueda.github.io/PythiaGex/?s=RUT |
+
+Y el JSON crudo queda servido en `datos/_SPX.json`, listo para que lo
+consuma un indicador de ATAS o cualquier otra cosa.
 
 ---
 
