@@ -136,6 +136,14 @@ def enriquecer(niveles, strikes, spot, base=None, iv_atm=None, T=None,
             continue
         tec, criollo = GLOSARIO.get(clave, (clave, ""))
         s = strikes.get(K) or {}
+        # El gamma flip no cae en un strike: sale de cruzar la curva por cero.
+        # Sin IV, el indicador no puede recalcularle la probabilidad en vivo y
+        # se queda con la del momento de la corrida, que es justo lo que
+        # estabamos arreglando. Se le presta la IV del strike mas cercano.
+        if not s.get("iv_call") and not s.get("iv_put") and strikes:
+            vecino = min(strikes, key=lambda k: abs(k - K))
+            s = dict(s, iv_call=strikes[vecino].get("iv_call"),
+                     iv_put=strikes[vecino].get("iv_put"))
         d = K - spot
         out.append({
             "clave": clave,
