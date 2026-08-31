@@ -372,7 +372,7 @@ namespace PythiaGex
         public FormatoEtiqueta Formato { get; set; } = FormatoEtiqueta.Chip;
 
         [Display(Name = "Largo del nombre", GroupName = "Etiqueta del nivel", Order = 301)]
-        public LargoNombre Nombre { get; set; } = LargoNombre.Corto;
+        public LargoNombre Nombre { get; set; } = LargoNombre.Ambos;
 
         [Display(Name = "Distancia en ticks", GroupName = "Etiqueta del nivel", Order = 302)]
         public bool CampoTicks { get; set; } = true;
@@ -991,8 +991,13 @@ namespace PythiaGex
             => new RenderFont(string.IsNullOrWhiteSpace(Tipografia) ? "Consolas" : Tipografia,
                               Math.Max(6f, tam), negrita ? FontStyle.Bold : FontStyle.Regular);
 
-        /// <summary>El nombre en la etiqueta. Corto por defecto: sobre el
-        /// grafico lo que importa es reconocerlo de un vistazo, no leerlo.</summary>
+        /// <summary>El nombre en la etiqueta.
+        ///
+        /// Por defecto van los DOS: el nombre tecnico, que es el que usa
+        /// cualquiera que hable de esto en serio, y abajo la traduccion. Que
+        /// aparezca solo "PISO" ahorra seis caracteres y a cambio deja al
+        /// operador sin poder buscar el termino en ningun lado ni entender a
+        /// nadie que lo nombre. Ese cambio no vale seis caracteres.</summary>
         private string NombreEtq(Nivel n)
         {
             if (Nombre == LargoNombre.Completo) return n.Nombre.ToUpperInvariant();
@@ -1006,6 +1011,22 @@ namespace PythiaGex
                 case "major_positive": b = "MAY+"; break;
                 case "major_negative": b = "MAY-"; break;
                 default: b = n.Nombre.ToUpperInvariant(); break;
+            }
+            if (Nombre == LargoNombre.Ambos)
+            {
+                // el tecnico primero, el criollo despues y en minuscula, para
+                // que se lea como lo que es: la traduccion, no otro nivel
+                var tec = n.Tipo == "call_wall" ? "CALL WALL"
+                        : n.Tipo == "put_wall" ? "PUT WALL"
+                        : n.Tipo == "gamma_pin" ? "GAMMA PIN"
+                        : n.Tipo == "gamma_flip" ? "ZERO GAMMA"
+                        : n.Tipo == "major_positive" ? "MAJOR +"
+                        : n.Tipo == "major_negative" ? "MAJOR -"
+                        : n.Nombre.ToUpperInvariant();
+                var cri = b == "TECHO" ? "techo" : b == "PISO" ? "piso"
+                        : b == "IMAN" ? "iman" : b == "FLIP" ? "el cambio de regimen"
+                        : b.ToLowerInvariant();
+                return tec + " " + cri + (n.Es0dte ? "  0DTE" : "");
             }
             return b + (n.Es0dte ? " 0D" : "");
         }
@@ -1946,21 +1967,55 @@ namespace PythiaGex
                 }
                 if (VerLeyenda)
                 {
-                    L.Add(new Fila("QUE ES CADA COSA", "", ColTexto, true, true));
-                    L.Add(new Fila("gam", "gamma parada en ese strike, en dolares",
-                                   Color.FromArgb(130, 140, 155)));
-                    L.Add(new Fila("toca", "probabilidad de tocarlo antes del cierre",
-                                   Color.FromArgb(130, 140, 155)));
-                    L.Add(new Fila("OI 2k c/5k p", "interes abierto: calls y puts vivos",
-                                   Color.FromArgb(130, 140, 155)));
-                    L.Add(new Fila("vol / delta", "lo operado ahi hoy, y la agresion neta",
-                                   Color.FromArgb(130, 140, 155)));
-                    L.Add(new Fila("ABSORCION", "mucho volumen y poco avance: alguien absorbe",
-                                   Color.FromArgb(130, 140, 155)));
-                    L.Add(new Fila("ZONA", "la 2da pared pesa casi igual: es franja, no raya",
-                                   Color.FromArgb(130, 140, 155)));
-                    L.Add(new Fila("acelera / frena", "si la cobertura crece o baja al moverse",
-                                   Color.FromArgb(130, 140, 155)));
+                    // La leyenda existe porque una abreviatura sin nombre no
+                    // ensena nada: el operador ve "-2.05B" y no puede ni
+                    // buscarlo. Va TODO lo que aparece en pantalla, incluidas
+                    // las lineas de contexto que antes no se explicaban.
+                    var gris = Color.FromArgb(130, 140, 155);
+                    L.Add(new Fila("LOS NIVELES DE GAMMA", "", ColTexto, true, true));
+                    L.Add(new Fila("CALL WALL  techo",
+                                   "el strike de mas gamma arriba: frena subas", gris));
+                    L.Add(new Fila("PUT WALL  piso",
+                                   "el de mas gamma abajo: frena bajas", gris));
+                    L.Add(new Fila("GAMMA PIN  iman",
+                                   "donde el hedge tira el precio al cierre", gris));
+                    L.Add(new Fila("ZERO GAMMA  flip",
+                                   "arriba amortigua, abajo amplifica", gris));
+                    L.Add(new Fila("0DTE", "vence hoy: pega mas fuerte y se apaga al cierre", gris));
+
+                    L.Add(new Fila("LO QUE DICE CADA NUMERO", "", ColTexto, true, true));
+                    L.Add(new Fila("gam  -2.05B",
+                                   "gamma parada en ese strike, en dolares (B = mil millones)", gris));
+                    L.Add(new Fila("toca  88%",
+                                   "probabilidad de tocarlo antes del cierre", gris));
+                    L.Add(new Fila("dist  -9tk",
+                                   "a cuantos TICKS esta del precio (1 tick = 0.25)", gris));
+                    L.Add(new Fila("OI  1.6kc/5.0kp",
+                                   "open interest: contratos vivos, calls y puts (k = mil)", gris));
+                    L.Add(new Fila("vol / delta",
+                                   "lo operado ahi hoy, y la agresion neta compra-venta", gris));
+                    L.Add(new Fila("x3",
+                                   "cuantas razones distintas coinciden en ese precio", gris));
+                    L.Add(new Fila("ABSORCION",
+                                   "mucho volumen y poco avance: alguien se lo come todo", gris));
+                    L.Add(new Fila("ZONA",
+                                   "la 2da pared pesa casi igual: es franja, no raya", gris));
+                    L.Add(new Fila("acelera / frena",
+                                   "si la cobertura crece o baja al moverse", gris));
+
+                    L.Add(new Fila("LAS LINEAS DE ATAS", "", ColTexto, true, true));
+                    L.Add(new Fila("VWAP",
+                                   "precio promedio ponderado por volumen de la sesion", gris));
+                    L.Add(new Fila("VWAP +1s / -1s",
+                                   "un desvio estandar: adentro pasa ~2 de cada 3 del volumen", gris));
+                    L.Add(new Fila("VWAP +2s / -2s",
+                                   "dos desvios: afuera esta caro o barato para la sesion", gris));
+                    L.Add(new Fila("POC  point of control",
+                                   "el precio donde MAS se opero hoy", gris));
+                    L.Add(new Fila("VAH / VAL  value area",
+                                   "entre las dos paso el 70% del volumen: el rango acordado", gris));
+                    L.Add(new Fila("IB  initial balance",
+                                   "el rango de la primera hora de la sesion", gris));
                 }
             }
             else

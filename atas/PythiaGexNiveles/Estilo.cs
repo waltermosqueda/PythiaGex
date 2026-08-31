@@ -49,6 +49,7 @@ namespace PythiaGex
     /// <summary>Cuanto nombre se escribe.</summary>
     public enum LargoNombre
     {
+        [Description("Tecnico + criollo: PUT WALL piso")] Ambos,
         [Description("Corto: TECHO, PISO, IMAN")] Corto,
         [Description("Completo: Call Wall, Put Wall")] Completo,
     }
