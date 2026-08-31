@@ -11,7 +11,8 @@ evolucion a lo largo de la rueda.
 
     python auditoria.py            # una pasada sobre SPX
     python auditoria.py NDX RUT    # otros simbolos
-    python auditoria.py --historia # que paso en las corridas anteriores
+    python auditoria.py --historia   # que paso en las corridas anteriores
+    python auditoria.py --vigilancia # si alguien se llevo el repositorio
 """
 import datetime as dt
 import json
@@ -424,8 +425,83 @@ def historia(simbolo="SPX"):
                 print("    %-12s %10s -> %-10s  %+.2f" % (etq, a[k], z[k], z[k] - a[k]))
 
 
+# ---------------------------------------------------------------------------
+def vigilancia():
+    """Quien mira el repositorio, y si alguien se lo llevo.
+
+    El repositorio es publico porque GitHub Pages gratis lo necesita para
+    servir el panel. Publico no significa libre: la licencia es de todos los
+    derechos reservados. Pero una licencia no impide que alguien copie, solo
+    da con que reclamar despues.
+
+    Esto guarda una foto de forks, estrellas, observadores y trafico, y avisa
+    cuando cambia. No previene nada; hace que uno se entere.
+
+    Ojo con los clones: los propios runners de Actions bajan el repositorio en
+    cada corrida, asi que el numero es alto por diseno. Lo que importa es que
+    NO suba de golpe por encima de las corridas del dia.
+    """
+    import subprocess
+    ruta = os.path.join(DIR, "vigilancia.json")
+    try:
+        campos = "forks_count,stargazers_count,subscribers_count"
+        j = json.loads(subprocess.run(
+            ["gh", "api", "repos/waltermosqueda/PythiaGex",
+             "--jq", "{forks:.forks_count,estrellas:.stargazers_count,"
+                     "observadores:.subscribers_count}"],
+            capture_output=True, text=True, timeout=30).stdout or "{}")
+        for clave, ruta_api in (("clones", "traffic/clones"),
+                                ("visitas", "traffic/views")):
+            r = subprocess.run(
+                ["gh", "api", "repos/waltermosqueda/PythiaGex/" + ruta_api,
+                 "--jq", "{c:.count,u:.uniques}"],
+                capture_output=True, text=True, timeout=30).stdout
+            d_ = json.loads(r or "{}")
+            j[clave] = d_.get("c", 0)
+            j[clave + "_origenes"] = d_.get("u", 0)
+    except Exception as e:
+        print("  no se pudo consultar GitHub: %s" % str(e)[:70])
+        return
+
+    ant = {}
+    if os.path.exists(ruta):
+        try:
+            ant = json.load(open(ruta, encoding="utf-8"))
+        except Exception:
+            ant = {}
+
+    print("\n  VIGILANCIA DEL REPOSITORIO   %s"
+          % dt.datetime.now().strftime("%Y-%m-%d %H:%M"))
+    print("  %-16s %8s %10s" % ("", "ahora", "cambio"))
+    alerta = False
+    for k in ("forks", "estrellas", "observadores", "clones", "clones_origenes",
+              "visitas", "visitas_origenes"):
+        a = ant.get(k)
+        n = j.get(k, 0)
+        dif = "" if a is None else ("%+d" % (n - a) if n != a else "=")
+        marca = ""
+        # un fork, una estrella o un observador nuevo es alguien real mirando
+        if k in ("forks", "estrellas", "observadores") and a is not None and n > a:
+            marca = "   <-- ALGUIEN LO TOMO"
+            alerta = True
+        print("  %-16s %8d %10s%s" % (k, n, dif, marca))
+
+    if j.get("forks", 0) > 0:
+        print("\n  Hay %d fork(s). Ver quien:" % j["forks"])
+        print("     gh api repos/waltermosqueda/PythiaGex/forks --jq '.[].full_name'")
+    if not alerta and ant:
+        print("\n  sin novedades desde la foto anterior")
+
+    j["t"] = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    os.makedirs(DIR, exist_ok=True)
+    with open(ruta, "w", encoding="utf-8") as f:
+        json.dump(j, f, indent=1)
+
 if __name__ == "__main__":
     args = [x for x in sys.argv[1:] if not x.startswith("--")]
+    if "--vigilancia" in sys.argv:
+        vigilancia()
+        sys.exit(0)
     if "--historia" in sys.argv:
         for s in (args or ["SPX"]):
             historia(s)
