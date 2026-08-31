@@ -11,6 +11,44 @@ Exposición de opciones (GEX, DEX, vanna, charm, theta) calculada desde
 Pensado para operar futuros de índices — ES/MES y NQ/MNQ — leyendo el
 posicionamiento de las opciones del índice subyacente.
 
+## Las tres mitades del proyecto
+
+Empezó como un panel web y se bifurcó. Hoy son tres cosas, todas acá adentro:
+
+| Carpeta | Qué es |
+|---|---|
+| `pythiagex/` + `panel/` | El motor y el panel web. El **mapa**. |
+| [`atas/`](atas/) | El indicador para ATAS. El **reloj**: junta los niveles con el precio en vivo de Rithmic. |
+| [`conocimiento/`](conocimiento/) | Las 26 memorias, la bitácora y las instrucciones. Todo lo aprendido. |
+
+El panel dice **dónde** está la pared. El indicador, con el footprint de ATAS,
+dice **quién está ganando ahí**. Ningún tablero de GEX público puede dar lo
+segundo.
+
+## Respaldo
+
+Buena parte del trabajo vivía solo en el disco de una máquina: las memorias,
+la bitácora, las guías, las instrucciones del proyecto. Ahora se sincroniza
+con:
+
+```bash
+python respaldar.py
+```
+
+Tacha los identificadores de cuenta antes de copiar, porque este repositorio
+es público.
+
+## Verificación
+
+```bash
+python auditoria.py SPX        # 14 controles contra la cadena cruda
+python auditoria.py --historia # la evolución de la rueda
+```
+
+El auditor **no reusa** las funciones del proyecto: recalcula cada número
+desde la cadena con la fórmula escrita de nuevo, y recién después compara. Un
+auditor que usa el mismo código que verifica no audita nada.
+
 ```bash
 python cli.py SPX --dias 18 --panel
 ```

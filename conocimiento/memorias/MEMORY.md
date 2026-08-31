@@ -1,0 +1,25 @@
+- [No terminar la sesión sin orden](no-terminar-sesion-sin-orden.md) — el control de pantalla sigue activo hasta que el usuario diga "apagate pantalla".
+- [Mirar la pantalla antes de responder sobre ATAS](mirar-pantalla-antes-de-responder-atas.md) — nada de suponer: screenshot primero, después explicar.
+- [Freeze del portapapeles = TextInputHost en bucle](freeze-portapapeles-textinputhost.md) — no es corrupción, SFC ya salió limpio; es un hilo al 98% de CPU.
+- [Cómo enseñarle trading](como-ensenarle-trading.md) — analogía concreta primero, una idea por vez, cero tablas y cero jerga.
+- [Setup de ATAS verificado](setup-atas-verificado.md) — Ultra vitalicia, 8.0.14.396, Rithmic; el tablero de opciones funciona pero sin agregación GEX.
+- [Plan para aprender gamma/GEX](plan-gamma-gex.md) — gratis primero, GEX Metrix después, GEXbot dentro de ATAS al final.
+- [Páginas GEX auditadas](paginas-gex-auditadas.md) — cinco tableros; solo Opensera refresca de verdad, un timestamp que avanza no prueba nada.
+- [Conversión SPX a ES](conversion-spx-a-es.md) — la base se mide restando dos forwards de la misma cadena, nunca contra el índice; se valida contra el carry teórico.
+- [Calcular el GEX propio](calcular-gex-propio.md) — el método que salió mejor que los cinco tableros; rehacerlo después de las 8:00 ET.
+- [Rutas y APIs de GEX](rutas-y-apis-gex.md) — endpoints exactos para sacarle el dato crudo a cada web sin pasar por la interfaz.
+- [No frontear el panel del navegador](panel-navegador-no-frontear.md) — trabajar en pestañas de fondo; `tabs_select` le congela la vista.
+- [Opciones de ES en ATAS](atas-opciones-es.md) — sí hay diarios y 0DTE con OI, gamma y volumen; el filtro venía en "Regular".
+- [Lecciones de order flow](lecciones-order-flow.md) — lo que ya domina de footprint, heatmap y niveles; retomar desde ahí, no desde cero.
+- [Navegar ATAS sin pedir permiso](navegar-atas-sin-pedir-permiso.md) — cambiar pestañas y vistas solo; lo único prohibido es clickear el lienzo del gráfico.
+- [CME Group: la fuente oficial](cme-quikstrike.md) — el endpoint de settlements despeja la IV solo; hay 22 productos de opciones de ES, no 10.
+- [Widgets sin choque de UI](widgets-sin-choque-de-ui.md) — el número que cambia va en su propia línea, nunca al lado del control.
+- [Nombres técnicos + criollo](nombrar-niveles-tecnico-y-criollo.md) — cada nivel con su nombre de experto arriba y la traducción debajo, siempre.
+- [Desplegables de ATAS](desplegables-atas-alt-flecha.md) — no se abren con clic; sí con alt+Flecha abajo. No declarar imposible sin probar.
+- [Cambios en ATAS de a uno](cambios-atas-de-a-uno.md) — un indicador por vez y nunca histórico pesado con el mercado abierto.
+- [Autonomía para abrir y buscar](autonomia-abrir-y-buscar.md) — abrir ATAS y consultar CME sin preguntar; el cache vive en el origen cmegroup.com.
+- [Enseñar con capturas reales](ensenar-con-capturas-reales.md) — guía paso a paso con imágenes de su pantalla; el texto abstracto no le enseña.
+- [Navegador propio y límite de CME](navegador-propio-y-limite-cme.md) — el integrado primero, Edge solo para capturas; una sola descarga diaria o Akamai bloquea.
+- [Compilar indicadores de ATAS](compilar-indicadores-atas.md) — SDK, referencias sin copiar, la API por reflexión y el botón “Add to chart” que no es doble clic.
+- [Datos ocultos de ATAS](datos-ocultos-de-atas.md) — cada vela trae el footprint por precio, delta, VWAP y value area; con eso se ve quién gana en cada nivel de gamma.
+- [Auditoría de punta a punta](auditoria-punta-a-punta.md) — recalcula todo desde la cadena cruda; encontró el flip sin interpolar y el deploy que nunca se disparaba.
