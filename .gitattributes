@@ -1,0 +1,12 @@
+
+# Binarios: git los detecta solo casi siempre, pero con los PDF se equivoco y
+# les convirtio los saltos de linea. Resultado: 397 bytes perdidos y el archivo
+# roto. Se marcan a mano.
+*.pdf   binary
+*.dll   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gz    binary
+*.zip   binary
+*.ico   binary
