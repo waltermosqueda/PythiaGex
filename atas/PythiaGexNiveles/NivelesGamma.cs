@@ -1102,6 +1102,7 @@ namespace PythiaGex
             }
             if (Nombre == LargoNombre.Ambos)
             {
+                var extra = Corto(n.Alias);
                 // el tecnico primero, el criollo despues y en minuscula, para
                 // que se lea como lo que es: la traduccion, no otro nivel
                 var tec = n.Tipo == "call_wall" ? "CALL WALL"
@@ -1114,9 +1115,34 @@ namespace PythiaGex
                 var cri = b == "TECHO" ? "techo" : b == "PISO" ? "piso"
                         : b == "IMAN" ? "iman" : b == "FLIP" ? "el cambio de regimen"
                         : b.ToLowerInvariant();
-                return tec + " " + cri + (n.Es0dte ? "  0DTE" : "");
+                return tec + " " + cri + (extra == "" ? "" : " +" + extra)
+                       + (n.Es0dte ? "  0DTE" : "");
             }
-            return b + (n.Es0dte ? " 0D" : "");
+            var ex = Corto(n.Alias);
+            return b + (ex == "" ? "" : "+" + ex) + (n.Es0dte ? " 0D" : "");
+        }
+
+        /// <summary>
+        /// El nombre corto de un nivel que quedo tapado por otro.
+        ///
+        /// Cuando dos niveles caen en el MISMO strike se dibuja uno solo —dos
+        /// rayas en el mismo precio serian la misma raya dos veces— y el otro
+        /// queda como alias. Pero si no se muestra, el operador busca el Gamma
+        /// Pin, ve un Put Wall, y concluye que el pin desaparecio. Paso.
+        ///
+        /// Mostrarlo cuesta cuatro caracteres y evita esa confusion entera.
+        /// </summary>
+        private static string Corto(string alias)
+        {
+            if (string.IsNullOrWhiteSpace(alias)) return "";
+            var a = alias.ToUpperInvariant();
+            if (a.Contains("PIN")) return "PIN";
+            if (a.Contains("POSITIVE")) return "MAJ+";
+            if (a.Contains("NEGATIVE")) return "MAJ-";
+            if (a.Contains("CALL")) return "CW";
+            if (a.Contains("PUT")) return "PW";
+            if (a.Contains("ZERO") || a.Contains("FLIP")) return "FLIP";
+            return "";
         }
 
         private Color ColorDe(Nivel n)
@@ -2306,6 +2332,44 @@ namespace PythiaGex
                                    : "ya vencio",
                                    falta > 0 && falta < 60 ? ColIman
                                    : falta <= 0 ? ColPiso : Color.FromArgb(140, 150, 165)));
+                }
+                // Diagnostico del libro. Va arriba de la leyenda porque
+                // contesta la pregunta mas concreta que puede tener el
+                // operador: "no veo barridos, esta roto o esta mal el umbral?"
+                if (VerLibro)
+                {
+                    var gris2 = Color.FromArgb(130, 140, 155);
+                    L.Add(new Fila("EL LIBRO Y LOS BARRIDOS", "", ColTexto, true, true));
+                    if (_libro.VistosTotal == 0)
+                    {
+                        L.Add(new Fila("barridos recibidos", "NINGUNO todavia", ColIman));
+                        L.Add(new Fila("", "si sigue en cero, el feed no manda"
+                                       + " trades agrupados", gris2));
+                    }
+                    else
+                    {
+                        var p90 = _libro.P90;
+                        L.Add(new Fila("agresores vistos",
+                                       Miles(_libro.VistosTotal) + "   mediana "
+                                       + _libro.Mediana.ToString("0") + " lotes", gris2));
+                        L.Add(new Fila("el mayor de todos",
+                                       _libro.MayorVisto.ToString("0") + " lotes", gris2));
+                        L.Add(new Fila("tu umbral",
+                                       MinBarridoLotes.ToString("0") + " lotes  ->  "
+                                       + _libro.Cantidad + " guardados",
+                                       _libro.Cantidad == 0 ? ColIman : ColTecho));
+                        if (p90 > 0)
+                            L.Add(new Fila("sugerido (1 de cada 10)",
+                                           p90.ToString("0") + " lotes en " + Raiz(),
+                                           ColTecho));
+                    }
+                    L.Add(new Fila("libro (DOM)",
+                                   _libro.LibroVivo
+                                   ? Miles((double)_libro.DomBids) + " bid / " + Miles((double)_libro.DomAsks)
+                                     + " ask   " + (_libro.DesbalanceDom * 100).ToString("+0;-0")
+                                     + "%"
+                                   : "sin datos de profundidad",
+                                   _libro.LibroVivo ? gris2 : ColIman));
                 }
                 if (VerLeyenda)
                 {

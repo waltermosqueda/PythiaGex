@@ -153,7 +153,11 @@ namespace PythiaGex
                 b.Append("]}");
                 b.Append('\n');
 
-                File.AppendAllText(ruta, b.ToString(), Encoding.UTF8);
+                // UTF8 a secas escribe un BOM al crear el archivo, y eso
+                // rompe la primera linea para cualquiera que la lea como
+                // JSON. Se descartaba en silencio la primera anotacion de
+                // cada dia. UTF8Encoding(false) escribe sin BOM.
+                File.AppendAllText(ruta, b.ToString(), new UTF8Encoding(false));
                 _ultima = DateTime.UtcNow;
                 Escritas++;
                 Estado = "ok " + _ultima.ToString("HH:mm", Inv) + "  (" + Escritas + ")";

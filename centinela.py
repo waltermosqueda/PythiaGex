@@ -118,7 +118,10 @@ def sincronizar_contexto():
         for ruta in (dst, org):
             if not os.path.exists(ruta):
                 continue
-            for l in open(ruta, encoding="utf-8"):
+            # utf-8-sig: los archivos que escribio el indicador antes del
+            # arreglo llevan un BOM adelante, y sin esto la primera anotacion
+            # de cada dia se descartaba en silencio.
+            for l in open(ruta, encoding="utf-8-sig"):
                 l = l.strip()
                 if not l:
                     continue
@@ -150,7 +153,7 @@ def leer_contexto(fecha):
         ruta = os.path.join(base, "contexto-%s.jsonl" % fecha) if base else ""
         if not ruta or not os.path.exists(ruta):
             continue
-        for l in open(ruta, encoding="utf-8"):
+        for l in open(ruta, encoding="utf-8-sig"):
             l = l.strip()
             if not l:
                 continue

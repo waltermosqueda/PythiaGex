@@ -103,6 +103,43 @@ namespace PythiaGex
         public decimal DomBids, DomAsks;
         public bool LibroVivo;
 
+        // Diagnostico. Sin esto, "no veo barridos" es indistinguible entre
+        // "el feed no manda nada" y "tu umbral esta demasiado alto", que son
+        // dos problemas opuestos. Se cuenta TODO lo que llega, antes del
+        // filtro, y se guardan los tamanos para poder sugerir un umbral.
+        public long VistosTotal;
+        public decimal MayorVisto;
+        private readonly List<decimal> _tamanos = new();
+
+        /// <summary>El tamano que solo superan uno de cada diez barridos. Es
+        /// el umbral que deja pasar lo destacado de este instrumento sin que
+        /// haya que adivinarlo.</summary>
+        public decimal P90
+        {
+            get
+            {
+                lock (_llave)
+                {
+                    if (_tamanos.Count < 10) return 0m;
+                    var o = _tamanos.OrderBy(x => x).ToList();
+                    return o[(int)(o.Count * 0.90)];
+                }
+            }
+        }
+
+        public decimal Mediana
+        {
+            get
+            {
+                lock (_llave)
+                {
+                    if (_tamanos.Count == 0) return 0m;
+                    var o = _tamanos.OrderBy(x => x).ToList();
+                    return o[o.Count / 2];
+                }
+            }
+        }
+
         /// <summary>Desbalance del libro entero. Positivo = mas ordenes
         /// esperando del lado comprador.</summary>
         public decimal DesbalanceDom
@@ -119,6 +156,13 @@ namespace PythiaGex
             if (t == null || tickSize <= 0) return;
             try
             {
+                lock (_llave)
+                {
+                    VistosTotal++;
+                    if (t.Volume > MayorVisto) MayorVisto = t.Volume;
+                    _tamanos.Add(t.Volume);
+                    while (_tamanos.Count > 3000) _tamanos.RemoveAt(0);
+                }
                 if (t.Volume < MinBarrido) return;
                 var b = new Barrido
                 {
