@@ -89,7 +89,9 @@ namespace PythiaGex
                            double maximo, double minimo,
                            Contexto sesion, Contexto previo, Contexto semana,
                            bool pocVirgen, List<Anotacion> niveles,
-                           List<Disparo.Evento> disparos)
+                           List<Disparo.Evento> disparos,
+                           double agresoresVistos, double medianaLotes,
+                           double mayorLotes, double umbral, double guardados)
         {
             try
             {
@@ -111,6 +113,16 @@ namespace PythiaGex
                 Num(b, "minimo", minimo); b.Append(',');
                 Num(b, "tick", tickSize); b.Append(',');
 
+                // El diagnostico del flujo, en el archivo. Sin esto, saber si
+                // el feed manda barridos y de que tamano dependia de mirar una
+                // pantalla, y eso no se puede analizar despues.
+                b.Append("\"flujo\":{");
+                Num(b, "agresores_vistos", agresoresVistos); b.Append(',');
+                Num(b, "mediana_lotes", medianaLotes); b.Append(',');
+                Num(b, "mayor_lotes", mayorLotes); b.Append(',');
+                Num(b, "umbral", umbral); b.Append(',');
+                Num(b, "guardados", guardados);
+                b.Append("},");
                 b.Append("\"sesion\":"); Perfil(b, sesion, true); b.Append(',');
                 b.Append("\"previo\":"); Perfil(b, previo, false);
                 b.Append(",\"poc_previo_virgen\":");

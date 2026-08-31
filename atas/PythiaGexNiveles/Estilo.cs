@@ -54,6 +54,12 @@ namespace PythiaGex
         [Description("Completo: Call Wall, Put Wall")] Completo,
     }
 
+    public enum ModoUmbral
+    {
+        [Description("Automatico: se mide del instrumento")] Automatico,
+        [Description("Fijo: yo pongo los lotes")] Fijo,
+    }
+
     public enum FormaDisparo
     {
         [Description("Triangulo")] Triangulo,

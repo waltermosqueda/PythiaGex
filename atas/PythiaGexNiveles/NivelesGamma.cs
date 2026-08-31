@@ -272,9 +272,16 @@ namespace PythiaGex
                  Description = "El footprint muestra lo ya operado; el libro muestra lo que espera. Son dos mundos. Esto agrega los barridos de agresores reales y el tamano parado en el libro alrededor de cada nivel.")]
         public bool VerLibro { get; set; } = true;
 
-        [Display(Name = "Lotes minimos para llamarlo barrido", GroupName = "Libro y barridos", Order = 2,
-                 Description = "Depende del instrumento: 50 es tamano en ES y rarisimo en MES. Mira el diagnostico arriba del tablero y usa el sugerido.")]
-        public double MinBarridoLotes { get; set; } = 15.0;
+        [Display(Name = "Como se decide que un barrido es grande", GroupName = "Libro y barridos", Order = 2,
+                 Description = "Automatico mide la mediana de ESTE instrumento y llama grande al que la supera por el factor. Un numero fijo de lotes significa cosas distintas en ES y en MES.")]
+        public ModoUmbral ModoBarrido { get; set; } = ModoUmbral.Automatico;
+
+        [Display(Name = "Veces la mediana del instrumento", GroupName = "Libro y barridos", Order = 3,
+                 Description = "Con 8, se marca el barrido que es ocho veces el tipico de este instrumento. Bajalo para ver mas, subilo para ver solo lo grande.")]
+        public double FactorBarrido { get; set; } = 8.0;
+
+        [Display(Name = "Lotes minimos (si el modo es fijo)", GroupName = "Libro y barridos", Order = 4)]
+        public double LotesBarrido { get; set; } = 15.0;
 
         [Display(Name = "Memoria de barridos (minutos)", GroupName = "Libro y barridos", Order = 3)]
         public int MemoriaBarridosMin { get; set; } = 30;
@@ -686,8 +693,11 @@ namespace PythiaGex
         {
             if (!VerLibro) return;
             var ts = InstrumentInfo != null ? InstrumentInfo.TickSize : 0.25m;
-            _libro.MinBarrido = (decimal)Math.Max(1.0, MinBarridoLotes);
+            _libro.UmbralAutomatico = ModoBarrido == ModoUmbral.Automatico;
+            _libro.FactorUmbral = (decimal)Math.Max(1.5, FactorBarrido);
+            _libro.MinBarrido = (decimal)Math.Max(1.0, LotesBarrido);
             _libro.MemoriaMin = Math.Max(1, MemoriaBarridosMin);
+            _libro.ResolverUmbral();
             _libro.Anotar(trade, ts > 0 ? ts : 0.25m);
         }
 
@@ -1443,6 +1453,10 @@ namespace PythiaGex
                 catch { _libro.LibroVivo = false; }
             }
             _libro.MinCaidaLibro = (decimal)Math.Max(0.05, Math.Min(0.95, CaidaMuroPct / 100.0));
+            _libro.UmbralAutomatico = ModoBarrido == ModoUmbral.Automatico;
+            _libro.FactorUmbral = (decimal)Math.Max(1.5, FactorBarrido);
+            _libro.MinBarrido = (decimal)Math.Max(1.0, LotesBarrido);
+            _libro.ResolverUmbral();
 
             foreach (var n in d.Niveles)
             {
@@ -1511,7 +1525,7 @@ namespace PythiaGex
             var lista = _libro.Todos(ahora, Math.Max(1, MemoriaBarridosMin));
             if (lista.Count == 0) return;
 
-            var minimo = (decimal)Math.Max(1.0, MinBarridoLotes);
+            var minimo = _libro.UmbralVigente > 0 ? _libro.UmbralVigente : 1m;
             foreach (var b in lista)
             {
                 // la barra se resuelve una sola vez y queda cacheada
@@ -1602,7 +1616,9 @@ namespace PythiaGex
             {
                 partes.Add(Tuple.Create("sin barridos",
                                         _libro.VistosTotal == 0
-                                        ? "(no llega nada)" : "(umbral " + MinBarridoLotes.ToString("0") + ")",
+                                        ? "(no llega nada)"
+                                        : "(umbral " + _libro.UmbralVigente.ToString("0")
+                                          + (ModoBarrido == ModoUmbral.Automatico ? " auto)" : ")"),
                                         Color.FromArgb(150, 160, 175)));
             }
             else
@@ -1840,6 +1856,11 @@ namespace PythiaGex
                 if (c.Low < mn) mn = c.Low;
             }
 
+            var vistos = (double)_libro.VistosTotal;
+            var medLotes = (double)_libro.Mediana;
+            var mayLotes = (double)_libro.MayorVisto;
+            var umb = (double)_libro.UmbralVigente;
+            var guard = (double)_libro.Cantidad;
             var inst = InstrumentInfo != null ? InstrumentInfo.Instrument : "";
             var pd = (double)precio; var td = (double)tick;
             var mxd = (double)mx; var mnd = (double)mn;
@@ -1853,7 +1874,7 @@ namespace PythiaGex
                     disp.Add(e);
             System.Threading.Tasks.Task.Run(() =>
                 _bit.Anotar(inst, pd, td, mxd, mnd, _ctx, _ctxPrev, _ctxSem, virgen,
-                            lista, disp));
+                            lista, disp, vistos, medLotes, mayLotes, umb, guard));
         }
 
         // ==================================================================
@@ -2581,8 +2602,11 @@ namespace PythiaGex
                                        + _libro.Mediana.ToString("0") + " lotes", gris2));
                         L.Add(new Fila("el mayor de todos",
                                        _libro.MayorVisto.ToString("0") + " lotes", gris2));
-                        L.Add(new Fila("tu umbral",
-                                       MinBarridoLotes.ToString("0") + " lotes  ->  "
+                        L.Add(new Fila("umbral en uso"
+                                       + (ModoBarrido == ModoUmbral.Automatico
+                                          ? "  (auto: " + FactorBarrido.ToString("0")
+                                            + "x la mediana)" : "  (fijo)"),
+                                       _libro.UmbralVigente.ToString("0") + " lotes  ->  "
                                        + _libro.Cantidad + " guardados",
                                        _libro.Cantidad == 0 ? ColIman : ColTecho));
                         if (p90 > 0)

@@ -53,8 +53,50 @@ namespace PythiaGex
         // ------------------------------------------------------------------
 
         /// <summary>Contratos que tiene que tener un barrido para contarlo.
-        /// Depende del instrumento: en ES 50 es tamano; en MES no.</summary>
-        public decimal MinBarrido = 50m;
+        ///
+        /// Poner un numero fijo de contratos fue un error de raiz: 50 lotes es
+        /// tamano en ES, es poquisimo en MES y no significa nada en NQ. El
+        /// mismo indicador puesto en dos graficos se comportaba distinto sin
+        /// que nada lo dijera.
+        ///
+        /// Por eso el modo normal es AUTOMATICO: se mide la mediana de los
+        /// barridos de ESTE instrumento y se llama grande al que la supera por
+        /// el factor elegido. Asi funciona igual en ES, en MES o en lo que
+        /// sea, y el numero que sale queda a la vista para poder discutirlo.
+        /// </summary>
+        public decimal MinBarrido = 15m;
+
+        /// <summary>Si es true, MinBarrido se recalcula de lo observado.</summary>
+        public bool UmbralAutomatico = true;
+
+        /// <summary>Cuantas veces la mediana del instrumento.</summary>
+        public decimal FactorUmbral = 8m;
+
+        /// <summary>Cuantos barridos hay que ver antes de confiar en la
+        /// mediana. Con pocos, cualquier numero es ruido.</summary>
+        public int MinMuestraUmbral = 60;
+
+        /// <summary>El umbral que se esta usando de verdad, ya resuelto.</summary>
+        public decimal UmbralVigente { get; private set; } = 15m;
+
+        /// <summary>Recalcula el umbral automatico. Se llama seguido y es
+        /// barato: la mediana sale de una lista ya ordenada en memoria.</summary>
+        public void ResolverUmbral()
+        {
+            if (!UmbralAutomatico) { UmbralVigente = MinBarrido; return; }
+            decimal med;
+            int n;
+            lock (_llave) { n = _tamanos.Count; }
+            med = Mediana;
+            if (n < Math.Max(10, MinMuestraUmbral) || med <= 0)
+            {
+                // todavia no hay con que medir: se usa lo que puso el operador
+                UmbralVigente = MinBarrido;
+                return;
+            }
+            var u = Math.Ceiling(med * Math.Max(1.5m, FactorUmbral));
+            UmbralVigente = Math.Max(2m, u);
+        }
 
         /// <summary>Cuantos minutos se recuerdan los barridos.</summary>
         public int MemoriaMin = 30;
@@ -163,7 +205,7 @@ namespace PythiaGex
                     _tamanos.Add(t.Volume);
                     while (_tamanos.Count > 3000) _tamanos.RemoveAt(0);
                 }
-                if (t.Volume < MinBarrido) return;
+                if (t.Volume < UmbralVigente) return;
                 var b = new Barrido
                 {
                     Hora = t.Time,
