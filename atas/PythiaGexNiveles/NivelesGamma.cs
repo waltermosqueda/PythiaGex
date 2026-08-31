@@ -738,6 +738,32 @@ namespace PythiaGex
         // ==================================================================
         // Utilidades
         // ==================================================================
+        /// <summary>
+        /// La hora en el reloj de la maquina, no en UTC.
+        ///
+        /// El operador esta en Argentina (UTC-3, sin horario de verano) y el
+        /// mercado en Chicago (UTC-5 en verano, UTC-6 en invierno). Hoy son
+        /// dos horas de diferencia, pero en noviembre Chicago atrasa y
+        /// Argentina no: pasan a ser TRES. Por eso nunca se escribe la
+        /// diferencia a mano; se convierte con la zona del sistema, que se
+        /// corrige sola.
+        /// </summary>
+        private static string HoraLocal(DateTime utc)
+        {
+            try { return utc.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture); }
+            catch { return utc.ToString("HH:mm", CultureInfo.InvariantCulture) + "z"; }
+        }
+
+        private static DateTime? ParseUtc(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return null;
+            if (DateTime.TryParse(s, CultureInfo.InvariantCulture,
+                                  System.Globalization.DateTimeStyles.AdjustToUniversal
+                                  | System.Globalization.DateTimeStyles.AssumeUniversal,
+                                  out var d)) return d;
+            return null;
+        }
+
         private static double Norm(double x)
             => 0.5 * (1.0 + Erf(x / Math.Sqrt(2.0)));
 
@@ -1389,12 +1415,7 @@ namespace PythiaGex
                 var techo = d.Niveles.FirstOrDefault(n => n.Tipo == "call_wall" && !n.Es0dte);
                 var flip = d.Niveles.FirstOrDefault(n => n.Tipo == "gamma_flip");
 
-                var minutos = d.Liquida.HasValue
-                    ? (d.Liquida.Value - DateTime.UtcNow).TotalMinutes : (double?)null;
-                L.Add(new Fila("CERCA   toque"
-                               + (minutos.HasValue && minutos > 0
-                                  ? "  " + Math.Round(minutos.Value) + " min"
-                                  : ""), "", ColTexto, true, true));
+                L.Add(new Fila("CERCA", "distancia   toque", ColTexto, true, true));
                 if (cerca != null)
                     L.Add(new Fila("cerca  " + (cerca.DistTicks >= 0 ? "+" : "") + cerca.DistTicks + " tk"
                                    + "  " + Mag(cerca.GexM) + " " + cerca.Signo,
@@ -1436,14 +1457,27 @@ namespace PythiaGex
                 }
 
                 var pctCtrl = d.Niveles.Any(n => n.ProbControl == "floja");
-                L.Add(new Fila(d.CadenaVencida ? "Cadena " + d.EdadMin + " min" : "Cadena al dia",
+                // La hora de la cadena, en el reloj de aca. El timestamp del
+                // feed viene en UTC y hacer la cuenta de cabeza a las 11 de la
+                // manana es justo cuando se comete el error.
+                var tsCad = ParseUtc(d.CadenaTs.Replace(" ", "T"));
+                var cad = tsCad.HasValue ? HoraLocal(tsCad.Value) : d.CadenaTs;
+                L.Add(new Fila("Cadena " + cad
+                               + (d.CadenaVencida ? "  (" + d.EdadMin + " min)" : ""),
                                (d.BaseConfiable ? "base firme" : "BASE FLOJA")
-                               + (pctCtrl ? " · % flojo" : "")
-                               + (d.ProbDias.HasValue
-                                  ? "  ·  % a " + d.ProbDias.Value.ToString("0.0", CultureInfo.InvariantCulture) + "d"
-                                  : ""),
+                               + (pctCtrl ? " · % flojo" : ""),
                                d.CadenaMuyVencida || !d.BaseConfiable ? ColPiso
                                : d.CadenaVencida ? ColIman : Color.FromArgb(140, 150, 165)));
+                if (d.Liquida.HasValue)
+                {
+                    var falta = (d.Liquida.Value - DateTime.UtcNow).TotalMinutes;
+                    L.Add(new Fila("0DTE liquida " + HoraLocal(d.Liquida.Value),
+                                   falta > 0
+                                   ? "faltan " + Math.Round(falta) + " min"
+                                   : "ya vencio",
+                                   falta > 0 && falta < 60 ? ColIman
+                                   : falta <= 0 ? ColPiso : Color.FromArgb(140, 150, 165)));
+                }
             }
             else
 
@@ -1615,7 +1649,16 @@ namespace PythiaGex
                                    + "%   medidos", Color.FromArgb(130, 140, 155)));
                 var colEdad = d.CadenaMuyVencida ? ColPiso : d.CadenaVencida ? ColIman
                             : Color.FromArgb(140, 150, 165);
-                L.Add(new Fila("Cadena CBOE", d.CadenaTs + "   " + d.EdadMin + " min", colEdad, d.CadenaVencida));
+                var tsC2 = ParseUtc(d.CadenaTs.Replace(" ", "T"));
+                L.Add(new Fila("Cadena CBOE", (tsC2.HasValue ? HoraLocal(tsC2.Value) : d.CadenaTs)
+                               + "   " + d.EdadMin + " min", colEdad, d.CadenaVencida));
+                if (d.Liquida.HasValue)
+                {
+                    var f2 = (d.Liquida.Value - DateTime.UtcNow).TotalMinutes;
+                    L.Add(new Fila("0DTE liquida", HoraLocal(d.Liquida.Value)
+                                   + (f2 > 0 ? "   faltan " + Math.Round(f2) + " min" : "   ya vencio"),
+                                   f2 > 0 && f2 < 60 ? ColIman : Color.FromArgb(140, 150, 165)));
+                }
                 if (d.CadenaMuyVencida)
                     L.Add(new Fila("", "CBOE no refresca hace " + (d.EdadMin / 60)
                                    + " horas. NO OPERES CON ESTO.", ColPiso, true));
