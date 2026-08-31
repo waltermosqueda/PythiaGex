@@ -1,5 +1,10 @@
 # PythiaGex
 
+> **Trabajo propio, todos los derechos reservados.** Este repositorio es visible
+> solo por requisitos tecnicos de alojamiento. No se licencia para uso de
+> terceros: ver [LICENSE](LICENSE). Que se pueda ver no significa que se pueda
+> usar.
+
 **Panel en vivo: https://waltermosqueda.github.io/PythiaGex/**
 
 Corre solo en GitHub Actions cada 15 minutos en horario de mercado.
