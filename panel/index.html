@@ -46,7 +46,7 @@ body{margin:0;background:var(--gr);color:var(--tx);font-family:var(--sa);font-si
 .ck{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--t2);cursor:pointer;user-select:none}
 .ck input{accent-color:var(--ac);cursor:pointer}
 canvas{display:block;width:100%}
-.sx{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)}
+.sx{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
 @media(max-width:860px){.sx{grid-template-columns:1fr}}
 .sc{overflow:auto}
 table{width:100%;border-collapse:collapse;font:11px var(--mo);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -67,6 +67,28 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
 .rw .tr{grid-column:1/-1;height:3px;background:var(--sf2);border-radius:2px;overflow:hidden;margin-top:3px}
 .rw .fl{height:100%;border-radius:2px}
 .nt{font-size:10px;color:var(--t3);line-height:1.55;padding:9px 11px;border-top:1px solid var(--ln)}
+.tn{width:100%;border-collapse:collapse;font:11px var(--mo)}
+.tn th{position:sticky;top:0;background:var(--sf2);color:var(--t3);font:600 9px var(--sa);
+ letter-spacing:.06em;text-transform:uppercase;padding:6px 7px;text-align:left;border-bottom:1px solid var(--ln);white-space:nowrap}
+.tn td{padding:6px 7px;border-bottom:1px solid var(--ln);white-space:nowrap;vertical-align:top}
+.tn tr:last-child td{border-bottom:0}
+.tn td.n{text-align:right;font-variant-numeric:tabular-nums}
+.tn th.n{text-align:right}
+.tn td.k{font:700 11px var(--mo)}
+.tn .tr2{font:9.5px var(--sa);color:var(--t3);font-weight:400;margin-top:2px;white-space:normal;max-width:210px}
+.tn .al{font:9px var(--mo);color:var(--t3)}
+.tn tr.aq td{background:var(--sf2)}
+.wf{color:var(--ne);font-weight:700}
+.tag{font:600 8px var(--sa);letter-spacing:.05em;text-transform:uppercase;color:var(--t3);
+ border:1px solid var(--ln2);border-radius:2px;padding:1px 4px;vertical-align:1px}
+.id{font:700 9px var(--mo);color:var(--ac);border:1px solid var(--ac2);border-radius:3px;padding:1px 5px}
+.ts{font:9px var(--mo);color:var(--t3)}
+#cinta{position:sticky;bottom:0;z-index:20;display:flex;gap:0;overflow-x:auto;
+ background:var(--sf);border-top:1px solid var(--ln2);box-shadow:0 -3px 12px rgba(0,0,0,.25)}
+.ci{padding:7px 13px;border-right:1px solid var(--ln);min-width:112px;flex:0 0 auto}
+.ce{font:600 8.5px var(--sa);letter-spacing:.06em;text-transform:uppercase;color:var(--t3)}
+.cv{font:700 14px var(--mo);margin-top:2px;letter-spacing:-.02em}
+.cs{font:8.5px var(--mo);color:var(--t3);margin-top:1px}
 .lg{display:flex;gap:11px;flex-wrap:wrap;font-size:9.5px;color:var(--t3)}
 .lg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:-1px}
 .lg i.dt{border-radius:50%}
@@ -156,8 +178,21 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
  </div>
 
  <div>
-  <div class="cd"><header><h2>Niveles clave</h2><span class="lg">cadena completa</span></header><div id="niv"></div></div>
-  <div class="cd"><header><h2>Niveles del vencimiento de hoy</h2><span class="lg" id="v0info"></span></header><div id="niv0"></div><div class="nt">Estas paredes mueren al cierre de hoy. Para scalping mandan mas que las de la cadena completa, porque toda su gamma se descarga en las proximas horas.</div></div>
+  <div class="cd"><header><h2>Niveles clave</h2><span class="lg">cadena completa</span></header><div class="sc" id="niv"></div></div>
+  <div class="cd"><header><h2>Niveles del vencimiento de hoy</h2><span class="lg" id="v0info"></span></header><div class="sc" id="niv0"></div><div class="nt">Estas paredes mueren al cierre de hoy. Para scalping mandan mas que las de la cadena completa, porque toda su gamma se descarga en las proximas horas.</div></div>
+  <div class="cd">
+    <header><h2>Convexity Ladder</h2><span class="lg">cobertura obligada</span></header>
+    <div class="sc" style="max-height:340px"><div id="esc"></div></div>
+    <div class="nt" id="escNota"></div>
+  </div>
+  <div class="cd">
+    <header><h2>Gamma Voids</h2><span class="lg">tramos sin freno</span></header><div id="hue"></div>
+    <div class="nt">Franjas entre dos strikes cargados donde no hay gamma que sostenga.
+      El precio las cruza r&#225;pido: no conviene poner un objetivo corto adentro, ni un stop ajustado.</div>
+  </div>
+  <div class="cd">
+    <header><h2>Referencias de sesi&#243;n</h2></header><div id="ses"></div>
+  </div>
   <div class="cd">
     <header><h2>Concentraci&#243;n</h2></header><div id="conc"></div>
     <div class="nt">Qu&#233; porcentaje de la gamma de cada nivel vence en qu&#233; fecha.</div>
@@ -179,6 +214,7 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
  </div>
 </div>
 </div>
+<div id="cinta"></div>
 <script>
 (function(){
   var q=new URLSearchParams(location.search).get('s');
@@ -198,6 +234,13 @@ function simVista(){ return esFut()?((D.futuro&&D.futuro.contrato)||'ES'):D.sym;
 function microVista(){ return (D.futuro&&D.futuro.micro)||''; }
 var zoomY='op';
 var ver0='si';
+// Un valor en futuro vale lo que valga la base con que se convirtio. Si la
+// medicion no paso el control contra el carry teorico, cada lugar donde
+// aparece un precio de futuro lo tiene que decir: si no, se termina
+// dibujando en ATAS una linea que no es auditable.
+function baseFloja(){ return D.base!=null && !((D.base_detalle||{}).confiable); }
+function marcaFut(){ return baseFloja()?'<span class="wf" title="la base no coincide con el carry teorico: no dibujes este nivel">*</span>':''; }
+function colFut(){ return baseFloja()?'var(--ne)':'var(--ac)'; }
 function spotVista(){ return esFut()?(((D.futuro&&D.futuro.spot)!=null)?D.futuro.spot:D.S+D.base):D.S; }
 var $=function(s){return document.querySelector(s);};
 var cs=function(k){return getComputedStyle(document.documentElement).getPropertyValue(k).trim();};
@@ -258,101 +301,173 @@ function escala(H,pT,pB){
   return {lo:lo,hi:hi,y:function(v){return pT+(H-pT-pB)*(1-(v-lo)/(hi-lo));}};
 }
 
-/* ---------- precio real: velas de 1 minuto + niveles superpuestos ---------- */
+/* ---------- precio real: velas de 1 minuto, eje doble y niveles rotulados ---------- */
+function kM(v){ if(v==null) return ''; var a=Math.abs(v);
+  return (a>=1000? (v/1000).toFixed(2)+'B' : Math.round(v)+'M'); }
+function kOI(v){ if(v==null) return ''; var a=Math.abs(v);
+  return (a>=1000? (v/1000).toFixed(1)+'k' : String(Math.round(v))); }
+
 function dibPrecio(){
   var c=$('#px'); if(!c) return;
   var o=setup(c,530), g=o.g, W=o.W, H=o.H;
-  var pT=10,pB=44,pL=8,pR=54;
+  var pT=16,pB=48,pL=54,pR=60;
   var E=escala(H,pT,pB);
   var PX=(D.precio_intradia&&D.precio_intradia.velas)||[];
-  var enFut=(vistaPrecio==='fut'&&D.base!=null);
+  var enFut=esFut(), b=(D.base!=null?D.base:0);
+  var x0=pL, x1=W-pR;
 
-  // grilla
-  g.strokeStyle=cs('--ln'); g.lineWidth=1; g.globalAlpha=.45;
-  var paso=Math.max(5,Math.round((E.hi-E.lo)/11/5)*5);
-  for(var v=Math.ceil(E.lo/paso)*paso; v<=E.hi; v+=paso){
-    var yy=E.y(v); g.beginPath(); g.moveTo(pL,yy); g.lineTo(W-pR,yy); g.stroke();
+  // ---- bandas de expected move: hasta donde llega un movimiento normal
+  var Sv=spotVista(), em=D.expected_move;
+  if(em){
+    [[1,.10],[2,.05]].forEach(function(z){
+      var a=E.y(Sv+em*z[0]), d=E.y(Sv-em*z[0]);
+      g.fillStyle=cs('--ac'); g.globalAlpha=z[1];
+      g.fillRect(x0,a,x1-x0,d-a); g.globalAlpha=1;
+    });
   }
-  g.globalAlpha=1;
 
+  // ---- grilla + eje izquierdo (indice) y derecho (futuro)
+  var paso=Math.max(5,Math.round((E.hi-E.lo)/12/5)*5);
+  g.font='9px '+cs('--mo');
+  for(var v=Math.ceil(E.lo/paso)*paso; v<=E.hi; v+=paso){
+    var yy=E.y(v);
+    g.strokeStyle=cs('--ln'); g.lineWidth=1; g.globalAlpha=.4;
+    g.beginPath(); g.moveTo(x0,yy); g.lineTo(x1,yy); g.stroke(); g.globalAlpha=1;
+    g.fillStyle=cs('--t3'); g.textAlign='right';
+    g.fillText(Math.round(enFut? v-b : v), x0-5, yy+3);
+    if(D.base!=null){ g.textAlign='left';
+      g.fillText(Math.round(enFut? v : v+b), x1+5, yy+3); }
+  }
+  // que eje es cual, para que no haya confusion posible
+  g.font='700 8px '+cs('--mo'); g.fillStyle=cs('--t2');
+  g.textAlign='right'; g.fillText(D.sym, x0-5, pT-5);
+  if(D.base!=null){ g.textAlign='left'; g.fillStyle=baseFloja()?cs('--ne'):cs('--t2');
+    g.fillText(((D.futuro&&D.futuro.contrato)||'FUT')+(baseFloja()?' *':''), x1+5, pT-5); }
+
+  // ---- referencias de la sesion
+  var SE=D.sesion||{};
+  [[SE.apertura,'OPEN','apertura'],[SE.maximo,'HOD','maximo del dia'],
+   [SE.minimo,'LOD','minimo del dia'],[SE.ib_alto,'IBH','techo primera hora'],
+   [SE.ib_bajo,'IBL','piso primera hora']].forEach(function(z){
+    var val=z[0]; if(val==null) return;
+    var y=E.y(enFut? val+b : val); if(y<pT||y>H-pB) return;
+    g.strokeStyle=cs('--gh'); g.globalAlpha=.45; g.lineWidth=1; g.setLineDash([1,4]);
+    g.beginPath(); g.moveTo(x0,y); g.lineTo(x1,y); g.stroke();
+    g.setLineDash([]); g.globalAlpha=.75;
+    g.fillStyle=cs('--gh'); g.font='7.5px '+cs('--mo'); g.textAlign='right';
+    g.fillText(z[1], x1-3, y-2); g.globalAlpha=1;
+  });
+
+  // ---- velas
   if(PX.length>1){
-    var X=function(i){return pL+(W-pL-pR)*i/(PX.length-1);};
-    var vv=function(p,cual){ var x=p[cual]; return (x!=null&&enFut)?x+D.base:x; };
-    var ancho=Math.max(1,(W-pL-pR)/PX.length*0.72);
-
-    // velas
+    var X=function(i){return x0+(x1-x0)*i/(PX.length-1);};
+    var vv=function(p,cual){var x=p[cual]; return (x!=null&&enFut)?x+b:x;};
+    var an=Math.max(1,(x1-x0)/PX.length*0.7);
     PX.forEach(function(p,i){
-      var op=vv(p,'o'), hi=vv(p,'h'), lo=vv(p,'l'), cl=vv(p,'c');
+      var op=vv(p,'o'),hi=vv(p,'h'),lo=vv(p,'l'),cl=vv(p,'c');
       if(cl==null) return;
-      var sube=cl>=op;
-      var col=sube?cs('--po'):cs('--ne');
-      var x=X(i);
-      g.strokeStyle=col; g.lineWidth=1; g.globalAlpha=.85;
-      if(hi!=null&&lo!=null){ g.beginPath(); g.moveTo(x,E.y(hi)); g.lineTo(x,E.y(lo)); g.stroke(); }
-      var y1=E.y(Math.max(op,cl)), y2=E.y(Math.min(op,cl));
-      g.fillStyle=col; g.fillRect(x-ancho/2, y1, ancho, Math.max(1,y2-y1));
-      g.globalAlpha=1;
+      var col=(cl>=op)?cs('--po'):cs('--ne'), x=X(i);
+      g.strokeStyle=col; g.lineWidth=1; g.globalAlpha=.9;
+      if(hi!=null&&lo!=null){g.beginPath();g.moveTo(x,E.y(hi));g.lineTo(x,E.y(lo));g.stroke();}
+      var a=E.y(Math.max(op,cl)), d=E.y(Math.min(op,cl));
+      g.fillStyle=col; g.fillRect(x-an/2,a,an,Math.max(1,d-a)); g.globalAlpha=1;
     });
 
-    // volumen de calls y puts por minuto, en la franja de abajo
-    var maxv=Math.max.apply(null,PX.map(function(p){return Math.max(p.vc||0,p.vp||0);}))||1;
-    var hv=26, y0=H-pB+6;
+    // volumen de opciones por minuto: calls a la izquierda, puts a la derecha
+    var mx=Math.max.apply(null,PX.map(function(p){return Math.max(p.vc||0,p.vp||0);}))||1;
+    var hv=26, yv=H-pB+8;
     PX.forEach(function(p,i){
       var x=X(i);
-      var hc=(p.vc||0)/maxv*hv, hp=(p.vp||0)/maxv*hv;
-      g.fillStyle=cs('--po'); g.globalAlpha=.4; g.fillRect(x-ancho/2,y0+hv-hc,ancho/2,hc);
-      g.fillStyle=cs('--ne'); g.fillRect(x,y0+hv-hp,ancho/2,hp); g.globalAlpha=1;
+      g.fillStyle=cs('--po'); g.globalAlpha=.45;
+      g.fillRect(x-an/2,yv+hv-(p.vc||0)/mx*hv,an/2,(p.vc||0)/mx*hv);
+      g.fillStyle=cs('--ne');
+      g.fillRect(x,yv+hv-(p.vp||0)/mx*hv,an/2,(p.vp||0)/mx*hv); g.globalAlpha=1;
     });
+    g.fillStyle=cs('--t3'); g.font='7.5px '+cs('--mo'); g.textAlign='left';
+    g.fillText('vol opciones C/P', x0+2, yv+7);
 
-    // horas
     g.fillStyle=cs('--t3'); g.font='9px '+cs('--mo'); g.textAlign='center';
-    [0,Math.floor(PX.length/4),Math.floor(PX.length/2),Math.floor(PX.length*3/4),PX.length-1]
-      .forEach(function(i){ if(PX[i]) g.fillText(PX[i].t, X(i), H-4); });
+    [0,(PX.length>>2),(PX.length>>1),(PX.length*3>>2),PX.length-1].forEach(function(i){
+      if(PX[i]) g.fillText(PX[i].t, X(i), H-4); });
   }else{
     g.fillStyle=cs('--t3'); g.font='11px '+cs('--sa'); g.textAlign='center';
     g.fillText('sin serie de precio', W/2, H/2);
   }
 
-  // niveles de gamma superpuestos sobre el precio
-  var N=D.niveles_indice||{}, N0=D.niveles_0dte_indice||{};
-  var aj=function(k){return (k!=null&&enFut)?k+D.base:k;};
-  var marcas=[
-    [aj(N.call_wall), cs('--po'), 'CALL WALL', 0, 0],
-    [aj(N.put_wall),  cs('--ne'), 'PUT WALL', 0, 0],
-    [aj(N.gamma_pin), cs('--ac2'),'GAMMA PIN', 1, 0],
-    [aj(D.gamma_flip),cs('--t3'), 'ZERO GAMMA / FLIP', 1, 0]
-  ];
-  if(ver0==='si'){
-    if(N0.call_wall!=null && N0.call_wall!==N.call_wall)
-      marcas.push([aj(N0.call_wall), cs('--po'), 'CALL WALL 0DTE', 1, 1]);
-    if(N0.put_wall!=null && N0.put_wall!==N.put_wall)
-      marcas.push([aj(N0.put_wall), cs('--ne'), 'PUT WALL 0DTE', 1, 1]);
-    if(N0.gamma_pin!=null && N0.gamma_pin!==N.gamma_pin)
-      marcas.push([aj(N0.gamma_pin), cs('--ac2'), 'PIN 0DTE', 0, 1]);
-  }
-  marcas.forEach(function(m){
-    if(m[0]==null||m[0]<E.lo||m[0]>E.hi) return;
-    var y=E.y(m[0]), es0=m[4];
-    g.strokeStyle=m[1]; g.globalAlpha=es0?.55:.8; g.lineWidth=es0?1:1.2;
-    g.setLineDash(es0?[2,3]:[6,4]);
-    g.beginPath(); g.moveTo(pL,y); g.lineTo(W-pR,y); g.stroke();
-    g.setLineDash([]); g.globalAlpha=1;
-    g.fillStyle=m[1]; g.font=(es0?'':'700 ')+'8px '+cs('--mo');
-    g.globalAlpha=es0?.8:1;
-    if(m[3]){ g.textAlign='right'; g.fillText(m[2], W-pR-3, y-3); }
-    else{ g.textAlign='left'; g.fillText(m[2], pL+3, y-3); }
+  // ---- huecos de gamma: donde no hay nada que frene
+  (D.huecos||[]).forEach(function(h){
+    var a=E.y(enFut?h.hasta+b:h.hasta), d=E.y(enFut?h.desde+b:h.desde);
+    if(d<pT||a>H-pB) return;
+    g.fillStyle=cs('--ac2'); g.globalAlpha=.07; g.fillRect(x0,a,x1-x0,d-a);
     g.globalAlpha=1;
+    g.strokeStyle=cs('--ac2'); g.globalAlpha=.3; g.setLineDash([1,3]); g.lineWidth=1;
+    [a,d].forEach(function(y){g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();});
+    g.setLineDash([]); g.globalAlpha=1;
   });
 
-  // spot
-  var sp=enFut?(D.futuro&&D.futuro.spot):D.S;
-  if(sp!=null){
-    var y=E.y(sp);
-    g.strokeStyle=cs('--ac'); g.lineWidth=1.4;
-    g.beginPath(); g.moveTo(pL,y); g.lineTo(W-pR,y); g.stroke();
-    g.fillStyle=cs('--ac'); g.fillRect(W-pR+1,y-7,pR-2,14);
-    g.fillStyle=cs('--gr'); g.font='700 9.5px '+cs('--mo'); g.textAlign='left';
-    g.fillText(sp.toFixed(0), W-pR+4, y+3);
+  // ---- niveles, con TODOS sus numeros
+  var filas=(D.niveles_ricos||[]).slice();
+  if(ver0==='si'){
+    // solo se dibuja el 0DTE cuando cae en otro precio que el de la cadena
+    // completa: si coinciden seria la misma raya dos veces
+    var ya={};
+    filas.forEach(function(f){ ya[Math.round(f.indice)]=1; });
+    (D.niveles_ricos_0dte||[]).forEach(function(f){
+      if(f.clave!=='call_wall'&&f.clave!=='put_wall'&&f.clave!=='gamma_pin') return;
+      if(ya[Math.round(f.indice)]) return;
+      var g2=Object.assign({},f); g2.es0=1; filas.push(g2);
+    });
+  }
+  var usados=[];
+  filas.sort(function(a,b){return b.indice-a.indice;})
+    .forEach(function(f){
+      var val=enFut?(f.futuro!=null?f.futuro:f.indice+b):f.indice;
+      if(val<E.lo||val>E.hi) return;
+      var y=E.y(val);
+      var col=(f.clave==='call_wall'||f.clave==='major_positive')?cs('--po')
+             :(f.clave==='put_wall'||f.clave==='major_negative')?cs('--ne')
+             :(f.clave==='gamma_pin')?cs('--ac2'):cs('--t2');
+      g.strokeStyle=col; g.globalAlpha=f.es0?.5:.85; g.lineWidth=f.es0?1:1.4;
+      g.setLineDash(f.es0?[2,3]:[7,4]);
+      g.beginPath(); g.moveTo(x0,y); g.lineTo(x1,y); g.stroke();
+      g.setLineDash([]); g.globalAlpha=1;
+
+      // dos renglones: que es, y cuanto pesa
+      var t1=f.nombre.toUpperCase()+'  '+f.indice
+            +(f.futuro!=null?'  → '+f.futuro:'');
+      var pes=[];
+      var gm=f.es0?f.gex_0dte_M:f.gex_M;
+      if(gm!=null) pes.push(kM(gm)+' gamma');
+      if(f.oi_call!=null) pes.push('OI '+kOI(f.oi_call)+'C/'+kOI(f.oi_put)+'P');
+      if(f.prob_toque!=null) pes.push('toque '+f.prob_toque+'%');
+      pes.push((f.dist_pts>0?'+':'')+Math.round(f.dist_pts)+'pt / '
+               +(f.dist_ticks>0?'+':'')+f.dist_ticks+'tk');
+      var t2=pes.join('  ·  ');
+
+      // no encimar etiquetas
+      var yl=y-4, n=0;
+      while(usados.some(function(u){return Math.abs(u-yl)<19;})&&n<9){ yl+=19; n++; }
+      usados.push(yl);
+      g.textAlign='left';
+      g.font='700 8.5px '+cs('--mo'); g.fillStyle=col;
+      g.globalAlpha=f.es0?.85:1;
+      g.fillText(t1, x0+4, yl-8);
+      g.font='8px '+cs('--mo'); g.fillStyle=cs('--t2');
+      g.fillText(t2, x0+4, yl+1); g.globalAlpha=1;
+    });
+
+  // ---- precio actual, marcado en los dos ejes
+  if(Sv!=null){
+    var y=E.y(Sv);
+    g.strokeStyle=cs('--ac'); g.lineWidth=1.5;
+    g.beginPath(); g.moveTo(x0,y); g.lineTo(x1,y); g.stroke();
+    g.fillStyle=cs('--ac'); g.fillRect(x0-pL,y-7,pL-2,14);
+    g.fillStyle=cs('--gr'); g.font='700 9.5px '+cs('--mo'); g.textAlign='center';
+    g.fillText((enFut?Sv-b:Sv).toFixed(0), x0-pL/2, y+3);
+    if(D.base!=null){
+      g.fillStyle=cs('--ac'); g.fillRect(x1+2,y-7,pR-4,14);
+      g.fillStyle=cs('--gr'); g.fillText((enFut?Sv:Sv+b).toFixed(0), x1+2+(pR-4)/2, y+3);
+    }
   }
 }
 
@@ -687,36 +802,6 @@ function pintarBasis(){
 }
 
 function pintarLaterales(){
-  var Ni=D.niveles_indice||{}, N={}, Sl=spotVista();
-  Object.keys(Ni).forEach(function(k){ N[k]=px(Ni[k]); });
-  var mp={call_wall:['Call Wall','el techo: la mesa frena las subas'],
-    gamma_pin:['Gamma Pin','el iman: el strike grande mas cercano'],
-    put_wall:['Put Wall','el piso: la mesa frena las bajas'],
-    major_positive:['Major Positive','el mayor positivo del complejo'],
-    major_negative:['Major Negative','el mayor negativo del complejo']};
-  $('#niv').innerHTML=Object.keys(mp).filter(function(k){return N[k]!=null;}).map(function(k){
-    var st=D.st.filter(function(s){return s.k===Ni[k];})[0]||{};
-    var d=N[k]-Sl;
-    return '<div class="rw"><div><div class="f">'+mp[k][0]+'</div><div class="d">'+mp[k][1]+'</div></div>'+
-      '<div><div class="g '+(d>=0?'po':'ne')+'">'+N[k]+'</div>'+
-      '<div class="o">'+(st.g!=null?nf(st.g,0)+' M, ':'')+(d>0?'+':'')+d.toFixed(0)+' pts</div></div></div>';
-  }).join('');
-
-  var N0i=D.niveles_0dte_indice||{}, N0={};
-  Object.keys(N0i).forEach(function(k){ N0[k]=px(N0i[k]); });
-  var mp0={call_wall:['Call Wall 0DTE','el techo de hoy: vence al cierre'],
-    gamma_pin:['Gamma Pin 0DTE','el iman de hoy: donde tiende a cerrar'],
-    put_wall:['Put Wall 0DTE','el piso de hoy: vence al cierre']};
-  var el0=$('#niv0');
-  if(el0){
-    el0.innerHTML=Object.keys(mp0).filter(function(k){return N0[k]!=null;}).map(function(k){
-      var d=N0[k]-Sl;
-      return '<div class="rw"><div><div class="f">'+mp0[k][0]+'</div><div class="d">'+mp0[k][1]+'</div></div>'+
-        '<div><div class="g '+(d>=0?'po':'ne')+'">'+N0[k]+'</div>'+
-        '<div class="o">'+(d>0?'+':'')+d.toFixed(0)+' pts</div></div></div>';
-    }).join('')||'<div class="nt" style="border:0">sin vencimiento de hoy</div>';
-  }
-
   $('#conc').innerHTML=(D.concentracion||[]).map(function(x){
     return '<div class="rw"><div><div class="f">'+x.strike+'</div>'+
       '<div class="d">'+x.concentracion_pct+'% vence el '+x.vencimiento_dominante+'</div></div>'+
@@ -750,9 +835,200 @@ function pintarLaterales(){
   }).join('');
 }
 
+/* ---------- tabla de niveles, con todos los numeros ---------- */
+function filaNivel(f, es0){
+  var gm = es0 ? f.gex_0dte_M : f.gex_M;
+  var col = (f.clave==='call_wall'||f.clave==='major_positive') ? 'po'
+          : (f.clave==='put_wall'||f.clave==='major_negative') ? 'ne'
+          : (f.clave==='gamma_pin') ? 'ac2' : 't2';
+  var fut = f.futuro!=null ? f.futuro : null;
+  var pt = f.prob_toque;
+  return '<tr>'
+   + '<td class="k"><span style="color:var(--'+col+')">'+f.nombre+'</span>'
+     + (f.alias?'<span class="al"> + '+f.alias+'</span>':'')
+     + '<div class="tr2">'+f.criollo+'</div></td>'
+   + '<td class="n">'+f.indice+'</td>'
+   + '<td class="n" style="color:'+colFut()+'">'+(fut!=null?fut+marcaFut():'&#8212;')+'</td>'
+   + '<td class="n">'+(f.dist_pts>0?'+':'')+Math.round(f.dist_pts)+'</td>'
+   + '<td class="n">'+(f.dist_ticks>0?'+':'')+f.dist_ticks+'</td>'
+   + '<td class="n '+(gm>=0?'po':'ne')+'">'+(gm!=null?kM(gm):'&#8212;')+'</td>'
+   + '<td class="n">'+(f.oi_call!=null?kOI(f.oi_call):'&#8212;')+'</td>'
+   + '<td class="n">'+(f.oi_put!=null?kOI(f.oi_put):'&#8212;')+'</td>'
+   + '<td class="n">'+(pt!=null
+       ? '<span class="pill'+(pt>=50?' w':'')+'">'+pt+'%</span>' : '&#8212;')+'</td>'
+   + '</tr>';
+}
+
+function pintarNiveles(){
+  var enc = '<tr><th>Nivel</th><th class="n">'+D.sym+'</th>'
+          + '<th class="n">'+((D.futuro&&D.futuro.contrato)||'FUT')+marcaFut()+'</th>'
+          + '<th class="n" title="distancia en puntos del indice">pts</th>'
+          + '<th class="n" title="distancia en ticks del futuro">ticks</th>'
+          + '<th class="n" title="gamma parada en ese strike">gamma</th>'
+          + '<th class="n" title="interes abierto de calls">OI C</th>'
+          + '<th class="n" title="interes abierto de puts">OI P</th>'
+          + '<th class="n" title="probabilidad de tocarlo antes del cierre">toque</th></tr>';
+  var r = (D.niveles_ricos||[]).map(function(f){ return filaNivel(f,false); }).join('');
+  $('#niv').innerHTML = '<table class="tn"><thead>'+enc+'</thead><tbody>'+r+'</tbody></table>'
+    + (baseFloja()
+       ? '<div class="nt"><span class="wf">*</span> La base '
+         +((D.futuro&&D.futuro.contrato)||'FUT')+' no pas&oacute; el control contra el carry te&oacute;rico'
+         +' ('+(D.base_detalle||{}).muestras+' strikes, dispersi&oacute;n '
+         +(D.base_detalle||{}).dispersion+' pts). Los valores del &iacute;ndice son buenos; '
+         +'los del futuro <strong>no los dibujes</strong> hasta que la medici&oacute;n coincida.</div>'
+       : '');
+
+  var r0 = (D.niveles_ricos_0dte||[]).filter(function(f){
+      return f.clave==='call_wall'||f.clave==='put_wall'||f.clave==='gamma_pin'; })
+    .map(function(f){ return filaNivel(f,true); }).join('');
+  $('#niv0').innerHTML = r0
+    ? '<table class="tn"><thead>'+enc+'</thead><tbody>'+r0+'</tbody></table>'
+    : '<div class="nt" style="border:0">sin vencimiento de hoy</div>';
+}
+
+/* ---------- convexity ladder ---------- */
+function pintarEscalera(){
+  var E = D.escalera||[];
+  if(!E.length){ $('#esc').innerHTML=''; return; }
+  var mx = Math.max.apply(null, E.map(function(e){ return Math.abs(e.contratos||0); }))||1;
+  var raiz = (D.contrato_detalle&&D.contrato_detalle.raiz)||'ES';
+  var micro = (D.futuro&&D.futuro.micro)||'';
+  var f = E.map(function(e){
+    var w = Math.abs(e.contratos||0)/mx*100;
+    var pos = e.contratos>=0;
+    return '<tr'+(e.es_spot?' class="aq"':'')+'>'
+     + '<td class="n">'+e.indice+(e.es_spot?' <span class="tag">precio</span>':'')+'</td>'
+     + '<td class="n" style="color:'+colFut()+'">'+(e.futuro!=null?e.futuro:'&#8212;')+'</td>'
+     + '<td class="n '+(e.gex_B>=0?'po':'ne')+'">'+nf(e.gex_B,1)+'</td>'
+     + '<td class="n '+(pos?'po':'ne')+'">'+(e.contratos!=null?ni(e.contratos):'&#8212;')+'</td>'
+     + '<td class="n" style="color:var(--t3)">'+(e.micro!=null?ni(e.micro):'&#8212;')+'</td>'
+     + '<td><div class="tr"><div class="fl" style="width:'+w+'%;background:var(--'
+       +(pos?'po':'ne')+')"></div></div></td>'
+     + '</tr>';
+  }).join('');
+  $('#esc').innerHTML='<table class="tn"><thead><tr>'
+    + '<th class="n">'+D.sym+'</th><th class="n">'+((D.futuro&&D.futuro.contrato)||'FUT')+marcaFut()+'</th>'
+    + '<th class="n">GEX</th><th class="n">'+raiz+'</th><th class="n">'+(micro||'micro')+'</th>'
+    + '<th style="width:70px">cobertura</th></tr></thead><tbody>'+f+'</tbody></table>';
+
+  var c=D.cobertura;
+  $('#escNota').innerHTML = c
+    ? ('Ahora mismo, por cada <strong>1% de movimiento</strong> la mesa tiene que operar '
+       + '<strong>'+ni(Math.abs(c.contratos))+' '+raiz+'</strong> ('+ni(Math.abs(c.micro))+' '+micro+'). '
+       + (D.T.net_gex_B<0
+          ? 'Con gamma negativa <strong style="color:var(--ne)">vende cuando baja y compra cuando sube</strong>: empuja el movimiento.'
+          : 'Con gamma positiva <strong style="color:var(--po)">compra cuando baja y vende cuando sube</strong>: frena el movimiento.')
+       + ' Un contrato '+raiz+' vale '+ni(c.nocional_contrato)+' dolares de nocional.')
+    : '';
+}
+
+/* ---------- huecos de gamma ---------- */
+function pintarHuecos(){
+  var H=D.huecos||[], el=$('#hue'); if(!el) return;
+  el.innerHTML = H.length ? H.map(function(h){
+    return '<div class="rw"><div><div class="f">'+h.desde+' &ndash; '+h.hasta+'</div>'
+     + '<div class="d">'+(h.sobre_spot?'arriba del precio':'abajo del precio')
+     + (h.desde_fut!=null?' &middot; '+((D.futuro&&D.futuro.contrato)||'FUT')+' '
+        +h.desde_fut+' &ndash; '+h.hasta_fut:'')+'</div></div>'
+     + '<div><div class="g" style="color:var(--ac2)">'+h.ancho+'</div>'
+     + '<div class="o">pts sin freno</div></div></div>';
+  }).join('') : '<div class="nt" style="border:0">no hay tramos vacios cerca del precio</div>';
+}
+
+/* ---------- referencias de la sesion ---------- */
+function pintarSesion(){
+  var S=D.sesion, el=$('#ses'); if(!el) return;
+  if(!S){ el.innerHTML='<div class="nt" style="border:0">sin serie de precio</div>'; return; }
+  var fu=(D.futuro&&D.futuro.contrato)||'FUT';
+  var mp=[['apertura','Open','apertura de la sesion','apertura_fut'],
+          ['maximo','High of Day','maximo del dia','maximo_fut'],
+          ['minimo','Low of Day','minimo del dia','minimo_fut'],
+          ['ib_alto','Initial Balance High','techo de la primera hora','ib_alto_fut'],
+          ['ib_bajo','Initial Balance Low','piso de la primera hora','ib_bajo_fut']];
+  el.innerHTML=mp.map(function(m){
+    if(S[m[0]]==null) return '';
+    return '<div class="rw"><div><div class="f">'+m[1]+'</div><div class="d">'+m[2]+'</div></div>'
+     + '<div><div class="g">'+S[m[0]].toFixed(2)+'</div>'
+     + '<div class="o">'+fu+' '+(S[m[3]]!=null?S[m[3]]:'&#8212;')+'</div></div></div>';
+  }).join('')
+   + '<div class="nt">Rango del d&iacute;a '+S.rango+' pts &middot; primera hora '+S.ib_rango+' pts.'
+   + ' El Initial Balance es el rango de los primeros 60 minutos: mientras el precio queda adentro'
+   + ' la sesi&oacute;n es de rango, y romperlo suele arrancar la tendencia del d&iacute;a.</div>';
+}
+
+/* ---------- cinta de abajo ---------- */
+function pintarCinta(){
+  var el=$('#cinta'); if(!el) return;
+  var fu=(D.futuro&&D.futuro.contrato)||null, mi=(D.futuro&&D.futuro.micro)||null;
+  var S=D.S, Sf=(D.futuro&&D.futuro.spot);
+  var it=[];
+  function add(et,val,sub,cl){
+    it.push('<div class="ci"><div class="ce">'+et+'</div><div class="cv '+(cl||'')+'">'
+      +val+'</div><div class="cs">'+(sub||'')+'</div></div>');
+  }
+  add(D.sym+' <span class="tag">&iacute;ndice contado</span>',
+      S.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}),
+      D.spot_corregido ? ('implicito por la cadena &middot; publicado '
+        +D.indice_publicado.toLocaleString('es-AR')) : 'CBOE');
+  if(fu&&Sf!=null){
+    add(fu+' <span class="tag">futuro</span>'+marcaFut(),
+        Sf.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}),
+        'base '+(D.base>0?'+':'')+D.base+' &middot; micro '+mi
+        +(baseFloja()?' <span class="wf">base floja</span>':''));
+  }
+  add('Gamma Flip', (D.gamma_flip!=null?D.gamma_flip:'&#8212;'),
+      fu?(fu+' '+(D.gamma_flip_futuro!=null?D.gamma_flip_futuro:'&#8212;')):'',
+      S>D.gamma_flip?'po':'ne');
+  var N=(D.niveles_ricos||[]);
+  ['call_wall','gamma_pin','put_wall'].forEach(function(k){
+    var f=N.filter(function(z){return z.clave===k;})[0]; if(!f) return;
+    add(GLO[k]||k, f.indice, (fu&&f.futuro!=null?fu+' '+f.futuro+' &middot; ':'')
+        +(f.dist_ticks>0?'+':'')+f.dist_ticks+' tk',
+        k==='call_wall'?'po':k==='put_wall'?'ne':'');
+  });
+  add('Expected Move', '&plusmn;'+D.expected_move,
+      (S-D.expected_move).toFixed(0)+' &ndash; '+(S+D.expected_move).toFixed(0));
+  var c=D.cobertura;
+  if(c) add('Dealer Hedge / 1%', ni(Math.abs(c.contratos))+' '+((D.contrato_detalle&&D.contrato_detalle.raiz)||'ES'),
+            (D.T.net_gex_B<0?'vende en la baja':'compra en la baja'),
+            D.T.net_gex_B<0?'ne':'po');
+  el.innerHTML=it.join('');
+}
+var GLO={call_wall:'Call Wall',put_wall:'Put Wall',gamma_pin:'Gamma Pin'};
+
+/* ---------- identidad en cada tarjeta ---------- */
+function pintarIdentidad(){
+  var fu=(D.futuro&&D.futuro.contrato)||null;
+  var txt=D.sym+(fu?' &middot; '+fu:'');
+  // cada tarjeta dice a que indice y a que futuro se refiere, sin excepcion
+  Array.prototype.forEach.call(document.querySelectorAll('.cd > header'),function(h){
+    if(!h.querySelector('.id')){
+      var w=document.createElement('span');
+      w.style.cssText='display:flex;gap:7px;align-items:center;margin-left:auto';
+      var a=document.createElement('span'); a.className='id';
+      var b=document.createElement('span'); b.className='ts';
+      w.appendChild(a); w.appendChild(b); h.appendChild(w);
+    }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('.id'),function(e){
+    e.innerHTML=txt;
+  });
+  var ed='';
+  if(D.generado){
+    var gd=(D.generado.indexOf('+')>0||D.generado.slice(-1)==='Z')?D.generado:D.generado+'Z';
+    var m=Math.round((Date.now()-new Date(gd))/60000);
+    ed=(m<1?'reci&eacute;n':'hace '+m+' min');
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.ts'),function(e){
+    e.innerHTML='dato '+D.timestamp+(ed?' &middot; '+ed:'');
+  });
+}
+
 /* ---------- arranque ---------- */
 function redibujar(){ dibPrecio(); dibHist(); dibCurva(); dibSkew(); dibTerm(); dibIntra(); }
-function pintarTodo(){ pintarCabecera(); pintarTabla(); pintarMatriz(); pintarLaterales(); redibujar(); }
+function pintarTodo(){ pintarCabecera(); pintarNiveles(); pintarEscalera(); pintarHuecos();
+  pintarSesion(); pintarCinta(); pintarTabla(); pintarMatriz(); pintarLaterales();
+  pintarIdentidad(); redibujar(); }
 
 $('#tabs').addEventListener('click',function(e){
   var b=e.target.closest('button'); if(!b){ return; }
@@ -778,7 +1054,8 @@ $('#vp').addEventListener('click',function(e){
   var b=e.target.closest('button'); if(!b||b.disabled){ return; }
   vistaPrecio=b.dataset.v;
   Array.prototype.forEach.call(this.children,function(x){x.setAttribute('aria-selected',x===b);});
-  pintarCabecera(); pintarLaterales(); dibPrecio(); dibHist(); dibCurva();
+  pintarCabecera(); pintarNiveles(); pintarEscalera(); pintarCinta();
+  pintarLaterales(); dibPrecio(); dibHist(); dibCurva();
 });
 
 (function(){
