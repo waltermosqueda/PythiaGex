@@ -146,6 +146,7 @@ namespace PythiaGex
         private bool _pocPrevioVirgen;
         private readonly Gatillos _gat = new();
         private readonly Bitacora _bit = new();
+        private readonly Disparo _disp = new();
         // OnRender corre en cada cuadro, pero mirar el footprint de veinte
         // barras por nivel es carisimo. Este aviso hace que los gatillos se
         // recalculen solo cuando el contexto se recalculo, no sesenta veces
@@ -265,6 +266,47 @@ namespace PythiaGex
         [Display(Name = "Carpeta (vacio = la de ATAS)", GroupName = "Bitacora", Order = 3,
                  Description = "Por defecto %APPDATA%\\ATAS\\PythiaGex\\contexto. El centinela lee de ahi.")]
         public string CarpetaBitacora { get; set; } = "";
+
+        [Display(Name = "Marcar los disparos en el grafico", GroupName = "Disparos", Order = 1,
+                 Description = "La flecha que dice 'aca, ahora'. Solo aparece si el precio esta DENTRO de la zona de un nivel, si el flujo dice para que lado, y si el puntaje llega al umbral.")]
+        public bool VerDisparos { get; set; } = true;
+
+        [Display(Name = "Puntaje minimo para disparar", GroupName = "Disparos", Order = 2,
+                 Description = "Mas alto = menos flechas y mejores. 3 es un arranque razonable; el centinela va a decir despues si conviene subirlo o bajarlo.")]
+        public int UmbralDisparo { get; set; } = 3;
+
+        [Display(Name = "Enfriamiento del nivel (minutos)", GroupName = "Disparos", Order = 3,
+                 Description = "El mismo nivel no vuelve a disparar por este rato.")]
+        public int EnfriamientoDisparo { get; set; } = 15;
+
+        [Display(Name = "Ticks para rearmar el nivel", GroupName = "Disparos", Order = 4,
+                 Description = "Ademas de esperar, el precio tiene que ALEJARSE del nivel. Sin esto, un precio pegado al muro dispara sin parar.")]
+        public int RearmeDisparo { get; set; } = 12;
+
+        [Display(Name = "% del flujo reciente para llamarlo esfuerzo", GroupName = "Disparos", Order = 10,
+                 Description = "Es el gatillo de 'muchos chicos': cuanta parte de todo lo operado en las ultimas barras se amontono en este nivel. Detecta lo que el print grande no ve.")]
+        public double MinPctEsfuerzo { get; set; } = 20.0;
+
+        [Display(Name = "Confluencias que suman punto", GroupName = "Disparos", Order = 5)]
+        public int MinConfluenciaDisparo { get; set; } = 3;
+
+        [Display(Name = "Forma de la marca", GroupName = "Disparos", Order = 6)]
+        public FormaDisparo Forma { get; set; } = FormaDisparo.Triangulo;
+
+        [Display(Name = "Tamano de la marca (px)", GroupName = "Disparos", Order = 7)]
+        public int TamDisparo { get; set; } = 11;
+
+        [Display(Name = "Ver el puntaje al lado", GroupName = "Disparos", Order = 8)]
+        public bool VerPuntajeDisparo { get; set; } = true;
+
+        [Display(Name = "Avisar con alerta", GroupName = "Disparos", Order = 9)]
+        public bool AlertaDisparo { get; set; } = false;
+
+        [Display(Name = "Color del disparo largo", GroupName = "Colores", Order = 320)]
+        public Color ColDispLargo { get; set; } = Color.FromArgb(255, 60, 220, 130);
+
+        [Display(Name = "Color del disparo corto", GroupName = "Colores", Order = 321)]
+        public Color ColDispCorto { get; set; } = Color.FromArgb(255, 255, 95, 95);
 
         [Display(Name = "Order flow como gatillo (solo sobre niveles)", GroupName = "Order flow", Order = 1,
                  Description = "Imbalances apilados, prints grandes y divergencia de delta. Se miran UNICAMENTE dentro de la zona de un nivel: en el resto del grafico son ruido.")]
@@ -1271,8 +1313,142 @@ namespace PythiaGex
                 n.Razones = string.Join(" + ", razones);
             }
 
+            EvaluarDisparos(d, tick);
             AnotarBitacora(d, tick);
             _ctxRecalculado = false;
+        }
+
+        /// <summary>
+        /// Recorre los niveles buscando un disparo. Solo cuando el contexto se
+        /// recalculo: evaluar esto en cada cuadro dispararia sesenta veces por
+        /// segundo sobre el mismo evento.
+        /// </summary>
+        private void EvaluarDisparos(Datos d, decimal tick)
+        {
+            if (!VerDisparos || d == null || !_ctxRecalculado || !_ctx.Listo) return;
+            var precio = PrecioActual();
+            if (precio <= 0 || CurrentBar < 2) return;
+
+            _disp.Umbral = Math.Max(1, UmbralDisparo);
+            _disp.EnfriamientoMin = Math.Max(1, EnfriamientoDisparo);
+            _disp.TicksRearme = Math.Max(2, RearmeDisparo);
+            _disp.MinPctEsfuerzo = (decimal)Math.Max(1.0, MinPctEsfuerzo);
+
+            DateTime hora;
+            try { hora = GetCandle(CurrentBar - 1).LastTime; }
+            catch { hora = DateTime.UtcNow; }
+
+            foreach (var n in d.Niveles)
+            {
+                var pf = n.Fut ?? n.Idx;
+                if (!pf.HasValue || pf.Value <= 0) continue;
+                var e = _disp.Evaluar(
+                    (n.Tipo ?? "?") + (n.Es0dte ? " 0DTE" : ""),
+                    (decimal)pf.Value, precio, tick, Math.Max(1, TicksZona),
+                    n.Flujo, n.Gatillo, n.Puntaje, Math.Max(1, MinConfluenciaDisparo),
+                    _ctx.DeltaAcumulado, CurrentBar - 1, hora);
+                if (e == null) continue;
+
+                e.Es0dte = n.Es0dte;
+                e.Nivel = NombreEtq(n);
+                if (AlertaDisparo)
+                {
+                    try
+                    {
+                        AddAlert(SonidoAlerta,
+                            InstrumentInfo != null ? InstrumentInfo.Instrument : "",
+                            (e.Lado > 0 ? "LARGO" : "CORTO") + " x" + e.Puntaje + "  "
+                            + e.Nivel + " " + e.Precio.ToString("0.00", CultureInfo.InvariantCulture)
+                            + "  (" + e.Razones + ")",
+                            Wpf(Color.FromArgb(30, 30, 30)),
+                            Wpf(e.Lado > 0 ? ColDispLargo : ColDispCorto));
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        /// <summary>Dibuja los disparos que quedaron anotados.</summary>
+        private void DibujarDisparos(RenderContext g, Rectangle area,
+                                     IChartContainer cont, RenderFont f)
+        {
+            if (!VerDisparos || _disp.Eventos.Count == 0) return;
+            int t = Math.Max(5, TamDisparo);
+
+            foreach (var e in _disp.Eventos)
+            {
+                int x, y;
+                try
+                {
+                    x = cont.GetXByBar(e.Barra, false);
+                    y = cont.GetYByPrice(e.Precio, false);
+                }
+                catch { continue; }
+                if (x < area.Left - 40 || x > area.Right + 40) continue;
+                if (y < area.Top - 40 || y > area.Bottom + 40) continue;
+
+                var col = e.Lado > 0 ? ColDispLargo : ColDispCorto;
+                // el largo se dibuja por DEBAJO del nivel y el corto por
+                // arriba, apuntando hacia donde dice que va el flujo
+                int yy = e.Lado > 0 ? y + t + 2 : y - t - 2;
+                DibujarMarca(g, x, yy, t, e.Lado, col);
+
+                if (VerPuntajeDisparo)
+                {
+                    var txt = "x" + e.Puntaje;
+                    g.DrawString(txt, f, col, x + t, yy - t / 2);
+                }
+            }
+        }
+
+        private void DibujarMarca(RenderContext g, int x, int y, int t, int lado, Color col)
+        {
+            var borde = Color.FromArgb(230, 15, 18, 24);
+            switch (Forma)
+            {
+                case FormaDisparo.Circulo:
+                    g.FillEllipse(col, new Rectangle(x - t / 2, y - t / 2, t, t));
+                    g.DrawEllipse(new RenderPen(borde, 1),
+                                  new Rectangle(x - t / 2, y - t / 2, t, t));
+                    break;
+
+                case FormaDisparo.Rombo:
+                {
+                    var pts = new[] { new Point(x, y - t), new Point(x + t, y),
+                                      new Point(x, y + t), new Point(x - t, y) };
+                    g.FillPolygon(col, pts);
+                    g.DrawPolygon(new RenderPen(borde, 1), pts);
+                    break;
+                }
+
+                case FormaDisparo.Flecha:
+                {
+                    // punta mas el cuerpo: se ve la direccion de lejos
+                    int s = lado > 0 ? -1 : 1;   // hacia arriba si es largo
+                    var pts = new[] {
+                        new Point(x, y + s * t),
+                        new Point(x + t, y),
+                        new Point(x + t / 2, y),
+                        new Point(x + t / 2, y - s * t),
+                        new Point(x - t / 2, y - s * t),
+                        new Point(x - t / 2, y),
+                        new Point(x - t, y) };
+                    g.FillPolygon(col, pts);
+                    g.DrawPolygon(new RenderPen(borde, 1), pts);
+                    break;
+                }
+
+                default:
+                {
+                    int s = lado > 0 ? -1 : 1;
+                    var pts = new[] { new Point(x, y + s * t),
+                                      new Point(x + t, y - s * t / 2),
+                                      new Point(x - t, y - s * t / 2) };
+                    g.FillPolygon(col, pts);
+                    g.DrawPolygon(new RenderPen(borde, 1), pts);
+                    break;
+                }
+            }
         }
 
         /// <summary>
@@ -1357,8 +1533,16 @@ namespace PythiaGex
             var pd = (double)precio; var td = (double)tick;
             var mxd = (double)mx; var mnd = (double)mn;
             var virgen = _pocPrevioVirgen;
+            // solo los disparos posteriores a la anotacion anterior, para que
+            // no se repita el mismo evento en cada linea
+            var desde = _bit.UltimaUtc;
+            var disp = new List<Disparo.Evento>();
+            foreach (var e in _disp.Eventos)
+                if (desde == DateTime.MinValue || e.Hora.ToUniversalTime() > desde)
+                    disp.Add(e);
             System.Threading.Tasks.Task.Run(() =>
-                _bit.Anotar(inst, pd, td, mxd, mnd, _ctx, _ctxPrev, _ctxSem, virgen, lista));
+                _bit.Anotar(inst, pd, td, mxd, mnd, _ctx, _ctxPrev, _ctxSem, virgen,
+                            lista, disp));
         }
 
         // ==================================================================
@@ -1388,6 +1572,8 @@ namespace PythiaGex
 
             if (Perfil != LadoPerfil.Apagado && _ctx.Listo && _ctx.Nodos.Count > 0)
                 DibujarPerfil(g, area, cont, hi, lo);
+
+            DibujarDisparos(g, area, cont, fDetalle);
 
             if (d != null && VerExpectedMove && d.ExpectedMove.HasValue && d.ExpectedMove.Value > 0
                 && d.SpotFuturo.HasValue && d.SpotFuturo.Value > 0)

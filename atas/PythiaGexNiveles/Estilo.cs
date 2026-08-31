@@ -54,6 +54,14 @@ namespace PythiaGex
         [Description("Completo: Call Wall, Put Wall")] Completo,
     }
 
+    public enum FormaDisparo
+    {
+        [Description("Triangulo")] Triangulo,
+        [Description("Flecha")] Flecha,
+        [Description("Circulo")] Circulo,
+        [Description("Rombo")] Rombo,
+    }
+
     public enum LadoPerfil
     {
         [Description("Apagado")] Apagado,

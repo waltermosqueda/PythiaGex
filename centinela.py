@@ -64,6 +64,7 @@ ROMPER_TK = 12       # pasarlo por doce ticks es romperlo, no tantearlo
 AGUANTAR_TK = 16     # alejarse dieciseis ticks sin romperlo es que aguanto
 MIN_CASOS = 12       # abajo de esto no se saca ninguna conclusion
 HORIZONTE = 60       # minutos que se le dan al nivel para resolverse
+GANANCIA_TK = 8      # los ticks que definen si un disparo acerto o fallo
 MIN_SEPARACION = 0.0 # los intervalos no se pueden tocar para llamarlo hallazgo
 
 
@@ -737,6 +738,86 @@ def analizar(obs, titulo):
     return hallazgos
 
 
+def disparos(fechas):
+    """Cuantos disparos del indicador acertaron, por puntaje.
+
+    Un disparo es una flecha que el indicador dibujo diciendo LARGO o CORTO.
+    Aca se lo juzga con una regla que no deja lugar a la interpretacion: desde
+    el precio del nivel, ¿llego {G} ticks a favor ANTES de llegar {G} ticks en
+    contra? Es simetrica a proposito. Si fuera mas generosa de un lado que del
+    otro, cualquier gatillo parecería bueno.
+
+    El que no alcanzo ninguno de los dos extremos dentro del horizonte queda
+    afuera: sin desenlace no hay acierto ni error, hay falta de datos.
+
+    Para que sirve: mirando la tasa por puntaje se ve donde poner el umbral.
+    Si con 3 acierta lo mismo que tirando una moneda y con 5 acierta mas, el
+    umbral va en 5. Eso lo decide la cuenta, no la intuicion.
+    """
+    casos = []
+    for fecha in fechas:
+        velas = leer_precio("SPX", fecha, 0.0)
+        if len(velas) < 10:
+            continue
+        for c in leer_contexto(fecha):
+            for e in (c.get("disparos") or []):
+                t = (e.get("t") or "")[11:16]
+                nivel, lado = e.get("precio"), e.get("lado")
+                if not t or nivel is None or not lado:
+                    continue
+                post = [v for v in velas if v["t"] and v["t"] > t]
+                if len(post) < 3:
+                    continue
+                fin = _sumar_minutos(t, HORIZONTE)
+                post = [v for v in post if v["t"] <= fin]
+                if not post:
+                    continue
+                meta = nivel + lado * GANANCIA_TK * TICK
+                stop = nivel - lado * GANANCIA_TK * TICK
+                res = None
+                for v in post:
+                    llego = v["alto"] >= meta if lado > 0 else v["bajo"] <= meta
+                    perdio = v["bajo"] <= stop if lado > 0 else v["alto"] >= stop
+                    # si en la misma vela toco los dos, no se sabe cual primero
+                    if llego and perdio:
+                        res = None
+                        break
+                    if llego:
+                        res = True
+                        break
+                    if perdio:
+                        res = False
+                        break
+                if res is None:
+                    continue
+                casos.append({"puntaje": e.get("puntaje") or 0, "ok": res,
+                              "lado": lado, "nivel": e.get("nivel") or "",
+                              "fecha": fecha})
+
+    if not casos:
+        print("\n  DISPAROS: todavia no hay ninguno anotado.")
+        print("  El indicador tiene que estar corriendo en ATAS para que salgan.")
+        return
+    print("\n  LOS DISPAROS DEL INDICADOR  (%d ticks a favor antes que %d en contra)"
+          % (GANANCIA_TK, GANANCIA_TK))
+    print("  %-16s %6s %8s %18s" % ("puntaje", "casos", "acerto", "intervalo"))
+    for lo_, hi_, etq in ((1, 3, "menos de 3"), (3, 4, "3"), (4, 5, "4"),
+                          (5, 99, "5 o mas")):
+        g = [c for c in casos if lo_ <= c["puntaje"] < hi_]
+        if not g:
+            continue
+        pr, l, h = wilson(sum(1 for c in g if c["ok"]), len(g))
+        print("  %-16s %6d %7.0f%% %16s%s"
+              % (etq, len(g), pr * 100, "%.0f%% a %.0f%%" % (l * 100, h * 100),
+                 "" if len(g) >= MIN_CASOS else "   pocos casos"))
+    tot = len(casos)
+    pr, l, h = wilson(sum(1 for c in casos if c["ok"]), tot)
+    print("  %-16s %6d %7.0f%% %16s" % ("TODOS", tot, pr * 100,
+                                        "%.0f%% a %.0f%%" % (l * 100, h * 100)))
+    if tot < MIN_CASOS * 2:
+        print("  Con %d disparos no se puede elegir umbral todavia." % tot)
+
+
 def calibracion(obs):
     """Lo que prometimos contra lo que paso. Es el control mas duro que hay."""
     con_prob = [o for o in obs if o.get("prob") is not None]
@@ -824,6 +905,7 @@ def main():
 
     h = analizar(todas, "%s   %s" % (sym, " + ".join(fechas)))
     calibracion(todas)
+    disparos(fechas)
     if todas:
         guardar(todas, h, sym)
         if "--informe" in args:

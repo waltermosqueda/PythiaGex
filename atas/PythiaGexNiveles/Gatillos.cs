@@ -35,6 +35,17 @@ namespace PythiaGex
     ///      agresion acumulada no lo acompana. Es agotamiento: quedan pocos
     ///      dispuestos a seguir empujando.
     ///
+    ///   4. ESFUERZO. Que parte de todo lo que se opero en las ultimas barras
+    ///      se concentro en ESTE precio. Un print grande es una sola orden
+    ///      grande; el esfuerzo es la otra cara: mil ordenes chicas amontonadas
+    ///      en el mismo precio pesan lo mismo y no dejan ningun print visible.
+    ///      Mirar solo el print grande se pierde la mitad de los casos.
+    ///
+    ///      Y el esfuerzo se lee junto con el delta, que es la distincion
+    ///      clasica del footprint: mucho volumen CON delta fuerte es alguien
+    ///      empujando; mucho volumen SIN delta es alguien comiendose todo lo
+    ///      que le tiran. Las dos cosas importan y significan lo contrario.
+    ///
     /// Todo lo que sale de aca es medido sobre el footprint que ya trae cada
     /// vela de ATAS. No hay ningun numero inventado ni ninguna constante
     /// magica escondida: los tres umbrales estan arriba de todo, con su razon
@@ -78,6 +89,14 @@ namespace PythiaGex
             /// <summary>Delta agredido dentro de la zona en la ventana.</summary>
             public decimal DeltaVentana;
             public decimal VolumenVentana;
+            /// <summary>Que parte del volumen de toda la ventana se opero en
+            /// este precio. Es el esfuerzo: detecta el amontonamiento de
+            /// ordenes chicas, que no deja print grande pero pesa igual.</summary>
+            public decimal PctVentana;
+            /// <summary>Delta sobre volumen dentro de la zona, en la ventana.
+            /// Alto = alguien empuja. Bajo con mucho volumen = alguien come.</summary>
+            public decimal RatioDelta;
+            public decimal VolumenTotalVentana;
             public int BarrasVistas;
             public bool Listo;
 
@@ -90,6 +109,8 @@ namespace PythiaGex
                     p.Add((Lado > 0 ? "+" : "-") + Apilados + "imb");
                 if (PrintGrande)
                     p.Add("print x" + PrintVeces.ToString("0"));
+                if (PctVentana >= 20m)
+                    p.Add(PctVentana.ToString("0") + "% del flujo");
                 if (Divergencia)
                     p.Add(LadoDivergencia > 0 ? "div+" : "div-");
                 return string.Join(" ", p);
@@ -158,10 +179,19 @@ namespace PythiaGex
                     }
                 }
                 catch { /* una barra sin footprint no invalida la ventana */ }
+
+                // el volumen de TODA la barra, no solo el de la zona: es el
+                // denominador contra el que se mide el esfuerzo
+                try { s.VolumenTotalVentana += c.Volume; } catch { }
             }
 
             s.BarrasVistas = n;
             if (porPrecio.Count == 0) return s;
+
+            s.PctVentana = s.VolumenTotalVentana > 0
+                ? s.VolumenVentana / s.VolumenTotalVentana * 100m : 0;
+            s.RatioDelta = s.VolumenVentana > 0
+                ? s.DeltaVentana / s.VolumenVentana : 0;
 
             // --- print grande: contra el volumen tipico de un precio en la zona
             var tipico = Mediana(porPrecio.Values.ToList());

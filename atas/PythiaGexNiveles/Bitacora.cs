@@ -84,7 +84,8 @@ namespace PythiaGex
         public bool Anotar(string instrumento, double precio, double tickSize,
                            double maximo, double minimo,
                            Contexto sesion, Contexto previo, Contexto semana,
-                           bool pocVirgen, List<Anotacion> niveles)
+                           bool pocVirgen, List<Anotacion> niveles,
+                           List<Disparo.Evento> disparos)
         {
             try
             {
@@ -118,6 +119,32 @@ namespace PythiaGex
                 {
                     if (i > 0) b.Append(',');
                     Nivel(b, niveles[i]);
+                }
+                b.Append(']');
+
+                // Los disparos que salieron en este tramo. Sin esto, si el
+                // gatillo sirve o es ruido queda en opinion: escritos, el
+                // centinela cuenta cuantos acertaron y con eso se sube o se
+                // baja el umbral. Es la unica forma honesta de calibrarlo.
+                b.Append(",\"disparos\":[");
+                if (disparos != null)
+                {
+                    for (int i = 0; i < disparos.Count; i++)
+                    {
+                        var e = disparos[i];
+                        if (i > 0) b.Append(',');
+                        b.Append('{');
+                        Txt(b, "t", e.Hora.ToUniversalTime()
+                                     .ToString("yyyy-MM-ddTHH:mm:ss", Inv) + "Z"); b.Append(',');
+                        Txt(b, "nivel", e.Nivel ?? ""); b.Append(',');
+                        b.Append("\"es0dte\":").Append(e.Es0dte ? "true" : "false").Append(',');
+                        Ent(b, "lado", e.Lado); b.Append(',');
+                        Ent(b, "puntaje", e.Puntaje); b.Append(',');
+                        Num(b, "precio", (double)e.Precio); b.Append(',');
+                        Num(b, "precio_barra", (double)e.PrecioBarra); b.Append(',');
+                        Txt(b, "razones", e.Razones ?? "");
+                        b.Append('}');
+                    }
                 }
                 b.Append("]}");
                 b.Append('\n');

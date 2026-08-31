@@ -18,7 +18,7 @@ ganando ahí.**
 
 | Carpeta | Qué es |
 |---|---|
-| `PythiaGexNiveles/` | El indicador. Cinco archivos de código. |
+| `PythiaGexNiveles/` | El indicador. Seis archivos de código. |
 | `_api/` | Herramienta que lee la API de ATAS por reflexión. |
 
 ### `PythiaGexNiveles/`
@@ -30,6 +30,7 @@ ganando ahí.**
   prints grandes y divergencia de delta. **Solo se miran parados sobre un nivel
   publicado.** En el resto del gráfico son ruido, y ese es el filtro que evita
   que la pantalla se llene de flechitas sin sentido.
+- **`Disparo.cs`** — el gatillo compuesto: la flecha que dice "acá, ahora".
 - **`Bitacora.cs`** — el puente con el centinela. Escribe una línea cada cinco
   minutos con lo que ATAS vio en cada nivel.
 - **`Estilo.cs`** — los enums de configuración visual.
@@ -58,6 +59,41 @@ Reglas de la bitácora, para que no ensucie nada:
 - No bloquea el dibujo: escribe en otro hilo y se traga cualquier error.
 - No lleva ninguna ruta personal adentro: por defecto usa la carpeta de datos
   de ATAS del usuario que lo corre.
+
+## El gatillo, sin salir de la vista de velas
+
+El footprint da el detalle de las entrañas pero, puesto como vista, tapa el
+macro. La salida no es elegir: es **leer el footprint por dentro y sacar una
+sola marca afuera**. `Gatillos.cs` recorre `GetAllPriceLevels()` precio por
+precio, bid contra ask; `Disparo.cs` decide si eso amerita una flecha. El
+operador nunca cambia de vista.
+
+Tres condiciones, y **la primera no suma puntos: habilita**.
+
+1. **Ubicación.** El precio tiene que estar dentro de la zona de un nivel
+   publicado. Sin esto no hay disparo, por mucho flujo que haya. Es el filtro
+   que mata la mayor parte del ruido.
+2. **Dirección.** Tres cosas votan: imbalances apilados, divergencia de delta,
+   y el delta agredido en la ventana reciente. Si se anulan entre sí no hay
+   disparo — un nivel donde nadie está ganando claramente no es un gatillo,
+   es una duda.
+3. **Peso.** Recién ahí suman los amplificadores: el **esfuerzo**, la
+   absorción, el print grande, la confluencia, y si el delta del día acompaña.
+
+El **esfuerzo** cubre el caso que el print grande no ve: mil órdenes chicas
+amontonadas en el mismo precio no dejan ningún print visible y pesan lo mismo
+que una orden grande. Se mide como qué parte de todo el flujo reciente se
+concentró en ese precio.
+
+Contra el falso positivo hay tres frenos: un **umbral** que el operador elige,
+un **enfriamiento** por nivel, y un **rearme** — además de esperar, el precio
+tiene que alejarse del nivel antes de que ese nivel pueda volver a disparar.
+
+Y lo que hace que nada de esto sea una opinión: **cada disparo se anota con su
+puntaje y sus componentes**, y `centinela.py` mide después cuántos acertaron,
+separados por puntaje. La regla es simétrica a propósito — ¿llegó 8 ticks a
+favor antes que 8 en contra? Con esa tabla el umbral se elige mirando la
+cuenta, no la intuición.
 
 ## Perfiles largos
 

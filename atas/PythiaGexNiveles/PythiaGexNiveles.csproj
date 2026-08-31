@@ -23,6 +23,7 @@
     <Compile Include="Estilo.cs" />
     <Compile Include="Gatillos.cs" />
     <Compile Include="Bitacora.cs" />
+    <Compile Include="Disparo.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.
