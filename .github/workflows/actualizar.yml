@@ -20,12 +20,21 @@ concurrency:
   group: datos
   cancel-in-progress: false
 
+# Publicar Pages necesita estos tres. Antes vivian en un workflow aparte y
+# eso costaba el doble: GitHub factura por MINUTO EMPEZADO, asi que un ciclo
+# de 53 segundos reales partido en dos trabajos se cobraba como 2 minutos.
+# Fusionado, el mismo ciclo cuesta 1.
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   correr:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -72,3 +81,13 @@ jobs:
             git pull --rebase --autostash origin main
             git push origin main
           fi
+
+      # La publicacion va en el MISMO trabajo. Separada costaba un minuto
+      # facturado de mas por ciclo, y ademas metia una espera entre que el
+      # dato se calculaba y llegaba a la pantalla.
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: panel
+      - id: deploy
+        uses: actions/deploy-pages@v4

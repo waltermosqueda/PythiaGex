@@ -7,15 +7,16 @@ name: Publicar panel
 # pusheara a mano. Verificado el 2026-08-31: el bot commiteo 09:57 y el ultimo
 # deploy era de las 07:45.
 #
-# Por eso se agrega workflow_run: este workflow escucha cuando termina el de
-# datos y publica igual.
+# Se resolvio fusionando la publicacion adentro del workflow de datos, que
+# ademas cuesta la mitad: GitHub factura por minuto empezado, asi que dos
+# trabajos de menos de un minuto se cobraban como dos minutos enteros.
+#
+# Este workflow queda solo para publicar a mano o cuando se edita el panel
+# directamente, sin recalcular datos.
 on:
   push:
     branches: [main]
     paths: ['panel/**']
-  workflow_run:
-    workflows: ["Actualizar datos"]
-    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -29,10 +30,6 @@ concurrency:
 
 jobs:
   publicar:
-    # si la corrida de datos fallo, no tiene sentido publicar
-    if: >-
-      github.event_name != 'workflow_run' ||
-      github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
