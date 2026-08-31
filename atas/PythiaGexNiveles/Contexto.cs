@@ -58,13 +58,22 @@ namespace PythiaGex
         public DateTime Desde, Hasta;
         public bool Listo;
 
+        /// <summary>Umbrales. Ninguno es una ley: son cortes elegidos, y por eso
+        /// se pueden cambiar desde los ajustes y quedan a la vista en el tablero.</summary>
+        public decimal PctValueArea = 0.70m;      // convencion de Market Profile
+        public decimal FactorNodoAlto = 2.0m;     // veces el volumen promedio del perfil
+        public decimal FactorNodoBajo = 0.3m;
+        public decimal MinPctAbsorcion = 4.0m;    // % del volumen de la sesion
+        public decimal MaxRatioAbsorcion = 0.12m; // |delta| / volumen
+        public int MinutosIb = 60;                // Initial Balance
+
         /// <summary>
         /// Recalcula todo desde las velas. Se llama en barra nueva, no en cada
         /// tick: recorrer el footprint de cientos de barras es caro y el perfil
         /// no cambia de manera util entre dos ticks.
         /// </summary>
         public void Calcular(Func<int, IndicatorCandle> vela, int desde, int hasta,
-                             decimal tickSize, decimal pctValueArea = 0.70m)
+                             decimal tickSize)
         {
             Listo = false;
             if (desde < 0 || hasta < desde) return;
@@ -122,7 +131,7 @@ namespace PythiaGex
 
             // Initial Balance: primera hora. Se aproxima por tiempo real de las
             // velas, asi sirve igual en graficos de volumen o de rango.
-            var limite = Desde.AddHours(1);
+            var limite = Desde.AddMinutes(Math.Max(1, MinutosIb));
             decimal ibh = decimal.MinValue, ibl = decimal.MaxValue;
             for (int b = desde; b <= hasta; b++)
             {
@@ -159,7 +168,7 @@ namespace PythiaGex
             var poc = Nodos.OrderByDescending(x => x.Volumen).First();
             Poc = poc.Precio;
             int iPoc = Nodos.FindIndex(x => x.Precio == Poc);
-            decimal objetivo = VolumenTotal * pctValueArea, dentro = poc.Volumen;
+            decimal objetivo = VolumenTotal * PctValueArea, dentro = poc.Volumen;
             int a = iPoc, z = iPoc;
             while (dentro < objetivo && (a > 0 || z < Nodos.Count - 1))
             {
@@ -174,10 +183,10 @@ namespace PythiaGex
             // Nodos de alto y bajo volumen, relativos al promedio del perfil.
             // Los altos frenan, los bajos se cruzan rapido.
             var prom = VolumenTotal / Nodos.Count;
-            NodosAltos = Nodos.Where(x => x.Volumen >= prom * 2.0m)
+            NodosAltos = Nodos.Where(x => x.Volumen >= prom * FactorNodoAlto)
                               .OrderByDescending(x => x.Volumen).Take(8)
                               .Select(x => x.Precio).ToList();
-            NodosBajos = Nodos.Where(x => x.Volumen <= prom * 0.3m)
+            NodosBajos = Nodos.Where(x => x.Volumen <= prom * FactorNodoBajo)
                               .Select(x => x.Precio).ToList();
 
             Listo = true;
@@ -198,9 +207,9 @@ namespace PythiaGex
             z.PctVolumenSesion = VolumenTotal > 0 ? z.Volumen / VolumenTotal * 100m : 0;
             // Absorcion: mucho volumen concentrado y delta chico en relacion.
             // Alguien esta comiendo todo lo que le tiran sin mover el precio.
-            z.Absorcion = z.PctVolumenSesion >= 4m
+            z.Absorcion = z.PctVolumenSesion >= MinPctAbsorcion
                           && z.Volumen > 0
-                          && Math.Abs(z.Delta) / z.Volumen < 0.12m;
+                          && Math.Abs(z.Delta) / z.Volumen < MaxRatioAbsorcion;
             return z;
         }
 

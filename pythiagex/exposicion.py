@@ -43,6 +43,7 @@ def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None) -> dict:
 
     strikes, vencs, curva_src = {}, {}, []
     tot = dict(gex=0.0, gex_vol=0.0, dex=0.0, vex=0.0, chex=0.0, tex=0.0,
+               vgex=0.0,
                oi=0, oi_call=0, oi_put=0, vol=0, vol_call=0, vol_put=0)
 
     for o in d["options"]:
@@ -66,6 +67,7 @@ def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None) -> dict:
         g   = o.get("gamma") or 0.0
         dl  = o.get("delta") or 0.0
         th  = o.get("theta") or 0.0
+        vg  = o.get("vega") or 0.0
         iv  = o.get("iv") or 0.0
         sgn = 1 if cp == "C" else -1
         T   = max(dias, 0.02) / 365.0
@@ -77,6 +79,9 @@ def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None) -> dict:
         vex     = van * oi  * MULT_INDICE * S * sgn
         chex    = chm * oi  * MULT_INDICE * S * sgn
         tex     = th  * oi  * MULT_INDICE
+        # vega en dolares por cada punto de volatilidad implicita. CBOE
+        # publica vega por 1 punto (no por 1%), asi que no lleva division.
+        vgex    = vg  * oi  * MULT_INDICE
 
         s = strikes.setdefault(K, dict(
             strike=K, gex=0.0, gex_vol=0.0, gex_0dte=0.0, dex=0.0, vex=0.0,
@@ -100,7 +105,8 @@ def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None) -> dict:
         v["oi_call" if cp == "C" else "oi_put"] += oi
 
         for k_, val in (("gex", gex), ("gex_vol", gex_vol), ("dex", dex),
-                        ("vex", vex), ("chex", chex), ("tex", tex)):
+                        ("vex", vex), ("chex", chex), ("tex", tex),
+                        ("vgex", vgex)):
             tot[k_] += val
         tot["oi"] += oi; tot["vol"] += vol
         tot["oi_call" if cp == "C" else "oi_put"] += oi

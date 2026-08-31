@@ -163,7 +163,7 @@ def main():
       "expected_move": em,
       "totales": {"net_gex_B": B(T["gex"]), "net_gex_vol_B": B(T["gex_vol"]),
                   "net_dex_B": B(T["dex"]), "net_vex_B": B(T["vex"]),
-                  "net_chex_B": B(T["chex"]), "net_tex_M": M(T["tex"]),
+                  "net_chex_B": B(T["chex"]), "net_tex_M": M(T["tex"]), "net_vega_M": M(T["vgex"]),
                   "oi_total": int(T["oi"]), "oi_call": int(T["oi_call"]),
                   "oi_put": int(T["oi_put"]), "volumen": int(T["vol"]),
                   "put_call_oi": round(T["oi_put"]/T["oi_call"], 3) if T["oi_call"] else None},
@@ -208,6 +208,7 @@ def main():
 
     # tablero.py razona en millones, igual que el panel
     st_M = {k: {"gex": M(v["gex"]), "gex_0dte": M(v["gex_0dte"]),
+                "dex": M(v["dex"]), "vex": M(v["vex"]), "chex": M(v["chex"]),
                 "oi_call": int(v["oi_call"]), "oi_put": int(v["oi_put"]),
                 "vol_call": int(v["vol_call"]), "vol_put": int(v["vol_put"])}
             for k, v in st.items()}

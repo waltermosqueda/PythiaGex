@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 
 using ATAS.Indicators;
 using OFT.Rendering.Context;
+using OFT.Rendering.Control;
 using OFT.Rendering.Tools;
 
 namespace PythiaGex
@@ -43,7 +44,7 @@ namespace PythiaGex
         private sealed class Nivel
         {
             public string Tipo, Nombre, Criollo, Alias;
-            public double? Idx, Fut, GexM, Toque, OiC, OiP;
+            public double? Idx, Fut, GexM, Toque, OiC, OiP, DexM, VexM, ChexM;
             public bool Es0dte;
             public int Puntaje;
             public string Razones = "";
@@ -58,6 +59,17 @@ namespace PythiaGex
 
         private sealed class Escalon { public double Fut, GexB, Contratos; }
 
+        /// <summary>Las griegas agregadas del complejo y los flujos que se
+        /// derivan de ellas. Todo viene calculado del backend sobre la cadena;
+        /// aca no se estima ni se inventa nada.</summary>
+        private sealed class Griegas
+        {
+            public double? GexB, DexB, VexB, ChexB, TexM, VegaM, PutCallOi;
+            public double? DiasAlVencimiento, CharmPendienteB, CharmContratos;
+            public double? VannaPorPuntoIv, DexContratos, SkewPp, IvAtm;
+            public string SkewLectura = "", TermForma = "", TermLectura = "";
+        }
+
         private sealed class Datos
         {
             public string Indice = "", Contrato = "", Micro = "", Regimen = "", CadenaTs = "";
@@ -66,6 +78,7 @@ namespace PythiaGex
             public double? Base, BaseErrorTicks, SpotIndice, SpotFuturo;
             public double? NetGexB, Gex0dteB, ExpectedMove, TasaCorta, DividendoImplicito;
             public double? CoberturaContratos;
+            public Griegas G = new();
             public List<Nivel> Niveles = new();
             public List<Hueco> Huecos = new();
             public List<Escalon> Escalera = new();
@@ -87,6 +100,8 @@ namespace PythiaGex
         private TimeSpan _periodo = TimeSpan.FromSeconds(60);
         private Action _tick;
         private string _opcionesAtas = "sin probar";
+        private Rectangle _cabecera = Rectangle.Empty;
+        private bool _colapsado;
 
         private static HttpClient CrearCliente()
         {
@@ -127,6 +142,9 @@ namespace PythiaGex
 
         [Display(Name = "Banda de expected move", GroupName = "Niveles de gamma", Order = 45)]
         public bool VerExpectedMove { get; set; } = true;
+
+        [Display(Name = "Convexity ladder (cobertura por escalon)", GroupName = "Niveles de gamma", Order = 46)]
+        public bool VerEscalera { get; set; } = true;
 
         // ==================================================================
         // Ajustes - Contexto de ATAS
@@ -230,6 +248,9 @@ namespace PythiaGex
         [Display(Name = "Mostrar tablero", GroupName = "Tablero", Order = 90)]
         public bool VerTablero { get; set; } = true;
 
+        [Display(Name = "Cuanto muestra (un clic en el titulo lo pliega)", GroupName = "Tablero", Order = 91)]
+        public ModoTablero Modo { get; set; } = ModoTablero.Compacto;
+
         [Display(Name = "Esquina", GroupName = "Tablero", Order = 91)]
         public Esquina EsquinaTablero { get; set; } = Esquina.ArribaDerecha;
 
@@ -244,6 +265,38 @@ namespace PythiaGex
 
         [Display(Name = "Incluir diagnostico", GroupName = "Tablero", Order = 95)]
         public bool TableroDiagnostico { get; set; } = false;
+
+        [Display(Name = "Ancho minimo del tablero (px)", GroupName = "Tablero", Order = 96)]
+        public int AnchoTablero { get; set; } = 250;
+
+        [Display(Name = "Interlineado (px)", GroupName = "Tablero", Order = 97)]
+        public int Interlineado { get; set; } = 3;
+
+        // ---- Umbrales. Ninguno es una ley de mercado: son cortes elegidos.
+        // Por eso estan aca, editables, y no escondidos adentro del codigo.
+        [Display(Name = "Area de valor (% del volumen)", GroupName = "Umbrales", Order = 200)]
+        public double PctValueArea { get; set; } = 70;
+
+        [Display(Name = "Nodo alto: veces el volumen promedio", GroupName = "Umbrales", Order = 201)]
+        public double FactorNodoAlto { get; set; } = 2.0;
+
+        [Display(Name = "Nodo bajo: veces el volumen promedio", GroupName = "Umbrales", Order = 202)]
+        public double FactorNodoBajo { get; set; } = 0.3;
+
+        [Display(Name = "Absorcion: minimo % del volumen de la sesion", GroupName = "Umbrales", Order = 203)]
+        public double MinPctAbsorcion { get; set; } = 4.0;
+
+        [Display(Name = "Absorcion: maximo |delta| / volumen", GroupName = "Umbrales", Order = 204)]
+        public double MaxRatioAbsorcion { get; set; } = 0.12;
+
+        [Display(Name = "Initial Balance (minutos)", GroupName = "Umbrales", Order = 205)]
+        public int MinutosIb { get; set; } = 60;
+
+        [Display(Name = "Segundos entre recalculos del contexto", GroupName = "Umbrales", Order = 206)]
+        public int SegundosContexto { get; set; } = 5;
+
+        [Display(Name = "Segundos de espera entre alertas", GroupName = "Umbrales", Order = 207)]
+        public int SegundosEntreAlertas { get; set; } = 20;
 
         // ==================================================================
         // Ajustes - Alertas
@@ -319,6 +372,18 @@ namespace PythiaGex
         }
 
         protected override void OnCalculate(int bar, decimal value) { }
+
+        /// <summary>Un clic en el titulo del tablero lo pliega o lo despliega.
+        /// Devolver true evita que el clic siga hasta el grafico, asi no
+        /// dispara nada del lienzo por accidente.</summary>
+        public override bool ProcessMouseClick(RenderControlMouseEventArgs e)
+        {
+            if (!VerTablero || _cabecera == Rectangle.Empty) return false;
+            if (!_cabecera.Contains(e.X, e.Y)) return false;
+            _colapsado = !_colapsado;
+            try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
+            return true;
+        }
 
         /// <summary>
         /// Pregunta si un indicador puede llegar al feed de opciones de ATAS.
@@ -409,6 +474,24 @@ namespace PythiaGex
                     DividendoImplicito = Num(r, "dividendo_implicito"),
                     CoberturaContratos = Num(r, "cobertura_contratos"),
                 };
+                if (r.TryGetProperty("griegas", out var gr) && gr.ValueKind == JsonValueKind.Object)
+                    d.G = new Griegas
+                    {
+                        GexB = Num(gr, "gex_B"), DexB = Num(gr, "dex_B"),
+                        VexB = Num(gr, "vex_B"), ChexB = Num(gr, "chex_B"),
+                        TexM = Num(gr, "tex_M"), VegaM = Num(gr, "vega_M"),
+                        PutCallOi = Num(gr, "put_call_oi"),
+                        DiasAlVencimiento = Num(gr, "dias_al_vencimiento"),
+                        CharmPendienteB = Num(gr, "charm_pendiente_B"),
+                        CharmContratos = Num(gr, "charm_pendiente_contratos"),
+                        VannaPorPuntoIv = Num(gr, "vanna_contratos_por_punto_iv"),
+                        DexContratos = Num(gr, "dex_contratos"),
+                        SkewPp = Num(gr, "skew_pp"), IvAtm = Num(gr, "iv_atm"),
+                        SkewLectura = Txt(gr, "skew_lectura"),
+                        TermForma = Txt(gr, "term_forma"),
+                        TermLectura = Txt(gr, "term_lectura"),
+                    };
+
                 if (r.TryGetProperty("niveles", out var ns) && ns.ValueKind == JsonValueKind.Array)
                     foreach (var n in ns.EnumerateArray())
                         d.Niveles.Add(new Nivel
@@ -416,6 +499,7 @@ namespace PythiaGex
                             Tipo = Txt(n, "tipo"), Nombre = Txt(n, "nombre"),
                             Criollo = Txt(n, "criollo"), Alias = Txt(n, "alias"),
                             Idx = Num(n, "idx"), Fut = Num(n, "fut"), GexM = Num(n, "gex_M"),
+                            DexM = Num(n, "dex_M"), VexM = Num(n, "vex_M"), ChexM = Num(n, "chex_M"),
                             OiC = Num(n, "oi_c"), OiP = Num(n, "oi_p"), Toque = Num(n, "toque"),
                             Es0dte = Bol(n, "es0dte"),
                         });
@@ -549,7 +633,8 @@ namespace PythiaGex
         {
             if (CurrentBar < 2) return;
             var ultima = CurrentBar - 1;
-            if (ultima == _ultimaBarraCtx && _relojCtx.ElapsedMilliseconds < 5000) return;
+            if (ultima == _ultimaBarraCtx
+                && _relojCtx.ElapsedMilliseconds < Math.Max(1, SegundosContexto) * 1000) return;
             _ultimaBarraCtx = ultima;
             _relojCtx.Restart();
 
@@ -565,6 +650,12 @@ namespace PythiaGex
                     if (IsNewSession(b)) { desde = b; break; }
             }
             var ts = InstrumentInfo != null ? InstrumentInfo.TickSize : 0.25m;
+            _ctx.PctValueArea = (decimal)Math.Max(10, Math.Min(95, PctValueArea)) / 100m;
+            _ctx.FactorNodoAlto = (decimal)Math.Max(1.1, FactorNodoAlto);
+            _ctx.FactorNodoBajo = (decimal)Math.Max(0.01, Math.Min(0.9, FactorNodoBajo));
+            _ctx.MinPctAbsorcion = (decimal)Math.Max(0.1, MinPctAbsorcion);
+            _ctx.MaxRatioAbsorcion = (decimal)Math.Max(0.01, MaxRatioAbsorcion);
+            _ctx.MinutosIb = Math.Max(1, MinutosIb);
             try { _ctx.Calcular(GetCandle, desde, ultima, ts); } catch { }
         }
 
@@ -846,7 +937,7 @@ namespace PythiaGex
             var ticks = Math.Abs(p - precio) / tick;
             var clave = n.Tipo + p.ToString("0.00", CultureInfo.InvariantCulture);
             if (ticks <= AlertaTicks && !_alertados.Contains(clave)
-                && (DateTime.UtcNow - _ultimaAlerta).TotalSeconds > 20)
+                && (DateTime.UtcNow - _ultimaAlerta).TotalSeconds > Math.Max(1, SegundosEntreAlertas))
             {
                 _alertados.Add(clave);
                 _ultimaAlerta = DateTime.UtcNow;
@@ -863,120 +954,267 @@ namespace PythiaGex
             else if (ticks > AlertaTicks * 2) _alertados.Remove(clave);
         }
 
+        // ==================================================================
+        // Tablero: dos columnas, plegable, y nada que no se pueda auditar
+        // ==================================================================
+        private sealed class Fila
+        {
+            public string Etq = "", Val = "";
+            public Color Col;
+            public bool Bold;
+            public bool Titulo;
+            public Fila(string e, string v, Color c, bool b = false, bool t = false)
+            { Etq = e; Val = v; Col = c; Bold = b; Titulo = t; }
+        }
+
         private void DibujarTablero(RenderContext g, Rectangle area, Datos d, decimal precio,
                                     decimal tick, RenderFont f, RenderFont fb)
         {
-            var L = new List<Tuple<string, Color, bool>>();
-            void Add(string t, Color c, bool b) => L.Add(Tuple.Create(t, c, b));
-
             var vivo = precio > 0 ? EnVivo(d, (double)precio) : null;
             var gexB = vivo.HasValue ? vivo.Value.gexB : (d.NetGexB ?? 0);
             var contratos = vivo.HasValue ? vivo.Value.contratos : (d.CoberturaContratos ?? 0);
             var pos = gexB >= 0;
             var raiz = d.Contrato.Length >= 2 ? d.Contrato.Substring(0, d.Contrato.Length - 2) : "ES";
+            var G = d.G;
 
-            Add(d.Indice + "  ->  " + d.Contrato + (d.Micro == "" ? "" : " / " + d.Micro), ColTexto, true);
-            Add((pos ? "LONG GAMMA - amortigua" : "SHORT GAMMA - amplifica") + "   "
-                + gexB.ToString("+0.0;-0.0", CultureInfo.InvariantCulture) + " B",
-                pos ? ColTecho : ColPiso, true);
-            Add("Cobertura por 1%: " + Miles(Math.Abs(contratos)) + " " + raiz
-                + "  (" + (pos ? "compra en la baja" : "vende en la baja") + ")",
-                pos ? ColTecho : ColPiso, false);
-            if (vivo.HasValue)
-                Add("   interpolado al precio de ahora, no al de la cadena",
-                    Color.FromArgb(150, 160, 175), false);
-            if (d.Gex0dteB != null)
-                Add("GEX del vencimiento de hoy: "
-                    + d.Gex0dteB.Value.ToString("+0.00;-0.00", CultureInfo.InvariantCulture) + " B",
-                    d.Gex0dteB >= 0 ? ColTecho : ColPiso, false);
+            // ---- cabecera: siempre visible, y es el boton que pliega
+            var flecha = _colapsado ? "+" : "-";
+            var titulo = "[" + flecha + "] " + d.Indice + " " + d.Contrato;
+            var resumen = (pos ? "LONG" : "SHORT") + " "
+                        + gexB.ToString("+0.0;-0.0", CultureInfo.InvariantCulture) + "B  "
+                        + Miles(Math.Abs(contratos)) + " " + raiz;
 
-            if (TableroContexto && _ctx.Listo)
+            var L = new List<Fila>();
+            bool completo = Modo == ModoTablero.Completo;
+            bool compacto = Modo != ModoTablero.Colapsado;
+
+            if (!_colapsado && compacto)
             {
-                Add("", ColTexto, false);
-                Add("CONTEXTO ATAS  (" + _ctx.BarrasUsadas + " barras, "
-                    + Kilo(_ctx.VolumenSesion) + " de volumen)", ColTexto, true);
-                Add("POC " + _ctx.Poc.ToString("0.00", CultureInfo.InvariantCulture)
-                    + "   VAH " + _ctx.Vah.ToString("0.00", CultureInfo.InvariantCulture)
-                    + "   VAL " + _ctx.Val.ToString("0.00", CultureInfo.InvariantCulture), ColPoc, false);
-                Add("VWAP " + _ctx.Vwap.ToString("0.00", CultureInfo.InvariantCulture)
-                    + "   1 sigma = " + _ctx.Sigma.ToString("0.0", CultureInfo.InvariantCulture) + " pts",
-                    ColVwap, false);
-                var dl = _ctx.DeltaAcumulado;
-                Add("Delta acumulado " + (dl >= 0 ? "+" : "") + Kilo(dl)
-                    + "   (max " + Kilo(_ctx.DeltaMaximo) + " / min " + Kilo(_ctx.DeltaMinimo) + ")",
-                    dl >= 0 ? ColTecho : ColPiso, false);
-                if (precio > 0)
+                L.Add(new Fila(pos ? "Regimen" : "Regimen",
+                               (pos ? "LONG GAMMA, amortigua" : "SHORT GAMMA, amplifica"),
+                               pos ? ColTecho : ColPiso, true));
+                L.Add(new Fila("Net GEX",
+                               gexB.ToString("+0.00;-0.00", CultureInfo.InvariantCulture) + " B"
+                               + (vivo.HasValue ? "  (al precio de ahora)" : ""),
+                               pos ? ColTecho : ColPiso));
+                L.Add(new Fila("Cobertura por 1%",
+                               Miles(Math.Abs(contratos)) + " " + raiz + "  "
+                               + (pos ? "compra en la baja" : "vende en la baja"),
+                               pos ? ColTecho : ColPiso));
+
+                // --- charm: el motor del arrastre de la tarde
+                if (G.CharmContratos.HasValue && G.DiasAlVencimiento.HasValue)
+                    L.Add(new Fila("Charm pendiente",
+                                   Miles(Math.Abs(G.CharmContratos.Value)) + " " + raiz + "  "
+                                   + (G.CharmContratos.Value < 0 ? "a comprar" : "a vender")
+                                   + " en " + G.DiasAlVencimiento.Value.ToString("0.00", CultureInfo.InvariantCulture) + " d",
+                                   G.CharmContratos.Value < 0 ? ColTecho : ColPiso));
+                if (G.VannaPorPuntoIv.HasValue)
+                    L.Add(new Fila("Vanna por 1% IV",
+                                   Miles(Math.Abs(G.VannaPorPuntoIv.Value)) + " " + raiz,
+                                   Color.FromArgb(170, 180, 195)));
+                if (d.Gex0dteB.HasValue)
+                    L.Add(new Fila("GEX 0DTE",
+                                   d.Gex0dteB.Value.ToString("+0.00;-0.00", CultureInfo.InvariantCulture) + " B",
+                                   d.Gex0dteB >= 0 ? ColTecho : ColPiso));
+
+                if (completo)
                 {
-                    var rel = precio > _ctx.Vah ? "arriba del area de valor"
-                            : precio < _ctx.Val ? "abajo del area de valor"
-                                                : "dentro del area de valor";
-                    Add("El precio esta " + rel, Color.FromArgb(170, 180, 195), false);
+                    L.Add(new Fila("GRIEGAS DEL COMPLEJO", "", ColTexto, true, true));
+                    if (G.DexB.HasValue)
+                        L.Add(new Fila("Net DEX", nfB(G.DexB) + "  ("
+                                       + (G.DexContratos.HasValue ? Miles(Math.Abs(G.DexContratos.Value)) + " " + raiz : "-")
+                                       + ")", G.DexB >= 0 ? ColTecho : ColPiso));
+                    if (G.VexB.HasValue)
+                        L.Add(new Fila("Net VEX (vanna)", nfB(G.VexB) + " por 1% de IV",
+                                       G.VexB >= 0 ? ColTecho : ColPiso));
+                    if (G.ChexB.HasValue)
+                        L.Add(new Fila("Net CHEX (charm)", nfB(G.ChexB) + " por dia",
+                                       G.ChexB >= 0 ? ColTecho : ColPiso));
+                    if (G.TexM.HasValue)
+                        L.Add(new Fila("Net TEX (theta)", Miles(G.TexM.Value) + " M",
+                                       G.TexM >= 0 ? ColTecho : ColPiso));
+                    if (G.VegaM.HasValue)
+                        L.Add(new Fila("Net Vega", Miles(G.VegaM.Value) + " M por punto de IV",
+                                       Color.FromArgb(170, 180, 195)));
+                    if (G.IvAtm.HasValue)
+                        L.Add(new Fila("IV at-the-money",
+                                       (G.IvAtm.Value * 100).ToString("0.0", CultureInfo.InvariantCulture) + "%",
+                                       Color.FromArgb(170, 180, 195)));
+                    if (G.SkewPp.HasValue)
+                        L.Add(new Fila("Skew",
+                                       G.SkewPp.Value.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)
+                                       + " pp  " + Recortar(G.SkewLectura, 42),
+                                       G.SkewPp > 0 ? ColPiso : ColTecho));
+                    if (!string.IsNullOrEmpty(G.TermForma))
+                        L.Add(new Fila("Term structure", G.TermForma + "  " + Recortar(G.TermLectura, 42),
+                                       Color.FromArgb(170, 180, 195)));
+                    if (G.PutCallOi.HasValue)
+                        L.Add(new Fila("Put / Call OI",
+                                       G.PutCallOi.Value.ToString("0.00", CultureInfo.InvariantCulture),
+                                       G.PutCallOi > 1 ? ColPiso : ColTecho));
+                }
+
+                // --- contexto de ATAS
+                if (TableroContexto && _ctx.Listo)
+                {
+                    L.Add(new Fila("CONTEXTO ATAS",
+                                   _ctx.BarrasUsadas + " barras / " + Kilo(_ctx.VolumenSesion) + " vol",
+                                   ColTexto, true, true));
+                    L.Add(new Fila("POC", _ctx.Poc.ToString("0.00", CultureInfo.InvariantCulture), ColPoc));
+                    L.Add(new Fila("Area de valor",
+                                   _ctx.Val.ToString("0.00", CultureInfo.InvariantCulture) + "  a  "
+                                   + _ctx.Vah.ToString("0.00", CultureInfo.InvariantCulture)
+                                   + "   (" + PctValueArea.ToString("0", CultureInfo.InvariantCulture) + "%)", ColVa));
+                    L.Add(new Fila("VWAP", _ctx.Vwap.ToString("0.00", CultureInfo.InvariantCulture)
+                                   + "   1 sigma " + _ctx.Sigma.ToString("0.0", CultureInfo.InvariantCulture) + " pts",
+                                   ColVwap));
+                    var dl = _ctx.DeltaAcumulado;
+                    L.Add(new Fila("Delta acumulado", (dl >= 0 ? "+" : "") + Kilo(dl)
+                                   + "   (max " + Kilo(_ctx.DeltaMaximo) + " / min " + Kilo(_ctx.DeltaMinimo) + ")",
+                                   dl >= 0 ? ColTecho : ColPiso));
+                    if (precio > 0)
+                        L.Add(new Fila("El precio esta",
+                                       precio > _ctx.Vah ? "arriba del area de valor"
+                                       : precio < _ctx.Val ? "abajo del area de valor"
+                                                           : "dentro del area de valor",
+                                       Color.FromArgb(170, 180, 195)));
+                    if (completo)
+                    {
+                        L.Add(new Fila("Initial Balance",
+                                       _ctx.IbBajo.ToString("0.00", CultureInfo.InvariantCulture) + "  a  "
+                                       + _ctx.IbAlto.ToString("0.00", CultureInfo.InvariantCulture)
+                                       + "   (" + MinutosIb + " min)", Color.FromArgb(150, 160, 175)));
+                        L.Add(new Fila("Rango del dia",
+                                       _ctx.Minimo.ToString("0.00", CultureInfo.InvariantCulture) + "  a  "
+                                       + _ctx.Maximo.ToString("0.00", CultureInfo.InvariantCulture),
+                                       Color.FromArgb(150, 160, 175)));
+                    }
+                }
+
+                // --- confluencia
+                var conf = d.Niveles.Where(n => n.Puntaje >= Math.Max(1, PuntajeResaltar))
+                                    .OrderByDescending(n => n.Puntaje).ToList();
+                if (VerConfluencia && conf.Count > 0)
+                {
+                    L.Add(new Fila("CONFLUENCIA", conf.Count + " nivel(es)", ColTexto, true, true));
+                    foreach (var n in conf.Take(completo ? 6 : 3))
+                        L.Add(new Fila("x" + n.Puntaje + "  " + n.Nombre,
+                                       (n.Fut ?? 0).ToString("0.00", CultureInfo.InvariantCulture)
+                                       + "   " + Recortar(n.Razones, 46), ColorDe(n)));
+                }
+
+                // --- procedencia del dato, siempre
+                L.Add(new Fila("PROCEDENCIA", "", ColTexto, true, true));
+                if (d.Base.HasValue)
+                    L.Add(new Fila("Base " + d.Contrato + " - " + d.Indice,
+                                   d.Base.Value.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)
+                                   + (d.BaseConfiable ? "   firme"
+                                      : "   FLOJA, " + (d.BaseErrorTicks ?? 0).ToString("0.#", CultureInfo.InvariantCulture)
+                                        + " ticks de error"),
+                                   d.BaseConfiable ? Color.FromArgb(170, 180, 195) : ColPiso, !d.BaseConfiable));
+                if (completo && d.TasaCorta.HasValue)
+                    L.Add(new Fila("Tasa / dividendo",
+                                   (d.TasaCorta.Value * 100).ToString("0.00", CultureInfo.InvariantCulture) + "%  /  "
+                                   + ((d.DividendoImplicito ?? 0) * 100).ToString("0.00", CultureInfo.InvariantCulture)
+                                   + "%   medidos", Color.FromArgb(130, 140, 155)));
+                var colEdad = d.CadenaMuyVencida ? ColPiso : d.CadenaVencida ? ColIman
+                            : Color.FromArgb(140, 150, 165);
+                L.Add(new Fila("Cadena CBOE", d.CadenaTs + "   " + d.EdadMin + " min", colEdad, d.CadenaVencida));
+                if (d.CadenaMuyVencida)
+                    L.Add(new Fila("", "CBOE no refresca hace " + (d.EdadMin / 60)
+                                   + " horas. NO OPERES CON ESTO.", ColPiso, true));
+                else if (d.CadenaVencida)
+                    L.Add(new Fila("", "Sirve para ubicar niveles, no para cronometrar la entrada.",
+                                   ColIman));
+                if (d.IndiceAtrasado)
+                    L.Add(new Fila("Contado implicito",
+                                   (d.SpotIndice ?? 0).ToString("0.00", CultureInfo.InvariantCulture)
+                                   + "   (el " + d.Indice + " publicado esta congelado)",
+                                   Color.FromArgb(150, 160, 175)));
+                if (!string.IsNullOrEmpty(_error))
+                    L.Add(new Fila("Ultima descarga", "fallo: " + _error, ColPiso));
+                if (TableroDiagnostico)
+                {
+                    L.Add(new Fila("DIAGNOSTICO", "", ColTexto, true, true));
+                    L.Add(new Fila("Feed de opciones", _opcionesAtas, Color.FromArgb(130, 140, 155)));
+                    L.Add(new Fila("Umbrales",
+                                   "VA " + PctValueArea.ToString("0", CultureInfo.InvariantCulture)
+                                   + "%  nodo x" + FactorNodoAlto.ToString("0.0", CultureInfo.InvariantCulture)
+                                   + "  absorcion " + MinPctAbsorcion.ToString("0.#", CultureInfo.InvariantCulture)
+                                   + "% / " + MaxRatioAbsorcion.ToString("0.00", CultureInfo.InvariantCulture)
+                                   + "  tol " + ToleranciaTicks + " tk",
+                                   Color.FromArgb(130, 140, 155)));
                 }
             }
 
-            if (VerConfluencia && d.Niveles.Any(n => n.Puntaje >= Math.Max(1, PuntajeResaltar)))
-            {
-                Add("", ColTexto, false);
-                Add("CONFLUENCIA", ColTexto, true);
-                foreach (var n in d.Niveles.Where(n => n.Puntaje >= Math.Max(1, PuntajeResaltar))
-                                           .OrderByDescending(n => n.Puntaje).Take(4))
-                    Add("x" + n.Puntaje + "  " + n.Nombre + " "
-                        + (n.Fut ?? 0).ToString("0.00", CultureInfo.InvariantCulture)
-                        + "  -  " + n.Razones, ColorDe(n), false);
-            }
-
-            Add("", ColTexto, false);
-            if (d.Base != null)
-                Add("Base " + d.Contrato + " - " + d.Indice + " "
-                    + d.Base.Value.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)
-                    + (d.BaseConfiable ? "  (firme)"
-                       : "  (FLOJA: " + (d.BaseErrorTicks ?? 0).ToString("0.#", CultureInfo.InvariantCulture)
-                         + " ticks - no dibujes estos niveles)"),
-                    d.BaseConfiable ? Color.FromArgb(170, 180, 195) : ColPiso, !d.BaseConfiable);
-            if (d.TasaCorta != null)
-                Add("Tasa " + (d.TasaCorta.Value * 100).ToString("0.00", CultureInfo.InvariantCulture)
-                    + "%   dividendo implicito "
-                    + ((d.DividendoImplicito ?? 0) * 100).ToString("0.00", CultureInfo.InvariantCulture) + "%",
-                    Color.FromArgb(130, 140, 155), false);
-
-            var colEdad = d.CadenaMuyVencida ? ColPiso : d.CadenaVencida ? ColIman
-                        : Color.FromArgb(140, 150, 165);
-            Add("Cadena CBOE " + d.CadenaTs + "  (" + d.EdadMin + " min)", colEdad, d.CadenaVencida);
-            if (d.CadenaMuyVencida)
-                Add("CBOE no refresca hace " + (d.EdadMin / 60) + " horas. NO OPERES CON ESTO.", ColPiso, true);
-            else if (d.CadenaVencida)
-                Add("Sirve para ubicar niveles, no para cronometrar la entrada.", ColIman, false);
-            if (d.IndiceAtrasado)
-                Add("El " + d.Indice + " publicado esta congelado; se usa el contado implicito "
-                    + (d.SpotIndice ?? 0).ToString("0.00", CultureInfo.InvariantCulture),
-                    Color.FromArgb(150, 160, 175), false);
-            if (!string.IsNullOrEmpty(_error))
-                Add("Ultima descarga fallo: " + _error, ColPiso, false);
-            if (TableroDiagnostico)
-                Add("Feed de opciones de ATAS: " + _opcionesAtas, Color.FromArgb(130, 140, 155), false);
-
-            int w2 = 0, h = 8;
+            // ---- medidas
+            var altoFila = g.MeasureString("X", f).Height + Math.Max(0, Interlineado);
+            var altoTit = g.MeasureString("X", fb).Height + Math.Max(0, Interlineado);
+            int anchoEtq = 0, anchoVal = 0;
             foreach (var it in L)
             {
-                var t = g.MeasureString(it.Item1.Length == 0 ? " " : it.Item1, it.Item3 ? fb : f);
-                w2 = Math.Max(w2, t.Width); h += t.Height + 2;
+                var ff = it.Bold ? fb : f;
+                anchoEtq = Math.Max(anchoEtq, g.MeasureString(it.Etq, ff).Width);
+                anchoVal = Math.Max(anchoVal, g.MeasureString(it.Val, ff).Width);
             }
-            w2 += 18;
+            var anchoCab = g.MeasureString(titulo + "   " + resumen, fb).Width;
+            var w = Math.Max(Math.Max(AnchoTablero, anchoCab + 20), anchoEtq + anchoVal + 34);
+            var hCab = altoTit + 6;
+            var h = hCab + (L.Count == 0 ? 0 : L.Count * altoFila + 6);
+
             int cx = (EsquinaTablero == Esquina.ArribaIzquierda || EsquinaTablero == Esquina.AbajoIzquierda)
-                     ? area.Left + 8 : area.Right - w2 - 10;
+                     ? area.Left + 8 : area.Right - w - 10;
             int cy = (EsquinaTablero == Esquina.ArribaDerecha || EsquinaTablero == Esquina.ArribaIzquierda)
                      ? area.Top + 8 : area.Bottom - h - 10;
-            var caja = new Rectangle(cx, cy, w2, h);
-            g.FillRectangle(Color.FromArgb(Math.Max(0, Math.Min(255, OpacidadTablero)), ColFondo), caja);
+            var caja = new Rectangle(cx, cy, w, h);
+            var op = Math.Max(0, Math.Min(255, OpacidadTablero));
+            g.FillRectangle(Color.FromArgb(op, ColFondo), caja);
             g.DrawRectangle(new RenderPen(Color.FromArgb(90, 120, 130, 145), 1), caja);
 
-            var y = caja.Top + 4;
+            // cabecera: fondo propio para que se vea que es un boton
+            _cabecera = new Rectangle(cx, cy, w, hCab);
+            g.FillRectangle(Color.FromArgb(Math.Min(255, op + 25), pos ? ColTecho : ColPiso),
+                            new Rectangle(cx, cy, 3, hCab));
+            g.DrawString(titulo, fb, ColTexto, cx + 9, cy + 3);
+            var wRes = g.MeasureString(resumen, fb).Width;
+            g.DrawString(resumen, fb, pos ? ColTecho : ColPiso, cx + w - wRes - 9, cy + 3);
+            g.DrawLine(new RenderPen(Color.FromArgb(70, 120, 130, 145), 1),
+                       cx + 1, cy + hCab, cx + w - 1, cy + hCab);
+
+            // filas
+            var y = cy + hCab + 3;
             foreach (var it in L)
             {
-                var ff = it.Item3 ? fb : f;
-                if (it.Item1.Length > 0) g.DrawString(it.Item1, ff, it.Item2, caja.Left + 9, y);
-                y += g.MeasureString(it.Item1.Length == 0 ? " " : it.Item1, ff).Height + 2;
+                var ff = it.Bold ? fb : f;
+                if (it.Titulo)
+                {
+                    g.DrawLine(new RenderPen(Color.FromArgb(45, 120, 130, 145), 1),
+                               cx + 9, y + altoFila / 2, cx + w - 9, y + altoFila / 2);
+                    var wt = g.MeasureString(it.Etq, ff).Width;
+                    g.FillRectangle(Color.FromArgb(op, ColFondo),
+                                    new Rectangle(cx + 7, y, wt + 6, altoFila));
+                    g.DrawString(it.Etq, ff, Color.FromArgb(190, ColTexto), cx + 9, y);
+                    if (it.Val.Length > 0)
+                    {
+                        var wv = g.MeasureString(it.Val, ff).Width;
+                        g.FillRectangle(Color.FromArgb(op, ColFondo),
+                                        new Rectangle(cx + w - wv - 12, y, wv + 6, altoFila));
+                        g.DrawString(it.Val, ff, Color.FromArgb(140, ColTexto), cx + w - wv - 9, y);
+                    }
+                }
+                else
+                {
+                    if (it.Etq.Length > 0)
+                        g.DrawString(it.Etq, ff, Color.FromArgb(165, ColTexto), cx + 9, y);
+                    var wv = g.MeasureString(it.Val, ff).Width;
+                    g.DrawString(it.Val, ff, it.Col, cx + w - wv - 9, y);
+                }
+                y += altoFila;
             }
         }
+
+        private static string nfB(double? v)
+            => v.HasValue ? v.Value.ToString("+0.00;-0.00", CultureInfo.InvariantCulture) + " B" : "-";
     }
 }

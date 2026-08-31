@@ -29,6 +29,13 @@ namespace PythiaGex
         [Description("Abajo a la izquierda")] AbajoIzquierda,
     }
 
+    public enum ModoTablero
+    {
+        [Description("Colapsado: una sola linea")] Colapsado,
+        [Description("Compacto: lo esencial")] Compacto,
+        [Description("Completo: todo")] Completo,
+    }
+
     public enum LadoPerfil
     {
         [Description("Apagado")] Apagado,
