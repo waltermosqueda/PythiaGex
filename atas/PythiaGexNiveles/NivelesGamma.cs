@@ -329,8 +329,14 @@ namespace PythiaGex
         [Display(Name = "Valor en el indice", GroupName = "Etiqueta del nivel", Order = 308)]
         public bool CampoIndice { get; set; } = false;
 
-        [Display(Name = "Mostrar el detalle del nivel", GroupName = "Etiqueta del nivel", Order = 312)]
-        public bool VerDetalle { get; set; } = true;
+        // Se renombra a proposito. La propiedad vieja se llamaba VerDetalle y
+        // describia otra cosa: una linea larga de ciento cincuenta caracteres
+        // que por molesta terminaba apagada. Ahora es el segundo renglon del
+        // chip. Al cambiar el nombre, ATAS no encuentra el valor guardado y
+        // arranca con el default, que es lo que corresponde para algo que ya
+        // no es lo mismo.
+        [Display(Name = "Segundo renglon del chip", GroupName = "Etiqueta del nivel", Order = 312)]
+        public bool VerLinea2 { get; set; } = true;
 
         [Display(Name = "Caja detras de la etiqueta", GroupName = "Estilo", Order = 76)]
         public bool CajaEtiqueta { get; set; } = true;
@@ -1313,7 +1319,7 @@ namespace PythiaGex
                     titulo = p.ToString("0.00", CultureInfo.InvariantCulture);
                     detalle = "";
                 }
-                var verDet = VerDetalle && detalle.Length > 0;
+                var verDet = VerLinea2 && detalle.Length > 0;
 
                 var salto = Math.Max(14, (int)(TamTitulo * 2.6f));
                 var yl = y - 15;
