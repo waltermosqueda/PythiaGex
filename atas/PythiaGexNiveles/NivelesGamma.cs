@@ -1316,11 +1316,28 @@ namespace PythiaGex
             // El archivo se escribe fuera del hilo del dibujo. Son cuatro
             // kilobytes cada cinco minutos, pero el grafico no tiene por que
             // esperar a un disco.
+            // El recorrido completo desde la anotacion anterior, no solo el
+            // precio de este instante. Se saca de las velas, que es exacto:
+            // llevar un maximo y un minimo en OnRender fallaria justo cuando
+            // el grafico no se esta dibujando.
+            decimal mx = precio, mn = precio;
+            var desdeCuando = _bit.UltimaUtc;
+            for (int b2 = CurrentBar - 1; b2 >= 0 && b2 > CurrentBar - 600; b2--)
+            {
+                IndicatorCandle c;
+                try { c = GetCandle(b2); } catch { break; }
+                if (c == null) continue;
+                if (desdeCuando != DateTime.MinValue && c.LastTime.ToUniversalTime() < desdeCuando) break;
+                if (c.High > mx) mx = c.High;
+                if (c.Low < mn) mn = c.Low;
+            }
+
             var inst = InstrumentInfo != null ? InstrumentInfo.Instrument : "";
             var pd = (double)precio; var td = (double)tick;
+            var mxd = (double)mx; var mnd = (double)mn;
             var virgen = _pocPrevioVirgen;
             System.Threading.Tasks.Task.Run(() =>
-                _bit.Anotar(inst, pd, td, _ctx, _ctxPrev, _ctxSem, virgen, lista));
+                _bit.Anotar(inst, pd, td, mxd, mnd, _ctx, _ctxPrev, _ctxSem, virgen, lista));
         }
 
         // ==================================================================

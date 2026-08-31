@@ -63,6 +63,7 @@ TOCAR_TK = 2         # a dos ticks del nivel se considera tocado
 ROMPER_TK = 12       # pasarlo por doce ticks es romperlo, no tantearlo
 AGUANTAR_TK = 16     # alejarse dieciseis ticks sin romperlo es que aguanto
 MIN_CASOS = 12       # abajo de esto no se saca ninguna conclusion
+HORIZONTE = 60       # minutos que se le dan al nivel para resolverse
 MIN_SEPARACION = 0.0 # los intervalos no se pueden tocar para llamarlo hallazgo
 
 
@@ -213,10 +214,47 @@ def leer_precio(sym, fecha, base):
     for v in velas:
         if v.get("h") is None or v.get("l") is None:
             continue
-        salida.append({"t": v.get("t"),
+        # Todo el centinela trabaja en UTC. Mezclar husos fue el error que
+        # dejaba una anotacion de las 03:00 UTC ordenada DESPUES del cierre,
+        # porque en hora de Nueva York son las 23:00 del dia anterior.
+        salida.append({"t": _ny_a_utc(v.get("t") or "", fecha),
                        "alto": v["h"] + base, "bajo": v["l"] + base,
                        "cierre": (v.get("c") or 0) + base})
+
+    # CBOE solo publica el SPX al contado en horario de Nueva York. De noche
+    # —Asia, Londres— no hay ni una vela, y sin camino del precio el centinela
+    # no puede juzgar nada de lo que promete el indicador en esas horas.
+    #
+    # El indicador SI ve el precio las 24 horas: es futuro, opera casi
+    # siempre. Cada anotacion de la bitacora trae el maximo y el minimo del
+    # tramo, asi que rellena los huecos sin inventar nada.
+    salida.extend(_tramos_de_atas(fecha, {v["t"] for v in salida if v.get("t")}))
+    salida.sort(key=lambda v: v["t"] or "")
     return salida
+
+
+def _tramos_de_atas(fecha, horas_ya):
+    """Los tramos que anoto ATAS y que CBOE no cubre.
+
+    Vienen en precio de futuro, que es en el que el indicador publica los
+    niveles, asi que no hay que convertir nada. Se saltean las horas que CBOE
+    ya cubrio: donde hay vela de un minuto, esa manda, porque es mas fina.
+    """
+    fuera = []
+    for c in leer_contexto(fecha):
+        t = c.get("t") or ""
+        if len(t) < 16:
+            continue
+        hhmm = t[11:16]                    # ya viene en UTC
+        if hhmm in horas_ya:
+            continue
+        alto = c.get("maximo") or c.get("precio")
+        bajo = c.get("minimo") or c.get("precio")
+        if alto is None or bajo is None:
+            continue
+        fuera.append({"t": hhmm, "alto": alto, "bajo": bajo,
+                      "cierre": c.get("precio"), "de_atas": True})
+    return fuera
 
 
 def observar(sym, fecha):
@@ -247,7 +285,8 @@ def observar(sym, fecha):
             continue
         hora = f.get("t", "")[11:16]
         # las velas que faltan desde esta foto hasta el cierre
-        restantes = [v for v in velas if v["t"] and v["t"] >= _hora_local(hora)]
+        # las dos puntas en UTC: la foto de la cadena y las velas
+        restantes = [v for v in velas if v["t"] and v["t"] >= hora]
         if len(restantes) < 5:
             continue
 
@@ -258,7 +297,7 @@ def observar(sym, fecha):
         # se esta deshaciendo, y eso cambia como se comporta cada pared.
         gex_prev = fotos[i - 1].get("gex") if i > 0 else None
         gex_delta = (gex - gex_prev) if gex_prev is not None else None
-        hora_et = _hora_local(hora)
+        hora_et = _utc_a_ny(hora, fecha)
 
         # Lo que ATAS estaba viendo en ese mismo momento. Si el indicador no
         # estaba corriendo, esto queda en None y las hipotesis que dependen de
@@ -361,18 +400,70 @@ def _desde_atas(cx, nv):
     }
 
 
-def _hora_local(hhmm):
-    """Las velas de CBOE vienen con hora de Nueva York; las fotos en UTC.
-    Se resta la diferencia para poder comparar. En verano son cuatro horas."""
+def _horas_ny(fecha):
+    """Cuantas horas atras de UTC esta Nueva York ese dia.
+
+    Estaba clavado en 4, que solo vale en verano. En noviembre pasa a 5 y todo
+    el analisis se corre una hora sin avisar: las fotos se aparearian con las
+    velas equivocadas. El horario de verano de EE.UU. va del segundo domingo
+    de marzo al primer domingo de noviembre.
+    """
+    try:
+        d = dt.date.fromisoformat(fecha)
+    except Exception:
+        return 4
+
+    def domingo(anio, mes, cual):
+        primero = dt.date(anio, mes, 1)
+        # 6 = domingo en isoweekday-1; se busca el primer domingo y se suman semanas
+        desp = (6 - primero.weekday()) % 7
+        return primero + dt.timedelta(days=desp + 7 * (cual - 1))
+
+    inicio = domingo(d.year, 3, 2)
+    fin = domingo(d.year, 11, 1)
+    return 4 if inicio <= d < fin else 5
+
+
+def _ny_a_utc(hhmm, fecha):
+    """Hora de Nueva York a UTC. Las velas de CBOE vienen en hora de NY."""
     try:
         h, m = hhmm.split(":")
-        return "%02d:%s" % ((int(h) - 4) % 24, m)
+        return "%02d:%s" % ((int(h) + _horas_ny(fecha)) % 24, m)
+    except Exception:
+        return "00:00"
+
+
+def _utc_a_ny(hhmm, fecha):
+    """UTC a hora de Nueva York. Solo para saber en que tramo de la rueda
+    americana cae una foto; no se usa para ordenar nada."""
+    try:
+        h, m = hhmm.split(":")
+        return "%02d:%s" % ((int(h) - _horas_ny(fecha)) % 24, m)
     except Exception:
         return "00:00"
 
 
 def _desenlace(nivel, es_arriba, velas):
-    """Que hizo el precio con ese nivel: lo toco, aguanto, o lo rompio."""
+    """Que hizo el precio con ese nivel: lo toco, aguanto, o lo rompio.
+
+    EL HORIZONTE ES FIJO Y ESE ES EL PUNTO.
+
+    Antes el desenlace se miraba "hasta el final de lo que hubiera". Eso
+    parece razonable y esta mal: un nivel tocado a las 9 de la manana de
+    Londres tiene ocho horas por delante para romperse, y uno tocado a las
+    15:30 tiene media. Comparar los dos es comparar cuanto tiempo les di, no
+    como se comportaron.
+
+    Ese error fabrico tres "hallazgos" que eran el mismo artefacto dicho de
+    tres maneras: que en la rueda americana los niveles aguantan mas, que en
+    Londres aguantan menos, y que aguantan menos cuando queda media rueda por
+    delante. Las tres cosas decian lo mismo: les di mas tiempo para romperse.
+
+    Ahora todos los niveles se juzgan con los mismos HORIZONTE minutos despues del
+    toque. Y si no hay HORIZONTE minutos de datos despues del toque, el desenlace
+    queda en None: censurado, afuera de la cuenta. Contarlo como "no aguanto"
+    seria inventar el final.
+    """
     tol = TICK * TOCAR_TK
     romper = TICK * ROMPER_TK
     aguantar = TICK * AGUANTAR_TK
@@ -392,20 +483,44 @@ def _desenlace(nivel, es_arriba, velas):
                     (v["alto"] - nivel) / TICK if es_arriba else (nivel - v["bajo"]) / TICK
                     for v in velas))}
 
-    # despues del toque: se rompio o se dio vuelta
-    post = velas[idx_toque:]
+    # Despues del toque, y SOLO durante el horizonte. Las velas no son
+    # siempre de un minuto (de noche vienen de la bitacora, cada cinco), asi
+    # que el corte se hace por reloj y no contando filas.
+    post_todo = velas[idx_toque:]
+    fin = _sumar_minutos(post_todo[0]["t"], HORIZONTE)
+    post = [v for v in post_todo if v["t"] <= fin] or post_todo[:1]
+
+    # ¿alcanzo la ventana? Si los datos se cortan antes, no se sabe el final.
+    completa = post_todo[-1]["t"] >= fin
+
     rompio = any((v["alto"] >= nivel + romper) if es_arriba
                  else (v["bajo"] <= nivel - romper) for v in post)
     reboto = any((v["bajo"] <= nivel - aguantar) if es_arriba
                  else (v["alto"] >= nivel + aguantar) for v in post)
+    # Si ya se rompio, el desenlace se sabe aunque la ventana este incompleta:
+    # romperse es un hecho consumado y no lo cambia el tiempo que venga.
+    resuelto = completa or rompio
     return {"tocado": True,
-            "rompio": bool(rompio),
+            "horizonte_completo": bool(completa),
+            "rompio": bool(rompio) if resuelto else None,
             # aguanto = se dio vuelta lo suficiente sin haberlo roto antes
-            "aguanto": bool(reboto and not rompio),
+            "aguanto": bool(reboto and not rompio) if resuelto else None,
             "minutos_hasta_toque": idx_toque,
             "excursion_tk": round(max(
                 (v["alto"] - nivel) / TICK if es_arriba else (nivel - v["bajo"]) / TICK
                 for v in post))}
+
+
+def _sumar_minutos(hhmm, minutos):
+    """Suma minutos a un HH:MM. No cruza la medianoche a proposito: si el
+    horizonte se pasa del dia, se corta ahi y la ventana queda incompleta,
+    que es la verdad."""
+    try:
+        h, m = hhmm.split(":")
+        t = int(h) * 60 + int(m) + minutos
+        return "23:59" if t >= 24 * 60 else "%02d:%02d" % (t // 60, t % 60)
+    except Exception:
+        return "23:59"
 
 
 # --------------------------------------------------------------------------
@@ -472,6 +587,18 @@ def factores_a_probar(obs):
         # afuera de la cuenta en vez de contaminarla.
         ("el nivel esta adentro del expected move",
          lambda o: (None if o.get("dist_em") is None else o["dist_em"] <= 1.0)),
+        # Las tres ruedas del dia. Un muro puede comportarse distinto con la
+        # liquidez de Nueva York que con la de Tokio, y eso no se puede
+        # suponer: se mide. Los cortes son en UTC porque es lo unico que no
+        # se mueve con el horario de verano de nadie.
+        ("la foto es de la sesion asiatica",
+         lambda o: (None if not o.get("hora") else o["hora"] < "07:00")),
+        ("la foto es de la sesion de Londres",
+         lambda o: (None if not o.get("hora")
+                    else "07:00" <= o["hora"] < "13:30")),
+        ("la foto es de la rueda americana",
+         lambda o: (None if not o.get("hora")
+                    else "13:30" <= o["hora"] < "20:00")),
         ("es la primera hora de la rueda",
          lambda o: (None if not o.get("hora_et")
                     else o["hora_et"] < "10:30")),
@@ -603,9 +730,6 @@ def analizar(obs, titulo):
               " puro azar." % (probados, probados / 20.0))
         print("  Un hallazgo recien vale cuando se repite en ruedas que no"
               " son las que lo encontraron.")
-    if probados >= 5 and hallazgos:
-        print("  Ojo: probando %d factores, uno o dos pueden parecer significativos" % probados)
-        print("  por puro azar. Un hallazgo vale cuando se repite en ruedas nuevas.")
     if len(resueltos) < MIN_CASOS * 2:
         print("\n  ADVERTENCIA: %d casos resueltos es MUY poco. Nada de esto es"
               % len(resueltos))

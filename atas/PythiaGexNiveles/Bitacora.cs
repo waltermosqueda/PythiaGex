@@ -77,7 +77,12 @@ namespace PythiaGex
         /// Escribe una linea. Devuelve false y deja el motivo en Estado si no
         /// se pudo: nunca tira una excepcion hacia el indicador.
         /// </summary>
+        /// <summary>Cuando se anoto por ultima vez, para que quien escribe
+        /// sepa desde donde tiene que juntar el maximo y el minimo.</summary>
+        public DateTime UltimaUtc => _ultima;
+
         public bool Anotar(string instrumento, double precio, double tickSize,
+                           double maximo, double minimo,
                            Contexto sesion, Contexto previo, Contexto semana,
                            bool pocVirgen, List<Anotacion> niveles)
         {
@@ -93,6 +98,12 @@ namespace PythiaGex
                 Txt(b, "t", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss", Inv) + "Z"); b.Append(',');
                 Txt(b, "instrumento", instrumento ?? ""); b.Append(',');
                 Num(b, "precio", precio); b.Append(',');
+                // El maximo y el minimo desde la anotacion anterior. Sin esto
+                // el camino del precio quedaria hecho de puntos sueltos cada
+                // cinco minutos, y una mecha que toca un nivel entre dos
+                // puntos no se veria nunca. Con esto el tramo es completo.
+                Num(b, "maximo", maximo); b.Append(',');
+                Num(b, "minimo", minimo); b.Append(',');
                 Num(b, "tick", tickSize); b.Append(',');
 
                 b.Append("\"sesion\":"); Perfil(b, sesion, true); b.Append(',');
