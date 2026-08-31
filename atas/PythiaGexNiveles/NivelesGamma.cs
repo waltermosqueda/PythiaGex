@@ -1409,15 +1409,31 @@ namespace PythiaGex
                                    Miles(Math.Abs(G.CharmContratos.Value)) + " " + raiz,
                                    G.CharmContratos.Value < 0 ? ColTecho : ColPiso));
 
-                var cerca = d.Cercanos.FirstOrDefault();
+                // La distancia del cercano venia del feed y la de los niveles se
+                // calculaba en vivo: el mismo precio salia con dos distancias
+                // distintas en dos renglones seguidos. Se recalculan las dos.
+                int TicksVivos(double precioNivel)
+                    => precio > 0 ? Contexto.Ticks((decimal)precioNivel, precio, tick) : 0;
+
                 var pin = d.Niveles.FirstOrDefault(n => n.Tipo == "gamma_pin");
+                // y se ordenan por la distancia de AHORA, no por la de la corrida
+                var cerca = d.Cercanos
+                    .Where(c => (c.Fut != 0 ? c.Fut : c.Idx) > 0)
+                    .OrderBy(c => Math.Abs(TicksVivos(c.Fut != 0 ? c.Fut : c.Idx)))
+                    // si el mas cercano es el mismo strike que el iman, no se
+                    // repite el renglon
+                    .FirstOrDefault(c => pin == null
+                                         || Math.Abs((c.Fut != 0 ? c.Fut : c.Idx)
+                                                     - (pin.Fut ?? pin.Idx ?? 0)) > 0.01);
                 var piso = d.Niveles.FirstOrDefault(n => n.Tipo == "put_wall" && !n.Es0dte);
                 var techo = d.Niveles.FirstOrDefault(n => n.Tipo == "call_wall" && !n.Es0dte);
                 var flip = d.Niveles.FirstOrDefault(n => n.Tipo == "gamma_flip");
 
                 L.Add(new Fila("CERCA", "distancia   toque", ColTexto, true, true));
                 if (cerca != null)
-                    L.Add(new Fila("cerca  " + (cerca.DistTicks >= 0 ? "+" : "") + cerca.DistTicks + " tk"
+                {
+                    var tkC = TicksVivos(cerca.Fut != 0 ? cerca.Fut : cerca.Idx);
+                    L.Add(new Fila("cerca  " + (tkC >= 0 ? "+" : "") + tkC + " tk"
                                    + "  " + Mag(cerca.GexM) + " " + cerca.Signo,
                                    (cerca.Fut != 0 ? cerca.Fut : cerca.Idx).ToString("0.00", CultureInfo.InvariantCulture)
                                    + "   " + Pct(PVivo(cerca.Idx, cerca.Iv,
@@ -1425,6 +1441,7 @@ namespace PythiaGex
                                                  ? (double?)Math.Min(100.0, cerca.ProbFinal.Value * 2.0)
                                                  : null, cerca.ProbFactor), cerca.ProbControl),
                                    PorSigno(cerca.GexM)));
+                }
                 foreach (var t3 in new[] { (pin, "iman"), (flip, "flip"),
                                            (piso, "piso"), (techo, "techo") })
                 {
