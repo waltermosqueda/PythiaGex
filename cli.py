@@ -23,6 +23,7 @@ from pythiagex.precio      import intradia as precio_intradia, cotizacion
 from pythiagex.base        import (medir as medir_base, contrato_vigente, nombre_futuro,
                                    convertir as a_futuro, edad_minutos as edad_cadena)
 from pythiagex.tasas       import curva as curva_tasas, tasa as tasa_plazo
+from pythiagex.feed_atas   import construir as feed_atas
 from pythiagex.griegas     import fijar_tasa
 from pythiagex.tablero     import (enriquecer, escalera, huecos, sesion,
                                    contratos_cobertura, CONTRATO)
@@ -256,6 +257,16 @@ def main():
         os.makedirs("panel", exist_ok=True)
         with open("panel/datos.json", "w", encoding="utf-8") as f:
             json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
+
+    # extracto liviano para el indicador de ATAS: lo baja cada 30 segundos
+    fa = feed_atas(out)
+    os.makedirs(os.path.join(SALIDA, "atas"), exist_ok=True)
+    raiz = (fa.get("contrato") or "ES")[:-2] or "ES"
+    ruta_atas = os.path.join(SALIDA, "atas", "%s.json" % raiz)
+    with open(ruta_atas, "w", encoding="utf-8") as f:
+        json.dump(fa, f, ensure_ascii=False, separators=(",", ":"))
+    print("  -> %s  (%d niveles, %.1f KB)"
+          % (ruta_atas, len(fa["niveles"]), os.path.getsize(ruta_atas) / 1024))
 
     t = out["totales"]
     print(f"{out['simbolo']}  spot {out['spot']}  ({out['vista']})  {out['timestamp']}")
