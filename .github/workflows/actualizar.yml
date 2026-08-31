@@ -1,12 +1,19 @@
 name: Actualizar datos
 
-# Horario de mercado de Estados Unidos.
-# 9:30 a 16:00 ET son 13:30-20:00 UTC en verano y 14:30-21:00 en invierno,
-# asi que se cubre 13:00-21:00 para no depender del cambio de hora.
+# ES opera casi 24 horas: domingo 18:00 ET hasta viernes 17:00 ET, con una
+# pausa diaria de una hora. Se cubria solo la rueda americana y quedaba un
+# hueco de catorce horas. Auditado el 2026-08-31 a las 09:52 UTC: CBOE estaba
+# refrescando la cadena de SPX cada UN minuto, y nosotros sin correr desde las
+# 21:00 del dia anterior. Se corrigio el horario.
+#
+# Los minutos de Actions son gratis en repos publicos, asi que el limite es el
+# sentido comun, no el costo: cada 15 minutos alrededor de la rueda americana
+# y cada 30 el resto.
 on:
   schedule:
-    - cron: '*/15 13-21 * * 1-5'   # cada 15 min, dias habiles
-    - cron: '5 11 * * 1-5'         # una corrida temprana con el mapa del dia
+    - cron: '*/15 12-22 * * 1-5'   # rueda americana, cubre verano e invierno
+    - cron: '*/30 0-11 * * 1-5'    # asiatica y europea
+    - cron: '*/30 23 * * 0-4'      # la reapertura de Globex cada noche
   workflow_dispatch:                # y a mano cuando haga falta
 
 concurrency:

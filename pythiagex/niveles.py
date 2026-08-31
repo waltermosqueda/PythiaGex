@@ -22,7 +22,14 @@ def curva_gamma(curva_src, spot, rango=0.06, pasos=200):
                   * (1 if cp == "C" else -1))
         pts.append([round(x, 2), round(t / 1e9, 4)])
         if ant is not None and ((ant < 0 <= t) or (ant > 0 >= t)) and flip is None:
-            flip = round(x, 1)
+            # El cruce por cero casi nunca cae justo en un punto de la grilla.
+            # Con 200 pasos sobre +/-6% cada paso mide unos 4,6 puntos de SPX:
+            # devolver el punto de la grilla erraba hasta 18 ticks de ES.
+            # Se interpola linealmente entre los dos puntos que lo encierran.
+            if t != ant:
+                flip = round(x - paso + paso * (-ant) / (t - ant), 2)
+            else:
+                flip = round(x, 2)
         ant = t
         x += paso
     return pts, flip

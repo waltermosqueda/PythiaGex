@@ -272,6 +272,15 @@ namespace PythiaGex
         [Display(Name = "Interlineado (px)", GroupName = "Tablero", Order = 97)]
         public int Interlineado { get; set; } = 3;
 
+        // El panel de trading de ATAS se dibuja ENCIMA del ChartArea, asi que
+        // el borde derecho del area no es el borde visible. Este margen corre
+        // el tablero para que no quede tapado.
+        [Display(Name = "Separacion del borde (px)", GroupName = "Tablero", Order = 98)]
+        public int MargenTablero { get; set; } = 150;
+
+        [Display(Name = "Ancho maximo (% del grafico)", GroupName = "Tablero", Order = 99)]
+        public int AnchoMaxPct { get; set; } = 40;
+
         // ---- Umbrales. Ninguno es una ley de mercado: son cortes elegidos.
         // Por eso estan aca, editables, y no escondidos adentro del codigo.
         [Display(Name = "Area de valor (% del volumen)", GroupName = "Umbrales", Order = 200)]
@@ -990,24 +999,21 @@ namespace PythiaGex
 
             if (!_colapsado && compacto)
             {
-                L.Add(new Fila(pos ? "Regimen" : "Regimen",
-                               (pos ? "LONG GAMMA, amortigua" : "SHORT GAMMA, amplifica"),
+                L.Add(new Fila("Regimen", pos ? "LONG, amortigua" : "SHORT, amplifica",
                                pos ? ColTecho : ColPiso, true));
-                L.Add(new Fila("Net GEX",
-                               gexB.ToString("+0.00;-0.00", CultureInfo.InvariantCulture) + " B"
-                               + (vivo.HasValue ? "  (al precio de ahora)" : ""),
+                L.Add(new Fila("Net GEX" + (vivo.HasValue ? " (aca)" : ""),
+                               gexB.ToString("+0.00;-0.00", CultureInfo.InvariantCulture) + " B",
                                pos ? ColTecho : ColPiso));
-                L.Add(new Fila("Cobertura por 1%",
-                               Miles(Math.Abs(contratos)) + " " + raiz + "  "
-                               + (pos ? "compra en la baja" : "vende en la baja"),
+                L.Add(new Fila("Cobertura 1%  " + (pos ? "compra baja" : "vende baja"),
+                               Miles(Math.Abs(contratos)) + " " + raiz,
                                pos ? ColTecho : ColPiso));
 
                 // --- charm: el motor del arrastre de la tarde
                 if (G.CharmContratos.HasValue && G.DiasAlVencimiento.HasValue)
-                    L.Add(new Fila("Charm pendiente",
-                                   Miles(Math.Abs(G.CharmContratos.Value)) + " " + raiz + "  "
+                    L.Add(new Fila("Charm pend. "
                                    + (G.CharmContratos.Value < 0 ? "a comprar" : "a vender")
-                                   + " en " + G.DiasAlVencimiento.Value.ToString("0.00", CultureInfo.InvariantCulture) + " d",
+                                   + " en " + G.DiasAlVencimiento.Value.ToString("0.00", CultureInfo.InvariantCulture) + "d",
+                                   Miles(Math.Abs(G.CharmContratos.Value)) + " " + raiz,
                                    G.CharmContratos.Value < 0 ? ColTecho : ColPiso));
                 if (G.VannaPorPuntoIv.HasValue)
                     L.Add(new Fila("Vanna por 1% IV",
@@ -1062,16 +1068,15 @@ namespace PythiaGex
                                    _ctx.BarrasUsadas + " barras / " + Kilo(_ctx.VolumenSesion) + " vol",
                                    ColTexto, true, true));
                     L.Add(new Fila("POC", _ctx.Poc.ToString("0.00", CultureInfo.InvariantCulture), ColPoc));
-                    L.Add(new Fila("Area de valor",
-                                   _ctx.Val.ToString("0.00", CultureInfo.InvariantCulture) + "  a  "
-                                   + _ctx.Vah.ToString("0.00", CultureInfo.InvariantCulture)
-                                   + "   (" + PctValueArea.ToString("0", CultureInfo.InvariantCulture) + "%)", ColVa));
-                    L.Add(new Fila("VWAP", _ctx.Vwap.ToString("0.00", CultureInfo.InvariantCulture)
-                                   + "   1 sigma " + _ctx.Sigma.ToString("0.0", CultureInfo.InvariantCulture) + " pts",
-                                   ColVwap));
+                    L.Add(new Fila("Area de valor " + PctValueArea.ToString("0", CultureInfo.InvariantCulture) + "%",
+                                   _ctx.Val.ToString("0.00", CultureInfo.InvariantCulture) + " a "
+                                   + _ctx.Vah.ToString("0.00", CultureInfo.InvariantCulture), ColVa));
+                    L.Add(new Fila("VWAP  (1s = " + _ctx.Sigma.ToString("0.0", CultureInfo.InvariantCulture) + " pts)",
+                                   _ctx.Vwap.ToString("0.00", CultureInfo.InvariantCulture), ColVwap));
                     var dl = _ctx.DeltaAcumulado;
-                    L.Add(new Fila("Delta acumulado", (dl >= 0 ? "+" : "") + Kilo(dl)
-                                   + "   (max " + Kilo(_ctx.DeltaMaximo) + " / min " + Kilo(_ctx.DeltaMinimo) + ")",
+                    L.Add(new Fila("Delta acum.  max " + Kilo(_ctx.DeltaMaximo)
+                                   + " min " + Kilo(_ctx.DeltaMinimo),
+                                   (dl >= 0 ? "+" : "") + Kilo(dl),
                                    dl >= 0 ? ColTecho : ColPiso));
                     if (precio > 0)
                         L.Add(new Fila("El precio esta",
@@ -1099,19 +1104,21 @@ namespace PythiaGex
                 {
                     L.Add(new Fila("CONFLUENCIA", conf.Count + " nivel(es)", ColTexto, true, true));
                     foreach (var n in conf.Take(completo ? 6 : 3))
+                    {
                         L.Add(new Fila("x" + n.Puntaje + "  " + n.Nombre,
-                                       (n.Fut ?? 0).ToString("0.00", CultureInfo.InvariantCulture)
-                                       + "   " + Recortar(n.Razones, 46), ColorDe(n)));
+                                       (n.Fut ?? 0).ToString("0.00", CultureInfo.InvariantCulture), ColorDe(n)));
+                        L.Add(new Fila("", Recortar(n.Razones, 52),
+                                       Color.FromArgb(150, ColTexto)));
+                    }
                 }
 
                 // --- procedencia del dato, siempre
                 L.Add(new Fila("PROCEDENCIA", "", ColTexto, true, true));
                 if (d.Base.HasValue)
-                    L.Add(new Fila("Base " + d.Contrato + " - " + d.Indice,
-                                   d.Base.Value.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)
-                                   + (d.BaseConfiable ? "   firme"
-                                      : "   FLOJA, " + (d.BaseErrorTicks ?? 0).ToString("0.#", CultureInfo.InvariantCulture)
-                                        + " ticks de error"),
+                    L.Add(new Fila("Base " + d.Contrato + "-" + d.Indice
+                                   + (d.BaseConfiable ? "  firme"
+                                      : "  FLOJA " + (d.BaseErrorTicks ?? 0).ToString("0.#", CultureInfo.InvariantCulture) + "tk"),
+                                   d.Base.Value.ToString("+0.00;-0.00", CultureInfo.InvariantCulture),
                                    d.BaseConfiable ? Color.FromArgb(170, 180, 195) : ColPiso, !d.BaseConfiable));
                 if (completo && d.TasaCorta.HasValue)
                     L.Add(new Fila("Tasa / dividendo",
@@ -1128,9 +1135,8 @@ namespace PythiaGex
                     L.Add(new Fila("", "Sirve para ubicar niveles, no para cronometrar la entrada.",
                                    ColIman));
                 if (d.IndiceAtrasado)
-                    L.Add(new Fila("Contado implicito",
-                                   (d.SpotIndice ?? 0).ToString("0.00", CultureInfo.InvariantCulture)
-                                   + "   (el " + d.Indice + " publicado esta congelado)",
+                    L.Add(new Fila("Contado implicito  (" + d.Indice + " congelado)",
+                                   (d.SpotIndice ?? 0).ToString("0.00", CultureInfo.InvariantCulture),
                                    Color.FromArgb(150, 160, 175)));
                 if (!string.IsNullOrEmpty(_error))
                     L.Add(new Fila("Ultima descarga", "fallo: " + _error, ColPiso));
@@ -1160,11 +1166,16 @@ namespace PythiaGex
             }
             var anchoCab = g.MeasureString(titulo + "   " + resumen, fb).Width;
             var w = Math.Max(Math.Max(AnchoTablero, anchoCab + 20), anchoEtq + anchoVal + 34);
+            // nunca mas ancho que la porcion del grafico que se eligio
+            var tope = Math.Max(160, area.Width * Math.Max(15, Math.Min(90, AnchoMaxPct)) / 100);
+            w = Math.Min(w, tope);
             var hCab = altoTit + 6;
             var h = hCab + (L.Count == 0 ? 0 : L.Count * altoFila + 6);
 
+            var margen = Math.Max(0, MargenTablero);
             int cx = (EsquinaTablero == Esquina.ArribaIzquierda || EsquinaTablero == Esquina.AbajoIzquierda)
-                     ? area.Left + 8 : area.Right - w - 10;
+                     ? area.Left + 8 : area.Right - w - 10 - margen;
+            if (cx < area.Left + 4) cx = area.Left + 4;
             int cy = (EsquinaTablero == Esquina.ArribaDerecha || EsquinaTablero == Esquina.ArribaIzquierda)
                      ? area.Top + 8 : area.Bottom - h - 10;
             var caja = new Rectangle(cx, cy, w, h);
