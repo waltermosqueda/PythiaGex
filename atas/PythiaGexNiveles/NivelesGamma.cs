@@ -273,8 +273,8 @@ namespace PythiaGex
         public bool VerLibro { get; set; } = true;
 
         [Display(Name = "Lotes minimos para llamarlo barrido", GroupName = "Libro y barridos", Order = 2,
-                 Description = "Depende del instrumento: en ES 50 contratos es tamano, en MES no. Subilo hasta que solo queden los que te importan.")]
-        public double MinBarridoLotes { get; set; } = 50.0;
+                 Description = "Depende del instrumento: 50 es tamano en ES y rarisimo en MES. Mira el diagnostico arriba del tablero y usa el sugerido.")]
+        public double MinBarridoLotes { get; set; } = 15.0;
 
         [Display(Name = "Memoria de barridos (minutos)", GroupName = "Libro y barridos", Order = 3)]
         public int MemoriaBarridosMin { get; set; } = 30;
@@ -2333,44 +2333,6 @@ namespace PythiaGex
                                    falta > 0 && falta < 60 ? ColIman
                                    : falta <= 0 ? ColPiso : Color.FromArgb(140, 150, 165)));
                 }
-                // Diagnostico del libro. Va arriba de la leyenda porque
-                // contesta la pregunta mas concreta que puede tener el
-                // operador: "no veo barridos, esta roto o esta mal el umbral?"
-                if (VerLibro)
-                {
-                    var gris2 = Color.FromArgb(130, 140, 155);
-                    L.Add(new Fila("EL LIBRO Y LOS BARRIDOS", "", ColTexto, true, true));
-                    if (_libro.VistosTotal == 0)
-                    {
-                        L.Add(new Fila("barridos recibidos", "NINGUNO todavia", ColIman));
-                        L.Add(new Fila("", "si sigue en cero, el feed no manda"
-                                       + " trades agrupados", gris2));
-                    }
-                    else
-                    {
-                        var p90 = _libro.P90;
-                        L.Add(new Fila("agresores vistos",
-                                       Miles(_libro.VistosTotal) + "   mediana "
-                                       + _libro.Mediana.ToString("0") + " lotes", gris2));
-                        L.Add(new Fila("el mayor de todos",
-                                       _libro.MayorVisto.ToString("0") + " lotes", gris2));
-                        L.Add(new Fila("tu umbral",
-                                       MinBarridoLotes.ToString("0") + " lotes  ->  "
-                                       + _libro.Cantidad + " guardados",
-                                       _libro.Cantidad == 0 ? ColIman : ColTecho));
-                        if (p90 > 0)
-                            L.Add(new Fila("sugerido (1 de cada 10)",
-                                           p90.ToString("0") + " lotes en " + Raiz(),
-                                           ColTecho));
-                    }
-                    L.Add(new Fila("libro (DOM)",
-                                   _libro.LibroVivo
-                                   ? Miles((double)_libro.DomBids) + " bid / " + Miles((double)_libro.DomAsks)
-                                     + " ask   " + (_libro.DesbalanceDom * 100).ToString("+0;-0")
-                                     + "%"
-                                   : "sin datos de profundidad",
-                                   _libro.LibroVivo ? gris2 : ColIman));
-                }
                 if (VerLeyenda)
                 {
                     // La leyenda existe porque una abreviatura sin nombre no
@@ -2465,6 +2427,46 @@ namespace PythiaGex
 
                 if (completo)
                 {
+                // Diagnostico del libro. Va ARRIBA de todo lo demas porque
+                // contesta la pregunta mas concreta que puede tener el
+                // operador —"no veo barridos: esta roto o esta mal el
+                // umbral?"— y abajo del todo no se veia nunca: el tablero
+                // se quedaba sin alto y las ultimas filas no se dibujaban.
+                if (VerLibro)
+                {
+                    var gris2 = Color.FromArgb(130, 140, 155);
+                    L.Add(new Fila("EL LIBRO Y LOS BARRIDOS", "", ColTexto, true, true));
+                    if (_libro.VistosTotal == 0)
+                    {
+                        L.Add(new Fila("barridos recibidos", "NINGUNO todavia", ColIman));
+                        L.Add(new Fila("", "si sigue en cero, el feed no manda"
+                                       + " trades agrupados", gris2));
+                    }
+                    else
+                    {
+                        var p90 = _libro.P90;
+                        L.Add(new Fila("agresores vistos",
+                                       Miles(_libro.VistosTotal) + "   mediana "
+                                       + _libro.Mediana.ToString("0") + " lotes", gris2));
+                        L.Add(new Fila("el mayor de todos",
+                                       _libro.MayorVisto.ToString("0") + " lotes", gris2));
+                        L.Add(new Fila("tu umbral",
+                                       MinBarridoLotes.ToString("0") + " lotes  ->  "
+                                       + _libro.Cantidad + " guardados",
+                                       _libro.Cantidad == 0 ? ColIman : ColTecho));
+                        if (p90 > 0)
+                            L.Add(new Fila("sugerido (1 de cada 10)",
+                                           p90.ToString("0") + " lotes en " + Raiz(),
+                                           ColTecho));
+                    }
+                    L.Add(new Fila("libro (DOM)",
+                                   _libro.LibroVivo
+                                   ? Miles((double)_libro.DomBids) + " bid / " + Miles((double)_libro.DomAsks)
+                                     + " ask   " + (_libro.DesbalanceDom * 100).ToString("+0;-0")
+                                     + "%"
+                                   : "sin datos de profundidad",
+                                   _libro.LibroVivo ? gris2 : ColIman));
+                }
                     L.Add(new Fila("GRIEGAS DEL COMPLEJO", "", ColTexto, true, true));
                     if (G.DexB.HasValue)
                         L.Add(new Fila("Net DEX", nfB(G.DexB) + "  ("
@@ -2656,6 +2658,21 @@ namespace PythiaGex
             var tope = Math.Max(160, area.Width * Math.Max(15, Math.Min(90, AnchoMaxPct)) / 100);
             w = Math.Min(w, tope);
             var hCab = altoTit + 6;
+
+            // El tablero dibujaba TODAS las filas y las que no entraban en el
+            // alto del grafico simplemente no se veian. Desaparecian sin decir
+            // nada, que es la peor forma de perder informacion: el operador no
+            // sabe que hay algo mas abajo. Ahora se recorta a proposito y la
+            // ultima fila dice cuantas quedaron afuera.
+            var altoDisp = Math.Max(60, area.Height - 24);
+            var maxFilas = Math.Max(1, (altoDisp - hCab - 6) / Math.Max(1, altoFila));
+            if (L.Count > maxFilas)
+            {
+                var sobran = L.Count - (maxFilas - 1);
+                L = L.Take(maxFilas - 1).ToList();
+                L.Add(new Fila("... " + sobran + " lineas mas",
+                               "achica la fuente o el interlineado", ColIman, true));
+            }
             var h = hCab + (L.Count == 0 ? 0 : L.Count * altoFila + 6);
 
             var margen = Math.Max(0, MargenTablero);
