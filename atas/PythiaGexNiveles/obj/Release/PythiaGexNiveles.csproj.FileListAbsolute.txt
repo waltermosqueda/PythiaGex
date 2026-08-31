@@ -1,8 +1,0 @@
-C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\PythiaGexNiveles\obj\Release\PythiaGexNiveles.csproj.AssemblyReference.cache
-C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\PythiaGexNiveles\obj\Release\PythiaGexNiveles.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\PythiaGexNiveles\obj\Release\PythiaGexNiveles.AssemblyInfoInputs.cache
-C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\PythiaGexNiveles\obj\Release\PythiaGexNiveles.AssemblyInfo.cs
-C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\PythiaGexNiveles\obj\Release\PythiaGexNiveles.csproj.CoreCompileInputs.cache
-C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\PythiaGexNiveles\bin\Release\PythiaGexNiveles.deps.json
-C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\PythiaGexNiveles\bin\Release\PythiaGexNiveles.dll
-C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\PythiaGexNiveles\obj\Release\PythiaGexNiveles.dll

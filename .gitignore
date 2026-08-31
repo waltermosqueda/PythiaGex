@@ -13,3 +13,6 @@ datos/salida/
 
 # el historico SI va: es lo que habilita lookbacks e intradia
 !datos/historico/
+atas/*/obj/
+atas/*/bin/Debug/
+atas/_api/bin/
