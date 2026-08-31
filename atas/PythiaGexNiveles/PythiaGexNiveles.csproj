@@ -19,6 +19,8 @@
 
   <ItemGroup>
     <Compile Include="NivelesGamma.cs" />
+    <Compile Include="Contexto.cs" />
+    <Compile Include="Estilo.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.
