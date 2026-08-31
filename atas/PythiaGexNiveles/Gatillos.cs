@@ -21,7 +21,10 @@ namespace PythiaGex
     ///      compara en diagonal: lo que se compro a un precio contra lo que se
     ///      vendio al precio de abajo. Si comprando gana por goleada varias
     ///      veces seguidas, hay alguien barriendo hacia arriba. Apilados de a
-    ///      tres o mas es la senal clasica de footprint.
+    ///      tres o mas es la senal clasica de footprint. Se cuentan DENTRO DE
+    ///      UNA MISMA VELA: apilado significa que en un solo momento alguien
+    ///      barrio varios precios seguidos. Sumando la ventana entera se
+    ///      mezclarian compras de hace veinte minutos con ventas de recien.
     ///
     ///   2. PRINTS GRANDES (block prints). Una sola operacion, en un solo
     ///      precio y una sola barra, muy por encima de lo normal de ese rato.
@@ -112,8 +115,6 @@ namespace PythiaGex
 
             // volumen por precio dentro de la zona, y el print mas grande
             var porPrecio = new Dictionary<decimal, decimal>();
-            var ask = new Dictionary<decimal, decimal>();
-            var bid = new Dictionary<decimal, decimal>();
             decimal printMayor = 0;
             // La ventana se parte al medio para poder comparar la mitad vieja
             // con la nueva. Es la unica forma de decir "hizo minimo nuevo" sin
@@ -151,8 +152,6 @@ namespace PythiaGex
                         if (Math.Abs(l.Price - precio) > tol) continue;
                         porPrecio.TryGetValue(l.Price, out var v);
                         porPrecio[l.Price] = v + l.Volume;
-                        ask.TryGetValue(l.Price, out var a); ask[l.Price] = a + l.Ask;
-                        bid.TryGetValue(l.Price, out var d); bid[l.Price] = d + l.Bid;
                         if (l.Volume > printMayor) printMayor = l.Volume;
                         s.VolumenVentana += l.Volume;
                         s.DeltaVentana += l.Ask - l.Bid;
@@ -173,29 +172,61 @@ namespace PythiaGex
             s.PrintVeces = tipicoPorBarra > 0 ? printMayor / tipicoPorBarra : 0;
             s.PrintGrande = tipicoPorBarra > 0 && s.PrintVeces >= FactorPrint;
 
-            // --- imbalances apilados: diagonal ask(P) contra bid(P - 1 tick)
-            var precios = porPrecio.Keys.OrderBy(x => x).ToList();
-            int seguidasC = 0, seguidasV = 0, mejorC = 0, mejorV = 0;
-            for (int i = 1; i < precios.Count; i++)
+            // --- imbalances apilados: diagonal ask(P) contra bid(P - 1 tick).
+            //
+            // Esto se cuenta DENTRO DE UNA MISMA VELA y no sumando la ventana.
+            // La diferencia no es de detalle: apilado significa que en un solo
+            // momento alguien barrio varios precios seguidos. Sumando veinte
+            // barras se mezclan compras de hace veinte minutos con ventas de
+            // recien y aparecen apilamientos que nunca existieron.
+            //
+            // De todas las barras de la ventana queda el apilamiento mas alto,
+            // que es el que efectivamente paso.
+            int mejorC = 0, mejorV = 0;
+            for (int b = desde; b <= ultima; b++)
             {
-                var arriba = precios[i];
-                var abajo = precios[i - 1];
-                // solo cuenta si son precios contiguos de verdad
-                if (Math.Abs((arriba - abajo) - tickSize) > tickSize / 2)
-                { seguidasC = seguidasV = 0; continue; }
+                IndicatorCandle c;
+                try { c = vela(b); } catch { continue; }
+                if (c == null) continue;
 
-                ask.TryGetValue(arriba, out var aArriba);
-                bid.TryGetValue(abajo, out var bAbajo);
-                ask.TryGetValue(abajo, out var aAbajo);
-                bid.TryGetValue(arriba, out var bArriba);
+                var aBarra = new Dictionary<decimal, decimal>();
+                var bBarra = new Dictionary<decimal, decimal>();
+                try
+                {
+                    foreach (var l in c.GetAllPriceLevels())
+                    {
+                        if (l == null || l.Volume <= 0) continue;
+                        if (Math.Abs(l.Price - precio) > tol) continue;
+                        aBarra[l.Price] = l.Ask;
+                        bBarra[l.Price] = l.Bid;
+                    }
+                }
+                catch { continue; }
+                if (aBarra.Count < 2) continue;
 
-                bool compra = bAbajo > 0 && aArriba >= bAbajo * FactorImbalance;
-                bool venta = aAbajo > 0 && bArriba >= aAbajo * FactorImbalance;
+                var precios = aBarra.Keys.OrderBy(x => x).ToList();
+                int seguidasC = 0, seguidasV = 0;
+                for (int i = 1; i < precios.Count; i++)
+                {
+                    var arriba = precios[i];
+                    var abajo = precios[i - 1];
+                    // solo cuenta si son precios contiguos de verdad
+                    if (Math.Abs((arriba - abajo) - tickSize) > tickSize / 2)
+                    { seguidasC = seguidasV = 0; continue; }
 
-                seguidasC = compra ? seguidasC + 1 : 0;
-                seguidasV = venta ? seguidasV + 1 : 0;
-                if (seguidasC > mejorC) mejorC = seguidasC;
-                if (seguidasV > mejorV) mejorV = seguidasV;
+                    aBarra.TryGetValue(arriba, out var aArriba);
+                    bBarra.TryGetValue(abajo, out var bAbajo);
+                    aBarra.TryGetValue(abajo, out var aAbajo);
+                    bBarra.TryGetValue(arriba, out var bArriba);
+
+                    bool compra = bAbajo > 0 && aArriba >= bAbajo * FactorImbalance;
+                    bool venta = aAbajo > 0 && bArriba >= aAbajo * FactorImbalance;
+
+                    seguidasC = compra ? seguidasC + 1 : 0;
+                    seguidasV = venta ? seguidasV + 1 : 0;
+                    if (seguidasC > mejorC) mejorC = seguidasC;
+                    if (seguidasV > mejorV) mejorV = seguidasV;
+                }
             }
             if (mejorC >= MinApilados || mejorV >= MinApilados)
             {
