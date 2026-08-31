@@ -1,9 +1,21 @@
 name: Publicar panel
 
+# Ojo con esto: GitHub NO dispara workflows desde los push que hace el propio
+# GITHUB_TOKEN, para evitar bucles infinitos. El workflow de datos commitea con
+# ese token, asi que sus commits nunca disparaban este deploy: el dato quedaba
+# en el repositorio pero el sitio publicado seguia viejo hasta que alguien
+# pusheara a mano. Verificado el 2026-08-31: el bot commiteo 09:57 y el ultimo
+# deploy era de las 07:45.
+#
+# Por eso se agrega workflow_run: este workflow escucha cuando termina el de
+# datos y publica igual.
 on:
   push:
     branches: [main]
     paths: ['panel/**']
+  workflow_run:
+    workflows: ["Actualizar datos"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -17,6 +29,10 @@ concurrency:
 
 jobs:
   publicar:
+    # si la corrida de datos fallo, no tiene sentido publicar
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}

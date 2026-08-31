@@ -300,6 +300,16 @@ def auditar(simbolo):
             r.dato("feed generado hace", round(edad_pub, 1), "minutos")
             if edad_pub > 45:
                 r.alerta("feed", "el workflow no publica hace %.0f minutos" % edad_pub)
+        # El repositorio puede tener dato fresco y el sitio publicado no: los
+        # commits del bot no disparan el deploy de Pages. Se compara.
+        try:
+            local = json.load(open("datos/salida/atas/%s.json" % fut_raiz, encoding="utf-8"))
+            if local.get("generado") and eg and local["generado"] > eg:
+                r.alerta("Pages", "el repositorio tiene dato de %s y el sitio "
+                                  "publicado de %s: el deploy quedo atras"
+                         % (local["generado"][11:19], eg[11:19]))
+        except Exception:
+            pass
         if g.get("gex_B") is not None:
             r.dato("deriva del GEX", round(gex_propio / 1e9 - g["gex_B"], 3),
                    "B desde que se publico")
