@@ -32,6 +32,7 @@ namespace PythiaGex
     public enum ModoTablero
     {
         [Description("Colapsado: una sola linea")] Colapsado,
+        [Description("Chip: lo minimo que sirve para decidir")] Chip,
         [Description("Compacto: lo esencial")] Compacto,
         [Description("Completo: todo")] Completo,
     }

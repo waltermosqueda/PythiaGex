@@ -53,6 +53,11 @@ namespace PythiaGex
             // raya: es una zona con dos paredes comparables.
             public double? CompetidorIdx, CompetidorFut, CompetidorPct, SeparacionPts;
             public bool Disputado;
+            // Probabilidad que paga el mercado, y cuanto se separan los
+            // cuatro caminos con que se calcula. Si se separan mucho el
+            // numero no se puede tomar como firme.
+            public double? ProbFinal, ProbDelta, ProbDispersion;
+            public string ProbControl = "";
         }
 
         private sealed class Hueco
@@ -73,6 +78,8 @@ namespace PythiaGex
             public double? OiC, OiP, Toque;
             public bool Solo0dte;
             public string Signo = "";
+            public double? ProbFinal, ProbDispersion;
+            public string ProbControl = "";
         }
 
         /// <summary>Techo, piso e iman de UN vencimiento. El de hoy y el de
@@ -116,6 +123,8 @@ namespace PythiaGex
             public Dictionary<string, double> Sesion = new();
             public List<Cercano> Cercanos = new();
             public List<Vencimiento> PorVenc = new();
+            public string ProbVencimiento = "";
+            public double? ProbDias;
         }
 
         // ==================================================================
@@ -317,7 +326,7 @@ namespace PythiaGex
         public bool VerTablero { get; set; } = true;
 
         [Display(Name = "Cuanto muestra (un clic en el titulo lo pliega)", GroupName = "Tablero", Order = 91)]
-        public ModoTablero Modo { get; set; } = ModoTablero.Compacto;
+        public ModoTablero Modo { get; set; } = ModoTablero.Chip;
 
         [Display(Name = "Esquina", GroupName = "Tablero", Order = 91)]
         public Esquina EsquinaTablero { get; set; } = Esquina.ArribaDerecha;
@@ -592,6 +601,25 @@ namespace PythiaGex
                             OiC = Num(n, "oi_c"), OiP = Num(n, "oi_p"), Toque = Num(n, "toque"),
                             Es0dte = Bol(n, "es0dte"),
                         });
+                d.ProbVencimiento = Txt(r, "prob_vencimiento");
+                d.ProbDias = Num(r, "prob_dias");
+                if (r.TryGetProperty("niveles", out var np) && np.ValueKind == JsonValueKind.Array)
+                {
+                    int j = 0;
+                    foreach (var n in np.EnumerateArray())
+                    {
+                        if (j >= d.Niveles.Count) break;
+                        if (n.TryGetProperty("prob", out var pb) && pb.ValueKind == JsonValueKind.Object)
+                        {
+                            var lv = d.Niveles[j];
+                            lv.ProbFinal = Num(pb, "final_mercado");
+                            lv.ProbDelta = Num(pb, "final_delta");
+                            lv.ProbDispersion = Num(pb, "dispersion_pp");
+                            lv.ProbControl = Txt(pb, "control");
+                        }
+                        j++;
+                    }
+                }
                 if (r.TryGetProperty("niveles", out var ns2) && ns2.ValueKind == JsonValueKind.Array)
                 {
                     int i = 0;
@@ -627,6 +655,21 @@ namespace PythiaGex
                             Solo0dte = Bol(c, "solo_0dte"),
                             Signo = Txt(c, "signo"),
                         });
+                if (r.TryGetProperty("cercanos", out var cp3) && cp3.ValueKind == JsonValueKind.Array)
+                {
+                    int j2 = 0;
+                    foreach (var c in cp3.EnumerateArray())
+                    {
+                        if (j2 >= d.Cercanos.Count) break;
+                        if (c.TryGetProperty("prob", out var pb) && pb.ValueKind == JsonValueKind.Object)
+                        {
+                            d.Cercanos[j2].ProbFinal = Num(pb, "final_mercado");
+                            d.Cercanos[j2].ProbDispersion = Num(pb, "dispersion_pp");
+                            d.Cercanos[j2].ProbControl = Txt(pb, "control");
+                        }
+                        j2++;
+                    }
+                }
 
                 if (r.TryGetProperty("por_vencimiento", out var pv) && pv.ValueKind == JsonValueKind.Array)
                     foreach (var v in pv.EnumerateArray())
@@ -1045,7 +1088,13 @@ namespace PythiaGex
                 var partes = new List<string>();
                 if (n.GexM != null) partes.Add(Mag(n.GexM) + " gamma");
                 if (n.OiC != null) partes.Add("OI " + Oi(n.OiC) + "C/" + Oi(n.OiP) + "P");
-                if (n.Toque != null) partes.Add("toque " + n.Toque.Value.ToString("0.#", CultureInfo.InvariantCulture) + "%");
+                if (n.Toque != null)
+                    partes.Add("toque " + n.Toque.Value.ToString("0.#", CultureInfo.InvariantCulture) + "%"
+                               + (string.IsNullOrEmpty(n.ProbControl) ? ""
+                                  : " (" + n.ProbControl
+                                    + (n.ProbDispersion.HasValue
+                                       ? " " + n.ProbDispersion.Value.ToString("0.#", CultureInfo.InvariantCulture) + "pp"
+                                       : "") + ")"));
                 if (precio > 0)
                 {
                     var dp = p - precio;
@@ -1232,6 +1281,87 @@ namespace PythiaGex
             var L = new List<Fila>();
             bool completo = Modo == ModoTablero.Completo;
             bool compacto = Modo != ModoTablero.Colapsado;
+
+            // ---- CHIP: lo minimo con lo que se puede decidir sin abrir nada.
+            // Regimen, flujo forzado, el vencimiento de hoy, los tres niveles
+            // que importan y la probabilidad de tocarlos. Nueve renglones.
+            if (Modo == ModoTablero.Chip && !_colapsado)
+            {
+                string Pct(double? v, string ctrl)
+                {
+                    if (v == null) return "-";
+                    var t = v.Value.ToString("0", CultureInfo.InvariantCulture) + "%";
+                    // si los cuatro caminos no coinciden, el numero lleva marca
+                    return ctrl == "floja" ? t + "?" : t;
+                }
+                Color PorSigno(double gex) => gex > 0 ? ColTecho : ColPiso;
+
+                L.Add(new Fila("Cobertura 1%  " + (pos ? "compra baja" : "vende baja"),
+                               Miles(Math.Abs(contratos)) + " " + raiz,
+                               pos ? ColTecho : ColPiso));
+                if (G.CharmContratos.HasValue)
+                    L.Add(new Fila("Charm pendiente "
+                                   + (G.CharmContratos.Value < 0 ? "compra" : "vende"),
+                                   Miles(Math.Abs(G.CharmContratos.Value)) + " " + raiz,
+                                   G.CharmContratos.Value < 0 ? ColTecho : ColPiso));
+
+                var cerca = d.Cercanos.FirstOrDefault();
+                var pin = d.Niveles.FirstOrDefault(n => n.Tipo == "gamma_pin");
+                var piso = d.Niveles.FirstOrDefault(n => n.Tipo == "put_wall" && !n.Es0dte);
+                var techo = d.Niveles.FirstOrDefault(n => n.Tipo == "call_wall" && !n.Es0dte);
+                var flip = d.Niveles.FirstOrDefault(n => n.Tipo == "gamma_flip");
+
+                L.Add(new Fila("CERCA   toque hoy", "", ColTexto, true, true));
+                if (cerca != null)
+                    L.Add(new Fila("cerca  " + (cerca.DistTicks >= 0 ? "+" : "") + cerca.DistTicks + " tk"
+                                   + "  " + Mag(cerca.GexM) + " " + cerca.Signo,
+                                   (cerca.Fut != 0 ? cerca.Fut : cerca.Idx).ToString("0.00", CultureInfo.InvariantCulture)
+                                   + "   " + Pct(cerca.ProbFinal.HasValue
+                                                 ? (double?)Math.Min(100.0, cerca.ProbFinal.Value * 2.0)
+                                                 : null, cerca.ProbControl),
+                                   PorSigno(cerca.GexM)));
+                foreach (var t3 in new[] { (pin, "iman"), (flip, "flip"),
+                                           (piso, "piso"), (techo, "techo") })
+                {
+                    var n = t3.Item1; if (n == null) continue;
+                    var pv3 = n.Fut ?? n.Idx; if (pv3 == null) continue;
+                    var dt3 = precio > 0 ? Contexto.Ticks((decimal)pv3.Value, precio, tick) : 0;
+                    L.Add(new Fila(t3.Item2 + "  " + (dt3 >= 0 ? "+" : "") + dt3 + " tk"
+                                   + (n.Disputado ? "  ZONA" : ""),
+                                   pv3.Value.ToString("0.00", CultureInfo.InvariantCulture)
+                                   + "   " + Pct(n.Toque, n.ProbControl),
+                                   ColorDe(n)));
+                }
+
+                var v0 = d.PorVenc.FirstOrDefault();
+                if (v0 != null)
+                {
+                    L.Add(new Fila("0DTE   " + Mag(d.Gex0dteB * 1000), "", ColTexto, true, true));
+                    var p0 = d.Niveles.FirstOrDefault(n => n.Tipo == "put_wall" && n.Es0dte);
+                    var t0 = d.Niveles.FirstOrDefault(n => n.Tipo == "call_wall" && n.Es0dte);
+                    foreach (var z in new[] { (p0, "piso", ColPiso), (t0, "techo", ColTecho) })
+                    {
+                        var n = z.Item1;
+                        if (n == null) continue;
+                        var pv4 = n.Fut ?? n.Idx; if (pv4 == null) continue;
+                        var dt4 = precio > 0 ? Contexto.Ticks((decimal)pv4.Value, precio, tick) : 0;
+                        L.Add(new Fila(z.Item2 + "  " + (dt4 >= 0 ? "+" : "") + dt4 + " tk",
+                                       pv4.Value.ToString("0.00", CultureInfo.InvariantCulture)
+                                       + "   " + Pct(n.Toque, n.ProbControl), z.Item3));
+                    }
+                }
+
+                var pctCtrl = d.Niveles.Any(n => n.ProbControl == "floja");
+                L.Add(new Fila(d.CadenaVencida ? "Cadena " + d.EdadMin + " min" : "Cadena al dia",
+                               (d.BaseConfiable ? "base firme" : "BASE FLOJA")
+                               + (pctCtrl ? " · % flojo" : "")
+                               + (d.ProbDias.HasValue
+                                  ? "  ·  % a " + d.ProbDias.Value.ToString("0.0", CultureInfo.InvariantCulture) + "d"
+                                  : ""),
+                               d.CadenaMuyVencida || !d.BaseConfiable ? ColPiso
+                               : d.CadenaVencida ? ColIman : Color.FromArgb(140, 150, 165)));
+            }
+            else
 
             if (!_colapsado && compacto)
             {

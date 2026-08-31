@@ -34,6 +34,8 @@ def _nivel(f, base, es0=False):
         "oi_c": f.get("oi_call"),
         "oi_p": f.get("oi_put"),
         "toque": f.get("prob_toque"),
+        # los cuatro caminos y su dispersion, para poder auditar el numero
+        "prob": f.get("prob"),
         "es0dte": bool(es0),
         "alias": f.get("alias"),
         # si el segundo strike pesa casi lo mismo, la pared es una zona
@@ -174,6 +176,8 @@ def construir(out):
         "niveles": niveles,
         # los strikes cargados pegados al precio, ordenados por cercania
         "cercanos": out.get("cercanos") or [],
+        "prob_vencimiento": out.get("prob_vencimiento"),
+        "prob_dias": out.get("prob_dias"),
         # techo, piso e iman de cada vencimiento cercano por separado
         "por_vencimiento": out.get("por_vencimiento") or [],
         "huecos": out.get("huecos") or [],

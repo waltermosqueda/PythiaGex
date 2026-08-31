@@ -23,6 +23,8 @@ from pythiagex.precio      import intradia as precio_intradia, cotizacion
 from pythiagex.base        import (medir as medir_base, contrato_vigente, nombre_futuro,
                                    convertir as a_futuro, edad_minutos as edad_cadena)
 from pythiagex.tasas       import curva as curva_tasas, tasa as tasa_plazo
+from pythiagex.probabilidad import (curva_probabilidad, interpolar as interp_prob,
+                                    confianza as conf_prob)
 from pythiagex.feed_atas   import construir as feed_atas
 from pythiagex.griegas     import fijar_tasa
 from pythiagex.tablero     import (enriquecer, escalera, huecos, sesion,
@@ -235,6 +237,43 @@ def main():
     out["huecos"] = huecos(st_M, S, base=base)
     # apertura, maximo, minimo e initial balance de la sesion
     out["sesion"] = sesion((px or {}).get("velas"), base=base) if px else None
+    # Probabilidad sacada del precio de las opciones, no de un modelo. Se
+    # arma sobre el vencimiento mas cercano, que es el horizonte que le
+    # importa a alguien que opera intradia.
+    _pv = {}
+    for o in crudo["data"]["options"]:
+        pp = parse_occ_cli(o["option"])
+        if not pp:
+            continue
+        vc, cp_, K_ = pp
+        _pv.setdefault(vc, {}).setdefault(K_, {})[cp_] = o
+    curva_prob = {}
+    if _pv:
+        _V = min(_pv)
+        _T = max((_V - dt.datetime.now(dt.timezone.utc)).total_seconds() / 86400.0,
+                 1e-6) / 365.0
+        try:
+            curva_prob = curva_probabilidad(_pv[_V], S, _T)
+        except Exception:
+            curva_prob = {}
+        out["prob_vencimiento"] = _V.date().isoformat()
+        out["prob_dias"] = round(_T * 365, 3)
+
+    def _prob(K):
+        p = interp_prob(curva_prob, K) if curva_prob else None
+        if not p:
+            return None
+        p = dict(p)
+        p["control"] = conf_prob(p)
+        return p
+
+    for _n in (out.get("niveles_ricos") or []) + (out.get("niveles_ricos_0dte") or []):
+        pr = _prob(_n.get("indice"))
+        if pr:
+            _n["prob"] = pr
+            # el numero que se muestra pasa a ser el del mercado
+            _n["prob_toque"] = pr["toque"]
+
     # Los strikes cargados PEGADOS al precio. Las paredes grandes suelen
     # estar a mas de cien puntos; esto es lo que se toca en los proximos
     # minutos, y es lo que faltaba para scalping.
@@ -265,6 +304,12 @@ def main():
         e["gex"] += g * oi * 100 * S * S * 0.01 * sgn / 1e6
         e["oi_call" if cp == "C" else "oi_put"] += oi
     out["por_vencimiento"] = por_vencimiento(porVK, S, base=base, raiz=raiz, n=3)
+
+    for _c in out["cercanos"]:
+        pr = _prob(_c.get("indice"))
+        if pr:
+            _c["prob"] = pr
+            _c["prob_toque"] = pr["toque"]
 
     # cuantos contratos tiene que operar la mesa por 1% de movimiento
     pf = (med.get("forward") if med else None) or (a_futuro(S, base) if base else None)
