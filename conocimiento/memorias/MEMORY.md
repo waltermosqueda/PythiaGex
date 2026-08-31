@@ -23,3 +23,4 @@
 - [Compilar indicadores de ATAS](compilar-indicadores-atas.md) — SDK, referencias sin copiar, la API por reflexión y el botón “Add to chart” que no es doble clic.
 - [Datos ocultos de ATAS](datos-ocultos-de-atas.md) — cada vela trae el footprint por precio, delta, VWAP y value area; con eso se ve quién gana en cada nivel de gamma.
 - [Auditoría de punta a punta](auditoria-punta-a-punta.md) — recalcula todo desde la cadena cruda; encontró el flip sin interpolar y el deploy que nunca se disparaba.
+- [Respaldo del conocimiento](respaldo-del-conocimiento.md) — las memorias viven fuera del repo: correr respaldar.py al final de la sesión o se pierden.
