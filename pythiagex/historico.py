@@ -34,6 +34,11 @@ def guardar(sym: str, resumen: dict, strikes: dict):
         # saber si un retraso de 15 minutos cuesta plata o no cuesta nada.
         "niv": resumen.get("niveles"),
         "niv0": resumen.get("niveles_0dte"),
+        # La probabilidad que se prometio en cada nivel. Sin esto no se puede
+        # medir la calibracion, que es el control mas duro que hay: de todos
+        # los niveles a los que les dimos 70%, cuantos se tocaron de verdad.
+        "prob": resumen.get("probs"),
+        "prob0": resumen.get("probs_0dte"),
         "ts_cadena": resumen.get("timestamp"),
         "k": {str(k): [round(v["gex"]/1e6), round(v["oi_call"]), round(v["oi_put"])]
               for k, v in strikes.items()},

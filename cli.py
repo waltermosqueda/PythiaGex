@@ -116,12 +116,6 @@ def main():
 
     # historico: habilita lookbacks e intradia
     lb = lookbacks(sym)
-    if not a.sin_historico:
-        hist_guardar(sym, {"spot": S, "net_gex_B": B(T["gex"]),
-                           "net_dex_B": B(T["dex"]), "net_vex_B": B(T["vex"]),
-                           "net_chex_B": B(T["chex"]), "gamma_flip": flip,
-                           "expected_move": em, "niveles": niv,
-                           "niveles_0dte": niv0, "timestamp": r["timestamp"]}, st)
     out_lb = {}
     for etq, snap in lb.items():
         out_lb[etq] = {"edad_min": snap["edad_min"], "spot": snap["spot"],
@@ -233,6 +227,20 @@ def main():
                                       T=T_atm, raiz=raiz, flip=flip)
     out["niveles_ricos_0dte"] = enriquecer(niv0, st_M, S, base=base, iv_atm=iv_atm,
                                            T=T_atm, raiz=raiz, sufijo=" 0DTE")
+    # El historico se guarda ACA y no antes: necesita los niveles ricos, que
+    # son los que traen la probabilidad prometida en cada nivel.
+    if not a.sin_historico:
+        hist_guardar(sym, {"spot": S, "net_gex_B": B(T["gex"]),
+                           "net_dex_B": B(T["dex"]), "net_vex_B": B(T["vex"]),
+                           "net_chex_B": B(T["chex"]), "gamma_flip": flip,
+                           "expected_move": em, "niveles": niv,
+                           "niveles_0dte": niv0, "timestamp": r["timestamp"],
+                           "probs": {n["clave"]: n.get("prob_toque")
+                                     for n in (out.get("niveles_ricos") or [])},
+                           "probs_0dte": {n["clave"]: n.get("prob_toque")
+                                          for n in (out.get("niveles_ricos_0dte") or [])},
+                           }, st)
+
     # convexity ladder: la cobertura obligada en cada escalon de precio
     out["escalera"] = escalera(curva, S, base=base, raiz=raiz)
     # tramos sin gamma, donde el precio viaja sin freno
@@ -340,6 +348,19 @@ def main():
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
     with open(f"{SALIDA}/{sym}-anterior.json", "w", encoding="utf-8") as f:
         json.dump({str(k): {"gex": v["gex"]} for k, v in st.items()}, f)
+    # El camino que hizo el precio hoy, archivado. CBOE solo sirve la rueda en
+    # curso: si no se guarda, manana el centinela no tiene contra que
+    # contrastar lo que prometimos.
+    if px and px.get("velas"):
+        try:
+            os.makedirs("datos/historico", exist_ok=True)
+            with open("datos/historico/precio-%s-%s.json"
+                      % (sym.lstrip("_^"), dt.date.today().isoformat()),
+                      "w", encoding="utf-8") as f:
+                json.dump({"velas": px["velas"]}, f, separators=(",", ":"))
+        except Exception:
+            pass
+
     if a.panel:
         os.makedirs("panel", exist_ok=True)
         with open("panel/datos.json", "w", encoding="utf-8") as f:
