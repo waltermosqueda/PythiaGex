@@ -47,6 +47,12 @@ import sys
 
 DIR_HIST = "datos/historico"
 DIR_CONO = os.path.join("conocimiento", "centinela")
+# Donde el indicador de ATAS anota lo que ve. Se busca primero la copia del
+# repositorio y despues la carpeta viva de ATAS, para que funcione igual si se
+# corre en esta maquina o si alguien lo corre despues sobre el archivo.
+DIR_CTX = "datos/contexto"
+DIR_CTX_ATAS = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "PythiaGex", "contexto")
+TOL_CTX_MIN = 8   # cuanto puede separarse la foto de ATAS de la de la cadena
 
 # --------------------------------------------------------------------------
 # Umbrales. Ninguno es una ley: son cortes elegidos y por eso estan aca arriba
@@ -87,6 +93,92 @@ def leer_fotos(sym, fecha):
         except Exception:
             pass
     return fotos
+
+
+def sincronizar_contexto():
+    """Trae al repositorio lo que ATAS fue anotando en su carpeta.
+
+    ATAS escribe en %APPDATA%. Si no se copia, ese conocimiento vive en una
+    sola maquina y se pierde con ella, que es exactamente lo que no queremos.
+    """
+    if not DIR_CTX_ATAS or not os.path.isdir(DIR_CTX_ATAS):
+        return 0
+    os.makedirs(DIR_CTX, exist_ok=True)
+    copiadas = 0
+    for nom in os.listdir(DIR_CTX_ATAS):
+        if not nom.startswith("contexto-") or not nom.endswith(".jsonl"):
+            continue
+        org = os.path.join(DIR_CTX_ATAS, nom)
+        dst = os.path.join(DIR_CTX, nom)
+        # se juntan las lineas de los dos lados sin repetir, por timestamp
+        vistas = {}
+        for ruta in (dst, org):
+            if not os.path.exists(ruta):
+                continue
+            for l in open(ruta, encoding="utf-8"):
+                l = l.strip()
+                if not l:
+                    continue
+                try:
+                    vistas[json.loads(l)["t"]] = l
+                except Exception:
+                    pass
+        if not vistas:
+            continue
+        antes = 0
+        if os.path.exists(dst):
+            antes = sum(1 for _ in open(dst, encoding="utf-8"))
+        with open(dst, "w", encoding="utf-8") as f:
+            for k in sorted(vistas):
+                f.write(vistas[k] + "\n")
+        copiadas += max(0, len(vistas) - antes)
+    return copiadas
+
+
+def leer_contexto(fecha):
+    """Lo que ATAS anoto ese dia, ordenado por hora.
+
+    Devuelve lista vacia si ese dia el indicador no estuvo corriendo. Eso no
+    es un error: significa que esa rueda no tiene contexto de order flow y las
+    hipotesis que lo necesitan van a quedar afuera de la cuenta, no adivinadas.
+    """
+    salida = []
+    for base in (DIR_CTX, DIR_CTX_ATAS):
+        ruta = os.path.join(base, "contexto-%s.jsonl" % fecha) if base else ""
+        if not ruta or not os.path.exists(ruta):
+            continue
+        for l in open(ruta, encoding="utf-8"):
+            l = l.strip()
+            if not l:
+                continue
+            try:
+                salida.append(json.loads(l))
+            except Exception:
+                pass
+        if salida:
+            break
+    salida.sort(key=lambda x: x.get("t", ""))
+    return salida
+
+
+def _mas_cerca(ctx, hora_utc):
+    """La foto de ATAS mas cercana en el tiempo a la foto de la cadena."""
+    if not ctx or not hora_utc:
+        return None
+    try:
+        hh, mm = int(hora_utc[:2]), int(hora_utc[3:5])
+    except Exception:
+        return None
+    obj = hh * 60 + mm
+    mejor, dist = None, 10 ** 9
+    for c in ctx:
+        t = c.get("t") or ""
+        if len(t) < 16:
+            continue
+        d = abs(int(t[11:13]) * 60 + int(t[14:16]) - obj)
+        if d < dist:
+            mejor, dist = c, d
+    return mejor if dist <= TOL_CTX_MIN else None
 
 
 def leer_precio(sym, fecha, base):
@@ -146,6 +238,7 @@ def observar(sym, fecha):
     velas = leer_precio(sym, fecha, base)
     if len(velas) < 10:
         return []
+    ctx_dia = leer_contexto(fecha)
 
     obs = []
     for i, f in enumerate(fotos):
@@ -166,6 +259,15 @@ def observar(sym, fecha):
         gex_prev = fotos[i - 1].get("gex") if i > 0 else None
         gex_delta = (gex - gex_prev) if gex_prev is not None else None
         hora_et = _hora_local(hora)
+
+        # Lo que ATAS estaba viendo en ese mismo momento. Si el indicador no
+        # estaba corriendo, esto queda en None y las hipotesis que dependen de
+        # el se saltean en vez de inventarse.
+        cx = _mas_cerca(ctx_dia, hora)
+        cx_niv = {}
+        if cx:
+            for nv in (cx.get("niveles") or []):
+                cx_niv[(nv.get("nombre"), bool(nv.get("es0dte")))] = nv
 
         for grupo, clave0 in (("niv", False), ("niv0", True)):
             niveles = f.get(grupo) or {}
@@ -209,10 +311,54 @@ def observar(sym, fecha):
                     "chex": f.get("chex"),
                     "dex": f.get("dex"),
                     "gex_delta": gex_delta,
+                    **_desde_atas(cx, cx_niv.get((tipo, clave0))),
                     "minutos_restantes": len(restantes),
                     **res,
                 })
     return obs
+
+
+def _desde_atas(cx, nv):
+    """Los campos que aporta ATAS, o None parejo si no estaba corriendo.
+
+    Se devuelven siempre las mismas claves, presentes o no. Una observacion a
+    la que le falta una clave y otra que la tiene en None son cosas distintas
+    para cualquier analisis, y mezclarlas ensucia todo.
+    """
+    vacio = {"vol_nivel": None, "delta_nivel": None, "pct_sesion": None,
+             "absorcion": None, "nodo": None, "dist_vwap_tk": None,
+             "confluencia": None, "apilados": None, "lado_apilados": None,
+             "print_grande": None, "divergencia": None, "lado_divergencia": None,
+             "poc_previo_virgen": None, "dist_poc_tk": None,
+             "dentro_area_valor": None}
+    if not cx or not nv:
+        return vacio
+    ses = cx.get("sesion") or {}
+    tick = cx.get("tick") or 0.25
+    fut = nv.get("fut")
+    d_poc = None
+    if fut and ses.get("poc") and tick:
+        d_poc = round((fut - ses["poc"]) / tick)
+    dentro = None
+    if fut and ses.get("vah") and ses.get("val"):
+        dentro = bool(ses["val"] <= fut <= ses["vah"])
+    return {
+        "vol_nivel": nv.get("vol"),
+        "delta_nivel": nv.get("delta"),
+        "pct_sesion": nv.get("pct_sesion"),
+        "absorcion": nv.get("absorcion"),
+        "nodo": nv.get("nodo"),
+        "dist_vwap_tk": nv.get("dist_vwap_tk"),
+        "confluencia": nv.get("confluencia"),
+        "apilados": nv.get("apilados"),
+        "lado_apilados": nv.get("lado_apilados"),
+        "print_grande": nv.get("print_grande"),
+        "divergencia": nv.get("divergencia"),
+        "lado_divergencia": nv.get("lado_divergencia"),
+        "poc_previo_virgen": cx.get("poc_previo_virgen"),
+        "dist_poc_tk": d_poc,
+        "dentro_area_valor": dentro,
+    }
 
 
 def _hora_local(hhmm):
@@ -338,6 +484,28 @@ def factores_a_probar(obs):
         ("la gamma se esta agrandando respecto de la foto anterior",
          lambda o: (None if o.get("gex_delta") is None
                     else o["gex_delta"] > 0)),
+        # --- de aca para abajo, lo que ve ATAS. Solo existe en las ruedas en
+        # las que el indicador estuvo corriendo; en las demas devuelve None y
+        # la hipotesis queda afuera de la cuenta, no adivinada.
+        ("el muro cae sobre un nodo de alto volumen",
+         lambda o: (None if o.get("nodo") is None else o["nodo"] == "alto")),
+        ("el muro cae sobre un nodo de bajo volumen (hueco)",
+         lambda o: (None if o.get("nodo") is None else o["nodo"] == "bajo")),
+        ("hay absorcion en el nivel",
+         lambda o: o.get("absorcion")),
+        ("el nivel esta adentro del area de valor",
+         lambda o: o.get("dentro_area_valor")),
+        ("el nivel tiene tres o mas confluencias",
+         lambda o: (None if o.get("confluencia") is None
+                    else o["confluencia"] >= 3)),
+        ("hay imbalances apilados en el nivel",
+         lambda o: (None if o.get("apilados") is None else o["apilados"] > 0)),
+        ("hubo un print grande en el nivel",
+         lambda o: o.get("print_grande")),
+        ("hay divergencia de delta en el nivel",
+         lambda o: o.get("divergencia")),
+        ("el POC de ayer sigue sin tocarse",
+         lambda o: o.get("poc_previo_virgen")),
     ]
 
 
@@ -391,10 +559,17 @@ def analizar(obs, titulo):
     # ---- a que factor esta reaccionando de verdad
     print("\n  QUE FACTOR SEPARA LO QUE AGUANTA DE LO QUE SE ROMPE")
     print("  %-52s %7s %7s %9s" % ("factor", "con", "sin", "diferencia"))
-    hallazgos, probados, sin_grupo = [], 0, []
+    hallazgos, probados, sin_grupo, sin_dato = [], 0, [], []
     for nombre, cond in factores_a_probar(obs):
         r = comparar(resueltos, nombre, cond, "aguanto")
         if not r:
+            # Dos motivos muy distintos para no poder comparar, y confundirlos
+            # seria mentir por omision: o no hay NINGUN dato todavia (el
+            # indicador de ATAS no estuvo corriendo esa rueda), o hay dato
+            # pero todos los casos caen del mismo lado.
+            if all(cond(o) is None for o in resueltos):
+                sin_dato.append(nombre)
+                continue
             # uno de los dos grupos quedo vacio: no hay con que comparar.
             # Pasa cuando toda la rueda cae del mismo lado, por ejemplo si
             # estuvo entera en gamma corta. No es un error, es que ese factor
@@ -409,6 +584,10 @@ def analizar(obs, titulo):
         if r["concluyente"]:
             hallazgos.append(r)
 
+    if sin_dato:
+        print("\n  sin dato todavia (el indicador de ATAS no anoto estas ruedas):")
+        for nom in sin_dato:
+            print("     %s" % nom)
     if sin_grupo:
         print("\n  sin comparacion posible, todos los casos caen del mismo lado:")
         for nom in sin_grupo:
@@ -510,6 +689,10 @@ def main():
         fechas = [args[args.index("--fecha") + 1]]
     else:
         fechas = [hoy]
+
+    n = sincronizar_contexto()
+    if n:
+        print("  contexto de ATAS: %d anotaciones nuevas traidas al repositorio" % n)
 
     todas = []
     for fe in fechas:

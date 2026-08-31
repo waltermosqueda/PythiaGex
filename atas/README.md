@@ -18,7 +18,7 @@ ganando ahí.**
 
 | Carpeta | Qué es |
 |---|---|
-| `PythiaGexNiveles/` | El indicador. Tres archivos de código. |
+| `PythiaGexNiveles/` | El indicador. Cinco archivos de código. |
 | `_api/` | Herramienta que lee la API de ATAS por reflexión. |
 
 ### `PythiaGexNiveles/`
@@ -26,7 +26,50 @@ ganando ahí.**
 - **`NivelesGamma.cs`** — el indicador: ajustes, descarga, confluencia, dibujo.
 - **`Contexto.cs`** — lo que se saca del footprint de ATAS: perfil de volumen,
   VWAP con bandas, delta acumulado, y el volumen y delta parados en cada nivel.
+- **`Gatillos.cs`** — el order flow como disparador: imbalances apilados,
+  prints grandes y divergencia de delta. **Solo se miran parados sobre un nivel
+  publicado.** En el resto del gráfico son ruido, y ese es el filtro que evita
+  que la pantalla se llene de flechitas sin sentido.
+- **`Bitacora.cs`** — el puente con el centinela. Escribe una línea cada cinco
+  minutos con lo que ATAS vio en cada nivel.
 - **`Estilo.cs`** — los enums de configuración visual.
+
+## El bucle que faltaba
+
+Hasta ahora el indicador calculaba el perfil de volumen, el VWAP, la absorción
+y el order flow parado en cada nivel… y lo tiraba en cada cuadro. El centinela,
+que mide si lo que prometemos pasa de verdad, sólo podía probar hipótesis
+sacadas de la cadena de opciones.
+
+O sea: **las hipótesis con más chance de ser ciertas eran justo las únicas que
+no se podían ni formular.**
+
+`Bitacora.cs` cierra ese bucle. Escribe en
+`%APPDATA%\ATAS\PythiaGex\contexto\contexto-AAAA-MM-DD.jsonl` una línea por
+foto con, para cada nivel: el volumen y el delta parados ahí, si hay absorción,
+si cae sobre un nodo de alto o bajo volumen, la distancia al VWAP, el puntaje
+de confluencia, y los tres gatillos. `centinela.py` lo levanta, lo copia al
+repositorio y con eso puede por fin preguntar cosas como *«un muro que además
+cae sobre un nodo de alto volumen, ¿aguanta más?»* y contestarlas con números.
+
+Reglas de la bitácora, para que no ensucie nada:
+
+- **Un campo que no se pudo medir sale `null`, nunca cero.**
+- No bloquea el dibujo: escribe en otro hilo y se traga cualquier error.
+- No lleva ninguna ruta personal adentro: por defecto usa la carpeta de datos
+  de ATAS del usuario que lo corre.
+
+## Perfiles largos
+
+Además del perfil de la sesión, ahora calcula el del **día anterior** y el de
+la **semana**, con su VWAP semanal. El del día anterior trae una marca extra:
+si el precio de hoy todavía no tocó el POC de ayer, ese nivel queda señalado
+como **POC virgen** (*naked POC*), que es de los imanes más usados en Market
+Profile — quedaron órdenes sin ejecutar en el precio donde ayer se acordó más.
+
+Los tres perfiles se recalculan **sólo cuando arranca una sesión nueva**. Hasta
+entonces no pueden cambiar, y recorrer miles de footprints en cada barra sería
+tirar tiempo.
 
 ### `_api/`
 

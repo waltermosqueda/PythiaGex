@@ -49,6 +49,7 @@ namespace PythiaGex
             public int Puntaje;
             public string Razones = "";
             public Contexto.Zona Flujo;
+            public Gatillos.Senal Gatillo;
             // Si el segundo strike pesa casi lo mismo, la pared no es una
             // raya: es una zona con dos paredes comparables.
             public double? CompetidorIdx, CompetidorFut, CompetidorPct, SeparacionPts;
@@ -136,6 +137,20 @@ namespace PythiaGex
         private volatile string _error = "";
         private int _bajando;
         private readonly Contexto _ctx = new();
+        // El dia anterior y la semana se calculan aparte y casi nunca: no
+        // cambian hasta que arranca una sesion nueva. Recalcularlos en cada
+        // barra seria recorrer miles de footprints para nada.
+        private readonly Contexto _ctxPrev = new();
+        private readonly Contexto _ctxSem = new();
+        private int _inicioSesionCalc = -1;
+        private bool _pocPrevioVirgen;
+        private readonly Gatillos _gat = new();
+        private readonly Bitacora _bit = new();
+        // OnRender corre en cada cuadro, pero mirar el footprint de veinte
+        // barras por nivel es carisimo. Este aviso hace que los gatillos se
+        // recalculen solo cuando el contexto se recalculo, no sesenta veces
+        // por segundo.
+        private bool _ctxRecalculado;
         private readonly Stopwatch _relojCtx = Stopwatch.StartNew();
         private int _ultimaBarraCtx = -1;
         private DateTime _ultimaAlerta = DateTime.MinValue;
@@ -239,6 +254,38 @@ namespace PythiaGex
         // ==================================================================
         // Ajustes - Contexto de ATAS
         // ==================================================================
+        [Display(Name = "Anotar lo que ATAS ve (para el centinela)", GroupName = "Bitacora", Order = 1,
+                 Description = "Escribe una linea por foto con el perfil, el VWAP, la absorcion y el order flow parado en cada nivel. Es lo que le permite al centinela medir si esas cosas importan de verdad. Sin esto, el indicador calcula todo y lo tira.")]
+        public bool VerBitacora { get; set; } = true;
+
+        [Display(Name = "Minutos entre anotaciones", GroupName = "Bitacora", Order = 2,
+                 Description = "Mas seguido no aporta: el perfil no cambia de manera util entre dos minutos.")]
+        public int MinutosBitacora { get; set; } = 5;
+
+        [Display(Name = "Carpeta (vacio = la de ATAS)", GroupName = "Bitacora", Order = 3,
+                 Description = "Por defecto %APPDATA%\\ATAS\\PythiaGex\\contexto. El centinela lee de ahi.")]
+        public string CarpetaBitacora { get; set; } = "";
+
+        [Display(Name = "Order flow como gatillo (solo sobre niveles)", GroupName = "Order flow", Order = 1,
+                 Description = "Imbalances apilados, prints grandes y divergencia de delta. Se miran UNICAMENTE dentro de la zona de un nivel: en el resto del grafico son ruido.")]
+        public bool VerGatillos { get; set; } = true;
+
+        [Display(Name = "Ventana del gatillo (barras)", GroupName = "Order flow", Order = 2,
+                 Description = "Cuantas barras para atras se mira. Muy larga deja de ser gatillo y pasa a ser contexto, que ya lo da el perfil.")]
+        public int VentanaGatillo { get; set; } = 20;
+
+        [Display(Name = "Factor de imbalance (diagonal)", GroupName = "Order flow", Order = 3,
+                 Description = "Cuantas veces tiene que ganar una diagonal para llamarla desbalanceada. 3 es la convencion de footprint.")]
+        public double FactorImbalance { get; set; } = 3.0;
+
+        [Display(Name = "Imbalances seguidos para que cuente", GroupName = "Order flow", Order = 4,
+                 Description = "Uno solo es ruido; tres apilados es alguien barriendo el libro.")]
+        public int MinApilados { get; set; } = 3;
+
+        [Display(Name = "Factor de print grande", GroupName = "Order flow", Order = 5,
+                 Description = "Cuantas veces el volumen tipico de un precio tiene que tener un print para llamarlo grande.")]
+        public double FactorPrint { get; set; } = 8.0;
+
         [Display(Name = "Perfil de volumen (histograma)", GroupName = "Contexto de ATAS", Order = 50)]
         public LadoPerfil Perfil { get; set; } = LadoPerfil.Izquierda;
 
@@ -262,6 +309,25 @@ namespace PythiaGex
 
         [Display(Name = "Bandas de desvio del VWAP", GroupName = "Contexto de ATAS", Order = 57)]
         public bool VerBandas { get; set; } = true;
+
+        [Display(Name = "Perfil del dia anterior (POC, VAH, VAL)", GroupName = "Contexto de ATAS", Order = 59,
+                 Description = "El area de valor de ayer. Donde el mercado acordo precio la rueda pasada.")]
+        public bool VerPerfilPrevio { get; set; } = true;
+
+        [Display(Name = "Marcar el POC virgen de ayer", GroupName = "Contexto de ATAS", Order = 60,
+                 Description = "Un POC de ayer que hoy todavia no se toco. Es de los imanes mas usados en Market Profile.")]
+        public bool VerPocVirgen { get; set; } = true;
+
+        [Display(Name = "Perfil semanal (POC, VAH, VAL)", GroupName = "Contexto de ATAS", Order = 61,
+                 Description = "El mismo perfil pero de la semana entera. Da el marco grande.")]
+        public bool VerPerfilSemanal { get; set; } = false;
+
+        [Display(Name = "VWAP semanal", GroupName = "Contexto de ATAS", Order = 62,
+                 Description = "Precio promedio ponderado por volumen de la semana. Los fondos lo usan como referencia de ejecucion.")]
+        public bool VerVwapSemanal { get; set; } = true;
+
+        [Display(Name = "Dias del perfil semanal", GroupName = "Contexto de ATAS", Order = 63)]
+        public int DiasSemana { get; set; } = 5;
 
         [Display(Name = "Referencias de sesion (open, HOD, LOD, IB)", GroupName = "Contexto de ATAS", Order = 58)]
         public bool VerSesion { get; set; } = true;
@@ -1001,6 +1067,7 @@ namespace PythiaGex
                 && _relojCtx.ElapsedMilliseconds < Math.Max(1, SegundosContexto) * 1000) return;
             _ultimaBarraCtx = ultima;
             _relojCtx.Restart();
+            _ctxRecalculado = true;
 
             int desde;
             if (Alcance == AlcancePerfil.Visibles)
@@ -1014,6 +1081,7 @@ namespace PythiaGex
                     if (IsNewSession(b)) { desde = b; break; }
             }
             var ts = InstrumentInfo != null ? InstrumentInfo.TickSize : 0.25m;
+            CalcularPerfilesLargos(desde, ultima, ts);
             _ctx.PctValueArea = (decimal)Math.Max(10, Math.Min(95, PctValueArea)) / 100m;
             _ctx.FactorNodoAlto = (decimal)Math.Max(1.1, FactorNodoAlto);
             _ctx.FactorNodoBajo = (decimal)Math.Max(0.01, Math.Min(0.9, FactorNodoBajo));
@@ -1021,6 +1089,64 @@ namespace PythiaGex
             _ctx.MaxRatioAbsorcion = (decimal)Math.Max(0.01, MaxRatioAbsorcion);
             _ctx.MinutosIb = Math.Max(1, MinutosIb);
             try { _ctx.Calcular(GetCandle, desde, ultima, ts); } catch { }
+
+            // El POC de ayer es "virgen" mientras el precio de hoy no lo haya
+            // tocado. Ese es el estado que lo vuelve un iman: hay ordenes que
+            // quedaron sin ejecutar en el precio donde ayer se acordo mas.
+            _pocPrevioVirgen = false;
+            if (_ctxPrev.Listo && _ctx.Listo && _ctxPrev.Poc > 0)
+                _pocPrevioVirgen = _ctxPrev.Poc > _ctx.Maximo || _ctxPrev.Poc < _ctx.Minimo;
+
+            _gat.Ventana = Math.Max(4, VentanaGatillo);
+            _gat.FactorImbalance = (decimal)Math.Max(1.5, FactorImbalance);
+            _gat.MinApilados = Math.Max(2, MinApilados);
+            _gat.FactorPrint = (decimal)Math.Max(2.0, FactorPrint);
+        }
+
+        /// <summary>
+        /// Perfil del dia anterior y de la semana. Se recalculan solo cuando
+        /// arranca una sesion nueva, porque hasta entonces no pueden cambiar.
+        /// </summary>
+        private void CalcularPerfilesLargos(int inicioSesion, int ultima, decimal ts)
+        {
+            if (inicioSesion == _inicioSesionCalc) return;
+            _inicioSesionCalc = inicioSesion;
+
+            // se camina para atras juntando los arranques de sesion que hay
+            // cargados en el grafico. Si el historico no llega, no se inventa
+            // nada: el perfil queda sin calcular y se dice.
+            var arranques = new List<int>();
+            for (int b = inicioSesion - 1; b > 0 && arranques.Count <= Math.Max(1, DiasSemana); b--)
+                if (IsNewSession(b)) arranques.Add(b);
+
+            if (arranques.Count >= 1)
+            {
+                int ini = arranques[0], fin = inicioSesion - 1;
+                if (fin > ini)
+                {
+                    CopiarUmbrales(_ctxPrev);
+                    try { _ctxPrev.Calcular(GetCandle, ini, fin, ts); } catch { }
+                }
+            }
+            else { _ctxPrev.Listo = false; }
+
+            if (arranques.Count >= 2)
+            {
+                int ini = arranques[Math.Min(arranques.Count - 1, Math.Max(1, DiasSemana) - 1)];
+                CopiarUmbrales(_ctxSem);
+                try { _ctxSem.Calcular(GetCandle, ini, ultima, ts); } catch { }
+            }
+            else { _ctxSem.Listo = false; }
+        }
+
+        private void CopiarUmbrales(Contexto c)
+        {
+            c.PctValueArea = (decimal)Math.Max(10, Math.Min(95, PctValueArea)) / 100m;
+            c.FactorNodoAlto = (decimal)Math.Max(1.1, FactorNodoAlto);
+            c.FactorNodoBajo = (decimal)Math.Max(0.01, Math.Min(0.9, FactorNodoBajo));
+            c.MinPctAbsorcion = (decimal)Math.Max(0.1, MinPctAbsorcion);
+            c.MaxRatioAbsorcion = (decimal)Math.Max(0.01, MaxRatioAbsorcion);
+            c.MinutosIb = Math.Max(1, MinutosIb);
         }
 
         // ==================================================================
@@ -1056,6 +1182,34 @@ namespace PythiaGex
                     { n.Puntaje++; razones.Add("referencia de sesion"); }
                 }
 
+                // El area de valor de AYER. Que una pared de gamma caiga sobre
+                // el POC de ayer son dos razones distintas para que el precio
+                // se frene ahi: una viene de las opciones y la otra del
+                // acuerdo de precio de la rueda pasada.
+                if (VerPerfilPrevio && _ctxPrev.Listo)
+                {
+                    if (Math.Abs(p - _ctxPrev.Poc) <= tol)
+                    {
+                        n.Puntaje++;
+                        razones.Add(_pocPrevioVirgen ? "POC de ayer sin tocar" : "POC de ayer");
+                        if (_pocPrevioVirgen && VerPocVirgen) n.Puntaje++;
+                    }
+                    if (Math.Abs(p - _ctxPrev.Vah) <= tol || Math.Abs(p - _ctxPrev.Val) <= tol)
+                    { n.Puntaje++; razones.Add("area de valor de ayer"); }
+                }
+
+                if (VerPerfilSemanal && _ctxSem.Listo)
+                {
+                    if (Math.Abs(p - _ctxSem.Poc) <= tol)
+                    { n.Puntaje++; razones.Add("POC semanal"); }
+                    if (Math.Abs(p - _ctxSem.Vah) <= tol || Math.Abs(p - _ctxSem.Val) <= tol)
+                    { n.Puntaje++; razones.Add("area de valor semanal"); }
+                }
+
+                if (VerVwapSemanal && _ctxSem.Listo && _ctxSem.Vwap > 0
+                    && Math.Abs(p - _ctxSem.Vwap) <= tol)
+                { n.Puntaje++; razones.Add("VWAP semanal"); }
+
                 // una pared del 0DTE encima de una de la cadena completa pesa doble
                 if (d.Niveles.Any(o => !ReferenceEquals(o, n) && o.Es0dte != n.Es0dte
                                        && Math.Abs((decimal)(o.Fut ?? 0) - p) <= tol))
@@ -1066,8 +1220,107 @@ namespace PythiaGex
                     n.Flujo = _ctx.EnNivel(p, tick, Math.Max(1, TicksZona));
                     if (n.Flujo.Absorcion) { n.Puntaje++; razones.Add("absorcion"); }
                 }
+
+                // El gatillo. Solo se calcula si el precio esta lo bastante
+                // cerca como para que el nivel este en juego: mirar el
+                // footprint de un nivel a doscientos ticks es gastar tiempo
+                // en algo que hoy no va a pasar.
+                if (!VerGatillos) n.Gatillo = null;
+                if (VerGatillos && _ctxRecalculado && CurrentBar > 2)
+                {
+                    var pa = PrecioActual();
+                    n.Gatillo = null;
+                    if (pa > 0 && Math.Abs(pa - p) <= tick * Math.Max(4, TicksZona) * 8)
+                    {
+                        try { n.Gatillo = _gat.Mirar(GetCandle, CurrentBar - 1, p, tick,
+                                                     Math.Max(1, TicksZona)); }
+                        catch { }
+                        if (n.Gatillo != null)
+                        {
+                            if (n.Gatillo.Apilados > 0)
+                            { n.Puntaje++; razones.Add(n.Gatillo.Apilados + " imbalances " +
+                                                       (n.Gatillo.Lado > 0 ? "compradores" : "vendedores")); }
+                            if (n.Gatillo.PrintGrande) { n.Puntaje++; razones.Add("print grande"); }
+                            if (n.Gatillo.Divergencia)
+                            { n.Puntaje++; razones.Add(n.Gatillo.LadoDivergencia > 0
+                                                       ? "divergencia alcista" : "divergencia bajista"); }
+                        }
+                    }
+                }
                 n.Razones = string.Join(" + ", razones);
             }
+
+            AnotarBitacora(d, tick);
+            _ctxRecalculado = false;
+        }
+
+        /// <summary>
+        /// Deja por escrito lo que ATAS vio en cada nivel. Es el puente con el
+        /// centinela: sin esto, todo el contexto de order flow se calcula, se
+        /// dibuja y se tira, y despues no hay forma de saber si importaba.
+        /// </summary>
+        private void AnotarBitacora(Datos d, decimal tick)
+        {
+            if (!VerBitacora || d == null || !_ctx.Listo) return;
+            _bit.MinutosEntreAnotaciones = Math.Max(1, MinutosBitacora);
+            _bit.Carpeta = CarpetaBitacora ?? "";
+            if (!_bit.Toca()) return;
+
+            var precio = PrecioActual();
+            if (precio <= 0) return;
+            var tol = tick * Math.Max(1, ToleranciaTicks);
+
+            var lista = new List<Bitacora.Anotacion>();
+            foreach (var n in d.Niveles)
+            {
+                var pf = n.Fut ?? n.Idx;
+                if (!pf.HasValue || pf.Value <= 0) continue;
+                var p = (decimal)pf.Value;
+
+                string nodo = "normal";
+                if (_ctx.NodosAltos.Any(h => Math.Abs(p - h) <= tol)) nodo = "alto";
+                else if (_ctx.NodosBajos.Any(h => Math.Abs(p - h) <= tol)) nodo = "bajo";
+
+                var a = new Bitacora.Anotacion
+                {
+                    Nombre = n.Tipo ?? n.Nombre,
+                    Es0dte = n.Es0dte,
+                    PrecioFut = n.Fut, PrecioIdx = n.Idx,
+                    GexM = n.GexM, Prob = n.ProbFinal, Iv = n.Iv,
+                    Puntaje = n.Puntaje, Razones = n.Razones,
+                    Nodo = nodo,
+                    DistPrecioTk = (int)Math.Round((p - precio) / tick),
+                    DistVwapTk = _ctx.Vwap > 0
+                        ? (int?)Math.Round((p - _ctx.Vwap) / tick) : null,
+                };
+                if (n.Flujo != null && n.Flujo.Volumen > 0)
+                {
+                    a.Volumen = (double)n.Flujo.Volumen;
+                    a.Delta = (double)n.Flujo.Delta;
+                    a.PctSesion = (double)n.Flujo.PctVolumenSesion;
+                    a.Absorcion = n.Flujo.Absorcion;
+                }
+                if (n.Gatillo != null && n.Gatillo.Listo)
+                {
+                    a.Apilados = n.Gatillo.Apilados;
+                    a.LadoApilados = n.Gatillo.Lado;
+                    a.PrintVeces = (double)n.Gatillo.PrintVeces;
+                    a.PrintGrande = n.Gatillo.PrintGrande;
+                    a.Divergencia = n.Gatillo.Divergencia;
+                    a.LadoDivergencia = n.Gatillo.LadoDivergencia;
+                }
+                lista.Add(a);
+            }
+            if (lista.Count == 0) return;
+
+            // El archivo se escribe fuera del hilo del dibujo. Son cuatro
+            // kilobytes cada cinco minutos, pero el grafico no tiene por que
+            // esperar a un disco.
+            var inst = InstrumentInfo != null ? InstrumentInfo.Instrument : "";
+            var pd = (double)precio; var td = (double)tick;
+            var virgen = _pocPrevioVirgen;
+            System.Threading.Tasks.Task.Run(() =>
+                _bit.Anotar(inst, pd, td, _ctx, _ctxPrev, _ctxSem, virgen, lista));
         }
 
         // ==================================================================

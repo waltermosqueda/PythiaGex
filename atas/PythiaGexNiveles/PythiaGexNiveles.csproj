@@ -21,6 +21,8 @@
     <Compile Include="NivelesGamma.cs" />
     <Compile Include="Contexto.cs" />
     <Compile Include="Estilo.cs" />
+    <Compile Include="Gatillos.cs" />
+    <Compile Include="Bitacora.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.
