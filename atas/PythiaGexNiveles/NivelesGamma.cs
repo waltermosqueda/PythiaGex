@@ -481,7 +481,19 @@ namespace PythiaGex
                     ? "SI, alcanzable: " + obj.GetType().Name
                     : "el servicio no esta registrado para indicadores";
             }
-            catch (Exception e) { _opcionesAtas = "falla: " + Recortar(e.Message, 50); }
+            catch (System.Reflection.TargetInvocationException e)
+            {
+                // Invoke envuelve la excepcion real. Sin desenvolverla el
+                // mensaje no dice nada: "thrown by the target of an invocation".
+                var i = e.InnerException;
+                _opcionesAtas = "NO: " + (i != null
+                    ? i.GetType().Name + " - " + Recortar(i.Message, 60)
+                    : Recortar(e.Message, 60));
+            }
+            catch (Exception e)
+            {
+                _opcionesAtas = "NO: " + e.GetType().Name + " - " + Recortar(e.Message, 60);
+            }
         }
 
         // ==================================================================
