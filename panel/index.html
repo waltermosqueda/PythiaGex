@@ -79,6 +79,10 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
 .tn .al{font:9px var(--mo);color:var(--t3)}
 .tn tr.aq td{background:var(--sf2)}
 .wf{color:var(--ne);font-weight:700}
+.al{border-radius:4px;padding:9px 12px;margin-bottom:8px;font:12px var(--sa);line-height:1.45;
+ border:1px solid var(--ln2)}
+.al.ne{background:var(--neb);border-color:var(--ne);color:var(--tx)}
+.al.ac{background:var(--sf2);border-color:var(--ac2);color:var(--tx)}
 .tag{font:600 8px var(--sa);letter-spacing:.05em;text-transform:uppercase;color:var(--t3);
  border:1px solid var(--ln2);border-radius:2px;padding:1px 4px;vertical-align:1px}
 .id{font:700 9px var(--mo);color:var(--ac);border:1px solid var(--ac2);border-radius:3px;padding:1px 5px}
@@ -108,6 +112,7 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
   <div style="text-align:right"><div class="lbl" style="margin-bottom:5px">Gamma Regime</div><span class="rg" id="reg">&#8212;</span></div>
 </div>
 
+<div id="alarma"></div>
 <div class="kp" id="kp"></div>
 
 <div class="cd">
@@ -192,6 +197,9 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
   </div>
   <div class="cd">
     <header><h2>Referencias de sesi&#243;n</h2></header><div id="ses"></div>
+  </div>
+  <div class="cd">
+    <header><h2>Deriva de niveles</h2><span class="lg">entre corridas</span></header><div id="der"></div>
   </div>
   <div class="cd">
     <header><h2>Concentraci&#243;n</h2></header><div id="conc"></div>
@@ -784,21 +792,84 @@ function pintarBasis(){
   if(D.base==null){ bel.textContent=''; return; }
 
   var ok=bd.confiable, col='var(--'+(ok?'po':'ne')+')';
-  var t='<span title="diferencia entre el futuro y el indice, medida por paridad put-call sobre la misma cadena">'+
-    'Basis '+((D.futuro&&D.futuro.contrato)||'FUT')+' &minus; '+D.sym+' '+
-    (D.base>0?'+':'')+D.base.toFixed(2)+'</span>'+
-    ' &middot; carry teorico '+(bd.carry_teorico>0?'+':'')+bd.carry_teorico+
-    ' &middot; <span style="color:'+col+'">'+
-      (ok?'coincide, medicion firme':'no coincide, medicion floja')+'</span>'+
-    ' <span style="color:var(--t3)">('+bd.muestras+' strikes, dispersion '+bd.dispersion+' pts)</span>';
+  var fu=(D.futuro&&D.futuro.contrato)||'FUT';
+  var t='<span title="diferencia entre el futuro y el indice, por recta sobre los forwards de la cadena">'
+    +'Basis '+fu+' &minus; '+D.sym+' <strong>'+(D.base>0?'+':'')+D.base.toFixed(2)+'</strong></span>'
+    +' &middot; <span style="color:'+col+'">'+(ok?'medicion firme':'medicion floja')+'</span>'
+    +' <span style="color:var(--t3)">('+bd.vencimientos_usados+' vencimientos, error '
+    +bd.residuo_ticks+' ticks, '+bd.muestras+' strikes)</span>';
 
+  // lo que antes estaba escrito a mano y ahora se mide
+  if(bd.tasa_corta!=null){
+    t+='<br><span style="color:var(--t3)">Tasa corta <strong>'+(bd.tasa_corta*100).toFixed(3)
+      +'%</strong> ('+(bd.tasa_fecha||'')+', Tesoro EEUU) &middot; dividendo implicito por la cadena <strong>'
+      +((bd.dividendo_implicito||0)*100).toFixed(2)+'%</strong>'
+      +((D.tasas&&D.tasas.medida===false)?' <span class="wf">tasa de respaldo, el Tesoro no contesto</span>':'')
+      +'</span>';
+  }
   if(D.indice_atrasado){
-    t+='<br><span style="color:var(--ac)">&#9888; el '+D.sym+' publicado ('+
-      D.S.toLocaleString('es-AR')+') es el cierre anterior. La cadena cotiza el contado en <strong>'+
-      D.contado_implicito.toLocaleString('es-AR')+'</strong>, '+
-      (D.desfase_indice>0?'+':'')+D.desfase_indice+' puntos.</span>';
+    t+='<br><span style="color:var(--ac)">&#9888; el '+D.sym+' publicado ('
+      +D.indice_publicado.toLocaleString('es-AR')+') es el cierre anterior. La cadena cotiza el contado en <strong>'
+      +D.contado_implicito.toLocaleString('es-AR')+'</strong>, '
+      +(D.desfase_indice>0?'+':'')+D.desfase_indice+' puntos. Todo el panel usa el contado.</span>';
   }
   bel.innerHTML=t;
+}
+
+/* ---------- deriva: cuanto se movieron los niveles desde la corrida anterior ---------- */
+function pintarDeriva(){
+  var el=$('#der'); if(!el) return;
+  var L=D.lookbacks||{}, claves=Object.keys(L);
+  var filas=[];
+  var mp={call_wall:'Call Wall',put_wall:'Put Wall',gamma_pin:'Gamma Pin'};
+  claves.forEach(function(k){
+    var s=L[k]; if(!s||!s.niv) return;
+    Object.keys(mp).forEach(function(n){
+      var ant=s.niv[n], act=(D.niveles_indice||{})[n];
+      if(ant==null||act==null) return;
+      filas.push([k, s.edad_min, mp[n], ant, act, act-ant]);
+    });
+  });
+  if(!filas.length){
+    el.innerHTML='<div class="nt" style="border:0">Todavia no hay dos corridas de la misma sesion'
+      +' para comparar. Con el mercado abierto se llena solo, cada 15 minutos.</div>';
+    return;
+  }
+  el.innerHTML='<table class="tn"><thead><tr><th>Hace</th><th>Nivel</th>'
+    +'<th class="n">era</th><th class="n">es</th><th class="n">movio</th></tr></thead><tbody>'
+    +filas.map(function(f){
+      return '<tr><td>'+f[1]+' min</td><td class="k">'+f[2]+'</td>'
+        +'<td class="n">'+f[3]+'</td><td class="n">'+f[4]+'</td>'
+        +'<td class="n '+(f[5]===0?'':(f[5]>0?'po':'ne'))+'">'
+        +(f[5]===0?'quieto':(f[5]>0?'+':'')+f[5])+'</td></tr>';
+    }).join('')+'</tbody></table>'
+    +'<div class="nt">Esto responde con numeros si el retraso de 15 minutos cuesta plata.'
+    +' Si las paredes quedan quietas entre corridas, el retraso no importa para ubicarlas.'
+    +' Si se mueven, aca se va a ver.</div>';
+}
+
+/* ---------- alarma de dato vencido ---------- */
+function pintarAlarma(){
+  var el=$('#alarma'); if(!el) return;
+  var m=D.edad_cadena_min, av=[];
+  if(D.timestamp_incoherente){
+    av.push(['ne','El timestamp de la cadena no cierra con el reloj. La zona horaria del feed'
+      +' pudo cambiar: no uses estos niveles hasta revisarlo.']);
+  }else if(D.cadena_muy_vencida){
+    av.push(['ne','CBOE no refresca esta cadena hace '+Math.round(m/60)+' horas ('
+      +D.timestamp+'). Los niveles son de otra sesion. <strong>No operes con esto.</strong>']);
+  }else if(D.cadena_vencida){
+    av.push(['ac','La cadena tiene '+m+' minutos. No es el ultimo precio: '
+      +'sirve para ubicar niveles, no para cronometrar una entrada.']);
+  }
+  if(D.base!=null && !((D.base_detalle||{}).confiable)){
+    av.push(['ne','La base '+((D.futuro&&D.futuro.contrato)||'FUT')+' no paso el control: '
+      +(D.base_detalle||{}).residuo_ticks+' ticks de error entre vencimientos. '
+      +'Los niveles del indice sirven; los del futuro no los dibujes.']);
+  }
+  el.innerHTML=av.map(function(a){
+    return '<div class="al '+a[0]+'">'+a[1]+'</div>';
+  }).join('');
 }
 
 function pintarLaterales(){
@@ -1026,7 +1097,7 @@ function pintarIdentidad(){
 
 /* ---------- arranque ---------- */
 function redibujar(){ dibPrecio(); dibHist(); dibCurva(); dibSkew(); dibTerm(); dibIntra(); }
-function pintarTodo(){ pintarCabecera(); pintarNiveles(); pintarEscalera(); pintarHuecos();
+function pintarTodo(){ pintarCabecera(); pintarAlarma(); pintarDeriva(); pintarNiveles(); pintarEscalera(); pintarHuecos();
   pintarSesion(); pintarCinta(); pintarTabla(); pintarMatriz(); pintarLaterales();
   pintarIdentidad(); redibujar(); }
 
@@ -1054,7 +1125,7 @@ $('#vp').addEventListener('click',function(e){
   var b=e.target.closest('button'); if(!b||b.disabled){ return; }
   vistaPrecio=b.dataset.v;
   Array.prototype.forEach.call(this.children,function(x){x.setAttribute('aria-selected',x===b);});
-  pintarCabecera(); pintarNiveles(); pintarEscalera(); pintarCinta();
+  pintarCabecera(); pintarAlarma(); pintarNiveles(); pintarEscalera(); pintarCinta();
   pintarLaterales(); dibPrecio(); dibHist(); dibCurva();
 });
 

@@ -29,6 +29,12 @@ def guardar(sym: str, resumen: dict, strikes: dict):
         "chex": resumen.get("net_chex_B"),
         "flip": resumen.get("gamma_flip"),
         "em": resumen.get("expected_move"),
+        # Los niveles con nombre se guardan para poder medir despues cuanto se
+        # mueven entre corrida y corrida. Esa es la unica forma honesta de
+        # saber si un retraso de 15 minutos cuesta plata o no cuesta nada.
+        "niv": resumen.get("niveles"),
+        "niv0": resumen.get("niveles_0dte"),
+        "ts_cadena": resumen.get("timestamp"),
         "k": {str(k): [round(v["gex"]/1e6), round(v["oi_call"]), round(v["oi_put"])]
               for k, v in strikes.items()},
     }
@@ -64,6 +70,7 @@ def lookbacks(sym: str, minutos=(10, 20, 30), fecha=None) -> dict:
             f = cand[-1]
             edad = (ahora - dt.datetime.fromisoformat(f["t"])).total_seconds()/60
             out[f"{m}m"] = {"t": f["t"], "edad_min": round(edad),
+                            "niv": f.get("niv"), "niv0": f.get("niv0"),
                             "spot": f["spot"], "gex": f["gex"], "flip": f["flip"],
                             "k": f["k"]}
     return out

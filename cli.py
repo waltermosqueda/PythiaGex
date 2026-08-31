@@ -20,7 +20,10 @@ from pythiagex.historico  import guardar as hist_guardar, lookbacks, intradia, c
 from pythiagex.volatilidad import skew, term, superficie
 from pythiagex.flujo       import hottest, actividad_por_strike, resumen_actividad
 from pythiagex.precio      import intradia as precio_intradia, cotizacion
-from pythiagex.base        import medir as medir_base, contrato_vigente, nombre_futuro, convertir as a_futuro
+from pythiagex.base        import (medir as medir_base, contrato_vigente, nombre_futuro,
+                                   convertir as a_futuro, edad_minutos as edad_cadena)
+from pythiagex.tasas       import curva as curva_tasas, tasa as tasa_plazo
+from pythiagex.griegas     import fijar_tasa
 from pythiagex.tablero     import (enriquecer, escalera, huecos, sesion,
                                    contratos_cobertura, CONTRATO)
 
@@ -64,6 +67,15 @@ def main():
     # Si el indice publicado quedo congelado (deja de cotizar 16:15 ET), toda
     # la exposicion se calcularia sobre un precio viejo: la gamma de cada
     # strike depende de donde esta el precio. Se corrige antes de calcular.
+    # La tasa entra en vanna y charm. Se mide del Tesoro antes de calcular;
+    # si el feed no contesta, queda el respaldo y el panel lo avisa.
+    ctas = None
+    try:
+        ctas = curva_tasas()
+    except Exception:
+        ctas = None
+    tasa_ok = fijar_tasa(tasa_plazo(30, ctas)) if ctas else False
+
     med = medir_base(crudo)
     indice_publicado = crudo["data"]["current_price"]
     if med and med.get("indice_atrasado") and med.get("contado_implicito"):
@@ -99,7 +111,8 @@ def main():
         hist_guardar(sym, {"spot": S, "net_gex_B": B(T["gex"]),
                            "net_dex_B": B(T["dex"]), "net_vex_B": B(T["vex"]),
                            "net_chex_B": B(T["chex"]), "gamma_flip": flip,
-                           "expected_move": em}, st)
+                           "expected_move": em, "niveles": niv,
+                           "niveles_0dte": niv0, "timestamp": r["timestamp"]}, st)
     out_lb = {}
     for etq, snap in lb.items():
         out_lb[etq] = {"edad_min": snap["edad_min"], "spot": snap["spot"],
@@ -134,6 +147,10 @@ def main():
       "futuro": {"contrato": fut, "micro": micro, "vencimiento": vfut.isoformat() if vfut else None,
                  "spot": (med.get("forward") if med else None)
                          or (a_futuro(S, base) if base is not None else None)},
+      "tasas": ({"fecha": ctas.get("fecha"), "fuente": ctas.get("fuente"),
+                 "tenores": ctas.get("tenores"), "medida": bool(tasa_ok)}
+                if ctas else {"medida": False,
+                              "fuente": "sin respuesta del Tesoro: se usa el respaldo"}),
       "contado_implicito": med.get("contado_implicito") if med else None,
       "indice_publicado": indice_publicado,
       "spot_corregido": bool(med and med.get("indice_atrasado")),
@@ -214,6 +231,15 @@ def main():
     # cuantos contratos tiene que operar la mesa por 1% de movimiento
     pf = (med.get("forward") if med else None) or (a_futuro(S, base) if base else None)
     out["cobertura"] = contratos_cobertura(T["gex"], pf, raiz) if pf else None
+
+    # Cuanto hace que CBOE cotizo esta cadena. Es distinto de "cuando corrio
+    # el calculo": el calculo puede ser de recien y el dato de anteayer.
+    edad = edad_cadena(r["timestamp"])
+    out["edad_cadena_min"] = round(edad) if edad is not None else None
+    out["cadena_vencida"] = bool(edad is not None and edad > 60)
+    out["cadena_muy_vencida"] = bool(edad is not None and edad > 20 * 60)
+    # si diera negativo, la zona horaria del feed cambio y hay que revisarla
+    out["timestamp_incoherente"] = bool(edad is not None and edad < -5)
 
     if a.matriz:
         mz = matriz_construir(crudo, "gex", dias_max=max(a.dias, 30), ancho=a.rango)

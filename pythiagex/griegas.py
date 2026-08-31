@@ -13,7 +13,18 @@ queda fuera de escala respecto del resto.
 """
 import math
 
-R = 0.04  # tasa libre de riesgo
+# La tasa NO se escribe a mano: la fija cli.py con la curva de letras del
+# Tesoro del dia (ver tasas.py). Este valor es solo el respaldo por si el
+# feed del Tesoro no contesta, y en ese caso el panel lo dice.
+R = 0.0372
+R_MEDIDA = False
+
+def fijar_tasa(r):
+    """Carga la tasa medida. Devuelve True si quedo una tasa real."""
+    global R, R_MEDIDA
+    if r and 0.0 < r < 0.25:
+        R, R_MEDIDA = float(r), True
+    return R_MEDIDA
 
 def _npdf(x: float) -> float:
     return math.exp(-0.5 * x * x) / math.sqrt(2.0 * math.pi)
