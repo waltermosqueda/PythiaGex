@@ -155,6 +155,10 @@ def enriquecer(niveles, strikes, spot, base=None, iv_atm=None, T=None,
             "oi_put": s.get("oi_put"),
             "vol_call": s.get("vol_call"),
             "vol_put": s.get("vol_put"),
+            # la IV del PROPIO strike: es la que respeta el skew y la que
+            # necesita el indicador para recalcular en vivo
+            "iv": (s.get("iv_put") if K < spot else s.get("iv_call"))
+                  or s.get("iv_call") or s.get("iv_put"),
             "prob_toque": prob_toque(spot, K, iv_atm, T),
             "orden": ORDEN.get(clave, 9),
             "competencia": competencia(strikes, spot, clave,
@@ -332,6 +336,8 @@ def cercanos(strikes, spot, base=None, raiz="ES", radio_pct=0.6, n=8,
             "dist_ticks": int(round(d / c["tick"])),
             "oi_call": s.get("oi_call"), "oi_put": s.get("oi_put"),
             "vol_call": s.get("vol_call"), "vol_put": s.get("vol_put"),
+            "iv": (s.get("iv_put") if k < spot else s.get("iv_call"))
+                  or s.get("iv_call") or s.get("iv_put"),
             "prob_toque": prob_toque(spot, k, iv_atm, T),
         })
     return out

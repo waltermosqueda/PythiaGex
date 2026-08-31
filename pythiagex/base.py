@@ -324,6 +324,24 @@ def mercado_abierto(timestamp: str) -> bool:
     m = t.hour * 60 + t.minute
     return 9 * 60 + 30 <= m <= 16 * 60 + 15
 
+def liquidacion_utc(fecha):
+    """El instante en que muere un vencimiento, en UTC.
+
+    Las opciones diarias y semanales de SPX (SPXW) liquidan por la tarde, a
+    las 16:00 ET. No a medianoche. La diferencia importa: una probabilidad
+    calculada contra medianoche le regala ocho horas de vida que no existen,
+    y en 0DTE eso duplica el numero.
+
+    Ojo que las mensuales clasicas (SPX, tercer viernes) liquidan por la
+    manana con el precio de apertura. Aca se devuelve el cierre porque los
+    vencimientos que se usan intradia son los diarios.
+    """
+    if fecha is None:
+        return None
+    h = 20 if _dst_eeuu(fecha) else 21   # 16:00 ET en verano y en invierno
+    return dt.datetime(fecha.year, fecha.month, fecha.day, h, 0,
+                       tzinfo=dt.timezone.utc)
+
 def convertir(nivel, base):
     if nivel is None or base is None:
         return None

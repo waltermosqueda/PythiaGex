@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import math
 """Archivo liviano para el indicador de ATAS.
 
 El JSON del panel pesa 120 KB. Un indicador que lo baja cada 30 segundos con
@@ -34,6 +35,12 @@ def _nivel(f, base, es0=False):
         "oi_c": f.get("oi_call"),
         "oi_p": f.get("oi_put"),
         "toque": f.get("prob_toque"),
+        # con esto el indicador recalcula la probabilidad en vivo contra el
+        # precio de ahora, en vez de mostrar la del momento de la publicacion
+        "iv": f.get("iv"),
+        # cociente mercado / modelo, para que el recalculo en vivo mantenga
+        # el nivel que paga el mercado y no solo la forma del modelo
+        "prob_factor": f.get("prob_factor"),
         # los cuatro caminos y su dispersion, para poder auditar el numero
         "prob": f.get("prob"),
         "es0dte": bool(es0),
@@ -110,12 +117,52 @@ def _griegas(out, base):
         "iv_atm": out.get("iv_atm"),
     }
 
+def _factor_mercado(f, spot, T):
+    """Cuanto se equivoca Black-Scholes contra lo que paga el mercado, en ese
+    strike y en ese momento.
+
+    El indicador necesita recalcular la probabilidad en vivo, porque el precio
+    se mueve entre corrida y corrida y el tiempo se consume. Pero recalcular
+    con Black-Scholes a secas devuelve un numero peor que el que ya teniamos:
+    medido el 2026-08-31, en el Put Wall el modelo daba 31,6 % donde el
+    mercado pagaba 42,0 %. Diez puntos de skew que el modelo no ve.
+
+    La salida es publicar el cociente entre los dos. El indicador recalcula
+    con el modelo, que le da la DINAMICA correcta contra el precio y el
+    tiempo, y multiplica por este factor, que le devuelve el NIVEL que paga
+    el mercado. Se topea entre 0,5 y 2 para que un strike raro no distorsione.
+    """
+    iv = f.get("iv")
+    K = f.get("indice")
+    mkt = f.get("prob_toque")
+    if not (iv and K and spot and T and T > 0) or mkt is None:
+        return None
+    sig = iv * math.sqrt(T)
+    if sig <= 0:
+        return None
+    d2 = (math.log(spot / K) - 0.5 * iv * iv * T) / sig
+    arriba = 0.5 * (1.0 + math.erf(d2 / math.sqrt(2.0)))
+    final = arriba if K >= spot else 1.0 - arriba
+    bs = min(100.0, 200.0 * final)
+    if bs <= 0.5:          # muy lejos: el cociente no significa nada
+        return None
+    return round(max(0.5, min(2.0, mkt / bs)), 4)
+
+
 def construir(out):
     """Recibe el diccionario completo de cli.py y devuelve el extracto."""
     bd = out.get("base_detalle") or {}
     fu = out.get("futuro") or {}
     base = out.get("base")
     T = out.get("totales") or {}
+
+    # se completa el factor de cada nivel, ya con el spot y el plazo a mano
+    _sp = out.get("prob_spot_indice") or out.get("spot")
+    _Tf = (out.get("prob_dias") or 0) / 365.0
+    for _lista in (out.get("niveles_ricos") or [], out.get("niveles_ricos_0dte") or [],
+                   out.get("cercanos") or []):
+        for _f in _lista:
+            _f["prob_factor"] = _factor_mercado(_f, _sp, _Tf)
 
     niveles = [_nivel(f, base) for f in (out.get("niveles_ricos") or [])]
 
@@ -178,6 +225,12 @@ def construir(out):
         "cercanos": out.get("cercanos") or [],
         "prob_vencimiento": out.get("prob_vencimiento"),
         "prob_dias": out.get("prob_dias"),
+        # el instante exacto en que muere ese vencimiento, para que el tiempo
+        # se consuma solo durante la rueda. Las diarias de SPX liquidan 16:00
+        # ET, no a medianoche: contra medianoche se regalaria 67% de vida.
+        "prob_liquida_utc": out.get("prob_liquida_utc"),
+        "prob_spot_indice": out.get("prob_spot_indice"),
+        "prob_iv_atm": out.get("iv_atm"),
         # techo, piso e iman de cada vencimiento cercano por separado
         "por_vencimiento": out.get("por_vencimiento") or [],
         "huecos": out.get("huecos") or [],

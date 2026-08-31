@@ -56,7 +56,7 @@ namespace PythiaGex
             // Probabilidad que paga el mercado, y cuanto se separan los
             // cuatro caminos con que se calcula. Si se separan mucho el
             // numero no se puede tomar como firme.
-            public double? ProbFinal, ProbDelta, ProbDispersion;
+            public double? ProbFinal, ProbDelta, ProbDispersion, Iv, ProbFactor;
             public string ProbControl = "";
         }
 
@@ -78,7 +78,7 @@ namespace PythiaGex
             public double? OiC, OiP, Toque;
             public bool Solo0dte;
             public string Signo = "";
-            public double? ProbFinal, ProbDispersion;
+            public double? ProbFinal, ProbDispersion, Iv, ProbFactor;
             public string ProbControl = "";
         }
 
@@ -124,7 +124,8 @@ namespace PythiaGex
             public List<Cercano> Cercanos = new();
             public List<Vencimiento> PorVenc = new();
             public string ProbVencimiento = "";
-            public double? ProbDias;
+            public double? ProbDias, ProbSpotIndice, ProbIvAtm;
+            public DateTime? Liquida;
         }
 
         // ==================================================================
@@ -600,9 +601,20 @@ namespace PythiaGex
                             DexM = Num(n, "dex_M"), VexM = Num(n, "vex_M"), ChexM = Num(n, "chex_M"),
                             OiC = Num(n, "oi_c"), OiP = Num(n, "oi_p"), Toque = Num(n, "toque"),
                             Es0dte = Bol(n, "es0dte"),
+                            Iv = Num(n, "iv"),
+                            ProbFactor = Num(n, "prob_factor"),
                         });
                 d.ProbVencimiento = Txt(r, "prob_vencimiento");
                 d.ProbDias = Num(r, "prob_dias");
+                d.ProbSpotIndice = Num(r, "prob_spot_indice");
+                d.ProbIvAtm = Num(r, "prob_iv_atm");
+                var liq = Txt(r, "prob_liquida_utc");
+                if (!string.IsNullOrEmpty(liq)
+                    && DateTime.TryParse(liq, CultureInfo.InvariantCulture,
+                                         System.Globalization.DateTimeStyles.AdjustToUniversal
+                                         | System.Globalization.DateTimeStyles.AssumeUniversal,
+                                         out var dq))
+                    d.Liquida = dq;
                 if (r.TryGetProperty("niveles", out var np) && np.ValueKind == JsonValueKind.Array)
                 {
                     int j = 0;
@@ -654,6 +666,8 @@ namespace PythiaGex
                             Toque = Num(c, "prob_toque"),
                             Solo0dte = Bol(c, "solo_0dte"),
                             Signo = Txt(c, "signo"),
+                            Iv = Num(c, "iv"),
+                            ProbFactor = Num(c, "prob_factor"),
                         });
                 if (r.TryGetProperty("cercanos", out var cp3) && cp3.ValueKind == JsonValueKind.Array)
                 {
@@ -724,6 +738,61 @@ namespace PythiaGex
         // ==================================================================
         // Utilidades
         // ==================================================================
+        private static double Norm(double x)
+            => 0.5 * (1.0 + Erf(x / Math.Sqrt(2.0)));
+
+        /// <summary>Aproximacion de Abramowitz y Stegun, 7.1.26. Error menor a
+        /// 1.5e-7, de sobra para una probabilidad que se muestra redondeada.</summary>
+        private static double Erf(double x)
+        {
+            var sg = x < 0 ? -1.0 : 1.0;
+            x = Math.Abs(x);
+            var t = 1.0 / (1.0 + 0.3275911 * x);
+            var y = 1.0 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t
+                            - 0.284496736) * t + 0.254829592) * t * Math.Exp(-x * x);
+            return sg * y;
+        }
+
+        /// <summary>
+        /// La probabilidad recalculada al precio de AHORA y al tiempo que
+        /// queda de verdad.
+        ///
+        /// El feed publica la probabilidad que pagaba el mercado en el momento
+        /// de la corrida. Entre corrida y corrida el precio se mueve y el
+        /// tiempo se consume, y el numero se queda quieto: se llegaba a ver un
+        /// nivel a 160 ticks diciendo "toque 100%". Es 0DTE, ademas: el tiempo
+        /// se come toda la probabilidad antes del cierre.
+        ///
+        /// Se recalcula por Black-Scholes con la IV del PROPIO strike, que es
+        /// la que respeta el skew, contra el precio en vivo y contra los
+        /// minutos que faltan hasta las 16:00 ET. Tocar sigue siendo el doble
+        /// de terminar del otro lado, por reflexion, topeado en 100%.
+        ///
+        /// El numero del mercado queda como control: si los dos se separan
+        /// mucho, el que manda es el del mercado y el tablero lo dice.
+        /// </summary>
+        private double? ProbViva(Datos d, double? kIdx, double? iv, decimal precioFut,
+                                 double? factor = null)
+        {
+            if (d?.Liquida == null || kIdx == null || iv == null || iv <= 0) return null;
+            if (d.Base == null || precioFut <= 0) return null;
+            var T = (d.Liquida.Value - DateTime.UtcNow).TotalDays / 365.0;
+            if (T <= 0) return null;                      // ya vencio
+            var S = (double)precioFut - d.Base.Value;     // el strike vive en el indice
+            if (S <= 0) return null;
+            var sig = iv.Value * Math.Sqrt(T);
+            if (sig <= 0) return null;
+            var d2 = (Math.Log(S / kIdx.Value) - 0.5 * iv.Value * iv.Value * T) / sig;
+            var arriba = Norm(d2);
+            var final = kIdx.Value >= S ? arriba : 1.0 - arriba;
+            var bs = 200.0 * final;
+            // El modelo da la DINAMICA correcta contra el precio y el tiempo,
+            // pero no ve el skew: en el put wall daba 31,6% donde el mercado
+            // pagaba 42,0%. El factor devuelve el nivel que paga el mercado.
+            if (factor.HasValue && factor.Value > 0) bs *= factor.Value;
+            return Math.Min(100.0, bs);
+        }
+
         private static System.Windows.Media.Color Wpf(Color c)
             => System.Windows.Media.Color.FromArgb(c.A, c.R, c.G, c.B);
 
@@ -1088,13 +1157,18 @@ namespace PythiaGex
                 var partes = new List<string>();
                 if (n.GexM != null) partes.Add(Mag(n.GexM) + " gamma");
                 if (n.OiC != null) partes.Add("OI " + Oi(n.OiC) + "C/" + Oi(n.OiP) + "P");
-                if (n.Toque != null)
+                var pViva = ProbViva(d, n.Idx, n.Iv, precio, n.ProbFactor);
+                if (pViva.HasValue)
+                {
+                    var txt = "toque " + pViva.Value.ToString("0", CultureInfo.InvariantCulture) + "%";
+                    // el numero del mercado al momento de publicar, como control
+                    if (n.Toque.HasValue && Math.Abs(n.Toque.Value - pViva.Value) > 12)
+                        txt += " (mercado " + n.Toque.Value.ToString("0", CultureInfo.InvariantCulture) + "%)";
+                    partes.Add(txt);
+                }
+                else if (n.Toque != null)
                     partes.Add("toque " + n.Toque.Value.ToString("0.#", CultureInfo.InvariantCulture) + "%"
-                               + (string.IsNullOrEmpty(n.ProbControl) ? ""
-                                  : " (" + n.ProbControl
-                                    + (n.ProbDispersion.HasValue
-                                       ? " " + n.ProbDispersion.Value.ToString("0.#", CultureInfo.InvariantCulture) + "pp"
-                                       : "") + ")"));
+                               + (d.Liquida.HasValue && d.Liquida.Value <= DateTime.UtcNow ? " vencido" : ""));
                 if (precio > 0)
                 {
                     var dp = p - precio;
@@ -1294,6 +1368,10 @@ namespace PythiaGex
                     // si los cuatro caminos no coinciden, el numero lleva marca
                     return ctrl == "floja" ? t + "?" : t;
                 }
+                // el porcentaje que se muestra es el recalculado al precio de
+                // ahora; el del feed queda solo como control
+                double? PVivo(double? k, double? iv, double? fallback, double? fac)
+                    => ProbViva(d, k, iv, precio, fac) ?? fallback;
                 Color PorSigno(double gex) => gex > 0 ? ColTecho : ColPiso;
 
                 L.Add(new Fila("Cobertura 1%  " + (pos ? "compra baja" : "vende baja"),
@@ -1311,14 +1389,20 @@ namespace PythiaGex
                 var techo = d.Niveles.FirstOrDefault(n => n.Tipo == "call_wall" && !n.Es0dte);
                 var flip = d.Niveles.FirstOrDefault(n => n.Tipo == "gamma_flip");
 
-                L.Add(new Fila("CERCA   toque hoy", "", ColTexto, true, true));
+                var minutos = d.Liquida.HasValue
+                    ? (d.Liquida.Value - DateTime.UtcNow).TotalMinutes : (double?)null;
+                L.Add(new Fila("CERCA   toque"
+                               + (minutos.HasValue && minutos > 0
+                                  ? "  " + Math.Round(minutos.Value) + " min"
+                                  : ""), "", ColTexto, true, true));
                 if (cerca != null)
                     L.Add(new Fila("cerca  " + (cerca.DistTicks >= 0 ? "+" : "") + cerca.DistTicks + " tk"
                                    + "  " + Mag(cerca.GexM) + " " + cerca.Signo,
                                    (cerca.Fut != 0 ? cerca.Fut : cerca.Idx).ToString("0.00", CultureInfo.InvariantCulture)
-                                   + "   " + Pct(cerca.ProbFinal.HasValue
+                                   + "   " + Pct(PVivo(cerca.Idx, cerca.Iv,
+                                                 cerca.ProbFinal.HasValue
                                                  ? (double?)Math.Min(100.0, cerca.ProbFinal.Value * 2.0)
-                                                 : null, cerca.ProbControl),
+                                                 : null, cerca.ProbFactor), cerca.ProbControl),
                                    PorSigno(cerca.GexM)));
                 foreach (var t3 in new[] { (pin, "iman"), (flip, "flip"),
                                            (piso, "piso"), (techo, "techo") })
@@ -1329,7 +1413,7 @@ namespace PythiaGex
                     L.Add(new Fila(t3.Item2 + "  " + (dt3 >= 0 ? "+" : "") + dt3 + " tk"
                                    + (n.Disputado ? "  ZONA" : ""),
                                    pv3.Value.ToString("0.00", CultureInfo.InvariantCulture)
-                                   + "   " + Pct(n.Toque, n.ProbControl),
+                                   + "   " + Pct(PVivo(n.Idx, n.Iv, n.Toque, n.ProbFactor), n.ProbControl),
                                    ColorDe(n)));
                 }
 
@@ -1347,7 +1431,7 @@ namespace PythiaGex
                         var dt4 = precio > 0 ? Contexto.Ticks((decimal)pv4.Value, precio, tick) : 0;
                         L.Add(new Fila(z.Item2 + "  " + (dt4 >= 0 ? "+" : "") + dt4 + " tk",
                                        pv4.Value.ToString("0.00", CultureInfo.InvariantCulture)
-                                       + "   " + Pct(n.Toque, n.ProbControl), z.Item3));
+                                       + "   " + Pct(PVivo(n.Idx, n.Iv, n.Toque, n.ProbFactor), n.ProbControl), z.Item3));
                     }
                 }
 

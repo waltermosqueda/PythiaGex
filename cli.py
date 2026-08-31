@@ -21,6 +21,7 @@ from pythiagex.volatilidad import skew, term, superficie
 from pythiagex.flujo       import hottest, actividad_por_strike, resumen_actividad
 from pythiagex.precio      import intradia as precio_intradia, cotizacion
 from pythiagex.base        import (medir as medir_base, contrato_vigente, nombre_futuro,
+                                   liquidacion_utc,
                                    convertir as a_futuro, edad_minutos as edad_cadena)
 from pythiagex.tasas       import curva as curva_tasas, tasa as tasa_plazo
 from pythiagex.probabilidad import (curva_probabilidad, interpolar as interp_prob,
@@ -216,6 +217,7 @@ def main():
     # tablero.py razona en millones, igual que el panel
     st_M = {k: {"gex": M(v["gex"]), "gex_0dte": M(v["gex_0dte"]),
                 "dex": M(v["dex"]), "vex": M(v["vex"]), "chex": M(v["chex"]),
+                "iv_call": v["iv_call"], "iv_put": v["iv_put"],
                 "oi_call": int(v["oi_call"]), "oi_put": int(v["oi_put"]),
                 "vol_call": int(v["vol_call"]), "vol_put": int(v["vol_put"])}
             for k, v in st.items()}
@@ -258,6 +260,9 @@ def main():
             curva_prob = {}
         out["prob_vencimiento"] = _V.date().isoformat()
         out["prob_dias"] = round(_T * 365, 3)
+        _liq = liquidacion_utc(_V.date())
+        out["prob_liquida_utc"] = _liq.isoformat() if _liq else None
+        out["prob_spot_indice"] = round(S, 2)
 
     def _prob(K):
         p = interp_prob(curva_prob, K) if curva_prob else None
