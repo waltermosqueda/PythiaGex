@@ -1628,7 +1628,16 @@ namespace PythiaGex
                 var v0 = d.PorVenc.FirstOrDefault();
                 if (v0 != null)
                 {
-                    L.Add(new Fila("0DTE   " + Mag(d.Gex0dteB * 1000), "", ColTexto, true, true));
+                    // que porcentaje de toda la gamma vence HOY: si es alto el
+                    // iman tira fuerte, y a las 17:00 desaparece de golpe
+                    var totG = Math.Abs(d.G.GexB ?? d.NetGexB ?? 0);
+                    var pctCero = totG > 0 && d.Gex0dteB.HasValue
+                        ? Math.Abs(d.Gex0dteB.Value) / totG * 100 : (double?)null;
+                    L.Add(new Fila("0DTE   " + Mag(d.Gex0dteB * 1000),
+                                   pctCero.HasValue
+                                   ? pctCero.Value.ToString("0", CultureInfo.InvariantCulture)
+                                     + "% de la gamma vence hoy" : "",
+                                   ColTexto, true, true));
                     var p0 = d.Niveles.FirstOrDefault(n => n.Tipo == "put_wall" && n.Es0dte);
                     var t0 = d.Niveles.FirstOrDefault(n => n.Tipo == "call_wall" && n.Es0dte);
                     foreach (var z in new[] { (p0, "piso", ColPiso), (t0, "techo", ColTecho) })
