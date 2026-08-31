@@ -89,6 +89,40 @@ GLOSARIO = {
 ORDEN = {"call_wall": 0, "put_wall": 1, "gamma_flip": 2,
          "gamma_pin": 3, "major_positive": 4, "major_negative": 5}
 
+# Cuando el segundo strike pesa casi lo mismo que el primero, decir "la pared
+# esta en X" es enganoso: es una ZONA con dos paredes. Medido el 2026-08-31 a
+# las 13:04 UTC sobre SPX: el call wall daba 7800 con 1.200 M y el 7750 tenia
+# 1.066 M, el 89% del lider, cincuenta puntos mas abajo. El put wall estaba
+# peor: 7650 con -2.687 M contra 7675 con -2.622 M, el 97,6%. Un movimiento
+# minimo del precio da vuelta la etiqueta y mueve el nivel 200 ticks de ES.
+UMBRAL_DISPUTA = 85.0   # % del lider a partir del cual la pared se marca disputada
+
+def competencia(strikes, spot, clave, campo="gex", n=4):
+    """Los strikes que se pelean por ser la pared, con su peso relativo."""
+    vals = [(k, s.get(campo) or 0.0) for k, s in strikes.items()]
+    if clave == "call_wall":
+        cand = [v for v in vals if v[0] > spot]
+        cand.sort(key=lambda z: -z[1])
+    elif clave == "put_wall":
+        cand = [v for v in vals if v[0] < spot]
+        cand.sort(key=lambda z: z[1])
+    else:
+        return None
+    cand = [c for c in cand if c[1] != 0][:n]
+    if len(cand) < 2:
+        return None
+    lider = cand[0][1]
+    if lider == 0:
+        return None
+    salida = [{"strike": k, "gex_M": round(g, 0),
+               "pct_del_lider": round(g / lider * 100, 1)} for k, g in cand]
+    seg = salida[1]
+    return {"candidatos": salida,
+            "competidor": seg["strike"],
+            "competidor_pct": seg["pct_del_lider"],
+            "disputado": seg["pct_del_lider"] >= UMBRAL_DISPUTA,
+            "separacion_pts": round(abs(seg["strike"] - salida[0]["strike"]), 2)}
+
 def enriquecer(niveles, strikes, spot, base=None, iv_atm=None, T=None,
                raiz="ES", flip=None, sufijo=""):
     """Convierte {nombre: strike} en niveles con todos sus numeros."""
@@ -123,6 +157,8 @@ def enriquecer(niveles, strikes, spot, base=None, iv_atm=None, T=None,
             "vol_put": s.get("vol_put"),
             "prob_toque": prob_toque(spot, K, iv_atm, T),
             "orden": ORDEN.get(clave, 9),
+            "competencia": competencia(strikes, spot, clave,
+                                       "gex_0dte" if sufijo else "gex"),
         })
 
     # Un mismo strike suele ser dos cosas a la vez: el Call Wall casi siempre

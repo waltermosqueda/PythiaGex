@@ -36,6 +36,8 @@ def _nivel(f, base, es0=False):
         "toque": f.get("prob_toque"),
         "es0dte": bool(es0),
         "alias": f.get("alias"),
+        # si el segundo strike pesa casi lo mismo, la pared es una zona
+        "competencia": f.get("competencia"),
     }
 
 def _griegas(out, base):

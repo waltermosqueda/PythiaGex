@@ -49,6 +49,10 @@ namespace PythiaGex
             public int Puntaje;
             public string Razones = "";
             public Contexto.Zona Flujo;
+            // Si el segundo strike pesa casi lo mismo, la pared no es una
+            // raya: es una zona con dos paredes comparables.
+            public double? CompetidorIdx, CompetidorFut, CompetidorPct, SeparacionPts;
+            public bool Disputado;
         }
 
         private sealed class Hueco
@@ -145,6 +149,12 @@ namespace PythiaGex
 
         [Display(Name = "Convexity ladder (cobertura por escalon)", GroupName = "Niveles de gamma", Order = 46)]
         public bool VerEscalera { get; set; } = true;
+
+        // Una pared cuyo segundo candidato pesa casi lo mismo no es una raya:
+        // un movimiento minimo del precio da vuelta cual gana. Medido el
+        // 2026-08-31: el put wall tenia un competidor al 98% a 25 puntos.
+        [Display(Name = "Marcar la zona cuando la pared esta disputada", GroupName = "Niveles de gamma", Order = 47)]
+        public bool VerZonaDisputada { get; set; } = true;
 
         // ==================================================================
         // Ajustes - Contexto de ATAS
@@ -512,6 +522,26 @@ namespace PythiaGex
                             OiC = Num(n, "oi_c"), OiP = Num(n, "oi_p"), Toque = Num(n, "toque"),
                             Es0dte = Bol(n, "es0dte"),
                         });
+                if (r.TryGetProperty("niveles", out var ns2) && ns2.ValueKind == JsonValueKind.Array)
+                {
+                    int i = 0;
+                    foreach (var n in ns2.EnumerateArray())
+                    {
+                        if (i >= d.Niveles.Count) break;
+                        if (n.TryGetProperty("competencia", out var cp)
+                            && cp.ValueKind == JsonValueKind.Object)
+                        {
+                            var lv = d.Niveles[i];
+                            lv.CompetidorIdx = Num(cp, "competidor");
+                            lv.CompetidorPct = Num(cp, "competidor_pct");
+                            lv.SeparacionPts = Num(cp, "separacion_pts");
+                            lv.Disputado = Bol(cp, "disputado");
+                            if (lv.CompetidorIdx.HasValue && d.Base.HasValue)
+                                lv.CompetidorFut = lv.CompetidorIdx.Value + d.Base.Value;
+                        }
+                        i++;
+                    }
+                }
                 if (r.TryGetProperty("huecos", out var hs) && hs.ValueKind == JsonValueKind.Array)
                     foreach (var h in hs.EnumerateArray())
                         d.Huecos.Add(new Hueco
@@ -786,6 +816,39 @@ namespace PythiaGex
                 return;
             }
 
+            // Zona de pared disputada: se sombrea entre el lider y el
+            // competidor, y se dibuja tambien la raya del competidor. Mostrar
+            // una sola seria decir que el nivel esta donde no esta.
+            if (VerZonaDisputada)
+                foreach (var n in d.Niveles.Where(x => x.Disputado && !x.Es0dte))
+                {
+                    var a1 = n.Fut ?? n.Idx; var b1 = n.CompetidorFut ?? n.CompetidorIdx;
+                    if (a1 == null || b1 == null) continue;
+                    var pa = (decimal)a1.Value; var pb = (decimal)b1.Value;
+                    var alto = Math.Max(pa, pb); var bajo = Math.Min(pa, pb);
+                    if (alto < lo || bajo > hi) continue;
+                    var col = ColorDe(n);
+                    var yA = cont.GetYByPrice(alto, false);
+                    var yB = cont.GetYByPrice(bajo, false);
+                    var rec = Rectangle.Intersect(area,
+                        new Rectangle(x0, Math.Min(yA, yB), area.Width, Math.Abs(yB - yA)));
+                    if (rec.Width > 0 && rec.Height > 0)
+                        g.FillRectangle(Color.FromArgb(18, col), rec);
+                    // la raya del competidor, mas fina
+                    var yc = cont.GetYByPrice(pb, false);
+                    if (pb >= lo && pb <= hi)
+                    {
+                        g.DrawLine(new RenderPen(Color.FromArgb(120, col), 1, DashStyle.Dot),
+                                   x0, yc, x1, yc);
+                        var ft = Fuente(TamDetalle - 0.5f, false);
+                        var tt = n.Nombre.ToUpperInvariant() + " 2do  "
+                               + pb.ToString("0.00", CultureInfo.InvariantCulture)
+                               + "   " + (n.CompetidorPct ?? 0).ToString("0.#", CultureInfo.InvariantCulture)
+                               + "% del lider";
+                        g.DrawString(tt, ft, Color.FromArgb(170, col), x0 + 6, yc + 2);
+                    }
+                }
+
             var usados = new List<int>();
             foreach (var n in d.Niveles.OrderByDescending(x => x.Fut ?? 0))
             {
@@ -809,6 +872,7 @@ namespace PythiaGex
                 var titulo = n.Nombre.ToUpperInvariant() + "  "
                            + p.ToString("0.00", CultureInfo.InvariantCulture)
                            + (d.BaseConfiable ? "" : " *")
+                           + (n.Disputado ? "   ZONA" : "")
                            + (destaca ? "   [ x" + n.Puntaje + " ]" : "");
 
                 var partes = new List<string>();
@@ -826,6 +890,11 @@ namespace PythiaGex
                                + " (" + n.Flujo.PctVolumenSesion.ToString("0.#", CultureInfo.InvariantCulture) + "%)"
                                + "  delta " + (n.Flujo.Delta >= 0 ? "+" : "") + Kilo(n.Flujo.Delta)
                                + (n.Flujo.Absorcion ? "  ABSORCION" : ""));
+                if (n.Disputado && n.CompetidorFut.HasValue)
+                    partes.Add("disputada con "
+                               + n.CompetidorFut.Value.ToString("0.00", CultureInfo.InvariantCulture)
+                               + " al " + (n.CompetidorPct ?? 0).ToString("0.#", CultureInfo.InvariantCulture)
+                               + "%, a " + (n.SeparacionPts ?? 0).ToString("0", CultureInfo.InvariantCulture) + " pts");
                 if (!string.IsNullOrEmpty(n.Razones)) partes.Add(n.Razones);
                 if (n.Idx != null) partes.Add(d.Indice + " " + n.Idx.Value.ToString("0.##", CultureInfo.InvariantCulture));
                 var detalle = string.Join("  .  ", partes);
@@ -1110,6 +1179,18 @@ namespace PythiaGex
                         L.Add(new Fila("", Recortar(n.Razones, 52),
                                        Color.FromArgb(150, ColTexto)));
                     }
+                }
+
+                var disp = d.Niveles.Where(n => n.Disputado && !n.Es0dte).ToList();
+                if (disp.Count > 0)
+                {
+                    L.Add(new Fila("PAREDES DISPUTADAS", disp.Count.ToString(), ColIman, true, true));
+                    foreach (var n in disp.Take(3))
+                        L.Add(new Fila(n.Nombre + "  2do al "
+                                       + (n.CompetidorPct ?? 0).ToString("0", CultureInfo.InvariantCulture) + "%",
+                                       (n.Fut ?? 0).ToString("0.00", CultureInfo.InvariantCulture) + " / "
+                                       + (n.CompetidorFut ?? 0).ToString("0.00", CultureInfo.InvariantCulture),
+                                       ColorDe(n)));
                 }
 
                 // --- procedencia del dato, siempre
