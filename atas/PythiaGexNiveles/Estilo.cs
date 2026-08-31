@@ -37,6 +37,22 @@ namespace PythiaGex
         [Description("Completo: todo")] Completo,
     }
 
+    /// <summary>Como se rotula cada nivel sobre el grafico.</summary>
+    public enum FormatoEtiqueta
+    {
+        [Description("Chip: dos renglones cortos")] Chip,
+        [Description("Una linea larga")] Linea,
+        [Description("Minima: nombre y precio")] Minima,
+        [Description("Solo el precio")] SoloPrecio,
+    }
+
+    /// <summary>Cuanto nombre se escribe.</summary>
+    public enum LargoNombre
+    {
+        [Description("Corto: TECHO, PISO, IMAN")] Corto,
+        [Description("Completo: Call Wall, Put Wall")] Completo,
+    }
+
     public enum LadoPerfil
     {
         [Description("Apagado")] Apagado,

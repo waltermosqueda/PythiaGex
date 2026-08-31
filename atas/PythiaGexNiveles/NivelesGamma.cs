@@ -212,6 +212,15 @@ namespace PythiaGex
         [Display(Name = "Estilo", GroupName = "Niveles cercanos", Order = 52)]
         public TipoLinea LineaCercano { get; set; } = TipoLinea.Punteada;
 
+        // Estaban casi invisibles, y son justamente lo que se toca en los
+        // proximos minutos. Ahora llevan su propia etiqueta compacta y un
+        // piso de opacidad para que se vean sin competir con las paredes.
+        [Display(Name = "Etiqueta en los cercanos", GroupName = "Niveles cercanos", Order = 310)]
+        public bool EtiquetaCercano { get; set; } = true;
+
+        [Display(Name = "Peso visual (% del de una pared)", GroupName = "Niveles cercanos", Order = 311)]
+        public int PesoVisualCercano { get; set; } = 55;
+
         [Display(Name = "Que frena (gamma positiva)", GroupName = "Niveles cercanos", Order = 53)]
         public Color ColFrena { get; set; } = Color.FromArgb(120, 200, 160);
 
@@ -223,6 +232,9 @@ namespace PythiaGex
 
         [Display(Name = "Cuantos vencimientos", GroupName = "Niveles cercanos", Order = 56)]
         public int NVencimientos { get; set; } = 2;
+
+        [Display(Name = "Peso visual del vencimiento (%)", GroupName = "Niveles cercanos", Order = 57)]
+        public int PesoVisualVenc { get; set; } = 55;
 
         // ==================================================================
         // Ajustes - Contexto de ATAS
@@ -290,7 +302,34 @@ namespace PythiaGex
         [Display(Name = "Lado de la etiqueta", GroupName = "Estilo", Order = 74)]
         public LadoEtiqueta LadoTexto { get; set; } = LadoEtiqueta.Izquierda;
 
-        [Display(Name = "Mostrar el detalle del nivel", GroupName = "Estilo", Order = 75)]
+        [Display(Name = "Formato de la etiqueta", GroupName = "Etiqueta del nivel", Order = 300)]
+        public FormatoEtiqueta Formato { get; set; } = FormatoEtiqueta.Chip;
+
+        [Display(Name = "Largo del nombre", GroupName = "Etiqueta del nivel", Order = 301)]
+        public LargoNombre Nombre { get; set; } = LargoNombre.Corto;
+
+        [Display(Name = "Distancia en ticks", GroupName = "Etiqueta del nivel", Order = 302)]
+        public bool CampoTicks { get; set; } = true;
+
+        [Display(Name = "Probabilidad de toque", GroupName = "Etiqueta del nivel", Order = 303)]
+        public bool CampoToque { get; set; } = true;
+
+        [Display(Name = "Gamma parada", GroupName = "Etiqueta del nivel", Order = 304)]
+        public bool CampoGamma { get; set; } = true;
+
+        [Display(Name = "Interes abierto", GroupName = "Etiqueta del nivel", Order = 305)]
+        public bool CampoOi { get; set; } = true;
+
+        [Display(Name = "Volumen y delta operados ahi", GroupName = "Etiqueta del nivel", Order = 306)]
+        public bool CampoFlujo { get; set; } = true;
+
+        [Display(Name = "Confluencia y absorcion", GroupName = "Etiqueta del nivel", Order = 307)]
+        public bool CampoConfluencia { get; set; } = true;
+
+        [Display(Name = "Valor en el indice", GroupName = "Etiqueta del nivel", Order = 308)]
+        public bool CampoIndice { get; set; } = false;
+
+        [Display(Name = "Mostrar el detalle del nivel", GroupName = "Etiqueta del nivel", Order = 312)]
         public bool VerDetalle { get; set; } = true;
 
         [Display(Name = "Caja detras de la etiqueta", GroupName = "Estilo", Order = 76)]
@@ -866,6 +905,25 @@ namespace PythiaGex
             => new RenderFont(string.IsNullOrWhiteSpace(Tipografia) ? "Consolas" : Tipografia,
                               Math.Max(6f, tam), negrita ? FontStyle.Bold : FontStyle.Regular);
 
+        /// <summary>El nombre en la etiqueta. Corto por defecto: sobre el
+        /// grafico lo que importa es reconocerlo de un vistazo, no leerlo.</summary>
+        private string NombreEtq(Nivel n)
+        {
+            if (Nombre == LargoNombre.Completo) return n.Nombre.ToUpperInvariant();
+            string b;
+            switch (n.Tipo)
+            {
+                case "call_wall": b = "TECHO"; break;
+                case "put_wall": b = "PISO"; break;
+                case "gamma_pin": b = "IMAN"; break;
+                case "gamma_flip": b = "FLIP"; break;
+                case "major_positive": b = "MAY+"; break;
+                case "major_negative": b = "MAY-"; break;
+                default: b = n.Nombre.ToUpperInvariant(); break;
+            }
+            return b + (n.Es0dte ? " 0D" : "");
+        }
+
         private Color ColorDe(Nivel n)
         {
             switch (n.Tipo)
@@ -1076,19 +1134,38 @@ namespace PythiaGex
                     if (pc < lo || pc > hi) continue;
                     var frena = c.GexM > 0;
                     var col = frena ? ColFrena : ColEmpuja;
-                    // el grosor acompana el peso: un strike del 90% se ve mas
-                    var gr = Math.Max(1, GrosorCercano + (c.PctDelMayor >= 70 ? 1 : 0));
-                    var alfa = (int)Math.Max(60, Math.Min(210, c.PctDelMayor * 2.1));
-                    g.DrawLine(new RenderPen(Color.FromArgb(alfa, col), gr, Dash(LineaCercano)),
-                               x0, cont.GetYByPrice(pc, false), x1, cont.GetYByPrice(pc, false));
+                    // El peso visual se mide contra el de una pared. Antes el
+                    // piso de opacidad era 60 sobre 255 y practicamente no se
+                    // veian, justo los niveles que se tocan primero.
+                    var peso = Math.Max(20, Math.Min(100, PesoVisualCercano)) / 100.0;
+                    var gr = Math.Max(1, (int)Math.Round(GrosorPared * peso)
+                                        + (c.PctDelMayor >= 70 ? 1 : 0));
+                    var alfa = (int)Math.Max(110, Math.Min(235,
+                                   (90 + c.PctDelMayor * 1.4) * peso + 60));
                     var yc = cont.GetYByPrice(pc, false);
-                    var t = pc.ToString("0.00", CultureInfo.InvariantCulture)
-                          + "  " + Mag(c.GexM) + "  " + c.Signo
-                          + "  " + (c.DistTicks >= 0 ? "+" : "") + c.DistTicks + "tk"
-                          + (c.Solo0dte ? "  0DTE" : "");
-                    var wt = g.MeasureString(t, fc).Width;
-                    g.DrawString(t, fc, Color.FromArgb(alfa, col),
-                                 x1 - wt - 8, yc - g.MeasureString(t, fc).Height - 1);
+                    g.DrawLine(new RenderPen(Color.FromArgb(alfa, col), gr, Dash(LineaCercano)),
+                               x0, yc, x1, yc);
+                    if (EtiquetaCercano)
+                    {
+                        // se recalcula contra el precio de ahora, igual que todo
+                        // lo que depende del precio
+                        var tkv = precio > 0 ? Contexto.Ticks(pc, precio, tick) : c.DistTicks;
+                        var pvv = ProbViva(d, c.Idx, c.Iv, precio, c.ProbFactor);
+                        var t = pc.ToString("0.00", CultureInfo.InvariantCulture)
+                              + "  " + (tkv >= 0 ? "+" : "") + tkv + "tk"
+                              + (pvv.HasValue
+                                 ? "  " + pvv.Value.ToString("0", CultureInfo.InvariantCulture) + "%" : "")
+                              + "  " + Mag(c.GexM)
+                              + (c.Solo0dte ? "  0D" : "");
+                        var tam = g.MeasureString(t, fc);
+                        var caja = new Rectangle(x1 - tam.Width - 10, yc - tam.Height - 1,
+                                                 tam.Width + 6, tam.Height + 2);
+                        if (CajaEtiqueta)
+                            g.FillRectangle(Color.FromArgb(
+                                Math.Max(0, Math.Min(255, (int)(OpacidadCaja * 0.8))), ColFondo), caja);
+                        g.DrawString(t, fc, Color.FromArgb(Math.Min(255, alfa + 25), col),
+                                     caja.Left + 3, caja.Top + 1);
+                    }
                     puestos++;
                 }
             }
@@ -1109,13 +1186,23 @@ namespace PythiaGex
                         var pv2 = (decimal)par.Item1.Fut.Value;
                         if (pv2 < lo || pv2 > hi) continue;
                         var yv = cont.GetYByPrice(pv2, false);
-                        g.DrawLine(new RenderPen(Color.FromArgb(90, par.Item2), 1, DashStyle.Dash),
-                                   x0 + area.Width / 2, yv, x1, yv);
+                        var pesoV = Math.Max(20, Math.Min(100, PesoVisualVenc)) / 100.0;
+                        var alfaV = (int)Math.Max(120, Math.Min(230, 210 * pesoV + 70));
+                        var grV = Math.Max(1, (int)Math.Round(GrosorPared * pesoV));
+                        g.DrawLine(new RenderPen(Color.FromArgb(alfaV, par.Item2), grV, DashStyle.Dash),
+                                   x0 + area.Width / 3, yv, x1, yv);
+                        var tkv2 = precio > 0 ? Contexto.Ticks(pv2, precio, tick) : par.Item1.DistTicks;
                         var t = etq + " " + par.Item3 + "  "
-                              + pv2.ToString("0.00", CultureInfo.InvariantCulture);
-                        var wt = g.MeasureString(t, fv).Width;
-                        g.DrawString(t, fv, Color.FromArgb(150, par.Item2),
-                                     x1 - wt - 8, yv + 1);
+                              + pv2.ToString("0.00", CultureInfo.InvariantCulture)
+                              + "  " + (tkv2 >= 0 ? "+" : "") + tkv2 + "tk";
+                        var tam2 = g.MeasureString(t, fv);
+                        var cajaV = new Rectangle(x1 - tam2.Width - 10, yv + 1,
+                                                  tam2.Width + 6, tam2.Height + 2);
+                        if (CajaEtiqueta)
+                            g.FillRectangle(Color.FromArgb(
+                                Math.Max(0, Math.Min(255, (int)(OpacidadCaja * 0.8))), ColFondo), cajaV);
+                        g.DrawString(t, fv, Color.FromArgb(alfaV, par.Item2),
+                                     cajaV.Left + 3, cajaV.Top + 1);
                     }
                     iv2++;
                 }
@@ -1174,46 +1261,59 @@ namespace PythiaGex
 
                 if (LadoTexto == LadoEtiqueta.Ninguna) { EvaluarAlerta(n, p, precio, tick, col); continue; }
 
-                var titulo = n.Nombre.ToUpperInvariant() + "  "
+                // ---- la etiqueta, en formato chip: dos renglones cortos en
+                // vez de una linea larga. Antes era un chorizo de 150
+                // caracteres y por eso terminaba apagado, que es peor: la
+                // informacion estaba pero no se podia leer.
+                var titulo = NombreEtq(n) + "  "
                            + p.ToString("0.00", CultureInfo.InvariantCulture)
                            + (d.BaseConfiable ? "" : " *")
-                           + (n.Disputado ? "   ZONA" : "")
-                           + (destaca ? "   [ x" + n.Puntaje + " ]" : "");
+                           + (n.Disputado ? "  ZONA" : "")
+                           + (destaca ? "  x" + n.Puntaje : "");
 
                 var partes = new List<string>();
-                if (n.GexM != null) partes.Add(Mag(n.GexM) + " gamma");
-                if (n.OiC != null) partes.Add("OI " + Oi(n.OiC) + "C/" + Oi(n.OiP) + "P");
                 var pViva = ProbViva(d, n.Idx, n.Iv, precio, n.ProbFactor);
-                if (pViva.HasValue)
+                if (CampoTicks && precio > 0)
                 {
-                    var txt = "toque " + pViva.Value.ToString("0", CultureInfo.InvariantCulture) + "%";
-                    // el numero del mercado al momento de publicar, como control
-                    if (n.Toque.HasValue && Math.Abs(n.Toque.Value - pViva.Value) > 12)
-                        txt += " (mercado " + n.Toque.Value.ToString("0", CultureInfo.InvariantCulture) + "%)";
-                    partes.Add(txt);
+                    var dt2 = Contexto.Ticks(p, precio, tick);
+                    partes.Add((dt2 >= 0 ? "+" : "") + dt2 + "tk");
                 }
-                else if (n.Toque != null)
-                    partes.Add("toque " + n.Toque.Value.ToString("0.#", CultureInfo.InvariantCulture) + "%"
-                               + (d.Liquida.HasValue && d.Liquida.Value <= DateTime.UtcNow ? " vencido" : ""));
-                if (precio > 0)
+                if (CampoToque)
                 {
-                    var dp = p - precio;
-                    partes.Add((dp >= 0 ? "+" : "") + dp.ToString("0.0", CultureInfo.InvariantCulture)
-                               + " pt / " + (dp >= 0 ? "+" : "") + Contexto.Ticks(p, precio, tick) + " tk");
+                    if (pViva.HasValue)
+                        partes.Add(pViva.Value.ToString("0", CultureInfo.InvariantCulture) + "%");
+                    else if (n.Toque != null)
+                        partes.Add(n.Toque.Value.ToString("0", CultureInfo.InvariantCulture) + "%");
                 }
-                if (VerFlujo && n.Flujo != null && n.Flujo.Volumen > 0)
-                    partes.Add("vol " + Kilo(n.Flujo.Volumen)
-                               + " (" + n.Flujo.PctVolumenSesion.ToString("0.#", CultureInfo.InvariantCulture) + "%)"
-                               + "  delta " + (n.Flujo.Delta >= 0 ? "+" : "") + Kilo(n.Flujo.Delta)
-                               + (n.Flujo.Absorcion ? "  ABSORCION" : ""));
-                if (n.Disputado && n.CompetidorFut.HasValue)
-                    partes.Add("disputada con "
-                               + n.CompetidorFut.Value.ToString("0.00", CultureInfo.InvariantCulture)
-                               + " al " + (n.CompetidorPct ?? 0).ToString("0.#", CultureInfo.InvariantCulture)
-                               + "%, a " + (n.SeparacionPts ?? 0).ToString("0", CultureInfo.InvariantCulture) + " pts");
-                if (!string.IsNullOrEmpty(n.Razones)) partes.Add(n.Razones);
-                if (n.Idx != null) partes.Add(d.Indice + " " + n.Idx.Value.ToString("0.##", CultureInfo.InvariantCulture));
-                var detalle = string.Join("  .  ", partes);
+                if (CampoGamma && n.GexM != null) partes.Add(Mag(n.GexM));
+                if (CampoOi && n.OiC != null) partes.Add(Oi(n.OiC) + "/" + Oi(n.OiP));
+                if (CampoFlujo && n.Flujo != null && n.Flujo.Volumen > 0)
+                    partes.Add("v" + Kilo(n.Flujo.Volumen)
+                               + " d" + (n.Flujo.Delta >= 0 ? "+" : "") + Kilo(n.Flujo.Delta));
+                if (CampoConfluencia)
+                {
+                    if (n.Flujo != null && n.Flujo.Absorcion) partes.Add("ABS");
+                    if (n.Disputado && n.CompetidorFut.HasValue)
+                        partes.Add("2do " + n.CompetidorFut.Value.ToString("0", CultureInfo.InvariantCulture)
+                                   + " " + (n.CompetidorPct ?? 0).ToString("0", CultureInfo.InvariantCulture) + "%");
+                }
+                if (CampoIndice && n.Idx != null)
+                    partes.Add(d.Indice + " " + n.Idx.Value.ToString("0", CultureInfo.InvariantCulture));
+
+                var detalle = string.Join("  ", partes);
+                if (Formato == FormatoEtiqueta.Linea)
+                {
+                    // el formato viejo, por si lo prefiere para un nivel puntual
+                    detalle = string.Join("  ·  ", partes);
+                    if (!string.IsNullOrEmpty(n.Razones)) detalle += "  ·  " + n.Razones;
+                }
+                else if (Formato == FormatoEtiqueta.Minima) detalle = "";
+                else if (Formato == FormatoEtiqueta.SoloPrecio)
+                {
+                    titulo = p.ToString("0.00", CultureInfo.InvariantCulture);
+                    detalle = "";
+                }
+                var verDet = VerDetalle && detalle.Length > 0;
 
                 var salto = Math.Max(14, (int)(TamTitulo * 2.6f));
                 var yl = y - 15;
@@ -1221,9 +1321,9 @@ namespace PythiaGex
                 usados.Add(yl);
 
                 var t1 = g.MeasureString(titulo, fTitulo);
-                var t2 = VerDetalle ? g.MeasureString(detalle, fDetalle) : new Size(0, 0);
+                var t2 = verDet ? g.MeasureString(detalle, fDetalle) : new Size(0, 0);
                 var w = Math.Max(t1.Width, t2.Width) + 10;
-                var h2 = t1.Height + (VerDetalle ? t2.Height + 2 : 0) + 6;
+                var h2 = t1.Height + (verDet ? t2.Height + 2 : 0) + 6;
 
                 int lx;
                 if (LadoTexto == LadoEtiqueta.Derecha) lx = x1 - w - 6;
@@ -1240,8 +1340,8 @@ namespace PythiaGex
                                                   destaca ? 2 : 1), caja);
                 }
                 g.DrawString(titulo, fTitulo, col, caja.Left + 5, caja.Top + 2);
-                if (VerDetalle)
-                    g.DrawString(detalle, fDetalle, Color.FromArgb(205, ColTexto),
+                if (verDet)
+                    g.DrawString(detalle, fDetalle, Color.FromArgb(215, ColTexto),
                                  caja.Left + 5, caja.Top + 2 + t1.Height);
 
                 EvaluarAlerta(n, p, precio, tick, col);
