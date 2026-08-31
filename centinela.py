@@ -159,8 +159,13 @@ def observar(sym, fecha):
             continue
 
         gex = f.get("gex") or 0.0
-        gex0 = None
         kk = f.get("k") or {}
+        # Como venia cambiando la gamma respecto de la foto anterior. Es la
+        # unica forma de distinguir un complejo que se esta armando de uno que
+        # se esta deshaciendo, y eso cambia como se comporta cada pared.
+        gex_prev = fotos[i - 1].get("gex") if i > 0 else None
+        gex_delta = (gex - gex_prev) if gex_prev is not None else None
+        hora_et = _hora_local(hora)
 
         for grupo, clave0 in (("niv", False), ("niv0", True)):
             niveles = f.get(grupo) or {}
@@ -194,6 +199,16 @@ def observar(sym, fecha):
                                      if f.get("flip") else None),
                     "em": f.get("em"),
                     "prob": probs.get(tipo),
+                    # distancia medida en unidades de expected move: un nivel
+                    # a 30 puntos es lejisimos en una rueda tranquila y esta
+                    # ahi nomas en una rueda de datos. En puntos crudos las
+                    # dos ruedas se mezclan y se pierde la senal.
+                    "dist_em": (round(abs(precio_nivel - spot) / f["em"], 2)
+                                if f.get("em") else None),
+                    "hora_et": hora_et,
+                    "chex": f.get("chex"),
+                    "dex": f.get("dex"),
+                    "gex_delta": gex_delta,
                     "minutos_restantes": len(restantes),
                     **res,
                 })
@@ -282,6 +297,7 @@ def factores_a_probar(obs):
     g_med = _mediana([abs(o["gamma_strike"]) for o in obs
                       if o.get("gamma_strike") is not None])
     oi_med = _mediana([(o.get("oi_call") or 0) + (o.get("oi_put") or 0) for o in obs])
+    ch_med = _mediana([o["chex"] for o in obs if o.get("chex") is not None])
     return [
         ("el complejo esta en gamma corta",
          lambda o: o["regimen"] == "corto"),
@@ -305,6 +321,23 @@ def factores_a_probar(obs):
                     else o["flip_dist_tk"] > 0)),
         ("queda mas de media rueda por delante",
          lambda o: o["minutos_restantes"] > 195),
+        # --- de aca para abajo, hipotesis que necesitan el contexto nuevo.
+        # Las fotos viejas no lo traen y devuelven None, asi que quedan
+        # afuera de la cuenta en vez de contaminarla.
+        ("el nivel esta adentro del expected move",
+         lambda o: (None if o.get("dist_em") is None else o["dist_em"] <= 1.0)),
+        ("es la primera hora de la rueda",
+         lambda o: (None if not o.get("hora_et")
+                    else o["hora_et"] < "10:30")),
+        ("es la ultima hora de la rueda",
+         lambda o: (None if not o.get("hora_et")
+                    else o["hora_et"] >= "15:00")),
+        ("el charm empuja fuerte (CHEX negativo grande)",
+         lambda o: (None if o.get("chex") is None
+                    else o["chex"] <= (ch_med if ch_med is not None else 0))),
+        ("la gamma se esta agrandando respecto de la foto anterior",
+         lambda o: (None if o.get("gex_delta") is None
+                    else o["gex_delta"] > 0)),
     ]
 
 
@@ -357,7 +390,7 @@ def analizar(obs, titulo):
 
     # ---- a que factor esta reaccionando de verdad
     print("\n  QUE FACTOR SEPARA LO QUE AGUANTA DE LO QUE SE ROMPE")
-    print("  %-46s %7s %7s %9s" % ("factor", "con", "sin", "diferencia"))
+    print("  %-52s %7s %7s %9s" % ("factor", "con", "sin", "diferencia"))
     hallazgos, probados, sin_grupo = [], 0, []
     for nombre, cond in factores_a_probar(obs):
         r = comparar(resueltos, nombre, cond, "aguanto")
@@ -370,8 +403,8 @@ def analizar(obs, titulo):
             continue
         probados += 1
         marca = "  <-- SEPARA" if r["concluyente"] else "   " + r["motivo"]
-        print("  %-46s %6.0f%% %6.0f%% %8.0f pp%s"
-              % (nombre[:46], r["con"]["p"] * 100, r["sin"]["p"] * 100,
+        print("  %-52s %6.0f%% %6.0f%% %8.0f pp%s"
+              % (nombre[:52], r["con"]["p"] * 100, r["sin"]["p"] * 100,
                  r["dif_pp"], marca))
         if r["concluyente"]:
             hallazgos.append(r)
@@ -381,6 +414,16 @@ def analizar(obs, titulo):
         for nom in sin_grupo:
             print("     %s" % nom)
     print("\n  %d factores probados, %d concluyentes." % (probados, len(hallazgos)))
+    if hallazgos:
+        # La trampa de las comparaciones multiples. Probando N factores sobre
+        # datos puramente al azar, uno espera ver alrededor de N/20 que
+        # parezcan significativos. Con 9 factores eso es medio hallazgo falso
+        # por corrida. Decirlo al lado del resultado es la unica forma de que
+        # no se lea como un descubrimiento.
+        print("  OJO: probando %d factores, ~%.1f pueden parecer buenos por"
+              " puro azar." % (probados, probados / 20.0))
+        print("  Un hallazgo recien vale cuando se repite en ruedas que no"
+              " son las que lo encontraron.")
     if probados >= 5 and hallazgos:
         print("  Ojo: probando %d factores, uno o dos pueden parecer significativos" % probados)
         print("  por puro azar. Un hallazgo vale cuando se repite en ruedas nuevas.")
@@ -417,61 +460,42 @@ def calibracion(obs):
 
 
 def guardar(obs, hallazgos, titulo):
+    """Archiva las observaciones REPISANDO las que ya estaban.
+
+    Esto no es un detalle. El centinela corre cada quince minutos, asi que la
+    misma foto se evalua muchas veces a lo largo del dia: a las 13:00 una foto
+    de las 12:00 tiene una hora de rueda por delante, y al cierre tiene cuatro.
+    Si se apendara sin repisar, quedaria grabado el veredicto de la evaluacion
+    mas POBRE — la primera — y la base entera quedaria sesgada hacia "no se
+    toco", porque a la mayoria de los niveles todavia no les habia dado tiempo.
+    La ultima evaluacion es siempre la que mas rueda vio, y es la que manda.
+    """
     os.makedirs(DIR_CONO, exist_ok=True)
     ruta = os.path.join(DIR_CONO, "observaciones.jsonl")
-    ya = set()
+    def clave(o):
+        return "%s|%s|%s|%s|%s" % (o["fecha"], o["hora"], o["tipo"],
+                                   o["nivel"], o["es0dte"])
+    previas = {}
     if os.path.exists(ruta):
         for l in open(ruta, encoding="utf-8"):
             try:
                 o = json.loads(l)
-                ya.add((o["fecha"], o["hora"], o["tipo"], o["nivel"], o["es0dte"]))
+                previas[clave(o)] = o
             except Exception:
                 pass
-    nuevas = 0
-    with open(ruta, "a", encoding="utf-8") as f:
-        for o in obs:
-            k = (o["fecha"], o["hora"], o["tipo"], o["nivel"], o["es0dte"])
-            if k in ya:
-                continue
-            f.write(json.dumps(o) + "\n")
-            nuevas += 1
-    print("\n  guardadas %d observaciones nuevas en %s" % (nuevas, ruta))
-
-
-def informe(obs, hallazgos, titulo, fechas):
-    """Deja la conclusion escrita en la bitacora, con fecha y cantidad de casos.
-
-    Lo que se escribe no es un resumen bonito: es lo que se puede defender.
-    Si nada fue concluyente, eso mismo es la entrada. Una bitacora que solo
-    anota los aciertos no sirve para aprender nada.
-    """
-    os.makedirs(DIR_CONO, exist_ok=True)
-    ruta = os.path.join(DIR_CONO, "bitacora.md")
-    resueltos = [o for o in obs if o["tocado"]]
-    L = []
-    L.append("\n## %s  (%d rueda/s: %s)\n"
-             % (dt.date.today().isoformat(), len(fechas), ", ".join(fechas)))
-    L.append("- %d predicciones, %d llegaron al nivel (%d%%).\n"
-             % (len(obs), len(resueltos),
-                round(len(resueltos) / len(obs) * 100) if obs else 0))
-    if resueltos:
-        t = wilson(sum(1 for o in resueltos if o["aguanto"]), len(resueltos))
-        L.append("- cuando el precio llega, el nivel aguanta el %d%% "
-                 "(intervalo %d%% a %d%%, %d casos).\n"
-                 % (t[0] * 100, t[1] * 100, t[2] * 100, len(resueltos)))
-    if hallazgos:
-        L.append("- factores que separan con intervalos que no se pisan:\n")
-        for h in hallazgos:
-            L.append("  - %s: %d%% contra %d%% (%+d pp)\n"
-                     % (h["factor"], h["con"]["p"] * 100,
-                        h["sin"]["p"] * 100, h["dif_pp"]))
-    else:
-        L.append("- **ningun factor resulto concluyente.** Con esta cantidad "
-                 "de ruedas no alcanza; no es un resultado negativo, es falta "
-                 "de muestra.\n")
-    with open(ruta, "a", encoding="utf-8") as f:
-        f.write("".join(["\n"] + L))
-    print("  informe agregado a %s" % ruta)
+    antes = len(previas)
+    repisadas = 0
+    for o in obs:
+        k = clave(o)
+        if k in previas:
+            repisadas += 1
+        previas[k] = o
+    with open(ruta, "w", encoding="utf-8") as f:
+        for k in sorted(previas):
+            f.write(json.dumps(previas[k]) + "\n")
+    print("\n" + "  archivo: %d observaciones (%d nuevas, %d actualizadas "
+          "con mas rueda por delante)"
+          % (len(previas), len(previas) - antes, repisadas))
 
 
 def main():
