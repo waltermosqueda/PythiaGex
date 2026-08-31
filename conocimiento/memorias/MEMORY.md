@@ -25,3 +25,4 @@
 - [Auditoría de punta a punta](auditoria-punta-a-punta.md) — recalcula todo desde la cadena cruda; encontró el flip sin interpolar y el deploy que nunca se disparaba.
 - [Respaldo del conocimiento](respaldo-del-conocimiento.md) — las memorias viven fuera del repo: correr respaldar.py al final de la sesión o se pierden.
 - [El centinela: qué mide y qué no](centinela-que-mide.md) — anota cada nivel prometido y mide si pasó; no concluye nada hasta que hay muestra.
+- [Autonomía por sesión](autonomia-por-sesion.md) — la cadena de CBOE se congela de noche; la bitácora solo escribe con ATAS abierto.
