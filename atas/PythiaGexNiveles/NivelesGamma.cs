@@ -63,6 +63,33 @@ namespace PythiaGex
 
         private sealed class Escalon { public double Fut, GexB, Contratos; }
 
+        /// <summary>Un strike cargado pegado al precio. Las paredes grandes
+        /// suelen estar a mas de cien puntos; esto es lo que se toca en los
+        /// proximos minutos.</summary>
+        private sealed class Cercano
+        {
+            public double Idx, Fut, GexM, PctDelMayor, DistPts;
+            public int DistTicks;
+            public double? OiC, OiP, Toque;
+            public bool Solo0dte;
+            public string Signo = "";
+        }
+
+        /// <summary>Techo, piso e iman de UN vencimiento. El de hoy y el de
+        /// manana no los tienen en el mismo lugar.</summary>
+        private sealed class NivelVenc
+        {
+            public double? Fut, GexM, DistPts;
+            public int DistTicks;
+        }
+
+        private sealed class Vencimiento
+        {
+            public string Fecha = "";
+            public double GexM, Oi;
+            public NivelVenc Techo, Piso, Iman;
+        }
+
         /// <summary>Las griegas agregadas del complejo y los flujos que se
         /// derivan de ellas. Todo viene calculado del backend sobre la cadena;
         /// aca no se estima ni se inventa nada.</summary>
@@ -87,6 +114,8 @@ namespace PythiaGex
             public List<Hueco> Huecos = new();
             public List<Escalon> Escalera = new();
             public Dictionary<string, double> Sesion = new();
+            public List<Cercano> Cercanos = new();
+            public List<Vencimiento> PorVenc = new();
         }
 
         // ==================================================================
@@ -155,6 +184,35 @@ namespace PythiaGex
         // 2026-08-31: el put wall tenia un competidor al 98% a 25 puntos.
         [Display(Name = "Marcar la zona cuando la pared esta disputada", GroupName = "Niveles de gamma", Order = 47)]
         public bool VerZonaDisputada { get; set; } = true;
+
+        // Las paredes grandes suelen estar a mas de cien puntos del precio.
+        // Estos son los strikes cargados que se tocan en los proximos minutos.
+        [Display(Name = "Niveles cercanos al precio", GroupName = "Niveles cercanos", Order = 48)]
+        public bool VerCercanos { get; set; } = true;
+
+        [Display(Name = "Cuantos dibujar", GroupName = "Niveles cercanos", Order = 49)]
+        public int NCercanos { get; set; } = 6;
+
+        [Display(Name = "Peso minimo (% del mayor del barrio)", GroupName = "Niveles cercanos", Order = 50)]
+        public int PesoMinCercano { get; set; } = 20;
+
+        [Display(Name = "Grosor", GroupName = "Niveles cercanos", Order = 51)]
+        public int GrosorCercano { get; set; } = 1;
+
+        [Display(Name = "Estilo", GroupName = "Niveles cercanos", Order = 52)]
+        public TipoLinea LineaCercano { get; set; } = TipoLinea.Punteada;
+
+        [Display(Name = "Que frena (gamma positiva)", GroupName = "Niveles cercanos", Order = 53)]
+        public Color ColFrena { get; set; } = Color.FromArgb(120, 200, 160);
+
+        [Display(Name = "Que empuja (gamma negativa)", GroupName = "Niveles cercanos", Order = 54)]
+        public Color ColEmpuja { get; set; } = Color.FromArgb(220, 130, 130);
+
+        [Display(Name = "Techo y piso de cada vencimiento", GroupName = "Niveles cercanos", Order = 55)]
+        public bool VerPorVencimiento { get; set; } = true;
+
+        [Display(Name = "Cuantos vencimientos", GroupName = "Niveles cercanos", Order = 56)]
+        public int NVencimientos { get; set; } = 2;
 
         // ==================================================================
         // Ajustes - Contexto de ATAS
@@ -542,6 +600,45 @@ namespace PythiaGex
                         i++;
                     }
                 }
+                if (r.TryGetProperty("cercanos", out var cs2) && cs2.ValueKind == JsonValueKind.Array)
+                    foreach (var c in cs2.EnumerateArray())
+                        d.Cercanos.Add(new Cercano
+                        {
+                            Idx = Num(c, "idx") ?? Num(c, "indice") ?? 0,
+                            Fut = Num(c, "futuro") ?? 0,
+                            GexM = Num(c, "gex_M") ?? 0,
+                            PctDelMayor = Num(c, "pct_del_mayor") ?? 0,
+                            DistPts = Num(c, "dist_pts") ?? 0,
+                            DistTicks = (int)(Num(c, "dist_ticks") ?? 0),
+                            OiC = Num(c, "oi_call"), OiP = Num(c, "oi_put"),
+                            Toque = Num(c, "prob_toque"),
+                            Solo0dte = Bol(c, "solo_0dte"),
+                            Signo = Txt(c, "signo"),
+                        });
+
+                if (r.TryGetProperty("por_vencimiento", out var pv) && pv.ValueKind == JsonValueKind.Array)
+                    foreach (var v in pv.EnumerateArray())
+                    {
+                        NivelVenc Leer(string k)
+                        {
+                            if (!v.TryGetProperty(k, out var x) || x.ValueKind != JsonValueKind.Object)
+                                return null;
+                            return new NivelVenc
+                            {
+                                Fut = Num(x, "futuro"), GexM = Num(x, "gex_M"),
+                                DistPts = Num(x, "dist_pts"),
+                                DistTicks = (int)(Num(x, "dist_ticks") ?? 0),
+                            };
+                        }
+                        d.PorVenc.Add(new Vencimiento
+                        {
+                            Fecha = Txt(v, "fecha"),
+                            GexM = Num(v, "gex_M") ?? 0, Oi = Num(v, "oi") ?? 0,
+                            Techo = Leer("call_wall"), Piso = Leer("put_wall"),
+                            Iman = Leer("gamma_pin"),
+                        });
+                    }
+
                 if (r.TryGetProperty("huecos", out var hs) && hs.ValueKind == JsonValueKind.Array)
                     foreach (var h in hs.EnumerateArray())
                         d.Huecos.Add(new Hueco
@@ -814,6 +911,64 @@ namespace PythiaGex
                 g.DrawString(msg, fTitulo, string.IsNullOrEmpty(_error) ? Color.Gray : ColPiso,
                              x0 + 8, area.Top + 8);
                 return;
+            }
+
+            // ---- niveles cercanos: lo que se toca en los proximos minutos
+            if (VerCercanos && d.Cercanos.Count > 0)
+            {
+                var fc = Fuente(TamDetalle - 0.5f, false);
+                int puestos = 0;
+                foreach (var c in d.Cercanos)
+                {
+                    if (puestos >= Math.Max(1, NCercanos)) break;
+                    if (c.PctDelMayor < PesoMinCercano) continue;
+                    var pc = (decimal)(c.Fut != 0 ? c.Fut : c.Idx);
+                    if (pc < lo || pc > hi) continue;
+                    var frena = c.GexM > 0;
+                    var col = frena ? ColFrena : ColEmpuja;
+                    // el grosor acompana el peso: un strike del 90% se ve mas
+                    var gr = Math.Max(1, GrosorCercano + (c.PctDelMayor >= 70 ? 1 : 0));
+                    var alfa = (int)Math.Max(60, Math.Min(210, c.PctDelMayor * 2.1));
+                    g.DrawLine(new RenderPen(Color.FromArgb(alfa, col), gr, Dash(LineaCercano)),
+                               x0, cont.GetYByPrice(pc, false), x1, cont.GetYByPrice(pc, false));
+                    var yc = cont.GetYByPrice(pc, false);
+                    var t = pc.ToString("0.00", CultureInfo.InvariantCulture)
+                          + "  " + Mag(c.GexM) + "  " + c.Signo
+                          + "  " + (c.DistTicks >= 0 ? "+" : "") + c.DistTicks + "tk"
+                          + (c.Solo0dte ? "  0DTE" : "");
+                    var wt = g.MeasureString(t, fc).Width;
+                    g.DrawString(t, fc, Color.FromArgb(alfa, col),
+                                 x1 - wt - 8, yc - g.MeasureString(t, fc).Height - 1);
+                    puestos++;
+                }
+            }
+
+            // ---- techo y piso de cada vencimiento cercano
+            if (VerPorVencimiento && d.PorVenc.Count > 0)
+            {
+                var fv = Fuente(TamDetalle - 1f, false);
+                int iv2 = 0;
+                foreach (var v in d.PorVenc)
+                {
+                    if (iv2 >= Math.Max(1, NVencimientos)) break;
+                    var etq = iv2 == 0 ? "0DTE" : v.Fecha.Length >= 10 ? v.Fecha.Substring(5) : v.Fecha;
+                    foreach (var par in new[] { (v.Techo, ColTecho, "techo"),
+                                                (v.Piso, ColPiso, "piso") })
+                    {
+                        if (par.Item1?.Fut == null) continue;
+                        var pv2 = (decimal)par.Item1.Fut.Value;
+                        if (pv2 < lo || pv2 > hi) continue;
+                        var yv = cont.GetYByPrice(pv2, false);
+                        g.DrawLine(new RenderPen(Color.FromArgb(90, par.Item2), 1, DashStyle.Dash),
+                                   x0 + area.Width / 2, yv, x1, yv);
+                        var t = etq + " " + par.Item3 + "  "
+                              + pv2.ToString("0.00", CultureInfo.InvariantCulture);
+                        var wt = g.MeasureString(t, fv).Width;
+                        g.DrawString(t, fv, Color.FromArgb(150, par.Item2),
+                                     x1 - wt - 8, yv + 1);
+                    }
+                    iv2++;
+                }
             }
 
             // Zona de pared disputada: se sombrea entre el lider y el
@@ -1178,6 +1333,32 @@ namespace PythiaGex
                                        (n.Fut ?? 0).ToString("0.00", CultureInfo.InvariantCulture), ColorDe(n)));
                         L.Add(new Fila("", Recortar(n.Razones, 52),
                                        Color.FromArgb(150, ColTexto)));
+                    }
+                }
+
+                if (VerCercanos && d.Cercanos.Count > 0)
+                {
+                    L.Add(new Fila("CERCA DEL PRECIO", d.Cercanos.Count + " strikes", ColTexto, true, true));
+                    foreach (var c in d.Cercanos.Take(completo ? 6 : 4))
+                        L.Add(new Fila((c.DistTicks >= 0 ? "+" : "") + c.DistTicks + " tk"
+                                       + (c.Solo0dte ? "  0DTE" : ""),
+                                       (c.Fut != 0 ? c.Fut : c.Idx).ToString("0.00", CultureInfo.InvariantCulture)
+                                       + "   " + Mag(c.GexM) + "  " + c.Signo,
+                                       c.GexM > 0 ? ColFrena : ColEmpuja));
+                }
+
+                if (VerPorVencimiento && d.PorVenc.Count > 0)
+                {
+                    L.Add(new Fila("POR VENCIMIENTO", "", ColTexto, true, true));
+                    int k2 = 0;
+                    foreach (var v in d.PorVenc.Take(completo ? 3 : 2))
+                    {
+                        var etq = k2 == 0 ? "0DTE" : v.Fecha;
+                        L.Add(new Fila(etq + "   GEX " + Mag(v.GexM),
+                                       (v.Piso?.Fut ?? 0).ToString("0.00", CultureInfo.InvariantCulture)
+                                       + "  a  " + (v.Techo?.Fut ?? 0).ToString("0.00", CultureInfo.InvariantCulture),
+                                       v.GexM >= 0 ? ColTecho : ColPiso));
+                        k2++;
                     }
                 }
 

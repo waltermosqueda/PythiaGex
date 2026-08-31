@@ -172,6 +172,10 @@ def construir(out):
         "griegas": _griegas(out, base),
 
         "niveles": niveles,
+        # los strikes cargados pegados al precio, ordenados por cercania
+        "cercanos": out.get("cercanos") or [],
+        # techo, piso e iman de cada vencimiento cercano por separado
+        "por_vencimiento": out.get("por_vencimiento") or [],
         "huecos": out.get("huecos") or [],
         "escalera": [{"idx": e.get("indice"), "fut": e.get("futuro"),
                       "gex_B": e.get("gex_B"), "contratos": e.get("contratos")}

@@ -284,3 +284,98 @@ def sesion(velas, base=None):
         "ib_rango": round(a - b, 2),
         "cierre": cs[-1]["c"], "cierre_fut": f(cs[-1]["c"]),
     }
+
+
+def cercanos(strikes, spot, base=None, raiz="ES", radio_pct=0.6, n=8,
+             iv_atm=None, T=None):
+    """Los strikes cargados que estan PEGADOS al precio.
+
+    Las paredes grandes suelen estar lejos: medido el 2026-08-31, el Call Wall
+    estaba a 117 puntos y el Put Wall a 33. Para scalpear MES eso no alcanza.
+    Lo que mueve el precio en los proximos minutos son los strikes cargados
+    que caen dentro de un rango chico alrededor del precio, y esos no tienen
+    nombre propio en ningun tablero: son los "minor levels".
+
+    Se devuelven ordenados por cercania, no por tamano, porque para operar
+    importa cual toca primero. Cada uno trae el signo de su gamma:
+
+        positivo -> la mesa frena ahi
+        negativo -> la mesa empuja ahi
+
+    radio_pct es medio punto porcentual por defecto: unos 46 puntos de SPX,
+    que a 0,25 de tick son 184 ticks de ES. Es el rango donde se juega una
+    sesion normal.
+    """
+    c = CONTRATO.get(raiz, CONTRATO["ES"])
+    lo, hi = spot * (1 - radio_pct / 100.0), spot * (1 + radio_pct / 100.0)
+    cand = [(k, s) for k, s in strikes.items() if lo <= k <= hi]
+    if not cand:
+        return []
+    # se descartan los que no pesan nada: menos del 8% del mayor del barrio
+    mayor = max(abs(s.get("gex") or 0) for _, s in cand) or 1
+    cand = [(k, s) for k, s in cand if abs(s.get("gex") or 0) >= mayor * 0.08]
+    cand.sort(key=lambda z: abs(z[0] - spot))
+    out = []
+    for k, s in cand[:n]:
+        g = s.get("gex") or 0
+        g0 = s.get("gex_0dte") or 0
+        d = k - spot
+        out.append({
+            "indice": round(k, 2),
+            "futuro": round(k + base, 2) if base is not None else None,
+            "gex_M": g,
+            "gex_0dte_M": g0,
+            "pct_del_mayor": round(abs(g) / mayor * 100, 1),
+            "signo": "frena" if g > 0 else "empuja",
+            "solo_0dte": bool(g0) and abs(g0) >= abs(g) * 0.8,
+            "dist_pts": round(d, 2),
+            "dist_ticks": int(round(d / c["tick"])),
+            "oi_call": s.get("oi_call"), "oi_put": s.get("oi_put"),
+            "vol_call": s.get("vol_call"), "vol_put": s.get("vol_put"),
+            "prob_toque": prob_toque(spot, k, iv_atm, T),
+        })
+    return out
+
+
+def por_vencimiento(crudo_strikes_por_venc, spot, base=None, raiz="ES", n=3):
+    """El techo, el piso y el iman de CADA uno de los vencimientos cercanos.
+
+    Hoy se publica una sola pared, calculada sobre toda la cadena hasta 18
+    dias. Pero el vencimiento de hoy y el de manana no tienen la pared en el
+    mismo lugar, y para intradia manda el de hoy. Esto los separa.
+
+    Recibe {fecha: {strike: {gex, oi_call, oi_put}}} ya agregado por
+    vencimiento, y devuelve los niveles de cada uno.
+    """
+    c = CONTRATO.get(raiz, CONTRATO["ES"])
+    out = []
+    for fecha in sorted(crudo_strikes_por_venc)[:n]:
+        st = crudo_strikes_por_venc[fecha]
+        vals = [(k, v.get("gex") or 0.0) for k, v in st.items()]
+        if not vals:
+            continue
+        arr = [v for v in vals if v[0] > spot]
+        aba = [v for v in vals if v[0] < spot]
+        cerca = sorted((v for v in vals if abs(v[1]) > 0),
+                       key=lambda z: abs(z[0] - spot))
+        cw = max(arr, key=lambda z: z[1])[0] if arr else None
+        pw = min(aba, key=lambda z: z[1])[0] if aba else None
+        pin = cerca[0][0] if cerca else None
+
+        def par(k):
+            if k is None:
+                return None
+            return {"indice": round(k, 2),
+                    "futuro": round(k + base, 2) if base is not None else None,
+                    "gex_M": round(st[k].get("gex") or 0.0, 0),
+                    "dist_pts": round(k - spot, 2),
+                    "dist_ticks": int(round((k - spot) / c["tick"]))}
+
+        out.append({
+            "fecha": fecha,
+            "gex_M": round(sum(v for _, v in vals), 0),
+            "oi": int(sum((v.get("oi_call") or 0) + (v.get("oi_put") or 0)
+                          for v in st.values())),
+            "call_wall": par(cw), "put_wall": par(pw), "gamma_pin": par(pin),
+        })
+    return out

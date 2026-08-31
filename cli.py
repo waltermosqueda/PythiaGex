@@ -12,7 +12,7 @@ PythiaGex - linea de comandos.
 """
 import argparse, json, os, sys, datetime as dt
 from pythiagex.fuentes    import bajar, normalizar
-from pythiagex.exposicion import calcular
+from pythiagex.exposicion import calcular, parse_occ as parse_occ_cli
 from pythiagex.niveles    import (curva_gamma, expected_move, niveles_clave,
                                   skew_0dte, cambio_vs, alertas)
 from pythiagex.matriz     import construir as matriz_construir, concentracion
@@ -26,6 +26,7 @@ from pythiagex.tasas       import curva as curva_tasas, tasa as tasa_plazo
 from pythiagex.feed_atas   import construir as feed_atas
 from pythiagex.griegas     import fijar_tasa
 from pythiagex.tablero     import (enriquecer, escalera, huecos, sesion,
+                                   cercanos, por_vencimiento,
                                    contratos_cobertura, CONTRATO)
 
 SALIDA = "datos/salida"
@@ -53,6 +54,10 @@ def main():
     ap.add_argument("--sin-precio", action="store_true",
                     help="no bajar la serie de precio intradia")
     ap.add_argument("--panel", action="store_true", help="escribe panel/datos.json")
+    ap.add_argument("--radio-cercanos", type=float, default=0.6,
+                    help="ancho en %% alrededor del precio para los niveles cercanos")
+    ap.add_argument("--n-cercanos", type=int, default=8,
+                    help="cuantos niveles cercanos publicar")
     ap.add_argument("--rango", type=float, default=0.03,
                     help="ancho de strikes alrededor del spot, en tanto por uno")
     ap.add_argument("--matriz", action="store_true",
@@ -230,6 +235,37 @@ def main():
     out["huecos"] = huecos(st_M, S, base=base)
     # apertura, maximo, minimo e initial balance de la sesion
     out["sesion"] = sesion((px or {}).get("velas"), base=base) if px else None
+    # Los strikes cargados PEGADOS al precio. Las paredes grandes suelen
+    # estar a mas de cien puntos; esto es lo que se toca en los proximos
+    # minutos, y es lo que faltaba para scalping.
+    out["cercanos"] = cercanos(st_M, S, base=base, raiz=raiz,
+                               radio_pct=a.radio_cercanos, n=a.n_cercanos,
+                               iv_atm=iv_atm, T=T_atm)
+
+    # El techo, el piso y el iman de CADA vencimiento cercano por separado.
+    # El de hoy y el de manana no los tienen en el mismo lugar, y para
+    # intradia manda el de hoy.
+    porVK = {}
+    _ahora = dt.datetime.now(dt.timezone.utc)
+    for o in crudo["data"]["options"]:
+        pp = parse_occ_cli(o["option"])
+        if not pp:
+            continue
+        vc, cp, K = pp
+        dias_o = (vc - _ahora).total_seconds() / 86400.0
+        if dias_o < 0 or dias_o > 8:
+            continue
+        oi = o.get("open_interest") or 0
+        if not oi:
+            continue
+        g = o.get("gamma") or 0.0
+        sgn = 1 if cp == "C" else -1
+        e = porVK.setdefault(vc.date().isoformat(), {}).setdefault(
+            K, {"gex": 0.0, "oi_call": 0, "oi_put": 0})
+        e["gex"] += g * oi * 100 * S * S * 0.01 * sgn / 1e6
+        e["oi_call" if cp == "C" else "oi_put"] += oi
+    out["por_vencimiento"] = por_vencimiento(porVK, S, base=base, raiz=raiz, n=3)
+
     # cuantos contratos tiene que operar la mesa por 1% de movimiento
     pf = (med.get("forward") if med else None) or (a_futuro(S, base) if base else None)
     out["cobertura"] = contratos_cobertura(T["gex"], pf, raiz) if pf else None
