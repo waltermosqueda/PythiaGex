@@ -365,6 +365,20 @@ namespace PythiaGex
         [Display(Name = "Extender lineas a todo el ancho", GroupName = "Estilo", Order = 84)]
         public bool LineaCompleta { get; set; } = true;
 
+        // El eje de precios se dibuja ENCIMA del ChartArea, asi que su borde
+        // derecho no es el borde visible. Las etiquetas alineadas a la derecha
+        // quedaban cortadas por el eje.
+        [Display(Name = "Separacion del eje de precios (px)", GroupName = "Estilo", Order = 85)]
+        public int MargenEje { get; set; } = 62;
+
+        [Display(Name = "Leyenda de que es cada valor", GroupName = "Estilo", Order = 86)]
+        public bool VerLeyenda { get; set; } = true;
+
+        // Cuanto se mueve el precio para medir la convexidad. Diez puntos de
+        // ES son cuarenta ticks: un movimiento normal de un rato.
+        [Display(Name = "Salto para medir la convexidad (puntos)", GroupName = "Tablero", Order = 98)]
+        public int SaltoConvexidad { get; set; } = 10;
+
         // ==================================================================
         // Ajustes - Tablero
         // ==================================================================
@@ -1112,7 +1126,8 @@ namespace PythiaGex
                     if (rec.Width <= 0 || rec.Height <= 0) continue;
                     g.FillRectangle(Color.FromArgb(14, ColIman), rec);
                     g.DrawString("GAMMA VOID " + h.Ancho.ToString("0", CultureInfo.InvariantCulture) + " pts",
-                        Fuente(TamDetalle - 1, false), Color.FromArgb(150, ColIman), x1 - 150, rec.Top + 2);
+                        Fuente(TamDetalle - 1, false), Color.FromArgb(150, ColIman),
+                        x1 - 150 - Math.Max(0, MargenEje), rec.Top + 2);
                 }
 
             if (_ctx.Listo) DibujarContexto(g, area, cont, hi, lo);
@@ -1158,13 +1173,14 @@ namespace PythiaGex
                         var tkv = precio > 0 ? Contexto.Ticks(pc, precio, tick) : c.DistTicks;
                         var pvv = ProbViva(d, c.Idx, c.Iv, precio, c.ProbFactor);
                         var t = pc.ToString("0.00", CultureInfo.InvariantCulture)
-                              + "  " + (tkv >= 0 ? "+" : "") + tkv + "tk"
+                              + "  dist " + (tkv >= 0 ? "+" : "") + tkv + "tk"
                               + (pvv.HasValue
-                                 ? "  " + pvv.Value.ToString("0", CultureInfo.InvariantCulture) + "%" : "")
-                              + "  " + Mag(c.GexM)
-                              + (c.Solo0dte ? "  0D" : "");
+                                 ? "  toca " + pvv.Value.ToString("0", CultureInfo.InvariantCulture) + "%" : "")
+                              + "  gam " + Mag(c.GexM)
+                              + (c.Solo0dte ? "  0DTE" : "");
                         var tam = g.MeasureString(t, fc);
-                        var caja = new Rectangle(x1 - tam.Width - 10, yc - tam.Height - 1,
+                        var caja = new Rectangle(x1 - tam.Width - 10 - Math.Max(0, MargenEje),
+                                                 yc - tam.Height - 1,
                                                  tam.Width + 6, tam.Height + 2);
                         if (CajaEtiqueta)
                             g.FillRectangle(Color.FromArgb(
@@ -1185,6 +1201,9 @@ namespace PythiaGex
                 {
                     if (iv2 >= Math.Max(1, NVencimientos)) break;
                     var etq = iv2 == 0 ? "0DTE" : v.Fecha.Length >= 10 ? v.Fecha.Substring(5) : v.Fecha;
+                    // cada vencimiento se corre un poco a la izquierda, asi dos
+                    // etiquetas del mismo precio no quedan una encima de otra
+                    var sangria = iv2 * 118;
                     foreach (var par in new[] { (v.Techo, ColTecho, "techo"),
                                                 (v.Piso, ColPiso, "piso") })
                     {
@@ -1198,12 +1217,12 @@ namespace PythiaGex
                         g.DrawLine(new RenderPen(Color.FromArgb(alfaV, par.Item2), grV, DashStyle.Dash),
                                    x0 + area.Width / 3, yv, x1, yv);
                         var tkv2 = precio > 0 ? Contexto.Ticks(pv2, precio, tick) : par.Item1.DistTicks;
-                        var t = etq + " " + par.Item3 + "  "
+                        var t = etq + " " + par.Item3 + " "
                               + pv2.ToString("0.00", CultureInfo.InvariantCulture)
-                              + "  " + (tkv2 >= 0 ? "+" : "") + tkv2 + "tk";
+                              + "  dist " + (tkv2 >= 0 ? "+" : "") + tkv2 + "tk";
                         var tam2 = g.MeasureString(t, fv);
-                        var cajaV = new Rectangle(x1 - tam2.Width - 10, yv + 1,
-                                                  tam2.Width + 6, tam2.Height + 2);
+                        var cajaV = new Rectangle(x1 - tam2.Width - 10 - Math.Max(0, MargenEje) - sangria,
+                                                  yv + 1, tam2.Width + 6, tam2.Height + 2);
                         if (CajaEtiqueta)
                             g.FillRectangle(Color.FromArgb(
                                 Math.Max(0, Math.Min(255, (int)(OpacidadCaja * 0.8))), ColFondo), cajaV);
@@ -1279,29 +1298,33 @@ namespace PythiaGex
 
                 var partes = new List<string>();
                 var pViva = ProbViva(d, n.Idx, n.Iv, precio, n.ProbFactor);
+                // Cada valor lleva adelante que es. Sin eso, "-29tk 77% -1.34B
+                // 2.4k/5.4k" es un renglon de numeros sueltos: la informacion
+                // esta pero no se puede leer, que es lo mismo que no tenerla.
                 if (CampoTicks && precio > 0)
                 {
                     var dt2 = Contexto.Ticks(p, precio, tick);
-                    partes.Add((dt2 >= 0 ? "+" : "") + dt2 + "tk");
+                    partes.Add("dist " + (dt2 >= 0 ? "+" : "") + dt2 + "tk");
                 }
                 if (CampoToque)
                 {
                     if (pViva.HasValue)
-                        partes.Add(pViva.Value.ToString("0", CultureInfo.InvariantCulture) + "%");
+                        partes.Add("toca " + pViva.Value.ToString("0", CultureInfo.InvariantCulture) + "%");
                     else if (n.Toque != null)
-                        partes.Add(n.Toque.Value.ToString("0", CultureInfo.InvariantCulture) + "%");
+                        partes.Add("toca " + n.Toque.Value.ToString("0", CultureInfo.InvariantCulture) + "%");
                 }
-                if (CampoGamma && n.GexM != null) partes.Add(Mag(n.GexM));
-                if (CampoOi && n.OiC != null) partes.Add(Oi(n.OiC) + "/" + Oi(n.OiP));
+                if (CampoGamma && n.GexM != null) partes.Add("gam " + Mag(n.GexM));
+                if (CampoOi && n.OiC != null)
+                    partes.Add("OI " + Oi(n.OiC) + "c/" + Oi(n.OiP) + "p");
                 if (CampoFlujo && n.Flujo != null && n.Flujo.Volumen > 0)
-                    partes.Add("v" + Kilo(n.Flujo.Volumen)
-                               + " d" + (n.Flujo.Delta >= 0 ? "+" : "") + Kilo(n.Flujo.Delta));
+                    partes.Add("vol " + Kilo(n.Flujo.Volumen)
+                               + " delta " + (n.Flujo.Delta >= 0 ? "+" : "") + Kilo(n.Flujo.Delta));
                 if (CampoConfluencia)
                 {
-                    if (n.Flujo != null && n.Flujo.Absorcion) partes.Add("ABS");
+                    if (n.Flujo != null && n.Flujo.Absorcion) partes.Add("ABSORCION");
                     if (n.Disputado && n.CompetidorFut.HasValue)
-                        partes.Add("2do " + n.CompetidorFut.Value.ToString("0", CultureInfo.InvariantCulture)
-                                   + " " + (n.CompetidorPct ?? 0).ToString("0", CultureInfo.InvariantCulture) + "%");
+                        partes.Add("2da pared " + n.CompetidorFut.Value.ToString("0", CultureInfo.InvariantCulture)
+                                   + " al " + (n.CompetidorPct ?? 0).ToString("0", CultureInfo.InvariantCulture) + "%");
                 }
                 if (CampoIndice && n.Idx != null)
                     partes.Add(d.Indice + " " + n.Idx.Value.ToString("0", CultureInfo.InvariantCulture));
@@ -1371,7 +1394,8 @@ namespace PythiaGex
                 var f = Fuente(TamDetalle - 0.5f, false);
                 var t = etq + "  " + p.ToString("0.00", CultureInfo.InvariantCulture);
                 var w = g.MeasureString(t, f).Width;
-                g.DrawString(t, f, Color.FromArgb(200, col), x1 - w - 6, y - 13);
+                g.DrawString(t, f, Color.FromArgb(200, col),
+                             x1 - w - 6 - Math.Max(0, MargenEje), y - 13);
             }
 
             if (VerPoc)
@@ -1509,11 +1533,51 @@ namespace PythiaGex
                 L.Add(new Fila("Cobertura 1%  " + (pos ? "compra baja" : "vende baja"),
                                Miles(Math.Abs(contratos)) + " " + raiz,
                                pos ? ColTecho : ColPiso));
+                // CONVEXIDAD. Es el numero que dice si un movimiento se va a
+                // acelerar o a frenar, y estaba calculado en la escalera pero
+                // nunca se mostraba. Para un scalper de gamma es lo que sigue
+                // en importancia despues del regimen: no alcanza con saber que
+                // la mesa vende, hay que saber cuanto MAS va a vender si cae.
+                if (precio > 0 && d.Escalera.Count >= 2)
+                {
+                    var salto = Math.Max(1, SaltoConvexidad);
+                    var abajo = EnVivo(d, (double)precio - salto);
+                    var arriba = EnVivo(d, (double)precio + salto);
+                    if (abajo.HasValue && arriba.HasValue)
+                    {
+                        var ca = Math.Abs(abajo.Value.contratos);
+                        var cb = Math.Abs(arriba.Value.contratos);
+                        var hoy = Math.Abs(contratos);
+                        L.Add(new Fila("Si baja " + salto + " pts  "
+                                       + (ca > hoy ? "acelera" : "frena"),
+                                       Miles(ca) + " " + raiz
+                                       + (hoy > 0 ? "  " + ((ca / Math.Max(1.0, hoy) - 1) * 100)
+                                                    .ToString("+0;-0", CultureInfo.InvariantCulture) + "%" : ""),
+                                       ca > hoy ? ColPiso : ColTecho));
+                        L.Add(new Fila("Si sube " + salto + " pts  "
+                                       + (cb > hoy ? "acelera" : "frena"),
+                                       Miles(cb) + " " + raiz
+                                       + (hoy > 0 ? "  " + ((cb / Math.Max(1.0, hoy) - 1) * 100)
+                                                    .ToString("+0;-0", CultureInfo.InvariantCulture) + "%" : ""),
+                                       cb > hoy ? ColPiso : ColTecho));
+                    }
+                }
+
                 if (G.CharmContratos.HasValue)
+                {
+                    // El charm no cae parejo: se acelera hacia el cierre. El
+                    // total en cinco horas se lee distinto que el ritmo por hora.
+                    var horas = d.Liquida.HasValue
+                        ? Math.Max(0.1, (d.Liquida.Value - DateTime.UtcNow).TotalHours)
+                        : (double?)null;
                     L.Add(new Fila("Charm pendiente "
-                                   + (G.CharmContratos.Value < 0 ? "compra" : "vende"),
+                                   + (G.CharmContratos.Value < 0 ? "compra" : "vende")
+                                   + (horas.HasValue
+                                      ? "  " + Miles(Math.Abs(G.CharmContratos.Value) / horas.Value) + "/h"
+                                      : ""),
                                    Miles(Math.Abs(G.CharmContratos.Value)) + " " + raiz,
                                    G.CharmContratos.Value < 0 ? ColTecho : ColPiso));
+                }
 
                 // La distancia del cercano venia del feed y la de los niveles se
                 // calculaba en vivo: el mismo precio salia con dos distancias
@@ -1601,6 +1665,24 @@ namespace PythiaGex
                                    falta > 0 && falta < 60 ? ColIman
                                    : falta <= 0 ? ColPiso : Color.FromArgb(140, 150, 165)));
                 }
+                if (VerLeyenda)
+                {
+                    L.Add(new Fila("QUE ES CADA COSA", "", ColTexto, true, true));
+                    L.Add(new Fila("gam", "gamma parada en ese strike, en dolares",
+                                   Color.FromArgb(130, 140, 155)));
+                    L.Add(new Fila("toca", "probabilidad de tocarlo antes del cierre",
+                                   Color.FromArgb(130, 140, 155)));
+                    L.Add(new Fila("OI 2k c/5k p", "interes abierto: calls y puts vivos",
+                                   Color.FromArgb(130, 140, 155)));
+                    L.Add(new Fila("vol / delta", "lo operado ahi hoy, y la agresion neta",
+                                   Color.FromArgb(130, 140, 155)));
+                    L.Add(new Fila("ABSORCION", "mucho volumen y poco avance: alguien absorbe",
+                                   Color.FromArgb(130, 140, 155)));
+                    L.Add(new Fila("ZONA", "la 2da pared pesa casi igual: es franja, no raya",
+                                   Color.FromArgb(130, 140, 155)));
+                    L.Add(new Fila("acelera / frena", "si la cobertura crece o baja al moverse",
+                                   Color.FromArgb(130, 140, 155)));
+                }
             }
             else
 
@@ -1627,9 +1709,19 @@ namespace PythiaGex
                                    Miles(Math.Abs(G.VannaPorPuntoIv.Value)) + " " + raiz,
                                    Color.FromArgb(170, 180, 195)));
                 if (d.Gex0dteB.HasValue)
-                    L.Add(new Fila("GEX 0DTE",
+                {
+                    // Que porcentaje de toda la gamma vence HOY. Si es alto, el
+                    // iman tira fuerte, y a las 17:00 desaparece de golpe.
+                    var tot = Math.Abs(d.G.GexB ?? d.NetGexB ?? 0);
+                    var pesoCero = tot > 0
+                        ? Math.Abs(d.Gex0dteB.Value) / tot * 100 : (double?)null;
+                    L.Add(new Fila("GEX 0DTE"
+                                   + (pesoCero.HasValue
+                                      ? "  " + pesoCero.Value.ToString("0", CultureInfo.InvariantCulture)
+                                        + "% del total" : ""),
                                    d.Gex0dteB.Value.ToString("+0.00;-0.00", CultureInfo.InvariantCulture) + " B",
                                    d.Gex0dteB >= 0 ? ColTecho : ColPiso));
+                }
 
                 if (completo)
                 {
