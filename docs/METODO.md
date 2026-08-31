@@ -90,17 +90,76 @@ por volatilidad, nunca porque entró posición nueva.
 ## La base: de índice a futuro
 
 Los niveles salen en SPX (el índice) pero se opera ES (el futuro). No son
-el mismo número.
+el mismo número. Los separa la **base**, que es carry puro: tasa corta
+menos dividendos, por el tiempo que falta hasta el vencimiento.
+
+### El método obvio falla fuera de horario
+
+Lo natural es:
 
 ```
 forward = strike + call − put        (paridad put-call)
-base    = forward − spot
-ES      = SPX + base
+base    = forward − spot              <-- acá está el agujero
 ```
 
-Se mide sobre el vencimiento que coincide con el del futuro, con doce
-strikes. **Si los doce dan casi el mismo forward, la cadena es real.**
+El problema: **el índice al contado deja de cotizar 16:15 ET, las opciones
+no.** Fuera de horario `spot` es el cierre anterior, mientras las opciones
+ya descuentan todo lo que pasó después. Restar uno del otro mezcla dos
+momentos distintos y devuelve cualquier cosa.
 
-**La base se mide todos los días.** En cuatro días de agosto de 2026 se
-movió de 21,6 a 12,28 — nueve puntos. Y **SPY × 10 está mal**: el ratio real
+Medido el 2026-08-31 a las 02:37 ET sobre SPX, sobre los mismos doce
+strikes: por punto medio de bid/ask daba −21,6 y por último operado +9,5.
+Treinta y un puntos de diferencia. La primera lectura fue culpar a los
+market makers por correr las cotizaciones de noche. Era falso.
+
+### Cómo se descubrió
+
+El forward de un vencimiento de **cero días es el contado, por definición**:
+no hay tiempo, no hay carry. Ese es el control.
+
+| vencimiento | días | forward medido | vs `current_price` 7711,76 | carry teórico |
+|---|---|---|---|---|
+| 2026-08-31 | 0 | 7679,30 | −32,46 | 0 |
+| 2026-09-03 | 3 | 7680,20 | −31,56 | +1,71 |
+| 2026-09-10 | 10 | 7683,85 | −27,91 | +5,70 |
+| 2026-09-18 | 18 | 7690,13 | −21,63 | +10,23 |
+
+El forward de cero días daba 7679,30 contra un `current_price` de 7711,76.
+Como ese forward **tiene** que ser el contado, los 32 puntos no eran base:
+era el índice atrasado. Y la curva de forwards subía +10,8 en 18 días,
+que es exactamente el carry teórico. La cadena estaba perfecta; el
+índice era el que mentía.
+
+### El método que se usa
+
+No tocar el índice. Los dos forwards salen de la misma cadena, cotizada
+en el mismo instante, así que el atraso se cancela solo:
+
+```
+base = forward(vencimiento trimestral) − forward(vencimiento más cercano)
+```
+
+Verificado el 2026-08-31 sobre SPX: **+10,83 medido contra +10,23 teórico**
+(tasa 4,0 % menos dividendo 1,3 %, a 18 días). Sesenta centésimos de
+diferencia entre una medición de mercado y un cálculo de pizarrón.
+
+De paso queda gratis un dato que ningún tablero público muestra: el
+**contado implícito**. Con el mercado cerrado, la cadena sabe dónde está
+el índice de verdad aunque la pizarra siga clavada en el cierre.
+
+### Cuándo NO creerle
+
+La medición se marca firme solo si se cumplen las tres:
+
+1. Doce strikes o más en cada vencimiento.
+2. Dispersión entre strikes menor al 0,05 % del índice — relativa, porque
+   tres puntos en SPX (7.700) es exigente y en NDX (29.000) es absurdo.
+3. La base medida cae a menos de 3 puntos del carry teórico.
+
+Medido el 2026-08-31: SPX pasa las tres. **NDX y RUT no** — NDX con seis
+strikes utilizables y 8,65 puntos de dispersión, RUT con 5,45. Sus
+opciones casi no cotizan de noche. El panel los marca en rojo y dice
+por qué. Un nivel de NQ convertido con esa base no se dibuja.
+
+**La base se mide todos los días.** Y **SPY × 10 está mal**: el ratio real
 no es 10 exacto.

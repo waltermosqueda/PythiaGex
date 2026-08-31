@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Gamma Desk</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
@@ -79,8 +81,8 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
 <div class="wrap">
 <div class="sy" id="sy"></div>
 <div class="top">
-  <div><div class="br"><h1>Gamma Desk</h1><span class="tk" id="sym">&#8212;</span></div><div class="st" id="stamp"></div></div>
-  <div style="text-align:right"><div class="lbl">Underlying</div><div class="sp" id="spot">&#8212;</div></div>
+  <div><div class="br"><h1>Gamma Desk</h1><span class="tk" id="sym">&#8212;</span></div><div class="st" id="stamp"></div><div class="st" id="basis" style="margin-top:3px"></div></div>
+  <div style="text-align:right"><div class="lbl" id="lblU">Underlying</div><div class="sp" id="spot">&#8212;</div></div>
   <div style="text-align:right"><div class="lbl" style="margin-bottom:5px">Gamma Regime</div><span class="rg" id="reg">&#8212;</span></div>
 </div>
 
@@ -105,7 +107,7 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
         <button role="tab" data-o="cp" aria-selected="false">Calls / Puts</button>
         <button role="tab" data-o="chg" aria-selected="false">Cambio</button>
       </div>
-      <label class="ck"><input type="checkbox" id="clb" checked> lookbacks</label>
+      <div class="tb" id="zy" role="tablist"><button role="tab" data-z="op" aria-selected="true" title="ventana entre paredes y rango del dia">Operativo</button><button role="tab" data-z="em" aria-selected="false" title="spot mas menos dos movimientos esperados">&#177;2&#963;</button><button role="tab" data-z="todo" aria-selected="false" title="toda la cadena">Todo</button></div><div class="tb" id="vp" role="tablist"><button role="tab" data-v="idx" aria-selected="true">&#205;ndice</button><button role="tab" data-v="fut" aria-selected="false" id="btnFut">Futuro</button></div><label class="ck"><input type="checkbox" id="c0d" checked> 0DTE</label><label class="ck"><input type="checkbox" id="clb" checked> lookbacks</label>
     </div>
   </header>
   <div class="sx">
@@ -154,7 +156,8 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
  </div>
 
  <div>
-  <div class="cd"><header><h2>Niveles clave</h2></header><div id="niv"></div></div>
+  <div class="cd"><header><h2>Niveles clave</h2><span class="lg">cadena completa</span></header><div id="niv"></div></div>
+  <div class="cd"><header><h2>Niveles del vencimiento de hoy</h2><span class="lg" id="v0info"></span></header><div id="niv0"></div><div class="nt">Estas paredes mueren al cierre de hoy. Para scalping mandan mas que las de la cadena completa, porque toda su gamma se descarga en las proximas horas.</div></div>
   <div class="cd">
     <header><h2>Concentraci&#243;n</h2></header><div id="conc"></div>
     <div class="nt">Qu&#233; porcentaje de la gamma de cada nivel vence en qu&#233; fecha.</div>
@@ -187,6 +190,15 @@ tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
 <script>
 var D=null, modo='g', op='abs', verLb=true;
 var PT='·';
+var vistaPrecio='idx';
+function esFut(){ return vistaPrecio==='fut' && D.base!=null; }
+function OFF(){ return esFut()?D.base:0; }
+function px(v){ return (v==null)?null:v+OFF(); }
+function simVista(){ return esFut()?((D.futuro&&D.futuro.contrato)||'ES'):D.sym; }
+function microVista(){ return (D.futuro&&D.futuro.micro)||''; }
+var zoomY='op';
+var ver0='si';
+function spotVista(){ return esFut()?(((D.futuro&&D.futuro.spot)!=null)?D.futuro.spot:D.S+D.base):D.S; }
 var $=function(s){return document.querySelector(s);};
 var cs=function(k){return getComputedStyle(document.documentElement).getPropertyValue(k).trim();};
 function nf(v,d){d=(d===undefined?1:d);return (v>=0?'+':'\u2212')+Math.abs(v).toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d});}
@@ -216,76 +228,132 @@ function partesCP(s){
   return [v*((s.oc||0)/t), v*((s.op||0)/t)];
 }
 function escala(H,pT,pB){
-  var ks=D.st.map(function(s){return s.k;});
-  var lo=Math.min.apply(null,ks), hi=Math.max.apply(null,ks);
-  var ser=(D.intradia||[]).map(function(p){return p.spot;}).filter(Boolean);
-  if(ser.length){lo=Math.min(lo,Math.min.apply(null,ser));hi=Math.max(hi,Math.max.apply(null,ser));}
-  lo=Math.min(lo,D.S);hi=Math.max(hi,D.S);
-  if(D.gamma_flip){lo=Math.min(lo,D.gamma_flip);hi=Math.max(hi,D.gamma_flip);}
-  var m=(hi-lo)*0.02; lo-=m; hi+=m;
+  var off=OFF(), S=spotVista(), lo, hi;
+  var ks=D.st.map(function(s){return s.k+off;});
+  var kLo=Math.min.apply(null,ks), kHi=Math.max.apply(null,ks);
+  var V=((D.precio_intradia||{}).velas)||[];
+  var sLo=null,sHi=null;
+  if(V.length){
+    var his=V.map(function(p){return p.h;}).filter(function(x){return x!=null;});
+    var los=V.map(function(p){return p.l;}).filter(function(x){return x!=null;});
+    if(his.length) sHi=Math.max.apply(null,his)+off;
+    if(los.length) sLo=Math.min.apply(null,los)+off;
+  }
+  if(zoomY==='todo'){ lo=kLo; hi=kHi; }
+  else if(zoomY==='em'){ var em=(D.expected_move||S*0.005)*2; lo=S-em; hi=S+em; }
+  else{
+    var N=D.niveles_indice||{};
+    var N0=D.niveles_0dte_indice||{};
+    var cand=[S, px(D.gamma_flip), px(N.call_wall), px(N.put_wall), px(N.gamma_pin),
+              px(N0.call_wall), px(N0.put_wall), sLo, sHi]
+      .filter(function(x){return x!=null;});
+    lo=Math.min.apply(null,cand); hi=Math.max.apply(null,cand);
+    var min=(D.expected_move||S*0.004)*2.2;
+    if(hi-lo<min){ var c=(hi+lo)/2; lo=c-min/2; hi=c+min/2; }
+  }
+  if(sLo!=null){ lo=Math.min(lo,sLo); hi=Math.max(hi,sHi); }
+  lo=Math.min(lo,S); hi=Math.max(hi,S);
+  lo=Math.max(lo,kLo-2); hi=Math.min(hi,kHi+2);
+  var m=(hi-lo)*0.04; lo-=m; hi+=m;
   return {lo:lo,hi:hi,y:function(v){return pT+(H-pT-pB)*(1-(v-lo)/(hi-lo));}};
 }
 
-/* ---------- panel de precio (izquierda), eje Y compartido ---------- */
+/* ---------- precio real: velas de 1 minuto + niveles superpuestos ---------- */
 function dibPrecio(){
   var c=$('#px'); if(!c) return;
   var o=setup(c,530), g=o.g, W=o.W, H=o.H;
-  var pT=10,pB=22,pL=8,pR=52;
+  var pT=10,pB=44,pL=8,pR=54;
   var E=escala(H,pT,pB);
-  var ser=(D.intradia||[]).filter(function(p){return p.spot;});
+  var PX=(D.precio_intradia&&D.precio_intradia.velas)||[];
+  var enFut=(vistaPrecio==='fut'&&D.base!=null);
 
-  // grilla horizontal cada 25 puntos del subyacente
-  g.strokeStyle=cs('--ln'); g.lineWidth=1; g.globalAlpha=.5;
-  var paso=Math.max(5,Math.round((E.hi-E.lo)/12/5)*5);
+  // grilla
+  g.strokeStyle=cs('--ln'); g.lineWidth=1; g.globalAlpha=.45;
+  var paso=Math.max(5,Math.round((E.hi-E.lo)/11/5)*5);
   for(var v=Math.ceil(E.lo/paso)*paso; v<=E.hi; v+=paso){
-    var y=E.y(v); g.beginPath(); g.moveTo(pL,y); g.lineTo(W-pR,y); g.stroke();
+    var yy=E.y(v); g.beginPath(); g.moveTo(pL,yy); g.lineTo(W-pR,yy); g.stroke();
   }
   g.globalAlpha=1;
 
-  if(ser.length>1){
-    var x=function(i){return pL+(W-pL-pR)*i/(ser.length-1);};
-    // area
-    g.beginPath(); g.moveTo(x(0),H-pB);
-    ser.forEach(function(p,i){g.lineTo(x(i),E.y(p.spot));});
-    g.lineTo(x(ser.length-1),H-pB); g.closePath();
-    g.fillStyle=cs('--ac')+'1E'; g.fill();
-    // linea
-    g.beginPath();
-    ser.forEach(function(p,i){ i?g.lineTo(x(i),E.y(p.spot)):g.moveTo(x(i),E.y(p.spot)); });
-    g.strokeStyle=cs('--ac'); g.lineWidth=1.6; g.stroke();
-    // ultimo punto
-    var uy=E.y(ser[ser.length-1].spot);
-    g.fillStyle=cs('--ac'); g.beginPath(); g.arc(x(ser.length-1),uy,3,0,7); g.fill();
+  if(PX.length>1){
+    var X=function(i){return pL+(W-pL-pR)*i/(PX.length-1);};
+    var vv=function(p,cual){ var x=p[cual]; return (x!=null&&enFut)?x+D.base:x; };
+    var ancho=Math.max(1,(W-pL-pR)/PX.length*0.72);
+
+    // velas
+    PX.forEach(function(p,i){
+      var op=vv(p,'o'), hi=vv(p,'h'), lo=vv(p,'l'), cl=vv(p,'c');
+      if(cl==null) return;
+      var sube=cl>=op;
+      var col=sube?cs('--po'):cs('--ne');
+      var x=X(i);
+      g.strokeStyle=col; g.lineWidth=1; g.globalAlpha=.85;
+      if(hi!=null&&lo!=null){ g.beginPath(); g.moveTo(x,E.y(hi)); g.lineTo(x,E.y(lo)); g.stroke(); }
+      var y1=E.y(Math.max(op,cl)), y2=E.y(Math.min(op,cl));
+      g.fillStyle=col; g.fillRect(x-ancho/2, y1, ancho, Math.max(1,y2-y1));
+      g.globalAlpha=1;
+    });
+
+    // volumen de calls y puts por minuto, en la franja de abajo
+    var maxv=Math.max.apply(null,PX.map(function(p){return Math.max(p.vc||0,p.vp||0);}))||1;
+    var hv=26, y0=H-pB+6;
+    PX.forEach(function(p,i){
+      var x=X(i);
+      var hc=(p.vc||0)/maxv*hv, hp=(p.vp||0)/maxv*hv;
+      g.fillStyle=cs('--po'); g.globalAlpha=.4; g.fillRect(x-ancho/2,y0+hv-hc,ancho/2,hc);
+      g.fillStyle=cs('--ne'); g.fillRect(x,y0+hv-hp,ancho/2,hp); g.globalAlpha=1;
+    });
+
     // horas
     g.fillStyle=cs('--t3'); g.font='9px '+cs('--mo'); g.textAlign='center';
-    [0,Math.floor(ser.length/2),ser.length-1].forEach(function(i){
-      if(ser[i]) g.fillText(ser[i].t, x(i), H-7);
-    });
+    [0,Math.floor(PX.length/4),Math.floor(PX.length/2),Math.floor(PX.length*3/4),PX.length-1]
+      .forEach(function(i){ if(PX[i]) g.fillText(PX[i].t, X(i), H-4); });
   }else{
     g.fillStyle=cs('--t3'); g.font='11px '+cs('--sa'); g.textAlign='center';
-    g.fillText('La serie intradía se arma con las corridas del día.', W/2, H/2-6);
-    g.font='10px '+cs('--sa');
-    g.fillText('Después de unas horas de mercado abierto aparece acá.', W/2, H/2+10);
+    g.fillText('sin serie de precio', W/2, H/2);
   }
 
-  // spot y flip, con etiqueta en el eje derecho
-  [[D.S,cs('--ac'),D.S.toFixed(0)],[D.gamma_flip,cs('--t3'),'FLIP '+D.gamma_flip]].forEach(function(a){
-    if(a[0]==null) return;
-    var y=E.y(a[0]);
-    g.strokeStyle=a[1]; g.lineWidth=1.2; g.setLineDash(a[1]===cs('--ac')?[]:[3,3]);
-    g.beginPath(); g.moveTo(pL,y); g.lineTo(W-pR,y); g.stroke(); g.setLineDash([]);
-    g.fillStyle=a[1]; g.font='700 9.5px '+cs('--mo'); g.textAlign='left';
-    g.fillText(a[2], W-pR+4, y+3);
-  });
-  // niveles clave marcados
-  var N=D.niveles_indice||{};
-  [['call_wall',cs('--po')],['put_wall',cs('--ne')]].forEach(function(a){
-    var k=N[a[0]]; if(k==null||k<E.lo||k>E.hi) return;
-    var y=E.y(k);
-    g.strokeStyle=a[1]; g.globalAlpha=.5; g.lineWidth=1; g.setLineDash([2,4]);
+  // niveles de gamma superpuestos sobre el precio
+  var N=D.niveles_indice||{}, N0=D.niveles_0dte_indice||{};
+  var aj=function(k){return (k!=null&&enFut)?k+D.base:k;};
+  var marcas=[
+    [aj(N.call_wall), cs('--po'), 'CALL WALL', 0, 0],
+    [aj(N.put_wall),  cs('--ne'), 'PUT WALL', 0, 0],
+    [aj(N.gamma_pin), cs('--ac2'),'GAMMA PIN', 1, 0],
+    [aj(D.gamma_flip),cs('--t3'), 'ZERO GAMMA / FLIP', 1, 0]
+  ];
+  if(ver0==='si'){
+    if(N0.call_wall!=null && N0.call_wall!==N.call_wall)
+      marcas.push([aj(N0.call_wall), cs('--po'), 'CALL WALL 0DTE', 1, 1]);
+    if(N0.put_wall!=null && N0.put_wall!==N.put_wall)
+      marcas.push([aj(N0.put_wall), cs('--ne'), 'PUT WALL 0DTE', 1, 1]);
+    if(N0.gamma_pin!=null && N0.gamma_pin!==N.gamma_pin)
+      marcas.push([aj(N0.gamma_pin), cs('--ac2'), 'PIN 0DTE', 0, 1]);
+  }
+  marcas.forEach(function(m){
+    if(m[0]==null||m[0]<E.lo||m[0]>E.hi) return;
+    var y=E.y(m[0]), es0=m[4];
+    g.strokeStyle=m[1]; g.globalAlpha=es0?.55:.8; g.lineWidth=es0?1:1.2;
+    g.setLineDash(es0?[2,3]:[6,4]);
     g.beginPath(); g.moveTo(pL,y); g.lineTo(W-pR,y); g.stroke();
     g.setLineDash([]); g.globalAlpha=1;
+    g.fillStyle=m[1]; g.font=(es0?'':'700 ')+'8px '+cs('--mo');
+    g.globalAlpha=es0?.8:1;
+    if(m[3]){ g.textAlign='right'; g.fillText(m[2], W-pR-3, y-3); }
+    else{ g.textAlign='left'; g.fillText(m[2], pL+3, y-3); }
+    g.globalAlpha=1;
   });
+
+  // spot
+  var sp=enFut?(D.futuro&&D.futuro.spot):D.S;
+  if(sp!=null){
+    var y=E.y(sp);
+    g.strokeStyle=cs('--ac'); g.lineWidth=1.4;
+    g.beginPath(); g.moveTo(pL,y); g.lineTo(W-pR,y); g.stroke();
+    g.fillStyle=cs('--ac'); g.fillRect(W-pR+1,y-7,pR-2,14);
+    g.fillStyle=cs('--gr'); g.font='700 9.5px '+cs('--mo'); g.textAlign='left';
+    g.fillText(sp.toFixed(0), W-pR+4, y+3);
+  }
 }
 
 /* ---------- histograma (derecha), mismo eje Y ---------- */
@@ -304,7 +372,7 @@ function dibHist(){
   g.beginPath(); g.moveTo(zero,pT); g.lineTo(zero,H-pB); g.stroke();
 
   S.forEach(function(s){
-    var y=E.y(s.k)-alto/2;
+    var y=E.y(s.k+((vistaPrecio==='fut'&&D.base!=null)?D.base:0))-alto/2;
     if(op==='cp'){
       var p=partesCP(s);
       var wc=(p[0]/max)*(W-pR-zero)*0.95, wp=(p[1]/max)*(zero-pL)*0.95;
@@ -330,7 +398,7 @@ function dibHist(){
         var pv=snap.k[String(s.k)]; if(pv==null||modo!=='g'||op!=='abs') return;
         var w=(Math.abs(pv)/max)*(pv>=0?(W-pR-zero):(zero-pL))*0.95;
         var px=pv>=0?zero+1+w:zero-1-w;
-        g.beginPath(); g.arc(px,E.y(s.k),2,0,7); g.fill();
+        g.beginPath(); g.arc(px,E.y(s.k+((vistaPrecio==='fut'&&D.base!=null)?D.base:0)),2,0,7); g.fill();
       });
       g.globalAlpha=1;
     });
@@ -339,10 +407,12 @@ function dibHist(){
   // etiquetas de strike
   g.font='9px '+cs('--mo'); g.textAlign='left'; g.fillStyle=cs('--t3');
   var pasoK=S.length>60?50:25;
-  S.forEach(function(s){ if(s.k%pasoK===0) g.fillText(s.k, W-pR+4, E.y(s.k)+3); });
+  var of2=(vistaPrecio==='fut'&&D.base!=null)?D.base:0;
+  S.forEach(function(s){ if(s.k%pasoK===0) g.fillText(Math.round(s.k+of2), W-pR+4, E.y(s.k+of2)+3); });
 
   // spot y flip
-  [[D.S,cs('--ac')],[D.gamma_flip,cs('--t3')]].forEach(function(a){
+  var of3=(vistaPrecio==='fut'&&D.base!=null)?D.base:0;
+  [[D.S+of3,cs('--ac')],[D.gamma_flip!=null?D.gamma_flip+of3:null,cs('--t3')]].forEach(function(a){
     if(a[0]==null) return;
     var y=E.y(a[0]);
     g.strokeStyle=a[1]; g.lineWidth=1.2; g.setLineDash(a[1]===cs('--ac')?[]:[3,3]);
@@ -379,7 +449,7 @@ function dibCurva(){
   g.fillText(y1.toFixed(1)+'B',pl-5,Y(y1)+3); g.fillText('0',pl-5,Y(0)+3);
   g.fillText(y0.toFixed(1)+'B',pl-5,Y(y0)+3);
   g.textAlign='center';
-  [x0,(x0+x1)/2,x1].forEach(function(v){g.fillText(v.toFixed(0),X(v),H-7);});
+  [x0,(x0+x1)/2,x1].forEach(function(v){g.fillText((v+OFF()).toFixed(0),X(v),H-7);});
 }
 
 /* ---------- skew ---------- */
@@ -473,8 +543,11 @@ function pintarCabecera(){
   var el=$('#sy'), act=window.__SYM__||'SPX';
   el.innerHTML=['SPX','NDX','RUT'].map(function(x){
     return '<a href="?s='+x+'" class="'+(x===act?'on':'')+'">'+x+'</a>';}).join('');
-  $('#sym').textContent=D.sym;
-  $('#spot').textContent=D.S.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  $('#sym').textContent=simVista();
+  var S=spotVista();
+  $('#spot').textContent=S.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  $('#lblU').textContent=esFut()?('Futuro'+(microVista()?' / micro '+microVista():'')):'Underlying';
+  pintarBasis();
   var edad='';
   if(D.generado){var gd=D.generado.indexOf('+')>0||D.generado.slice(-1)==='Z'?D.generado:D.generado+'Z';
     var m=Math.round((Date.now()-new Date(gd))/60000);
@@ -484,18 +557,22 @@ function pintarCabecera(){
   r.className='rg '+(p?'p':'n');
   r.textContent=(p?'LONG GAMMA':'SHORT GAMMA')+' \u00b7 '+(p?'amortigua':'amplifica');
 
-  var T=D.T, N=D.niveles_indice||{};
+  var T=D.T, Ni=D.niveles_indice||{}, N={};
+  Object.keys(Ni).forEach(function(k){ N[k]=px(Ni[k]); });
+  var GF=px(D.gamma_flip);
   var kk=[
    ['Net GEX',nf(T.net_gex_B,2)+' B',T.net_gex_B>0?'po':'ne','por 1% de movimiento'],
-   ['Gamma Flip',D.gamma_flip?D.gamma_flip.toLocaleString('es-AR'):'\u2014',
-     D.S>D.gamma_flip?'po':'ne',(D.S>D.gamma_flip?'arriba +':'abajo ')+Math.abs(D.S-D.gamma_flip).toFixed(1)],
-   ['Expected Move','\u00b1'+D.expected_move,'',(D.S-D.expected_move).toFixed(0)+' \u2013 '+(D.S+D.expected_move).toFixed(0)],
-   ['Call Wall',N.call_wall||'\u2014','po','+'+((N.call_wall||D.S)-D.S).toFixed(0)+' pts'],
-   ['Put Wall',N.put_wall||'\u2014','ne',((N.put_wall||D.S)-D.S).toFixed(0)+' pts'],
+   ['Gamma Flip',GF?GF.toLocaleString('es-AR'):'\u2014',
+     S>GF?'po':'ne',(S>GF?'arriba +':'abajo ')+Math.abs(S-GF).toFixed(1)],
+   ['Expected Move','\u00b1'+D.expected_move,'',(S-D.expected_move).toFixed(0)+' \u2013 '+(S+D.expected_move).toFixed(0)],
+   ['Call Wall',N.call_wall||'\u2014','po','+'+((N.call_wall||S)-S).toFixed(0)+' pts'],
+   ['Put Wall',N.put_wall||'\u2014','ne',((N.put_wall||S)-S).toFixed(0)+' pts'],
    ['Net DEX',nf(T.net_dex_B,1)+' B',T.net_dex_B>0?'po':'ne','direccional'],
    ['Net VEX',nf(T.net_vex_B,2)+' B',T.net_vex_B>0?'po':'ne','vanna \u00b7 por 1% IV'],
    ['Net CHEX',nf(T.net_chex_B,2)+' B',T.net_chex_B>0?'po':'ne','charm \u00b7 por d\u00eda'],
    ['Net TEX',nf(T.net_tex_M,0)+' M',T.net_tex_M>0?'po':'ne','theta'],
+   ['Net GEX 0DTE',D.gex_0dte_B!=null?nf(D.gex_0dte_B,2)+' B':'—',
+     D.gex_0dte_B>0?'po':'ne','vence hoy'],
    ['Open Interest',ni(T.oi_total),'',ni(T.oi_call)+' C / '+ni(T.oi_put)+' P'],
    ['Put / Call',T.put_call_oi!=null?T.put_call_oi.toFixed(2):'\u2014',
      T.put_call_oi>1?'ne':'po','ratio de OI'],
@@ -512,11 +589,14 @@ function pintarCabecera(){
    '<span><i style="background:var(--ne)"></i>negativo \u00b7 amplifica</span>'+
    '<span><i style="background:var(--ac)"></i>spot y precio intrad\u00eda</span>'+
    '<span><i style="background:var(--t3)"></i>gamma flip</span>'+
+   '<span><i class="dt" style="background:var(--po)"></i>punteado fino = pared del vencimiento de hoy (0DTE)</span>'+
    (lbk.length?'<span><i class="dt" style="background:var(--gh)"></i>lookback '+lbk.join(' / ')+'</span>':'');
 
+  var v0=(D.vencimientos||[])[0];
+  if($('#v0info')) $('#v0info').textContent=(v0&&v0.dias<1)?(v0.fecha+' · '+ni(v0.oi)+' OI'):'';
   $('#curvaInfo').textContent=D.horizonte?(D.horizonte.vencimientos+' vencimientos \u00b7 '+D.horizonte.dias+' d\u00edas'):'';
-  $('#notaCurva').innerHTML='La curva cruza cero en <strong>'+D.gamma_flip+'</strong>. Arriba de ese precio la mesa frena los movimientos; abajo los agranda. El spot est\u00e1 '+
-    (D.S>D.gamma_flip?'<span style="color:var(--po)">del lado que amortigua</span>':'<span style="color:var(--ne)">del lado que amplifica</span>')+'.';
+  $('#notaCurva').innerHTML='La curva cruza cero en <strong>'+GF+'</strong> ('+simVista()+'). Arriba de ese precio la mesa frena los movimientos; abajo los agranda. El spot est\u00e1 '+
+    (S>GF?'<span style="color:var(--po)">del lado que amortigua</span>':'<span style="color:var(--ne)">del lado que amplifica</span>')+'.';
 
   var sk=D.skew||{}, tm=D.term||{};
   $('#skInfo').textContent=sk.vencimiento||'';
@@ -577,20 +657,65 @@ function pintarMatriz(){
 }
 
 /* ---------- paneles laterales ---------- */
+function pintarBasis(){
+  var bd=D.base_detalle||{}, bel=$('#basis'), bf=$('#btnFut');
+  if(bf){
+    bf.textContent=(D.futuro&&D.futuro.contrato)||'Futuro';
+    bf.disabled=(D.base==null);
+    bf.title=(D.base==null)?'sin base medida para este simbolo':'convierte todo a precio de futuro';
+  }
+  var bi=$('#vp').children[0]; if(bi) bi.textContent=D.sym;
+  if(!bel) return;
+  if(D.base==null){ bel.textContent=''; return; }
+
+  var ok=bd.confiable, col='var(--'+(ok?'po':'ne')+')';
+  var t='<span title="diferencia entre el futuro y el indice, medida por paridad put-call sobre la misma cadena">'+
+    'Basis '+((D.futuro&&D.futuro.contrato)||'FUT')+' &minus; '+D.sym+' '+
+    (D.base>0?'+':'')+D.base.toFixed(2)+'</span>'+
+    ' &middot; carry teorico '+(bd.carry_teorico>0?'+':'')+bd.carry_teorico+
+    ' &middot; <span style="color:'+col+'">'+
+      (ok?'coincide, medicion firme':'no coincide, medicion floja')+'</span>'+
+    ' <span style="color:var(--t3)">('+bd.muestras+' strikes, dispersion '+bd.dispersion+' pts)</span>';
+
+  if(D.indice_atrasado){
+    t+='<br><span style="color:var(--ac)">&#9888; el '+D.sym+' publicado ('+
+      D.S.toLocaleString('es-AR')+') es el cierre anterior. La cadena cotiza el contado en <strong>'+
+      D.contado_implicito.toLocaleString('es-AR')+'</strong>, '+
+      (D.desfase_indice>0?'+':'')+D.desfase_indice+' puntos.</span>';
+  }
+  bel.innerHTML=t;
+}
+
 function pintarLaterales(){
-  var N=D.niveles_indice||{};
+  var Ni=D.niveles_indice||{}, N={}, Sl=spotVista();
+  Object.keys(Ni).forEach(function(k){ N[k]=px(Ni[k]); });
   var mp={call_wall:['Call Wall','el techo: la mesa frena las subas'],
     gamma_pin:['Gamma Pin','el iman: el strike grande mas cercano'],
     put_wall:['Put Wall','el piso: la mesa frena las bajas'],
     major_positive:['Major Positive','el mayor positivo del complejo'],
     major_negative:['Major Negative','el mayor negativo del complejo']};
   $('#niv').innerHTML=Object.keys(mp).filter(function(k){return N[k]!=null;}).map(function(k){
-    var st=D.st.filter(function(s){return s.k===N[k];})[0]||{};
-    var d=N[k]-D.S;
+    var st=D.st.filter(function(s){return s.k===Ni[k];})[0]||{};
+    var d=N[k]-Sl;
     return '<div class="rw"><div><div class="f">'+mp[k][0]+'</div><div class="d">'+mp[k][1]+'</div></div>'+
       '<div><div class="g '+(d>=0?'po':'ne')+'">'+N[k]+'</div>'+
       '<div class="o">'+(st.g!=null?nf(st.g,0)+' M, ':'')+(d>0?'+':'')+d.toFixed(0)+' pts</div></div></div>';
   }).join('');
+
+  var N0i=D.niveles_0dte_indice||{}, N0={};
+  Object.keys(N0i).forEach(function(k){ N0[k]=px(N0i[k]); });
+  var mp0={call_wall:['Call Wall 0DTE','el techo de hoy: vence al cierre'],
+    gamma_pin:['Gamma Pin 0DTE','el iman de hoy: donde tiende a cerrar'],
+    put_wall:['Put Wall 0DTE','el piso de hoy: vence al cierre']};
+  var el0=$('#niv0');
+  if(el0){
+    el0.innerHTML=Object.keys(mp0).filter(function(k){return N0[k]!=null;}).map(function(k){
+      var d=N0[k]-Sl;
+      return '<div class="rw"><div><div class="f">'+mp0[k][0]+'</div><div class="d">'+mp0[k][1]+'</div></div>'+
+        '<div><div class="g '+(d>=0?'po':'ne')+'">'+N0[k]+'</div>'+
+        '<div class="o">'+(d>0?'+':'')+d.toFixed(0)+' pts</div></div></div>';
+    }).join('')||'<div class="nt" style="border:0">sin vencimiento de hoy</div>';
+  }
 
   $('#conc').innerHTML=(D.concentracion||[]).map(function(x){
     return '<div class="rw"><div><div class="f">'+x.strike+'</div>'+
@@ -642,6 +767,19 @@ $('#modo').addEventListener('click',function(e){
   dibHist();
 });
 $('#clb').addEventListener('change',function(){ verLb=this.checked; dibHist(); });
+$('#c0d').addEventListener('change',function(){ ver0=this.checked?'si':'no'; dibPrecio(); });
+$('#zy').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b){ return; }
+  zoomY=b.dataset.z;
+  Array.prototype.forEach.call(this.children,function(x){x.setAttribute('aria-selected',x===b);});
+  dibPrecio(); dibHist();
+});
+$('#vp').addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b||b.disabled){ return; }
+  vistaPrecio=b.dataset.v;
+  Array.prototype.forEach.call(this.children,function(x){x.setAttribute('aria-selected',x===b);});
+  pintarCabecera(); pintarLaterales(); dibPrecio(); dibHist(); dibCurva();
+});
 
 (function(){
   var i=0;
