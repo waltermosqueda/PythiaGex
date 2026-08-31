@@ -256,6 +256,59 @@ def auditar(simbolo):
             r.chequeo("toque del Call Wall", prob_toque(S, cw, iv0, t0), pt_propio,
                       0.2, " %", "2 x N(-d), aproximacion por reflexion")
 
+    # --- 6b. la probabilidad que paga el mercado, recalculada de cero -----
+    # No se usa el modulo del proyecto: se rehace -dC/dK sobre precios crudos.
+    # Si las dos cuentas coinciden, el numero que se muestra es el que el
+    # mercado esta pagando de verdad.
+    porVK_aud = {}
+    for o in d["options"]:
+        pp = parse_occ(o["option"])
+        if not pp:
+            continue
+        vc, cp_, K_ = pp
+        porVK_aud.setdefault(vc, {}).setdefault(K_, {})[cp_] = o
+    if porVK_aud:
+        Vp = min(porVK_aud)
+        Tp = max((Vp - dt.datetime.now(dt.timezone.utc)).total_seconds() / 86400.0,
+                 1e-6) / 365.0
+        pk_ = porVK_aud[Vp]
+        ks_ = sorted(k for k, v in pk_.items() if "C" in v and "P" in v)
+
+        def _md(o):
+            b_, a_ = o.get("bid") or 0.0, o.get("ask") or 0.0
+            return (b_ + a_) / 2.0 if a_ > 0 else (o.get("last_trade_price") or 0.0)
+
+        from pythiagex.probabilidad import curva_probabilidad, interpolar
+        cur_pipe = curva_probabilidad(pk_, S, Tp)
+        r.dato("probabilidad sobre", Vp.date().isoformat(),
+               "%.2f dias, %d strikes" % (Tp * 365, len(cur_pipe)))
+        controlados = 0
+        for objetivo in (niv.get("call_wall"), niv.get("put_wall"), niv.get("gamma_pin")):
+            if objetivo is None or objetivo not in ks_:
+                continue
+            i_ = ks_.index(objetivo)
+            if i_ == 0 or i_ == len(ks_) - 1:
+                continue
+            ka_, kb_ = ks_[i_ - 1], ks_[i_ + 1]
+            if objetivo >= S:
+                prop = -(_md(pk_[kb_]["C"]) - _md(pk_[ka_]["C"])) / (kb_ - ka_)
+            else:
+                prop = (_md(pk_[kb_]["P"]) - _md(pk_[ka_]["P"])) / (kb_ - ka_)
+            prop = max(0.0, min(1.0, prop)) * 100
+            pp_ = interpolar(cur_pipe, objetivo)
+            if pp_:
+                r.chequeo("P(mas alla de %g)" % objetivo, pp_["final_mercado"],
+                          round(prop, 1), 0.2, " %",
+                          "menos la derivada del call respecto del strike, precios reales")
+                controlados += 1
+                # el delta como segunda opinion, sin ser un control duro
+                lado = "C" if objetivo >= S else "P"
+                dl_ = abs(pk_[objetivo].get(lado, {}).get("delta") or 0) * 100
+                r.dato("   delta en %g" % objetivo, round(dl_, 1),
+                       "%% - segunda opinion, disp %s pp" % pp_.get("dispersion_pp"))
+        if controlados == 0:
+            r.alerta("probabilidad", "ningun nivel cayo en un strike con vecinos a los dos lados")
+
     # --- 7. cobertura y flujos derivados ---------------------------------
     raiz = CONTRATO.get((res["simbolo"] or "").replace("^", ""), None)
     fut_raiz = {"^SPX": "ES", "^NDX": "NQ", "^RUT": "RTY"}.get(res["simbolo"], "ES")
