@@ -147,6 +147,7 @@ namespace PythiaGex
         private readonly Gatillos _gat = new();
         private readonly Bitacora _bit = new();
         private readonly Disparo _disp = new();
+        private readonly Libro _libro = new();
         // OnRender corre en cada cuadro, pero mirar el footprint de veinte
         // barras por nivel es carisimo. Este aviso hace que los gatillos se
         // recalculen solo cuando el contexto se recalculo, no sesenta veces
@@ -266,6 +267,33 @@ namespace PythiaGex
         [Display(Name = "Carpeta (vacio = la de ATAS)", GroupName = "Bitacora", Order = 3,
                  Description = "Por defecto %APPDATA%\\ATAS\\PythiaGex\\contexto. El centinela lee de ahi.")]
         public string CarpetaBitacora { get; set; } = "";
+
+        [Display(Name = "Leer el libro y los barridos", GroupName = "Libro y barridos", Order = 1,
+                 Description = "El footprint muestra lo ya operado; el libro muestra lo que espera. Son dos mundos. Esto agrega los barridos de agresores reales y el tamano parado en el libro alrededor de cada nivel.")]
+        public bool VerLibro { get; set; } = true;
+
+        [Display(Name = "Lotes minimos para llamarlo barrido", GroupName = "Libro y barridos", Order = 2,
+                 Description = "Depende del instrumento: en ES 50 contratos es tamano, en MES no. Subilo hasta que solo queden los que te importan.")]
+        public double MinBarridoLotes { get; set; } = 50.0;
+
+        [Display(Name = "Memoria de barridos (minutos)", GroupName = "Libro y barridos", Order = 3)]
+        public int MemoriaBarridosMin { get; set; } = 30;
+
+        [Display(Name = "Ventana de barridos para el gatillo (min)", GroupName = "Libro y barridos", Order = 4)]
+        public int VentanaBarridoMin { get; set; } = 5;
+
+        [Display(Name = "Caida del muro para llamarlo comido (%)", GroupName = "Libro y barridos", Order = 5,
+                 Description = "Cuanto tiene que bajar el tamano parado en el libro. Si bajo Y hubo volumen, se lo comieron; si bajo sin volumen, lo retiraron, que dice lo contrario.")]
+        public double CaidaMuroPct { get; set; } = 50.0;
+
+        [Display(Name = "Marcar los barridos en el grafico", GroupName = "Libro y barridos", Order = 6)]
+        public bool VerBarridos { get; set; } = true;
+
+        [Display(Name = "Color del barrido comprador", GroupName = "Colores", Order = 322)]
+        public Color ColBarrCompra { get; set; } = Color.FromArgb(255, 90, 200, 255);
+
+        [Display(Name = "Color del barrido vendedor", GroupName = "Colores", Order = 323)]
+        public Color ColBarrVenta { get; set; } = Color.FromArgb(255, 255, 170, 60);
 
         [Display(Name = "Marcar los disparos en el grafico", GroupName = "Disparos", Order = 1,
                  Description = "La flecha que dice 'aca, ahora'. Solo aparece si el precio esta DENTRO de la zona de un nivel, si el flujo dice para que lado, y si el puntaje llega al umbral.")]
@@ -626,6 +654,24 @@ namespace PythiaGex
         }
 
         protected override void OnCalculate(int bar, decimal value) { }
+
+        /// <summary>
+        /// Cada barrido de un agresor, tal como lo agrupa ATAS. Esto es lo que
+        /// de verdad se llama un trade grande: los ticks consecutivos de UN
+        /// agresor comiendose varios precios. El "print grande" del footprint
+        /// era otra cosa: el volumen de un precio en una vela, que pueden ser
+        /// mil ordenes de un contrato.
+        ///
+        /// Corre en el hilo de datos, asi que solo apila y se va.
+        /// </summary>
+        protected override void OnCumulativeTrade(CumulativeTrade trade)
+        {
+            if (!VerLibro) return;
+            var ts = InstrumentInfo != null ? InstrumentInfo.TickSize : 0.25m;
+            _libro.MinBarrido = (decimal)Math.Max(1.0, MinBarridoLotes);
+            _libro.MemoriaMin = Math.Max(1, MemoriaBarridosMin);
+            _libro.Anotar(trade, ts > 0 ? ts : 0.25m);
+        }
 
         /// <summary>Un clic en el titulo del tablero lo pliega o lo despliega.
         /// Devolver true evita que el clic siga hasta el grafico, asi no
@@ -1338,15 +1384,49 @@ namespace PythiaGex
             try { hora = GetCandle(CurrentBar - 1).LastTime; }
             catch { hora = DateTime.UtcNow; }
 
+            // Una sola foto del libro para todos los niveles: pedirla por
+            // nivel seria recorrer el DOM entero cinco veces por gusto.
+            List<MarketDataArg> dom = null;
+            if (VerLibro)
+            {
+                try
+                {
+                    dom = MarketDepthInfo?.GetMarketDepthSnapshot()?.ToList();
+                    _libro.DomBids = MarketDepthInfo?.CumulativeDomBids ?? 0m;
+                    _libro.DomAsks = MarketDepthInfo?.CumulativeDomAsks ?? 0m;
+                    _libro.LibroVivo = dom != null && dom.Count > 0;
+                }
+                catch { _libro.LibroVivo = false; }
+            }
+            _libro.MinCaidaLibro = (decimal)Math.Max(0.05, Math.Min(0.95, CaidaMuroPct / 100.0));
+
             foreach (var n in d.Niveles)
             {
                 var pf = n.Fut ?? n.Idx;
                 if (!pf.HasValue || pf.Value <= 0) continue;
+                var clave = (n.Tipo ?? "?") + (n.Es0dte ? " 0DTE" : "");
+
+                List<Libro.Barrido> barr = null;
+                var suerte = Libro.Suerte.SinDato;
+                if (VerLibro)
+                {
+                    barr = _libro.EnNivel((decimal)pf.Value, tick, Math.Max(1, TicksZona),
+                                          hora, Math.Max(1, VentanaBarridoMin));
+                    if (_libro.LibroVivo)
+                    {
+                        var muro = _libro.Parado(dom, (decimal)pf.Value, tick,
+                                                 Math.Max(1, TicksZona));
+                        suerte = _libro.Comparar(clave, muro.Bids + muro.Asks,
+                                                 n.Flujo != null ? n.Flujo.Volumen : 0m, hora);
+                    }
+                }
+
                 var e = _disp.Evaluar(
-                    (n.Tipo ?? "?") + (n.Es0dte ? " 0DTE" : ""),
+                    clave,
                     (decimal)pf.Value, precio, tick, Math.Max(1, TicksZona),
                     n.Flujo, n.Gatillo, n.Puntaje, Math.Max(1, MinConfluenciaDisparo),
-                    _ctx.DeltaAcumulado, CurrentBar - 1, hora);
+                    _ctx.DeltaAcumulado, CurrentBar - 1, hora,
+                    barr, suerte, VerLibro ? _libro.DesbalanceDom : 0m);
                 if (e == null) continue;
 
                 e.Es0dte = n.Es0dte;
@@ -1365,6 +1445,64 @@ namespace PythiaGex
                     }
                     catch { }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Los barridos de agresores, en el grafico de velas.
+        ///
+        /// Es lo que se ve entrando en el heatmap, pero filtrado: solo los que
+        /// pasan el tamano minimo, y puestos en el precio y el momento en que
+        /// pasaron. El tamano del punto crece con el volumen, asi que un
+        /// barrido de 400 lotes se distingue de uno de 60 sin leer un numero.
+        /// </summary>
+        private void DibujarBarridos(RenderContext g, Rectangle area,
+                                     IChartContainer cont, RenderFont f)
+        {
+            if (!VerLibro || !VerBarridos) return;
+            DateTime ahora;
+            try { ahora = GetCandle(CurrentBar - 1).LastTime; }
+            catch { return; }
+
+            var lista = _libro.Todos(ahora, Math.Max(1, MemoriaBarridosMin));
+            if (lista.Count == 0) return;
+
+            var minimo = (decimal)Math.Max(1.0, MinBarridoLotes);
+            foreach (var b in lista)
+            {
+                // la barra se resuelve una sola vez y queda cacheada
+                if (b.Barra < 0)
+                {
+                    for (int i = CurrentBar - 1; i >= 0 && i > CurrentBar - 600; i--)
+                    {
+                        IndicatorCandle c;
+                        try { c = GetCandle(i); } catch { break; }
+                        if (c == null) continue;
+                        if (c.Time <= b.Hora) { b.Barra = i; break; }
+                    }
+                    if (b.Barra < 0) continue;
+                }
+
+                int x, y;
+                try
+                {
+                    x = cont.GetXByBar(b.Barra, false);
+                    y = cont.GetYByPrice(b.Precio, false);
+                }
+                catch { continue; }
+                if (x < area.Left - 20 || x > area.Right + 20) continue;
+                if (y < area.Top - 20 || y > area.Bottom + 20) continue;
+
+                // el radio crece con el volumen, con techo para que un barrido
+                // enorme no tape media pantalla
+                var veces = minimo > 0 ? (double)(b.Volumen / minimo) : 1.0;
+                int r = (int)Math.Round(3 + 2.2 * Math.Log(Math.Max(1.0, veces) + 1.0));
+                r = Math.Max(3, Math.Min(14, r));
+
+                var col = b.Lado > 0 ? ColBarrCompra : ColBarrVenta;
+                var rec = new Rectangle(x - r, y - r, r * 2, r * 2);
+                g.FillEllipse(Color.FromArgb(150, col), rec);
+                g.DrawEllipse(new RenderPen(Color.FromArgb(220, col), 1), rec);
             }
         }
 
@@ -1497,6 +1635,23 @@ namespace PythiaGex
                     a.PctSesion = (double)n.Flujo.PctVolumenSesion;
                     a.Absorcion = n.Flujo.Absorcion;
                 }
+                // el libro alrededor del nivel, y los barridos que le pegaron
+                if (VerLibro)
+                {
+                    try
+                    {
+                        var hb = GetCandle(CurrentBar - 1).LastTime;
+                        var bs = _libro.EnNivel(p, tick, Math.Max(1, TicksZona),
+                                                hb, Math.Max(1, VentanaBarridoMin));
+                        a.Barridos = bs.Count;
+                        double vc = 0, vv = 0;
+                        foreach (var x in bs)
+                            if (x.Lado > 0) vc += (double)x.Volumen; else vv += (double)x.Volumen;
+                        a.BarridoCompra = vc; a.BarridoVenta = vv;
+                        if (_libro.LibroVivo) a.DesbalanceDom = (double)_libro.DesbalanceDom;
+                    }
+                    catch { }
+                }
                 if (n.Gatillo != null && n.Gatillo.Listo)
                 {
                     a.Apilados = n.Gatillo.Apilados;
@@ -1573,6 +1728,7 @@ namespace PythiaGex
             if (Perfil != LadoPerfil.Apagado && _ctx.Listo && _ctx.Nodos.Count > 0)
                 DibujarPerfil(g, area, cont, hi, lo);
 
+            DibujarBarridos(g, area, cont, fDetalle);
             DibujarDisparos(g, area, cont, fDetalle);
 
             if (d != null && VerExpectedMove && d.ExpectedMove.HasValue && d.ExpectedMove.Value > 0

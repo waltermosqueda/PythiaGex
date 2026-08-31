@@ -120,7 +120,9 @@ namespace PythiaGex
                               decimal tickSize, int ticksZona,
                               Contexto.Zona flujo, Gatillos.Senal senal,
                               int confluencia, int minConfluencia,
-                              decimal deltaSesion, int barra, DateTime hora)
+                              decimal deltaSesion, int barra, DateTime hora,
+                              List<Libro.Barrido> barridos, Libro.Suerte suerteMuro,
+                              decimal desbalanceDom)
         {
             if (tickSize <= 0 || precioNivel <= 0 || precioAhora <= 0) return null;
 
@@ -162,6 +164,38 @@ namespace PythiaGex
                             + " " + Math.Abs(Math.Round(senal.RatioDelta * 100, 0))
                             + "% del flujo del nivel");
             }
+            // BARRIDOS: agresores de verdad, uno por uno, no volumen agregado.
+            // Este es el unico que ve "alguien entro de una", y por eso vota
+            // con el peso de lo que efectivamente barrio.
+            if (barridos != null && barridos.Count > 0)
+            {
+                decimal vc = 0, vv = 0;
+                foreach (var x in barridos)
+                    if (x.Lado > 0) vc += x.Volumen; else vv += x.Volumen;
+                if (vc + vv > 0 && Math.Abs(vc - vv) / (vc + vv) >= 0.25m)
+                {
+                    voto += vc > vv ? 1 : -1;
+                    razones.Add(barridos.Count + " barrido" + (barridos.Count > 1 ? "s" : "")
+                                + " " + (vc > vv ? "comprador" : "vendedor") + " de "
+                                + Math.Round(Math.Max(vc, vv)) + " lotes");
+                }
+            }
+
+            // EL MURO DEL LIBRO. Que se lo hayan COMIDO es evidencia dura:
+            // alguien pago por atravesarlo y eso no se puede fingir. Que lo
+            // hayan RETIRADO dice lo contrario y por eso vota al reves: la
+            // pared nunca estuvo dispuesta a defender ese precio.
+            if (suerteMuro == Libro.Suerte.Comido)
+            {
+                voto += precioAhora >= precioNivel ? 1 : -1;
+                razones.Add("se comieron el muro del libro");
+            }
+            else if (suerteMuro == Libro.Suerte.Retirado)
+            {
+                voto += precioAhora >= precioNivel ? -1 : 1;
+                razones.Add("retiraron el muro sin defenderlo");
+            }
+
             if (voto == 0) return null;
             int lado = voto > 0 ? 1 : -1;
 
@@ -186,6 +220,22 @@ namespace PythiaGex
             { puntaje++; razones.Add(confluencia + " confluencias"); }
             if (deltaSesion != 0 && Math.Sign(deltaSesion) == lado)
             { puntaje++; razones.Add("el delta de la sesion acompana"); }
+
+            // El libro entero inclinado para el mismo lado. Amplificador y no
+            // direccion a proposito: las ordenes limite se retiran, asi que el
+            // tamano parado sugiere pero no prueba.
+            if (Math.Abs(desbalanceDom) >= 0.20m && Math.Sign(desbalanceDom) == lado)
+            {
+                puntaje++;
+                razones.Add("el libro esta " + Math.Round(Math.Abs(desbalanceDom) * 100)
+                            + "% inclinado a favor");
+            }
+            if (suerteMuro == Libro.Suerte.Crecio)
+            {
+                // alguien esta REFORZANDO la pared: juega en contra de pasarla
+                puntaje = Math.Max(1, puntaje - 1);
+                razones.Add("ojo: estan reforzando el muro");
+            }
 
             if (puntaje < Math.Max(1, Umbral)) return null;
 

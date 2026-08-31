@@ -49,6 +49,10 @@ namespace PythiaGex
             public int? Apilados, LadoApilados, LadoDivergencia;
             public double? PrintVeces;
             public bool PrintGrande, Divergencia;
+            // el libro: lo que espera, no lo que ya se opero
+            public double? BarridoCompra, BarridoVenta, LibroBids, LibroAsks, DesbalanceDom;
+            public int? Barridos;
+            public string SuerteMuro;        // comido | retirado | crecio | igual
         }
 
         /// <summary>Carpeta donde se escribe. Vacio = la de ATAS del usuario.</summary>
@@ -210,7 +214,14 @@ namespace PythiaGex
             NumN(b, "print_veces", a.PrintVeces); b.Append(',');
             b.Append("\"print_grande\":").Append(a.PrintGrande ? "true" : "false").Append(',');
             b.Append("\"divergencia\":").Append(a.Divergencia ? "true" : "false").Append(',');
-            EntN(b, "lado_divergencia", a.LadoDivergencia);
+            EntN(b, "lado_divergencia", a.LadoDivergencia); b.Append(',');
+            EntN(b, "barridos", a.Barridos); b.Append(',');
+            NumN(b, "barrido_compra", a.BarridoCompra); b.Append(',');
+            NumN(b, "barrido_venta", a.BarridoVenta); b.Append(',');
+            NumN(b, "libro_bids", a.LibroBids); b.Append(',');
+            NumN(b, "libro_asks", a.LibroAsks); b.Append(',');
+            NumN(b, "desbalance_dom", a.DesbalanceDom); b.Append(',');
+            Txt(b, "suerte_muro", a.SuerteMuro ?? "");
             b.Append('}');
         }
 

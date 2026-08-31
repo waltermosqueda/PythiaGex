@@ -64,6 +64,7 @@ ROMPER_TK = 12       # pasarlo por doce ticks es romperlo, no tantearlo
 AGUANTAR_TK = 16     # alejarse dieciseis ticks sin romperlo es que aguanto
 MIN_CASOS = 12       # abajo de esto no se saca ninguna conclusion
 HORIZONTE = 60       # minutos que se le dan al nivel para resolverse
+MAX_HUECO_MIN = 20   # si el precio mas cercano esta mas lejos, no se juzga
 GANANCIA_TK = 8      # los ticks que definen si un disparo acerto o fallo
 MIN_SEPARACION = 0.0 # los intervalos no se pueden tocar para llamarlo hallazgo
 
@@ -290,6 +291,14 @@ def observar(sym, fecha):
         restantes = [v for v in velas if v["t"] and v["t"] >= hora]
         if len(restantes) < 5:
             continue
+        # Si el primer dato de precio que hay despues de la foto esta a horas
+        # de distancia, esta foto NO se puede juzgar. Pasaba de noche: una foto
+        # de las 03:00 UTC agarraba las velas de las 13:30, diez horas mas
+        # tarde, y el resultado se anotaba como si fuera el desenlace de esa
+        # foto. Eso fabrico un hallazgo entero ("los niveles aguantan mas en la
+        # rueda americana") que era puro hueco de datos.
+        if _minutos_entre(hora, restantes[0]["t"]) > MAX_HUECO_MIN:
+            continue
 
         gex = f.get("gex") or 0.0
         kk = f.get("k") or {}
@@ -355,7 +364,41 @@ def observar(sym, fecha):
                     "minutos_restantes": len(restantes),
                     **res,
                 })
-    return obs
+    return _colapsar(obs)
+
+
+def _colapsar(obs):
+    """Una observacion por EPISODIO, no una por foto.
+
+    Habia dos formas de contar de mas, y las dos inflaban la muestra sin
+    agregar informacion. Los intervalos de Wilson suponen observaciones
+    independientes: contar de mas los aprieta y fabrica hallazgos que no
+    existen. Ya paso — un "la gamma chica aguanta mas" que en realidad eran
+    seis miradas al mismo gamma pin.
+
+    1. DUPLICADO EXACTO. El mismo strike aparece en la cadena completa y en la
+       del 0DTE. Mismo precio, mismo desenlace, contado dos veces.
+
+    2. LA MISMA ESCENA MIRADA VARIAS VECES. El indicador saca una foto cada
+       quince minutos. Un nivel que sigue ahi aparece en todas, y las cuatro
+       fotos de una hora no son cuatro pruebas: son una sola situacion mirada
+       cuatro veces.
+
+    Se queda la primera de cada episodio, que ademas es la mas honesta: es la
+    que se publico ANTES de que pasara nada.
+    """
+    if not obs:
+        return obs
+    orden = sorted(obs, key=lambda o: (o["fecha"], o["nivel"], o["arriba"], o["hora"]))
+    salida, ultima = [], {}
+    for o in orden:
+        k = (o["fecha"], o["nivel"], o["arriba"])
+        prev = ultima.get(k)
+        if prev is not None and _minutos_entre(prev, o["hora"]) < HORIZONTE:
+            continue
+        ultima[k] = o["hora"]
+        salida.append(o)
+    return salida
 
 
 def _desde_atas(cx, nv):
@@ -370,7 +413,9 @@ def _desde_atas(cx, nv):
              "confluencia": None, "apilados": None, "lado_apilados": None,
              "print_grande": None, "divergencia": None, "lado_divergencia": None,
              "poc_previo_virgen": None, "dist_poc_tk": None,
-             "dentro_area_valor": None}
+             "dentro_area_valor": None, "barridos": None,
+             "barrido_compra": None, "barrido_venta": None,
+             "desbalance_dom": None, "suerte_muro": None}
     if not cx or not nv:
         return vacio
     ses = cx.get("sesion") or {}
@@ -398,6 +443,11 @@ def _desde_atas(cx, nv):
         "poc_previo_virgen": cx.get("poc_previo_virgen"),
         "dist_poc_tk": d_poc,
         "dentro_area_valor": dentro,
+        "barridos": nv.get("barridos"),
+        "barrido_compra": nv.get("barrido_compra"),
+        "barrido_venta": nv.get("barrido_venta"),
+        "desbalance_dom": nv.get("desbalance_dom"),
+        "suerte_muro": nv.get("suerte_muro") or None,
     }
 
 
@@ -510,6 +560,16 @@ def _desenlace(nivel, es_arriba, velas):
             "excursion_tk": round(max(
                 (v["alto"] - nivel) / TICK if es_arriba else (nivel - v["bajo"]) / TICK
                 for v in post))}
+
+
+def _minutos_entre(a, b):
+    """Minutos de a a b, los dos como HH:MM del mismo dia."""
+    try:
+        ha, ma = a.split(":")
+        hb, mb = b.split(":")
+        return (int(hb) * 60 + int(mb)) - (int(ha) * 60 + int(ma))
+    except Exception:
+        return 10 ** 6
 
 
 def _sumar_minutos(hhmm, minutos):
@@ -634,6 +694,15 @@ def factores_a_probar(obs):
          lambda o: o.get("divergencia")),
         ("el POC de ayer sigue sin tocarse",
          lambda o: o.get("poc_previo_virgen")),
+        # --- el libro: lo que espera, distinto de lo que ya se opero
+        ("hubo barridos de agresores en el nivel",
+         lambda o: (None if o.get("barridos") is None else o["barridos"] > 0)),
+        ("los barridos del nivel son compradores",
+         lambda o: (None if not o.get("barridos")
+                    else (o.get("barrido_compra") or 0) > (o.get("barrido_venta") or 0))),
+        ("el libro esta inclinado a favor del nivel",
+         lambda o: (None if o.get("desbalance_dom") is None
+                    else abs(o["desbalance_dom"]) >= 0.20)),
     ]
 
 
@@ -657,8 +726,10 @@ def analizar(obs, titulo):
     tocados = [o for o in obs if o["tocado"]]
     resueltos = [o for o in tocados if o.get("aguanto") is not None
                  and (o["aguanto"] or o["rompio"])]
-    print("  %d predicciones sobre %d rueda(s): %s"
+    print("  %d episodios sobre %d rueda(s): %s"
           % (len(obs), len(ruedas), ", ".join(ruedas)))
+    print("  (un episodio = un nivel; las fotos repetidas del mismo nivel"
+          " dentro de %d min se cuentan UNA vez)" % HORIZONTE)
     print("  se tocaron %d (%.0f%%). De esos, %d llegaron a resolverse"
           % (len(tocados), len(tocados) / len(obs) * 100, len(resueltos)))
 
