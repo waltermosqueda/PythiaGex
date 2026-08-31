@@ -289,6 +289,24 @@ namespace PythiaGex
         [Display(Name = "Marcar los barridos en el grafico", GroupName = "Libro y barridos", Order = 6)]
         public bool VerBarridos { get; set; } = true;
 
+        [Display(Name = "Escribir los lotes al lado del barrido", GroupName = "Libro y barridos", Order = 7,
+                 Description = "El numero de contratos, en el grafico. Sin esto se ve que entro algo pero no cuanto.")]
+        public bool VerLotesBarrido { get; set; } = true;
+
+        [Display(Name = "Desde cuantos lotes escribir el numero", GroupName = "Libro y barridos", Order = 8,
+                 Description = "Los chicos se dibujan igual pero sin numero, para no tapar el grafico.")]
+        public double MinLotesEtiqueta { get; set; } = 25.0;
+
+        [Display(Name = "Cinta de flujo en vivo (sobre el grafico)", GroupName = "Libro y barridos", Order = 9,
+                 Description = "Una sola linea pegada al precio con lo que esta entrando ahora. No hay que desplegar nada para verla.")]
+        public bool VerCintaFlujo { get; set; } = true;
+
+        [Display(Name = "Ventana de la cinta (minutos)", GroupName = "Libro y barridos", Order = 10)]
+        public int MinutosCinta { get; set; } = 5;
+
+        [Display(Name = "Tamano de letra de la cinta", GroupName = "Libro y barridos", Order = 11)]
+        public float TamCinta { get; set; } = 11f;
+
         [Display(Name = "Color del barrido comprador", GroupName = "Colores", Order = 322)]
         public Color ColBarrCompra { get; set; } = Color.FromArgb(255, 90, 200, 255);
 
@@ -1529,6 +1547,118 @@ namespace PythiaGex
                 var rec = new Rectangle(x - r, y - r, r * 2, r * 2);
                 g.FillEllipse(Color.FromArgb(150, col), rec);
                 g.DrawEllipse(new RenderPen(Color.FromArgb(220, col), 1), rec);
+
+                // El numero de contratos, en el grafico. Un circulo mas grande
+                // dice "entro mas" pero no dice CUANTO, y para scalpear la
+                // diferencia entre 40 y 400 lotes no es un matiz.
+                if (VerLotesBarrido && b.Volumen >= (decimal)Math.Max(1.0, MinLotesEtiqueta))
+                {
+                    var txt = b.Volumen.ToString("0", CultureInfo.InvariantCulture);
+                    var wt = g.MeasureString(txt, f).Width;
+                    var ht = g.MeasureString(txt, f).Height;
+                    // arriba si compro, abajo si vendio: se lee de que lado vino
+                    int ty = b.Lado > 0 ? y - r - ht : y + r;
+                    g.FillRectangle(Color.FromArgb(170, 12, 15, 20),
+                                    new Rectangle(x - wt / 2 - 2, ty, wt + 4, ht));
+                    g.DrawString(txt, f, col, x - wt / 2, ty);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Una sola linea pegada al precio con lo que esta entrando AHORA.
+        ///
+        /// El tablero tiene todo pero hay que desplegarlo, y un dato que hay
+        /// que desplegar no sirve para scalpear: cuando lo abriste, el momento
+        /// ya paso. Esto va siempre visible, al lado del precio, y dice lo
+        /// minimo indispensable: cuanto entro comprando, cuanto vendiendo, el
+        /// barrido mas grande del rato, y como esta parado el libro.
+        /// </summary>
+        private void DibujarCintaFlujo(RenderContext g, Rectangle area,
+                                       IChartContainer cont, decimal precio)
+        {
+            if (!VerLibro || !VerCintaFlujo || precio <= 0) return;
+            DateTime ahora;
+            try { ahora = GetCandle(CurrentBar - 1).LastTime; }
+            catch { return; }
+
+            var lista = _libro.Todos(ahora, Math.Max(1, MinutosCinta));
+            decimal vc = 0, vv = 0, mayor = 0;
+            int ladoMayor = 0;
+            foreach (var b in lista)
+            {
+                if (b.Lado > 0) vc += b.Volumen; else vv += b.Volumen;
+                if (b.Volumen > mayor) { mayor = b.Volumen; ladoMayor = b.Lado; }
+            }
+
+            var f = Fuente(Math.Max(7f, TamCinta), true);
+            var fc = Fuente(Math.Max(6f, TamCinta - 1f), false);
+
+            // cada dato con su nombre adelante: un numero suelto no se entiende
+            var partes = new List<Tuple<string, string, Color>>();
+            partes.Add(Tuple.Create("FLUJO " + Math.Max(1, MinutosCinta) + "m",
+                                    "", ColTexto));
+            if (lista.Count == 0)
+            {
+                partes.Add(Tuple.Create("sin barridos",
+                                        _libro.VistosTotal == 0
+                                        ? "(no llega nada)" : "(umbral " + MinBarridoLotes.ToString("0") + ")",
+                                        Color.FromArgb(150, 160, 175)));
+            }
+            else
+            {
+                partes.Add(Tuple.Create("compra", Miles((double)vc), ColBarrCompra));
+                partes.Add(Tuple.Create("venta", Miles((double)vv), ColBarrVenta));
+                var neto = vc - vv;
+                partes.Add(Tuple.Create("neto",
+                                        (neto >= 0 ? "+" : "") + Miles((double)neto),
+                                        neto >= 0 ? ColBarrCompra : ColBarrVenta));
+                partes.Add(Tuple.Create("mayor", Miles((double)mayor),
+                                        ladoMayor > 0 ? ColBarrCompra : ColBarrVenta));
+            }
+            if (_libro.LibroVivo)
+            {
+                var d = _libro.DesbalanceDom;
+                partes.Add(Tuple.Create("libro",
+                                        (d * 100).ToString("+0;-0", CultureInfo.InvariantCulture) + "%",
+                                        Math.Abs(d) < 0.10m ? Color.FromArgb(150, 160, 175)
+                                        : d > 0 ? ColBarrCompra : ColBarrVenta));
+            }
+
+            // medir para poder centrar la cinta en el precio
+            int ancho = 10;
+            foreach (var t in partes)
+            {
+                ancho += g.MeasureString(t.Item1, fc).Width + 4;
+                if (t.Item2.Length > 0) ancho += g.MeasureString(t.Item2, f).Width + 10;
+                else ancho += 8;
+            }
+            var alto = g.MeasureString("X", f).Height + 6;
+
+            int y;
+            try { y = cont.GetYByPrice(precio, false) - alto - 14; }
+            catch { return; }
+            if (y < area.Top + 2) y = area.Top + 2;
+            if (y > area.Bottom - alto - 2) y = area.Bottom - alto - 2;
+
+            int x = area.Right - ancho - Math.Max(0, MargenEje) - 6;
+            if (x < area.Left + 4) x = area.Left + 4;
+
+            var caja = new Rectangle(x, y, ancho, alto);
+            g.FillRectangle(Color.FromArgb(215, 12, 15, 20), caja);
+            g.DrawRectangle(new RenderPen(Color.FromArgb(80, 120, 130, 145), 1), caja);
+
+            int cx = x + 6;
+            foreach (var t in partes)
+            {
+                g.DrawString(t.Item1, fc, Color.FromArgb(155, 165, 180), cx, y + 4);
+                cx += g.MeasureString(t.Item1, fc).Width + 4;
+                if (t.Item2.Length > 0)
+                {
+                    g.DrawString(t.Item2, f, t.Item3, cx, y + 3);
+                    cx += g.MeasureString(t.Item2, f).Width + 10;
+                }
+                else cx += 8;
             }
         }
 
@@ -1755,6 +1885,7 @@ namespace PythiaGex
                 DibujarPerfil(g, area, cont, hi, lo);
 
             DibujarBarridos(g, area, cont, fDetalle);
+            DibujarCintaFlujo(g, area, cont, precio);
             DibujarDisparos(g, area, cont, fDetalle);
 
             if (d != null && VerExpectedMove && d.ExpectedMove.HasValue && d.ExpectedMove.Value > 0
