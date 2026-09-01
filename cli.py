@@ -95,7 +95,7 @@ def main():
     S  = r["spot"]
     st = r["strikes"]
     curva, flip = curva_gamma(r["curva_src"], S)
-    em  = expected_move(r["curva_src"], S)
+    em, em_det = expected_move(r["curva_src"], S, detalle=True)
     niv = niveles_clave(st, S)
     # niveles del vencimiento de hoy: son los imanes que mandan en el intradia
     st0 = {k: v for k, v in st.items() if abs(v.get("gex_0dte", 0.0)) > 0}
@@ -163,6 +163,7 @@ def main():
       "regimen": "POSITIVO" if T["gex"] > 0 else "NEGATIVO",
       "gamma_flip": flip,
       "expected_move": em,
+      "expected_move_detalle": em_det,
       "totales": {"net_gex_B": B(T["gex"]), "net_gex_vol_B": B(T["gex_vol"]),
                   "net_dex_B": B(T["dex"]), "net_vex_B": B(T["vex"]),
                   "net_chex_B": B(T["chex"]), "net_tex_M": M(T["tex"]), "net_vega_M": M(T["vgex"]),

@@ -154,15 +154,40 @@ def auditar(simbolo):
         rt = tasa_plazo(max(dias, 28), ct) if ct else None
         if rt and med.get("dividendo_implicito") is not None:
             carry_propio = f_cer[0] * (rt - med["dividendo_implicito"]) * dias / 365.0
-            r.chequeo("carry implicito", base_propia, carry_propio, 1.0, " pts",
-                      "coherencia: tasa %.3f%% del Tesoro %s menos el dividendo despejado"
-                      % (rt * 100, ct.get("fecha")))
+            # Esto NO es un control de la base: es una medida de cuanto se
+            # aparta la curva de forwards de una recta. La diferencia entre el
+            # extremo contra extremo y la pendiente por los dias es la suma de
+            # los residuos de los dos extremos, y eso no tiene por que dar
+            # cero. Llamarlo "falla" con una tolerancia inventada solo
+            # generaba alarmas que no significaban nada.
+            r.dato("curvatura de los forwards",
+                   round(base_propia - carry_propio, 2),
+                   "pts de diferencia entre extremo-a-extremo (%.2f) y pendiente "
+                   "por dias (%.2f); es la suma de los residuos de las dos puntas"
+                   % (base_propia, carry_propio))
         r.dato("dividendo implicito",
                round((med.get("dividendo_implicito") or 0) * 100, 3),
                "% anual, despejado de la recta")
         r.dato("base confiable", med["confiable"],
                "%s ticks de error, %d vencimientos"
                % (med.get("residuo_ticks"), med.get("vencimientos_usados")))
+        # ----------------------------------------------------------------
+        # EL CONTROL EXTERNO: la base medida contra el precio real de ATAS.
+        #
+        # Todo lo demas se recalcula desde la misma cadena de CBOE, asi que un
+        # error de metodo comun a las dos cuentas no se veria. Este control usa
+        # una fuente completamente distinta —el precio del futuro que llega por
+        # Rithmic y que el indicador deja anotado— y compara:
+        #
+        #     ES de ATAS  -  contado implicito de CBOE   contra   la base
+        #
+        # Si esas dos cosas coinciden, la base esta bien medida de verdad. Si
+        # no, todos los niveles convertidos a ES estan corridos por esa
+        # diferencia, que es la perdida sistematica que este proyecto existe
+        # para evitar.
+        # ----------------------------------------------------------------
+        _control_atas(r, med, f_cer[0], crudo.get("timestamp"))
+
         desfase = f_cer[0] - S_publicado
         r.dato("indice publicado", S_publicado,
                "desfase %+.2f contra el contado de la cadena" % desfase)
@@ -394,6 +419,119 @@ def auditar(simbolo):
         f.write(json.dumps(fila) + "\n")
 
     return r, fila
+
+
+def _control_atas(r, med, contado, ts_cadena):
+    """La base medida contra el precio real del futuro que anota el indicador.
+
+    POR QUE NO ALCANZA CON COMPARAR UN PRECIO CONTRA OTRO
+
+    La primera version de este control tomaba la anotacion de ATAS mas cercana
+    en el tiempo y le restaba el contado de la cadena. Dio "falla" con 8 puntos
+    de diferencia y era MENTIRA: los dos precios estaban tomados con dos
+    minutos de separacion, y en un mercado que se mueve un punto por minuto eso
+    solo mide el movimiento, no la base.
+
+    Medido sobre 29 pares del 2026-09-01: la diferencia iba de -6.9 a +20.1
+    segun el par que tocara. La MEDIANA daba +8.86, contra una base publicada
+    de 9.8. O sea que el metodo estaba bien y el control estaba mal.
+
+    Asi que ahora:
+
+      - se usan TODOS los pares del dia, no el mas cercano
+      - solo los que estan a un minuto o menos
+      - se descartan las fotos con la cadena congelada, que de madrugada
+        repiten el mismo contado durante horas y fabrican diferencias enormes
+      - se juzga la MEDIANA, que es lo unico estable cuando cada par arrastra
+        el ruido del desfase temporal
+    """
+    hoy = dt.date.today().isoformat()
+
+    def mins(t):
+        try:
+            return int(t[11:13]) * 60 + int(t[14:16])
+        except Exception:
+            return None
+
+    # ---- lo que anoto el indicador
+    atas = []
+    for d in (os.path.join("datos", "contexto"),
+              os.path.join(os.environ.get("APPDATA", ""), "ATAS", "PythiaGex", "contexto")):
+        ruta = os.path.join(d, "contexto-%s.jsonl" % hoy) if d else ""
+        if not ruta or not os.path.exists(ruta):
+            continue
+        for l in open(ruta, encoding="utf-8-sig"):
+            l = l.strip()
+            if not l:
+                continue
+            try:
+                x = json.loads(l)
+            except Exception:
+                continue
+            m = mins(x.get("t") or "")
+            if m is not None and x.get("precio"):
+                atas.append((m, x["precio"], (x.get("instrumento") or "").upper()))
+        if atas:
+            break
+
+    if not atas:
+        r.dato("base contra ATAS", "sin datos",
+               "el indicador tiene que estar corriendo para dejar el precio anotado")
+        return
+
+    # ---- las fotos de la cadena, con su propio timestamp de cotizacion
+    fotos = []
+    ruta_h = os.path.join("datos", "historico", "_SPX-%s.jsonl" % hoy)
+    if os.path.exists(ruta_h):
+        for l in open(ruta_h, encoding="utf-8"):
+            l = l.strip()
+            if not l:
+                continue
+            try:
+                x = json.loads(l)
+            except Exception:
+                continue
+            m = mins(x.get("t") or "")
+            if m is not None and x.get("spot"):
+                fotos.append((m, x["spot"], x.get("ts_cadena")))
+
+    if len(fotos) < 3:
+        r.dato("base contra ATAS", "%d fotos de cadena hoy" % len(fotos),
+               "hacen falta varias para sacar una mediana; el historico local "
+               "se llena corriendo cli.py o trayendo lo del bot")
+        return
+
+    # ---- descartar las fotos con la cadena congelada: el mismo contado
+    # repetido significa que CBOE no refresco, y restarle un futuro que si se
+    # movio da diferencias enormes que no son la base
+    vistos = {}
+    for m, sp, ts in fotos:
+        vistos.setdefault(round(sp, 2), []).append(m)
+    congelados = {v for v, ms in vistos.items() if len(ms) >= 3}
+
+    pares = []
+    for m, sp, ts in fotos:
+        if round(sp, 2) in congelados:
+            continue
+        c = min(atas, key=lambda a: abs(a[0] - m))
+        if abs(c[0] - m) > 1:      # un minuto o menos, o no sirve
+            continue
+        pares.append(c[1] - sp)
+
+    if len(pares) < 5:
+        r.dato("base contra ATAS", "%d pares utiles" % len(pares),
+               "hacen falta al menos 5 a un minuto o menos y con la cadena viva")
+        return
+
+    pares.sort()
+    mediana = statistics.median(pares)
+    q1 = pares[len(pares) // 4]
+    q3 = pares[(3 * len(pares)) // 4]
+    inst = atas[-1][2] or "?"
+    r.chequeo("base contra ATAS (%s)" % inst, med["base"], mediana, 2.5, " pts",
+              "mediana de %d pares a <=1 min, entre %.2f y %.2f "
+              "(el rango es ancho porque cada par arrastra el desfase temporal)"
+              % (len(pares), q1, q3))
 
 
 def historia(simbolo="SPX"):

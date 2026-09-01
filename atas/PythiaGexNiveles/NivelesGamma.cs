@@ -1453,6 +1453,17 @@ namespace PythiaGex
                 catch { _libro.LibroVivo = false; }
             }
             _libro.MinCaidaLibro = (decimal)Math.Max(0.05, Math.Min(0.95, CaidaMuroPct / 100.0));
+
+            // La especificacion del contrato, leida del feed. El multiplicador
+            // estaba escrito a mano en una tabla —ES 50, MES 5— y una tabla se
+            // desactualiza sin avisar. El exchange informa cuanto vale un tick
+            // y cuanto mide: dividiendo sale el multiplicador real.
+            try
+            {
+                var sec = TradingManager?.Security;
+                if (sec != null) _libro.LeerContrato(sec.TickCost, sec.TickSize);
+            }
+            catch { }
             _libro.UmbralAutomatico = ModoBarrido == ModoUmbral.Automatico;
             _libro.FactorUmbral = (decimal)Math.Max(1.5, FactorBarrido);
             _libro.MinBarrido = (decimal)Math.Max(1.0, LotesBarrido);
@@ -1469,7 +1480,7 @@ namespace PythiaGex
                 if (VerLibro)
                 {
                     barr = _libro.EnNivel((decimal)pf.Value, tick, Math.Max(1, TicksZona),
-                                          hora, Math.Max(1, VentanaBarridoMin));
+                                          Math.Max(1, VentanaBarridoMin));
                     if (_libro.LibroVivo)
                     {
                         var muro = _libro.Parado(dom, (decimal)pf.Value, tick,
@@ -1522,7 +1533,7 @@ namespace PythiaGex
             try { ahora = GetCandle(CurrentBar - 1).LastTime; }
             catch { return; }
 
-            var lista = _libro.Todos(ahora, Math.Max(1, MemoriaBarridosMin));
+            var lista = _libro.Todos(Math.Max(1, MemoriaBarridosMin));
             if (lista.Count == 0) return;
 
             var minimo = _libro.UmbralVigente > 0 ? _libro.UmbralVigente : 1m;
@@ -1596,7 +1607,7 @@ namespace PythiaGex
             try { ahora = GetCandle(CurrentBar - 1).LastTime; }
             catch { return; }
 
-            var lista = _libro.Todos(ahora, Math.Max(1, MinutosCinta));
+            var lista = _libro.Todos(Math.Max(1, MinutosCinta));
             decimal vc = 0, vv = 0, mayor = 0;
             int ladoMayor = 0;
             foreach (var b in lista)
@@ -1814,7 +1825,7 @@ namespace PythiaGex
                     {
                         var hb = GetCandle(CurrentBar - 1).LastTime;
                         var bs = _libro.EnNivel(p, tick, Math.Max(1, TicksZona),
-                                                hb, Math.Max(1, VentanaBarridoMin));
+                                                Math.Max(1, VentanaBarridoMin));
                         a.Barridos = bs.Count;
                         double vc = 0, vv = 0;
                         foreach (var x in bs)
@@ -2613,6 +2624,30 @@ namespace PythiaGex
                             L.Add(new Fila("sugerido (1 de cada 10)",
                                            p90.ToString("0") + " lotes en " + Raiz(),
                                            ColTecho));
+                    }
+                    if (_libro.MultiplicadorReal > 0)
+                    {
+                        // Lo que dice el exchange contra lo que supuso el
+                        // panel. Si no coinciden, TODO lo que se publique en
+                        // contratos de cobertura esta mal por ese factor, y
+                        // vale mas verlo aca que descubrirlo operando.
+                        var esperado = Raiz() == "NQ" ? 20m : Raiz() == "RTY" ? 50m : 50m;
+                        var micro = (InstrumentInfo?.Instrument ?? "").ToUpperInvariant()
+                                    .TrimStart('#').StartsWith("M");
+                        if (micro) esperado = Raiz() == "NQ" ? 2m : 5m;
+                        var ok = Math.Abs(_libro.MultiplicadorReal - esperado) < 0.01m;
+                        L.Add(new Fila("contrato (del exchange)",
+                                       _libro.MultiplicadorReal.ToString("0.##") + " USD/punto   tick "
+                                       + _libro.TickReal.ToString("0.####"),
+                                       ok ? Color.FromArgb(130, 140, 155) : ColPiso));
+                        if (!ok)
+                            L.Add(new Fila("", "NO coincide con el " + esperado.ToString("0.##")
+                                           + " que supone el panel", ColPiso, true));
+                    }
+                    else
+                    {
+                        L.Add(new Fila("contrato", _libro.OrigenContrato,
+                                       Color.FromArgb(130, 140, 155)));
                     }
                     L.Add(new Fila("libro (DOM)",
                                    _libro.LibroVivo

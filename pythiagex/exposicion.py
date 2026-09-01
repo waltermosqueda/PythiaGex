@@ -9,16 +9,50 @@ medido -- ver docs/METODO.md. Cuando el flujo dominante se invierte
 import math, re, datetime as dt
 from .griegas import vanna_charm, gamma_bs
 
-MULT_INDICE = 100      # multiplicador de opciones de indice
+MULT_INDICE = 100      # multiplicador de opciones de indice de CBOE: 100 USD por punto
 RX = re.compile(r"^([A-Z]+)(\d{2})(\d{2})(\d{2})([CP])(\d{8})$")
 
+import calendar as _cal
+
+def dst_eeuu(f: dt.date) -> bool:
+    """Horario de verano de EE.UU.: 2do domingo de marzo a 1er domingo de noviembre."""
+    def domingo(anio, mes, cual):
+        ds = [d for d in range(1, _cal.monthrange(anio, mes)[1] + 1)
+              if dt.date(anio, mes, d).weekday() == 6]
+        return dt.date(anio, mes, ds[cual - 1])
+    return domingo(f.year, 3, 2) <= f < domingo(f.year, 11, 1)
+
+def hora_cierre_utc(f: dt.date) -> int:
+    """La hora UTC en que son las 16:00 de Nueva York ese dia.
+
+    EL BUG QUE ESTO ARREGLA, Y QUE IBA A APARECER SOLO EN NOVIEMBRE
+
+    Aca estaba clavado el 20. Las 16:00 ET son las 20:00 UTC en verano y las
+    21:00 en invierno, porque Nueva York cambia la hora y UTC no. Del primer
+    domingo de noviembre en adelante, TODOS los vencimientos habrian quedado
+    una hora corridos.
+
+    En un 0DTE con cinco horas de vida, una hora es el 20 % del tiempo que
+    queda. Como la gamma y el expected move van con raiz de T, eso es un 10 %
+    de error en cada numero, todos los dias, sin que nada avisara.
+
+    Lo peor es que el proyecto YA tenia la version correcta en base.py. Habia
+    dos copias de la misma regla y solo una estaba bien. Ahora hay una sola.
+    """
+    return 20 if dst_eeuu(f) else 21
+
 def parse_occ(simbolo: str):
-    """SPX260918C00200000 -> (vencimiento, 'C', 7200.0)"""
+    """SPX260918C00200000 -> (vencimiento, 'C', 7200.0)
+
+    El vencimiento se devuelve en el instante real de liquidacion: las 16:00
+    de Nueva York de ese dia, convertidas a UTC segun corresponda.
+    """
     m = RX.match(simbolo)
     if not m:
         return None
     _, yy, mm, dd, cp, k = m.groups()
-    venc = dt.datetime(2000 + int(yy), int(mm), int(dd), 20, 0,
+    f = dt.date(2000 + int(yy), int(mm), int(dd))
+    venc = dt.datetime(f.year, f.month, f.day, hora_cierre_utc(f), 0,
                        tzinfo=dt.timezone.utc)
     return venc, cp, int(k) / 1000.0
 

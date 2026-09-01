@@ -107,7 +107,23 @@ namespace PythiaGex
 
         public sealed class Barrido
         {
+            /// <summary>La hora que informa el exchange. Se guarda para el
+            /// registro, NO para medir ventanas.</summary>
             public DateTime Hora;
+
+            /// <summary>Cuando lo recibimos, en UTC de esta maquina.
+            ///
+            /// Las ventanas se miden con ESTE reloj y no con el del exchange.
+            /// Los barridos venian con la hora de CumulativeTrade y el "ahora"
+            /// salia de la ultima vela: dos relojes distintos, posiblemente en
+            /// husos distintos. Si se corren, la ventana de cinco minutos no
+            /// encuentra nada aunque el barrido acabe de pasar — y eso es
+            /// exactamente lo que se vio en pantalla: un barrido dibujado y la
+            /// cinta diciendo "sin barridos".
+            ///
+            /// OnCumulativeTrade llega en tiempo casi real, asi que sellarlo al
+            /// recibirlo da un reloj unico, monotono y sin husos de por medio.</summary>
+            public DateTime RecibidoUtc;
             public decimal Precio;       // donde termino
             public decimal Desde;        // donde arranco
             public decimal Volumen;
@@ -209,6 +225,7 @@ namespace PythiaGex
                 var b = new Barrido
                 {
                     Hora = t.Time,
+                    RecibidoUtc = DateTime.UtcNow,
                     Precio = t.Lastprice,
                     Desde = t.FirstPrice,
                     Volumen = t.Volume,
@@ -218,23 +235,24 @@ namespace PythiaGex
                 lock (_llave)
                 {
                     _barridos.Add(b);
-                    var corte = b.Hora.AddMinutes(-Math.Max(1, MemoriaMin));
-                    _barridos.RemoveAll(x => x.Hora < corte);
+                    var corte = b.RecibidoUtc.AddMinutes(-Math.Max(1, MemoriaMin));
+                    _barridos.RemoveAll(x => x.RecibidoUtc < corte);
                     while (_barridos.Count > 400) _barridos.RemoveAt(0);
                 }
             }
             catch { /* nunca romper el feed */ }
         }
 
-        /// <summary>Los barridos recientes dentro de la zona de un nivel.</summary>
+        /// <summary>Los barridos recientes dentro de la zona de un nivel.
+        /// La ventana se mide contra el reloj de recepcion, en UTC.</summary>
         public List<Barrido> EnNivel(decimal precio, decimal tickSize, int ticks,
-                                     DateTime ahora, int minutos)
+                                     int minutos)
         {
             var tol = tickSize * Math.Max(1, ticks);
-            var corte = ahora.AddMinutes(-Math.Max(1, minutos));
+            var corte = DateTime.UtcNow.AddMinutes(-Math.Max(1, minutos));
             lock (_llave)
             {
-                return _barridos.Where(x => x.Hora >= corte
+                return _barridos.Where(x => x.RecibidoUtc >= corte
                                             && Math.Abs(x.Precio - precio) <= tol)
                                 .ToList();
             }
@@ -242,10 +260,40 @@ namespace PythiaGex
 
         public int Cantidad { get { lock (_llave) { return _barridos.Count; } } }
 
-        public List<Barrido> Todos(DateTime ahora, int minutos)
+        public List<Barrido> Todos(int minutos)
         {
-            var corte = ahora.AddMinutes(-Math.Max(1, minutos));
-            lock (_llave) { return _barridos.Where(x => x.Hora >= corte).ToList(); }
+            var corte = DateTime.UtcNow.AddMinutes(-Math.Max(1, minutos));
+            lock (_llave) { return _barridos.Where(x => x.RecibidoUtc >= corte).ToList(); }
+        }
+
+        // ------------------------------------------------------------------
+        // El contrato, leido del exchange y no de una tabla
+        // ------------------------------------------------------------------
+
+        /// <summary>Multiplicador en dolares por punto, segun lo que informa el
+        /// feed. Cero si todavia no se pudo leer.</summary>
+        public decimal MultiplicadorReal;
+        public decimal TickReal;
+        public string OrigenContrato = "sin leer";
+
+        /// <summary>
+        /// Saca el multiplicador de la especificacion que manda el exchange, en
+        /// vez de la tabla escrita a mano.
+        ///
+        /// El multiplicador sale de dividir cuanto vale un tick por cuanto mide
+        /// un tick: en ES son 12.50 dolares cada 0.25 puntos, o sea 50 dolares
+        /// por punto. Eso lo publica el feed y no hay por que suponerlo.
+        /// </summary>
+        public void LeerContrato(decimal tickCost, decimal tickSize)
+        {
+            if (tickSize <= 0 || tickCost <= 0)
+            {
+                OrigenContrato = "el feed no informa el valor del tick";
+                return;
+            }
+            TickReal = tickSize;
+            MultiplicadorReal = tickCost / tickSize;
+            OrigenContrato = "del feed";
         }
 
         // ------------------------------------------------------------------

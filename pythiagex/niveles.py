@@ -34,12 +34,49 @@ def curva_gamma(curva_src, spot, rango=0.06, pasos=200):
         x += paso
     return pts, flip
 
-def expected_move(curva_src, spot):
-    """1-sigma con la IV del strike mas cercano al dinero."""
+def expected_move(curva_src, spot, detalle=False):
+    """1-sigma con la IV at-the-money del vencimiento MAS CERCANO.
+
+    EL BUG QUE ESTO ARREGLA
+
+    Antes hacia min() sobre toda la curva buscando el strike mas cercano al
+    dinero. Pero la curva trae una entrada por cada contrato: el mismo strike
+    aparece una vez por vencimiento, y por calls y por puts. min() devuelve la
+    PRIMERA de las empatadas, o sea un vencimiento cualquiera segun como
+    quedaron ordenados los datos ese dia.
+
+    Como el expected move va con raiz de T, elegir mal el vencimiento no
+    desplaza el numero: lo multiplica. Medido el 2026-09-01: publicaba 198.7
+    puntos donde correspondian 22.0. Nueve veces mas. Un operador que dibujara
+    esa banda tendria el rango del dia entero mal en pantalla.
+
+    Ahora el vencimiento se elige a proposito —el mas cercano, que es el
+    horizonte que le importa a alguien que opera intradia— y se promedia la IV
+    de call y put del strike at-the-money, que es mas estable que tomar una
+    sola punta.
+    """
     if not curva_src:
-        return None
-    K, cp, oi, iv, T = min(curva_src, key=lambda z: abs(z[0] - spot))
-    return round(spot * iv * math.sqrt(T), 1)
+        return None if not detalle else (None, {})
+
+    # el vencimiento mas cercano, con T estrictamente positiva
+    vivos = [z for z in curva_src if z[4] and z[4] > 0 and z[3] and z[3] > 0]
+    if not vivos:
+        return None if not detalle else (None, {})
+    Tmin = min(z[4] for z in vivos)
+    cerca = [z for z in vivos if abs(z[4] - Tmin) < 1e-9]
+
+    # el strike mas cercano al dinero DENTRO de ese vencimiento
+    Katm = min(cerca, key=lambda z: abs(z[0] - spot))[0]
+    ivs = [z[3] for z in cerca if z[0] == Katm]
+    if not ivs:
+        return None if not detalle else (None, {})
+    iv = sum(ivs) / len(ivs)
+
+    em = round(spot * iv * math.sqrt(Tmin), 1)
+    if not detalle:
+        return em
+    return em, {"strike": Katm, "iv": round(iv, 4),
+                "dias": round(Tmin * 365, 3), "muestras": len(ivs)}
 
 def niveles_clave(strikes: dict, spot: float, campo="gex") -> dict:
     """Call Wall, Put Wall, Major Positive/Negative y Gamma Pin."""

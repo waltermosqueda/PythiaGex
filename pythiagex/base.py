@@ -207,7 +207,23 @@ def medir(crudo: dict, venc=None, n=12, max_vencimientos=10):
     if not f_fut:
         return None
 
-    # el contado sale de la recta; si el ajuste fallara, del vencimiento mas cercano
+    # POR QUE ESTA MEZCLA, QUE NO ES UN DESCUIDO
+    #
+    # La base sale del forward trimestral CRUDO menos el contado de la RECTA.
+    # Mezclar un valor observado con uno ajustado parece inconsistente, y es a
+    # proposito:
+    #
+    #   - El forward trimestral es lo que estamos midiendo. Suavizarlo con la
+    #     recta lo alejaria del precio que efectivamente cotiza el futuro.
+    #   - El contado, en cambio, saldria del forward a 0 dias, que es el mas
+    #     fragil de todos: son opciones que vencen en horas, con valor tiempo
+    #     casi nulo, donde la paridad put-call amplifica cualquier centavo de
+    #     spread. La ordenada de la recta lo estima con los 11 vencimientos
+    #     juntos y es mucho mas estable.
+    #
+    # Medido el 2026-09-01: extremo contra extremo daba 10.22, la recta pura
+    # 8.97, y esta mezcla 9.79. La diferencia entre las tres es de hasta 5
+    # ticks de ES, asi que la eleccion no es cosmetica.
     contado = round(aj["contado"], 2) if aj else f_cer["forward"]
     base = round(f_fut["forward"] - contado, 2)
 
@@ -281,13 +297,9 @@ def medir(crudo: dict, venc=None, n=12, max_vencimientos=10):
             "dispersion_pct": round(f_fut["dispersion"] / S * 100, 4),
             "aviso": " · ".join(avisos) if avisos else None}
 
-def _dst_eeuu(f: dt.date) -> bool:
-    """Horario de verano: del segundo domingo de marzo al primero de noviembre."""
-    def domingo(anio, mes, cual):
-        ds = [d for d in range(1, calendar.monthrange(anio, mes)[1] + 1)
-              if dt.date(anio, mes, d).weekday() == 6]
-        return dt.date(anio, mes, ds[cual - 1])
-    return domingo(f.year, 3, 2) <= f < domingo(f.year, 11, 1)
+# La regla del horario de verano vive en exposicion.py y se importa. Tener dos
+# copias fue justamente el problema: una estaba bien y la otra no.
+from .exposicion import dst_eeuu as _dst_eeuu  # noqa: E402
 
 def a_et(timestamp: str):
     """El timestamp de la cadena de CBOE viene en UTC.
