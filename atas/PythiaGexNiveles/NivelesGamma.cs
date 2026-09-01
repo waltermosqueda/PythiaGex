@@ -555,7 +555,13 @@ namespace PythiaGex
         public int MargenEje { get; set; } = 62;
 
         [Display(Name = "Leyenda de que es cada valor", GroupName = "Estilo", Order = 86)]
-        public bool VerLeyenda { get; set; } = true;
+        public bool VerLeyendaSiempre { get; set; } = false;
+
+        /// <summary>Alias interno. La leyenda se consulta UNA vez y despues
+        /// estorba: son veinte renglones que tapan el grafico entero. Se
+        /// prende cuando hace falta y se apaga. La propiedad cambio de nombre
+        /// para que ATAS suelte el "true" que quedo guardado en el workspace.</summary>
+        private bool VerLeyenda => VerLeyendaSiempre;
 
         // Cuanto se mueve el precio para medir la convexidad. Diez puntos de
         // ES son cuarenta ticks: un movimiento normal de un rato.
@@ -2319,9 +2325,13 @@ namespace PythiaGex
                 g.DrawLine(pen, x0, y, x1, y);
                 var f = Fuente(TamDetalle - 0.5f, false);
                 var t = etq + "  " + p.ToString("0.00", CultureInfo.InvariantCulture);
-                var w = g.MeasureString(t, f).Width;
-                g.DrawString(t, f, Color.FromArgb(200, col),
-                             x1 - w - 6 - Math.Max(0, MargenEje), y - 13);
+                var tam = g.MeasureString(t, f);
+                // OPEN, IB LOW y VWAP caian en el mismo pixel y se leian como
+                // un borron. Pasan por el mismo acomodador que el resto.
+                var cja = Acomodar(new Rectangle(
+                    x1 - tam.Width - 6 - Math.Max(0, MargenEje), y - 13,
+                    tam.Width + 4, tam.Height), area, tam.Height * 3);
+                g.DrawString(t, f, Color.FromArgb(200, col), cja.Left, cja.Top);
             }
 
             if (VerPoc)
