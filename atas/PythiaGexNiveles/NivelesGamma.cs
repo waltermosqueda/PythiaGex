@@ -312,6 +312,9 @@ namespace PythiaGex
                  Description = "Un muro enorme a 200 ticks no cambia nada en los proximos minutos; uno mediano a 8 ticks lo cambia todo. La presencia visual sale de multiplicar la gamma por la probabilidad de tocarlo, en vez de una regla fija de quien va primero.")]
         public bool PesarPorRelevancia { get; set; } = true;
 
+        [Display(Name = "Color propio para el vencimiento cercano", GroupName = "Niveles cercanos", Order = 58)]
+        public bool VerColorVencCerca { get; set; } = true;
+
         [Display(Name = "Ticks para considerar un vencimiento cercano", GroupName = "Niveles cercanos", Order = 57,
                  Description = "Por dentro de esta distancia el nivel del vencimiento se dibuja con mas presencia: es el que se puede tocar en los proximos minutos.")]
         public int TicksCercaVenc { get; set; } = 40;
@@ -389,6 +392,9 @@ namespace PythiaGex
 
         [Display(Name = "Avisar con alerta", GroupName = "Disparos", Order = 9)]
         public bool AlertaDisparo { get; set; } = false;
+
+        [Display(Name = "Vencimiento pegado al precio", GroupName = "Colores", Order = 319)]
+        public Color ColVencCerca { get; set; } = Color.FromArgb(255, 245, 200, 90);
 
         [Display(Name = "Color del disparo largo", GroupName = "Colores", Order = 320)]
         public Color ColDispLargo { get; set; } = Color.FromArgb(255, 60, 220, 130);
@@ -570,13 +576,17 @@ namespace PythiaGex
         // El eje de precios se dibuja ENCIMA del ChartArea, asi que su borde
         // derecho no es el borde visible. Las etiquetas alineadas a la derecha
         // quedaban cortadas por el eje.
-        [Display(Name = "La gamma va en el titulo (no se recorta nunca)", GroupName = "Estilo", Order = 83,
-                 Description = "La gamma decide, asi que no puede caerse cuando la caja no entra. En el titulo siempre se ve.")]
+        [Display(Name = "La gamma va en el titulo (no se cae nunca)", GroupName = "Estilo", Order = 82,
+                 Description = "La gamma decide, asi que no puede depender de si el renglon de detalle esta prendido ni de cuanto mide la caja.")]
         public bool GammaEnTitulo { get; set; } = true;
+
+        [Display(Name = "La probabilidad va en el titulo (no se cae nunca)", GroupName = "Estilo", Order = 83,
+                 Description = "Idem. Estas dos opciones son APARTE de las del renglon de detalle: si se colgaban de aquellas, apagar el detalle apagaba tambien lo esencial, que fue justo lo que paso.")]
+        public bool ProbEnTitulo { get; set; } = true;
 
         [Display(Name = "Ancho maximo de la etiqueta (% del grafico)", GroupName = "Estilo", Order = 84,
                  Description = "Si el detalle no entra en este ancho, se cae el renglon de detalle. Una caja que cruza el grafico entero choca con todo lo demas.")]
-        public int AnchoMaxEtqPct { get; set; } = 34;
+        public int AnchoMaxEtqPct { get; set; } = 46;
 
         [Display(Name = "Separacion del eje de precios (px)", GroupName = "Estilo", Order = 85)]
         public int MargenEje { get; set; } = 62;
@@ -2295,7 +2305,14 @@ namespace PythiaGex
                             pesoV = Math.Min(1.0, pesoV * 1.6);
                         var alfaV = (int)Math.Max(120, Math.Min(245, 210 * pesoV + 70));
                         var grV = Math.Max(1, (int)Math.Round(GrosorPared * pesoV));
-                        g.DrawLine(new RenderPen(Color.FromArgb(alfaV, par.Item2), grV, DashStyle.Dash),
+                        // Un vencimiento pegado al precio se distingue por
+                        // COLOR ademas de por peso: en un vistazo hay que poder
+                        // separar "esto se puede tocar ahora" de "esto esta
+                        // lejos", sin leer la distancia.
+                        var colV = par.Item2;
+                        if (tkCerca <= Math.Max(4, TicksCercaVenc) && VerColorVencCerca)
+                            colV = ColVencCerca;
+                        g.DrawLine(new RenderPen(Color.FromArgb(alfaV, colV), grV, DashStyle.Dash),
                                    x0 + area.Width / 3, yv, x1, yv);
                         var tkv2 = precio > 0 ? Contexto.Ticks(pv2, precio, tick) : par.Item1.DistTicks;
                         var t = etq + " " + par.Item3 + " "
@@ -2308,7 +2325,7 @@ namespace PythiaGex
                         if (CajaEtiqueta)
                             g.FillRectangle(Color.FromArgb(
                                 Math.Max(0, Math.Min(255, (int)(OpacidadCaja * 0.8))), ColFondo), cajaV);
-                        g.DrawString(t, fv, Color.FromArgb(alfaV, par.Item2),
+                        g.DrawString(t, fv, Color.FromArgb(alfaV, colV),
                                      cajaV.Left + 3, cajaV.Top + 1);
                     }
                     iv2++;
@@ -2409,11 +2426,24 @@ namespace PythiaGex
                 // vez de una linea larga. Antes era un chorizo de 150
                 // caracteres y por eso terminaba apagado, que es peor: la
                 // informacion estaba pero no se podia leer.
-                var titulo = NombreEtq(n) + "  "
-                           + p.ToString("0.00", CultureInfo.InvariantCulture)
-                           + (d.BaseConfiable ? "" : " *")
-                           + (n.Disputado ? "  ZONA" : "")
-                           + (destaca ? "  x" + n.Puntaje : "");
+                // EL TITULO SE ARMA POR PARTES, CON PRIORIDAD.
+                //
+                // Antes era una sola cadena y, cuando no entraba, se recortaba
+                // por caracteres. Eso comia el final... que es justo donde
+                // estaban la gamma y la probabilidad. En pantalla quedo
+                // "-2.56" sin la B y sin el 76 %, y en el Put Wall no quedo
+                // ninguno de los dos.
+                //
+                // Cortar por caracteres nunca sirve: no sabe que esta cortando.
+                // Ahora cada parte tiene prioridad y se caen ENTERAS, de la
+                // menos decisiva a la mas. Nombre, precio, gamma y
+                // probabilidad no se caen nunca.
+                var tp = new List<Tuple<int, string>>();   // prioridad, texto
+                tp.Add(Tuple.Create(0, NombreEtq(n)));
+                tp.Add(Tuple.Create(0, p.ToString("0.00", CultureInfo.InvariantCulture)
+                                        + (d.BaseConfiable ? "" : " *")));
+                if (n.Disputado) tp.Add(Tuple.Create(3, "ZONA"));
+                if (destaca) tp.Add(Tuple.Create(2, "x" + n.Puntaje));
 
                 var partes = new List<string>();
                 // Cada valor lleva adelante que es. Sin eso, "-29tk 77% -1.34B
@@ -2461,7 +2491,8 @@ namespace PythiaGex
                 else if (Formato == FormatoEtiqueta.Minima) detalle = "";
                 else if (Formato == FormatoEtiqueta.SoloPrecio)
                 {
-                    titulo = p.ToString("0.00", CultureInfo.InvariantCulture);
+                    tp.Clear();
+                    tp.Add(Tuple.Create(0, p.ToString("0.00", CultureInfo.InvariantCulture)));
                     detalle = "";
                 }
                 bool verDet = VerLinea2 && detalle.Length > 0;
@@ -2476,31 +2507,72 @@ namespace PythiaGex
                 // etiquetas encimadas o que una sola que oculta a la otra
                 var coinc = coincide.FirstOrDefault(kv => Math.Abs(kv.Key - p) <= tick * 2);
                 if (!string.IsNullOrWhiteSpace(coinc.Value))
-                    titulo = titulo + "  " + coinc.Value.Trim();
+                    tp.Add(Tuple.Create(4, coinc.Value.Trim()));
 
                 // La gamma es de lo primero que mira el operador para decidir,
                 // y estaba en el renglon de detalle: cuando la caja no entraba
                 // en el ancho, ese renglon se caia y la gamma desaparecia. Un
                 // dato que decide no puede depender de cuanto mide la caja.
                 // Sube al titulo, que no se recorta nunca.
-                if (CampoGamma && GammaEnTitulo && n.GexM != null)
+                // LO QUE DECIDE VA EN EL TITULO, SIEMPRE.
+                //
+                // La gamma y la probabilidad de toque estaban en el renglon de
+                // detalle, y ese renglon se caia cuando la caja no entraba.
+                // Justo los dos numeros con los que se decide entrar. Ahora
+                // van arriba y en forma corta; lo que se puede perder es el
+                // resto, que es contexto.
+                if (GammaEnTitulo && n.GexM != null)
                 {
                     var gvt = GammaViva(d, n.Idx, n.Iv, n.GexM, n.DiasGamma, precio);
-                    titulo = titulo + "  " + Mag(gvt ?? n.GexM);
+                    tp.Add(Tuple.Create(1, Mag(gvt ?? n.GexM)));
                 }
+                if (ProbEnTitulo)
+                {
+                    var pt = pViva ?? n.Toque;
+                    if (pt.HasValue)
+                        tp.Add(Tuple.Create(1, pt.Value.ToString("0", CultureInfo.InvariantCulture) + "%"));
+                }
+
+                // EL TITULO SE ARMA ACA Y NO ANTES.
+                // Estaba armado mas arriba, y la gamma y la probabilidad se
+                // agregaban DESPUES: nunca entraban. En pantalla se veia el
+                // nombre y el precio, sin los dos numeros que deciden.
+                // el titulo se arma recien aca: los formatos de arriba pueden
+                // haber cambiado que partes van
+                var titulo = string.Join("  ", tp.Select(z => z.Item2));
+
 
                 var t1 = g.MeasureString(titulo, fTitulo);
                 var t2 = verDet ? g.MeasureString(detalle, fDetalle) : new Size(0, 0);
 
-                // Con el detalle puesto la caja llegaba a 720 px: cruzaba el
-                // grafico entero y chocaba con la escalera de la derecha, que
-                // esta a 400 px. Si no entra, se cae el renglon de detalle
-                // ANTES que empujar la caja a otra altura.
-                var topeW = Math.Max(120, area.Width
+                // LA CAJA SE AJUSTA AL TEXTO, NO AL REVES.
+                //
+                // La version anterior recortaba el ANCHO DE LA CAJA con
+                // Math.Min(tope, ...) pero seguia dibujando el texto entero:
+                // el resultado en pantalla fue "-1|65B", con el borde pasando
+                // por encima de las letras. Recortar el marco no achica el
+                // contenido, solo lo tapa.
+                //
+                // Ahora si no entra se acorta EL TEXTO —primero cae el renglon
+                // de detalle, que es contexto— y la caja se dimensiona con lo
+                // que efectivamente se va a dibujar. Nunca queda un caracter
+                // afuera del marco.
+                var topeW = Math.Max(140, area.Width
                             * Math.Max(15, Math.Min(80, AnchoMaxEtqPct)) / 100);
                 if (verDet && Math.Max(t1.Width, t2.Width) + 10 > topeW)
                 { verDet = false; t2 = new Size(0, 0); }
-                var w = Math.Min(topeW, Math.Max(t1.Width, t2.Width) + 10);
+                // si el titulo se pasa, se sueltan partes ENTERAS empezando por
+                // la de menor prioridad; nombre, precio, gamma y probabilidad
+                // (prioridad 0 y 1) no se sueltan nunca
+                while (t1.Width + 10 > topeW && tp.Any(z => z.Item1 >= 2))
+                {
+                    var peor = tp.Where(z => z.Item1 >= 2).OrderByDescending(z => z.Item1)
+                                 .ThenByDescending(z => z.Item2.Length).First();
+                    tp.Remove(peor);
+                    titulo = string.Join("  ", tp.Select(z => z.Item2));
+                    t1 = g.MeasureString(titulo, fTitulo);
+                }
+                var w = Math.Max(t1.Width, t2.Width) + 10;
                 var h2 = t1.Height + (verDet ? t2.Height + 2 : 0) + 6;
 
                 int lx;
