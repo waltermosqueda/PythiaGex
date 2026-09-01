@@ -319,6 +319,10 @@ namespace PythiaGex
         [Display(Name = "Donde va la cinta de griegas", GroupName = "Libro y barridos", Order = 16)]
         public Esquina EsquinaGriegas { get; set; } = Esquina.AbajoIzquierda;
 
+        [Display(Name = "Recalcular el iman con el precio vivo", GroupName = "Niveles cercanos", Order = 62,
+                 Description = "El panel elige el iman contra el spot de su ultima foto, y de noche CBOE no refresca. Esto lo vuelve a elegir con el precio de ahora usando los strikes cercanos que el panel ya publica.")]
+        public bool ImanVivo { get; set; } = true;
+
         [Display(Name = "Mostrar de que lado del dinero esta cada nivel", GroupName = "Niveles cercanos", Order = 61,
                  Description = "ATM, o cuantos strikes esta afuera del dinero y de que lado. Decir solo ITM u OTM seria incorrecto: el mismo strike es ITM para un lado y OTM para el otro.")]
         public bool VerMoneyness { get; set; } = true;
@@ -2100,6 +2104,60 @@ namespace PythiaGex
             }
         }
 
+        /// <summary>
+        /// El iman, recalculado contra el precio de AHORA.
+        ///
+        /// POR QUE HACE FALTA, Y CUANDO
+        ///
+        /// El gamma pin es el strike con mas gamma del vecindario del precio.
+        /// El panel lo elige contra el spot de su ultima foto de CBOE, y de
+        /// noche esa foto se congela: medido el 2026-09-01, la cadena quedo
+        /// clavada en 7686.14 entre las 03:01 y las 07:34 UTC mientras el
+        /// precio real andaba doce puntos mas arriba.
+        ///
+        /// Para los muros grandes eso no importa —se verifico: el call wall y
+        /// el put wall no se movieron en toda la noche, porque un error de
+        /// ocho puntos no cambia cual es el strike de mas gamma a doscientos
+        /// puntos—. Pero el iman SI se elige por cercania, asi que con el spot
+        /// corrido puede senalar el strike equivocado justo cuando el operador
+        /// esta parado encima.
+        ///
+        /// Aca se rehace la eleccion con el precio vivo, usando la lista de
+        /// strikes cercanos que el panel ya publica con su gamma. Si el
+        /// resultado es otro strike, ese pasa a ser el iman y el nivel viejo
+        /// queda como uno mas.
+        /// </summary>
+        private void RecalcularIman(Datos d, decimal tick, decimal precio)
+        {
+            if (!ImanVivo || precio <= 0 || d.Base == null || d.Cercanos.Count == 0) return;
+            var pIdx = (double)precio - d.Base.Value;
+            if (pIdx <= 0) return;
+            var ventana = pIdx * 0.005;
+
+            Cercano mejor = null;
+            foreach (var c in d.Cercanos)
+            {
+                var k = c.Idx;
+                if (k <= 0 || Math.Abs(k - pIdx) > ventana) continue;
+                if (mejor == null || Math.Abs(c.GexM) > Math.Abs(mejor.GexM))
+                    mejor = c;
+            }
+            if (mejor == null) return;
+
+            var pin = d.Niveles.FirstOrDefault(n => n.Tipo == "gamma_pin");
+            if (pin == null) return;
+            if (Math.Abs((pin.Idx ?? 0) - mejor.Idx) < 0.01) return;   // ya es ese
+
+            // el iman se muda al strike que de verdad manda ahora
+            pin.Idx = mejor.Idx;
+            pin.Fut = mejor.Fut != 0 ? mejor.Fut : mejor.Idx + d.Base.Value;
+            pin.GexM = mejor.GexM;
+            pin.Iv = mejor.Iv;
+            pin.ProbFinal = mejor.ProbFinal;
+            pin.ProbFactor = mejor.ProbFactor;
+            pin.Alias = (pin.Alias ?? "") + " recalculado";
+        }
+
         /// <summary>Dibuja los disparos que quedaron anotados.</summary>
         private void DibujarDisparos(RenderContext g, Rectangle area,
                                      IChartContainer cont, RenderFont f)
@@ -2324,6 +2382,7 @@ namespace PythiaGex
             int x0 = area.Left, x1 = area.Right;
 
             if (d != null) PuntuarNiveles(d, tick);
+            if (d != null) RecalcularIman(d, tick, precio);
 
             if (Perfil != LadoPerfil.Apagado && _ctx.Listo && _ctx.Nodos.Count > 0)
                 DibujarPerfil(g, area, cont, hi, lo);

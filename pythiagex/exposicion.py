@@ -98,11 +98,35 @@ def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None) -> dict:
         if not oi and not vol:
             continue
 
-        g   = o.get("gamma") or 0.0
+        # LA GAMMA SE RECALCULA, NO SE COPIA.
+        #
+        # CBOE publica la gamma REDONDEADA A CUATRO DECIMALES: se verifico el
+        # 2026-09-01 y todos los valores son multiplos exactos de 0.0001. Para
+        # una gamma de 0.0002 eso es +/-25 % de error por el solo redondeo, y
+        # las gammas chicas son muchisimas.
+        #
+        # Medido: en las opciones con gamma > 0.002, donde el redondeo no
+        # manda, nuestra formula coincide con la de CBOE con mediana -0.5 % y
+        # sin sesgo por plazo (+1.1 %, +0.2 %, -0.3 % a menos de 2, 2-7 y 8-30
+        # dias). O sea que es la misma formula; lo unico que agrega el
+        # recalculo es precision.
+        #
+        # En el agregado la diferencia NO es cosmetica: el Net GEX del complejo
+        # pasa de -31.91 B a -35.49 B, un 11 %.
+        #
+        # Si falta la IV no se puede recalcular y se usa la publicada, que es
+        # lo unico que hay.
+        iv  = o.get("iv") or 0.0
+        g_pub = o.get("gamma") or 0.0
+        g = g_pub
+        if iv and iv > 0 and dias > 0:
+            _T = max(dias, 0.02) / 365.0
+            _g = gamma_bs(S, K, _T, iv)
+            if _g > 0:
+                g = _g
         dl  = o.get("delta") or 0.0
         th  = o.get("theta") or 0.0
         vg  = o.get("vega") or 0.0
-        iv  = o.get("iv") or 0.0
         sgn = 1 if cp == "C" else -1
         T   = max(dias, 0.02) / 365.0
         van, chm = vanna_charm(S, K, T, iv)

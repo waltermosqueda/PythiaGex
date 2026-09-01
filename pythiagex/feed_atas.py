@@ -150,6 +150,33 @@ def _factor_mercado(f, spot, T):
     return round(max(0.5, min(2.0, mkt / bs)), 4)
 
 
+def _ultima_auditoria():
+    """Cuantas fallas encontro la ultima auditoria, o None si no corrio.
+
+    Se lee del registro que deja auditoria.py. Si el archivo no existe o no se
+    puede leer devuelve None, y el indicador lo muestra como "sin auditar" en
+    vez de como "todo bien": no es lo mismo, y confundirlos seria justamente
+    la clase de silencio que este proyecto evita.
+    """
+    import os, json as _j, datetime as _dt
+    try:
+        r = os.path.join("datos", "auditoria",
+                         _dt.date.today().isoformat() + ".jsonl")
+        if not os.path.exists(r):
+            return None
+        ultima = None
+        for l in open(r, encoding="utf-8"):
+            l = l.strip()
+            if l:
+                try:
+                    ultima = _j.loads(l)
+                except Exception:
+                    pass
+        return None if ultima is None else int(ultima.get("fallas") or 0)
+    except Exception:
+        return None
+
+
 def construir(out):
     """Recibe el diccionario completo de cli.py y devuelve el extracto."""
     bd = out.get("base_detalle") or {}
@@ -183,6 +210,14 @@ def construir(out):
         "generado": out.get("generado"),
         "cadena_ts": out.get("timestamp"),
         "cadena_edad_min": out.get("edad_cadena_min"),
+        # LA ALARMA DE LA AUDITORIA, VIAJANDO CON EL DATO.
+        #
+        # De poco sirve que la auditoria detecte un desvio si hay que abrir un
+        # archivo para enterarse. Va en el feed y el indicador la puede mostrar
+        # en el grafico: si los calculos no cuadran, se ve donde se opera.
+        #
+        # null = no corrio. Cero = corrio y dio bien. No es lo mismo.
+        "auditoria_fallas": _ultima_auditoria(),
         "cadena_vencida": bool(out.get("cadena_vencida")),
         "cadena_muy_vencida": bool(out.get("cadena_muy_vencida")),
         "fuente": "CBOE delayed_quotes",

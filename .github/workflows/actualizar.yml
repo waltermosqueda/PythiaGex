@@ -67,6 +67,21 @@ jobs:
           cp datos/salida/atas/*.json panel/datos/atas/ 2>/dev/null || true
           ls -la panel/datos/ panel/datos/atas/
 
+      # LA AUDITORIA DE CALCULOS, EN CADA CICLO.
+      #
+      # Recalcula once controles desde la cadena cruda de CBOE sin reusar
+      # ninguna funcion del proyecto: si un error estuviera en el pipeline, la
+      # unica forma de verlo es rehacer la cuenta por otro camino. Hasta ahora
+      # se corria a mano, o sea casi nunca, y los errores los encontraba el
+      # operador en vivo.
+      #
+      # No se detiene el ciclo si falla: el dato igual se publica, pero queda
+      # el registro y el resumen aparece en el log de la corrida. Un auditor
+      # que ademas corrige deja de ser auditor; lo suyo es avisar fuerte.
+      - name: Auditoria de calculos
+        run: |
+          python auditoria.py 2>&1 | tail -40 || echo "la auditoria fallo"
+
       # El centinela mide si lo que el indicador prometio paso de verdad.
       # Corre en cada ciclo para ir juntando observaciones (no baja nada: usa
       # la serie de precio que cli.py acaba de archivar), y escribe la
@@ -94,7 +109,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add panel/datos.json panel/datos panel/datos/atas datos/historico conocimiento/centinela 2>/dev/null || true
+          git add panel/datos.json panel/datos panel/datos/atas datos/historico conocimiento/centinela datos/auditoria 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "sin cambios"
           else

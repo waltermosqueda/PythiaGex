@@ -42,8 +42,18 @@ def vanna_charm(S: float, K: float, T: float, sigma: float):
     return vanna, charm
 
 def gamma_bs(S: float, K: float, T: float, sigma: float) -> float:
-    """Gamma de Black-Scholes. Solo se usa para reprecar la curva a otros
-    niveles de precio; la gamma del strike viene de CBOE."""
+    """Gamma de Black-Scholes.
+
+    Se usa para DOS cosas: reprecar la curva a otros niveles de precio, y
+    calcular la gamma de cada opcion.
+
+    Lo segundo antes se copiaba de CBOE, hasta que se verifico el 2026-09-01
+    que CBOE la publica redondeada a cuatro decimales —todos los valores son
+    multiplos exactos de 0.0001—. En una gamma de 0.0002 eso son 25 puntos
+    porcentuales de error de puro redondeo, y en el agregado movia el Net GEX
+    un 11 %. Nuestra cuenta coincide con la de ellos donde el redondeo no
+    manda (mediana -0.5 % en gammas > 0.002, sin sesgo por plazo), asi que
+    recalcular solo agrega precision."""
     if T <= 0 or sigma <= 0:
         return 0.0
     st = sigma * math.sqrt(T)

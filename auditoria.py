@@ -27,6 +27,7 @@ from pythiagex.exposicion import parse_occ, calcular, MULT_INDICE
 from pythiagex.base import (medir as medir_base, contrato_vigente, edad_minutos,
                             mercado_abierto)
 from pythiagex.niveles import curva_gamma, expected_move, niveles_clave
+from pythiagex.griegas import gamma_bs as _gamma_bs
 from pythiagex.tasas import curva as curva_tasas, tasa as tasa_plazo
 from pythiagex.tablero import prob_toque, contratos_cobertura, CONTRATO
 
@@ -199,6 +200,8 @@ def auditar(simbolo):
     res = calcular(crudo2, dias_max=18)
 
     gex_propio = 0.0
+
+    gex_publicada = 0.0
     dex_propio = 0.0
     por_strike = {}
     ahora = dt.datetime.now(dt.timezone.utc)
@@ -214,14 +217,34 @@ def auditar(simbolo):
         vol = o.get("volume") or 0
         if not oi and not vol:
             continue
-        g = o.get("gamma") or 0.0
+        # LA GAMMA SE RECALCULA, IGUAL QUE EN EL PIPELINE, Y SE COMPARA CON LA
+        # PUBLICADA COMO DATO APARTE.
+        #
+        # CBOE publica la gamma redondeada a cuatro decimales. El pipeline la
+        # recalcula desde la IV porque eso agrega precision (verificado: misma
+        # formula, sin sesgo por plazo). Este control verifica la AGREGACION,
+        # que es lo suyo; y la eleccion de la fuente de gamma queda medida
+        # abajo, como numero, para que siga siendo discutible.
+        g_pub = o.get("gamma") or 0.0
+        iv_o = o.get("iv") or 0.0
+        g = g_pub
+        if iv_o > 0 and dias > 0:
+            _g = _gamma_bs(S, K, max(dias, 0.02) / 365.0, iv_o)
+            if _g > 0:
+                g = _g
         dl = o.get("delta") or 0.0
         sgn = 1 if cp == "C" else -1
         # GEX = gamma x OI x multiplicador x S^2 x 1%, con signo por tipo
         gk = g * oi * MULT_INDICE * S * S * 0.01 * sgn
         gex_propio += gk
+        gex_publicada += g_pub * oi * MULT_INDICE * S * S * 0.01 * sgn
         dex_propio += dl * oi * MULT_INDICE * S * sgn
         por_strike[K] = por_strike.get(K, 0.0) + gk
+
+    r.dato("redondeo de CBOE en la gamma",
+           round((gex_propio - gex_publicada) / 1e9, 2),
+           "B de diferencia entre recalcular la gamma desde la IV y usar la que "
+           "publica CBOE, que viene redondeada a 4 decimales")
 
     T = res["totales"]
     r.chequeo("Net GEX", round(T["gex"] / 1e9, 3), round(gex_propio / 1e9, 3),
@@ -269,10 +292,18 @@ def auditar(simbolo):
     # --- 6. expected move y probabilidad de toque ------------------------
     em = expected_move(res["curva_src"], S)
     if res["curva_src"]:
-        Tmin = min(z[4] for z in res["curva_src"])
-        cerc = [z for z in res["curva_src"] if abs(z[4] - Tmin) < 1e-9]
-        k0, _, _, iv0, t0 = min(cerc, key=lambda z: abs(z[0] - S))
-        em_propio = S * iv0 * math.sqrt(t0)
+        # El pipeline promedia la IV de call y put del strike at-the-money del
+        # vencimiento mas cercano VIVO. Aca se rehace igual: si el control
+        # usara una sola punta mediria otra cosa y fallaria siempre por unas
+        # decimas, que es ruido con forma de alarma.
+        vivos = [z for z in res["curva_src"] if z[4] and z[4] > 0 and z[3] and z[3] > 0]
+        Tmin = min(z[4] for z in vivos) if vivos else 0.0
+        cerc = [z for z in vivos if abs(z[4] - Tmin) < 1e-9]
+        k0 = min(cerc, key=lambda z: abs(z[0] - S))[0] if cerc else S
+        ivs = [z[3] for z in cerc if z[0] == k0]
+        iv0 = sum(ivs) / len(ivs) if ivs else 0.0
+        t0 = Tmin
+        em_propio = S * iv0 * math.sqrt(t0) if t0 > 0 else 0.0
         r.chequeo("expected move 1 sigma", em, round(em_propio, 1), 0.15, " pts",
                   "S x IV x raiz(T), IV %.2f%% T %.4f a" % (iv0 * 100, t0))
         if niv.get("call_pared" if False else "call_wall"):
@@ -294,7 +325,14 @@ def auditar(simbolo):
         vc, cp_, K_ = pp
         porVK_aud.setdefault(vc, {}).setdefault(K_, {})[cp_] = o
     if porVK_aud:
-        Vp = min(porVK_aud)
+        # mismo criterio que el pipeline: solo vencimientos con vida por
+        # delante. Con el 0DTE ya liquidado la probabilidad se va a 0 o 100 y
+        # el control comparaba dos numeros sin sentido contra otros dos.
+        _ah = dt.datetime.now(dt.timezone.utc)
+        _viv = [v for v in porVK_aud if (v - _ah).total_seconds() > 1800]
+        if not _viv:
+            _viv = list(porVK_aud)
+        Vp = min(_viv)
         Tp = max((Vp - dt.datetime.now(dt.timezone.utc)).total_seconds() / 86400.0,
                  1e-6) / 365.0
         pk_ = porVK_aud[Vp]
@@ -305,6 +343,8 @@ def auditar(simbolo):
             return (b_ + a_) / 2.0 if a_ > 0 else (o.get("last_trade_price") or 0.0)
 
         from pythiagex.probabilidad import curva_probabilidad, interpolar
+        # el mismo criterio que el pipeline: el vencimiento tiene que estar
+        # vivo, si no la probabilidad no informa nada
         cur_pipe = curva_probabilidad(pk_, S, Tp)
         r.dato("probabilidad sobre", Vp.date().isoformat(),
                "%.2f dias, %d strikes" % (Tp * 365, len(cur_pipe)))

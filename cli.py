@@ -269,10 +269,21 @@ def main():
         vc, cp_, K_ = pp
         _pv.setdefault(vc, {}).setdefault(K_, {})[cp_] = o
     curva_prob = {}
-    if _pv:
-        _V = min(_pv)
-        _T = max((_V - dt.datetime.now(dt.timezone.utc)).total_seconds() / 86400.0,
-                 1e-6) / 365.0
+    # EL VENCIMIENTO DE REFERENCIA TIENE QUE ESTAR VIVO.
+    #
+    # Antes era min(_pv): el mas temprano de la cadena, hubiera liquidado o no.
+    # Despues de las 16:00 de Nueva York el 0DTE ya vencio, la T quedaba
+    # clavada en 1e-6 por el max() y TODAS las probabilidades publicadas se
+    # iban a 0 o a 100. O sea que desde el cierre hasta la rueda siguiente el
+    # numero no valia nada, y nada lo decia.
+    #
+    # Se pide media hora de vida como minimo: con menos, la probabilidad es
+    # tan sensible al ultimo tick que deja de informar.
+    _ahora = dt.datetime.now(dt.timezone.utc)
+    _vivos = [v for v in _pv if (v - _ahora).total_seconds() > 1800]
+    if _vivos:
+        _V = min(_vivos)
+        _T = (_V - _ahora).total_seconds() / 86400.0 / 365.0
         try:
             curva_prob = curva_probabilidad(_pv[_V], S, _T)
         except Exception:
