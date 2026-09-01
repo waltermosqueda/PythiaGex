@@ -344,6 +344,13 @@ def cercanos(strikes, spot, base=None, raiz="ES", radio_pct=0.6, n=8,
             "dist_ticks": int(round(d / c["tick"])),
             "oi_call": s.get("oi_call"), "oi_put": s.get("oi_put"),
             "vol_call": s.get("vol_call"), "vol_put": s.get("vol_put"),
+            # El interes abierto DEL VENCIMIENTO DE HOY, aparte del total.
+            # Sin esto el operador veia 27k calls en un strike y lo comparaba
+            # contra los 7.6k que muestra CME para el 0DTE: dos numeros que
+            # miden cosas distintas y parecian contradecirse.
+            "oi_0dte_call": s.get("oi_0dte_call"), "oi_0dte_put": s.get("oi_0dte_put"),
+            "vol_0dte_call": s.get("vol_0dte_call"), "vol_0dte_put": s.get("vol_0dte_put"),
+            "iv_0dte": s.get("iv_0dte"),
             "iv": (s.get("iv_put") if k < spot else s.get("iv_call"))
                   or s.get("iv_call") or s.get("iv_put"),
             "prob_toque": prob_toque(spot, k, iv_atm, T),

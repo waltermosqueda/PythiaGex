@@ -214,7 +214,14 @@ def main():
                 "dex": M(v["dex"]), "vex": M(v["vex"]), "chex": M(v["chex"]),
                 "iv_call": v["iv_call"], "iv_put": v["iv_put"],
                 "oi_call": int(v["oi_call"]), "oi_put": int(v["oi_put"]),
-                "vol_call": int(v["vol_call"]), "vol_put": int(v["vol_put"])}
+                "vol_call": int(v["vol_call"]), "vol_put": int(v["vol_put"]),
+                # el vencimiento de hoy, aparte del total: es lo que mira
+                # alguien que opera 0DTE, y es el numero que publica CME
+                "oi_0dte_call": int(v.get("oi_0dte_call") or 0),
+                "oi_0dte_put": int(v.get("oi_0dte_put") or 0),
+                "vol_0dte_call": int(v.get("vol_0dte_call") or 0),
+                "vol_0dte_put": int(v.get("vol_0dte_put") or 0),
+                "iv_0dte": v.get("iv_0dte")}
             for k, v in st.items()}
 
     raiz = (fut or "ES")[:-2] or "ES"

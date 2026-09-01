@@ -120,15 +120,32 @@ def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None) -> dict:
         s = strikes.setdefault(K, dict(
             strike=K, gex=0.0, gex_vol=0.0, gex_0dte=0.0, dex=0.0, vex=0.0,
             chex=0.0, tex=0.0, oi_call=0, oi_put=0, vol_call=0, vol_put=0,
-            iv_call=None, iv_put=None))
+            oi_0dte_call=0, oi_0dte_put=0, vol_0dte_call=0, vol_0dte_put=0,
+            iv_0dte=None, iv_call=None, iv_put=None))
         s["gex"] += gex; s["gex_vol"] += gex_vol; s["dex"] += dex
         s["vex"] += vex; s["chex"] += chex;       s["tex"] += tex
-        if dias <= 1:
+
+        # 0DTE ES EL QUE VENCE HOY, POR FECHA, NO "menos de un dia".
+        #
+        # Estaba escrito como dias <= 1, que suena igual y no lo es. Con dias
+        # fraccionarios, el vencimiento de manana cae a 1.2 dias por la manana
+        # y a 0.98 despues del cierre de hoy: o sea que entraba o no entraba
+        # segun la hora, sin que nada lo dijera. Para alguien que opera el
+        # vencimiento del dia eso es mezclar dos cadenas distintas.
+        es_hoy = venc.date() == ahora.date()
+        if es_hoy:
             s["gex_0dte"] += gex
+
         if cp == "C":
             s["oi_call"] += oi; s["vol_call"] += vol; s["iv_call"] = iv
+            if es_hoy:
+                s["oi_0dte_call"] += oi; s["vol_0dte_call"] += vol
         else:
             s["oi_put"]  += oi; s["vol_put"]  += vol; s["iv_put"]  = iv
+            if es_hoy:
+                s["oi_0dte_put"] += oi; s["vol_0dte_put"] += vol
+        if es_hoy and iv:
+            s["iv_0dte"] = iv
 
         kd = venc.date().isoformat()
         v = vencs.setdefault(kd, dict(fecha=kd, dias=round(dias, 2), n=0, oi=0,

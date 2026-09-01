@@ -148,6 +148,11 @@ namespace PythiaGex
         private readonly Bitacora _bit = new();
         private readonly Disparo _disp = new();
         private readonly Libro _libro = new();
+
+        // Todo lo que ya se dibujo en este cuadro. Sin esto las etiquetas se
+        // superponen entre si y el operador termina leyendo dos numeros
+        // encimados, que es peor que no ver ninguno.
+        private readonly List<Rectangle> _ocupado = new();
         // OnRender corre en cada cuadro, pero mirar el footprint de veinte
         // barras por nivel es carisimo. Este aviso hace que los gatillos se
         // recalculen solo cuando el contexto se recalculo, no sesenta veces
@@ -310,6 +315,13 @@ namespace PythiaGex
 
         [Display(Name = "Ventana de la cinta (minutos)", GroupName = "Libro y barridos", Order = 10)]
         public int MinutosCinta { get; set; } = 5;
+
+        [Display(Name = "Donde va la cinta", GroupName = "Libro y barridos", Order = 12,
+                 Description = "Pegada al precio la seguis sin mover los ojos, pero puede chocar con las etiquetas. En una esquina nunca molesta.")]
+        public Esquina EsquinaCinta { get; set; } = Esquina.AbajoDerecha;
+
+        [Display(Name = "La cinta sigue al precio", GroupName = "Libro y barridos", Order = 13)]
+        public bool CintaSigueAlPrecio { get; set; } = false;
 
         [Display(Name = "Tamano de letra de la cinta", GroupName = "Libro y barridos", Order = 11)]
         public float TamCinta { get; set; } = 11f;
@@ -1662,16 +1674,28 @@ namespace PythiaGex
             }
             var alto = g.MeasureString("X", f).Height + 6;
 
-            int y;
-            try { y = cont.GetYByPrice(precio, false) - alto - 14; }
-            catch { return; }
+            int y, x;
+            if (CintaSigueAlPrecio)
+            {
+                try { y = cont.GetYByPrice(precio, false) - alto - 14; }
+                catch { return; }
+                x = area.Right - ancho - Math.Max(0, MargenEje) - 6;
+            }
+            else
+            {
+                bool arriba = EsquinaCinta == Esquina.ArribaIzquierda
+                              || EsquinaCinta == Esquina.ArribaDerecha;
+                bool izq = EsquinaCinta == Esquina.ArribaIzquierda
+                           || EsquinaCinta == Esquina.AbajoIzquierda;
+                y = arriba ? area.Top + 6 : area.Bottom - alto - 8;
+                x = izq ? area.Left + 6
+                        : area.Right - ancho - Math.Max(0, MargenEje) - 6;
+            }
             if (y < area.Top + 2) y = area.Top + 2;
             if (y > area.Bottom - alto - 2) y = area.Bottom - alto - 2;
-
-            int x = area.Right - ancho - Math.Max(0, MargenEje) - 6;
             if (x < area.Left + 4) x = area.Left + 4;
 
-            var caja = new Rectangle(x, y, ancho, alto);
+            var caja = Acomodar(new Rectangle(x, y, ancho, alto), area);
             g.FillRectangle(Color.FromArgb(215, 12, 15, 20), caja);
             g.DrawRectangle(new RenderPen(Color.FromArgb(80, 120, 130, 145), 1), caja);
 
@@ -1687,6 +1711,36 @@ namespace PythiaGex
                 }
                 else cx += 8;
             }
+        }
+
+        /// <summary>
+        /// Corre una caja hacia abajo (y si no entra, hacia arriba) hasta que
+        /// no pise nada de lo ya dibujado, y la registra.
+        ///
+        /// Es la diferencia entre una pantalla que se puede leer de un vistazo
+        /// y una donde hay que adivinar que numero pertenece a que nivel. En
+        /// scalping eso no es cosmetica.
+        /// </summary>
+        private Rectangle Acomodar(Rectangle r, Rectangle area, int paso = 3)
+        {
+            var orig = r;
+            for (int i = 0; i < 60; i++)
+            {
+                if (!_ocupado.Any(o => o.IntersectsWith(r))
+                    && r.Top >= area.Top && r.Bottom <= area.Bottom)
+                { _ocupado.Add(r); return r; }
+                r = new Rectangle(r.Left, r.Top + paso + r.Height / 3, r.Width, r.Height);
+            }
+            r = orig;
+            for (int i = 0; i < 60; i++)
+            {
+                r = new Rectangle(r.Left, r.Top - paso - r.Height / 3, r.Width, r.Height);
+                if (!_ocupado.Any(o => o.IntersectsWith(r))
+                    && r.Top >= area.Top && r.Bottom <= area.Bottom)
+                { _ocupado.Add(r); return r; }
+            }
+            _ocupado.Add(orig);
+            return orig;
         }
 
         /// <summary>Dibuja los disparos que quedaron anotados.</summary>
@@ -1902,6 +1956,7 @@ namespace PythiaGex
             var fTab = Fuente(TamTablero, false);
             var fTabB = Fuente(TamTablero, true);
 
+            _ocupado.Clear();
             ActualizarContexto();
 
             var tick = InstrumentInfo != null ? InstrumentInfo.TickSize : 0.25m;
@@ -2001,9 +2056,10 @@ namespace PythiaGex
                               + "  gam " + Mag(c.GexM)
                               + (c.Solo0dte ? "  0DTE" : "");
                         var tam = g.MeasureString(t, fc);
-                        var caja = new Rectangle(x1 - tam.Width - 10 - Math.Max(0, MargenEje),
-                                                 yc - tam.Height - 1,
-                                                 tam.Width + 6, tam.Height + 2);
+                        var caja = Acomodar(
+                            new Rectangle(x1 - tam.Width - 10 - Math.Max(0, MargenEje),
+                                          yc - tam.Height - 1,
+                                          tam.Width + 6, tam.Height + 2), area);
                         if (CajaEtiqueta)
                             g.FillRectangle(Color.FromArgb(
                                 Math.Max(0, Math.Min(255, (int)(OpacidadCaja * 0.8))), ColFondo), caja);
@@ -2183,7 +2239,7 @@ namespace PythiaGex
                          cont.GetXByBar(Math.Max(0, CurrentBar - 1), false) - w - 10));
                 else lx = x0 + 4;
 
-                var caja = new Rectangle(lx, yl - 2, w, h2);
+                var caja = Acomodar(new Rectangle(lx, yl - 2, w, h2), area);
                 if (CajaEtiqueta)
                 {
                     g.FillRectangle(Color.FromArgb(Math.Max(0, Math.Min(255, OpacidadCaja)), ColFondo), caja);
