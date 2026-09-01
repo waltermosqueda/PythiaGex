@@ -26,3 +26,4 @@
 - [Respaldo del conocimiento](respaldo-del-conocimiento.md) — las memorias viven fuera del repo: correr respaldar.py al final de la sesión o se pierden.
 - [El centinela: qué mide y qué no](centinela-que-mide.md) — anota cada nivel prometido y mide si pasó; no concluye nada hasta que hay muestra.
 - [Autonomía por sesión](autonomia-por-sesion.md) — la cadena de CBOE se congela de noche; la bitácora solo escribe con ATAS abierto.
+- [Verificar yo, no el usuario](verificar-yo-no-el-usuario.md) — reiniciar ATAS y medir en pantalla antes de entregar; él no es el QA.
