@@ -1331,7 +1331,7 @@ namespace PythiaGex
         {
             if (string.IsNullOrWhiteSpace(alias)) return "";
             var a = alias.ToUpperInvariant();
-            if (a.Contains("PIN")) return "PIN";
+            if (a.Contains("PIN")) return "IMAN";
             if (a.Contains("POSITIVE")) return "MAJ+";
             if (a.Contains("NEGATIVE")) return "MAJ-";
             if (a.Contains("CALL")) return "CW";
@@ -2424,11 +2424,22 @@ namespace PythiaGex
                         // se recalcula contra el precio de ahora, igual que todo
                         // lo que depende del precio
                         var tkv = precio > 0 ? Contexto.Ticks(pc, precio, tick) : c.DistTicks;
-                        var pvv = ProbViva(d, c.Idx, c.Iv, precio, c.ProbFactor);
+                        // La probabilidad VIVA necesita tiempo restante. Cuando
+                        // el 0DTE ya liquido —a las 16:00 de Nueva York— se
+                        // vuelve incalculable y devuelve null. Los niveles con
+                        // nombre ya caian al valor publicado; la escalera no, y
+                        // por eso despues del cierre se quedaba sin porcentajes
+                        // justo cuando el operador los buscaba. Ahora tambien
+                        // cae al publicado, y se marca con un asterisco para
+                        // que no se confunda con uno recalculado.
+                        var pvViva = ProbViva(d, c.Idx, c.Iv, precio, c.ProbFactor);
+                        var pvv = pvViva ?? c.ProbFinal;
+                        var pvVieja = !pvViva.HasValue && c.ProbFinal.HasValue;
                         var t = pc.ToString("0.00", CultureInfo.InvariantCulture)
                               + "  dist " + (tkv >= 0 ? "+" : "") + tkv + "tk"
                               + (pvv.HasValue
-                                 ? "  toca " + pvv.Value.ToString("0", CultureInfo.InvariantCulture) + "%" : "")
+                                 ? "  toca " + pvv.Value.ToString("0", CultureInfo.InvariantCulture)
+                                   + "%" + (pvVieja ? "*" : "") : "")
                               + "  gam " + Mag(c.GexM)
                               + (c.Solo0dte ? "  0DTE" : "");
                         var tam = g.MeasureString(t, fc);
@@ -2776,9 +2787,14 @@ namespace PythiaGex
                 }
                 if (ProbEnTitulo)
                 {
+                    // el asterisco dice que ese porcentaje viene de la foto del
+                    // panel y no se pudo recalcular: pasa cuando el vencimiento
+                    // de referencia ya liquido y todavia no rodo al siguiente
                     var pt = pViva ?? n.Toque;
                     if (pt.HasValue)
-                        tp.Add(Tuple.Create(1, pt.Value.ToString("0", CultureInfo.InvariantCulture) + "%"));
+                        tp.Add(Tuple.Create(1,
+                            pt.Value.ToString("0", CultureInfo.InvariantCulture) + "%"
+                            + (pViva.HasValue ? "" : "*")));
                 }
 
                 // EL TITULO SE ARMA ACA Y NO ANTES.
@@ -3170,6 +3186,9 @@ namespace PythiaGex
                                    "gamma parada en ese strike, en dolares (B = mil millones)", gris));
                     L.Add(new Fila("toca  88%",
                                    "probabilidad de tocarlo antes del cierre", gris));
+                    L.Add(new Fila("toca  88%*",
+                                   "con asterisco: es la del panel, no se pudo "
+                                   + "recalcular (el vencimiento ya liquido)", gris));
                     L.Add(new Fila("dist  -9tk",
                                    "a cuantos TICKS esta del precio (1 tick = 0.25)", gris));
                     L.Add(new Fila("OI  1.6kc/5.0kp",
