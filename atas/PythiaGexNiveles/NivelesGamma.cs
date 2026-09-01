@@ -308,6 +308,10 @@ namespace PythiaGex
         [Display(Name = "Marcar los barridos en el grafico", GroupName = "Libro y barridos", Order = 6)]
         public bool VerBarridos { get; set; } = true;
 
+        [Display(Name = "Pesar los niveles por relevancia (tamano x alcance)", GroupName = "Niveles cercanos", Order = 56,
+                 Description = "Un muro enorme a 200 ticks no cambia nada en los proximos minutos; uno mediano a 8 ticks lo cambia todo. La presencia visual sale de multiplicar la gamma por la probabilidad de tocarlo, en vez de una regla fija de quien va primero.")]
+        public bool PesarPorRelevancia { get; set; } = true;
+
         [Display(Name = "Ticks para considerar un vencimiento cercano", GroupName = "Niveles cercanos", Order = 57,
                  Description = "Por dentro de esta distancia el nivel del vencimiento se dibuja con mas presencia: es el que se puede tocar en los proximos minutos.")]
         public int TicksCercaVenc { get; set; } = 40;
@@ -1788,13 +1792,26 @@ namespace PythiaGex
                                         : d > 0 ? ColBarrCompra : ColBarrVenta));
             }
 
-            // medir para poder centrar la cinta en el precio
-            int ancho = 10;
-            foreach (var t in partes)
+            // La cinta tiene que entrar SI O SI en el ancho disponible. Si no
+            // entra, suelta campos de atras para adelante —los ultimos son los
+            // menos decisivos— antes que salirse y quedar cortada contra el
+            // eje, que fue lo que se vio en pantalla.
+            int Medir(List<Tuple<string, string, Color>> ps)
             {
-                ancho += g.MeasureString(t.Item1, fc).Width + 4;
-                if (t.Item2.Length > 0) ancho += g.MeasureString(t.Item2, f).Width + 10;
-                else ancho += 8;
+                int w2 = 10;
+                foreach (var t in ps)
+                {
+                    w2 += g.MeasureString(t.Item1, fc).Width + 4;
+                    w2 += t.Item2.Length > 0 ? g.MeasureString(t.Item2, f).Width + 10 : 8;
+                }
+                return w2;
+            }
+            var disponible = Math.Max(120, area.Width - Math.Max(0, MargenEje) - 16);
+            int ancho = Medir(partes);
+            while (ancho > disponible && partes.Count > 2)
+            {
+                partes.RemoveAt(partes.Count - 1);
+                ancho = Medir(partes);
             }
             var alto = g.MeasureString("X", f).Height + 6;
 
@@ -2341,10 +2358,47 @@ namespace PythiaGex
 
                 var y = cont.GetYByPrice(p, false);
                 var col = ColorDe(n);
+                // la probabilidad viva se necesita antes, para pesar el nivel
+                var pViva = ProbViva(d, n.Idx, n.Iv, precio, n.ProbFactor);
                 var destaca = VerConfluencia && n.Puntaje >= Math.Max(1, PuntajeResaltar);
                 var grosor = n.Es0dte ? Grosor0dte : GrosorPared;
                 if (destaca) grosor += 1;
-                var pen = new RenderPen(Color.FromArgb(n.Es0dte ? 175 : 235, col),
+
+                // RELEVANCIA = TAMANO x ALCANCE, y no una regla de quien va primero.
+                //
+                // El operador pregunto si el 0DTE cercano deberia pesar mas que
+                // los lejanos, y en la misma frase noto que "la gamma de
+                // cualquier vencimiento mas grande puede ponderar mas aun que
+                // el 0DTE cercano segun el mercado, el dia, la hora". Las dos
+                // cosas son ciertas y por eso ninguna regla fija sirve:
+                //
+                //   - un muro enorme a 200 ticks no cambia nada en los
+                //     proximos minutos
+                //   - uno mediano a 8 ticks lo cambia todo
+                //   - y cual gana depende del dia y de la hora, no de una
+                //     jerarquia escrita a mano
+                //
+                // Lo que resuelve las dos a la vez es multiplicar: cuanta
+                // gamma hay ahi POR que tan alcanzable es. La probabilidad de
+                // toque ya se recalcula viva contra el precio y el tiempo que
+                // queda, asi que el peso se mueve solo a lo largo del dia: el
+                // 0DTE pesa mucho a la manana y se apaga hacia el cierre, sin
+                // que nadie lo programe.
+                double relev = 1.0;
+                if (PesarPorRelevancia)
+                {
+                    var gv2 = GammaViva(d, n.Idx, n.Iv, n.GexM, n.DiasGamma, precio) ?? n.GexM;
+                    var mayor = d.Niveles.Max(z => Math.Abs(z.GexM ?? 0));
+                    var tam = mayor > 0 ? Math.Abs(gv2 ?? 0) / mayor : 0.0;
+                    var alc = (pViva ?? n.Toque ?? 0) / 100.0;
+                    // raiz para que un nivel chico no desaparezca del todo
+                    relev = Math.Sqrt(Math.Max(0.02, tam * Math.Max(0.02, alc)));
+                    grosor = Math.Max(1, (int)Math.Round(grosor * (0.6 + 0.9 * relev)));
+                }
+                var alfaBase = n.Es0dte ? 175 : 235;
+                if (PesarPorRelevancia)
+                    alfaBase = (int)Math.Max(90, Math.Min(255, alfaBase * (0.5 + 0.7 * relev)));
+                var pen = new RenderPen(Color.FromArgb(alfaBase, col),
                                         Math.Max(1, grosor), Dash(n.Es0dte ? Linea0dte : LineaPared));
                 var xa = LineaCompleta ? x0 : x0 + area.Width / 3;
                 g.DrawLine(pen, xa, y, x1, y);
@@ -2362,7 +2416,6 @@ namespace PythiaGex
                            + (destaca ? "  x" + n.Puntaje : "");
 
                 var partes = new List<string>();
-                var pViva = ProbViva(d, n.Idx, n.Iv, precio, n.ProbFactor);
                 // Cada valor lleva adelante que es. Sin eso, "-29tk 77% -1.34B
                 // 2.4k/5.4k" es un renglon de numeros sueltos: la informacion
                 // esta pero no se puede leer, que es lo mismo que no tenerla.
