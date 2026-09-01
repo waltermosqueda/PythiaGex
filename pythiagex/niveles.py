@@ -78,6 +78,12 @@ def expected_move(curva_src, spot, detalle=False):
     return em, {"strike": Katm, "iv": round(iv, 4),
                 "dias": round(Tmin * 365, 3), "muestras": len(ivs)}
 
+# Que tan lejos del precio se busca el iman. Medio punto porcentual son
+# unos 38 puntos de SPX: el rango donde se juega una sesion normal. Mas
+# ancho y el "iman" pasa a ser la pared grande de la semana, que no arrastra
+# el precio en los proximos minutos.
+VENTANA_PIN = 0.005
+
 def niveles_clave(strikes: dict, spot: float, campo="gex") -> dict:
     """Call Wall, Put Wall, Major Positive/Negative y Gamma Pin."""
     vals = [(k, s[campo]) for k, s in strikes.items()]
@@ -87,14 +93,30 @@ def niveles_clave(strikes: dict, spot: float, campo="gex") -> dict:
     abajo  = [v for v in vals if v[0] < spot]
     pos = max(vals, key=lambda z: z[1])
     neg = min(vals, key=lambda z: z[1])
-    cerca = sorted((v for v in vals if abs(v[1]) > 0),
-                   key=lambda z: abs(z[0] - spot))
+    # EL GAMMA PIN ERA, LITERALMENTE, EL PRECIO REDONDEADO.
+    #
+    # Estaba definido como "el strike mas cercano al spot con gamma distinta
+    # de cero". Eso no es un iman: es redondear el precio al strike de al
+    # lado, y no aporta nada que el operador no vea mirando el eje.
+    #
+    # Medido el 2026-09-01: publicaba 7640 (gamma -3.268 M) porque el spot
+    # estaba en 7638, mientras el strike 7650 tenia -4.047 M. El iman de
+    # verdad estaba en 7650 y nosotros senalabamos el redondeo.
+    #
+    # Un gamma pin es el precio al que la cobertura de las mesas ARRASTRA:
+    # el strike con mas gamma acumulada del vecindario. Se busca dentro de
+    # una ventana alrededor del precio, porque una pared enorme a doscientos
+    # puntos no arrastra nada hoy.
+    ancho = spot * VENTANA_PIN
+    vecinos = [v for v in vals if abs(v[0] - spot) <= ancho and abs(v[1]) > 0]
+    pin = max(vecinos, key=lambda z: abs(z[1]))[0] if vecinos else None
+
     return {
         "call_wall":      max(arriba, key=lambda z: z[1])[0] if arriba else None,
         "put_wall":       min(abajo,  key=lambda z: z[1])[0] if abajo  else None,
         "major_positive": pos[0],
         "major_negative": neg[0],
-        "gamma_pin":      cerca[0][0] if cerca else None,
+        "gamma_pin":      pin,
     }
 
 def skew_0dte(strikes: dict, spot: float, ancho=0.02):

@@ -312,6 +312,14 @@ namespace PythiaGex
                  Description = "Un muro enorme a 200 ticks no cambia nada en los proximos minutos; uno mediano a 8 ticks lo cambia todo. La presencia visual sale de multiplicar la gamma por la probabilidad de tocarlo, en vez de una regla fija de quien va primero.")]
         public bool PesarPorRelevancia { get; set; } = true;
 
+        [Display(Name = "Marcar el at-the-money (ATM)", GroupName = "Niveles cercanos", Order = 59,
+                 Description = "El strike al que el precio esta pegado. Ahi la gamma es maxima y en 0DTE el efecto se dispara hacia el cierre: es la referencia contra la que se miden ITM y OTM.")]
+        public bool VerAtm { get; set; } = true;
+
+        [Display(Name = "Paso entre strikes (puntos del indice)", GroupName = "Niveles cercanos", Order = 60,
+                 Description = "5 en SPX para los diarios. Se usa para saber cual es el strike del dinero.")]
+        public double PasoStrike { get; set; } = 5.0;
+
         [Display(Name = "Color propio para el vencimiento cercano", GroupName = "Niveles cercanos", Order = 58)]
         public bool VerColorVencCerca { get; set; } = true;
 
@@ -392,6 +400,9 @@ namespace PythiaGex
 
         [Display(Name = "Avisar con alerta", GroupName = "Disparos", Order = 9)]
         public bool AlertaDisparo { get; set; } = false;
+
+        [Display(Name = "At-the-money (ATM)", GroupName = "Colores", Order = 318)]
+        public Color ColAtm { get; set; } = Color.FromArgb(255, 170, 190, 215);
 
         [Display(Name = "Vencimiento pegado al precio", GroupName = "Colores", Order = 319)]
         public Color ColVencCerca { get; set; } = Color.FromArgb(255, 245, 200, 90);
@@ -1851,7 +1862,14 @@ namespace PythiaGex
             if (y > area.Bottom - alto - 2) y = area.Bottom - alto - 2;
             if (x < area.Left + 4) x = area.Left + 4;
 
+            // Acomodar puede correrla hacia abajo buscando lugar, y area.Bottom
+            // esta POR DEBAJO del eje de tiempo: asi terminaba tapada otra vez
+            // aunque el margen estuviera bien calculado. Se limita despues.
             var caja = Acomodar(new Rectangle(x, y, ancho, alto), area);
+            var pisoY = area.Bottom - alto - Math.Max(0, MargenAbajo);
+            if (caja.Top > pisoY)
+                caja = new Rectangle(caja.Left, Math.Max(area.Top + 2, pisoY),
+                                     caja.Width, caja.Height);
             g.FillRectangle(Color.FromArgb(215, 12, 15, 20), caja);
             g.DrawRectangle(new RenderPen(Color.FromArgb(80, 120, 130, 145), 1), caja);
 
@@ -1905,6 +1923,53 @@ namespace PythiaGex
                 }
             _ocupado.Add(orig);
             return orig;
+        }
+
+        /// <summary>
+        /// El at-the-money: el strike al que el precio esta pegado ahora.
+        ///
+        /// POR QUE IMPORTA Y POR QUE FALTABA
+        ///
+        /// La gamma de una opcion es MAXIMA at-the-money y cae rapido hacia
+        /// los costados. O sea que el strike que el precio tiene encima es
+        /// donde la cobertura de las mesas es mas sensible a cada tick, y en
+        /// 0DTE ese efecto se dispara hacia el cierre porque la gamma se
+        /// concentra cada vez mas en el dinero.
+        ///
+        /// De ahi salen los tres terminos:
+        ///
+        ///   ATM  at-the-money, en el dinero: el strike pegado al precio
+        ///   ITM  in-the-money, dentro del dinero: la opcion ya vale por si
+        ///        misma. Para un CALL son los strikes DEBAJO del precio;
+        ///        para un PUT, los de ARRIBA.
+        ///   OTM  out-of-the-money, fuera del dinero: solo vale por el tiempo
+        ///        que le queda. Es al reves: calls arriba, puts abajo.
+        ///
+        /// Lo que le sirve a un scalper no es etiquetar cada strike —eso seria
+        /// ruido, porque cada nivel es ITM para un lado y OTM para el otro al
+        /// mismo tiempo— sino tener a la vista DONDE esta el dinero, que es la
+        /// referencia contra la que todo lo demas se mide.
+        /// </summary>
+        private void DibujarAtm(RenderContext g, Rectangle area, IChartContainer cont,
+                                decimal precio, decimal tick, Datos d)
+        {
+            if (!VerAtm || precio <= 0 || d?.Base == null) return;
+            var paso = (decimal)Math.Max(1.0, PasoStrike);
+            var kIdx = Math.Round(((decimal)((double)precio - d.Base.Value)) / paso) * paso;
+            var kFut = kIdx + (decimal)d.Base.Value;
+            int y;
+            try { y = cont.GetYByPrice(kFut, false); } catch { return; }
+            if (y < area.Top || y > area.Bottom) return;
+
+            g.DrawLine(new RenderPen(Color.FromArgb(110, ColAtm), 1, DashStyle.Dot),
+                       area.Left, y, area.Right, y);
+            var f = Fuente(TamDetalle - 1f, false);
+            var t = "ATM " + kFut.ToString("0.00", CultureInfo.InvariantCulture);
+            var tam = g.MeasureString(t, f);
+            var caja = Acomodar(new Rectangle(area.Left + 6, y - tam.Height - 1,
+                                              tam.Width + 6, tam.Height + 2), area);
+            g.FillRectangle(Color.FromArgb(150, 12, 15, 20), caja);
+            g.DrawString(t, f, Color.FromArgb(210, ColAtm), caja.Left + 3, caja.Top + 1);
         }
 
         /// <summary>Dibuja los disparos que quedaron anotados.</summary>
@@ -2135,6 +2200,7 @@ namespace PythiaGex
             if (Perfil != LadoPerfil.Apagado && _ctx.Listo && _ctx.Nodos.Count > 0)
                 DibujarPerfil(g, area, cont, hi, lo);
 
+            DibujarAtm(g, area, cont, precio, tick, d);
             DibujarBarridos(g, area, cont, fDetalle);
             DibujarCintaFlujo(g, area, cont, precio);
             DibujarDisparos(g, area, cont, fDetalle);
@@ -2375,6 +2441,18 @@ namespace PythiaGex
 
                 var y = cont.GetYByPrice(p, false);
                 var col = ColorDe(n);
+                // Si este nivel ES ADEMAS el de un vencimiento cercano y esta
+                // pegado al precio, va con el color de enfasis. Antes el color
+                // solo se aplicaba a las lineas de vencimiento dibujadas
+                // aparte, y esas casi nunca existen: al coincidir con un nivel
+                // con nombre se fusionan, asi que el enfasis no se veia nunca.
+                if (VerColorVencCerca && precio > 0)
+                {
+                    var ct = coincide.FirstOrDefault(kv => Math.Abs(kv.Key - p) <= tick * 2);
+                    var esVencCerca = (!string.IsNullOrWhiteSpace(ct.Value) || n.Es0dte)
+                        && Math.Abs(Contexto.Ticks(p, precio, tick)) <= Math.Max(4, TicksCercaVenc);
+                    if (esVencCerca) col = ColVencCerca;
+                }
                 // la probabilidad viva se necesita antes, para pesar el nivel
                 var pViva = ProbViva(d, n.Idx, n.Iv, precio, n.ProbFactor);
                 var destaca = VerConfluencia && n.Puntaje >= Math.Max(1, PuntajeResaltar);
@@ -2950,6 +3028,16 @@ namespace PythiaGex
                                    "entre las dos paso el 70% del volumen: el rango acordado", gris));
                     L.Add(new Fila("IB  initial balance",
                                    "el rango de la primera hora de la sesion", gris));
+
+                    L.Add(new Fila("DONDE ESTA EL DINERO", "", ColTexto, true, true));
+                    L.Add(new Fila("ATM  at-the-money",
+                                   "el strike pegado al precio: ahi la gamma es maxima", gris));
+                    L.Add(new Fila("ITM  in-the-money",
+                                   "ya vale por si misma: calls DEBAJO del precio, puts ARRIBA", gris));
+                    L.Add(new Fila("OTM  out-of-the-money",
+                                   "solo vale por el tiempo: calls ARRIBA, puts DEBAJO", gris));
+                    L.Add(new Fila("", "cada strike es ITM para un lado y OTM para el otro "
+                                   + "al mismo tiempo; lo que se marca es el dinero", gris));
                 }
             }
             else
