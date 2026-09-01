@@ -72,6 +72,26 @@ namespace PythiaGex
         /// <summary>Cuantas veces la mediana del instrumento.</summary>
         public decimal FactorUmbral = 8m;
 
+        /// <summary>Cuantos barridos como mucho se muestran en la ventana.
+        ///
+        /// POR QUE UN TOPE DE CANTIDAD Y NO UN UMBRAL DE TAMANO
+        ///
+        /// El umbral por multiplo de la mediana no funciona en micros y esta
+        /// medido: la mediana de un barrido en MES es UN contrato, asi que
+        /// ocho veces la mediana son ocho lotes, y de 5.929 agresores vistos
+        /// pasaban 205. La pantalla quedaba tapada de puntos y no habia forma
+        /// de distinguir cuando importaba.
+        ///
+        /// El problema de fondo es que la distribucion es larguisima: casi
+        /// todo es de uno o dos lotes y lo grande es rarisimo. Ningun multiplo
+        /// de la mediana describe eso.
+        ///
+        /// Con un tope de cantidad la pantalla NUNCA se satura, y lo que se ve
+        /// es siempre lo mas grande que efectivamente paso en el rato. Se
+        /// ajusta solo a cualquier instrumento y a cualquier momento del dia,
+        /// sin que el operador tenga que adivinar un numero.</summary>
+        public int MaxMostrados = 10;
+
         /// <summary>Cuantos barridos hay que ver antes de confiar en la
         /// mediana. Con pocos, cualquier numero es ruido.</summary>
         public int MinMuestraUmbral = 60;
@@ -94,6 +114,11 @@ namespace PythiaGex
                 UmbralVigente = MinBarrido;
                 return;
             }
+            // El umbral de CAPTURA queda bajo a proposito: se guarda mucho y
+            // despues se muestran solo los mas grandes. Asi el analisis
+            // posterior tiene todo el material y la pantalla igual queda
+            // limpia. Filtrar al capturar tiraba datos que despues hacian
+            // falta para medir.
             var u = Math.Ceiling(med * Math.Max(1.5m, FactorUmbral));
             UmbralVigente = Math.Max(2m, u);
         }
@@ -260,10 +285,25 @@ namespace PythiaGex
 
         public int Cantidad { get { lock (_llave) { return _barridos.Count; } } }
 
+        /// <summary>Los barridos de la ventana, y si son muchos, solo los mas
+        /// grandes: lo que importa es ver el tamano, no contar puntos.</summary>
         public List<Barrido> Todos(int minutos)
         {
             var corte = DateTime.UtcNow.AddMinutes(-Math.Max(1, minutos));
-            lock (_llave) { return _barridos.Where(x => x.RecibidoUtc >= corte).ToList(); }
+            List<Barrido> v;
+            lock (_llave) { v = _barridos.Where(x => x.RecibidoUtc >= corte).ToList(); }
+            if (MaxMostrados > 0 && v.Count > MaxMostrados)
+                v = v.OrderByDescending(x => x.Volumen).Take(MaxMostrados).ToList();
+            return v;
+        }
+
+        /// <summary>El tamano del barrido mas chico que quedo mostrandose. Es
+        /// el umbral efectivo, y conviene tenerlo a la vista: sin eso el
+        /// operador no sabe desde que tamano esta viendo.</summary>
+        public decimal CorteEfectivo(int minutos)
+        {
+            var v = Todos(minutos);
+            return v.Count == 0 ? 0m : v.Min(x => x.Volumen);
         }
 
         // ------------------------------------------------------------------

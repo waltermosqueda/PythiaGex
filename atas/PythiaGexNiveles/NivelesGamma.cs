@@ -302,6 +302,10 @@ namespace PythiaGex
         [Display(Name = "Marcar los barridos en el grafico", GroupName = "Libro y barridos", Order = 6)]
         public bool VerBarridos { get; set; } = true;
 
+        [Display(Name = "Cuantos barridos mostrar como maximo", GroupName = "Libro y barridos", Order = 7,
+                 Description = "Se muestran los MAS GRANDES del rato. Un umbral por tamano no sirve en micros: la mediana es 1 lote y de 5.929 agresores pasaban 205. Con un tope de cantidad la pantalla nunca satura y siempre ves lo mas grande que paso.")]
+        public int MaxBarridosVistos { get; set; } = 10;
+
         [Display(Name = "Escribir los lotes al lado del barrido", GroupName = "Libro y barridos", Order = 7,
                  Description = "El numero de contratos, en el grafico. Sin esto se ve que entro algo pero no cuanto.")]
         public bool VerLotesBarrido { get; set; } = true;
@@ -316,6 +320,10 @@ namespace PythiaGex
 
         [Display(Name = "Ventana de la cinta (minutos)", GroupName = "Libro y barridos", Order = 10)]
         public int MinutosCinta { get; set; } = 5;
+
+        [Display(Name = "Separacion del borde de abajo (px)", GroupName = "Libro y barridos", Order = 14,
+                 Description = "El area del grafico sigue por debajo del eje de tiempo, asi que una caja pegada al borde queda tapada. Este margen la levanta.")]
+        public int MargenAbajo { get; set; } = 34;
 
         [Display(Name = "Donde va la cinta", GroupName = "Libro y barridos", Order = 12,
                  Description = "Pegada al precio la seguis sin mover los ojos, pero puede chocar con las etiquetas. En una esquina nunca molesta.")]
@@ -726,6 +734,7 @@ namespace PythiaGex
             _libro.FactorUmbral = (decimal)Math.Max(1.5, FactorBarrido);
             _libro.MinBarrido = (decimal)Math.Max(1.0, LotesBarrido);
             _libro.MemoriaMin = Math.Max(1, MemoriaBarridosMin);
+            _libro.MaxMostrados = Math.Max(1, MaxBarridosVistos);
             _libro.ResolverUmbral();
             _libro.Anotar(trade, ts > 0 ? ts : 0.25m);
         }
@@ -1504,6 +1513,7 @@ namespace PythiaGex
             _libro.UmbralAutomatico = ModoBarrido == ModoUmbral.Automatico;
             _libro.FactorUmbral = (decimal)Math.Max(1.5, FactorBarrido);
             _libro.MinBarrido = (decimal)Math.Max(1.0, LotesBarrido);
+            _libro.MaxMostrados = Math.Max(1, MaxBarridosVistos);
             _libro.ResolverUmbral();
 
             foreach (var n in d.Niveles)
@@ -1712,7 +1722,12 @@ namespace PythiaGex
                               || EsquinaCinta == Esquina.ArribaDerecha;
                 bool izq = EsquinaCinta == Esquina.ArribaIzquierda
                            || EsquinaCinta == Esquina.AbajoIzquierda;
-                y = arriba ? area.Top + 6 : area.Bottom - alto - 8;
+                // El area del grafico sigue POR DEBAJO del eje de tiempo, igual
+                // que sigue por detras del eje de precios a la derecha. Una
+                // caja pegada a area.Bottom queda tapada por el eje: se vio en
+                // pantalla, con la cinta cortada al ras del borde.
+                y = arriba ? area.Top + 6
+                           : area.Bottom - alto - Math.Max(0, MargenAbajo);
                 x = izq ? area.Left + 6
                         : area.Right - ancho - Math.Max(0, MargenEje) - 6;
             }
