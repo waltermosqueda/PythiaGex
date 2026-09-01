@@ -479,7 +479,13 @@ namespace PythiaGex
         public FormatoEtiqueta Formato { get; set; } = FormatoEtiqueta.Chip;
 
         [Display(Name = "Largo del nombre", GroupName = "Etiqueta del nivel", Order = 301)]
-        public LargoNombre Nombre { get; set; } = LargoNombre.Ambos;
+        public LargoNombre NombreNivel { get; set; } = LargoNombre.Ambos;
+
+        /// <summary>La propiedad cambio de nombre porque ATAS guarda el valor
+        /// elegido en el workspace y ese guardado le gana a cualquier default
+        /// nuevo: el operador seguia viendo "PISO+PIN" en vez de "PUT WALL
+        /// piso +PIN" aunque el default ya decia Ambos.</summary>
+        private LargoNombre Nombre => NombreNivel;
 
         [Display(Name = "Distancia en ticks", GroupName = "Etiqueta del nivel", Order = 302)]
         public bool CampoTicks { get; set; } = true;
@@ -541,6 +547,10 @@ namespace PythiaGex
         // El eje de precios se dibuja ENCIMA del ChartArea, asi que su borde
         // derecho no es el borde visible. Las etiquetas alineadas a la derecha
         // quedaban cortadas por el eje.
+        [Display(Name = "Ancho maximo de la etiqueta (% del grafico)", GroupName = "Estilo", Order = 84,
+                 Description = "Si el detalle no entra en este ancho, se cae el renglon de detalle. Una caja que cruza el grafico entero choca con todo lo demas.")]
+        public int AnchoMaxEtqPct { get; set; } = 34;
+
         [Display(Name = "Separacion del eje de precios (px)", GroupName = "Estilo", Order = 85)]
         public int MargenEje { get; set; } = 62;
 
@@ -1721,24 +1731,32 @@ namespace PythiaGex
         /// y una donde hay que adivinar que numero pertenece a que nivel. En
         /// scalping eso no es cosmetica.
         /// </summary>
-        private Rectangle Acomodar(Rectangle r, Rectangle area, int paso = 3)
+        private Rectangle Acomodar(Rectangle r, Rectangle area, int correa = 0)
         {
+            // LA CORREA, Y ES LO MAS IMPORTANTE DE ESTA FUNCION
+            //
+            // La primera version corria la caja hasta encontrar lugar, sin
+            // limite. En pantalla salio peor que el problema: la etiqueta del
+            // Put Wall quedo dibujada VEINTE PUNTOS arriba de su propia linea.
+            // Una etiqueta superpuesta molesta; una etiqueta lejos de su nivel
+            // MIENTE sobre donde esta el nivel, y eso se paga operando.
+            //
+            // Con tope: si adentro del tope no entra, se dibuja igual en su
+            // lugar correcto y que se superponga. Preferimos una pantalla
+            // apretada y honesta antes que una prolija y falsa.
+            if (correa <= 0) correa = Math.Max(24, r.Height * 2);
             var orig = r;
-            for (int i = 0; i < 60; i++)
-            {
-                if (!_ocupado.Any(o => o.IntersectsWith(r))
-                    && r.Top >= area.Top && r.Bottom <= area.Bottom)
-                { _ocupado.Add(r); return r; }
-                r = new Rectangle(r.Left, r.Top + paso + r.Height / 3, r.Width, r.Height);
-            }
-            r = orig;
-            for (int i = 0; i < 60; i++)
-            {
-                r = new Rectangle(r.Left, r.Top - paso - r.Height / 3, r.Width, r.Height);
-                if (!_ocupado.Any(o => o.IntersectsWith(r))
-                    && r.Top >= area.Top && r.Bottom <= area.Bottom)
-                { _ocupado.Add(r); return r; }
-            }
+            int paso = Math.Max(3, r.Height / 2);
+            for (int dir = 0; dir < 2; dir++)
+                for (int d = paso; d <= correa; d += paso)
+                {
+                    var c = new Rectangle(orig.Left,
+                                          dir == 0 ? orig.Top + d : orig.Top - d,
+                                          orig.Width, orig.Height);
+                    if (c.Top < area.Top || c.Bottom > area.Bottom) break;
+                    if (!_ocupado.Any(o => o.IntersectsWith(c)))
+                    { _ocupado.Add(c); return c; }
+                }
             _ocupado.Add(orig);
             return orig;
         }
@@ -2020,6 +2038,14 @@ namespace PythiaGex
             }
 
             // ---- niveles cercanos: lo que se toca en los proximos minutos
+            var yaMarcados = new List<decimal>();
+            if (d != null)
+                foreach (var nn in d.Niveles)
+                {
+                    var pp = nn.Fut ?? nn.Idx;
+                    if (pp.HasValue) yaMarcados.Add((decimal)pp.Value);
+                }
+
             if (VerCercanos && d.Cercanos.Count > 0)
             {
                 var fc = Fuente(TamDetalle - 0.5f, false);
@@ -2030,6 +2056,9 @@ namespace PythiaGex
                     if (c.PctDelMayor < PesoMinCercano) continue;
                     var pc = (decimal)(c.Fut != 0 ? c.Fut : c.Idx);
                     if (pc < lo || pc > hi) continue;
+                    // si un nivel con nombre ya marca este precio, no se repite
+                    if (yaMarcados.Any(m => Math.Abs(m - pc) <= tick)) continue;
+                    yaMarcados.Add(pc);
                     var frena = c.GexM > 0;
                     var col = frena ? ColFrena : ColEmpuja;
                     // El peso visual se mide contra el de una pared. Antes el
@@ -2071,6 +2100,12 @@ namespace PythiaGex
             }
 
             // ---- techo y piso de cada vencimiento cercano
+            //
+            // Los precios que YA marcaron los niveles principales. Sin esto el
+            // mismo nivel salia dos veces —la caja de la izquierda y otra vez
+            // en la escalera de la derecha— y en la parte de abajo llegaban a
+            // encimarse tres etiquetas del mismo precio. Marcar dos veces lo
+            // mismo no agrega informacion: solo tapa.
             if (VerPorVencimiento && d.PorVenc.Count > 0)
             {
                 var fv = Fuente(TamDetalle - 1f, false);
@@ -2088,6 +2123,10 @@ namespace PythiaGex
                         if (par.Item1?.Fut == null) continue;
                         var pv2 = (decimal)par.Item1.Fut.Value;
                         if (pv2 < lo || pv2 > hi) continue;
+                        // si un nivel principal ya marca este precio, no se
+                        // repite: la etiqueta de arriba ya lo dice todo
+                        if (yaMarcados.Any(m => Math.Abs(m - pv2) <= tick)) continue;
+                        yaMarcados.Add(pv2);
                         var yv = cont.GetYByPrice(pv2, false);
                         var pesoV = Math.Max(20, Math.Min(100, PesoVisualVenc)) / 100.0;
                         var alfaV = (int)Math.Max(120, Math.Min(230, 210 * pesoV + 70));
@@ -2220,7 +2259,7 @@ namespace PythiaGex
                     titulo = p.ToString("0.00", CultureInfo.InvariantCulture);
                     detalle = "";
                 }
-                var verDet = VerLinea2 && detalle.Length > 0;
+                bool verDet = VerLinea2 && detalle.Length > 0;
 
                 var salto = Math.Max(14, (int)(TamTitulo * 2.6f));
                 var yl = y - 15;
@@ -2229,7 +2268,16 @@ namespace PythiaGex
 
                 var t1 = g.MeasureString(titulo, fTitulo);
                 var t2 = verDet ? g.MeasureString(detalle, fDetalle) : new Size(0, 0);
-                var w = Math.Max(t1.Width, t2.Width) + 10;
+
+                // Con el detalle puesto la caja llegaba a 720 px: cruzaba el
+                // grafico entero y chocaba con la escalera de la derecha, que
+                // esta a 400 px. Si no entra, se cae el renglon de detalle
+                // ANTES que empujar la caja a otra altura.
+                var topeW = Math.Max(120, area.Width
+                            * Math.Max(15, Math.Min(80, AnchoMaxEtqPct)) / 100);
+                if (verDet && Math.Max(t1.Width, t2.Width) + 10 > topeW)
+                { verDet = false; t2 = new Size(0, 0); }
+                var w = Math.Min(topeW, Math.Max(t1.Width, t2.Width) + 10);
                 var h2 = t1.Height + (verDet ? t2.Height + 2 : 0) + 6;
 
                 int lx;
