@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PythiaGex
 {
@@ -78,7 +79,7 @@ namespace PythiaGex
         public int TicksRearme = 12;
 
         /// <summary>Cuantos disparos se guardan dibujados.</summary>
-        public int MaxEventos = 60;
+        public int MaxEventos = 400;
 
         /// <summary>Que parte del flujo reciente tiene que concentrarse en el
         /// nivel para llamarlo esfuerzo. Es el gatillo de "muchos chicos":
@@ -91,9 +92,120 @@ namespace PythiaGex
 
         public readonly List<Evento> Eventos = new();
 
+        /// <summary>Cuantos disparos se guardan dibujados. Se subio de 60 a
+        /// 400: un disparo que se borra de la pantalla no se puede revisar
+        /// despues, y revisarlos es el unico modo de saber si sirven.</summary>
+        public string Carpeta = "";
+
         // por nivel: cuando disparo, y si esta armado
         private readonly Dictionary<string, DateTime> _ultimo = new();
         private readonly Dictionary<string, bool> _armado = new();
+
+        /// <summary>
+        /// Deja el disparo en disco apenas ocurre.
+        ///
+        /// Antes vivian solo en memoria: al cerrar ATAS se perdian, y sin
+        /// registro no hay forma de decir despues "este acerto y este no".
+        /// Medir el gatillo es justamente lo que decide si sirve o es ruido,
+        /// asi que el registro no es un extra: es la razon de que exista.
+        /// </summary>
+        private void Persistir(Evento e)
+        {
+            try
+            {
+                var dir = string.IsNullOrWhiteSpace(Carpeta)
+                    ? System.IO.Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "ATAS", "PythiaGex", "contexto")
+                    : Carpeta.Trim();
+                System.IO.Directory.CreateDirectory(dir);
+                var ruta = System.IO.Path.Combine(
+                    dir, "disparos-" + DateTime.UtcNow.ToString("yyyy-MM-dd") + ".jsonl");
+                var inv = System.Globalization.CultureInfo.InvariantCulture;
+                var l = "{\"t\":\"" + e.Hora.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss", inv)
+                      + "Z\",\"nivel\":\"" + (e.Nivel ?? "").Replace("\"", "'")
+                      + "\",\"lado\":" + e.Lado
+                      + ",\"puntaje\":" + e.Puntaje
+                      + ",\"precio\":" + Math.Round(e.Precio, 2).ToString(inv)
+                      + ",\"precio_barra\":" + Math.Round(e.PrecioBarra, 2).ToString(inv)
+                      + ",\"es0dte\":" + (e.Es0dte ? "true" : "false")
+                      + ",\"razones\":\"" + (e.Razones ?? "").Replace("\"", "'") + "\"}";
+                System.IO.File.AppendAllText(ruta, l + "\n",
+                    new System.Text.UTF8Encoding(false));
+            }
+            catch { /* nunca romper el indicador por no poder escribir */ }
+        }
+
+        /// <summary>Vuelve a cargar los disparos del dia para que sigan
+        /// dibujados despues de reiniciar ATAS.</summary>
+        public int Recuperar(int maxEventos)
+        {
+            try
+            {
+                var dir = string.IsNullOrWhiteSpace(Carpeta)
+                    ? System.IO.Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "ATAS", "PythiaGex", "contexto")
+                    : Carpeta.Trim();
+                var ruta = System.IO.Path.Combine(
+                    dir, "disparos-" + DateTime.UtcNow.ToString("yyyy-MM-dd") + ".jsonl");
+                if (!System.IO.File.Exists(ruta)) return 0;
+                int n = 0;
+                foreach (var l in System.IO.File.ReadAllLines(ruta))
+                {
+                    var e = Leer(l);
+                    if (e == null) continue;
+                    if (Eventos.Any(x => x.Hora == e.Hora && x.Nivel == e.Nivel
+                                         && x.Precio == e.Precio)) continue;
+                    Eventos.Add(e);
+                    n++;
+                }
+                Eventos.Sort((x, y) => x.Hora.CompareTo(y.Hora));
+                while (Eventos.Count > Math.Max(5, maxEventos)) Eventos.RemoveAt(0);
+                return n;
+            }
+            catch { return 0; }
+        }
+
+        private static Evento Leer(string l)
+        {
+            if (string.IsNullOrWhiteSpace(l) || l[0] != '{') return null;
+            try
+            {
+                string Tx(string k)
+                {
+                    var i = l.IndexOf("\"" + k + "\":\"", StringComparison.Ordinal);
+                    if (i < 0) return "";
+                    i += k.Length + 4;
+                    var j = l.IndexOf('"', i);
+                    return j < 0 ? "" : l.Substring(i, j - i);
+                }
+                double Nm(string k)
+                {
+                    var i = l.IndexOf("\"" + k + "\":", StringComparison.Ordinal);
+                    if (i < 0) return 0;
+                    i += k.Length + 3;
+                    var j = i;
+                    while (j < l.Length && (char.IsDigit(l[j]) || l[j] == '-'
+                           || l[j] == '.' || l[j] == '+')) j++;
+                    return double.TryParse(l.Substring(i, j - i), System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;
+                }
+                var t = Tx("t");
+                if (t.Length < 19) return null;
+                return new Evento
+                {
+                    Hora = DateTime.Parse(t, System.Globalization.CultureInfo.InvariantCulture,
+                                          System.Globalization.DateTimeStyles.AdjustToUniversal
+                                          | System.Globalization.DateTimeStyles.AssumeUniversal),
+                    Nivel = Tx("nivel"), Razones = Tx("razones"),
+                    Lado = (int)Nm("lado"), Puntaje = (int)Nm("puntaje"),
+                    Precio = (decimal)Nm("precio"), PrecioBarra = (decimal)Nm("precio_barra"),
+                    Barra = -1,
+                };
+            }
+            catch { return null; }
+        }
 
         public void Limpiar()
         {
@@ -154,46 +266,39 @@ namespace PythiaGex
                 razones.Add(senal.LadoDivergencia > 0
                             ? "divergencia alcista" : "divergencia bajista");
             }
-            // El delta de la VENTANA, no el acumulado del dia. Para un gatillo
-            // importa quien esta ganando ahora; el acumulado del dia es
-            // contexto y entra mas abajo, como amplificador.
+            // EL DELTA DE LA VENTANA, no el acumulado del dia: para un
+            // gatillo importa quien esta ganando ahora.
+            //
+            // LO QUE SE INTENTO MEDIR Y NO SE PUDO, QUE HAY QUE DEJAR ESCRITO
+            //
+            // El 2026-09-01 se probo condicionar este voto a que hubiera
+            // absorcion. Parecia respaldado: 203 casos, 67 % con absorcion
+            // contra 40 % sin. Pero al auditarlo se cayo entero, por dos
+            // motivos que ya conociamos y volvimos a pisar:
+            //
+            //   - EL SESGO DEL MERCADO. En esas dos ruedas el precio bajo casi
+            //     sin parar: los cortos acertaban 93 % y los largos 5 %. De los
+            //     66 casos "con absorcion", 43 eran cortos. El 67 % era la
+            //     tendencia, no la senal.
+            //   - LA CORRELACION SERIAL. El indicador anota cada cinco minutos,
+            //     asi que la misma escena aparecia una y otra vez. Los 203
+            //     casos eran 15 episodios independientes.
+            //
+            // Normalizando por la tasa base de cada direccion y colapsando a
+            // episodios: 15 episodios, 53 % contra una base de 50 %. Nada.
+            //
+            // Asi que el voto queda como estaba. NO porque este validado, sino
+            // porque con dos ruedas de un mercado que fue para un solo lado no
+            // se puede validar ni descartar nada. La herramienta que lo mide
+            // quedo en herramientas/probar_gatillos.py y hay que volver a
+            // correrla cuando el centinela junte ruedas con las dos
+            // direcciones representadas.
             if (senal != null && senal.Listo && Math.Abs(senal.RatioDelta) >= MinRatioDelta)
             {
                 voto += senal.RatioDelta > 0 ? 1 : -1;
                 razones.Add((senal.RatioDelta > 0 ? "delta comprador" : "delta vendedor")
                             + " " + Math.Abs(Math.Round(senal.RatioDelta * 100, 0))
                             + "% del flujo del nivel");
-            }
-            // BARRIDOS: agresores de verdad, uno por uno, no volumen agregado.
-            // Este es el unico que ve "alguien entro de una", y por eso vota
-            // con el peso de lo que efectivamente barrio.
-            if (barridos != null && barridos.Count > 0)
-            {
-                decimal vc = 0, vv = 0;
-                foreach (var x in barridos)
-                    if (x.Lado > 0) vc += x.Volumen; else vv += x.Volumen;
-                if (vc + vv > 0 && Math.Abs(vc - vv) / (vc + vv) >= 0.25m)
-                {
-                    voto += vc > vv ? 1 : -1;
-                    razones.Add(barridos.Count + " barrido" + (barridos.Count > 1 ? "s" : "")
-                                + " " + (vc > vv ? "comprador" : "vendedor") + " de "
-                                + Math.Round(Math.Max(vc, vv)) + " lotes");
-                }
-            }
-
-            // EL MURO DEL LIBRO. Que se lo hayan COMIDO es evidencia dura:
-            // alguien pago por atravesarlo y eso no se puede fingir. Que lo
-            // hayan RETIRADO dice lo contrario y por eso vota al reves: la
-            // pared nunca estuvo dispuesta a defender ese precio.
-            if (suerteMuro == Libro.Suerte.Comido)
-            {
-                voto += precioAhora >= precioNivel ? 1 : -1;
-                razones.Add("se comieron el muro del libro");
-            }
-            else if (suerteMuro == Libro.Suerte.Retirado)
-            {
-                voto += precioAhora >= precioNivel ? -1 : 1;
-                razones.Add("retiraron el muro sin defenderlo");
             }
 
             if (voto == 0) return null;
@@ -248,6 +353,7 @@ namespace PythiaGex
             };
             Eventos.Add(e);
             while (Eventos.Count > Math.Max(5, MaxEventos)) Eventos.RemoveAt(0);
+            Persistir(e);
             _ultimo[clave] = hora;
             _armado[clave] = false;   // hasta que se aleje, este nivel queda callado
             return e;

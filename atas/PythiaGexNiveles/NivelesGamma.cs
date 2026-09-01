@@ -147,6 +147,7 @@ namespace PythiaGex
         private readonly Gatillos _gat = new();
         private readonly Bitacora _bit = new();
         private readonly Disparo _disp = new();
+        private bool _disparosRecuperados;
         private readonly Libro _libro = new();
 
         // Todo lo que ya se dibujo en este cuadro. Sin esto las etiquetas se
@@ -1460,6 +1461,14 @@ namespace PythiaGex
             _disp.Umbral = Math.Max(1, UmbralDisparo);
             _disp.EnfriamientoMin = Math.Max(1, EnfriamientoDisparo);
             _disp.TicksRearme = Math.Max(2, RearmeDisparo);
+            _disp.Carpeta = CarpetaBitacora ?? "";
+            // una sola vez por sesion: recupera los disparos del dia para que
+            // sigan dibujados aunque se haya reiniciado la plataforma
+            if (!_disparosRecuperados)
+            {
+                _disparosRecuperados = true;
+                _disp.Recuperar(_disp.MaxEventos);
+            }
             _disp.MinPctEsfuerzo = (decimal)Math.Max(1.0, MinPctEsfuerzo);
 
             DateTime hora;
@@ -2044,6 +2053,12 @@ namespace PythiaGex
             }
 
             // ---- niveles cercanos: lo que se toca en los proximos minutos
+            // Cuando un nivel de un vencimiento cae en el MISMO precio que un
+            // nivel principal, la version anterior lo borraba. Eso escondia la
+            // informacion mas util que hay: que el Put Wall de la cadena
+            // completa es TAMBIEN el del vencimiento de hoy. Ahora se anota y
+            // se muestra pegado al nombre.
+            var coincide = new Dictionary<decimal, string>();
             var yaMarcados = new List<decimal>();
             if (d != null)
                 foreach (var nn in d.Niveles)
@@ -2123,15 +2138,27 @@ namespace PythiaGex
                     // cada vencimiento se corre un poco a la izquierda, asi dos
                     // etiquetas del mismo precio no quedan una encima de otra
                     var sangria = iv2 * 118;
+                    // El iman del vencimiento no se dibujaba nunca, y para
+                    // 0DTE es el nivel al que el hedge arrastra el precio al
+                    // cierre: es el que mas le importa a alguien que opera el dia.
                     foreach (var par in new[] { (v.Techo, ColTecho, "techo"),
-                                                (v.Piso, ColPiso, "piso") })
+                                                (v.Piso, ColPiso, "piso"),
+                                                (v.Iman, ColIman, "iman") })
                     {
                         if (par.Item1?.Fut == null) continue;
                         var pv2 = (decimal)par.Item1.Fut.Value;
                         if (pv2 < lo || pv2 > hi) continue;
                         // si un nivel principal ya marca este precio, no se
                         // repite: la etiqueta de arriba ya lo dice todo
-                        if (yaMarcados.Any(m => Math.Abs(m - pv2) <= tick)) continue;
+                        var choca = yaMarcados.FirstOrDefault(m => Math.Abs(m - pv2) <= tick * 2);
+                        if (choca != 0)
+                        {
+                            // no se dibuja de nuevo, pero se deja constancia
+                            coincide.TryGetValue(choca, out var ya);
+                            if ((ya ?? "").IndexOf(etq, StringComparison.Ordinal) < 0)
+                                coincide[choca] = (ya ?? "") + " " + etq;
+                            continue;
+                        }
                         yaMarcados.Add(pv2);
                         var yv = cont.GetYByPrice(pv2, false);
                         var pesoV = Math.Max(20, Math.Min(100, PesoVisualVenc)) / 100.0;
@@ -2144,8 +2171,9 @@ namespace PythiaGex
                               + pv2.ToString("0.00", CultureInfo.InvariantCulture)
                               + "  dist " + (tkv2 >= 0 ? "+" : "") + tkv2 + "tk";
                         var tam2 = g.MeasureString(t, fv);
-                        var cajaV = new Rectangle(x1 - tam2.Width - 10 - Math.Max(0, MargenEje) - sangria,
-                                                  yv + 1, tam2.Width + 6, tam2.Height + 2);
+                        var cajaV = Acomodar(new Rectangle(
+                            x1 - tam2.Width - 10 - Math.Max(0, MargenEje) - sangria,
+                            yv + 1, tam2.Width + 6, tam2.Height + 2), area);
                         if (CajaEtiqueta)
                             g.FillRectangle(Color.FromArgb(
                                 Math.Max(0, Math.Min(255, (int)(OpacidadCaja * 0.8))), ColFondo), cajaV);
@@ -2271,6 +2299,13 @@ namespace PythiaGex
                 var yl = y - 15;
                 while (usados.Any(u => Math.Abs(u - yl) < salto)) yl += salto;
                 usados.Add(yl);
+
+                // si algun vencimiento marca este mismo precio, va pegado al
+                // nombre: "PUT WALL piso  0DTE 09-02" dice mucho mas que dos
+                // etiquetas encimadas o que una sola que oculta a la otra
+                var coinc = coincide.FirstOrDefault(kv => Math.Abs(kv.Key - p) <= tick * 2);
+                if (!string.IsNullOrWhiteSpace(coinc.Value))
+                    titulo = titulo + "  " + coinc.Value.Trim();
 
                 var t1 = g.MeasureString(titulo, fTitulo);
                 var t2 = verDet ? g.MeasureString(detalle, fDetalle) : new Size(0, 0);
