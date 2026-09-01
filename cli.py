@@ -97,6 +97,31 @@ def main():
     curva, flip = curva_gamma(r["curva_src"], S)
     em, em_det = expected_move(r["curva_src"], S, detalle=True)
     niv = niveles_clave(st, S)
+
+    # EL HORIZONTE CAMBIA LOS NIVELES, Y HAY QUE PODER VER LOS DOS.
+    #
+    # SpotGamma y Unusual Whales publican sobre los CUATRO VENCIMIENTOS mas
+    # cercanos; nosotros veniamos usando 18 dias. Medido el 2026-09-01 sobre la
+    # misma cadena, la diferencia no es de matiz:
+    #
+    #     4 vencimientos ... Net GEX -25.16 B   call wall 7715
+    #     18 dias .......... Net GEX -36.10 B   call wall 7800
+    #
+    # Ochenta y cinco puntos de diferencia en el call wall es otra operacion
+    # distinta. Ninguno de los dos esta "mal": miden horizontes distintos, y el
+    # de cuatro vencimientos es el que mira quien opera el dia.
+    #
+    # Se publican los dos y el horizonte queda a la vista. Elegir uno en
+    # silencio seria esconder la decision mas importante del calculo.
+    niv_4v, gex_4v_B = {}, None
+    try:
+        r4 = calcular(crudo, n_vencimientos=4)
+        niv_4v = niveles_clave(r4["strikes"], S)
+        gex_4v_B = B(r4["totales"]["gex"])
+    except Exception:
+        niv_4v, gex_4v_B = {}, None
+    except Exception:
+        niv_4v = {}
     # niveles del vencimiento de hoy: son los imanes que mandan en el intradia
     st0 = {k: v for k, v in st.items() if abs(v.get("gex_0dte", 0.0)) > 0}
     niv0 = niveles_clave(st0, S, campo="gex_0dte") if st0 else {}
@@ -164,6 +189,10 @@ def main():
       "gamma_flip": flip,
       "expected_move": em,
       "expected_move_detalle": em_det,
+      # el mismo calculo sobre los 4 vencimientos mas cercanos, que es el
+      # horizonte que publican SpotGamma y Unusual Whales
+      "niveles_4venc": niv_4v,
+      "net_gex_4venc_B": gex_4v_B,
       "totales": {"net_gex_B": B(T["gex"]), "net_gex_vol_B": B(T["gex_vol"]),
                   "net_dex_B": B(T["dex"]), "net_vex_B": B(T["vex"]),
                   "net_chex_B": B(T["chex"]), "net_tex_M": M(T["tex"]), "net_vega_M": M(T["vgex"]),

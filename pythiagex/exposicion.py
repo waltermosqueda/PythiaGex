@@ -56,10 +56,14 @@ def parse_occ(simbolo: str):
                        tzinfo=dt.timezone.utc)
     return venc, cp, int(k) / 1000.0
 
-def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None) -> dict:
+def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None,
+             n_vencimientos=None) -> dict:
     """
-    dias_max   -> None = todo; 18 = las proximas dos semanas y media
-    solo_venc  -> 'latest' | 'next' | None   (equivalente a las vistas de GEXBot)
+    dias_max        -> None = todo; 18 = las proximas dos semanas y media
+    solo_venc       -> 'latest' | 'next' | None
+    n_vencimientos  -> los N vencimientos mas cercanos. Cuatro es lo que
+                       publican SpotGamma y Unusual Whales, y es el horizonte
+                       que mira quien opera el dia.
     """
     d = crudo["data"]
     S = d["current_price"]
@@ -70,6 +74,8 @@ def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None) -> dict:
                      if parse_occ(o["option"])
                      and (parse_occ(o["option"])[0] - ahora).total_seconds() > 0})
     permitidas = None
+    if n_vencimientos:
+        permitidas = set(fechas[:max(1, int(n_vencimientos))])
     if solo_venc == "latest" and fechas:
         permitidas = {fechas[0]}
     elif solo_venc == "next" and len(fechas) > 1:

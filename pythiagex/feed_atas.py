@@ -218,6 +218,16 @@ def construir(out):
         #
         # null = no corrio. Cero = corrio y dio bien. No es lo mismo.
         "auditoria_fallas": _ultima_auditoria(),
+        # EL HORIZONTE, A LA VISTA.
+        #
+        # Los niveles cambian mucho segun cuantos vencimientos se sumen: 85
+        # puntos de diferencia en el call wall entre 4 vencimientos y 18 dias,
+        # medido. Se publican los dos para que el operador sepa cual esta
+        # mirando y pueda comparar contra lo que muestran SpotGamma o Unusual
+        # Whales, que usan cuatro.
+        "niveles_4venc": out.get("niveles_4venc") or {},
+        "net_gex_4venc_B": out.get("net_gex_4venc_B"),
+        "horizonte_dias": 18,
         "cadena_vencida": bool(out.get("cadena_vencida")),
         "cadena_muy_vencida": bool(out.get("cadena_muy_vencida")),
         "fuente": "CBOE delayed_quotes",
