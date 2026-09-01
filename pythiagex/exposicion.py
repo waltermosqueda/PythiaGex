@@ -121,8 +121,17 @@ def calcular(crudo: dict, dias_max=None, solo_venc=None, ahora=None) -> dict:
             strike=K, gex=0.0, gex_vol=0.0, gex_0dte=0.0, dex=0.0, vex=0.0,
             chex=0.0, tex=0.0, oi_call=0, oi_put=0, vol_call=0, vol_put=0,
             oi_0dte_call=0, oi_0dte_put=0, vol_0dte_call=0, vol_0dte_put=0,
+            # Para poder recalcular la gamma con el precio de AHORA hace falta
+            # saber a que plazo corresponde. Pero la gamma de un strike suma
+            # todos los vencimientos, asi que no hay UNA T: hay que promediar
+            # los plazos pesando por cuanta gamma aporta cada uno.
+            #
+            # Sin esto, escalar la gamma con la T del 0DTE da 24 % de error
+            # (medido el 2026-09-01). Con la T efectiva, 0,8 %.
+            gex_abs=0.0, gex_dias=0.0,
             iv_0dte=None, iv_call=None, iv_put=None))
         s["gex"] += gex; s["gex_vol"] += gex_vol; s["dex"] += dex
+        s["gex_abs"] += abs(gex); s["gex_dias"] += abs(gex) * dias
         s["vex"] += vex; s["chex"] += chex;       s["tex"] += tex
 
         # 0DTE ES EL QUE VENCE HOY, POR FECHA, NO "menos de un dia".

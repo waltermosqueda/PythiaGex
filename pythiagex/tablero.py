@@ -165,6 +165,7 @@ def enriquecer(niveles, strikes, spot, base=None, iv_atm=None, T=None,
             "vol_put": s.get("vol_put"),
             # la IV del PROPIO strike: es la que respeta el skew y la que
             # necesita el indicador para recalcular en vivo
+            "dias_gamma": s.get("dias_gamma"),
             "iv": (s.get("iv_put") if K < spot else s.get("iv_call"))
                   or s.get("iv_call") or s.get("iv_put"),
             "prob_toque": prob_toque(spot, K, iv_atm, T),
@@ -348,6 +349,7 @@ def cercanos(strikes, spot, base=None, raiz="ES", radio_pct=0.6, n=8,
             # Sin esto el operador veia 27k calls en un strike y lo comparaba
             # contra los 7.6k que muestra CME para el 0DTE: dos numeros que
             # miden cosas distintas y parecian contradecirse.
+            "dias_gamma": s.get("dias_gamma"),
             "oi_0dte_call": s.get("oi_0dte_call"), "oi_0dte_put": s.get("oi_0dte_put"),
             "vol_0dte_call": s.get("vol_0dte_call"), "vol_0dte_put": s.get("vol_0dte_put"),
             "iv_0dte": s.get("iv_0dte"),

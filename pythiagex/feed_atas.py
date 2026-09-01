@@ -32,6 +32,7 @@ def _nivel(f, base, es0=False):
         "dex_M": f.get("dex_M"),
         "vex_M": f.get("vex_M"),
         "chex_M": f.get("chex_M"),
+        "dias_gamma": f.get("dias_gamma"),
         "oi_c": f.get("oi_call"),
         "oi_p": f.get("oi_put"),
         "toque": f.get("prob_toque"),

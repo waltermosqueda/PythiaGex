@@ -58,6 +58,12 @@ namespace PythiaGex
             // cuatro caminos con que se calcula. Si se separan mucho el
             // numero no se puede tomar como firme.
             public double? ProbFinal, ProbDelta, ProbDispersion, Iv, ProbFactor;
+            /// <summary>Plazo promedio de la gamma de ese strike, ponderado por
+            /// cuanta gamma aporta cada vencimiento. Sin esto no se puede
+            /// recalcular la gamma con el precio de ahora: usar la T del 0DTE
+            /// da 24 % de error porque la gamma del strike suma TODOS los
+            /// vencimientos.</summary>
+            public double? DiasGamma;
             public string ProbControl = "";
         }
 
@@ -301,6 +307,10 @@ namespace PythiaGex
 
         [Display(Name = "Marcar los barridos en el grafico", GroupName = "Libro y barridos", Order = 6)]
         public bool VerBarridos { get; set; } = true;
+
+        [Display(Name = "Ticks para considerar un vencimiento cercano", GroupName = "Niveles cercanos", Order = 57,
+                 Description = "Por dentro de esta distancia el nivel del vencimiento se dibuja con mas presencia: es el que se puede tocar en los proximos minutos.")]
+        public int TicksCercaVenc { get; set; } = 40;
 
         [Display(Name = "Cuantos barridos mostrar como maximo", GroupName = "Libro y barridos", Order = 7,
                  Description = "Se muestran los MAS GRANDES del rato. Un umbral por tamano no sirve en micros: la mediana es 1 lote y de 5.929 agresores pasaban 205. Con un tope de cantidad la pantalla nunca satura y siempre ves lo mas grande que paso.")]
@@ -556,6 +566,10 @@ namespace PythiaGex
         // El eje de precios se dibuja ENCIMA del ChartArea, asi que su borde
         // derecho no es el borde visible. Las etiquetas alineadas a la derecha
         // quedaban cortadas por el eje.
+        [Display(Name = "La gamma va en el titulo (no se recorta nunca)", GroupName = "Estilo", Order = 83,
+                 Description = "La gamma decide, asi que no puede caerse cuando la caja no entra. En el titulo siempre se ve.")]
+        public bool GammaEnTitulo { get; set; } = true;
+
         [Display(Name = "Ancho maximo de la etiqueta (% del grafico)", GroupName = "Estilo", Order = 84,
                  Description = "Si el detalle no entra en este ancho, se cae el renglon de detalle. Una caja que cruza el grafico entero choca con todo lo demas.")]
         public int AnchoMaxEtqPct { get; set; } = 34;
@@ -876,6 +890,7 @@ namespace PythiaGex
                         {
                             Tipo = Txt(n, "tipo"), Nombre = Txt(n, "nombre"),
                             Criollo = Txt(n, "criollo"), Alias = Txt(n, "alias"),
+                            DiasGamma = Num(n, "dias_gamma"),
                             Idx = Num(n, "idx"), Fut = Num(n, "fut"), GexM = Num(n, "gex_M"),
                             DexM = Num(n, "dex_M"), VexM = Num(n, "vex_M"), ChexM = Num(n, "chex_M"),
                             OiC = Num(n, "oi_c"), OiP = Num(n, "oi_p"), Toque = Num(n, "toque"),
@@ -1096,6 +1111,80 @@ namespace PythiaGex
             // pagaba 42,0%. El factor devuelve el nivel que paga el mercado.
             if (factor.HasValue && factor.Value > 0) bs *= factor.Value;
             return Math.Min(100.0, bs);
+        }
+
+        /// <summary>
+        /// La gamma del strike recalculada con el precio de AHORA.
+        ///
+        /// POR QUE HACIA FALTA
+        ///
+        /// El panel publica la gamma calculada en el momento de la foto de
+        /// CBOE, y esa foto se renueva cada quince minutos. Entre foto y foto
+        /// el numero quedaba clavado en pantalla, y el operador lo noto: "lo
+        /// suelo ver fijo, no es dinamico?".
+        ///
+        /// Y tenia razon en que deberia moverse. La gamma en dolares de un
+        /// strike es
+        ///
+        ///     GEX = gamma_BS(S, K, T, sigma) x OI x 100 x S^2 x 1%
+        ///
+        /// o sea que depende del precio por dos vias: adentro de la gamma de
+        /// Black-Scholes y en el S^2. Cuando el precio se acerca al strike la
+        /// gamma sube fuerte; cuando se aleja, cae. Mostrarla congelada
+        /// quince minutos es mostrar la de hace quince minutos.
+        ///
+        /// COMO SE RECALCULA SIN INVENTAR NADA
+        ///
+        /// No se recalcula desde cero: no tenemos el interes abierto separado
+        /// por call y put con su signo. Se ESCALA el valor publicado por el
+        /// cociente entre la gamma de ahora y la del momento de la foto:
+        ///
+        ///     gex_vivo = gex_publicado x [g(S_hoy) x S_hoy^2] / [g(S_foto) x S_foto^2]
+        ///
+        /// El interes abierto se cancela en la division —y ademas no cambia
+        /// intradia, lo consolidan de noche— asi que el resultado es exacto
+        /// salvo por el cambio de volatilidad, que en minutos es chico.
+        ///
+        /// Si falta la IV del strike o el spot de la foto, devuelve null y se
+        /// muestra el publicado: preferimos el dato viejo y honesto antes que
+        /// uno recalculado sobre supuestos.
+        /// </summary>
+        private double? GammaViva(Datos d, double? kIdx, double? iv, double? gexPub,
+                                  double? diasGamma, decimal precioFut)
+        {
+            if (kIdx == null || iv == null || iv <= 0) return null;
+            if (gexPub == null || gexPub == 0) return null;
+            if (d?.Base == null || d.SpotIndice == null || precioFut <= 0) return null;
+            // sin el plazo efectivo NO se recalcula: se prefiere el numero
+            // publicado antes que uno escalado con una T inventada
+            if (diasGamma == null || diasGamma <= 0) return null;
+
+            // el tiempo que paso desde la foto tambien corre el plazo
+            var minutos = d.EdadMin > 0 ? d.EdadMin : 0;
+            var Tfoto = diasGamma.Value / 365.0;
+            var T = Math.Max(1e-6, (diasGamma.Value - minutos / 1440.0) / 365.0);
+            if (Tfoto <= 1e-9) return null;
+
+            var S = (double)precioFut - d.Base.Value;   // el strike vive en el indice
+            var S0 = d.SpotIndice.Value;
+            if (S <= 0 || S0 <= 0) return null;
+
+            double G(double x, double t)
+            {
+                var sig = iv.Value * Math.Sqrt(t);
+                if (sig <= 0) return 0;
+                var d1 = (Math.Log(x / kIdx.Value) + 0.5 * iv.Value * iv.Value * t) / sig;
+                return Math.Exp(-0.5 * d1 * d1) / (Math.Sqrt(2 * Math.PI) * x * sig);
+            }
+
+            var num = G(S, T) * S * S;
+            var den = G(S0, Tfoto) * S0 * S0;
+            if (den <= 0 || num <= 0) return null;
+            var r = num / den;
+            // un cociente disparatado significa que algo no cierra: mejor no
+            // mostrar nada inventado
+            if (r < 0.05 || r > 20.0) return null;
+            return gexPub.Value * r;
         }
 
         private static System.Windows.Media.Color Wpf(Color c)
@@ -2176,8 +2265,18 @@ namespace PythiaGex
                         }
                         yaMarcados.Add(pv2);
                         var yv = cont.GetYByPrice(pv2, false);
+                        // Un vencimiento pegado al precio importa mucho mas que
+                        // uno a doscientos ticks: para scalpear, el de cerca es
+                        // el que se puede tocar en los proximos minutos. Se le
+                        // sube el peso visual de forma continua con la
+                        // cercania, sin llegar a competir con los niveles
+                        // principales.
                         var pesoV = Math.Max(20, Math.Min(100, PesoVisualVenc)) / 100.0;
-                        var alfaV = (int)Math.Max(120, Math.Min(230, 210 * pesoV + 70));
+                        var tkCerca = precio > 0
+                            ? Math.Abs(Contexto.Ticks(pv2, precio, tick)) : 999;
+                        if (tkCerca <= Math.Max(4, TicksCercaVenc))
+                            pesoV = Math.Min(1.0, pesoV * 1.6);
+                        var alfaV = (int)Math.Max(120, Math.Min(245, 210 * pesoV + 70));
                         var grV = Math.Max(1, (int)Math.Round(GrosorPared * pesoV));
                         g.DrawLine(new RenderPen(Color.FromArgb(alfaV, par.Item2), grV, DashStyle.Dash),
                                    x0 + area.Width / 3, yv, x1, yv);
@@ -2279,7 +2378,11 @@ namespace PythiaGex
                     else if (n.Toque != null)
                         partes.Add("toca " + n.Toque.Value.ToString("0", CultureInfo.InvariantCulture) + "%");
                 }
-                if (CampoGamma && n.GexM != null) partes.Add("gam " + Mag(n.GexM));
+                if (CampoGamma && n.GexM != null)
+                {
+                    var gv = GammaViva(d, n.Idx, n.Iv, n.GexM, n.DiasGamma, precio);
+                    partes.Add("gam " + Mag(gv ?? n.GexM));
+                }
                 if (CampoOi && n.OiC != null)
                     partes.Add("OI " + Oi(n.OiC) + "c/" + Oi(n.OiP) + "p");
                 if (CampoFlujo && n.Flujo != null && n.Flujo.Volumen > 0)
@@ -2321,6 +2424,17 @@ namespace PythiaGex
                 var coinc = coincide.FirstOrDefault(kv => Math.Abs(kv.Key - p) <= tick * 2);
                 if (!string.IsNullOrWhiteSpace(coinc.Value))
                     titulo = titulo + "  " + coinc.Value.Trim();
+
+                // La gamma es de lo primero que mira el operador para decidir,
+                // y estaba en el renglon de detalle: cuando la caja no entraba
+                // en el ancho, ese renglon se caia y la gamma desaparecia. Un
+                // dato que decide no puede depender de cuanto mide la caja.
+                // Sube al titulo, que no se recorta nunca.
+                if (CampoGamma && GammaEnTitulo && n.GexM != null)
+                {
+                    var gvt = GammaViva(d, n.Idx, n.Iv, n.GexM, n.DiasGamma, precio);
+                    titulo = titulo + "  " + Mag(gvt ?? n.GexM);
+                }
 
                 var t1 = g.MeasureString(titulo, fTitulo);
                 var t2 = verDet ? g.MeasureString(detalle, fDetalle) : new Size(0, 0);

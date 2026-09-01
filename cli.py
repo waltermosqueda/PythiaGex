@@ -221,7 +221,10 @@ def main():
                 "oi_0dte_put": int(v.get("oi_0dte_put") or 0),
                 "vol_0dte_call": int(v.get("vol_0dte_call") or 0),
                 "vol_0dte_put": int(v.get("vol_0dte_put") or 0),
-                "iv_0dte": v.get("iv_0dte")}
+                "iv_0dte": v.get("iv_0dte"),
+                # dias efectivos: el plazo promedio de la gamma de ese strike
+                "dias_gamma": (round(v["gex_dias"] / v["gex_abs"], 3)
+                               if v.get("gex_abs") else None)}
             for k, v in st.items()}
 
     raiz = (fut or "ES")[:-2] or "ES"
