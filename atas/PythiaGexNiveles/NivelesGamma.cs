@@ -312,6 +312,17 @@ namespace PythiaGex
                  Description = "Un muro enorme a 200 ticks no cambia nada en los proximos minutos; uno mediano a 8 ticks lo cambia todo. La presencia visual sale de multiplicar la gamma por la probabilidad de tocarlo, en vez de una regla fija de quien va primero.")]
         public bool PesarPorRelevancia { get; set; } = true;
 
+        [Display(Name = "Cinta de griegas (regimen, charm, vanna)", GroupName = "Libro y barridos", Order = 15,
+                 Description = "Solo las tres que mueven el precio intradia, cada una con hacia donde OBLIGA a operar. Las otras quedan en el tablero: mostrarlas todas seria ruido con aspecto de rigor.")]
+        public bool VerCintaGriegas { get; set; } = true;
+
+        [Display(Name = "Donde va la cinta de griegas", GroupName = "Libro y barridos", Order = 16)]
+        public Esquina EsquinaGriegas { get; set; } = Esquina.AbajoIzquierda;
+
+        [Display(Name = "Mostrar de que lado del dinero esta cada nivel", GroupName = "Niveles cercanos", Order = 61,
+                 Description = "ATM, o cuantos strikes esta afuera del dinero y de que lado. Decir solo ITM u OTM seria incorrecto: el mismo strike es ITM para un lado y OTM para el otro.")]
+        public bool VerMoneyness { get; set; } = true;
+
         [Display(Name = "Marcar el at-the-money (ATM)", GroupName = "Niveles cercanos", Order = 59,
                  Description = "El strike al que el precio esta pegado. Ahi la gamma es maxima y en 0DTE el efecto se dispara hacia el cierre: es la referencia contra la que se miden ITM y OTM.")]
         public bool VerAtm { get; set; } = true;
@@ -345,6 +356,10 @@ namespace PythiaGex
 
         [Display(Name = "Ventana de la cinta (minutos)", GroupName = "Libro y barridos", Order = 10)]
         public int MinutosCinta { get; set; } = 5;
+
+        [Display(Name = "Separacion del borde de arriba (px)", GroupName = "Libro y barridos", Order = 13,
+                 Description = "ATAS escribe el nombre del instrumento arriba a la izquierda del grafico. Sin este margen cualquier caja anclada arriba queda ilegible encima de ese texto.")]
+        public int MargenArriba { get; set; } = 26;
 
         [Display(Name = "Separacion del borde de abajo (px)", GroupName = "Libro y barridos", Order = 14,
                  Description = "El area del grafico sigue por debajo del eje de tiempo, asi que una caja pegada al borde queda tapada. Este margen la levanta.")]
@@ -1853,7 +1868,11 @@ namespace PythiaGex
                 // que sigue por detras del eje de precios a la derecha. Una
                 // caja pegada a area.Bottom queda tapada por el eje: se vio en
                 // pantalla, con la cinta cortada al ras del borde.
-                y = arriba ? area.Top + 6
+                // ATAS escribe el nombre del instrumento arriba a la izquierda:
+                // una caja pegada a area.Top queda encima de ese texto y las
+                // dos se vuelven ilegibles. Se vio en pantalla con la cinta de
+                // griegas sobre "Continuous(MES)@Chicago Mercantile Exchange".
+                y = arriba ? area.Top + Math.Max(0, MargenArriba)
                            : area.Bottom - alto - Math.Max(0, MargenAbajo);
                 x = izq ? area.Left + 6
                         : area.Right - ancho - Math.Max(0, MargenEje) - 6;
@@ -1970,6 +1989,115 @@ namespace PythiaGex
                                               tam.Width + 6, tam.Height + 2), area);
             g.FillRectangle(Color.FromArgb(150, 12, 15, 20), caja);
             g.DrawString(t, f, Color.FromArgb(210, ColAtm), caja.Left + 3, caja.Top + 1);
+        }
+
+        /// <summary>
+        /// Las griegas que mueven el precio HOY, en una linea.
+        ///
+        /// QUE ENTRA Y QUE NO, Y POR QUE
+        ///
+        /// Hay seis griegas agregadas en el panel, pero para alguien que opera
+        /// intradia solo TRES cambian lo que va a pasar en las proximas horas.
+        /// Las otras se dejan en el tablero: mostrarlas todas seria ruido con
+        /// aspecto de rigor.
+        ///
+        ///   GEX   el regimen. Positivo, las mesas venden fuerza y compran
+        ///         debilidad: rango. Negativo, hacen lo contrario: expansion.
+        ///         Es lo primero que define si conviene operar reversion o
+        ///         continuacion, asi que va primero.
+        ///
+        ///   CHARM el arrastre de la tarde. Es cuantos contratos tiene que
+        ///         operar el conjunto de dealers SOLO porque pasa el tiempo,
+        ///         sin que el precio se mueva. Por eso se muestra por HORA: es
+        ///         un caudal, no un saldo, y explica la deriva sostenida de la
+        ///         ultima parte de la rueda.
+        ///
+        ///   VANNA cuantos contratos tienen que operar por cada punto que se
+        ///         mueva la volatilidad implicita. Es el canal por el que una
+        ///         noticia entra al precio antes de que el precio se mueva.
+        ///
+        /// Cada una con su signo y su color: verde si el flujo obligado
+        /// empuja para arriba, rojo si empuja para abajo. El numero solo no
+        /// dice nada; lo que decide es hacia donde obliga.
+        /// </summary>
+        private void DibujarGriegas(RenderContext g, Rectangle area, Datos d)
+        {
+            if (!VerCintaGriegas || d == null) return;
+            var G = d.G;
+            var f = Fuente(Math.Max(7f, TamCinta), true);
+            var fc = Fuente(Math.Max(6f, TamCinta - 1f), false);
+            var gris = Color.FromArgb(155, 165, 180);
+
+            var partes = new List<Tuple<string, string, Color>>();
+            if (d.NetGexB.HasValue)
+            {
+                var pos = d.NetGexB.Value > 0;
+                partes.Add(Tuple.Create("GEX",
+                    d.NetGexB.Value.ToString("+0.0;-0.0", CultureInfo.InvariantCulture) + "B "
+                    + (pos ? "rango" : "expande"),
+                    pos ? ColTecho : ColPiso));
+            }
+            if (G.CharmContratos.HasValue && G.DiasAlVencimiento.HasValue
+                && G.DiasAlVencimiento.Value > 0)
+            {
+                var horas = Math.Max(0.25, G.DiasAlVencimiento.Value * 24.0);
+                var porHora = G.CharmContratos.Value / horas;
+                // charm negativo = la mesa tiene que COMPRAR: empuja arriba
+                partes.Add(Tuple.Create("CHARM",
+                    Miles(Math.Abs(porHora)) + "/h " + (porHora < 0 ? "compra" : "vende"),
+                    porHora < 0 ? ColTecho : ColPiso));
+            }
+            if (G.VannaPorPuntoIv.HasValue && Math.Abs(G.VannaPorPuntoIv.Value) > 1)
+            {
+                var v = G.VannaPorPuntoIv.Value;
+                partes.Add(Tuple.Create("VANNA",
+                    Miles(Math.Abs(v)) + "/1%IV " + (v > 0 ? "compra" : "vende"),
+                    v > 0 ? ColTecho : ColPiso));
+            }
+            if (partes.Count == 0) return;
+
+            int Medir(List<Tuple<string, string, Color>> ps)
+            {
+                int w2 = 10;
+                foreach (var t in ps)
+                    w2 += g.MeasureString(t.Item1, fc).Width + 4
+                          + g.MeasureString(t.Item2, f).Width + 10;
+                return w2;
+            }
+            var disponible = Math.Max(120, area.Width - Math.Max(0, MargenEje) - 16);
+            int ancho = Medir(partes);
+            while (ancho > disponible && partes.Count > 1)
+            {
+                partes.RemoveAt(partes.Count - 1);
+                ancho = Medir(partes);
+            }
+            var alto = g.MeasureString("X", f).Height + 6;
+
+            bool arriba = EsquinaGriegas == Esquina.ArribaIzquierda
+                          || EsquinaGriegas == Esquina.ArribaDerecha;
+            bool izq = EsquinaGriegas == Esquina.ArribaIzquierda
+                       || EsquinaGriegas == Esquina.AbajoIzquierda;
+            int y = arriba ? area.Top + Math.Max(0, MargenArriba)
+                           : area.Bottom - alto - Math.Max(0, MargenAbajo);
+            int x = izq ? area.Left + 6 : area.Right - ancho - Math.Max(0, MargenEje) - 6;
+            if (x < area.Left + 4) x = area.Left + 4;
+
+            var caja = Acomodar(new Rectangle(x, y, ancho, alto), area);
+            var pisoY = area.Bottom - alto - Math.Max(0, MargenAbajo);
+            var techoY = area.Top + Math.Max(0, MargenArriba);
+            if (caja.Top > pisoY) caja = new Rectangle(caja.Left, pisoY, caja.Width, caja.Height);
+            if (caja.Top < techoY) caja = new Rectangle(caja.Left, techoY, caja.Width, caja.Height);
+
+            g.FillRectangle(Color.FromArgb(215, 12, 15, 20), caja);
+            g.DrawRectangle(new RenderPen(Color.FromArgb(80, 120, 130, 145), 1), caja);
+            int cx = caja.Left + 6;
+            foreach (var t in partes)
+            {
+                g.DrawString(t.Item1, fc, gris, cx, caja.Top + 4);
+                cx += g.MeasureString(t.Item1, fc).Width + 4;
+                g.DrawString(t.Item2, f, t.Item3, cx, caja.Top + 3);
+                cx += g.MeasureString(t.Item2, f).Width + 10;
+            }
         }
 
         /// <summary>Dibuja los disparos que quedaron anotados.</summary>
@@ -2201,6 +2329,7 @@ namespace PythiaGex
                 DibujarPerfil(g, area, cont, hi, lo);
 
             DibujarAtm(g, area, cont, precio, tick, d);
+            DibujarGriegas(g, area, d);
             DibujarBarridos(g, area, cont, fDetalle);
             DibujarCintaFlujo(g, area, cont, precio);
             DibujarDisparos(g, area, cont, fDetalle);
@@ -2520,6 +2649,47 @@ namespace PythiaGex
                 tp.Add(Tuple.Create(0, NombreEtq(n)));
                 tp.Add(Tuple.Create(0, p.ToString("0.00", CultureInfo.InvariantCulture)
                                         + (d.BaseConfiable ? "" : " *")));
+                // MONEYNESS, EN DOS CARACTERES Y SIN AMBIGUEDAD.
+                //
+                // Etiquetar un strike como "ITM" u "OTM" a secas es incorrecto:
+                // el MISMO strike es ITM para un lado y OTM para el otro al
+                // mismo tiempo. Lo que si es univoco es de que lado del dinero
+                // esta, y eso ya dice cual de los dos tipos manda ahi:
+                //
+                //   arriba del precio -> los calls estan fuera del dinero
+                //   abajo del precio  -> los puts estan fuera del dinero
+                //
+                // Y lo que importa de verdad: la gamma es una CAMPANA centrada
+                // en el dinero, y cerca del vencimiento esa campana se vuelve
+                // alta y angosta. Un muro 0DTE lejos del ATM tiene casi nada
+                // de gamma viva por mas grande que sea su numero publicado. Por
+                // eso al lado de la etiqueta va tambien cuan lejos del dinero
+                // esta, en pasos de strike: ATM, +1, +2...
+                if (VerMoneyness && precio > 0 && d.Base != null)
+                {
+                    var pasoK = (decimal)Math.Max(1.0, PasoStrike);
+                    var kAtm = Math.Round(((decimal)((double)precio - d.Base.Value)) / pasoK) * pasoK;
+                    var kNiv = n.Idx.HasValue ? (decimal)n.Idx.Value : 0m;
+                    if (kNiv > 0)
+                    {
+                        var pasos = (int)Math.Round((kNiv - kAtm) / pasoK);
+                        // TRES CARACTERES, Y NO SE CAE.
+                        //
+                        // La primera version decia "OTM·C +2", que son nueve
+                        // caracteres, y con prioridad baja: el titulo no
+                        // entraba y se caia siempre. No se veia nunca.
+                        //
+                        // Un scalper no necesita que le deletreen
+                        // out-of-the-money en cada raya: necesita saber a
+                        // cuantos strikes del dinero esta, y de que lado. El
+                        // signo ya dice el lado, y el numero la distancia en la
+                        // campana de gamma. Va con prioridad 1, como la gamma y
+                        // la probabilidad, porque ubica todo lo demas.
+                        var etqM = pasos == 0 ? "ATM"
+                                 : (pasos > 0 ? "+" + pasos + "K" : pasos + "K");
+                        tp.Add(Tuple.Create(1, etqM));
+                    }
+                }
                 if (n.Disputado) tp.Add(Tuple.Create(3, "ZONA"));
                 if (destaca) tp.Add(Tuple.Create(2, "x" + n.Puntaje));
 
