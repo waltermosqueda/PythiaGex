@@ -13,6 +13,7 @@ class Program
 
     static void Main(string[] args)
     {
+        if (args.Length > 0 && args[0] == "--v") { _v = true; args = args.Skip(1).ToArray(); }
         _ctx = new AssemblyLoadContext("atas", true);
         _ctx.Resolving += (c, n) =>
         {
@@ -21,7 +22,8 @@ class Program
         };
 
         foreach (var f in new[] { "ATAS.Indicators", "ATAS.Types", "OFT.Rendering",
-                                  "OFT.Attributes", "OFT.Localization", "ATAS.DataFeedsCore" })
+                                  "OFT.Attributes", "OFT.Localization", "ATAS.DataFeedsCore",
+                                  "ATAS.Indicators.Technical", "ATAS.Indicators.Other" })
             try { _ctx.LoadFromAssemblyPath(Path.Combine(Dir, f + ".dll")); } catch { }
 
         if (args.Length == 0 || args[0] == "--tipos")
@@ -50,6 +52,13 @@ class Program
                      .FirstOrDefault(x => x.FullName == nombre || x.Name == nombre);
         if (t == null) { Console.WriteLine($"!! no encontrado: {nombre}"); return; }
 
+        if (t.IsEnum)
+        {
+            Console.WriteLine($"### ENUM {t.FullName}");
+            foreach (var v in Enum.GetValues(t))
+                Console.WriteLine($"  {Convert.ToInt64(v),4} = {v}");
+            return;
+        }
         Console.WriteLine($"### {t.FullName}  : {t.BaseType?.Name}");
         foreach (var i in t.GetInterfaces()) Console.WriteLine($"    impl {i.Name}");
 
@@ -67,15 +76,20 @@ class Program
                          .OrderBy(m => m.Name))
                 Console.WriteLine($"  metodo {Corto(m.ReturnType)} {m.Name}("
                     + string.Join(", ", m.GetParameters().Select(x => Corto(x.ParameterType) + " " + x.Name)) + ")");
+            foreach (var f2 in tt.GetFields(F).Where(x => x.IsPublic))
+                Console.WriteLine($"  campo {Corto(f2.FieldType)} {f2.Name}"
+                    + (f2.IsLiteral ? " = " + f2.GetRawConstantValue() : ""));
             foreach (var c in tt.GetConstructors(F).Where(c => c.IsPublic || c.IsFamily))
                 Console.WriteLine($"  ctor ({string.Join(", ", c.GetParameters().Select(x => Corto(x.ParameterType) + " " + x.Name))})");
             tt = tt.BaseType; nivel++;
         }
     }
 
+    static bool _v = false;
     static string Corto(Type t)
     {
         if (t == null) return "?";
+        if (_v && !t.IsGenericType) return t.FullName ?? t.Name;
         if (!t.IsGenericType) return t.Name;
         return t.Name.Split('`')[0] + "<" + string.Join(",", t.GetGenericArguments().Select(Corto)) + ">";
     }
