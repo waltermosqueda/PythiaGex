@@ -86,7 +86,7 @@ namespace PythiaGex
 
         private sealed class Datos
         {
-            public string Contrato = "", CadenaTs = "", HoraMercado = "";
+            public string Contrato = "", CadenaTs = "", HoraMercado = "", Revivida = "";
             public double EdadMin;
             public int RetrasoS;
             public double? Spot, Base;
@@ -310,6 +310,7 @@ namespace PythiaGex
                     Contrato = Txt(r, "contrato"),
                     CadenaTs = Txt(r, "cadena_ts"),
                     HoraMercado = Txt(r, "hora_mercado"),
+                    Revivida = Txt(r, "revivida"),
                     EdadMin = Num(r, "edad_min") ?? 0,
                     RetrasoS = (int)(Num(r, "retraso_s") ?? 902),
                     Spot = Num(r, "spot"),
@@ -630,15 +631,25 @@ namespace PythiaGex
             }
             else
             {
+                // UNA SESION RECONSTRUIDA NO ES UNA CADENA VIEJA.
+                //
+                // Es de otro dia a proposito. Pintarla de rojo por antiguedad
+                // seria gritar por algo que no es un problema, y un aviso que
+                // grita de mas se ignora justo el dia que importa.
+                var reviva = !string.IsNullOrEmpty(d.Revivida);
                 var edad = d.EdadMin;
-                var colEdad = edad > 30 ? ColAcel : ColTexto;
+                var colEdad = (!reviva && edad > 30) ? ColAcel : ColTexto;
                 lineas.Add(Tuple.Create(
-                    string.Format(CultureInfo.InvariantCulture,
+                    reviva
+                    ? string.Format(CultureInfo.InvariantCulture,
+                        "{0}  ·  SESION DEL {1} RECONSTRUIDA, no es el mercado de ahora",
+                        d.Contrato, d.Revivida)
+                    : string.Format(CultureInfo.InvariantCulture,
                         "{0}  ·  cadena de hace {1:0.#} min  ·  mercado {2}",
                         d.Contrato,
                         edad,
                         d.HoraMercado.Length >= 19 ? d.HoraMercado.Substring(11, 8) : "?"),
-                    colEdad));
+                    reviva ? ColAviso : colEdad));
 
                 lineas.Add(Tuple.Create(
                     string.Format(CultureInfo.InvariantCulture,
