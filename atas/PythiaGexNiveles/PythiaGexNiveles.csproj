@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Compile Include="NivelesGamma.cs" />
+    <Compile Include="RadarDominantes.cs" />
     <Compile Include="Contexto.cs" />
     <Compile Include="Estilo.cs" />
     <Compile Include="Gatillos.cs" />
