@@ -1,0 +1,609 @@
+<meta charset="utf-8">
+<title>Radar de Dominantes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ------------------------------------------------------------------ *
+ * Paleta. El tema claro completo vive en :root; el oscuro solo
+ * redefine tokens. Ningun color se declara adentro de un media query
+ * sin estar antes aca, que es como se rompen las paginas.
+ * ------------------------------------------------------------------ */
+:root{
+  --tinta:#141a21;         /* texto principal, casi negro con sesgo azul */
+  --tinta-2:#4c5866;       /* texto secundario */
+  --tinta-3:#7b8896;       /* texto terciario, etiquetas */
+  --fondo:#f2f4f6;         /* ground, gris con sesgo frio */
+  --panel:#ffffff;
+  --panel-2:#e9edf1;
+  --linea:#d5dce3;
+  --linea-fuerte:#b6c1cc;
+
+  --freno:#1f8a7c;         /* gamma positiva: amortigua */
+  --freno-suave:rgba(31,138,124,.13);
+  --acel:#c9542b;          /* gamma negativa: amplifica */
+  --acel-suave:rgba(201,84,43,.13);
+  --ambar:#b8811a;         /* BigTrades y acentos de dato */
+  --ambar-suave:rgba(184,129,26,.15);
+  --alerta:#a8321f;
+
+  --precio:#2c3742;        /* la linea del precio */
+  --sombra:0 1px 2px rgba(20,26,33,.06), 0 4px 16px rgba(20,26,33,.05);
+  --radio:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --tinta:#e8edf2;
+    --tinta-2:#a3b0bd;
+    --tinta-3:#78848f;
+    --fondo:#0e1216;
+    --panel:#161c23;
+    --panel-2:#1e262f;
+    --linea:#2a333d;
+    --linea-fuerte:#3d4954;
+
+    --freno:#3fbfa9;
+    --freno-suave:rgba(63,191,169,.16);
+    --acel:#e8734a;
+    --acel-suave:rgba(232,115,74,.16);
+    --ambar:#e0a32e;
+    --ambar-suave:rgba(224,163,46,.18);
+    --alerta:#f0705c;
+    --precio:#cdd7e0;
+    --sombra:0 1px 2px rgba(0,0,0,.4), 0 6px 22px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --tinta:#e8edf2; --tinta-2:#a3b0bd; --tinta-3:#78848f;
+  --fondo:#0e1216; --panel:#161c23; --panel-2:#1e262f;
+  --linea:#2a333d; --linea-fuerte:#3d4954;
+  --freno:#3fbfa9; --freno-suave:rgba(63,191,169,.16);
+  --acel:#e8734a; --acel-suave:rgba(232,115,74,.16);
+  --ambar:#e0a32e; --ambar-suave:rgba(224,163,46,.18);
+  --alerta:#f0705c; --precio:#cdd7e0;
+  --sombra:0 1px 2px rgba(0,0,0,.4), 0 6px 22px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--fondo);
+  color:var(--tinta);
+  font-family:Archivo,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:15px; line-height:1.5;
+  margin:0; padding:0 20px 64px;
+  -webkit-font-smoothing:antialiased;
+}
+.envoltura{max-width:1180px;margin:0 auto}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+      font-variant-numeric:tabular-nums}
+
+/* ---------- encabezado ---------- */
+header{padding:30px 0 18px;border-bottom:1px solid var(--linea)}
+.marca{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{
+  font-size:clamp(26px,4vw,38px); font-weight:700; letter-spacing:-.02em;
+  margin:0; text-wrap:balance;
+}
+.sub{color:var(--tinta-2);font-size:15px;margin:6px 0 0;max-width:62ch}
+
+/* La cinta de procedencia. Va arriba de todo y a la vista, no en una
+   nota al pie: ningun numero de esta pagina se lee sin ella. */
+.cinta{
+  margin-top:18px; background:var(--panel); border:1px solid var(--linea);
+  border-radius:var(--radio); padding:14px 16px; box-shadow:var(--sombra);
+  display:grid; gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(148px,1fr));
+}
+.dato .et{
+  font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--tinta-3); font-weight:600; display:block; margin-bottom:3px;
+}
+.dato .vl{font-size:17px;font-weight:600;display:block}
+.dato .vl.chico{font-size:14px;font-weight:500;color:var(--tinta-2)}
+
+.aviso{
+  margin-top:12px; border-left:3px solid var(--ambar);
+  background:var(--ambar-suave); padding:10px 14px;
+  border-radius:0 6px 6px 0; font-size:13.5px; color:var(--tinta);
+}
+.aviso.rojo{border-left-color:var(--alerta);background:rgba(168,50,31,.1)}
+.aviso b{font-weight:600}
+
+/* ---------- secciones ---------- */
+section{margin-top:38px}
+h2{
+  font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--tinta-3); font-weight:600; margin:0 0 4px;
+}
+.h2sub{color:var(--tinta-2);font-size:14px;margin:0 0 16px;max-width:64ch}
+
+/* ---------- tarjetas de dominantes ---------- */
+.tarjetas{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(258px,1fr))}
+.tarjeta{
+  background:var(--panel); border:1px solid var(--linea);
+  border-radius:var(--radio); padding:16px 16px 14px;
+  box-shadow:var(--sombra); position:relative; overflow:hidden;
+}
+/* la franja de la izquierda codifica el caracter: no es decoracion */
+.tarjeta::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+}
+.tarjeta.freno::before{background:var(--freno)}
+.tarjeta.acel::before{background:var(--acel)}
+.tarjeta.vacia::before{background:var(--linea-fuerte)}
+.tarjeta .rol{
+  font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  font-weight:600; margin:0 0 2px;
+}
+.tarjeta.freno .rol{color:var(--freno)}
+.tarjeta.acel .rol{color:var(--acel)}
+.tarjeta.vacia .rol{color:var(--tinta-3)}
+.tarjeta .tec{font-size:13px;color:var(--tinta-2);margin:0 0 8px}
+/* el numero que cambia va en su propia linea, nunca al lado de un control */
+.tarjeta .num{
+  font-size:31px; font-weight:600; letter-spacing:-.01em;
+  display:block; line-height:1.1;
+}
+.tarjeta .banda{font-size:12.5px;color:var(--tinta-3);margin:2px 0 10px}
+.tarjeta .criollo{font-size:14px;color:var(--tinta);margin:0 0 12px;text-wrap:pretty}
+
+.factores{display:grid;gap:7px;padding-top:11px;border-top:1px solid var(--linea)}
+.factor{display:grid;grid-template-columns:74px 1fr 40px;gap:9px;align-items:center}
+.factor .fn{font-size:11px;color:var(--tinta-3);letter-spacing:.03em}
+.factor .fb{height:5px;background:var(--panel-2);border-radius:3px;overflow:hidden}
+.factor .fb i{display:block;height:100%;border-radius:3px}
+.factor .fv{font-size:11.5px;color:var(--tinta-2);text-align:right}
+.puntaje{
+  display:flex;align-items:baseline;gap:7px;
+  margin-top:11px;padding-top:10px;border-top:1px solid var(--linea);
+}
+.puntaje .pn{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-3);font-weight:600}
+.puntaje .pv{font-size:19px;font-weight:600}
+.chip{
+  font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;
+  padding:2px 7px;border-radius:99px;border:1px solid currentColor;
+}
+.chip.debil{color:var(--tinta-3)}
+.chip.firme{color:var(--freno)}
+
+/* ---------- el mapa ---------- */
+.mapa{
+  background:var(--panel); border:1px solid var(--linea);
+  border-radius:var(--radio); box-shadow:var(--sombra);
+  padding:14px; overflow-x:auto;
+}
+.mapa svg{display:block;min-width:640px;width:100%;height:auto}
+.leyenda{
+  display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--linea);font-size:12.5px;color:var(--tinta-2);
+}
+.leyenda span{display:inline-flex;align-items:center;gap:6px}
+.pto{width:9px;height:9px;border-radius:50%;display:inline-block}
+.brr{width:16px;height:7px;border-radius:2px;display:inline-block}
+
+/* ---------- lista de flujo ---------- */
+.flujo{display:grid;gap:9px}
+.fila{
+  background:var(--panel);border:1px solid var(--linea);border-radius:8px;
+  padding:11px 14px;display:grid;gap:4px 14px;
+  grid-template-columns:78px 1fr auto;align-items:baseline;
+}
+.fila .hh{font-size:12.5px;color:var(--tinta-3)}
+.fila .qq{font-size:14px}
+.fila .pp{font-size:14px;font-weight:600;text-align:right;white-space:nowrap}
+.fila .nota{grid-column:2/-1;font-size:12.5px;color:var(--tinta-2)}
+.fila.amplifica{border-left:3px solid var(--acel)}
+.fila.amortigua{border-left:3px solid var(--freno)}
+.fila.indefinido{border-left:3px solid var(--linea-fuerte)}
+
+.vacio{
+  border:1px dashed var(--linea-fuerte);border-radius:var(--radio);
+  padding:22px;text-align:center;color:var(--tinta-3);font-size:14px;
+}
+footer{
+  margin-top:44px;padding-top:18px;border-top:1px solid var(--linea);
+  color:var(--tinta-3);font-size:12.5px;max-width:74ch;
+}
+footer p{margin:0 0 8px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ambar);outline-offset:2px;border-radius:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="envoltura">
+<header>
+  <div class="marca">
+    <h1>Radar de Dominantes</h1>
+  </div>
+  <p class="sub">Dónde la mesa tiene un incentivo real hoy, y quién está entrando ahí ahora mismo.
+     Todo recalculado desde la cadena cruda de CBOE — ningún número viene copiado de un tablero.</p>
+  <div class="cinta mono" id="cinta"></div>
+  <div id="avisos"></div>
+</header>
+
+<section>
+  <h2>Las cuatro dominantes</h2>
+  <p class="h2sub">Una zona entra acá sólo si pasa los tres filtros a la vez: que sea grande,
+     que venza pronto y que el precio pueda llegar. El puntaje es el producto de los tres,
+     así que si uno falla la zona se cae sola.</p>
+  <div class="tarjetas" id="tarjetas"></div>
+</section>
+
+<section>
+  <h2>El mapa</h2>
+  <p class="h2sub">El eje del medio es el precio, y de él cuelgan las dos mitades.
+     A la izquierda, la estructura: cuánta gamma hay en cada strike, que viene del interés abierto de ayer.
+     A la derecha, el flujo: cuánta plata grande entró hoy en ese mismo strike.
+     Puestas al mismo nivel se ve de un vistazo si la plata de hoy está cayendo sobre la pared del mapa,
+     y de qué lado.</p>
+  <div class="mapa"><svg id="svg" viewBox="0 0 1000 620" role="img"
+       aria-label="Mapa de zonas dominantes y operaciones grandes de opciones"></svg>
+    <div class="leyenda">
+      <span><i class="brr" style="background:var(--freno)"></i> izquierda: gamma positiva, frena</span>
+      <span><i class="brr" style="background:var(--acel)"></i> izquierda: gamma negativa, acelera</span>
+      <span><i class="brr" style="background:var(--acel)"></i> derecha: compra agresiva, deja a la mesa corta</span>
+      <span><i class="brr" style="background:var(--freno)"></i> derecha: venta agresiva, deja a la mesa larga</span>
+      <span><i class="brr" style="background:var(--tinta-3)"></i> cruce sin agresor claro</span>
+      <span>las barras apagadas son strikes sin incentivo hoy</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Qué le están haciendo a cada zona</h2>
+  <p class="h2sub">Acá se cruzan las dos mitades. Una pared con compras agresivas encima se está
+     debilitando: cada opción que la mesa vende la deja más corta de gamma. La misma pared con
+     ventas agresivas se está endureciendo.</p>
+  <div class="flujo" id="cruce"></div>
+</section>
+
+<section>
+  <h2>Las operaciones más grandes</h2>
+  <p class="h2sub">Cada línea es plata que entró de golpe en un solo strike.
+     El lado sale de comparar contra qué punta se cruzó, y cuando no se puede saber, lo dice.</p>
+  <div class="flujo" id="lista"></div>
+</section>
+
+<footer>
+  <p><b>Lo que esto no dice.</b> El GEX describe cómo se espera que se comporte el movimiento
+     —rango o tendencia, compresión o expansión— nunca hacia dónde. Una dominante de freno no
+     dice que el precio va a bajar desde ahí: dice que si llega, es más probable que se pare
+     a que la atraviese de largo.</p>
+  <p><b>Un nivel no es una entrada.</b> Dice dónde mirar. Si entrar o no lo decide lo que pase
+     cuando el precio llegue ahí.</p>
+  <p><b>El signo es una convención.</b> La fórmula estándar supone que las mesas están largas de
+     calls y cortas de puts. Cuando el flujo dominante se da vuelta, el signo miente.</p>
+</footer>
+</div>
+
+<script>
+/* ================================================================== *
+ * Los datos entran por una de dos puertas:
+ *   1. window.DATOS, si la pagina viene con el dato adentro
+ *   2. fetch a datos/, si esta servida junto al motor
+ * ================================================================== */
+const F = {
+  usd(n){
+    if(n==null) return "—";
+    const a=Math.abs(n);
+    if(a>=1e9) return (n/1e9).toFixed(2)+" B";
+    if(a>=1e6) return (n/1e6).toFixed(1)+" M";
+    if(a>=1e3) return Math.round(n/1e3)+" k";
+    return String(Math.round(n));
+  },
+  pre(n,d=2){ return n==null? "—" : n.toLocaleString("es-AR",{minimumFractionDigits:d,maximumFractionDigits:d}); },
+  hora(s){ return s? s.slice(11,16) : "—"; },
+  pct(x){ return x==null? "—" : Math.round(x*100)+"%"; }
+};
+
+function pintar(D){
+  const dom = D.dominantes||{}, base=D.base, hayBase=!!D.base_confiable;
+  const unidad = hayBase ? (D.contrato||"futuro") : (D.simbolo||"índice");
+  // precio de referencia: el del futuro si la base es confiable, si no el del indice
+  const P = x => x==null ? null : (hayBase ? x + base : x);
+
+  /* ---------- cinta de procedencia ---------- */
+  const edad = D.cadena_edad_min;
+  const viejo = edad!=null && edad>30;
+  document.getElementById("cinta").innerHTML = [
+    ["Índice", D.simbolo+" "+F.pre(D.spot)],
+    ["Hora de mercado", F.hora(D.hora_mercado)+" UTC"],
+    ["Antigüedad", (edad==null?"—":edad.toFixed(1)+" min")],
+    ["Base a "+(D.contrato||"futuro"), hayBase? (base>=0?"+":"")+F.pre(base) : "no confiable"],
+    [D.revivida?"Operaciones grandes":"Operaciones grandes hoy", (D.bigtrades_dia_n||0)+""],
+    ["Fuente", "CBOE, cadena cruda"]
+  ].map(([e,v],i)=>`<div class="dato"><span class="et">${e}</span>
+      <span class="vl${i>=3?" chico":""}">${v}</span></div>`).join("");
+
+  /* ---------- avisos ---------- */
+  const av=[];
+  av.push(`<div class="aviso"><b>El dato llega ${Math.round((D.retraso_s||902)/60)} minutos tarde.</b>
+    Está medido, no estimado: ${D.retraso_s||902} segundos exactos, en 14 de 14 corridas del 1 de septiembre.
+    Las operaciones grandes de acá describen lo que pasó hace un cuarto de hora.
+    Sirven para leer estructura y para estudiar la sesión; <b>no sirven como gatillo de entrada en vivo</b>.</div>`);
+  if(!hayBase) av.push(`<div class="aviso rojo"><b>Los niveles salen en ${D.simbolo}, no en ${D.contrato||"ES"}.</b>
+    La base no dio confiable${D.base_aviso? " — "+D.base_aviso : ""}.
+    Dibujar un nivel del índice crudo en el futuro lo deja unos ${Math.abs(Math.round(D.base_cruda||11))} puntos corrido.</div>`);
+  // Una sesión reconstruida no es una cadena vieja: es de otro día a propósito.
+  // Avisar por antigüedad ahí sería gritar por algo que no es un problema, y un
+  // aviso que grita de más se ignora justo el día que importa.
+  if(D.revivida) av.push(`<div class="aviso"><b>Esta es la sesión del ${D.revivida}, reconstruida.</b>
+    No es el mercado de ahora: es esa rueda rearmada desde las cadenas guardadas, con las
+    dominantes y el flujo grande superpuestos. Para estudiar una sesión terminada el retraso
+    de quince minutos no molesta nada — es justo para esto que ese dato sirve.</div>`);
+  else if(viejo) av.push(`<div class="aviso rojo"><b>La cadena tiene ${edad.toFixed(0)} minutos.</b>
+    Con más de media hora el mapa describe otro mercado.</div>`);
+  (dom.faltan||[]).forEach(f=>av.push(`<div class="aviso"><b>Falta una pata del mapa.</b> ${f}.</div>`));
+  document.getElementById("avisos").innerHTML = av.join("");
+
+  /* ---------- tarjetas ---------- */
+  const roles=[
+    ["dominante_arriba","Techo","Dominante de freno · arriba"],
+    ["dominante_abajo","Piso","Dominante de freno · abajo"],
+    ["acelerador_arriba","Trampolín","Dominante de aceleración · arriba"],
+    ["acelerador_abajo","Resbaladilla","Dominante de aceleración · abajo"]
+  ];
+  document.getElementById("tarjetas").innerHTML = roles.map(([k,rol,tec])=>{
+    const z=dom[k];
+    if(!z) return `<article class="tarjeta vacia"><p class="rol">${rol}</p>
+      <p class="tec">${tec}</p><span class="num mono">—</span>
+      <p class="criollo">Hoy no hay ninguna zona de este tipo. Eso no es un fallo del cálculo:
+         significa que de ese lado no hay nada con incentivo.</p></article>`;
+    const cls = z.caracter==="freno"?"freno":"acel";
+    const pr = P(z.strike), d1=P(z.desde), d2=P(z.hasta);
+    const fac=[["tamaño",z.tamano,"cuánta gamma hay ahí"],
+               ["inmediatez",z.inmediatez,"cuánta vence pronto"],
+               ["alcance",z.alcance,"si el precio puede llegar"]];
+    return `<article class="tarjeta ${cls}">
+      <p class="rol">${rol}</p>
+      <p class="tec">${tec}</p>
+      <span class="num mono">${F.pre(pr, hayBase?2:0)}</span>
+      <p class="banda mono">zona ${F.pre(d1,hayBase?2:0)} – ${F.pre(d2,hayBase?2:0)} · ${unidad}</p>
+      <p class="criollo">${z.criollo||""}</p>
+      <div class="factores">${fac.map(([n,v])=>`
+        <div class="factor"><span class="fn">${n}</span>
+          <span class="fb"><i style="width:${Math.round((v||0)*100)}%;background:var(--${cls==="freno"?"freno":"acel"})"></i></span>
+          <span class="fv mono">${F.pct(v)}</span></div>`).join("")}
+      </div>
+      <div class="puntaje"><span class="pn">incentivo</span>
+        <span class="pv mono">${(z.incentivo_100||0).toFixed(1)}</span>
+        <span class="chip ${z.relevante?"firme":"debil"}">${z.relevante?"cuenta hoy":"decorativo"}</span>
+      </div></article>`;
+  }).join("");
+
+  /* ---------- el mapa ---------- */
+  dibujar(D, dom, P, hayBase);
+
+  /* ---------- cruce con las zonas ---------- */
+  const cr = D.bigtrades_contra_zonas||[];
+  document.getElementById("cruce").innerHTML = cr.length ? cr.slice(0,6).map(c=>{
+    const cls = c.neto_gamma>0?"amplifica":c.neto_gamma<0?"amortigua":"indefinido";
+    return `<div class="fila ${cls}">
+      <span class="hh mono">${F.pre(P(c.zona), hayBase?2:0)}</span>
+      <span class="qq">zona de ${c.caracter==="freno"?"freno":"aceleración"} ${c.lado}
+        · ${c.n_trades} operación${c.n_trades===1?"":"es"}</span>
+      <span class="pp mono">USD ${F.usd(c.prima)}</span>
+      <span class="nota">${c.lectura}</span></div>`;
+  }).join("") : `<div class="vacio">Todavía no entró plata grande en ninguna zona dominante
+      durante esta ventana.</div>`;
+
+  /* ---------- lista de operaciones ---------- */
+  const ev = (D.bigtrades_dia||[]).slice().sort((a,b)=>b.prima-a.prima).slice(0,14);
+  document.getElementById("lista").innerHTML = ev.length ? ev.map(e=>{
+    const cls = e.efecto_gamma==="amplifica"?"amplifica":e.efecto_gamma==="amortigua"?"amortigua":"indefinido";
+    const conf = e.confianza==="alta"?"" : ` · confianza ${e.confianza}`;
+    return `<div class="fila ${cls}">
+      <span class="hh mono">${F.hora(e.hora)}</span>
+      <span class="qq"><b class="mono">${F.pre(P(e.strike), hayBase?2:0)}</b>
+        ${e.tipo} ${e.es_0dte?"del día":"a "+Math.round(e.dte)+" días"}
+        · ${e.contratos.toLocaleString("es-AR")} contratos</span>
+      <span class="pp mono">USD ${F.usd(e.prima)}</span>
+      <span class="nota">${e.lado}${conf} — ${e.efecto_porque}</span></div>`;
+  }).join("") : `<div class="vacio">No hay operaciones grandes registradas todavía hoy.</div>`;
+}
+
+/* ------------------------------------------------------------------ *
+ * El mapa, en forma de mariposa alrededor del eje de precio.
+ *
+ * POR QUE NO ES UNA DISPERSION EN EL TIEMPO
+ *
+ * La primera version ponia las operaciones grandes como puntos sobre un eje
+ * de tiempo, que es como lo dibujan los tableros que hacen esto. Con datos
+ * continuos funciona. Los nuestros no son continuos: las corridas guardadas
+ * vienen a rachas, asi que el grafico quedaba con un racimo a la izquierda,
+ * un desierto en el medio y una columna al final. Eso no es una lectura del
+ * dia: es un retrato del muestreo.
+ *
+ * Lo que si es continuo, y es lo que importa, es el PRECIO. Asi que el eje
+ * vertical es el precio y las dos mitades cuelgan de el:
+ *
+ *   izquierda   la estructura   gamma por strike, del interes abierto
+ *   derecha     el flujo        prima grande que entro hoy en ese strike
+ *
+ * Puestas al mismo nivel se lee de un vistazo lo unico que ningun tablero
+ * publico puede decir: si la plata de hoy esta cayendo sobre la pared que
+ * el mapa dibujo, y de que lado.
+ *
+ * Abajo queda una cinta de tiempo, que ahi si dice cuando entro cada cosa
+ * y muestra los huecos de muestreo como huecos, sin disimularlos.
+ * ------------------------------------------------------------------ */
+function dibujar(D, dom, P, hayBase){
+  const svg=document.getElementById("svg");
+  const W=1000, H=640;
+  const XG0=74, XG1=446;            // barras de gamma, crecen hacia la izquierda
+  const XC0=446, XC1=554;           // columna central con el precio
+  const XF0=554, XF1=926;           // barras de flujo, crecen hacia la derecha
+  const Y0=44, Y1=470;              // area de la mariposa
+  const T0=516, T1=602;             // cinta de tiempo
+  const ev=(D.bigtrades_dia||[]);
+  const perfil=(dom.perfil||[]).filter(p=>Math.abs(p.gex)>0);
+  const E=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  if(!perfil.length){ svg.innerHTML=""; return; }
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);
+
+  /* --- rango de precio: lo que cubren las zonas que cuentan, el precio
+         de ahora y donde entro la plata. No toda la cadena, o el dibujo
+         queda vacio justo en el medio. --- */
+  const rel=(dom.zonas||[]).filter(z=>z.relevante);
+  let lo=D.spot, hi=D.spot;
+  rel.forEach(z=>{ lo=Math.min(lo,z.desde); hi=Math.max(hi,z.hasta); });
+  ev.forEach(e=>{ lo=Math.min(lo,e.strike); hi=Math.max(hi,e.strike); });
+  perfil.filter(p=>p.incentivo>=0.02).forEach(p=>{ lo=Math.min(lo,p.strike); hi=Math.max(hi,p.strike); });
+  const pad=Math.max((hi-lo)*0.06, 6);
+  lo-=pad; hi+=pad;
+  const Y = v => Y1 - (v-lo)/(hi-lo)*(Y1-Y0);
+  const alto = Math.max(3, Math.min(11, (Y1-Y0)/Math.max(12,(hi-lo)/(dom.paso_strike||5))*0.62));
+
+  /* --- flujo agrupado por strike --- */
+  const flujo={};
+  ev.forEach(e=>{
+    const f=flujo[e.strike]||(flujo[e.strike]={amp:0,amo:0,ind:0,n:0,total:0});
+    const k = e.efecto_gamma==="amplifica"?"amp":e.efecto_gamma==="amortigua"?"amo":"ind";
+    f[k]+=e.prima; f.total+=e.prima; f.n++;
+  });
+  const maxG=Math.max(...perfil.map(p=>Math.abs(p.gex)))||1;
+  const maxF=Math.max(1,...Object.values(flujo).map(f=>f.total));
+  const mostrar = v => (hayBase ? v + D.base : v);
+  let s="";
+
+  /* --- bandas de las zonas que cuentan, al fondo --- */
+  rel.forEach(z=>{
+    const ya=Y(z.hasta+ (dom.paso_strike||5)/2), yb=Y(z.desde-(dom.paso_strike||5)/2);
+    const col = z.caracter==="freno" ? "var(--freno-suave)" : "var(--acel-suave)";
+    s+=`<rect x="${XG0}" y="${ya}" width="${XF1-XG0}" height="${Math.max(4,yb-ya)}"
+         fill="${col}" rx="2"/>`;
+  });
+
+  /* --- grilla y numeros de precio en la columna del medio --- */
+  const rango=hi-lo;
+  const paso = rango>240?50 : rango>120?25 : rango>60?10 : 5;
+  for(let v=Math.ceil(lo/paso)*paso; v<=hi; v+=paso){
+    const y=Y(v);
+    s+=`<line x1="${XG0}" y1="${y}" x2="${XC0-4}" y2="${y}" stroke="var(--linea)" opacity=".5"/>`;
+    s+=`<line x1="${XC1+4}" y1="${y}" x2="${XF1}" y2="${y}" stroke="var(--linea)" opacity=".5"/>`;
+    s+=`<text x="${(XC0+XC1)/2}" y="${y+4}" font-size="11.5" fill="var(--tinta-3)"
+         text-anchor="middle" font-family="IBM Plex Mono, monospace">${mostrar(v).toFixed(0)}</text>`;
+  }
+
+  /* --- izquierda: la estructura --- */
+  perfil.forEach(p=>{
+    const y=Y(p.strike);
+    if(y<Y0-6||y>Y1+6) return;
+    const w=Math.max(1.5, Math.abs(p.gex)/maxG*(XG1-XG0));
+    const col=p.gex>=0?"var(--freno)":"var(--acel)";
+    const fuerte = p.incentivo>=0.02;
+    s+=`<rect x="${XG1-w}" y="${y-alto/2}" width="${w}" height="${alto}" rx="1.5"
+         fill="${col}" opacity="${fuerte?.92:.34}">
+         <title>${mostrar(p.strike).toFixed(0)} · gamma ${(p.gex/1e6).toFixed(0)} M por 1% · incentivo ${(p.incentivo*100).toFixed(1)}</title></rect>`;
+  });
+
+  /* --- derecha: el flujo, partido por lo que le hace a la gamma --- */
+  Object.entries(flujo).forEach(([k,f])=>{
+    const y=Y(+k);
+    if(y<Y0-6||y>Y1+6) return;
+    let x=XF0;
+    [["amp","var(--acel)"],["amo","var(--freno)"],["ind","var(--tinta-3)"]].forEach(([kk,col])=>{
+      if(!f[kk]) return;
+      const w=Math.max(1.2, f[kk]/maxF*(XF1-XF0));
+      s+=`<rect x="${x}" y="${y-alto/2}" width="${w}" height="${alto}" rx="1.5"
+           fill="${col}" opacity=".9">
+           <title>${mostrar(+k).toFixed(0)} · ${f.n} operación${f.n===1?"":"es"} · USD ${F.usd(f.total)}</title></rect>`;
+      x+=w;
+    });
+  });
+
+  /* --- las cuatro dominantes: etiqueta al margen, no encima del dato --- */
+  const usados=[];
+  [["dominante_arriba","freno","techo"],["dominante_abajo","freno","piso"],
+   ["acelerador_arriba","acel","trampolín"],["acelerador_abajo","acel","resbaladilla"]].forEach(([k,c,et])=>{
+    const z=dom[k]; if(!z) return;
+    let y=Y(z.strike);
+    if(y<Y0||y>Y1) return;
+    while(usados.some(u=>Math.abs(u-y)<13)) y+=13;   // que no se pisen entre si
+    usados.push(y);
+    const col=c==="freno"?"var(--freno)":"var(--acel)";
+    const yr=Y(z.strike);
+    s+=`<line x1="${XG0}" y1="${yr}" x2="${XF1}" y2="${yr}" stroke="${col}"
+         stroke-width="${z.relevante?1.6:1}" stroke-dasharray="${z.relevante?"":"5 4"}" opacity=".85"/>`;
+    s+=`<text x="${XG0-6}" y="${y+4}" font-size="11" fill="${col}" font-weight="600"
+         text-anchor="end" font-family="Archivo, sans-serif">${E(et)}</text>`;
+  });
+
+  /* --- el precio de ahora --- */
+  const ys=Y(D.spot);
+  if(ys>=Y0&&ys<=Y1){
+    s+=`<line x1="${XG0}" y1="${ys}" x2="${XF1}" y2="${ys}" stroke="var(--precio)"
+         stroke-width="1.4" stroke-dasharray="2 3"/>`;
+    s+=`<text x="${XF1+6}" y="${ys+4}" font-size="11.5" font-weight="600" fill="var(--precio)"
+         font-family="IBM Plex Mono, monospace">${mostrar(D.spot).toFixed(0)}</text>`;
+  }
+
+  /* --- encabezados de las dos mitades --- */
+  s+=`<text x="${XG1}" y="${Y0-16}" font-size="10.5" fill="var(--tinta-3)" text-anchor="end"
+       font-family="Archivo, sans-serif" letter-spacing=".1em">ESTRUCTURA · GAMMA POR STRIKE</text>`;
+  s+=`<text x="${XF0}" y="${Y0-16}" font-size="10.5" fill="var(--tinta-3)"
+       font-family="Archivo, sans-serif" letter-spacing=".1em">FLUJO · PRIMA GRANDE DE HOY</text>`;
+  s+=`<text x="${(XC0+XC1)/2}" y="${Y0-16}" font-size="10.5" fill="var(--tinta-3)" text-anchor="middle"
+       font-family="Archivo, sans-serif" letter-spacing=".1em">${hayBase?E(D.contrato||"ES"):E(D.simbolo)}</text>`;
+  s+=`<line x1="${XG0}" y1="${Y0-8}" x2="${XF1}" y2="${Y0-8}" stroke="var(--linea)"/>`;
+
+  /* --- la cinta de tiempo --- */
+  const ts=ev.map(e=>Date.parse(e.hora)).filter(Boolean);
+  if(ts.length>1){
+    const t0=Math.min(...ts), t1=Math.max(...ts);
+    const cubos=48, ancho=(XF1-XG0)/cubos;
+    const bal=new Array(cubos).fill(0), tot=new Array(cubos).fill(0);
+    ev.forEach(e=>{
+      const i=Math.min(cubos-1, Math.floor((Date.parse(e.hora)-t0)/(t1-t0+1)*cubos));
+      tot[i]+=e.prima;
+      bal[i]+= e.efecto_gamma==="amplifica"? e.prima : e.efecto_gamma==="amortigua"? -e.prima : 0;
+    });
+    const mx=Math.max(1,...tot);
+    const ym=(T0+T1)/2;
+    s+=`<text x="${XG0}" y="${T0-14}" font-size="10.5" fill="var(--tinta-3)"
+         font-family="Archivo, sans-serif" letter-spacing=".1em">CUÁNDO ENTRÓ · arriba deja a la mesa corta, abajo larga</text>`;
+    s+=`<line x1="${XG0}" y1="${ym}" x2="${XF1}" y2="${ym}" stroke="var(--linea-fuerte)"/>`;
+    for(let i=0;i<cubos;i++){
+      if(!tot[i]) continue;
+      const h=Math.max(1.5, tot[i]/mx*((T1-T0)/2-3));
+      const arriba = bal[i]>=0;
+      const col = bal[i]>0?"var(--acel)":bal[i]<0?"var(--freno)":"var(--tinta-3)";
+      s+=`<rect x="${XG0+i*ancho+0.6}" y="${arriba?ym-h:ym}" width="${ancho-1.2}" height="${h}"
+           fill="${col}" opacity=".85" rx="1"/>`;
+    }
+    for(let i=0;i<=4;i++){
+      const t=t0+(t1-t0)*i/4, x=XG0+(XF1-XG0)*i/4;
+      s+=`<text x="${x}" y="${T1+18}" font-size="10.5" fill="var(--tinta-3)" text-anchor="middle"
+           font-family="IBM Plex Mono, monospace">${new Date(t).toISOString().slice(11,16)}</text>`;
+    }
+    s+=`<text x="${XF1}" y="${T0-14}" font-size="10.5" fill="var(--tinta-3)" text-anchor="end"
+         font-family="Archivo, sans-serif">los huecos son huecos de muestreo, no calma</text>`;
+  }
+  svg.innerHTML=s;
+}
+
+/* ---------- arranque ---------- */
+(function(){
+  if(window.DATOS){ pintar(window.DATOS); return; }
+  const sim=(new URLSearchParams(location.search)).get("s")||"SPX";
+  fetch("datos/radar-"+sim+".json",{cache:"no-store"})
+    .then(r=>r.json())
+    .then(d=>{
+      // si el dia de hoy todavia no tiene operaciones, se muestra el ultimo
+      // dia que si las tiene, diciendolo
+      if((d.bigtrades_dia||[]).length) return pintar(d);
+      return fetch("datos/bigtrades-"+sim+"-"+(d.hora_mercado||"").slice(0,10)+".json",
+                   {cache:"no-store"})
+        .then(r=>r.ok?r.json():null)
+        .then(h=>{ if(h&&h.eventos){ d.bigtrades_dia=h.eventos; d.bigtrades_dia_n=h.eventos.length; }
+                   pintar(d); })
+        .catch(()=>pintar(d));
+    })
+    .catch(e=>{
+      document.getElementById("tarjetas").innerHTML =
+        `<div class="vacio">No se pudo leer <b>datos/radar-${sim}.json</b>.
+         Corré <span class="mono">python radar.py ${sim}</span> primero.</div>`;
+    });
+})();
+</script>
