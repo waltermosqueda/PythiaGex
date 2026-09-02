@@ -29,14 +29,22 @@ Está en `PythiaGex/atas/_api` — un programa chico que carga los ensamblados c
 - refresco periódico: `SubscribeToTimer(TimeSpan, Action)` y `RedrawChart(new RedrawArg(ChartArea))`
 - los ajustes se declaran con `[Display(Name=..., GroupName=..., Order=...)]` de `System.ComponentModel.DataAnnotations`
 
-**Trampa de tipos:** `AddAlert` usa el `Color` de `System.Windows.Media`; el dibujo usa el de `System.Drawing`. Mismo nombre, dos tipos. Hay que convertir.
+**Trampa de tipos:** `AddAlert` usa el `Color` de `System.Windows.Media`; el dibujo usa el de `System.Drawing`. Mismo nombre, dos tipos. Hay que convertir. Lo mismo en las series: `ValueDataSeries.Color` y `RangeDataSeries.RangeColor` son **Media**, mientras que `RenderColor` es **Drawing**.
+
+**El eje de precios se dibuja ENCIMA de `ChartArea`**, así que `area.Right` no es el borde visible: mide unos **62 px** de más. Una etiqueta alineada a la derecha queda cortada por el eje y parece que le falta texto. Hay que restar ese margen y dejarlo configurable.
+
+**Las propiedades de cada serie tambien las guarda el workspace, y ese guardado le gana al default del codigo** — igual que con las propiedades del indicador. Pasó con `ShowCurrentValue`: ATAS dibujaba el valor de la serie en el eje de precios, duplicando la etiqueta propia. Cambiar el default a `false` en el código no alcanzó para la instancia ya agregada; hay que destildar **"Show value"** a mano en `Ctrl+I` → indicador → sección *Drawing* → expandir la serie. Cambiar el `Id` de la serie sí hace que las nuevas tomen el default.
+
+**ATAS se traga las excepciones de los indicadores sin dejar nada en su log.** Un fallo se ve solo como un indicador que no dibuja. Conviene envolver `OnCalculate` y `OnRender` en try/catch que escriba a un archivo propio.
 
 Usar `InstrumentInfo.Instrument` y `InstrumentInfo.TickSize`, no `Instrument` ni `TickSize` sueltos: están obsoletos.
 
 ## Instalarlo (el paso que costó)
 
-1. Copiar el DLL a `%APPDATA%\ATAS\Indicators\`.
-2. **Reiniciar ATAS.** No lo toma en caliente. En el log aparece `Indicators: Created library '...dll'`.
+1. Copiar el DLL a `%APPDATA%\ATAS\Indicators\`. **El archivo NO queda bloqueado aunque ATAS esté abierto**: se puede pisar en caliente.
+2. **Reiniciar ATAS.** En el log aparece `Indicators: Created library '...dll'`.
+
+   **CORREGIDO el 2026-09-01:** decía que no lo toma en caliente. En realidad ATAS **detecta el cambio** y avisa: `Changed library '...dll'` seguido de la notificación *"Some indicator libraries have been changed. You can reload indicators in the status bar of the main window."* O sea que existe una recarga en caliente. **Todavía no encontré el botón** — no está en el ícono de la derecha de la barra de estado, que es "Open changelog". Vale la pena buscarlo bien: ahorraría los 4-5 minutos de cada reinicio.
 3. Gráfico → `Indicators` → buscarlo por nombre.
 4. Seleccionarlo con **un solo clic**. Ahí el botón de abajo a la derecha cambia de `Apply` a **`Add to chart`**.
 5. Apretar `Add to chart` — recién ahí sube el contador de `Added (N)`. **Doble clic no alcanza, arrastrarlo tampoco.**

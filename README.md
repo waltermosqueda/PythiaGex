@@ -30,6 +30,71 @@ El panel dice **dónde** está la pared. El indicador, con el footprint de ATAS,
 dice **quién está ganando ahí**. Ningún tablero de GEX público puede dar lo
 segundo.
 
+---
+
+## El radar: dominantes y BigTrades
+
+```bash
+python radar.py SPX                 # una corrida
+python radar.py SPX --vigilar 60    # corre cada 60 s hasta que lo cortes
+python radar.py SPX --dia 2026-08-31  # rearma esa sesión desde el cache
+python radar.py SPX --rehacer       # reconstruye el historial guardado
+```
+
+Escribe `panel/datos/radar-SPX.json` (el panel), `panel/datos/atas/ES_radar.json`
+(el indicador) y `panel/datos/bigtrades-SPX-<fecha>.json` (el historial del día).
+La pantalla está en [`panel/radar.html`](panel/radar.html).
+
+### Dominante
+
+Una **dominante** no es el strike más grande del mapa: es el único que pasa
+los tres filtros a la vez.
+
+```
+incentivo = tamaño × inmediatez × alcance
+
+tamaño      cuánta gamma hay ahí, contra la mayor del mapa
+inmediatez  qué fracción de esa gamma vence dentro del horizonte
+alcance     probabilidad de que el precio la toque hoy
+```
+
+Los tres son necesarios y los tres se publican por separado, así que se puede
+discutir cuál falla en vez de creerle a un número. Si uno da cero, la zona no
+existe hoy por grande que sea el titular.
+
+Esto es lo que corrige tres mentiras por omisión que ya estaban medidas en el
+proyecto y nunca se habían juntado: que la gamma más grande suele vencer
+dentro de tres semanas (el 7800 del 28 de agosto tenía el 69 % de su gamma en
+el vencimiento del 18 de septiembre), que una pared a doscientos puntos no se
+activa nunca, y que el interés abierto es de ayer.
+
+El signo dice el **carácter**, nunca la dirección: gamma positiva **frena**,
+gamma negativa **acelera**.
+
+### BigTrades
+
+CBOE no publica la cinta de operaciones, pero sí publica por contrato el
+volumen **acumulado** del día, el último precio operado, las dos puntas y el
+tick. Restando el volumen acumulado de dos corridas seguidas queda el volumen
+que se operó entre las dos: la cinta agrupada en ventanas en lugar de tick a
+tick. El lado sale de contra qué punta se cruzó.
+
+Eso contesta la pregunta que el mapa solo no puede: **la pared que estoy
+mirando, ¿la refuerzan o se la comen?** Si el cliente compra, la mesa queda
+corta de gamma y el freno se afloja; si vende, se endurece.
+
+> **El dato de CBOE llega 902 segundos tarde.** Medido, no estimado: 902
+> segundos exactos en 14 de 14 corridas guardadas del 1 de septiembre, con
+> desviación cero. Los BigTrades describen lo que pasó hace un cuarto de hora.
+> Sirven para leer estructura y para estudiar una sesión terminada — **no
+> sirven como gatillo de entrada en vivo**. Cada evento sale con su hora de
+> mercado real calculada, no con la del archivo.
+
+Lo que tampoco puede: separar una ventana donde hubo compras *y* ventas. El
+delta de volumen las suma y el último precio solo describe el último cruce.
+Por eso cada evento lleva su `confianza`, y cuando la ventana es larga o el
+contrato operó mucho, baja y lo dice.
+
 ## Respaldo
 
 Buena parte del trabajo vivía solo en el disco de una máquina: las memorias,

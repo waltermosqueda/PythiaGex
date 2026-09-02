@@ -19,6 +19,26 @@ metadata:
    - Esperar con `until` sobre la memoria del proceso: arranca en ~460 MB y los gráficos están listos arriba de ~2.000 MB. Tarda 3 a 5 minutos en total.
    - **Antes de cerrar, mirar el panel de cuenta**: si `Open PnL` no es 0.00 hay posición abierta y hay que preguntar.
 
+### El reinicio, paso por paso y sin perder tiempo
+
+Tardaba 4-5 minutos por reinicio con esperas a ciegas. La secuencia correcta:
+
+```bash
+# 1. cerrar (PowerShell) — sale el diálogo "Save current workspace?"
+Get-Process OFT.Platform | ForEach-Object { $_.CloseMainWindow() }
+```
+
+- Esperar 4 s y clickear **"Save and close"** en (841, 435).
+- `open_application "ATAS Platform"`.
+- **Esperar a que aparezca el login, ~40 s.** Antes de eso el clic no hace nada.
+- **El clic en "Connect" NO funciona solo**: la ventana no tiene foco. Hay que
+  **clickear primero el cuerpo del diálogo (959, 210) y después apretar Enter.**
+  Esto me colgó cinco veces seguidas.
+- Los gráficos están listos cuando el proceso pasa de ~2.000 MB.
+
+**Y sobre todo: agrupar los cambios.** Cada reinicio cuesta 4-5 minutos de su
+sesión. Compilar varias correcciones juntas y reiniciar UNA vez.
+
 2. **Verificar en pantalla, midiendo.** No alcanza con "compiló". Sacar captura y **medir contra el eje de precios**: dos marcas del eje dan los píxeles por punto, y con eso se comprueba que cada etiqueta esté a la altura de su nivel. Así encontré que una etiqueta estaba a 14 puntos de su línea.
 
 3. **Verificar los datos y la lógica igual de en serio**, no solo lo visual.

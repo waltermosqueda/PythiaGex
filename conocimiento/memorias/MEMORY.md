@@ -26,4 +26,7 @@
 - [Respaldo del conocimiento](respaldo-del-conocimiento.md) — las memorias viven fuera del repo: correr respaldar.py al final de la sesión o se pierden.
 - [El centinela: qué mide y qué no](centinela-que-mide.md) — anota cada nivel prometido y mide si pasó; no concluye nada hasta que hay muestra.
 - [Autonomía por sesión](autonomia-por-sesion.md) — la cadena de CBOE se congela de noche; la bitácora solo escribe con ATAS abierto.
+- [Clics que no llegan y loops](clics-que-no-llegan-y-loops.md) — dos intentos del mismo clic y basta; después cambiar de método o pedírselo a él.
 - [Verificar yo, no el usuario](verificar-yo-no-el-usuario.md) — reiniciar ATAS y medir en pantalla antes de entregar; él no es el QA.
+- [El radar: dominantes y BigTrades](radar-dominantes-bigtrades.md) — una zona cuenta solo si es grande, vence pronto Y el precio puede llegar; el indicador todavia no se vio dibujar.
+- [CBOE llega 902 segundos tarde](retraso-cboe-902s.md) — medido en 14 de 14, sin dispersion: sirve para estructura, nunca de gatillo en vivo.
