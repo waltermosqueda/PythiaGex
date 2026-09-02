@@ -46,6 +46,23 @@ jobs:
         with:
           python-version: '3.12'
 
+      # LAS CADENAS DE LA CORRIDA ANTERIOR, PARA PODER RESTAR VOLUMENES.
+      #
+      # Los BigTrades salen de restar el volumen acumulado de dos corridas.
+      # En un runner nuevo no hay corrida anterior, asi que sin esto la nube
+      # no detectaria NUNCA una sola operacion grande y el archivo saldria
+      # perfecto igual, con la lista vacia.
+      #
+      # Va por el cache de Actions y no por el repo a proposito: son 1,8 MB
+      # comprimidos por simbolo y commitearlos cada quince minutos llenaria
+      # el historial de git de datos que no se leen dos veces.
+      - name: Recuperar cadenas anteriores
+        uses: actions/cache/restore@v4
+        with:
+          path: datos/cache
+          key: cadenas-${{ github.run_id }}
+          restore-keys: cadenas-
+
       - name: Calcular exposiciones
         run: |
           for S in SPX NDX RUT; do
@@ -66,6 +83,49 @@ jobs:
           mkdir -p panel/datos/atas
           cp datos/salida/atas/*.json panel/datos/atas/ 2>/dev/null || true
           ls -la panel/datos/ panel/datos/atas/
+
+      # DOMINANTES Y BIGTRADES.
+      #
+      # Se corre DOS VECES con una pausa corta en el medio, y las dos sirven
+      # para cosas distintas:
+      #
+      #   la primera   resta contra la corrida del ciclo anterior, que quedo
+      #                en el cache. Ventana de unos quince minutos: cubre toda
+      #                la rueda, pero el lado sale con confianza baja porque en
+      #                quince minutos entra de todo y el ultimo precio ya no
+      #                representa al conjunto.
+      #
+      #   la segunda   resta contra la primera. Ventana de ochenta segundos:
+      #                cubre poco, pero ahi el lado se puede afirmar.
+      #
+      # Las dos escriben en el mismo historial del dia y cada evento lleva su
+      # propia confianza, asi que no se mezclan sin avisar.
+      - name: Dominantes y BigTrades
+        run: |
+          for S in SPX NDX RUT; do
+            python radar.py "$S" || echo "fallo el radar de $S"
+            sleep 2
+          done
+          sleep 80
+          for S in SPX NDX RUT; do
+            python radar.py "$S" || echo "fallo el radar corto de $S"
+            sleep 2
+          done
+          ls -la panel/datos/atas/ 2>/dev/null || true
+
+      # Se guarda solo lo reciente: el cache no es un archivo historico, es el
+      # eslabon anterior de la cadena. Sin la poda crece sin techo y la
+      # restauracion se vuelve mas lenta que bajar el dato de nuevo.
+      - name: Podar el cache de cadenas
+        run: |
+          find datos/cache -name '*.json.gz' -mmin +90 -delete 2>/dev/null || true
+          du -sh datos/cache 2>/dev/null || true
+
+      - name: Guardar cadenas para el proximo ciclo
+        uses: actions/cache/save@v4
+        with:
+          path: datos/cache
+          key: cadenas-${{ github.run_id }}
 
       # LA AUDITORIA DE CALCULOS, EN CADA CICLO.
       #
