@@ -73,6 +73,55 @@ def anterior_util(sim, ahora_sello, minimo_s=30, maximo_s=900):
     return mejor
 
 
+BASE_MEM = os.path.join(SALIDA, "base-ultima.json")
+
+
+def recordar_base(sim, base, error_ticks):
+    """Guarda la ultima base CONFIABLE, con su hora.
+
+    POR QUE HACE FALTA PERSISTIRLA
+
+    La base solo se puede medir cuando las opciones del indice cotizan. Fuera
+    de ese horario medir_base() devuelve None -- no es que mida mal: no hay
+    con que medir. Verificado el 2026-09-03 a las 08:23 UTC, con SPX cerrado.
+
+    Sin memoria, el indicador arranca en frio sin base y no dibuja NADA. Y
+    apagarse no es lo prudente: la base es carry, se mueve unos pocos puntos
+    por dia, asi que la ultima medicion buena sigue siendo una estimacion
+    razonable durante horas -- siempre que se diga de cuando es, que es
+    justo lo que se guarda aca junto al numero.
+    """
+    if base is None:
+        return
+    try:
+        os.makedirs(SALIDA, exist_ok=True)
+        d = {}
+        if os.path.exists(BASE_MEM):
+            with open(BASE_MEM, encoding="utf-8") as f:
+                d = json.load(f)
+        d[sim] = {"base": round(base, 3),
+                  "error_ticks": error_ticks,
+                  "cuando": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")}
+        with open(BASE_MEM, "w", encoding="utf-8") as f:
+            json.dump(d, f, ensure_ascii=False, indent=1)
+    except Exception:
+        pass
+
+
+def base_recordada(sim):
+    """(base, edad en minutos) de la ultima medicion confiable, o (None, None)."""
+    try:
+        with open(BASE_MEM, encoding="utf-8") as f:
+            d = json.load(f).get(sim)
+        if not d:
+            return None, None
+        t = dt.datetime.fromisoformat(d["cuando"])
+        edad = (dt.datetime.now(dt.timezone.utc) - t).total_seconds() / 60.0
+        return d["base"], round(edad, 1)
+    except Exception:
+        return None, None
+
+
 def historial_path(sim, fecha):
     return os.path.join(SALIDA, "bigtrades-%s-%s.json" % (sim.lstrip("_"), fecha))
 
@@ -113,6 +162,9 @@ def una_corrida(simbolo, crudo=None, prima_minima=None, guardar=True,
         b = {"base": None, "confiable": False, "aviso": "no se pudo medir: %s" % e}
     base = b.get("base") if b.get("confiable") else None
     base_cruda = b.get("base")
+    if base is not None:
+        recordar_base(sim, base, b.get("residuo_ticks"))
+    base_mem, base_mem_edad = base_recordada(sim)
 
     dom = DOM.calcular(crudo, base=base, ahora=sello.replace(tzinfo=dt.timezone.utc))
 
@@ -171,6 +223,8 @@ def una_corrida(simbolo, crudo=None, prima_minima=None, guardar=True,
         "base_confiable": bool(b.get("confiable")),
         "base_aviso": b.get("aviso"),
         "base_error_ticks": b.get("residuo_ticks"),
+        "base_ultima_buena": base_mem,
+        "base_ultima_buena_edad_min": base_mem_edad,
         "dominantes": dom,
         "bigtrades_ventana": bt,
         # EL CRUCE CON LAS ZONAS VA CONTRA TODA LA SESION, NO CONTRA LA
@@ -233,6 +287,17 @@ def _feed_atas(s, crudo=None, sello=None):
         "retraso_s": s["retraso_s"],
         "spot": s["spot"], "base": s["base"],
         "base_confiable": s["base_confiable"],
+        # La base CRUDA viaja igual aunque no sea confiable. Sin esto el
+        # indicador se queda sin nada y apaga todo el dibujo, que es peor:
+        # la base es carry y se mueve lento, asi que una medicion floja
+        # avisada sirve mucho mas que una pantalla en blanco.
+        "base_cruda": s.get("base_cruda"),
+        "base_error_ticks": s.get("base_error_ticks"),
+        # La ultima base CONFIABLE medida, con su edad. Es el respaldo
+        # que evita que el indicador se apague fuera del horario de
+        # opciones, cuando la base no se puede medir en absoluto.
+        "base_ultima_buena": s.get("base_ultima_buena"),
+        "base_ultima_buena_edad_min": s.get("base_ultima_buena_edad_min"),
         "contrato": s["contrato"],
         "dominantes": [z(x) for x in (d.get("dominante_arriba"),
                                       d.get("dominante_abajo"),
