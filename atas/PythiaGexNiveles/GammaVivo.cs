@@ -1503,12 +1503,20 @@ namespace PythiaGex
             // Es lo primero que hay que saber para scalpear -- si el mercado
             // esta en rango o en expansion -- y hasta ahora habia que leerlo
             // en un renglon de texto. Un color arriba se lee sin leer.
-            if (VerFranjaRegimen && !double.IsNaN(zero) && zero > 0 && spot > 0)
+            if (VerFranjaRegimen && spot > 0)
             {
-                bool pos = spot > zero;
-                var cr = pos ? ColPos : ColNeg;
-                g.FillRectangle(Color.FromArgb(pos ? 42 : 58, cr),
-                                new Rectangle(x0, area.Top, x1 - x0, 3));
+                // sin zero gamma la franja va gris: no se sabe, y pintarla de
+                // rojo seria decir "expansion" sin tener con que
+                if (double.IsNaN(zero) || zero <= 0)
+                    g.FillRectangle(Color.FromArgb(45, ColAviso),
+                                    new Rectangle(x0, area.Top, x1 - x0, 3));
+                else
+                {
+                    bool pos = spot > zero;
+                    var cr = pos ? ColPos : ColNeg;
+                    g.FillRectangle(Color.FromArgb(pos ? 42 : 58, cr),
+                                    new Rectangle(x0, area.Top, x1 - x0, 3));
+                }
             }
 
             // Los titulos de las mitades van APAGADOS por defecto: chocaban con
@@ -2167,9 +2175,19 @@ namespace PythiaGex
             // el dato -- porque un nivel sin fuente no se publica.
             if (TableroCompacto)
             {
-                bool pos = !double.IsNaN(zero) && zero > 0 && spot > zero;
-                ls.Add(Tuple.Create(pos ? "GAMMA +  rango" : "GAMMA -  expansion",
-                                    pos ? ColPos : ColNeg));
+                // SIN ZERO GAMMA NO HAY REGIMEN.
+                //
+                // Cuando la suma no cruza cero dentro de lo observado, el zero
+                // sale NaN y esto mostraba "GAMMA - expansion": afirmaba
+                // regimen negativo sin saberlo, solo porque la comparacion con
+                // NaN da false. Un regimen sin dato no es un regimen negativo,
+                // y de los dos se opera distinto.
+                bool haySzero = !double.IsNaN(zero) && zero > 0 && spot > 0;
+                if (!haySzero)
+                    ls.Add(Tuple.Create("REGIMEN  sin dato", ColAviso));
+                else
+                    ls.Add(Tuple.Create(spot > zero ? "GAMMA +  rango" : "GAMMA -  expansion",
+                                        spot > zero ? ColPos : ColNeg));
                 ls.Add(Tuple.Create("zero  " + P(zero), ColZero));
                 ls.Add(Tuple.Create("+wall " + P(mp), ColPos));
                 ls.Add(Tuple.Create("-wall " + P(mn), ColNeg));
