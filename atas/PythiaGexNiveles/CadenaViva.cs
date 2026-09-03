@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ATAS.DataFeedsCore;
 
-namespace PythiaGexNiveles
+namespace PythiaGex
 {
     /// <summary>
     /// LA CADENA DE OPCIONES DE ES, EN VIVO, POR RITHMIC.
@@ -95,7 +95,8 @@ namespace PythiaGexNiveles
         /// llama UNA vez y en segundo plano.
         /// </summary>
         public async Task Arrancar(object proveedor, object manager, Security seguridad,
-                                   int diasMax, int strikesPorLado, Action<string> log)
+                                   int diasMax, int strikesPorLado, int vencMax,
+                                   int topeContratos, Action<string> log)
         {
             if (_armando) return;
             _armando = true;
@@ -166,13 +167,64 @@ namespace PythiaGexNiveles
                 // necesidad: los strikes lejanos no mueven la aguja del GEX y
                 // igual habria que descartarlos. Se toman los N de cada lado
                 // POR VENCIMIENTO, para que el 0DTE no se coma toda la cuota.
+                // CUIDADO CON LA CUOTA: ESTO LE COMPITE AL FEED DE FUTUROS.
+                //
+                // La primera version se suscribia a 40 strikes por lado en cada
+                // uno de los 6 vencimientos: unos 960 contratos. ATAS empezo a
+                // mostrar "Market Data Latency: 7772 ms" -- o sea que la cinta
+                // de futuros, que es con la que se opera, llegaba casi ocho
+                // segundos tarde. Inaceptable: el indicador no puede degradar
+                // justo el dato que vino a mejorar.
+                //
+                // Se recorta a los vencimientos mas cercanos y a una ventana
+                // angosta. Los strikes lejanos no mueven la aguja del GEX: su
+                // gamma es practicamente cero y solo gastan ancho de banda.
+                var fechas = ops.Select(o => o.Expiration.Date).Distinct()
+                                .OrderBy(d => d).Take(Math.Max(1, vencMax)).ToList();
+                // MALLA NO UNIFORME: DENSA AL DINERO, RALA LEJOS.
+                //
+                // Con una ventana pareja de +/-60 puntos el zero gamma quedaba
+                // afuera -- suele estar 70 puntos por debajo del precio -- y el
+                // tablero mostraba "--" porque la suma nunca cruzaba cero
+                // dentro de lo observado. Ampliarla pareja gastaria el triple de
+                // ancho de banda en strikes cuya gamma es casi cero.
+                //
+                // Cerca del dinero se toman TODOS los strikes, que es donde
+                // vive la gamma. De ahi para afuera uno cada varios, que
+                // alcanza para que la suma cruce y para ver los muros lejanos.
                 var elegidos = new List<Security>();
-                foreach (var grupo in ops.GroupBy(o => o.Expiration.Date))
+                foreach (var f2 in fechas)
                 {
-                    var ks = grupo.Select(o => (double)(o.StrikePrice ?? 0m))
-                                  .Distinct().OrderBy(k => Math.Abs(k - Futuro))
-                                  .Take(strikesPorLado * 2).ToHashSet();
+                    var grupo = ops.Where(o => o.Expiration.Date == f2).ToList();
+                    var todosK = grupo.Select(o => (double)(o.StrikePrice ?? 0m))
+                                      .Distinct().OrderBy(k => k).ToList();
+                    if (todosK.Count == 0) continue;
+                    // paso tipico de la cadena, medido y no supuesto
+                    var pasos = new List<double>();
+                    for (int i = 1; i < todosK.Count; i++) pasos.Add(todosK[i] - todosK[i-1]);
+                    pasos.Sort();
+                    double paso = pasos.Count > 0 ? pasos[pasos.Count / 2] : 5.0;
+                    if (paso <= 0) paso = 5.0;
+
+                    double radioDenso = paso * strikesPorLado;         // todos
+                    double radioRalo  = paso * strikesPorLado * 4;     // uno cada 4
+                    var ks = new HashSet<double>();
+                    foreach (var k in todosK)
+                    {
+                        double d = Math.Abs(k - Futuro);
+                        if (d <= radioDenso) ks.Add(k);
+                        else if (d <= radioRalo && Math.Abs((k / paso) % 4) < 0.01) ks.Add(k);
+                    }
                     elegidos.AddRange(grupo.Where(o => ks.Contains((double)(o.StrikePrice ?? 0m))));
+                }
+                if (elegidos.Count > topeContratos)
+                {
+                    // Si hay que recortar se sacan los del vencimiento mas lejano
+                    // primero: el 0DTE es el que manda el GEX intradia.
+                    elegidos = elegidos
+                        .OrderBy(o => o.Expiration.Date)
+                        .ThenBy(o => Math.Abs((double)(o.StrikePrice ?? 0m) - Futuro))
+                        .Take(topeContratos).ToList();
                 }
 
                 try
@@ -302,7 +354,9 @@ namespace PythiaGexNiveles
             {
                 List<Security> ss;
                 lock (_llave) { ss = new List<Security>(_suscritos); _suscritos.Clear(); }
-                if (_conn != null && ss.Count > 0) _conn.UnsubscribeFromMarketData(ss);
+                if (_conn != null && ss.Count > 0)
+                    _conn.UnsubscribeFromMarketData(ss,
+                        SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
             }
             catch { }
             Activa = false;

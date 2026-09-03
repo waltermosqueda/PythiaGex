@@ -87,6 +87,10 @@ namespace PythiaGex
             public bool BaseConfiable;
             public string Contrato = "";
             public double EdadMin;
+            // true cuando la cadena vino de Rithmic: los strikes ya estan en
+            // precio de FUTURO y corresponde Black-76 en vez de Black-Scholes.
+            public bool EsFuturo;
+            public string Fuente = "CBOE";
         }
 
         /// <summary>Lo que sale de repreciar: un renglon por strike.</summary>
@@ -264,6 +268,15 @@ namespace PythiaGex
         private double _zeroGamma, _netGex, _maxGex, _maxAcel;
         private double _majorPos, _majorNeg;
         private double _spotUsado = double.NaN;
+        private bool _esFuturo;
+        private string _fuente = "CBOE";
+        // la cadena que REALMENTE se uso en el ultimo repricing: la cinta
+        // leia _c y decia "CBOE, 15 min tarde" mientras el calculo iba con
+        // la viva. Dos renglones de la misma pantalla se contradecian.
+        private Cadena _cUsada;
+        private readonly CadenaViva _viva = new();
+        private bool _vivaPedida;
+        private DateTime _ultimoVolcadoViva = DateTime.MinValue;
         private readonly object _candado = new();
 
         // ==============================================================
@@ -288,6 +301,23 @@ namespace PythiaGex
 
         [Display(Name = "Cuantos minutos vale la base vieja", GroupName = "Fuente", Order = 42)]
         public int MinutosBaseVieja { get; set; } = 45;
+
+        [Display(Name = "Usar la cadena EN VIVO de Rithmic", GroupName = "Fuente", Order = 5,
+                 Description = "Sin retraso. Si no esta disponible cae a CBOE, que llega 902 s tarde, " +
+                               "y lo avisa en la cinta.")]
+        public bool UsarCadenaViva { get; set; } = true;
+
+        [Display(Name = "Strikes por lado en vivo", GroupName = "Fuente", Order = 6,
+                 Description = "Por vencimiento. Subirlo le compite ancho de banda al feed de futuros.")]
+        public int StrikesEnVivo { get; set; } = 14;
+
+        [Display(Name = "Vencimientos en vivo", GroupName = "Fuente", Order = 7,
+                 Description = "Los mas cercanos. El 0DTE y el de manana ya explican casi todo el GEX.")]
+        public int VencimientosEnVivo { get; set; } = 3;
+
+        [Display(Name = "Tope de contratos suscritos", GroupName = "Fuente", Order = 8,
+                 Description = "Techo duro. Con ~960 ATAS acuso 7772 ms de atraso en la cinta de futuros.")]
+        public int TopeContratos { get; set; } = 180;
 
         [Display(Name = "Dias de vencimiento a incluir", GroupName = "Calculo", Order = 50)]
         public int DiasMax { get; set; } = 7;
@@ -495,6 +525,31 @@ namespace PythiaGex
             _tick = () => _ = Bajar();
             SubscribeToTimer(_periodo, _tick);
             _ = Bajar();
+
+            // LA CADENA EN VIVO DE RITHMIC.
+            //
+            // Arranca una sola vez y en segundo plano: buscar las series y
+            // esperar a que lleguen las puntas lleva medio minuto, y eso no
+            // puede colgar el dibujo. Mientras no este lista se sigue usando
+            // CBOE, avisando en pantalla que llega 15 min tarde.
+            if (UsarCadenaViva && !_vivaPedida)
+            {
+                _vivaPedida = true;
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _viva.Arrancar(DataProvider, TradingManager,
+                                             TradingManager?.Security,
+                                             Math.Max(1, DiasMax),
+                                             Math.Max(5, StrikesEnVivo),
+                                             Math.Max(1, VencimientosEnVivo),
+                                             Math.Max(20, TopeContratos),
+                                             m => Registrar2(m)).ConfigureAwait(false);
+                    }
+                    catch (Exception e) { Registrar(e); }
+                });
+            }
         }
 
         protected override void OnDispose()
@@ -573,6 +628,93 @@ namespace PythiaGex
             if (s.StartsWith("MNQ") || s.StartsWith("NQ")) return "NQ";
             if (s.StartsWith("M2K") || s.StartsWith("RTY")) return "RTY";
             return "ES";
+        }
+
+        /// <summary>
+        /// Arma una Cadena con lo que hay AHORA en el feed de Rithmic.
+        ///
+        /// Devuelve null si la cadena viva todavia no esta lista o no trajo
+        /// nada usable. Eso no es un error: significa seguir con CBOE, que
+        /// llega tarde pero llega, y avisarlo en pantalla.
+        ///
+        /// Los strikes salen en precio de FUTURO, asi que la base vale cero y
+        /// no hay ninguna conversion que hacer. Ese es justamente el otro
+        /// beneficio de esta fuente: se elimina el paso donde se metia el error
+        /// sistematico de ~9 puntos si la base salia mal.
+        /// </summary>
+        private Cadena ArmarDesdeViva()
+        {
+            if (!UsarCadenaViva || !_viva.Activa) return null;
+            List<CadenaViva.Fila> fs;
+            try { fs = _viva.Instantanea(); } catch { return null; }
+            if (fs == null || fs.Count == 0) return null;
+
+            var dias = fs.Select(f => Math.Round(f.Dias, 4)).Distinct().OrderBy(d => d).ToList();
+            var idx = new Dictionary<double, int>();
+            for (int i = 0; i < dias.Count; i++) idx[dias[i]] = i;
+
+            var porClave = new Dictionary<(double, int), Fila>();
+            foreach (var f in fs)
+            {
+                if (f.OI <= 0 || f.IV <= 0) continue;
+                int v = idx[Math.Round(f.Dias, 4)];
+                var clave = (f.K, v);
+                if (!porClave.TryGetValue(clave, out var fila))
+                    fila = new Fila { K = f.K, V = v };
+                if (f.EsCall) { fila.OiC = f.OI; fila.IvC = f.IV; }
+                else          { fila.OiP = f.OI; fila.IvP = f.IV; }
+                porClave[clave] = fila;
+            }
+            if (porClave.Count == 0) return null;
+
+            // VOLCADO PARA PODER AUDITARLA.
+            //
+            // Igual que con la cadena de CBOE: si no se puede rehacer la cuenta
+            // desde afuera con EXACTAMENTE los mismos numeros, el resultado no
+            // es auditable. Se escribe cada tanto, no en cada tick.
+            try
+            {
+                if ((DateTime.Now - _ultimoVolcadoViva).TotalSeconds > 20)
+                {
+                    _ultimoVolcadoViva = DateTime.Now;
+                    var sb = new System.Text.StringBuilder(1 << 16);
+                    sb.Append("{\"ts\":\"").Append(DateTime.Now.ToString("yyyy-MM-dd_HH:mm:ss"))
+                      .Append("\",\"futuro\":").Append(_viva.Futuro.ToString("0.####", CultureInfo.InvariantCulture))
+                      .Append(",\"filas\":[");
+                    bool primero = true;
+                    foreach (var f in fs)
+                    {
+                        if (!primero) sb.Append(',');
+                        primero = false;
+                        sb.Append('[').Append(f.K.ToString("0.##", CultureInfo.InvariantCulture))
+                          .Append(',').Append(f.Dias.ToString("0.#####", CultureInfo.InvariantCulture))
+                          .Append(',').Append(f.EsCall ? 1 : 0)
+                          .Append(',').Append(f.OI.ToString("0.#", CultureInfo.InvariantCulture))
+                          .Append(',').Append(f.IV.ToString("0.######", CultureInfo.InvariantCulture))
+                          .Append(',').Append(f.Bid.ToString("0.####", CultureInfo.InvariantCulture))
+                          .Append(',').Append(f.Ask.ToString("0.####", CultureInfo.InvariantCulture))
+                          .Append(']');
+                    }
+                    sb.Append("]}");
+                    File.WriteAllText(Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        "ATAS", "pythiagex-cadena-viva.json"), sb.ToString());
+                }
+            }
+            catch { }
+
+            return new Cadena
+            {
+                Ts = DateTime.Now.ToString("yyyy-MM-dd_HH:mm:ss", CultureInfo.InvariantCulture),
+                SpotIdx = _viva.Futuro,
+                Dias = dias.ToArray(),
+                Filas = porClave.Values.ToList(),
+                Base = 0, BaseCruda = 0, BaseConfiable = true,
+                Contrato = "ES (Rithmic)",
+                EdadMin = 0,
+                EsFuturo = true,
+                Fuente = "Rithmic EN VIVO",
+            };
         }
 
         private async Task Bajar()
@@ -735,8 +877,15 @@ namespace PythiaGex
 
         private double GexStrike(Fila f, double S, double T, double r)
         {
-            var gC = GammaBs(S, f.K, T, f.IvC, r);
-            var gP = GammaBs(S, f.K, T, f.IvP, r);
+            // EL MODELO CORRECTO SEGUN DE DONDE VINO LA CADENA.
+            //
+            // Las opciones de ES son opciones sobre un FUTURO y les corresponde
+            // Black-76. Las de SPX son sobre el indice al contado y les
+            // corresponde Black-Scholes. La diferencia a 7 dias es de decimas
+            // de por mil, pero teniendo el modelo exacto no hay motivo para
+            // usar el aproximado.
+            var gC = _esFuturo ? Black76.Gamma(S, f.K, T, f.IvC) : GammaBs(S, f.K, T, f.IvC, r);
+            var gP = _esFuturo ? Black76.Gamma(S, f.K, T, f.IvP) : GammaBs(S, f.K, T, f.IvP, r);
             // Convencion estandar de la industria: +1 para calls, -1 para puts.
             // Es una ASUNCION sobre de que lado quedo la mesa, no un dato
             // medido. Cuando el flujo dominante se da vuelta, el signo miente.
@@ -754,11 +903,26 @@ namespace PythiaGex
         /// </summary>
         private void Repreciar()
         {
-            var c = _c;
+            // LA VIVA MANDA CUANDO ESTA.
+            //
+            // El operador scalpea en minutos y segundos y dijo que 902 s de
+            // retraso no le sirven. Tiene razon: un dato que llega tarde obliga
+            // a confiar en que nada cambio en el medio, y esa confianza no se
+            // puede auditar. Cuando Rithmic esta entregando, se usa Rithmic.
+            var c = ArmarDesdeViva() ?? _c;
             if (c == null || c.Filas.Count == 0) return;
+            _esFuturo = c.EsFuturo;
+            _fuente = c.Fuente;
+            _cUsada = c;
 
             double baseUsada;
-            if (BaseManual != 0m)
+            if (c.EsFuturo)
+            {
+                // los strikes YA vienen en precio de futuro: no hay conversion
+                baseUsada = 0;
+                _baseOrigen = "no hace falta (cadena de futuros)";
+            }
+            else if (BaseManual != 0m)
             {
                 baseUsada = (double)BaseManual;
                 _baseOrigen = "manual";
@@ -1108,7 +1272,7 @@ namespace PythiaGex
             if (perfil.Count == 0 || mx <= 0) return;
 
             var cont = ChartInfo.PriceChartContainer;
-            var c = _c;
+            var c = _cUsada ?? _c;   // la que de verdad se uso, no la de CBOE por defecto
             var br = _baseResuelta;
             var baseUsada = br == null ? double.NaN : (double)br;
 
@@ -1644,7 +1808,7 @@ namespace PythiaGex
         {
             var f = new RenderFont("Arial", 9.5f);
             var ls = new List<Tuple<string, Color>>();
-            var c = _c;
+            var c = _cUsada ?? _c;   // la que de verdad se uso, no la de CBOE por defecto
 
             if (c == null)
             {
@@ -1656,9 +1820,16 @@ namespace PythiaGex
                 ls.Add(Tuple.Create(string.Format(CultureInfo.InvariantCulture,
                     "{0}  ·  {1} strikes repreciados con el precio de cada tick",
                     c.Contrato, nStrikes), ColTexto));
-                ls.Add(Tuple.Create(string.Format(CultureInfo.InvariantCulture,
-                    "net gex {0:+0.00;-0.00} B  ·  indice implicito {1:0.00}  ·  cadena de hace {2:0.#} min",
-                    neto / 1e9, spot, c.EdadMin), ColTexto));
+                // DE DONDE SALIO EL NUMERO Y CON QUE ATRASO. Nunca un nivel
+                // suelto: si no dice su fuente y su antiguedad, no se publica.
+                if (c.EsFuturo)
+                    ls.Add(Tuple.Create(string.Format(CultureInfo.InvariantCulture,
+                        "net gex {0:+0.00;-0.00} B  ·  futuro {1:0.00}  ·  cadena EN VIVO por Rithmic (sin retraso)",
+                        neto / 1e9, spot), ColPos));
+                else
+                    ls.Add(Tuple.Create(string.Format(CultureInfo.InvariantCulture,
+                        "net gex {0:+0.00;-0.00} B  ·  indice implicito {1:0.00}  ·  CBOE, 15 min tarde (hace {2:0.#} min)",
+                        neto / 1e9, spot, c.EdadMin), ColAviso));
                 if (_baseOrigen == "sin base")
                     ls.Add(Tuple.Create(
                         "sin base indice->futuro: no se dibuja ningun nivel", ColNeg));
@@ -1729,11 +1900,33 @@ namespace PythiaGex
             var colNet = Color.FromArgb(90, 210, 230);
             var ls = new List<Tuple<string, Color>>();
 
-            ls.Add(Tuple.Create("volume   (de hoy, 15 min tarde)", ColAviso));
-            ls.Add(Tuple.Create("  zero gamma      " + P(zeroVol > 0 ? zeroVol : zero), ColZero));
-            ls.Add(Tuple.Create("  major positive  " + P(mpv), ColPos));
-            ls.Add(Tuple.Create("  major negative  " + P(mnv), ColNeg));
-            ls.Add(Tuple.Create("  net gex         " + M(netoV), colNet));
+            // SI NO HAY VOLUMEN, NO SE INVENTAN NIVELES.
+            //
+            // Con la cadena de Rithmic todavia no llega el volumen de opciones
+            // (el ultimo negociado viene en cero). Sin volumen, el "major" del
+            // bloque salia igual: daba 7.500 con el net gex en 0M, o sea un
+            // nivel sin nada atras. Un numero sin respaldo es peor que un
+            // guion, porque el guion no engana.
+            bool hayVol = Math.Abs(netoV) > 1e-6;
+            ls.Add(Tuple.Create(
+                _esFuturo ? (hayVol ? "volume   (de hoy, en vivo)"
+                                    : "volume   (Rithmic todavia no manda volumen de opciones)")
+                          : "volume   (de hoy, 15 min tarde)",
+                _esFuturo ? (hayVol ? ColPos : ColAviso) : ColAviso));
+            if (hayVol)
+            {
+                ls.Add(Tuple.Create("  zero gamma      " + P(zeroVol > 0 ? zeroVol : zero), ColZero));
+                ls.Add(Tuple.Create("  major positive  " + P(mpv), ColPos));
+                ls.Add(Tuple.Create("  major negative  " + P(mnv), ColNeg));
+                ls.Add(Tuple.Create("  net gex         " + M(netoV), colNet));
+            }
+            else
+            {
+                ls.Add(Tuple.Create("  zero gamma        --", ColTexto));
+                ls.Add(Tuple.Create("  major positive    --", ColTexto));
+                ls.Add(Tuple.Create("  major negative    --", ColTexto));
+                ls.Add(Tuple.Create("  net gex           --", ColTexto));
+            }
             ls.Add(Tuple.Create("", ColTexto));
 
             ls.Add(Tuple.Create("open interest   (de ayer, para todos)", ColAviso));

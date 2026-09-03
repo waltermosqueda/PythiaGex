@@ -1,6 +1,6 @@
 using System;
 
-namespace PythiaGexNiveles
+namespace PythiaGex
 {
     /// <summary>
     /// BLACK-76: EL MODELO QUE CORRESPONDE A LAS OPCIONES DE ES.
