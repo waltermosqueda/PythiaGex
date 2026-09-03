@@ -16,3 +16,5 @@ datos/salida/
 atas/*/obj/
 atas/*/bin/Debug/
 atas/_api/bin/
+atas/_test/bin/
+atas/_test/obj/

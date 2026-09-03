@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <AssemblyName>probarblack76</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- EL MISMO ARCHIVO QUE CORRE EN PRODUCCION, no una copia -->
+    <Compile Include="..\PythiaGexNiveles\Black76.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>
