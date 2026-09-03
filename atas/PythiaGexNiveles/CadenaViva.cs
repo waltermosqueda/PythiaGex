@@ -318,7 +318,14 @@ namespace PythiaGex
                 // opciones es mucho mas flaco y tarda. Con la espera corta y el
                 // umbral del 10 % se daba por perdida una cadena que si estaba
                 // llegando, solo que despacio.
-                int minimo = Math.Max(6, elegidos.Count / 20);
+                // EL MINIMO NO PUEDE SER CUALQUIERA.
+                //
+                // Bajarlo a 6 hizo que la cadena de MNQ se declarara "EN VIVO"
+                // con 10 patas de 142, y con eso no se puede armar un perfil de
+                // gamma: hacen falta varios STRIKES con call y put. Peor
+                // todavia, al darse por viva bloqueaba la caida a CBOE y el
+                // indicador no dibujaba nada. Mejor decir que no se pudo.
+                int minimo = Math.Max(24, elegidos.Count / 6);
                 for (int i = 0; i < 40; i++)
                 {
                     await Task.Delay(1500).ConfigureAwait(false);

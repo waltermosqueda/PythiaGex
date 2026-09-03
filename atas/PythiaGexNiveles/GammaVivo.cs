@@ -279,6 +279,8 @@ namespace PythiaGex
         private bool _vivaPedida;
         private DateTime _ultimoVolcadoViva = DateTime.MinValue;
         private volatile bool _vivaCorriendo;
+        // cuantos strikes utiles trajo la viva cuando no alcanzaron
+        private int _vivaFlaca = -1;
         private Action _tickViva;
         private TimeSpan _periodoViva;
         private readonly object _candado = new();
@@ -735,6 +737,23 @@ namespace PythiaGex
                 else          { fila.OiP = f.OI; fila.IvP = f.IV; }
                 porClave[clave] = fila;
             }
+            // UNA CADENA FLACA NO SIRVE Y NO PUEDE TAPAR AL RESPALDO.
+            //
+            // Con pocos strikes el perfil no tiene forma: el zero gamma no
+            // cruza, los muros son cualquier cosa y la interpolacion de picos
+            // no tiene vecinos. Si no llega a un minimo se devuelve null, que
+            // hace caer a CBOE -- 15 min tarde pero completo -- en vez de
+            // dibujar un mapa hecho con cuatro puntos.
+            const int MinStrikes = 12;
+            int strikesUtiles = porClave.Values
+                .Where(v => v.OiC > 0 && v.OiP > 0 && v.IvC > 0 && v.IvP > 0)
+                .Select(v => v.K).Distinct().Count();
+            if (strikesUtiles < MinStrikes)
+            {
+                _vivaFlaca = strikesUtiles;
+                return null;
+            }
+            _vivaFlaca = -1;
             if (porClave.Count == 0) return null;
 
             // VOLCADO PARA PODER AUDITARLA.
@@ -2076,6 +2095,10 @@ namespace PythiaGex
                     ls.Add(Tuple.Create("base " + _baseOrigen + ": los niveles pueden estar corridos", ColAviso));
                 if (_visiblesUlt == 0 && nStrikes > 0)
                     ls.Add(Tuple.Create("ningun strike entra en pantalla: abri la escala de precios", ColNeg));
+                if (_vivaFlaca >= 0)
+                    ls.Add(Tuple.Create(
+                        "la cadena en vivo solo trajo " + _vivaFlaca + " strikes utiles: se usa CBOE",
+                        ColAviso));
             }
             if (ls.Count == 0) return;
 
