@@ -415,9 +415,14 @@ namespace PythiaGex
         [Display(Name = "Ver la cinta de estado", GroupName = "Dibujo", Order = 66)]
         public bool VerCinta { get; set; } = true;
 
-        [Display(Name = "Ver las dominantes como puntos", GroupName = "Dominantes", Order = 82,
-                 Description = "Un punto por vela al nivel dominante. Asi forman las bandas.")]
-        public bool VerPuntosDominantes { get; set; } = true;
+        [Display(Name = "Banda de puntos por vela (NO es del original)", GroupName = "Dominantes", Order = 82,
+                 Description = "APAGADO: el producto original NO dibuja esto. Se agrego por un error " +
+                               "de medicion mio -- en los videos verticales comprimidos confundi los " +
+                               "cuerpos de las velas NARANJAS con marcas del indicador. Medido despues " +
+                               "en cuadros de 1920x1080 sin comprimir: el cuerpo del grafico tiene solo " +
+                               "velas y tres lineas de nivel, cero puntos. Queda por si a alguien le " +
+                               "sirve igual, pero no viene del original.")]
+        public bool VerPuntosDominantes { get; set; } = false;
 
         [Display(Name = "Alto del punto (px)", GroupName = "Dominantes", Order = 83)]
         public int AltoPunto { get; set; } = 4;
@@ -500,8 +505,11 @@ namespace PythiaGex
         public bool NumeroAdentro { get; set; } = true;
 
         [Display(Name = "Circulos de la estela", GroupName = "Perfil", Order = 53,
-                 Description = "Donde estuvo ese strike antes. Adentro = encogio, afuera = crecio.")]
-        public bool VerEstela { get; set; } = false;
+                 Description = "ESTO SI es lo que dibuja el original: circulos sobre la barra de cada " +
+                               "strike marcando donde estuvo su valor antes. Adentro de la barra = " +
+                               "encogio, afuera = crecio. Verificado en cuadros de 1920x1080 del " +
+                               "producto real (MES 30s, titulo 'GAMMAlito - Gexbot').")]
+        public bool VerEstela { get; set; } = true;
 
         [Display(Name = "Cuantos circulos por barra", GroupName = "Perfil", Order = 54)]
         public int CirculosPorBarra { get; set; } = 3;
@@ -510,10 +518,10 @@ namespace PythiaGex
         public int TamCirculo { get; set; } = 9;
 
         [Display(Name = "Circulo de la estela (izquierda)", GroupName = "Colores", Order = 86)]
-        public Color ColCircIzq { get; set; } = Color.FromArgb(60, 90, 235);
+        public Color ColCircIzq { get; set; } = Color.FromArgb(150, 158, 168);
 
         [Display(Name = "Circulo de la estela (derecha)", GroupName = "Colores", Order = 89)]
-        public Color ColCircDer { get; set; } = Color.FromArgb(225, 228, 234);
+        public Color ColCircDer { get; set; } = Color.FromArgb(150, 158, 168);
 
         [Display(Name = "Compra agresiva", GroupName = "Colores", Order = 78)]
         public Color ColCompra { get; set; } = Color.FromArgb(80, 220, 150);
@@ -1847,8 +1855,12 @@ namespace PythiaGex
                 // el mas reciente, mas grande: al reves se lee como si el
                 // pasado pesara mas que el presente
                 int r = Math.Max(4, TamCirculo - i * 2);
-                g.FillEllipse(Color.FromArgb(225, col),
-                    new Rectangle(cx - r / 2, y - r / 2, r, r));
+                // En el original se ven como discos con un borde apenas mas
+                // claro, no como manchas planas: eso es lo que los hace
+                // legibles encima de la barra de color.
+                var rect = new Rectangle(cx - r / 2, y - r / 2, r, r);
+                g.FillEllipse(Color.FromArgb(210, col), rect);
+                g.DrawEllipse(new RenderPen(Color.FromArgb(120, 235, 240, 245), 1f), rect);
             }
         }
 
