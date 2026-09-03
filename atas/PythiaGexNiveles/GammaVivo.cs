@@ -514,8 +514,20 @@ namespace PythiaGex
         [Display(Name = "Cuantos circulos por barra", GroupName = "Perfil", Order = 54)]
         public int CirculosPorBarra { get; set; } = 3;
 
-        [Display(Name = "Tamano del circulo (px)", GroupName = "Perfil", Order = 55)]
-        public int TamCirculo { get; set; } = 9;
+        [Display(Name = "Tamano del circulo (px)", GroupName = "Perfil", Order = 55,
+                 Description = "Techo, no valor fijo: nunca se dibuja mas alto que la separacion " +
+                               "entre strikes, porque si no los de filas vecinas se tocan y se ve " +
+                               "una mancha en vez de puntos.")]
+        public int TamCirculo { get; set; } = 7;
+
+        [Display(Name = "Forma de la marca", GroupName = "Perfil", Order = 56,
+                 Description = "0 = circulo lleno  ·  1 = anillo (el que mejor se separa a tamano " +
+                               "chico)  ·  2 = rectangulito. Probar cual se lee mejor con tu zoom.")]
+        public int FormaMarca { get; set; } = 1;
+
+        [Display(Name = "Achicar la marca (px)", GroupName = "Perfil", Order = 57,
+                 Description = "Se le restan al techo. Subilo si todavia se ven pegadas.")]
+        public int AchicarMarca { get; set; } = 1;
 
         [Display(Name = "Circulo de la estela (izquierda)", GroupName = "Colores", Order = 86)]
         public Color ColCircIzq { get; set; } = Color.FromArgb(150, 158, 168);
@@ -1537,7 +1549,7 @@ namespace PythiaGex
                     int al = (int)(OpacidadPerfil * 2.55 * (0.45 + 0.55 * f));
                     g.FillRectangle(Color.FromArgb(Math.Min(255, Math.Max(12, al)), col),
                         new Rectangle(x0, y - alto / 2, w, alto));
-                    if (VerEstela) Estela(g, n.K, mx, ancho, x0, y, true);
+                    if (VerEstela) Estela(g, n.K, mx, ancho, x0, y, true, alto);
                 }
                 if (VerAcel && mxA > 0 && Math.Abs(n.Acel) > 0)
                 {
@@ -1547,7 +1559,7 @@ namespace PythiaGex
                     int al = (int)(OpacidadPerfil * 2.55 * (0.45 + 0.55 * f));
                     g.FillRectangle(Color.FromArgb(Math.Min(255, Math.Max(12, al)), col),
                         new Rectangle(x1 - w, y - alto / 2, w, alto));
-                    if (VerEstela) Estela(g, n.K, mxA, ancho, x1, y, false);
+                    if (VerEstela) Estela(g, n.K, mxA, ancho, x1, y, false, alto);
                 }
             }
 
@@ -1835,7 +1847,7 @@ namespace PythiaGex
         /// false dibuja creciendo hacia la izquierda desde x1.
         /// </summary>
         private void Estela(RenderContext g, double strike, double mx, int ancho,
-                            int origen, int y, bool izquierda)
+                            int origen, int y, bool izquierda, int altoFila)
         {
             if (mx <= 0) return;
             List<KeyValuePair<DateTime, double>> h;
@@ -1854,13 +1866,34 @@ namespace PythiaGex
                 int cx = izquierda ? origen + w : origen - w;
                 // el mas reciente, mas grande: al reves se lee como si el
                 // pasado pesara mas que el presente
-                int r = Math.Max(4, TamCirculo - i * 2);
-                // En el original se ven como discos con un borde apenas mas
-                // claro, no como manchas planas: eso es lo que los hace
-                // legibles encima de la barra de color.
+                // LA MARCA NUNCA ES MAS ALTA QUE LA FILA.
+                //
+                // Antes el tamano era fijo y no miraba la separacion entre
+                // strikes: con el grafico alejado los circulos de filas vecinas
+                // se tocaban y habia que agrandar mucho la pantalla para saber
+                // si eran uno o varios. Ahora el alto de fila es el techo, y
+                // encima se le resta AchicarMarca para dejar aire.
+                int techo = Math.Max(3, altoFila - Math.Max(0, AchicarMarca));
+                int r = Math.Max(3, Math.Min(techo, TamCirculo - i * 2));
                 var rect = new Rectangle(cx - r / 2, y - r / 2, r, r);
-                g.FillEllipse(Color.FromArgb(210, col), rect);
-                g.DrawEllipse(new RenderPen(Color.FromArgb(120, 235, 240, 245), 1f), rect);
+
+                if (FormaMarca >= 2)
+                {
+                    g.FillRectangle(Color.FromArgb(215, col), rect);
+                }
+                else if (FormaMarca == 1)
+                {
+                    // ANILLO: a tamano chico es el que mejor se separa, porque
+                    // el hueco del medio marca el limite de cada marca aunque
+                    // dos queden pegadas.
+                    g.FillEllipse(Color.FromArgb(70, col), rect);
+                    g.DrawEllipse(new RenderPen(Color.FromArgb(240, col), 1.3f), rect);
+                }
+                else
+                {
+                    g.FillEllipse(Color.FromArgb(210, col), rect);
+                    g.DrawEllipse(new RenderPen(Color.FromArgb(120, 235, 240, 245), 1f), rect);
+                }
             }
         }
 
