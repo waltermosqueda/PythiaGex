@@ -427,6 +427,13 @@ namespace PythiaGex
                  Description = "0 = cuadradito  ·  1 = redondito  ·  2 = guioncito (mas ancho que alto)")]
         public int FormaDominante { get; set; } = 0;
 
+        [Display(Name = "Hueco horizontal entre marcas (px)", GroupName = "Dominantes", Order = 87,
+                 Description = "Cuanto aire dejar entre una marca y la de la vela siguiente. Si no " +
+                               "entra, se dibuja una cada N velas en vez de pegarlas: el nivel es el " +
+                               "mismo en velas contiguas, asi que no se pierde informacion y se ganan " +
+                               "marcas contables.")]
+        public int HuecoEntreMarcas { get; set; } = 3;
+
         [Display(Name = "Separacion minima entre marcas (px)", GroupName = "Dominantes", Order = 86,
                  Description = "Si dos dominantes caen mas cerca que esto en la misma vela, se dibuja " +
                                "solo la mas fuerte. Asi nunca se ven pegadas y no hay que agrandar la " +
@@ -434,10 +441,10 @@ namespace PythiaGex
         public int SeparacionMinima { get; set; } = 4;
 
         [Display(Name = "Alto del punto (px)", GroupName = "Dominantes", Order = 83)]
-        public int AltoPunto { get; set; } = 3;
+        public int AltoPunto { get; set; } = 4;
 
         [Display(Name = "Ancho del punto (px)", GroupName = "Dominantes", Order = 84)]
-        public int AnchoPunto { get; set; } = 5;
+        public int AnchoPunto { get; set; } = 4;
 
         [Display(Name = "Punto de la dominante", GroupName = "Colores", Order = 87)]
         public Color ColPuntoDom { get; set; } = Color.FromArgb(232, 168, 56);
@@ -1928,7 +1935,36 @@ namespace PythiaGex
             int desde = Math.Max(0, FirstVisibleBarNumber);
             int hasta = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
 
-            for (int b = desde; b <= hasta; b++)
+            // QUE SE DISTINGAN TAMBIEN CUANDO EL GRAFICO ESTA ALEJADO.
+            //
+            // La regla de separacion que ya habia solo miraba entre NIVELES de
+            // la misma vela. Pero al alejar el grafico las velas se juntan en
+            // el eje X y las marcas de velas consecutivas se tocan de costado:
+            // ahi es donde se forma la rayita que el operador ve.
+            //
+            // Se mide la separacion real entre velas y se hacen dos cosas: la
+            // marca nunca ocupa toda la vela, y si aun asi quedarian pegadas se
+            // dibuja una cada N velas. Perder algunas marcas no pierde
+            // informacion -- el nivel es el mismo en velas contiguas -- pero
+            // ganar el hueco es lo que deja contarlas.
+            int pasoBarras = 1;
+            try
+            {
+                int xa = cont.GetXByBar(desde, false);
+                int xb = cont.GetXByBar(Math.Min(hasta, desde + 1), false);
+                int sepX = Math.Abs(xb - xa);
+                if (sepX > 0)
+                {
+                    w = Math.Min(w, Math.Max(2, sepX - 1));
+                    int necesita = w + Math.Max(1, HuecoEntreMarcas);
+                    if (sepX < necesita)
+                        pasoBarras = (int)Math.Ceiling((double)necesita / sepX);
+                }
+            }
+            catch { }
+            pasoBarras = Math.Max(1, Math.Min(40, pasoBarras));
+
+            for (int b = desde; b <= hasta; b += pasoBarras)
             {
                 if (!copia.TryGetValue(b, out var m) || !m.Hay) continue;
                 int x;
@@ -1956,8 +1992,10 @@ namespace PythiaGex
                     yaEn.Add(y);
 
                     var f = Math.Max(0.25, Math.Min(1.0, fuerza));
-                    int ww = Math.Max(3, (int)(w * (0.6 + 0.4 * f)));
-                    int hh = Math.Max(2, (int)(h * (0.7 + 0.5 * f)));
+                    // la fuerza cambia el tamano pero NO la proporcion: un
+                    // cuadradito que se estira deja de leerse como cuadradito
+                    int ww = Math.Max(2, (int)Math.Round(w * (0.65 + 0.35 * f)));
+                    int hh = Math.Max(2, (int)Math.Round(h * (0.65 + 0.35 * f)));
                     // y nunca mas alta que la separacion, para que aunque dos
                     // queden en velas vecinas se lea el hueco entre ellas
                     hh = Math.Min(hh, Math.Max(2, sep - 1));
