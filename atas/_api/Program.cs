@@ -26,6 +26,35 @@ class Program
                                   "ATAS.Indicators.Technical", "ATAS.Indicators.Other" })
             try { _ctx.LoadFromAssemblyPath(Path.Combine(Dir, f + ".dll")); } catch { }
 
+        // Quien IMPLEMENTA una interfaz. Sirve para contestar si el conector
+        // de Rithmic sabe servir opciones sin tener que abrir la plataforma.
+        if (args.Length > 1 && args[0] == "--impl")
+        {
+            foreach (var f in new[] { "OFT.Rithmic", "OFT.IQFeed", "OFT.DxFeed",
+                                      "ADataFeeder8", "ATAS.Strategies" })
+                try { _ctx.LoadFromAssemblyPath(Path.Combine(Dir, f + ".dll")); } catch { }
+            var pat = args[1];
+            foreach (var a in _ctx.Assemblies)
+            {
+                Type[] ts;
+                try { ts = a.GetTypes(); }
+                catch (ReflectionTypeLoadException e) { ts = e.Types.Where(t => t != null).ToArray(); }
+                catch { continue; }
+                foreach (var t in ts)
+                {
+                    if (t == null) continue;
+                    try
+                    {
+                        foreach (var i in t.GetInterfaces())
+                            if (i.Name.Contains(pat, StringComparison.OrdinalIgnoreCase))
+                            { Console.WriteLine($"{a.GetName().Name,-22} {t.FullName}  ->  {i.Name}"); break; }
+                    }
+                    catch { }
+                }
+            }
+            return;
+        }
+
         if (args.Length == 0 || args[0] == "--tipos")
         {
             var pat = args.Length > 1 ? args[1] : "";
