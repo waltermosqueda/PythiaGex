@@ -191,6 +191,9 @@ namespace PythiaGex
         /// con el precio de esa vela. De aca salen las bandas de puntitos.</summary>
         private sealed class Marca
         {
+            // La hora es lo que hace que la marca sobreviva a un reinicio: el
+            // NUMERO de vela no es estable entre sesiones, la hora si.
+            public DateTime Hora;
             public double MajorPos, MajorNeg, Zero;
             // Donde estaban las dominantes EN ESE MOMENTO. Guardarlas por vela
             // es lo que hace que los guiones ondulen y tengan huecos, en vez de
@@ -277,6 +280,10 @@ namespace PythiaGex
         private Cadena _cUsada;
         private readonly CadenaViva _viva = new();
         private bool _vivaPedida;
+        private Historia.Paquete _histPend;
+        private int _histMapeadoEn = -1;
+        private int _histRestauradas;
+        private DateTime _ultimoGuardado = DateTime.MinValue;
         private Cadena _vivaCache;
         private List<CadenaViva.Fila> _vivaFilasCache;
         private DateTime _vivaCacheHora = DateTime.MinValue;
@@ -342,6 +349,17 @@ namespace PythiaGex
                  Description = "Mismo criterio. Poner 0 a la izquierda y 2 a la derecha deja las " +
                                "dos lecturas en la misma pantalla: el mapa de hoy y el de fondo.")]
         public int VencDer { get; set; } = 1;
+
+        [Display(Name = "Guardar lo acumulado entre reinicios", GroupName = "Historia", Order = 120,
+                 Description = "Las dominantes por vela, el rastro de los strikes y las pelotitas " +
+                               "sobreviven al reinicio. NO se guarda ningun nivel calculado: el zero " +
+                               "gamma, los muros y el perfil se rehacen desde la cadena en cada tick.")]
+        public bool PersistirHistoria { get; set; } = true;
+
+        [Display(Name = "Cuantas horas guardar", GroupName = "Historia", Order = 121,
+                 Description = "Mas viejo que esto se descarta al restaurar: una marca de la semana " +
+                               "pasada sobre el grafico de hoy es ruido, no historia.")]
+        public int HorasHistoria { get; set; } = 24;
 
         [Display(Name = "Dias de vencimiento a incluir", GroupName = "Calculo", Order = 50)]
         public int DiasMax { get; set; } = 7;
@@ -661,6 +679,8 @@ namespace PythiaGex
             SubscribeToTimer(_periodo, _tick);
 
             // el primer arranque no espera al tick
+            LeerHistoria();
+
             _ultimaBajada = DateTime.UtcNow;
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = Bajar();
@@ -688,6 +708,7 @@ namespace PythiaGex
         protected override void OnDispose()
         {
             try { if (_tick != null) UnsubscribeFromTimer(_periodo, _tick); } catch { }
+            try { GuardarHistoria(); } catch { }
             try { _viva.Dispose(); } catch { }
         }
 
@@ -1398,6 +1419,7 @@ namespace PythiaGex
                     }
                     _porBarra[b] = new Marca
                     {
+                        Hora = ahora,
                         MajorPos = mp, MajorNeg = mn,
                         Zero = double.IsNaN(zero) ? 0
                              : (double.IsNaN(baseUsada) ? zero : zero + baseUsada),
@@ -1425,6 +1447,7 @@ namespace PythiaGex
                     _ultimoVolcado = ahora;
                     // LA FOTO, SELLADA EN EL MISMO INSTANTE QUE EL RENGLON.
                     VolcarCadenaViva();
+                    GuardarHistoria();
                     Registrar2(string.Format(CultureInfo.InvariantCulture,
                         "AUDIT spot_idx={0:F4} base={1:F4} origen=" + _baseOrigen.Replace(" ", "_") + " strikes={2} visibles=" + _visiblesUlt + " " +
                         "zero={3:F4} majorpos={4:F4} majorneg={5:F4} netgex={6:F6} netgexvol={7:F6} diasmax={8} " +
@@ -1479,6 +1502,7 @@ namespace PythiaGex
             if (ChartInfo == null) return;
             try { g.SetSmoothingMode(OFT.Rendering.Context.RenderSmoothingModes.AntiAlias); } catch { }
             _etiquetasUsadas.Clear();
+            MapearHistoria();
             var area = ChartArea;
             if (!_latido)
             {
@@ -2539,6 +2563,196 @@ namespace PythiaGex
 
         private static string Recortar(string s, int n)
             => string.IsNullOrEmpty(s) ? "" : (s.Length <= n ? s : s.Substring(0, n) + "...");
+
+
+        // ==============================================================
+        // Historia: lo acumulado sobrevive al reinicio
+        // ==============================================================
+
+        private string RutaHistoria()
+        {
+            var ins = (InstrumentInfo?.Instrument ?? Raiz()).Replace("#", "");
+            var per = (ChartInfo?.ChartType ?? "") + "-" + (ChartInfo?.TimeFrame ?? "");
+            return Historia.Ruta(ins, per);
+        }
+
+        /// <summary>
+        /// Vuelca lo acumulado. NO guarda ningun nivel calculado: solo el
+        /// registro de lo que ya se midio. El zero gamma, los muros y el perfil
+        /// se rehacen desde la cadena en cada tick y no leen nada de aca.
+        /// </summary>
+        private void GuardarHistoria()
+        {
+            if (!PersistirHistoria) return;
+            try
+            {
+                var p = new Historia.Paquete
+                {
+                    Guardado = DateTime.UtcNow.ToString("s", CultureInfo.InvariantCulture),
+                    Instrumento = (InstrumentInfo?.Instrument ?? "").Replace("#", ""),
+                };
+
+                lock (_porBarra)
+                    foreach (var m in _porBarra.Values)
+                    {
+                        if (!m.Hay || m.Hora == default(DateTime)) continue;
+                        p.Marcas.Add(new Historia.MarcaDto
+                        {
+                            T = Historia.AUnix(m.Hora),
+                            Mp = m.MajorPos, Mn = m.MajorNeg, Z = m.Zero,
+                            D = m.Doms, I = m.Incs,
+                        });
+                    }
+
+                lock (_pelotitas)
+                    foreach (var q in _pelotitas)
+                        p.Pelotitas.Add(new Historia.PelotitaDto
+                        {
+                            T = Historia.AUnix(q.Hora), K = q.Strike,
+                            Fut = q.Fut, Delta = q.Delta, Fuerza = q.Fuerza,
+                        });
+
+                // EL RASTRO SE DIEZMA ANTES DE GUARDAR.
+                //
+                // _estela anota un punto en CADA repricing, o sea por tick: en
+                // MNQ eran 82.000 puntos y 2,4 MB de archivo. Pero las ventanas
+                // que lo consultan son de 1, 5, 10, 15 y 30 minutos, asi que
+                // esa resolucion no aporta nada y solo pesa. Se guarda un punto
+                // cada 30 segundos, que sigue siendo veinte veces mas fino que
+                // la ventana mas corta.
+                const int SegRastro = 30;
+                lock (_estela)
+                    foreach (var kv in _estela)
+                    {
+                        if (kv.Value == null || kv.Value.Count == 0) continue;
+                        var tt = new List<long>(); var vv = new List<double>();
+                        long ult = long.MinValue;
+                        foreach (var x in kv.Value)
+                        {
+                            var u = Historia.AUnix(x.Key);
+                            if (u - ult < SegRastro) continue;
+                            ult = u; tt.Add(u); vv.Add(x.Value);
+                        }
+                        // el ultimo siempre, que es el valor de ahora
+                        var fin = kv.Value[kv.Value.Count - 1];
+                        var uf = Historia.AUnix(fin.Key);
+                        if (tt.Count == 0 || tt[tt.Count - 1] != uf) { tt.Add(uf); vv.Add(fin.Value); }
+                        p.Estela.Add(new Historia.EstelaDto
+                        {
+                            K = kv.Key, T = tt.ToArray(), V = vv.ToArray(),
+                        });
+                    }
+
+                Historia.Guardar(RutaHistoria(), p);
+            }
+            catch (Exception e) { Registrar(e); }
+        }
+
+        private void LeerHistoria()
+        {
+            if (!PersistirHistoria) return;
+            try
+            {
+                var ins = (InstrumentInfo?.Instrument ?? "").Replace("#", "");
+                string motivo;
+                _histPend = Historia.Leer(RutaHistoria(), ins, HorasHistoria, out motivo);
+                Registrar2(_histPend == null
+                    ? "historia: " + motivo
+                    : "historia: " + _histPend.Marcas.Count + " marcas, "
+                      + _histPend.Pelotitas.Count + " pelotitas, "
+                      + _histPend.Estela.Count + " strikes con rastro (a mapear)");
+            }
+            catch (Exception e) { Registrar(e); }
+        }
+
+        /// <summary>
+        /// Le asigna a cada registro guardado la vela que le corresponde POR
+        /// HORA, no por numero. Es la parte que evita el error silencioso: el
+        /// numero de vela cambia entre sesiones y restaurar por indice dejaria
+        /// cada marca corrida sin dar ningun error.
+        ///
+        /// Se descarta lo que caiga fuera del rango cargado y lo de la vela en
+        /// formacion, que se mide en vivo.
+        /// </summary>
+        private void MapearHistoria()
+        {
+            if (_histPend == null) return;
+            int n = CurrentBar;
+            if (n < 10) return;
+            if (_histMapeadoEn > 0 && n < _histMapeadoEn * 3 / 2) return;
+            _histMapeadoEn = n;
+
+            try
+            {
+                var t = new long[n];
+                for (int i = 0; i < n; i++)
+                {
+                    try { t[i] = Historia.AUnix(GetCandle(i).Time); }
+                    catch { t[i] = 0; }
+                }
+                if (t[0] == 0 || t[n - 1] == 0) return;
+
+                Func<long, int> Buscar = x =>
+                {
+                    if (x < t[0] || x > t[n - 1] + 86400) return -1;
+                    int lo = 0, hi = n - 1;
+                    while (lo < hi)
+                    {
+                        int m = (lo + hi + 1) / 2;
+                        if (t[m] <= x) lo = m; else hi = m - 1;
+                    }
+                    return lo;
+                };
+
+                int puestas = 0;
+                lock (_porBarra)
+                    foreach (var m in _histPend.Marcas)
+                    {
+                        int b = Buscar(m.T);
+                        if (b < 0 || b >= n - 1) continue;
+                        if (_porBarra.ContainsKey(b)) continue;
+                        _porBarra[b] = new Marca
+                        {
+                            Hora = Historia.DeUnix(m.T), Hay = true,
+                            MajorPos = m.Mp, MajorNeg = m.Mn, Zero = m.Z,
+                            Doms = m.D, Incs = m.I,
+                        };
+                        puestas++;
+                    }
+
+                lock (_pelotitas)
+                {
+                    var yaHay = new HashSet<long>(_pelotitas.Select(q => Historia.AUnix(q.Hora)));
+                    foreach (var q in _histPend.Pelotitas)
+                    {
+                        if (yaHay.Contains(q.T)) continue;
+                        int b = Buscar(q.T);
+                        if (b < 0) continue;
+                        _pelotitas.Add(new Pelotita
+                        {
+                            Hora = Historia.DeUnix(q.T), Strike = q.K, Fut = q.Fut,
+                            Delta = q.Delta, Fuerza = q.Fuerza, Barra = b,
+                        });
+                    }
+                    _pelotitas.Sort((a, b2) => a.Hora.CompareTo(b2.Hora));
+                }
+
+                lock (_estela)
+                    foreach (var e in _histPend.Estela)
+                    {
+                        if (_estela.ContainsKey(e.K)) continue;
+                        var l = new List<KeyValuePair<DateTime, double>>();
+                        for (int i = 0; i < e.T.Length && i < e.V.Length; i++)
+                            l.Add(new KeyValuePair<DateTime, double>(Historia.DeUnix(e.T[i]), e.V[i]));
+                        _estela[e.K] = l;
+                    }
+
+                _histRestauradas = puestas;
+                Registrar2("historia mapeada: " + puestas + " marcas puestas en su vela por hora");
+                _histPend = null;
+            }
+            catch (Exception e) { Registrar(e); _histPend = null; }
+        }
 
         /// <summary>
         /// Los picos interpolados, al renglon de auditoria.

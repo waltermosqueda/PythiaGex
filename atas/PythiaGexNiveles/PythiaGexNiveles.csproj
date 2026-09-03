@@ -30,6 +30,7 @@
     <Compile Include="Libro.cs" />
     <Compile Include="Black76.cs" />
     <Compile Include="CadenaViva.cs" />
+    <Compile Include="Historia.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.
