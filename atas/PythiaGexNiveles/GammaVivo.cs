@@ -332,6 +332,17 @@ namespace PythiaGex
                  Description = "Techo duro. Con ~960 ATAS acuso 7772 ms de atraso en la cinta de futuros.")]
         public int TopeContratos { get; set; } = 180;
 
+        [Display(Name = "Vencimiento del perfil IZQUIERDO", GroupName = "Calculo", Order = 48,
+                 Description = "0 = solo el 0DTE (para scalpear) / 1 = hasta los dias de abajo / " +
+                               "2 = todos los que haya (vista macro). Asi lo ofrece el producto " +
+                               "original: cada perfil con su propio vencimiento.")]
+        public int VencIzq { get; set; } = 1;
+
+        [Display(Name = "Vencimiento del perfil DERECHO", GroupName = "Calculo", Order = 49,
+                 Description = "Mismo criterio. Poner 0 a la izquierda y 2 a la derecha deja las " +
+                               "dos lecturas en la misma pantalla: el mapa de hoy y el de fondo.")]
+        public int VencDer { get; set; } = 1;
+
         [Display(Name = "Dias de vencimiento a incluir", GroupName = "Calculo", Order = 50)]
         public int DiasMax { get; set; } = 7;
 
@@ -1104,11 +1115,30 @@ namespace PythiaGex
                 if (masCerca != double.MaxValue && masCerca > horizonte) horizonte = masCerca;
             }
 
+            // CADA PERFIL CON SU PROPIO VENCIMIENTO.
+            //
+            // Asi lo ofrece el producto original: su dialogo se llama
+            // "Configurar Perfil" y adentro tiene Metrica y VENCIMIENTO
+            // (0DTE / Latest / Next) por perfil, no uno global.
+            //
+            // Para que sirve de verdad: el mapa del 0DTE y el de la cadena
+            // entera son estructuralmente distintos. El de hoy es el que
+            // aprieta para scalpear -- gamma concentrada, muros filosos -- y el
+            // completo es el de fondo, mas plano y mas estable. Poder mirarlos
+            // a la vez, uno de cada lado, es tener el corto y el largo sin
+            // cambiar de pantalla.
+            bool PasaVenc(double dias, int modo) =>
+                modo <= 0 ? dias < 1.0            // solo lo que vence hoy
+              : modo == 1 ? dias <= horizonte     // la ventana elegida
+              : true;                             // todo lo que haya
+
             foreach (var f in c.Filas)
             {
                 if (f.V < 0 || f.V >= c.Dias.Length) continue;
                 var dias = c.Dias[f.V];
-                if (dias > horizonte) continue;
+                bool enIzq = PasaVenc(dias, VencIzq);
+                bool enDer = PasaVenc(dias, VencDer);
+                if (!enIzq && !enDer) continue;
                 // El plazo nunca baja de media hora: con T tendiendo a cero la
                 // gamma explota y un 0DTE a punto de liquidar se comeria todo
                 // el mapa con un numero que no significa nada.
@@ -1121,9 +1151,10 @@ namespace PythiaGex
 
                 if (!porStrike.TryGetValue(f.K, out var n))
                     n = new Nivel { K = f.K, Gex = 0, GexVol = 0, Acel = 0 };
-                n.Gex += g;
-                n.GexVol += gv;
-                n.Acel += (gUp - g);
+                // el perfil de gamma (izquierda) y el de convexidad (derecha)
+                // se llenan cada uno con SU vencimiento
+                if (enIzq) { n.Gex += g; n.GexVol += gv; }
+                if (enDer) { n.Acel += (gUp - g); }
                 porStrike[f.K] = n;
             }
 
@@ -2254,6 +2285,19 @@ namespace PythiaGex
                 // un mapa distinto del que se cree estar mirando.
                 if (_esFuturo && _viva.DiasReales > 1)
                     ls.Add(Tuple.Create("OJO: vence en " + _viva.DiasReales + "d, no es 0DTE", ColAviso));
+
+                // QUE VENCIMIENTO MIRA CADA LADO.
+                //
+                // Solo si son distintos: si los dos miran lo mismo el renglon
+                // no aporta y ocupa lugar. Pero cuando difieren hay que
+                // decirlo, porque dos perfiles con distinta forma en la misma
+                // pantalla parecen un error si no se sabe que es a proposito.
+                if (VencIzq != VencDer)
+                {
+                    string V(int m) => m <= 0 ? "0DTE" : m == 1 ? DiasMax + "d" : "todos";
+                    ls.Add(Tuple.Create("izq " + V(VencIzq) + " · der " + V(VencDer),
+                                        Color.FromArgb(170, ColTexto)));
+                }
 
                 var fc = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamTablero - 1m)));
                 var medc = ls.Select(l => g.MeasureString(l.Item1, fc)).ToList();
