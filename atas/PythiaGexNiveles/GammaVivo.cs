@@ -403,6 +403,34 @@ namespace PythiaGex
         [Display(Name = "Ver Zero Gamma y Majors", GroupName = "Dibujo", Order = 64)]
         public bool VerLineas { get; set; } = true;
 
+        [Display(Name = "Ver los strikes CERCANOS", GroupName = "Cercanos", Order = 110,
+                 Description = "Los mas cargados que estan al lado del precio. Medido: con el " +
+                               "futuro en 7752 el major positive apuntaba a 7800 -- 48 puntos -- " +
+                               "mientras 7760, a OCHO puntos, tenia el 96 % de esa gamma y no se " +
+                               "dibujaba. Para scalpear eso es al reves de lo que sirve.")]
+        public bool VerCercanos { get; set; } = true;
+
+        [Display(Name = "Cuantos cercanos", GroupName = "Cercanos", Order = 111)]
+        public int CuantosCercanos { get; set; } = 4;
+
+        [Display(Name = "Hasta cuantos puntos", GroupName = "Cercanos", Order = 112,
+                 Description = "Radio alrededor del precio. Mas alla de esto ya no es 'cerca' " +
+                               "para un scalp.")]
+        public decimal RadioCercanos { get; set; } = 45m;
+
+        [Display(Name = "Minimo, en % del mayor", GroupName = "Cercanos", Order = 113,
+                 Description = "Un strike chico al lado del precio no frena nada. Por debajo de " +
+                               "este porcentaje del strike mas grande de la cadena, no se dibuja.")]
+        public int MinimoCercano { get; set; } = 22;
+
+        [Display(Name = "Freno (gamma +)", GroupName = "Cercanos", Order = 114,
+                 Description = "Donde la mesa absorbe: compra caidas y vende subas.")]
+        public Color ColCercanoPos { get; set; } = Color.FromArgb(70, 200, 145);
+
+        [Display(Name = "Acelerador (gamma -)", GroupName = "Cercanos", Order = 115,
+                 Description = "Donde la mesa amplifica: vende caidas y compra subas.")]
+        public Color ColCercanoNeg { get; set; } = Color.FromArgb(235, 110, 95);
+
         [Display(Name = "Margen del eje de precios (px)", GroupName = "Dibujo", Order = 65)]
         public int MargenEje { get; set; } = 62;
 
@@ -1617,6 +1645,43 @@ namespace PythiaGex
             int xl0 = x0 + (VerGamma ? ancho + 6 : 2);
             int xl1 = x1 - (VerAcel ? ancho + 6 : 2);
             if (xl1 - xl0 < 60) { xl0 = x0 + 2; xl1 = x1 - 2; }
+            // LOS CERCANOS PRIMERO, PARA QUE LOS MAJORS LES GANEN EL LUGAR.
+            //
+            // POR QUE HACEN FALTA. Los majors son el argmax GLOBAL de la
+            // cadena, y eso deja un hueco enorme entre el precio y el primer
+            // nivel dibujado. Medido con el futuro en 7752: el major positive
+            // apuntaba a 7800 -- a 48 puntos -- con 661 M, mientras 7760, a
+            // OCHO puntos, tenia 637 M. O sea el 96 % de la gamma del mayor,
+            // invisible, y era el unico que el precio iba a tocar en el proximo
+            // rato. Para scalpear eso es exactamente al reves.
+            //
+            // El signo dice que hace la mesa en ese nivel: gamma positiva la
+            // obliga a comprar caidas y vender subas (frena), negativa a lo
+            // contrario (acelera).
+            if (VerCercanos && perfil.Count > 0 && spot > 0)
+            {
+                // el precio del GRAFICO, que es contra el que se mide "cerca"
+                double pxAhora = 0;
+                try { pxAhora = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { }
+                double radio = (double)Math.Max(5m, RadioCercanos);
+                double piso = mx * Math.Max(0, Math.Min(90, MinimoCercano)) / 100.0;
+                var cerca = pxAhora <= 0 ? new List<Nivel>() : perfil
+                    .Where(nv => Math.Abs(nv.Fut - pxAhora) <= radio
+                              && Math.Abs(nv.Gex) >= piso
+                              && Math.Abs(nv.Fut - mp) > 0.01
+                              && Math.Abs(nv.Fut - mn) > 0.01)
+                    .OrderByDescending(nv => Math.Abs(nv.Gex))
+                    .Take(Math.Max(1, CuantosCercanos))
+                    .ToList();
+
+                foreach (var nv in cerca)
+                {
+                    var col = nv.Gex >= 0 ? ColCercanoPos : ColCercanoNeg;
+                    Linea(g, cont, xl0, xl1, nv.Fut, col,
+                          nv.Gex >= 0 ? "freno" : "acel", false, spot, x1, true);
+                }
+            }
+
             if (VerLineas)
             {
                 Linea(g, cont, xl0, xl1, mp, ColPos, "+wall", false, spot, x1);
@@ -2172,7 +2237,7 @@ namespace PythiaGex
         /// </summary>
         private void Linea(RenderContext g, IChartContainer cont, int x0, int x1,
                            double precio, Color col, string nombre, bool grueso,
-                           double spot, int xEje)
+                           double spot, int xEje, bool secundario = false)
         {
             if (double.IsNaN(precio) || precio <= 0) return;
             int y;
@@ -2215,10 +2280,13 @@ namespace PythiaGex
             }
 
             // la linea: fina y translucida, es una referencia y no un borde
-            var pluma = new RenderPen(Color.FromArgb(grueso ? 190 : 140, col),
-                                      grueso ? 1.6f : 1.1f,
-                                      grueso ? System.Drawing.Drawing2D.DashStyle.Dash
-                                             : System.Drawing.Drawing2D.DashStyle.Solid);
+            // Los cercanos van mas finos y mas apagados que los majors: son
+            // mas, y si pesaran lo mismo la pantalla perderia jerarquia.
+            var pluma = new RenderPen(Color.FromArgb(secundario ? 95 : (grueso ? 190 : 140), col),
+                                      secundario ? 1f : (grueso ? 1.6f : 1.1f),
+                                      secundario ? System.Drawing.Drawing2D.DashStyle.Dot
+                                      : grueso ? System.Drawing.Drawing2D.DashStyle.Dash
+                                               : System.Drawing.Drawing2D.DashStyle.Solid);
             g.DrawLine(pluma, x0, y, x1, y);
 
             // el chip, todo junto, contra el eje
@@ -2246,8 +2314,9 @@ namespace PythiaGex
                 && xc + wChip > _tableroRect.Left)
                 xc = _tableroRect.Left - wChip - 6;
 
-            g.FillRectangle(Color.FromArgb(225, ColFondo), new Rectangle(xc, yTxt, wChip, hChip));
-            g.DrawRectangle(new RenderPen(Color.FromArgb(150, col), 1f),
+            g.FillRectangle(Color.FromArgb(secundario ? 175 : 225, ColFondo),
+                            new Rectangle(xc, yTxt, wChip, hChip));
+            g.DrawRectangle(new RenderPen(Color.FromArgb(secundario ? 90 : 150, col), 1f),
                             new Rectangle(xc, yTxt, wChip, hChip));
             // una barrita del color a la izquierda del chip: identifica el
             // nivel sin tener que leer el nombre
