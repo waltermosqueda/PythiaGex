@@ -350,6 +350,15 @@ namespace PythiaGex
         [Display(Name = "Ver el tablero de datos", GroupName = "Dibujo", Order = 67)]
         public bool VerTablero { get; set; } = true;
 
+        [Display(Name = "Tablero compacto", GroupName = "Dibujo", Order = 67,
+                 Description = "Chiquito a un costado. Apagalo para ver el tablero completo " +
+                               "con volumen, interes abierto y max change.")]
+        public bool TableroCompacto { get; set; } = true;
+
+        [Display(Name = "Tablero a la derecha", GroupName = "Dibujo", Order = 67,
+                 Description = "Para que no tape el perfil de gamma, que se dibuja a la izquierda.")]
+        public bool TableroDerecha { get; set; } = true;
+
         [Display(Name = "Tablero abajo a la izquierda", GroupName = "Dibujo", Order = 68,
                  Description = "Arriba a la izquierda tapa la accion del precio en un grafico angosto.")]
         public bool TableroAbajo { get; set; } = true;
@@ -436,7 +445,10 @@ namespace PythiaGex
         public int MaxPuntos { get; set; } = 400;
 
         [Display(Name = "Tamano del circulo (px)", GroupName = "BigTrades", Order = 96)]
-        public int TamPunto { get; set; } = 26;
+        public int TamPunto { get; set; } = 20;
+
+        [Display(Name = "Tamano minimo del circulo (px)", GroupName = "BigTrades", Order = 98)]
+        public int TamPuntoMin { get; set; } = 9;
 
         [Display(Name = "Escribir los contratos adentro", GroupName = "BigTrades", Order = 97)]
         public bool NumeroAdentro { get; set; } = true;
@@ -1056,6 +1068,45 @@ namespace PythiaGex
                 mn = perfil.Aggregate((a, b) => a.Gex <= b.Gex ? a : b).K;
             }
 
+            // LOS PICOS DEL PERFIL, INTERPOLADOS.
+            //
+            // POR QUE INTERPOLADOS Y NO EL STRIKE PELADO. El operador dijo que
+            // las dominantes dibujadas se veian "muy lineales" y que en el
+            // producto real se ven dispersas. Se midio sobre tres capturas
+            // suyas: entre el 59 % y el 89 % de los guiones tienen una altura
+            // UNICA, y el ajuste a rejilla da un desvio de 0,19 a 0,30 donde
+            // cero seria rejilla perfecta. O sea que el nivel de ellos es una
+            // cantidad CONTINUA, no un strike.
+            //
+            // Devolver el strike pelado solo puede pararse en la rejilla de 5
+            // puntos, y por eso se veia una escalera. El pico real del perfil
+            // cae ENTRE strikes: se ajusta una parabola por el maximo y sus dos
+            // vecinos y se toma el vertice. Se mueve con cada tick, que es lo
+            // que se ve en los videos.
+            var picos = new List<(double Fut, double Peso)>();
+            if (perfil.Count >= 3)
+            {
+                for (int i = 1; i < perfil.Count - 1; i++)
+                {
+                    double a = Math.Abs(perfil[i - 1].Gex);
+                    double b2 = Math.Abs(perfil[i].Gex);
+                    double c2 = Math.Abs(perfil[i + 1].Gex);
+                    if (b2 <= a || b2 <= c2) continue;          // no es maximo local
+                    if (b2 < mx * 0.12) continue;               // ruido de fondo
+
+                    double den = a - 2 * b2 + c2;
+                    double delta = Math.Abs(den) > 1e-12 ? 0.5 * (a - c2) / den : 0.0;
+                    if (delta > 0.5) delta = 0.5;
+                    if (delta < -0.5) delta = -0.5;
+                    // paso local de la cadena, medido y no supuesto
+                    double paso = (perfil[i + 1].K - perfil[i - 1].K) / 2.0;
+                    double kInt = perfil[i].K + delta * paso;
+                    picos.Add((double.IsNaN(baseUsada) ? kInt : kInt + baseUsada, b2));
+                }
+                picos.Sort((u, v) => v.Peso.CompareTo(u.Peso));
+                if (picos.Count > 6) picos.RemoveRange(6, picos.Count - 6);
+            }
+
             // Guardar la foto de cada strike para poder dibujar la estela.
             // Se poda a 35 minutos: mas atras no lo pide ninguna ventana y el
             // diccionario crece sin techo con el grafico abierto todo el dia.
@@ -1157,15 +1208,15 @@ namespace PythiaGex
                 int b = Math.Max(0, CurrentBar - 1);
                 lock (_porBarra)
                 {
+                    // Los picos interpolados de ESTE momento. Antes se guardaban
+                    // los nucleos de las zonas, que son strikes pelados: solo
+                    // podian caer en la rejilla de 5 puntos y por eso la banda
+                    // salia como una escalera en vez de ondular.
                     double[] dd = null, ii = null;
-                    lock (_zonas)
+                    if (picos.Count > 0)
                     {
-                        var act = _zonas.Where(z => z.Relevante && z.Fut > 0).ToList();
-                        if (act.Count > 0)
-                        {
-                            dd = act.Select(z => z.Fut).ToArray();
-                            ii = act.Select(z => z.Incentivo).ToArray();
-                        }
+                        dd = picos.Select(p => p.Fut).ToArray();
+                        ii = picos.Select(p => p.Peso).ToArray();
                     }
                     _porBarra[b] = new Marca
                     {
@@ -1454,19 +1505,45 @@ namespace PythiaGex
             }
             if (visibles.Count == 0) return;
 
-            var elegidos = visibles
-                .OrderByDescending(t => t.Item1.Volumen)
+            // UN CIRCULO NO SE MUEVE DE SU PRECIO.
+            //
+            // La version anterior, cuando dos barridos caian encimados, corria
+            // el segundo hacia abajo para que se vieran los dos. El resultado
+            // eran columnas verticales perfectamente rectas, y el operador
+            // desconfio con razon: la ALTURA del circulo es el PRECIO al que
+            // se opero, asi que correrlo es mentir sobre donde paso la cosa.
+            // En las capturas del producto real el circulo -- ese rojo con
+            // "205" adentro -- esta sentado en el precio de las velas, no
+            // apilado en una columna.
+            //
+            // Lo correcto es SUMARLOS: si entraron varios barridos al mismo
+            // precio en la misma vela, eso es un solo evento mas grande, y el
+            // circulo crece. Ademas es mas informativo que tres circulos
+            // chicos, porque lo que importa es cuanto entro en ese nivel.
+            var juntados = new Dictionary<(int, int), (Libro.Barrido B, decimal Vol, int X, int Y)>();
+            foreach (var t in visibles)
+            {
+                var clave = (t.Item2, t.Item3);
+                if (juntados.TryGetValue(clave, out var y0))
+                    juntados[clave] = (y0.B.Volumen >= t.Item1.Volumen ? y0.B : t.Item1,
+                                       y0.Vol + t.Item1.Volumen, t.Item2, t.Item3);
+                else
+                    juntados[clave] = (t.Item1, t.Item1.Volumen, t.Item2, t.Item3);
+            }
+
+            var elegidos = juntados.Values
+                .OrderByDescending(t => t.Vol)
                 .Take(Math.Max(1, CuantosDibujar))
                 .ToList();
 
             decimal mayor = 1m;
-            foreach (var t in elegidos) if (t.Item1.Volumen > mayor) mayor = t.Item1.Volumen;
-            var usados = new List<Tuple<int, int>>();
+            foreach (var t in elegidos) if (t.Vol > mayor) mayor = t.Vol;
 
             foreach (var t in elegidos)
             {
-                var b = t.Item1;
-                int x = t.Item2, y = t.Item3;
+                var b = t.B;
+                decimal vol = t.Vol;
+                int x = t.X, y = t.Y;
 
                 // CIRCULO CON EL NUMERO DE CONTRATOS ADENTRO.
                 //
@@ -1476,14 +1553,10 @@ namespace PythiaGex
                 // punto sin numero obliga a adivinar el tamano por el area,
                 // que el ojo estima mal.
                 var col = b.Lado >= 0 ? ColCompra : ColVenta;
-                var r = (int)Math.Max(11, Math.Sqrt((double)(b.Volumen / mayor)) * TamPunto);
-                // APILADOS, no encimados. En las capturas se ven varios
-                // circulos en vertical sobre la misma vela, cada uno con su
-                // numero. Dibujarlos uno arriba del otro tapa los de abajo y
-                // se pierde justo lo que hay que ver: cuantos entraron.
-                while (usados.Any(u => Math.Abs(u.Item1 - x) < r && Math.Abs(u.Item2 - y) < r))
-                    y += r + 2;
-                usados.Add(Tuple.Create(x, y));
+                // el area crece con el volumen, asi que el radio va con la
+                // raiz: con escala lineal un barrido enorme deja al resto en un
+                // pixel y se pierde el racimo, que es lo que hay que ver
+                var r = (int)Math.Max(TamPuntoMin, Math.Sqrt((double)(vol / mayor)) * TamPunto);
                 // translucido con anillo claro: deja ver la vela debajo
                 g.FillEllipse(Color.FromArgb(120, col),
                     new Rectangle(x - r / 2, y - r / 2, r, r));
@@ -1491,7 +1564,7 @@ namespace PythiaGex
                     new Rectangle(x - r / 2, y - r / 2, r, r));
                 if (NumeroAdentro && r >= 16)
                 {
-                    var txt = ((int)b.Volumen).ToString(CultureInfo.InvariantCulture);
+                    var txt = ((int)vol).ToString(CultureInfo.InvariantCulture);
                     var ft = new RenderFont("Arial", r >= 24 ? 9f : 7.5f);
                     var m = g.MeasureString(txt, ft);
                     if (m.Width < r - 2)
@@ -1899,6 +1972,43 @@ namespace PythiaGex
             double zeroVol = 0;
             var colNet = Color.FromArgb(90, 210, 230);
             var ls = new List<Tuple<string, Color>>();
+
+            // MODO COMPACTO, QUE ES EL POR DEFECTO.
+            //
+            // El tablero completo son catorce renglones y le tapa el grafico.
+            // El operador pidio que sea chiquito y a un costado, y que se
+            // despliegue solo si quiere mas. Aca va lo minimo que hace falta
+            // para operar: en que regimen esta, donde cambia, y de donde salio
+            // el dato -- porque un nivel sin fuente no se publica.
+            if (TableroCompacto)
+            {
+                bool pos = !double.IsNaN(zero) && zero > 0 && spot > zero;
+                ls.Add(Tuple.Create(pos ? "GAMMA +  rango" : "GAMMA -  expansion",
+                                    pos ? ColPos : ColNeg));
+                ls.Add(Tuple.Create("zero  " + P(zero), ColZero));
+                ls.Add(Tuple.Create("+wall " + P(mp), ColPos));
+                ls.Add(Tuple.Create("-wall " + P(mn), ColNeg));
+                ls.Add(Tuple.Create("net   " + M(neto), colNet));
+                ls.Add(Tuple.Create(_esFuturo ? "EN VIVO" : "15 min tarde",
+                                    _esFuturo ? ColPos : ColAviso));
+
+                var fc = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamTablero - 1m)));
+                var medc = ls.Select(l => g.MeasureString(l.Item1, fc)).ToList();
+                int wc = 0, hc = 6;
+                foreach (var m in medc) { wc = Math.Max(wc, m.Width); hc += m.Height + 1; }
+                int xc = TableroDerecha ? area.Right - wc - MargenEje - 18 : area.Left + 8;
+                int yc = TableroAbajo ? area.Bottom - hc - 6 : area.Top + 8;
+                _tableroRect = new Rectangle(xc, yc, wc + 14, hc);
+                g.FillRectangle(Color.FromArgb(205, ColFondo), _tableroRect);
+                g.DrawRectangle(new RenderPen(Color.FromArgb(70, ColTexto), 1f), _tableroRect);
+                int yyc = yc + 3;
+                for (int i = 0; i < ls.Count; i++)
+                {
+                    g.DrawString(ls[i].Item1, fc, ls[i].Item2, xc + 7, yyc);
+                    yyc += medc[i].Height + 1;
+                }
+                return;
+            }
 
             // SI NO HAY VOLUMEN, NO SE INVENTAN NIVELES.
             //

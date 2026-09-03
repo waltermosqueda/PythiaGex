@@ -1,5 +1,5 @@
 using System;
-using PythiaGexNiveles;
+using PythiaGex;
 
 // PRUEBAS DE BLACK-76.
 //
