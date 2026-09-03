@@ -268,6 +268,7 @@ namespace PythiaGex
         private double _zeroGamma, _netGex, _maxGex, _maxAcel;
         private double _majorPos, _majorNeg;
         private double _spotUsado = double.NaN;
+        private double[] _picosUlt;
         private bool _esFuturo;
         private string _fuente = "CBOE";
         // la cadena que REALMENTE se uso en el ultimo repricing: la cinta
@@ -374,10 +375,10 @@ namespace PythiaGex
         public bool VerPuntosDominantes { get; set; } = true;
 
         [Display(Name = "Alto del punto (px)", GroupName = "Dominantes", Order = 83)]
-        public int AltoPunto { get; set; } = 3;
+        public int AltoPunto { get; set; } = 4;
 
         [Display(Name = "Ancho del punto (px)", GroupName = "Dominantes", Order = 84)]
-        public int AnchoPunto { get; set; } = 7;
+        public int AnchoPunto { get; set; } = 11;
 
         [Display(Name = "Punto de la dominante", GroupName = "Colores", Order = 87)]
         public Color ColPuntoDom { get; set; } = Color.FromArgb(232, 168, 56);
@@ -1105,6 +1106,7 @@ namespace PythiaGex
                 }
                 picos.Sort((u, v) => v.Peso.CompareTo(u.Peso));
                 if (picos.Count > 6) picos.RemoveRange(6, picos.Count - 6);
+                lock (_candado) _picosUlt = picos.Select(p => p.Fut).ToArray();
             }
 
             // Guardar la foto de cada strike para poder dibujar la estela.
@@ -1248,7 +1250,7 @@ namespace PythiaGex
                     Registrar2(string.Format(CultureInfo.InvariantCulture,
                         "AUDIT spot_idx={0:F4} base={1:F4} origen=" + _baseOrigen.Replace(" ", "_") + " strikes={2} visibles=" + _visiblesUlt + " " +
                         "zero={3:F4} majorpos={4:F4} majorneg={5:F4} netgex={6:F6} netgexvol={7:F6} diasmax={8} " +
-                        "cadenafilas={9} cadenats={10}" + AtrasoDom(),
+                        "cadenafilas={9} cadenats={10}" + AtrasoDom() + Picos(),
                         S, baseUsada, perfil.Count,
                         double.IsNaN(zero) ? 0 : zero, mp, mn, neto / 1e9, netoVol / 1e9, DiasMax,
                         c.Filas.Count, (c.Ts ?? "").Replace(" ", "_")));
@@ -1996,7 +1998,7 @@ namespace PythiaGex
                 var medc = ls.Select(l => g.MeasureString(l.Item1, fc)).ToList();
                 int wc = 0, hc = 6;
                 foreach (var m in medc) { wc = Math.Max(wc, m.Width); hc += m.Height + 1; }
-                int xc = TableroDerecha ? area.Right - wc - MargenEje - 18 : area.Left + 8;
+                int xc = TableroDerecha ? area.Right - wc - MargenEje - 46 : area.Left + 8;
                 int yc = TableroAbajo ? area.Bottom - hc - 6 : area.Top + 8;
                 _tableroRect = new Rectangle(xc, yc, wc + 14, hc);
                 g.FillRectangle(Color.FromArgb(205, ColFondo), _tableroRect);
@@ -2114,6 +2116,30 @@ namespace PythiaGex
 
         private static string Recortar(string s, int n)
             => string.IsNullOrEmpty(s) ? "" : (s.Length <= n ? s : s.Substring(0, n) + "...");
+
+        /// <summary>
+        /// Los picos interpolados, al renglon de auditoria.
+        ///
+        /// Sirve para PROBAR que son continuos y no strikes pelados: si
+        /// estuvieran pegados a la rejilla, todos caerian en multiplos de 5.
+        /// Se publica tambien el resto contra 5 para no tener que mirarlo a ojo.
+        /// </summary>
+        private string Picos()
+        {
+            double[] pp;
+            lock (_candado) pp = _picosUlt;
+            if (pp == null || pp.Length == 0) return " picos=ninguno";
+            var sb = new System.Text.StringBuilder(" picos=");
+            for (int i = 0; i < pp.Length; i++)
+            {
+                if (i > 0) sb.Append('/');
+                sb.Append(pp[i].ToString("F3", CultureInfo.InvariantCulture));
+            }
+            int enRejilla = 0;
+            foreach (var p in pp) if (Math.Abs(p / 5.0 - Math.Round(p / 5.0)) < 0.002) enRejilla++;
+            sb.Append(" picos_en_rejilla=").Append(enRejilla).Append('/').Append(pp.Length);
+            return sb.ToString();
+        }
 
         /// <summary>Mediana del atraso del libro, en ms, para el renglon de auditoria.</summary>
         private string AtrasoDom()
