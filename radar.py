@@ -29,6 +29,7 @@ from pythiagex.base import (medir as medir_base, contrato_vigente,
                             nombre_futuro, edad_minutos)
 from pythiagex import dominantes as DOM
 from pythiagex import bigtrades as BT
+from pythiagex import cadena_atas as CAD
 
 CACHE = "datos/cache"
 SALIDA = "panel/datos"
@@ -198,14 +199,14 @@ def una_corrida(simbolo, crudo=None, prima_minima=None, guardar=True,
         with open(os.path.join(SALIDA, "radar-%s.json" % sim.lstrip("_")),
                   "w", encoding="utf-8") as f:
             json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
-        _feed_atas(salida)
+        _feed_atas(salida, crudo, sello)
 
     if verboso:
         _imprimir(salida, nuevos, prev)
     return salida
 
 
-def _feed_atas(s):
+def _feed_atas(s, crudo=None, sello=None):
     """El extracto liviano que baja el indicador de ATAS.
 
     El archivo completo pesa cientos de KB por los BigTrades del dia. ATAS lo
@@ -239,6 +240,14 @@ def _feed_atas(s):
                                       d.get("acelerador_abajo")) if x],
         "zonas": [z(x) for x in d.get("zonas", []) if x.get("relevante")][:12],
         "faltan": d.get("faltan", []),
+        # LOS INSUMOS PARA REPRECIAR EN VIVO. Ver cadena_atas.py: el
+        # indicador rehace la gamma con el precio de cada tick, que es
+        # lo unico que se mueve. El interes abierto es de ayer para
+        # todos, asi que el retraso de CBOE no lo toca.
+        "cadena": (CAD.construir(
+            crudo, ahora=sello.replace(tzinfo=dt.timezone.utc))
+            if crudo is not None and sello is not None else None),
+
         # el perfil por strike, para la barra lateral
         "perfil": [{"idx": p["strike"],
                     "fut": round(p["strike"] + s["base"], 2) if s["base"] else None,

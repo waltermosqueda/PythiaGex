@@ -20,6 +20,8 @@
   <ItemGroup>
     <Compile Include="NivelesGamma.cs" />
     <Compile Include="RadarDominantes.cs" />
+    <Compile Include="SondaOpciones.cs" />
+    <Compile Include="GammaVivo.cs" />
     <Compile Include="Contexto.cs" />
     <Compile Include="Estilo.cs" />
     <Compile Include="Gatillos.cs" />
@@ -54,6 +56,10 @@
     </Reference>
     <Reference Include="OFT.Localization">
       <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Localization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Utils.Common">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\Utils.Common.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="OFT.Core">
