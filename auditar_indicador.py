@@ -22,7 +22,18 @@ LOG = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "pythiagex-gammavivo.l
 FEED = "panel/datos/atas/ES_radar.json"
 # La foto que deja el propio indicador. Se prefiere esta: es exactamente
 # el archivo que uso para calcular, sin la carrera contra el vigilante.
-FOTO = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "pythiagex-cadena-usada.json")
+# Una foto POR INSTRUMENTO: con dos graficos abiertos las dos instancias
+# escribian el mismo archivo y se pisaban, asi que el auditor no sabia cual
+# estaba mirando. Se toma la mas reciente si no se pide una.
+def _foto(raiz=None):
+    d = os.path.join(os.environ.get("APPDATA", ""), "ATAS")
+    if raiz:
+        return os.path.join(d, "pythiagex-cadena-usada-%s.json" % raiz)
+    cs = sorted(glob.glob(os.path.join(d, "pythiagex-cadena-usada-*.json")),
+                key=os.path.getmtime, reverse=True)
+    return cs[0] if cs else os.path.join(d, "pythiagex-cadena-usada.json")
+
+FOTO = _foto(sys.argv[1].upper() if len(sys.argv) > 1 else None)
 
 
 # ------------------------------------------------------------------
@@ -84,6 +95,16 @@ def leer_volcado():
         return None
     txt = io.open(LOG, encoding="utf-8", errors="replace").read()
     ls = [l for l in txt.splitlines() if "AUDIT" in l]
+    if not ls:
+        return None
+    # CON DOS GRAFICOS ABIERTOS HAY DOS INSTANCIAS ESCRIBIENDO EL MISMO LOG.
+    # Tomar "la ultima" mezclaba el renglon de MNQ con la cadena de ES. Se
+    # filtra por el rango de precio del instrumento que se esta auditando.
+    raiz = (sys.argv[1].upper() if len(sys.argv) > 1 else "")
+    if raiz in ("NQ", "MNQ"):
+        ls = [l for l in ls if re.search(r"spot_idx=(1|2|3)\d{4}", l)]
+    elif raiz in ("ES", "MES", "SPX"):
+        ls = [l for l in ls if re.search(r"spot_idx=\d{4}\.", l)]
     if not ls:
         return None
     linea = ls[-1]

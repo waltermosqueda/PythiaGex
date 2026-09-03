@@ -277,12 +277,14 @@ namespace PythiaGex
         private Cadena _cUsada;
         private readonly CadenaViva _viva = new();
         private bool _vivaPedida;
-        private DateTime _ultimoVolcadoViva = DateTime.MinValue;
+        private Cadena _vivaCache;
+        private List<CadenaViva.Fila> _vivaFilasCache;
+        private DateTime _vivaCacheHora = DateTime.MinValue;
         private volatile bool _vivaCorriendo;
         // cuantos strikes utiles trajo la viva cuando no alcanzaron
         private int _vivaFlaca = -1;
-        private Action _tickViva;
-        private TimeSpan _periodoViva;
+        private DateTime _ultimaBajada = DateTime.MinValue;
+        private DateTime _ultimoIntentoViva = DateTime.MinValue;
         private readonly object _candado = new();
 
         // ==============================================================
@@ -312,6 +314,11 @@ namespace PythiaGex
                  Description = "Sin retraso. Si no esta disponible cae a CBOE, que llega 902 s tarde, " +
                                "y lo avisa en la cinta.")]
         public bool UsarCadenaViva { get; set; } = true;
+
+        [Display(Name = "Refrescar las puntas cada (segundos)", GroupName = "Fuente", Order = 6,
+                 Description = "El PRECIO se reprecia en cada tick igual; esto es cada cuanto se " +
+                               "releen las puntas de las opciones, que no se mueven tan rapido.")]
+        public int SegundosCadenaViva { get; set; } = 5;
 
         [Display(Name = "Strikes por lado en vivo", GroupName = "Fuente", Order = 6,
                  Description = "Por vencimiento. Subirlo le compite ancho de banda al feed de futuros.")]
@@ -561,26 +568,57 @@ namespace PythiaGex
             }
             catch (Exception e) { Registrar(e); }
 
-            _periodo = TimeSpan.FromSeconds(Math.Max(60, SegundosRefresco));
-            _tick = () => _ = Bajar();
-            SubscribeToTimer(_periodo, _tick);
-            _ = Bajar();
-
-            // LA CADENA EN VIVO DE RITHMIC.
+            // UN SOLO TEMPORIZADOR PARA LAS DOS TAREAS.
             //
-            // Arranca una sola vez y en segundo plano: buscar las series y
-            // esperar a que lleguen las puntas lleva medio minuto, y eso no
-            // puede colgar el dibujo. Mientras no este lista se sigue usando
-            // CBOE, avisando en pantalla que llega 15 min tarde.
-            // SI FALLA, SE REINTENTA.
+            // Antes habia dos SubscribeToTimer, uno para bajar la cadena de
+            // CBOE y otro para reintentar la cadena viva. ATAS parece honrar
+            // uno solo: el segundo piso al primero y la cadena de CBOE dejo de
+            // refrescarse. Se vio auditando -- el feed publicado tenia 0,6
+            // minutos y el indicador seguia usando el de hacia catorce.
             //
-            // Antes esto corria UNA sola vez: si el mercado de opciones estaba
-            // flaco en ese momento -- o si todavia no habia abierto -- la
-            // cadena viva quedaba muerta para toda la sesion y se seguia con
-            // CBOE sin que nada lo volviera a intentar.
-            _tickViva = () =>
+            // Con un tick fijo y el tiempo controlado aca adentro no se depende
+            // de cuantas suscripciones soporte la plataforma.
+            _periodo = TimeSpan.FromSeconds(30);
+            _tick = () =>
             {
-                if (!UsarCadenaViva || _viva.Activa || _vivaCorriendo) return;
+                var ahora = DateTime.UtcNow;
+
+                if ((ahora - _ultimaBajada).TotalSeconds >= Math.Max(60, SegundosRefresco))
+                {
+                    _ultimaBajada = ahora;
+                    _ = Bajar();
+                }
+
+                if (UsarCadenaViva && !_viva.Activa && !_vivaCorriendo
+                    && (ahora - _ultimoIntentoViva).TotalSeconds >= 180)
+                {
+                    _ultimoIntentoViva = ahora;
+                    _vivaCorriendo = true;
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await _viva.Arrancar(DataProvider, TradingManager,
+                                                 TradingManager?.Security, Raiz(),
+                                                 Math.Max(1, DiasMax),
+                                                 Math.Max(5, StrikesEnVivo),
+                                                 Math.Max(1, VencimientosEnVivo),
+                                                 Math.Max(20, TopeContratos),
+                                                 m => Registrar2(m)).ConfigureAwait(false);
+                        }
+                        catch (Exception e) { Registrar(e); }
+                        finally { _vivaCorriendo = false; }
+                    });
+                }
+            };
+            SubscribeToTimer(_periodo, _tick);
+
+            // el primer arranque no espera al tick
+            _ultimaBajada = DateTime.UtcNow;
+            _ultimoIntentoViva = DateTime.UtcNow;
+            _ = Bajar();
+            if (UsarCadenaViva)
+            {
                 _vivaCorriendo = true;
                 _ = Task.Run(async () =>
                 {
@@ -597,35 +635,12 @@ namespace PythiaGex
                     catch (Exception e) { Registrar(e); }
                     finally { _vivaCorriendo = false; }
                 });
-            };
-            _periodoViva = TimeSpan.FromSeconds(180);
-            SubscribeToTimer(_periodoViva, _tickViva);
-
-            if (UsarCadenaViva && !_vivaPedida)
-            {
-                _vivaPedida = true;
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await _viva.Arrancar(DataProvider, TradingManager,
-                                             TradingManager?.Security,
-                                             Raiz(),
-                                             Math.Max(1, DiasMax),
-                                             Math.Max(5, StrikesEnVivo),
-                                             Math.Max(1, VencimientosEnVivo),
-                                             Math.Max(20, TopeContratos),
-                                             m => Registrar2(m)).ConfigureAwait(false);
-                    }
-                    catch (Exception e) { Registrar(e); }
-                });
             }
         }
 
         protected override void OnDispose()
         {
             try { if (_tick != null) UnsubscribeFromTimer(_periodo, _tick); } catch { }
-            try { if (_tickViva != null) UnsubscribeFromTimer(_periodoViva, _tickViva); } catch { }
             try { _viva.Dispose(); } catch { }
         }
 
@@ -717,6 +732,24 @@ namespace PythiaGex
         private Cadena ArmarDesdeViva()
         {
             if (!UsarCadenaViva || !_viva.Activa) return null;
+
+            // LA CADENA SE REARMA CADA POCOS SEGUNDOS, NO EN CADA TICK.
+            //
+            // Antes se rehacia entera en cada llamada -- o sea miles de veces
+            // por minuto -- para nada: las puntas de las opciones no se mueven
+            // a esa velocidad y la volatilidad implicita menos. Lo que si tiene
+            // que ir en cada tick es el PRECIO, y eso pasa igual porque el
+            // repricing corre despues con el precio del momento.
+            //
+            // Ademas resuelve una carrera de la auditoria: la foto en disco se
+            // escribia cada 20 s mientras la cadena cambiaba en cada tick, asi
+            // que el auditor NUNCA agarraba el mismo par y no podia comparar.
+            // Ahora la foto y la cadena se sellan en el mismo instante.
+            var ahoraC = DateTime.Now;
+            if (_vivaCache != null &&
+                (ahoraC - _vivaCacheHora).TotalSeconds < Math.Max(1, SegundosCadenaViva))
+                return _vivaCache;
+
             List<CadenaViva.Fila> fs;
             try { fs = _viva.Instantanea(); } catch { return null; }
             if (fs == null || fs.Count == 0) return null;
@@ -761,40 +794,16 @@ namespace PythiaGex
             // Igual que con la cadena de CBOE: si no se puede rehacer la cuenta
             // desde afuera con EXACTAMENTE los mismos numeros, el resultado no
             // es auditable. Se escribe cada tanto, no en cada tick.
-            try
-            {
-                if ((DateTime.Now - _ultimoVolcadoViva).TotalSeconds > 20)
-                {
-                    _ultimoVolcadoViva = DateTime.Now;
-                    var sb = new System.Text.StringBuilder(1 << 16);
-                    sb.Append("{\"ts\":\"").Append(DateTime.Now.ToString("yyyy-MM-dd_HH:mm:ss"))
-                      .Append("\",\"futuro\":").Append(_viva.Futuro.ToString("0.####", CultureInfo.InvariantCulture))
-                      .Append(",\"filas\":[");
-                    bool primero = true;
-                    foreach (var f in fs)
-                    {
-                        if (!primero) sb.Append(',');
-                        primero = false;
-                        sb.Append('[').Append(f.K.ToString("0.##", CultureInfo.InvariantCulture))
-                          .Append(',').Append(f.Dias.ToString("0.#####", CultureInfo.InvariantCulture))
-                          .Append(',').Append(f.EsCall ? 1 : 0)
-                          .Append(',').Append(f.OI.ToString("0.#", CultureInfo.InvariantCulture))
-                          .Append(',').Append(f.IV.ToString("0.######", CultureInfo.InvariantCulture))
-                          .Append(',').Append(f.Bid.ToString("0.####", CultureInfo.InvariantCulture))
-                          .Append(',').Append(f.Ask.ToString("0.####", CultureInfo.InvariantCulture))
-                          .Append(']');
-                    }
-                    sb.Append("]}");
-                    File.WriteAllText(Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                        "ATAS", "pythiagex-cadena-viva.json"), sb.ToString());
-                }
-            }
-            catch { }
+            var selloC = ahoraC.ToString("yyyy-MM-dd_HH:mm:ss", CultureInfo.InvariantCulture);
+            // Las filas se guardan y la foto se escribe en el MISMO momento en
+            // que se escribe el renglon de auditoria, no aca: si se vuelcan en
+            // distintos instantes el auditor nunca agarra el mismo par y no
+            // puede comparar. Se probo y daban once segundos de diferencia.
+            lock (_candado) _vivaFilasCache = fs;
 
-            return new Cadena
+            var salida = new Cadena
             {
-                Ts = DateTime.Now.ToString("yyyy-MM-dd_HH:mm:ss", CultureInfo.InvariantCulture),
+                Ts = selloC,
                 SpotIdx = _viva.Futuro,
                 Dias = dias.ToArray(),
                 Filas = porClave.Values.ToList(),
@@ -804,6 +813,9 @@ namespace PythiaGex
                 EsFuturo = true,
                 Fuente = "Rithmic EN VIVO",
             };
+            _vivaCache = salida;
+            _vivaCacheHora = ahoraC;
+            return salida;
         }
 
         private async Task Bajar()
@@ -830,7 +842,7 @@ namespace PythiaGex
                     {
                         var dst = Path.Combine(
                             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                            "ATAS", "pythiagex-cadena-usada.json");
+                            "ATAS", "pythiagex-cadena-usada-" + Raiz() + ".json");
                         File.WriteAllText(dst, txt);
                     }
                     catch { }
@@ -1072,11 +1084,31 @@ namespace PythiaGex
             double neto = 0, mx = 0, mxA = 0;
             var porStrike = new Dictionary<double, Nivel>();
 
+            // EL HORIZONTE SE ADAPTA A LO QUE HAY.
+            //
+            // Bug encontrado auditando MNQ: la cadena viva aflojaba el
+            // horizonte para traer el unico vencimiento que existe (el
+            // trimestral a 15 dias), y ACA se seguia aplicando el corte de 7 y
+            // se tiraban TODAS las filas. El renglon de auditoria lo mostraba
+            // sin lugar a dudas: cadenafilas=59 y strikes=0. Una parte del
+            // codigo relajo el criterio y la otra no se entero.
+            //
+            // El horizonte efectivo nunca es menor que el vencimiento mas
+            // cercano disponible: si hay 0DTE, el corte de 7 dias manda igual
+            // que siempre; si lo unico que hay esta a 15, se usan esos.
+            double horizonte = DiasMax;
+            if (c.Dias != null && c.Dias.Length > 0)
+            {
+                double masCerca = double.MaxValue;
+                foreach (var d in c.Dias) if (d >= 0 && d < masCerca) masCerca = d;
+                if (masCerca != double.MaxValue && masCerca > horizonte) horizonte = masCerca;
+            }
+
             foreach (var f in c.Filas)
             {
                 if (f.V < 0 || f.V >= c.Dias.Length) continue;
                 var dias = c.Dias[f.V];
-                if (dias > DiasMax) continue;
+                if (dias > horizonte) continue;
                 // El plazo nunca baja de media hora: con T tendiendo a cero la
                 // gamma explota y un 0DTE a punto de liquidar se comeria todo
                 // el mapa con un numero que no significa nada.
@@ -1161,6 +1193,7 @@ namespace PythiaGex
             // vecinos y se toma el vertice. Se mueve con cada tick, que es lo
             // que se ve en los videos.
             var picos = new List<(double Fut, double Peso)>();
+            if (perfil.Count < 3) lock (_candado) _picosUlt = null;   // no dejar los viejos colgados
             if (perfil.Count >= 3)
             {
                 for (int i = 1; i < perfil.Count - 1; i++)
@@ -1323,6 +1356,8 @@ namespace PythiaGex
                 if ((ahora - _ultimoVolcado).TotalSeconds >= 60)
                 {
                     _ultimoVolcado = ahora;
+                    // LA FOTO, SELLADA EN EL MISMO INSTANTE QUE EL RENGLON.
+                    VolcarCadenaViva();
                     Registrar2(string.Format(CultureInfo.InvariantCulture,
                         "AUDIT spot_idx={0:F4} base={1:F4} origen=" + _baseOrigen.Replace(" ", "_") + " strikes={2} visibles=" + _visiblesUlt + " " +
                         "zero={3:F4} majorpos={4:F4} majorneg={5:F4} netgex={6:F6} netgexvol={7:F6} diasmax={8} " +
@@ -2196,9 +2231,18 @@ namespace PythiaGex
                 // nivel sin fuente no se publica, y separarlos hacia que el ojo
                 // tuviera que cruzar el grafico para saber de donde salio
                 var cc = _cUsada ?? _c;
+                // EL ATRASO QUE SE PUBLICA ES EL REAL, NO EL NOMINAL.
+                //
+                // Decia "15 min tarde" fijo, que son los 902 s de CBOE. Pero a
+                // eso hay que sumarle la edad del archivo: auditando se vio el
+                // feed publicado con 0,6 minutos y el indicador usando uno de
+                // hacia catorce, o sea casi treinta minutos de atraso real
+                // mientras la pantalla decia quince.
+                double atrasoMin = 902.0 / 60.0 + Math.Max(0, cc?.EdadMin ?? 0);
                 ls.Add(Tuple.Create(
                     _esFuturo ? "EN VIVO · " + perfil.Count + " strikes"
-                              : "15 min tarde · " + perfil.Count + " strikes",
+                              : string.Format(CultureInfo.GetCultureInfo("es-AR"),
+                                    "{0:N0} min tarde · {1} strikes", atrasoMin, perfil.Count),
                     _esFuturo ? ColPos : ColAviso));
 
                 // SI EL MAPA NO ES DEL 0DTE, HAY QUE DECIRLO.
@@ -2346,6 +2390,48 @@ namespace PythiaGex
         /// estuvieran pegados a la rejilla, todos caerian en multiplos de 5.
         /// Se publica tambien el resto contra 5 para no tener que mirarlo a ojo.
         /// </summary>
+        /// <summary>
+        /// Escribe la foto de la cadena viva que se esta usando AHORA.
+        ///
+        /// Se llama junto con el renglon de auditoria y no cada N segundos por
+        /// su cuenta: si los dos sellos no coinciden, el auditor rechaza la
+        /// comparacion -- con razon, porque comparar dos cadenas distintas no
+        /// prueba nada -- y nunca llega a auditar.
+        /// </summary>
+        private void VolcarCadenaViva()
+        {
+            List<CadenaViva.Fila> fs;
+            Cadena c;
+            lock (_candado) { fs = _vivaFilasCache; c = _cUsada; }
+            if (fs == null || fs.Count == 0 || c == null || !c.EsFuturo) return;
+            try
+            {
+                var sb = new System.Text.StringBuilder(1 << 16);
+                sb.Append("{\"ts\":\"").Append(c.Ts)
+                  .Append("\",\"futuro\":").Append(c.SpotIdx.ToString("0.####", CultureInfo.InvariantCulture))
+                  .Append(",\"filas\":[");
+                bool primero = true;
+                foreach (var f in fs)
+                {
+                    if (!primero) sb.Append(',');
+                    primero = false;
+                    sb.Append('[').Append(f.K.ToString("0.##", CultureInfo.InvariantCulture))
+                      .Append(',').Append(f.Dias.ToString("0.#####", CultureInfo.InvariantCulture))
+                      .Append(',').Append(f.EsCall ? 1 : 0)
+                      .Append(',').Append(f.OI.ToString("0.#", CultureInfo.InvariantCulture))
+                      .Append(',').Append(f.IV.ToString("0.######", CultureInfo.InvariantCulture))
+                      .Append(',').Append(f.Bid.ToString("0.####", CultureInfo.InvariantCulture))
+                      .Append(',').Append(f.Ask.ToString("0.####", CultureInfo.InvariantCulture))
+                      .Append(']');
+                }
+                sb.Append("]}");
+                File.WriteAllText(Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "ATAS", "pythiagex-cadena-viva-" + Raiz() + ".json"), sb.ToString());
+            }
+            catch { }
+        }
+
         private string Picos()
         {
             double[] pp;
