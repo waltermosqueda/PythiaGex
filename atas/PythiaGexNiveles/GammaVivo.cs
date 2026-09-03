@@ -415,20 +415,29 @@ namespace PythiaGex
         [Display(Name = "Ver la cinta de estado", GroupName = "Dibujo", Order = 66)]
         public bool VerCinta { get; set; } = true;
 
-        [Display(Name = "Banda de puntos por vela (NO es del original)", GroupName = "Dominantes", Order = 82,
-                 Description = "APAGADO: el producto original NO dibuja esto. Se agrego por un error " +
-                               "de medicion mio -- en los videos verticales comprimidos confundi los " +
-                               "cuerpos de las velas NARANJAS con marcas del indicador. Medido despues " +
-                               "en cuadros de 1920x1080 sin comprimir: el cuerpo del grafico tiene solo " +
-                               "velas y tres lineas de nivel, cero puntos. Queda por si a alguien le " +
-                               "sirve igual, pero no viene del original.")]
-        public bool VerPuntosDominantes { get; set; } = false;
+        [Display(Name = "Marcas de las dominantes", GroupName = "Dominantes", Order = 82,
+                 Description = "Una marca por vela en cada nivel dominante de ESE momento. " +
+                               "Evidencia en conflicto: el video de NinjaTrader no las dibuja en el " +
+                               "cuerpo del grafico, pero las capturas del operador si -- una rotulada " +
+                               "'niveles de mayor exposicion gamma'. Probablemente sea la version web " +
+                               "contra la de NinjaTrader.")]
+        public bool VerPuntosDominantes { get; set; } = true;
+
+        [Display(Name = "Forma de la dominante", GroupName = "Dominantes", Order = 83,
+                 Description = "0 = cuadradito  ·  1 = redondito  ·  2 = guioncito (mas ancho que alto)")]
+        public int FormaDominante { get; set; } = 0;
+
+        [Display(Name = "Separacion minima entre marcas (px)", GroupName = "Dominantes", Order = 86,
+                 Description = "Si dos dominantes caen mas cerca que esto en la misma vela, se dibuja " +
+                               "solo la mas fuerte. Asi nunca se ven pegadas y no hay que agrandar la " +
+                               "pantalla para saber si son una o dos.")]
+        public int SeparacionMinima { get; set; } = 4;
 
         [Display(Name = "Alto del punto (px)", GroupName = "Dominantes", Order = 83)]
-        public int AltoPunto { get; set; } = 4;
+        public int AltoPunto { get; set; } = 3;
 
         [Display(Name = "Ancho del punto (px)", GroupName = "Dominantes", Order = 84)]
-        public int AnchoPunto { get; set; } = 11;
+        public int AnchoPunto { get; set; } = 5;
 
         [Display(Name = "Punto de la dominante", GroupName = "Colores", Order = 87)]
         public Color ColPuntoDom { get; set; } = Color.FromArgb(232, 168, 56);
@@ -1927,6 +1936,14 @@ namespace PythiaGex
                 catch { continue; }
                 if (x < x0 - 10 || x > x1 + 10) continue;
 
+                // NUNCA DOS MARCAS PEGADAS EN LA MISMA VELA.
+                //
+                // El operador dijo que tenia que agrandar mucho la pantalla
+                // para saber si eran una o varias. Si dos dominantes caen mas
+                // cerca que SeparacionMinima, se dibuja solo la mas fuerte:
+                // dos marcas que se tocan no informan mas que una, informan
+                // menos, porque ya no se sabe cuantas hay.
+                var yaEn = new List<int>();
                 void Punto(double precio, Color col, double fuerza)
                 {
                     if (precio <= 0) return;
@@ -1934,11 +1951,24 @@ namespace PythiaGex
                     try { y = cont.GetYByPrice((decimal)precio, false); }
                     catch { return; }
                     if (y < ChartArea.Top - 4 || y > ChartArea.Bottom + 4) return;
+                    int sep = Math.Max(2, SeparacionMinima);
+                    foreach (var u in yaEn) if (Math.Abs(u - y) < sep) return;
+                    yaEn.Add(y);
+
                     var f = Math.Max(0.25, Math.Min(1.0, fuerza));
                     int ww = Math.Max(3, (int)(w * (0.6 + 0.4 * f)));
                     int hh = Math.Max(2, (int)(h * (0.7 + 0.5 * f)));
-                    g.FillRectangle(Color.FromArgb((int)(140 + 115 * f), col),
-                        new Rectangle(x - ww / 2, y - hh / 2, ww, hh));
+                    // y nunca mas alta que la separacion, para que aunque dos
+                    // queden en velas vecinas se lea el hueco entre ellas
+                    hh = Math.Min(hh, Math.Max(2, sep - 1));
+                    var rc = new Rectangle(x - ww / 2, y - hh / 2, ww, hh);
+                    var cc2 = Color.FromArgb((int)(150 + 105 * f), col);
+
+                    if (FormaDominante == 1) g.FillEllipse(cc2, rc);
+                    else if (FormaDominante >= 2)
+                        g.FillRectangle(cc2, new Rectangle(x - Math.Max(3, ww) / 2, y - 1,
+                                                           Math.Max(3, ww), Math.Max(1, hh - 1)));
+                    else g.FillRectangle(cc2, rc);   // cuadradito
                 }
 
                 // LAS DOMINANTES DE ESA VELA, no las de ahora.

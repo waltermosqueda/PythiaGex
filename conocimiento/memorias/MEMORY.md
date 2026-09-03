@@ -32,5 +32,5 @@
 - [CBOE llega 902 segundos tarde](retraso-cboe-902s.md) — medido en 14 de 14, sin dispersion: sirve para estructura, nunca de gatillo en vivo.
 - [Lo que cuesta el retraso de verdad](costo-real-del-retraso.md) — 0,29 pts en el zero gamma, cero en los muros; el libro llega en 157 ms.
 - [Cadena de ES en vivo por Rithmic](cadena-es-en-vivo-rithmic.md) — 0DTE con puntas reales desde adentro de ATAS; adios al retraso de CBOE.
-- [Las dominantes no son una linea](dominantes-no-son-linea.md) — ondulan, tienen huecos y no cruzan el grafico; medido sobre las capturas.
+- [Los puntitos van sobre las barras](dominantes-no-son-linea.md) — no cruzan el grafico; y ojo: las velas naranjas contaminan la deteccion de ambar.
 - [El ChartArea de ATAS es mas alto que el visible](atas-chartarea-mas-alto.md) — lo anclado al fondo cae detras del eje de tiempo, sin error.
