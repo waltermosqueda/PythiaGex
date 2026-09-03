@@ -332,8 +332,25 @@ namespace PythiaGex
         [Display(Name = "Ver aceleracion (derecha)", GroupName = "Dibujo", Order = 61)]
         public bool VerAcel { get; set; } = true;
 
-        [Display(Name = "Ancho maximo de barra (px)", GroupName = "Dibujo", Order = 62)]
-        public int AnchoBarra { get; set; } = 150;
+        [Display(Name = "Ancho maximo de barra (px)", GroupName = "Dibujo", Order = 62,
+                 Description = "El perfil vive en el borde. Ancho pisa las velas y no deja leer.")]
+        public int AnchoBarra { get; set; } = 78;
+
+        [Display(Name = "Intensidad del perfil (0-100)", GroupName = "Dibujo", Order = 62,
+                 Description = "El perfil es contexto, no protagonista: apagado deja ver el precio.")]
+        public int OpacidadPerfil { get; set; } = 58;
+
+        [Display(Name = "Franja de regimen arriba", GroupName = "Dibujo", Order = 59,
+                 Description = "Verde = gamma positiva (rango). Roja = negativa (expansion). " +
+                               "Es lo primero que hay que saber y se lee sin leer.")]
+        public bool VerFranjaRegimen { get; set; } = true;
+
+        [Display(Name = "Rotulos pegados al eje", GroupName = "Dibujo", Order = 64,
+                 Description = "Con la distancia en puntos. Ahi ya esta mirando el ojo.")]
+        public bool RotulosDerecha { get; set; } = true;
+
+        [Display(Name = "Ver los titulos de las mitades", GroupName = "Dibujo", Order = 69)]
+        public bool VerTitulos { get; set; } = false;
 
         [Display(Name = "Alto de barra (px, 0 = automatico)", GroupName = "Dibujo", Order = 63)]
         public int AltoBarra { get; set; } = 0;
@@ -347,6 +364,11 @@ namespace PythiaGex
 
         [Display(Name = "Margen del eje de precios (px)", GroupName = "Dibujo", Order = 65)]
         public int MargenEje { get; set; } = 62;
+
+        [Display(Name = "Margen inferior (px)", GroupName = "Dibujo", Order = 65,
+                 Description = "ATAS entrega un area mas alta que la que se ve: sin este margen " +
+                               "lo que se ancla al fondo queda detras del eje de tiempo.")]
+        public int MargenInferior { get; set; } = 48;
 
         [Display(Name = "Ver el tablero de datos", GroupName = "Dibujo", Order = 67)]
         public bool VerTablero { get; set; } = true;
@@ -419,7 +441,7 @@ namespace PythiaGex
         public bool VerZonasDebiles { get; set; } = false;
 
         [Display(Name = "Relleno de la zona (0-100)", GroupName = "Dominantes", Order = 81)]
-        public int OpacidadZona { get; set; } = 16;
+        public int OpacidadZona { get; set; } = 10;
 
         [Display(Name = "Ver BigTrades del libro", GroupName = "BigTrades", Order = 90)]
         public bool VerBigTrades { get; set; } = true;
@@ -456,7 +478,7 @@ namespace PythiaGex
 
         [Display(Name = "Circulos de la estela", GroupName = "Perfil", Order = 53,
                  Description = "Donde estuvo ese strike antes. Adentro = encogio, afuera = crecio.")]
-        public bool VerEstela { get; set; } = true;
+        public bool VerEstela { get; set; } = false;
 
         [Display(Name = "Cuantos circulos por barra", GroupName = "Perfil", Order = 54)]
         public int CirculosPorBarra { get; set; } = 3;
@@ -1371,19 +1393,31 @@ namespace PythiaGex
                 catch { continue; }
                 if (y < area.Top - 6 || y > area.Bottom + 6) continue;
 
+                // EL PERFIL ES CONTEXTO, NO PROTAGONISTA.
+                //
+                // Antes se dibujaba a 215 de opacidad y 150 px de ancho: se
+                // comia un tercio del grafico y ahogaba las velas. En las
+                // capturas del producto real el perfil vive en el borde y el
+                // centro queda limpio para el precio. La intensidad ademas
+                // sigue al tamano: las barras chicas casi no se ven y las
+                // grandes saltan, que es lo que hay que leer de un vistazo.
                 if (VerGamma && Math.Abs(n.Gex) > 0)
                 {
-                    int w = Math.Max(1, (int)(Math.Abs(n.Gex) / mx * ancho));
+                    double f = Math.Abs(n.Gex) / mx;
+                    int w = Math.Max(1, (int)(f * ancho));
                     var col = n.Gex >= 0 ? ColPos : ColNeg;
-                    g.FillRectangle(Color.FromArgb(215, col),
+                    int al = (int)(OpacidadPerfil * 2.55 * (0.45 + 0.55 * f));
+                    g.FillRectangle(Color.FromArgb(Math.Min(255, Math.Max(12, al)), col),
                         new Rectangle(x0, y - alto / 2, w, alto));
                     if (VerEstela) Estela(g, n.K, mx, ancho, x0, y, true);
                 }
                 if (VerAcel && mxA > 0 && Math.Abs(n.Acel) > 0)
                 {
-                    int w = Math.Max(1, (int)(Math.Abs(n.Acel) / mxA * ancho));
+                    double f = Math.Abs(n.Acel) / mxA;
+                    int w = Math.Max(1, (int)(f * ancho));
                     var col = n.Acel >= 0 ? ColAcelPos : ColAcelNeg;
-                    g.FillRectangle(Color.FromArgb(215, col),
+                    int al = (int)(OpacidadPerfil * 2.55 * (0.45 + 0.55 * f));
+                    g.FillRectangle(Color.FromArgb(Math.Min(255, Math.Max(12, al)), col),
                         new Rectangle(x1 - w, y - alto / 2, w, alto));
                     if (VerEstela) Estela(g, n.K, mxA, ancho, x1, y, false);
                 }
@@ -1394,33 +1428,87 @@ namespace PythiaGex
             if (VerDominantes) Zonas(g, cont, x0, x1);
             if (VerBigTrades) Puntos(g, cont, x0, x1);
 
+            // LAS LINEAS NO CRUZAN EL PERFIL.
+            //
+            // Cruzarlo mezcla dos lecturas distintas -- cuanta gamma hay en ese
+            // strike y donde esta el nivel -- y el ojo tiene que separarlas
+            // solo. Empiezan despues del perfil y terminan antes del de la
+            // derecha, asi cada cosa ocupa su franja.
+            int xl0 = x0 + (VerGamma ? ancho + 6 : 2);
+            int xl1 = x1 - (VerAcel ? ancho + 6 : 2);
+            if (xl1 - xl0 < 60) { xl0 = x0 + 2; xl1 = x1 - 2; }
             if (VerLineas)
             {
-                Linea(g, cont, x0, x1, zero, ColZero, "Zero Gamma", true);
-                Linea(g, cont, x0, x1, mp, ColPos, "Major Positive", false);
-                Linea(g, cont, x0, x1, mn, ColNeg, "Major Negative", false);
+                Linea(g, cont, xl0, xl1, mp, ColPos, "+wall", false, spot, x1);
+                Linea(g, cont, xl0, xl1, mn, ColNeg, "-wall", false, spot, x1);
+                Linea(g, cont, xl0, xl1, zero, ColZero, "zero", true, spot, x1);
             }
 
-            // rotulos de las dos mitades
-            var f8 = new RenderFont("Arial", 8f);
-            if (VerGamma)
-                g.DrawString("EXPOSICION GAMMA", f8, Color.FromArgb(150, ColTexto),
-                             x0 + 4, area.Top + 4);
-            if (VerAcel)
+            // LA FRANJA DE REGIMEN.
+            //
+            // Es lo primero que hay que saber para scalpear -- si el mercado
+            // esta en rango o en expansion -- y hasta ahora habia que leerlo
+            // en un renglon de texto. Un color arriba se lee sin leer.
+            if (VerFranjaRegimen && !double.IsNaN(zero) && zero > 0 && spot > 0)
             {
-                var m = g.MeasureString("ACELERACION", f8);
-                g.DrawString("ACELERACION", f8, Color.FromArgb(150, ColTexto),
-                             x1 - m.Width - 4, area.Top + 4);
+                bool pos = spot > zero;
+                var cr = pos ? ColPos : ColNeg;
+                g.FillRectangle(Color.FromArgb(pos ? 42 : 58, cr),
+                                new Rectangle(x0, area.Top, x1 - x0, 3));
+            }
+
+            // Los titulos de las mitades van APAGADOS por defecto: chocaban con
+            // la marca de agua de ATAS ("Trading Platform by Rithmic") y no
+            // aportan nada que no diga el color. El que quiera verlos los
+            // prende, y ahi salen mas abajo para no pisarla.
+            if (VerTitulos)
+            {
+                var f8 = new RenderFont("Arial", 7.5f);
+                if (VerGamma)
+                    g.DrawString("EXPOSICION GAMMA", f8, Color.FromArgb(95, ColTexto),
+                                 x0 + 4, area.Top + 22);
+                if (VerAcel)
+                {
+                    var m = g.MeasureString("ACELERACION", f8);
+                    g.DrawString("ACELERACION", f8, Color.FromArgb(95, ColTexto),
+                                 x1 - m.Width - 4, area.Top + 22);
+                }
             }
         }
 
         /// <summary>Las zonas dominantes, como bandas al fondo.</summary>
+        /// <summary>
+        /// LAS ZONAS, COMO CORCHETES AL BORDE Y NO COMO MANCHAS.
+        ///
+        /// Antes cada zona era un rectangulo translucido que cruzaba TODO el
+        /// grafico. Con tres o cuatro zonas activas eso pinta media pantalla y
+        /// las velas quedan atras de un vidrio de color: exactamente lo que el
+        /// operador llamo "poco profesional visualmente".
+        ///
+        /// Una zona es un RANGO DE PRECIO, o sea informacion del eje vertical.
+        /// No necesita ancho: le alcanza con un corchete al costado, como los
+        /// que se usan para marcar tramos en un eje. Asi se ve donde empieza y
+        /// donde termina, se distingue freno de acelerador por color, y el
+        /// centro del grafico queda libre para el precio, que es lo que se
+        /// mira para operar.
+        /// </summary>
         private void Zonas(RenderContext g, IChartContainer cont, int x0, int x1)
         {
             List<ZonaDom> zs;
             lock (_zonas) zs = new List<ZonaDom>(_zonas);
+            if (zs.Count == 0) return;
+
+            double incMax = 0;
+            foreach (var z in zs) if (z.Incentivo > incMax) incMax = z.Incentivo;
+            if (incMax <= 0) incMax = 1;
+
+            // el corchete vive pegado al perfil, en su propia franja
+            int xb = x0 + (VerGamma ? Math.Max(20, AnchoBarra) + 10 : 6);
+            const int gruesoCorchete = 3, patita = 6;
+
             foreach (var z in zs)
             {
+                if (!z.Relevante && !VerZonasDebiles) continue;
                 int ya, yb;
                 try
                 {
@@ -1429,21 +1517,26 @@ namespace PythiaGex
                 }
                 catch { continue; }
                 if (yb < ChartArea.Top || ya > ChartArea.Bottom) continue;
-                if (!z.Relevante && !VerZonasDebiles) continue;
-                var col = z.Caracter == "freno" ? ColPos : ColNeg;
-                var alfa = Math.Max(0, Math.Min(255, OpacidadZona * 255 / 100));
+                ya = Math.Max(ya, ChartArea.Top);
+                yb = Math.Min(yb, ChartArea.Bottom);
                 int alt = Math.Max(3, yb - ya);
-                // Relleno apenas insinuado y BORDE punteado. Verificado en
-                // pantalla: con el relleno fuerte, tres zonas de 10 y 20
-                // puntos tapaban mas de un tercio del grafico y no se veian
-                // las velas. El borde marca donde empieza y termina sin
-                // inundar nada.
-                g.FillRectangle(Color.FromArgb(z.Relevante ? alfa : alfa / 2, col),
-                    new Rectangle(x0, ya, Math.Max(1, x1 - x0), alt));
-                var pluma = new RenderPen(Color.FromArgb(z.Relevante ? 150 : 80, col), 1f,
-                                          System.Drawing.Drawing2D.DashStyle.Dot);
-                g.DrawLine(pluma, x0, ya, x1, ya);
-                g.DrawLine(pluma, x0, yb, x1, yb);
+
+                var col = z.Caracter == "freno" ? ColPos : ColNeg;
+                double fz = Math.Max(0.25, Math.Min(1.0, z.Incentivo / incMax));
+                int alfa = (int)(120 + 120 * fz);
+
+                // el cuerpo del corchete
+                g.FillRectangle(Color.FromArgb(alfa, col), new Rectangle(xb, ya, gruesoCorchete, alt));
+                // las dos patitas, que cierran el tramo
+                g.FillRectangle(Color.FromArgb(alfa, col), new Rectangle(xb, ya, patita, 1));
+                g.FillRectangle(Color.FromArgb(alfa, col), new Rectangle(xb, yb - 1, patita, 1));
+
+                // y un relleno apenas insinuado, para que se lea como banda sin
+                // tapar nada: 10 % sobre fondo oscuro son 25 de 255
+                var alfaR = Math.Max(0, Math.Min(255, OpacidadZona * 255 / 100));
+                if (alfaR > 0)
+                    g.FillRectangle(Color.FromArgb(z.Relevante ? alfaR : alfaR / 2, col),
+                        new Rectangle(xb + patita, ya, Math.Max(1, x1 - xb - patita), alt));
             }
         }
 
@@ -1801,136 +1894,168 @@ namespace PythiaGex
             catch { return 5; }
         }
 
+        /// <summary>
+        /// UN NIVEL: linea fina y un chip pegado al eje con precio y distancia.
+        ///
+        /// POR QUE EL CHIP VA A LA DERECHA. Antes el nombre iba flotando a la
+        /// izquierda y el precio contra el eje: dos objetos separados por todo
+        /// el ancho del grafico para decir una sola cosa, y el ojo tenia que
+        /// unirlos. Pegado al eje esta donde el ojo ya mira -- ahi lee el
+        /// precio actual -- y en un solo golpe sale que nivel es, a que precio
+        /// y CUANTOS PUNTOS FALTAN, que es el numero con el que se decide una
+        /// entrada.
+        /// </summary>
         private void Linea(RenderContext g, IChartContainer cont, int x0, int x1,
-                           double precio, Color col, string nombre, bool grueso)
+                           double precio, Color col, string nombre, bool grueso,
+                           double spot, int xEje)
         {
             if (double.IsNaN(precio) || precio <= 0) return;
             int y;
             try { y = cont.GetYByPrice((decimal)precio, false); }
             catch { return; }
 
+            decimal pxAct = 0;
+            try { pxAct = GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { }
+            double falta = pxAct > 0 ? precio - (double)pxAct : double.NaN;
+            string dist = double.IsNaN(falta) ? "" :
+                (falta >= 0 ? "+" : "") + falta.ToString("N0", CultureInfo.GetCultureInfo("es-AR"));
+
+            var f = new RenderFont("Arial", 8.5f);
+
             // NIVEL FUERA DE PANTALLA: no se calla, se marca en el borde.
             //
-            // Medido en vivo: con la ventana de precio que usa el operador
-            // (unos 16 puntos) NINGUN strike entra, porque los de SPX van de
-            // 5 en 5 y los Majors del dia estaban a 27 y 73 puntos. El
-            // indicador dibujaba en silencio y parecia roto.
-            //
-            // Ahora, si el nivel quedo arriba o abajo, se pone una flecha
-            // pegada al borde con su precio y cuantos puntos falta para
-            // llegar. Un nivel que no se ve sigue siendo un nivel.
+            // Medido en vivo: con la ventana de precio que suele usar el
+            // operador NINGUN strike entra, porque los de SPX van de 5 en 5 y
+            // los muros del dia estaban a 27 y 73 puntos. El indicador
+            // dibujaba en silencio y parecia roto.
             if (y < ChartArea.Top || y > ChartArea.Bottom)
             {
                 if (!MarcarFueraDePantalla) return;
                 bool arriba = y < ChartArea.Top;
-                int yb2 = arriba ? ChartArea.Top + 8 : ChartArea.Bottom - 16;
-                var fa = new RenderFont("Arial", 8.5f);
-                decimal px = 0;
-                try { px = GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { }
-                var falta = px > 0 ? Math.Abs((double)px - precio) : 0;
+                int yb2 = arriba ? ChartArea.Top + 6
+                                 : ChartArea.Bottom - Math.Max(18, MargenInferior + 4);
                 var t2 = string.Format(CultureInfo.GetCultureInfo("es-AR"),
-                    "{0} {1}  {2:N2}  ({3:N0} pts)", arriba ? "^" : "v", nombre, precio, falta);
-                var mm = g.MeasureString(t2, fa);
-                int xx = Math.Max(x0 + 4, x1 - mm.Width - 10);
-                g.FillRectangle(Color.FromArgb(170, ColFondo),
+                    "{0} {1} {2:N0} ({3} pts)", arriba ? "▲" : "▼", nombre, precio, dist);
+                var mm = g.MeasureString(t2, f);
+                int xx = xEje - mm.Width - 10;
+                // el marcador tampoco puede pisar el tablero
+                if (VerTablero && !_tableroRect.IsEmpty
+                    && yb2 + mm.Height > _tableroRect.Top && yb2 < _tableroRect.Bottom
+                    && xx + mm.Width > _tableroRect.Left)
+                    xx = _tableroRect.Left - mm.Width - 12;
+                g.FillRectangle(Color.FromArgb(150, ColFondo),
                     new Rectangle(xx, yb2, mm.Width + 8, mm.Height + 2));
-                g.DrawString(t2, fa, Color.FromArgb(210, col), xx + 4, yb2 + 1);
+                g.DrawString(t2, f, Color.FromArgb(190, col), xx + 4, yb2 + 1);
                 return;
             }
-            g.DrawLine(new RenderPen(col, grueso ? 2f : 1.4f), x0, y, x1, y);
-            var f = new RenderFont("Arial", 9f);
-            // El nombre va del lado IZQUIERDO, como en el producto original
-            // ("Zero Gamma", "Major Positive"), y el precio del lado del eje.
-            // Poner las dos cosas juntas contra el eje tapaba las velas.
-            var m1 = g.MeasureString(nombre, f);
-            // Si la etiqueta caeria sobre el tablero se corre a su derecha.
-            // Verificado en pantalla: "Zero Gamma" y "Major Negative" quedaban
-            // tapados por el panel y no se leia ninguno de los dos.
-            // LAS ETIQUETAS NO SE PISAN ENTRE SI.
-            //
-            // Verificado en pantalla: con el zero gamma en 7691 y el major
-            // negative en 7684 -- siete puntos -- los dos rotulos quedaban uno
-            // encima del otro y no se leia ninguno. Se corre en vertical hasta
-            // encontrar lugar.
-            int yTxt = y - m1.Height;
-            while (_etiquetasUsadas.Any(u => Math.Abs(u - yTxt) < m1.Height + 2))
-                yTxt -= m1.Height + 3;
+
+            // la linea: fina y translucida, es una referencia y no un borde
+            var pluma = new RenderPen(Color.FromArgb(grueso ? 190 : 140, col),
+                                      grueso ? 1.6f : 1.1f,
+                                      grueso ? System.Drawing.Drawing2D.DashStyle.Dash
+                                             : System.Drawing.Drawing2D.DashStyle.Solid);
+            g.DrawLine(pluma, x0, y, x1, y);
+
+            // el chip, todo junto, contra el eje
+            var txt = string.Format(CultureInfo.GetCultureInfo("es-AR"),
+                                    "{0} {1:N2}", nombre, precio);
+            var mt = g.MeasureString(txt, f);
+            bool hayDist = !string.IsNullOrEmpty(dist);
+            var md = hayDist ? g.MeasureString(dist, f) : default;
+            int wChip = mt.Width + 10 + (hayDist ? md.Width + 10 : 0);
+            int hChip = mt.Height + 3;
+
+            // que no se pisen entre ellos: se corren en vertical y se les deja
+            // un tirante fino para saber a que linea pertenecen
+            int yTxt = y - hChip / 2;
+            while (_etiquetasUsadas.Any(u => Math.Abs(u - yTxt) < hChip + 1))
+                yTxt -= hChip + 2;
             _etiquetasUsadas.Add(yTxt);
 
-            int xl = x0 + 2;
-            if (VerTablero && !_tableroRect.IsEmpty
-                && y >= _tableroRect.Top - 4 && y <= _tableroRect.Bottom + 4
-                && xl < _tableroRect.Right)
-                xl = _tableroRect.Right + 8;
-            g.FillRectangle(Color.FromArgb(185, ColFondo),
-                new Rectangle(xl, yTxt - 1, m1.Width + 8, m1.Height + 2));
-            g.DrawString(nombre, f, col, xl + 4, yTxt);
-            // si la etiqueta quedo lejos de su linea, un tirante fino para que
-            // se vea a cual pertenece
-            if (Math.Abs(yTxt - (y - m1.Height)) > 3)
-                g.DrawLine(new RenderPen(Color.FromArgb(110, col), 1f),
-                           xl + 2, yTxt + m1.Height, xl + 2, y);
+            // contra el EJE, no contra el final de la linea: la linea ahora
+            // termina antes del perfil de la derecha y el chip quedaba
+            // flotando en el medio del grafico, que es donde menos sirve.
+            int xc = xEje - wChip - 2;
+            if (!_tableroRect.IsEmpty && VerTablero
+                && yTxt + hChip > _tableroRect.Top && yTxt < _tableroRect.Bottom
+                && xc + wChip > _tableroRect.Left)
+                xc = _tableroRect.Left - wChip - 6;
 
-            var pr = precio.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
-            var m2 = g.MeasureString(pr, f);
-            g.FillRectangle(Color.FromArgb(215, col),
-                new Rectangle(x1 - m2.Width - 8, y - m2.Height / 2 - 1, m2.Width + 8, m2.Height + 2));
-            g.DrawString(pr, f, Color.FromArgb(250, 15, 20, 26), x1 - m2.Width - 4, y - m2.Height / 2);
+            g.FillRectangle(Color.FromArgb(225, ColFondo), new Rectangle(xc, yTxt, wChip, hChip));
+            g.DrawRectangle(new RenderPen(Color.FromArgb(150, col), 1f),
+                            new Rectangle(xc, yTxt, wChip, hChip));
+            // una barrita del color a la izquierda del chip: identifica el
+            // nivel sin tener que leer el nombre
+            g.FillRectangle(Color.FromArgb(230, col), new Rectangle(xc, yTxt, 3, hChip));
+            g.DrawString(txt, f, Color.FromArgb(235, ColTexto), xc + 7, yTxt + 1);
+            if (hayDist)
+                g.DrawString(dist, f, Color.FromArgb(165, ColTexto),
+                             xc + mt.Width + 13, yTxt + 1);
+
+            if (Math.Abs(yTxt + hChip / 2 - y) > 3)
+                g.DrawLine(new RenderPen(Color.FromArgb(90, col), 1f),
+                           xc + 1, yTxt + hChip / 2, xc + 1, y);
         }
 
+        /// <summary>
+        /// LA CINTA: UN SOLO RENGLON, Y LOS AVISOS SOLO CUANDO IMPORTAN.
+        ///
+        /// Antes eran cuatro renglones largos abajo a la izquierda, con la
+        /// advertencia del interes abierto repetida en cada repintado. Una
+        /// advertencia permanente deja de leerse a los cinco minutos y encima
+        /// ocupa un cuarto del ancho del grafico.
+        ///
+        /// Ahora va la procedencia en una linea corta -- fuente, cuantos
+        /// strikes, el neto -- y debajo SOLO lo que este realmente mal. Si no
+        /// hay nada mal, no hay segundo renglon.
+        /// </summary>
+        /// <summary>
+        /// SOLO LOS AVISOS. Si esta todo bien, no dibuja nada.
+        ///
+        /// Antes esto era una cinta de cuatro renglones abajo a la izquierda
+        /// que decia CASI LO MISMO que el tablero de la otra esquina: dos
+        /// cajas de estado peleando por la pantalla. La procedencia -- fuente,
+        /// si esta en vivo, el neto -- se mudo al tablero, que es donde ya se
+        /// miran los numeros.
+        ///
+        /// Aca queda unicamente lo que este realmente mal, arriba a la
+        /// izquierda para que se vea, y desaparece cuando se arregla. Una
+        /// advertencia permanente deja de leerse a los cinco minutos.
+        /// </summary>
         private void Cinta(RenderContext g, int x0, Rectangle area, int nStrikes,
                            double neto, double spot)
         {
-            var f = new RenderFont("Arial", 9.5f);
+            var f = new RenderFont("Arial", 8.5f);
             var ls = new List<Tuple<string, Color>>();
-            var c = _cUsada ?? _c;   // la que de verdad se uso, no la de CBOE por defecto
+            var c = _cUsada ?? _c;
 
             if (c == null)
-            {
                 ls.Add(Tuple.Create(string.IsNullOrEmpty(_error)
                     ? "bajando la cadena..." : "sin cadena: " + _error, ColAviso));
-            }
             else
             {
-                ls.Add(Tuple.Create(string.Format(CultureInfo.InvariantCulture,
-                    "{0}  ·  {1} strikes repreciados con el precio de cada tick",
-                    c.Contrato, nStrikes), ColTexto));
-                // DE DONDE SALIO EL NUMERO Y CON QUE ATRASO. Nunca un nivel
-                // suelto: si no dice su fuente y su antiguedad, no se publica.
-                if (c.EsFuturo)
-                    ls.Add(Tuple.Create(string.Format(CultureInfo.InvariantCulture,
-                        "net gex {0:+0.00;-0.00} B  ·  futuro {1:0.00}  ·  cadena EN VIVO por Rithmic (sin retraso)",
-                        neto / 1e9, spot), ColPos));
-                else
-                    ls.Add(Tuple.Create(string.Format(CultureInfo.InvariantCulture,
-                        "net gex {0:+0.00;-0.00} B  ·  indice implicito {1:0.00}  ·  CBOE, 15 min tarde (hace {2:0.#} min)",
-                        neto / 1e9, spot, c.EdadMin), ColAviso));
                 if (_baseOrigen == "sin base")
-                    ls.Add(Tuple.Create(
-                        "sin base indice->futuro: no se dibuja ningun nivel", ColNeg));
-                else if (_baseOrigen != "medida")
-                    ls.Add(Tuple.Create("base " + _baseOrigen +
-                        " -- los niveles pueden estar corridos unos ticks", ColAviso));
+                    ls.Add(Tuple.Create("sin base indice->futuro: no se dibuja ningun nivel", ColNeg));
+                else if (_baseOrigen != "medida" && !c.EsFuturo
+                         && !_baseOrigen.StartsWith("no hace falta"))
+                    ls.Add(Tuple.Create("base " + _baseOrigen + ": los niveles pueden estar corridos", ColAviso));
                 if (_visiblesUlt == 0 && nStrikes > 0)
-                    ls.Add(Tuple.Create(
-                        "ningun strike entra en la ventana de precio: abri el grafico para ver el perfil",
-                        ColNeg));
-                ls.Add(Tuple.Create(
-                    "el interes abierto es de ayer para todos; lo que late es el precio", ColAviso));
+                    ls.Add(Tuple.Create("ningun strike entra en pantalla: abri la escala de precios", ColNeg));
             }
+            if (ls.Count == 0) return;
 
             var med = ls.Select(l => g.MeasureString(l.Item1, f)).ToList();
-            int w = 0, h = 8;
-            foreach (var m in med) { w = Math.Max(w, m.Width); h += m.Height + 2; }
-            var x = x0 + 6; var y = area.Bottom - h - 6;
-            g.FillRectangle(Color.FromArgb(215, ColFondo), new Rectangle(x, y, w + 20, h));
-            g.DrawRectangle(new RenderPen(Color.FromArgb(90, ColTexto), 1f),
-                new Rectangle(x, y, w + 20, h));
-            var yy = y + 4;
+            int w = 0, h = 5;
+            foreach (var m in med) { w = Math.Max(w, m.Width); h += m.Height + 1; }
+            int x = x0 + 5, y = area.Top + 10;
+            g.FillRectangle(Color.FromArgb(215, ColFondo), new Rectangle(x, y, w + 12, h));
+            g.DrawRectangle(new RenderPen(Color.FromArgb(120, ColAviso), 1f),
+                            new Rectangle(x, y, w + 12, h));
+            int yy = y + 2;
             for (int i = 0; i < ls.Count; i++)
             {
-                g.DrawString(ls[i].Item1, f, ls[i].Item2, x + 9, yy);
-                yy += med[i].Height + 2;
+                g.DrawString(ls[i].Item1, f, ls[i].Item2, x + 6, yy);
+                yy += med[i].Height + 1;
             }
         }
 
@@ -1991,15 +2116,26 @@ namespace PythiaGex
                 ls.Add(Tuple.Create("+wall " + P(mp), ColPos));
                 ls.Add(Tuple.Create("-wall " + P(mn), ColNeg));
                 ls.Add(Tuple.Create("net   " + M(neto), colNet));
-                ls.Add(Tuple.Create(_esFuturo ? "EN VIVO" : "15 min tarde",
-                                    _esFuturo ? ColPos : ColAviso));
+                // la procedencia viaja CON los numeros, no en otra caja: un
+                // nivel sin fuente no se publica, y separarlos hacia que el ojo
+                // tuviera que cruzar el grafico para saber de donde salio
+                var cc = _cUsada ?? _c;
+                ls.Add(Tuple.Create(
+                    _esFuturo ? "EN VIVO · " + perfil.Count + " strikes"
+                              : "15 min tarde · " + perfil.Count + " strikes",
+                    _esFuturo ? ColPos : ColAviso));
 
                 var fc = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamTablero - 1m)));
                 var medc = ls.Select(l => g.MeasureString(l.Item1, fc)).ToList();
                 int wc = 0, hc = 6;
                 foreach (var m in medc) { wc = Math.Max(wc, m.Width); hc += m.Height + 1; }
                 int xc = TableroDerecha ? area.Right - wc - MargenEje - 46 : area.Left + 8;
-                int yc = TableroAbajo ? area.Bottom - hc - 6 : area.Top + 8;
+                // ATAS entrega un area mas alta que la visible: sin descontar
+                // el margen, el ultimo renglon queda detras del eje de tiempo.
+                // Y un poco mas arriba todavia para no pisar el reloj de la vela.
+                int yc = TableroAbajo
+                       ? area.Bottom - hc - Math.Max(6, MargenInferior)
+                       : area.Top + 14;
                 _tableroRect = new Rectangle(xc, yc, wc + 14, hc);
                 g.FillRectangle(Color.FromArgb(205, ColFondo), _tableroRect);
                 g.DrawRectangle(new RenderPen(Color.FromArgb(70, ColTexto), 1f), _tableroRect);
