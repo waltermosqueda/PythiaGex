@@ -199,6 +199,7 @@ namespace PythiaGex
         private int _ultimoMapeoPel = -1;
         private int _visiblesUlt;
         private Rectangle _tableroRect = Rectangle.Empty;
+        private readonly List<int> _etiquetasUsadas = new();
 
         /// <summary>La ultima base que dio confiable, con su hora.
         ///
@@ -1026,6 +1027,7 @@ namespace PythiaGex
         {
             if (ChartInfo == null) return;
             try { g.SetSmoothingMode(OFT.Rendering.Context.RenderSmoothingModes.AntiAlias); } catch { }
+            _etiquetasUsadas.Clear();
             var area = ChartArea;
             if (!_latido)
             {
@@ -1204,6 +1206,7 @@ namespace PythiaGex
 
             decimal mayor = 1m;
             foreach (var b in bs) if (b.Volumen > mayor) mayor = b.Volumen;
+            var usados = new List<Tuple<int, int>>();
 
             foreach (var b in bs)
             {
@@ -1227,9 +1230,17 @@ namespace PythiaGex
                 // que el ojo estima mal.
                 var col = b.Lado >= 0 ? ColCompra : ColVenta;
                 var r = (int)Math.Max(11, Math.Sqrt((double)(b.Volumen / mayor)) * TamPunto);
-                g.FillEllipse(Color.FromArgb(215, col),
+                // APILADOS, no encimados. En las capturas se ven varios
+                // circulos en vertical sobre la misma vela, cada uno con su
+                // numero. Dibujarlos uno arriba del otro tapa los de abajo y
+                // se pierde justo lo que hay que ver: cuantos entraron.
+                while (usados.Any(u => Math.Abs(u.Item1 - x) < r && Math.Abs(u.Item2 - y) < r))
+                    y += r + 2;
+                usados.Add(Tuple.Create(x, y));
+                // translucido con anillo claro: deja ver la vela debajo
+                g.FillEllipse(Color.FromArgb(120, col),
                     new Rectangle(x - r / 2, y - r / 2, r, r));
-                g.DrawEllipse(new RenderPen(Color.FromArgb(235, 255, 255, 255), 1f),
+                g.DrawEllipse(new RenderPen(Color.FromArgb(200, 235, 240, 245), 1.4f),
                     new Rectangle(x - r / 2, y - r / 2, r, r));
                 if (NumeroAdentro && r >= 16)
                 {
@@ -1468,14 +1479,30 @@ namespace PythiaGex
             // Si la etiqueta caeria sobre el tablero se corre a su derecha.
             // Verificado en pantalla: "Zero Gamma" y "Major Negative" quedaban
             // tapados por el panel y no se leia ninguno de los dos.
+            // LAS ETIQUETAS NO SE PISAN ENTRE SI.
+            //
+            // Verificado en pantalla: con el zero gamma en 7691 y el major
+            // negative en 7684 -- siete puntos -- los dos rotulos quedaban uno
+            // encima del otro y no se leia ninguno. Se corre en vertical hasta
+            // encontrar lugar.
+            int yTxt = y - m1.Height;
+            while (_etiquetasUsadas.Any(u => Math.Abs(u - yTxt) < m1.Height + 2))
+                yTxt -= m1.Height + 3;
+            _etiquetasUsadas.Add(yTxt);
+
             int xl = x0 + 2;
             if (VerTablero && !_tableroRect.IsEmpty
                 && y >= _tableroRect.Top - 4 && y <= _tableroRect.Bottom + 4
                 && xl < _tableroRect.Right)
                 xl = _tableroRect.Right + 8;
             g.FillRectangle(Color.FromArgb(185, ColFondo),
-                new Rectangle(xl, y - m1.Height - 1, m1.Width + 8, m1.Height + 2));
-            g.DrawString(nombre, f, col, xl + 4, y - m1.Height);
+                new Rectangle(xl, yTxt - 1, m1.Width + 8, m1.Height + 2));
+            g.DrawString(nombre, f, col, xl + 4, yTxt);
+            // si la etiqueta quedo lejos de su linea, un tirante fino para que
+            // se vea a cual pertenece
+            if (Math.Abs(yTxt - (y - m1.Height)) > 3)
+                g.DrawLine(new RenderPen(Color.FromArgb(110, col), 1f),
+                           xl + 2, yTxt + m1.Height, xl + 2, y);
 
             var pr = precio.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
             var m2 = g.MeasureString(pr, f);
@@ -1634,7 +1661,12 @@ namespace PythiaGex
                 ls.RemoveAt(ult); med.RemoveAt(ult);
             }
 
-            int x = area.Left + 8;
+            // EL TABLERO NO TAPA EL PERFIL.
+            //
+            // Verificado en pantalla: quedaba justo encima de la franja
+            // donde se dibujan las barras de gamma, que es la informacion
+            // principal del indicador. Arranca despues de ellas.
+            int x = area.Left + (VerGamma ? Math.Max(20, AnchoBarra) + 16 : 8);
             int y = TableroAbajo ? Math.Max(area.Top + 4, area.Bottom - h - 8) : area.Top + 8;
             _tableroRect = new Rectangle(x, y, w + 20, h);
             g.FillRectangle(Color.FromArgb(225, ColFondo), new Rectangle(x, y, w + 20, h));
