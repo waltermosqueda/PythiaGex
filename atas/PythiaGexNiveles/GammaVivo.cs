@@ -372,10 +372,15 @@ namespace PythiaGex
         public bool VerZonasDebiles { get; set; } = false;
 
         [Display(Name = "Relleno de la zona (0-100)", GroupName = "Dominantes", Order = 81)]
-        public int OpacidadZona { get; set; } = 9;
+        public int OpacidadZona { get; set; } = 16;
 
         [Display(Name = "Ver BigTrades del libro", GroupName = "BigTrades", Order = 90)]
         public bool VerBigTrades { get; set; } = true;
+
+        [Display(Name = "Cuantos BigTrades dibujar", GroupName = "BigTrades", Order = 92,
+                 Description = "Solo se dibujan los N mas grandes de los que hay en pantalla. " +
+                               "El resto se sigue guardando para el analisis.")]
+        public int CuantosDibujar { get; set; } = 14;
 
         [Display(Name = "Umbral automatico", GroupName = "BigTrades", Order = 91,
                  Description = "El corte sale del propio flujo del instrumento, no de un numero fijo.")]
@@ -1204,22 +1209,49 @@ namespace PythiaGex
                 }
             }
 
-            decimal mayor = 1m;
-            foreach (var b in bs) if (b.Volumen > mayor) mayor = b.Volumen;
-            var usados = new List<Tuple<int, int>>();
-
+            // SOLO LOS MAS GRANDES SE DIBUJAN.
+            //
+            // El umbral de captura queda bajo a proposito para no perder
+            // material, pero dibujar todo lo capturado llena la pantalla de
+            // ruido: en MES la mediana es de 1 contrato, asi que entraban
+            // barridos de 8, 9 y 10. En las capturas del operador los
+            // circulos dicen 291, 313, 245, 722 -- tres cifras. Un barrido de
+            // 9 contratos en el micro no es un BigTrade y decirle asi es
+            // mentirle al ojo.
+            //
+            // Se ordena por tamano y se dibujan los N mayores QUE ESTAN EN
+            // PANTALLA. Asi el corte se adapta solo: si el mercado se pone
+            // pesado suben los numeros y siguen entrando los mismos catorce.
+            var visibles = new List<Tuple<Libro.Barrido, int, int>>();
             foreach (var b in bs)
             {
                 if (b.Barra < 0) continue;
-                int x, y;
+                int xv, yv;
                 try
                 {
-                    x = cont.GetXByBar(b.Barra, false);
-                    y = cont.GetYByPrice(b.Precio, false);
+                    xv = cont.GetXByBar(b.Barra, false);
+                    yv = cont.GetYByPrice(b.Precio, false);
                 }
                 catch { continue; }
-                if (x < x0 - 20 || x > x1 + 20) continue;
-                if (y < ChartArea.Top - 6 || y > ChartArea.Bottom + 6) continue;
+                if (xv < x0 - 20 || xv > x1 + 20) continue;
+                if (yv < ChartArea.Top - 6 || yv > ChartArea.Bottom + 6) continue;
+                visibles.Add(Tuple.Create(b, xv, yv));
+            }
+            if (visibles.Count == 0) return;
+
+            var elegidos = visibles
+                .OrderByDescending(t => t.Item1.Volumen)
+                .Take(Math.Max(1, CuantosDibujar))
+                .ToList();
+
+            decimal mayor = 1m;
+            foreach (var t in elegidos) if (t.Item1.Volumen > mayor) mayor = t.Item1.Volumen;
+            var usados = new List<Tuple<int, int>>();
+
+            foreach (var t in elegidos)
+            {
+                var b = t.Item1;
+                int x = t.Item2, y = t.Item3;
 
                 // CIRCULO CON EL NUMERO DE CONTRATOS ADENTRO.
                 //
@@ -1353,6 +1385,54 @@ namespace PythiaGex
                 Punto(m.MajorPos, ColPuntoDom);
                 Punto(m.MajorNeg, ColPuntoDom);
                 Punto(m.Zero, ColPuntoZero);
+            }
+
+            // LAS BANDAS DE LAS DOMINANTES.
+            //
+            // Esto faltaba entero. El bucle de arriba solo marca donde estuvo
+            // el nivel en cada vela que paso, o sea el rastro; las dominantes
+            // son las zonas que calcula dominantes.py y no se dibujaban.
+            // Cada una pone su banda de puntos a lo ancho de lo visible, a la
+            // altura de su nucleo, con el ambar mas fuerte cuanto mayor es el
+            // incentivo -- que es como se leen en las capturas.
+            List<ZonaDom> zs;
+            lock (_zonas) zs = new List<ZonaDom>(_zonas);
+            if (zs.Count == 0) return;
+
+            double incMax = 0.0;
+            foreach (var z in zs) if (z.Incentivo > incMax) incMax = z.Incentivo;
+            if (incMax <= 0) incMax = 1.0;
+
+            foreach (var z in zs)
+            {
+                if (!z.Relevante && !VerZonasDebiles) continue;
+                // El nucleo es el strike dominante, que viaja en "fut", NO el
+                // punto medio de la zona. En la primera zona de hoy el nucleo
+                // esta en 7759,07 y el medio daria 7749,07: diez puntos de
+                // corrimiento, o sea la banda dibujada donde no hay nada.
+                double nucleo = z.Fut;
+                if (nucleo <= 0) continue;
+                int y;
+                try { y = cont.GetYByPrice((decimal)nucleo, false); }
+                catch { continue; }
+                if (y < ChartArea.Top || y > ChartArea.Bottom) continue;
+
+                // el peso de la zona se ve en el punto: la mas fuerte se lee
+                // primero sin tener que mirar ningun numero
+                double f = z.Incentivo / incMax;
+                int alfa = (int)(120 + 135 * f);
+                int ww = Math.Max(3, (int)(w * (0.6 + 0.4 * f)));
+                int hh = Math.Max(2, (int)(h * (0.7 + 0.5 * f)));
+                var colz = Color.FromArgb(Math.Min(255, alfa), ColPuntoDom);
+
+                for (int b = desde; b <= hasta; b += 2)
+                {
+                    int xb;
+                    try { xb = cont.GetXByBar(b, false); }
+                    catch { continue; }
+                    if (xb < x0 - 10 || xb > x1 + 10) continue;
+                    g.FillRectangle(colz, new Rectangle(xb - ww / 2, y - hh / 2, ww, hh));
+                }
             }
         }
 
