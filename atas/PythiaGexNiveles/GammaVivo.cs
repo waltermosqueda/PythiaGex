@@ -188,6 +188,11 @@ namespace PythiaGex
         private sealed class Marca
         {
             public double MajorPos, MajorNeg, Zero;
+            // Donde estaban las dominantes EN ESE MOMENTO. Guardarlas por vela
+            // es lo que hace que los guiones ondulen y tengan huecos, en vez de
+            // salir una linea recta que seria mentira. Ver PuntosDominantes().
+            public double[] Doms;
+            public double[] Incs;
             public bool Hay;
         }
 
@@ -988,11 +993,22 @@ namespace PythiaGex
                 int b = Math.Max(0, CurrentBar - 1);
                 lock (_porBarra)
                 {
+                    double[] dd = null, ii = null;
+                    lock (_zonas)
+                    {
+                        var act = _zonas.Where(z => z.Relevante && z.Fut > 0).ToList();
+                        if (act.Count > 0)
+                        {
+                            dd = act.Select(z => z.Fut).ToArray();
+                            ii = act.Select(z => z.Incentivo).ToArray();
+                        }
+                    }
                     _porBarra[b] = new Marca
                     {
                         MajorPos = mp, MajorNeg = mn,
                         Zero = double.IsNaN(zero) ? 0
                              : (double.IsNaN(baseUsada) ? zero : zero + baseUsada),
+                        Doms = dd, Incs = ii,
                         Hay = true,
                     };
                     // no dejar crecer sin techo con el grafico abierto todo el dia
@@ -1406,69 +1422,66 @@ namespace PythiaGex
                 catch { continue; }
                 if (x < x0 - 10 || x > x1 + 10) continue;
 
-                void Punto(double precio, Color col)
+                void Punto(double precio, Color col, double fuerza)
                 {
                     if (precio <= 0) return;
                     int y;
                     try { y = cont.GetYByPrice((decimal)precio, false); }
                     catch { return; }
                     if (y < ChartArea.Top - 4 || y > ChartArea.Bottom + 4) return;
-                    g.FillRectangle(Color.FromArgb(230, col),
-                        new Rectangle(x - w / 2, y - h / 2, w, h));
+                    var f = Math.Max(0.25, Math.Min(1.0, fuerza));
+                    int ww = Math.Max(3, (int)(w * (0.6 + 0.4 * f)));
+                    int hh = Math.Max(2, (int)(h * (0.7 + 0.5 * f)));
+                    g.FillRectangle(Color.FromArgb((int)(140 + 115 * f), col),
+                        new Rectangle(x - ww / 2, y - hh / 2, ww, hh));
                 }
 
-                Punto(m.MajorPos, ColPuntoDom);
-                Punto(m.MajorNeg, ColPuntoDom);
-                Punto(m.Zero, ColPuntoZero);
-            }
-
-            // LAS BANDAS DE LAS DOMINANTES.
-            //
-            // Esto faltaba entero. El bucle de arriba solo marca donde estuvo
-            // el nivel en cada vela que paso, o sea el rastro; las dominantes
-            // son las zonas que calcula dominantes.py y no se dibujaban.
-            // Cada una pone su banda de puntos a lo ancho de lo visible, a la
-            // altura de su nucleo, con el ambar mas fuerte cuanto mayor es el
-            // incentivo -- que es como se leen en las capturas.
-            List<ZonaDom> zs;
-            lock (_zonas) zs = new List<ZonaDom>(_zonas);
-            if (zs.Count == 0) return;
-
-            double incMax = 0.0;
-            foreach (var z in zs) if (z.Incentivo > incMax) incMax = z.Incentivo;
-            if (incMax <= 0) incMax = 1.0;
-
-            foreach (var z in zs)
-            {
-                if (!z.Relevante && !VerZonasDebiles) continue;
-                // El nucleo es el strike dominante, que viaja en "fut", NO el
-                // punto medio de la zona. En la primera zona de hoy el nucleo
-                // esta en 7759,07 y el medio daria 7749,07: diez puntos de
-                // corrimiento, o sea la banda dibujada donde no hay nada.
-                double nucleo = z.Fut;
-                if (nucleo <= 0) continue;
-                int y;
-                try { y = cont.GetYByPrice((decimal)nucleo, false); }
-                catch { continue; }
-                if (y < ChartArea.Top || y > ChartArea.Bottom) continue;
-
-                // el peso de la zona se ve en el punto: la mas fuerte se lee
-                // primero sin tener que mirar ningun numero
-                double f = z.Incentivo / incMax;
-                int alfa = (int)(120 + 135 * f);
-                int ww = Math.Max(3, (int)(w * (0.6 + 0.4 * f)));
-                int hh = Math.Max(2, (int)(h * (0.7 + 0.5 * f)));
-                var colz = Color.FromArgb(Math.Min(255, alfa), ColPuntoDom);
-
-                for (int b = desde; b <= hasta; b += 2)
+                // LAS DOMINANTES DE ESA VELA, no las de ahora.
+                //
+                // Se dibuja lo que se midio en el momento de esa vela. Si el
+                // nivel se movio, los guiones ondulan; si en esa vela ninguna
+                // zona califico, no hay guion y queda el hueco. Asi es como se
+                // ve en los cuadros del producto real, medido con deteccion de
+                // color sobre tres capturas del operador.
+                if (m.Doms != null)
                 {
-                    int xb;
-                    try { xb = cont.GetXByBar(b, false); }
-                    catch { continue; }
-                    if (xb < x0 - 10 || xb > x1 + 10) continue;
-                    g.FillRectangle(colz, new Rectangle(xb - ww / 2, y - hh / 2, ww, hh));
+                    double imax = 0.0;
+                    if (m.Incs != null) foreach (var v in m.Incs) if (v > imax) imax = v;
+                    if (imax <= 0) imax = 1.0;
+                    for (int k = 0; k < m.Doms.Length; k++)
+                    {
+                        double inc = (m.Incs != null && k < m.Incs.Length) ? m.Incs[k] : imax;
+                        Punto(m.Doms[k], ColPuntoDom, inc / imax);
+                    }
                 }
+
+                Punto(m.MajorPos, ColPuntoDom, 1.0);
+                Punto(m.MajorNeg, ColPuntoDom, 1.0);
+                Punto(m.Zero, ColPuntoZero, 1.0);
             }
+
+            // POR QUE NO SE DIBUJA UNA BANDA A LO ANCHO.
+            //
+            // Antes se dibujaba, a la altura de cada dominante, una linea de
+            // puntos recta que cruzaba todo el grafico. El operador dijo que
+            // en el producto real eso no se ve asi, y midiendo tres cuadros
+            // suyos con deteccion de color resulto que tenia razon:
+            //
+            //   banda de 17 guiones -- ondula 47 px = 9,4 alturas de guion
+            //   banda de 18 guiones -- ondula 80 px = 13,3 alturas
+            //   banda de 28 guiones -- ondula 196 px = 28,1 alturas
+            //
+            // Ninguna es recta, todas tienen huecos (el mayor de 352 px) y
+            // ninguna llega de punta a punta del lienzo. El guion mide 7 a 13
+            // px de ancho, o sea UNA VELA.
+            //
+            // La banda recta ademas mentia: pintaba el nivel de AHORA sobre
+            // velas de hace horas, donde ese nivel no se habia medido. Eso es
+            // dibujar una hipotesis como si fuera un registro.
+            //
+            // Lo correcto es lo de arriba: cada vela muestra donde estaba la
+            // dominante en SU momento. Ondula solo, tiene huecos solos, y
+            // arranca cuando arranco la medicion.
         }
 
         /// <summary>Las pelotitas del Max Change, plantadas en el grafico.

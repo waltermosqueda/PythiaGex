@@ -174,11 +174,20 @@ namespace PythiaGex
                 foreach (var x in todas.Take(10))
                     L("     " + (x.Code ?? "?").PadRight(16) + x.Type + "   " + x.Exchange);
 
-                if (sec == null)
-                    sec = todas.Where(x => x.Type == SecType.Future
-                                      && (x.Code ?? "").ToUpperInvariant().StartsWith(raizB))
-                               .OrderBy(x => x.Expiration).FirstOrDefault()
-                          ?? todas.FirstOrDefault(x => x.Type == SecType.Future);
+                // SE APUNTA A ES A PROPOSITO.
+                //
+                // La corrida anterior salio desde un grafico de MNQ y trajo un
+                // solo vencimiento. Lo que hace falta saber es si ES tiene los
+                // DIARIOS y el 0DTE, que es lo que se opera. El tablero de
+                // opciones de ATAS los muestra, asi que el dato existe: hay que
+                // ver si el conector los entrega por esta via.
+                sec = todas.Where(x => x.Type == SecType.Future
+                                  && (x.Code ?? "").ToUpperInvariant().StartsWith("ES"))
+                           .OrderBy(x => x.Expiration).FirstOrDefault()
+                      ?? todas.Where(x => x.Type == SecType.Future
+                                     && (x.Code ?? "").ToUpperInvariant().StartsWith(raizB))
+                              .OrderBy(x => x.Expiration).FirstOrDefault()
+                      ?? todas.FirstOrDefault(x => x.Type == SecType.Future);
                 L("   futuro elegido .................... " + (sec?.Code ?? "ninguno"));
 
                 // BUSCAR EN EL SERVIDOR. Cada variante del filtro va en su propio
@@ -224,13 +233,24 @@ namespace PythiaGex
                         var ss = await ((dynamic)feed).GetOptionSeriesAsync(sec);
                         var series = ((IEnumerable<OptionSeries>)ss).OrderBy(z => z.Expiration).ToList();
                         L("   por serie del futuro -> " + series.Count + " vencimientos");
+                        var hoyd = DateTime.Now.Date;
                         foreach (var serie in series)
                         {
                             var cc = await ((dynamic)feed).GetOptionsAsync(serie);
                             var l = ((IEnumerable<Security>)cc).ToList();
                             ops.AddRange(l);
-                            L("     " + serie.Expiration.ToString("yyyy-MM-dd") + " (" + serie.Type + ") -> " + l.Count);
+                            int dte = (serie.Expiration.Date - hoyd).Days;
+                            L("     " + serie.Expiration.ToString("yyyy-MM-dd")
+                              + "  dte " + dte.ToString().PadLeft(3)
+                              + "  tipo " + (serie.Type.ToString() ?? "?").PadRight(10)
+                              + "  contratos " + l.Count);
                         }
+                        // LO QUE IMPORTA PARA SCALPING: hay 0DTE y diarios?
+                        var cortos = series.Where(z => (z.Expiration.Date - hoyd).Days <= 7).ToList();
+                        L("");
+                        L("   vencimientos a 7 dias o menos: " + cortos.Count);
+                        L("   hay 0DTE (vence hoy): " +
+                          (series.Any(z => z.Expiration.Date == hoyd) ? "SI" : "NO"));
                     }
                     catch (Exception e)
                     { L("   camino por serie fallo: " + Recortar(e.Message, 70)); }
@@ -253,12 +273,49 @@ namespace PythiaGex
                 // (Best) y el resumen (Summary, donde viaja el interes abierto).
                 // Se toma una ventana alrededor del dinero y no las 454: pedir
                 // todo de golpe es maltratar el feed sin necesidad.
-                var px = (decimal)Precio();
-                var cerca = ops.Where(o => o.StrikePrice.HasValue)
-                               .OrderBy(o => Math.Abs((o.StrikePrice ?? 0) - px))
-                               .Take(60).ToList();
+                // EL PRECIO DE REFERENCIA TIENE QUE SER EL DEL SUBYACENTE DE LA
+                // CADENA, no el del grafico donde esta la sonda.
+                //
+                // La corrida anterior salio desde un grafico de MNQ y uso 29511
+                // para buscar en la cadena de ES: cayo en los strikes 10800 a
+                // 12000, que no los cotiza nadie, y el resultado fue "no llegan
+                // precios" cuando en realidad se habia preguntado en el lugar
+                // equivocado. Se suscribe primero al futuro y se lee SU precio.
+                decimal px = 0m;
+                try
+                {
+                    conn.SubscribeToMarketData(new[] { sec },
+                        SubscriptionType.Prints | SubscriptionType.Best);
+                    for (int i = 0; i < 10 && px <= 0; i++)
+                    {
+                        await Task.Delay(1000).ConfigureAwait(false);
+                        px = sec.LastTradePrice ?? 0m;
+                        if (px <= 0 && sec.BestBidPrice > 0 && sec.BestAskPrice > 0)
+                            px = (sec.BestBidPrice + sec.BestAskPrice) / 2m;
+                    }
+                }
+                catch (Exception e) { L("   no se pudo leer el precio del futuro: " + Recortar(e.Message, 60)); }
+
+                if (px <= 0)
+                {
+                    // respaldo: el strike con mas interes abierto suele estar
+                    // cerca del dinero, y sirve para no quedarse sin referencia
+                    var conOi = ops.Where(o => o.StrikePrice.HasValue && (o.OpenInterest ?? 0) > 0)
+                                   .OrderByDescending(o => o.OpenInterest ?? 0).FirstOrDefault();
+                    px = conOi?.StrikePrice ?? (decimal)Precio();
+                    L("   sin precio del futuro; se usa referencia de respaldo " + px.ToString("0.##"));
+                }
+                L("   precio de " + sec.Code + " ............. " + px.ToString("0.##"));
+
+                // solo el 0DTE y el de manana: es lo que se opera scalpeando
+                var hoy2 = DateTime.Now.Date;
+                var cortas = ops.Where(o => o.StrikePrice.HasValue
+                                       && (o.Expiration.Date - hoy2).Days <= 1).ToList();
+                if (cortas.Count == 0) cortas = ops.Where(o => o.StrikePrice.HasValue).ToList();
+                var cerca = cortas.OrderBy(o => Math.Abs((o.StrikePrice ?? 0) - px))
+                                  .Take(60).ToList();
                 L("");
-                L("7) suscribiendo " + cerca.Count + " contratos alrededor de " + px.ToString("0.##"));
+                L("7) suscribiendo " + cerca.Count + " contratos 0DTE/1d alrededor de " + px.ToString("0.##"));
                 try
                 {
                     conn.SubscribeToMarketData(cerca,
