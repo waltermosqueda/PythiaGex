@@ -85,6 +85,10 @@ namespace PythiaGex
 
         public DateTime UltimaLectura { get; private set; }
 
+        /// <summary>Dias al vencimiento mas cercano que se pudo conseguir.
+        /// Si no es 0 en pleno dia, el mapa NO es el del 0DTE y hay que decirlo.</summary>
+        public int DiasReales { get; private set; } = -1;
+
         // ------------------------------------------------------------------
         // arranque
         // ------------------------------------------------------------------
@@ -95,7 +99,7 @@ namespace PythiaGex
         /// llama UNA vez y en segundo plano.
         /// </summary>
         public async Task Arrancar(object proveedor, object manager, Security seguridad,
-                                   int diasMax, int strikesPorLado, int vencMax,
+                                   string raiz, int diasMax, int strikesPorLado, int vencMax,
                                    int topeContratos, Action<string> log)
         {
             if (_armando) return;
@@ -118,11 +122,62 @@ namespace PythiaGex
                 if (_conn == null) { L("el conector no expone IDataFeedConnector"); return; }
                 if (!_conn.IsConnected) { L("el conector no esta conectado"); return; }
 
+                // EL FUTURO SALE DE LA RAIZ DEL GRAFICO, NO DE UNA CONSTANTE.
+                //
+                // Esto estaba escrito como StartsWith("ES") a secas: en un
+                // grafico de NQ o MNQ se enganchaba igual a la cadena de ES,
+                // los strikes no tenian nada que ver con el precio y no se
+                // dibujaba nada. Ahora sirve para ES/MES, NQ/MNQ y RTY/M2K.
+                //
+                // Se prefiere SIEMPRE el contrato grande sobre el micro: el
+                // grande lista los vencimientos diarios y el 0DTE, que es lo
+                // que se opera. Medido: ESU6 da 11 vencimientos con 0DTE,
+                // mientras que MNQU6 daba uno solo, el trimestral.
+                string grande = raiz, micro = raiz == "ES" ? "MES"
+                                            : raiz == "NQ" ? "MNQ"
+                                            : raiz == "RTY" ? "M2K" : "M" + raiz;
+
                 var todas = (_conn.Securities ?? Enumerable.Empty<Security>()).ToList();
-                _futuro = todas.Where(x => x.Type == SecType.Future
-                                      && (x.Code ?? "").ToUpperInvariant().StartsWith("ES"))
-                               .OrderBy(x => x.Expiration).FirstOrDefault();
-                if (_futuro == null) { L("no esta el futuro de ES en el catalogo"); return; }
+                Security Buscar(string cod) =>
+                    todas.Where(x => x.Type == SecType.Future
+                                && string.Equals(Raiz(x.Code), cod, StringComparison.OrdinalIgnoreCase))
+                         .OrderBy(x => x.Expiration).FirstOrDefault();
+
+                _futuro = Buscar(grande);
+
+                // Si el grande no esta en el catalogo local se lo pide al
+                // servidor: el catalogo solo trae lo que ya esta suscrito, y
+                // quedarse con el micro cuesta los vencimientos diarios.
+                if (_futuro == null)
+                {
+                    // OJO CON EL FILTRO POR CODIGO: ESTA ROTO.
+                    //
+                    // SearchSecuritiesAsync con Code puesto tira
+                    // ArgumentOutOfRangeException("length ('-1')"), medido con
+                    // Code=MNQ y con Code=NQ. Se busca por mercado y se filtra
+                    // del lado nuestro, que ademas es mas robusto.
+                    try
+                    {
+                        var r = await _conn.SearchSecuritiesAsync(
+                            new SecurityFilter { Type = SecType.Future, Exchange = "CME" })
+                            .ConfigureAwait(false);
+                        _futuro = (r ?? Enumerable.Empty<Security>())
+                            .Where(x => string.Equals(Raiz(x.Code), grande, StringComparison.OrdinalIgnoreCase)
+                                     && x.Expiration > DateTime.Now.Date)
+                            .OrderBy(x => x.Expiration).FirstOrDefault();
+                        if (_futuro != null) L("el grande no estaba local, vino del servidor: " + _futuro.Code);
+                    }
+                    catch (Exception e) { L("no se pudo buscar " + grande + ": " + e.Message); }
+                }
+
+                if (_futuro == null)
+                {
+                    _futuro = Buscar(micro);
+                    if (_futuro != null)
+                        L("sin " + grande + ": se usa el micro " + _futuro.Code +
+                          " (puede no tener vencimientos diarios)");
+                }
+                if (_futuro == null) { L("no esta el futuro de " + raiz + " en el catalogo"); return; }
 
                 // EL PRECIO DE REFERENCIA ES EL DEL FUTURO DE LA CADENA.
                 // Tomarlo del grafico fue un error que ya se cometio: desde un
@@ -147,10 +202,29 @@ namespace PythiaGex
                 try
                 {
                     var ss = await ((dynamic)feed).GetOptionSeriesAsync(_futuro);
-                    var series = ((IEnumerable<OptionSeries>)ss)
-                                 .Where(z => (z.Expiration.Date - hoy).Days >= 0
-                                          && (z.Expiration.Date - hoy).Days <= diasMax)
-                                 .OrderBy(z => z.Expiration).ToList();
+                    var todasSeries = ((IEnumerable<OptionSeries>)ss)
+                                      .Where(z => (z.Expiration.Date - hoy).Days >= 0)
+                                      .OrderBy(z => z.Expiration).ToList();
+                    var series = todasSeries
+                                 .Where(z => (z.Expiration.Date - hoy).Days <= diasMax).ToList();
+
+                    // ANTES DE NO DIBUJAR NADA, DIBUJAR LO QUE HAY Y DECIRLO.
+                    //
+                    // En MNQ el unico vencimiento listado es el trimestral, a
+                    // 15 dias: con el horizonte de 7 quedaban CERO series y el
+                    // indicador no dibujaba nada sin explicar por que. Un mapa
+                    // de 15 dias es peor que uno de 0DTE para scalpear -- la
+                    // gamma del dia es la que aprieta -- pero es muchisimo
+                    // mejor que una pantalla en blanco, siempre que se avise.
+                    if (series.Count == 0 && todasSeries.Count > 0)
+                    {
+                        series = todasSeries.Take(Math.Max(1, vencMax)).ToList();
+                        DiasReales = (series[0].Expiration.Date - hoy).Days;
+                        L("sin vencimientos a " + diasMax + " dias; el mas cercano esta a "
+                          + DiasReales + ": se usa igual y se avisa en pantalla");
+                    }
+                    else if (series.Count > 0)
+                        DiasReales = (series[0].Expiration.Date - hoy).Days;
                     foreach (var serie in series)
                     {
                         var cc = await ((dynamic)feed).GetOptionsAsync(serie);
@@ -237,19 +311,28 @@ namespace PythiaGex
                 lock (_llave) _suscritos = elegidos;
                 L("suscritos " + elegidos.Count + " contratos, esperando puntas");
 
-                // esperar a que efectivamente lleguen, sin darlo por hecho
-                for (int i = 0; i < 20; i++)
+                // ESPERAR A QUE LLEGUEN DE VERDAD, CON PACIENCIA.
+                //
+                // En ES las puntas entran en quince segundos. En MNQ, cuyo
+                // unico vencimiento listado es el trimestral, el mercado de
+                // opciones es mucho mas flaco y tarda. Con la espera corta y el
+                // umbral del 10 % se daba por perdida una cadena que si estaba
+                // llegando, solo que despacio.
+                int minimo = Math.Max(6, elegidos.Count / 20);
+                for (int i = 0; i < 40; i++)
                 {
                     await Task.Delay(1500).ConfigureAwait(false);
                     int conPunta = elegidos.Count(x => x.BestBidPrice > 0 && x.BestAskPrice > 0);
-                    if (conPunta >= Math.Max(8, elegidos.Count / 10))
+                    if (conPunta >= minimo)
                     {
                         Activa = true;
                         L("EN VIVO: " + conPunta + " de " + elegidos.Count + " con las dos puntas");
                         return;
                     }
                 }
-                L("suscrito pero no llegaron suficientes puntas");
+                int fin = elegidos.Count(x => x.BestBidPrice > 0 && x.BestAskPrice > 0);
+                L("suscrito pero solo " + fin + " de " + elegidos.Count +
+                  " con las dos puntas (hacian falta " + minimo + "); se reintenta");
             }
             catch (Exception e) { Estado = "error al arrancar: " + e.Message; }
             finally { _armando = false; }
@@ -325,6 +408,22 @@ namespace PythiaGex
         }
 
         // ------------------------------------------------------------------
+
+        /// <summary>
+        /// La raiz de un codigo de futuro: ESU6 -> ES, MESU6 -> MES, MNQZ5 -> MNQ.
+        ///
+        /// El codigo termina en letra de mes + digito(s) de ano. Se cortan
+        /// desde atras mientras haya digitos, y despues una letra mas.
+        /// </summary>
+        private static string Raiz(string codigo)
+        {
+            var c = (codigo ?? "").Trim().ToUpperInvariant();
+            if (c.Length < 3) return c;
+            int i = c.Length - 1;
+            while (i >= 0 && char.IsDigit(c[i])) i--;
+            if (i >= 0 && char.IsLetter(c[i])) i--;      // la letra del mes
+            return i >= 0 ? c.Substring(0, i + 1) : c;
+        }
 
         private static object Rastrear(object raiz, Type buscada, int nivel)
         {

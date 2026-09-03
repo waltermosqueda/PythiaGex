@@ -278,6 +278,9 @@ namespace PythiaGex
         private readonly CadenaViva _viva = new();
         private bool _vivaPedida;
         private DateTime _ultimoVolcadoViva = DateTime.MinValue;
+        private volatile bool _vivaCorriendo;
+        private Action _tickViva;
+        private TimeSpan _periodoViva;
         private readonly object _candado = new();
 
         // ==============================================================
@@ -567,6 +570,35 @@ namespace PythiaGex
             // esperar a que lleguen las puntas lleva medio minuto, y eso no
             // puede colgar el dibujo. Mientras no este lista se sigue usando
             // CBOE, avisando en pantalla que llega 15 min tarde.
+            // SI FALLA, SE REINTENTA.
+            //
+            // Antes esto corria UNA sola vez: si el mercado de opciones estaba
+            // flaco en ese momento -- o si todavia no habia abierto -- la
+            // cadena viva quedaba muerta para toda la sesion y se seguia con
+            // CBOE sin que nada lo volviera a intentar.
+            _tickViva = () =>
+            {
+                if (!UsarCadenaViva || _viva.Activa || _vivaCorriendo) return;
+                _vivaCorriendo = true;
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await _viva.Arrancar(DataProvider, TradingManager,
+                                             TradingManager?.Security, Raiz(),
+                                             Math.Max(1, DiasMax),
+                                             Math.Max(5, StrikesEnVivo),
+                                             Math.Max(1, VencimientosEnVivo),
+                                             Math.Max(20, TopeContratos),
+                                             m => Registrar2(m)).ConfigureAwait(false);
+                    }
+                    catch (Exception e) { Registrar(e); }
+                    finally { _vivaCorriendo = false; }
+                });
+            };
+            _periodoViva = TimeSpan.FromSeconds(180);
+            SubscribeToTimer(_periodoViva, _tickViva);
+
             if (UsarCadenaViva && !_vivaPedida)
             {
                 _vivaPedida = true;
@@ -576,6 +608,7 @@ namespace PythiaGex
                     {
                         await _viva.Arrancar(DataProvider, TradingManager,
                                              TradingManager?.Security,
+                                             Raiz(),
                                              Math.Max(1, DiasMax),
                                              Math.Max(5, StrikesEnVivo),
                                              Math.Max(1, VencimientosEnVivo),
@@ -590,6 +623,8 @@ namespace PythiaGex
         protected override void OnDispose()
         {
             try { if (_tick != null) UnsubscribeFromTimer(_periodo, _tick); } catch { }
+            try { if (_tickViva != null) UnsubscribeFromTimer(_periodoViva, _tickViva); } catch { }
+            try { _viva.Dispose(); } catch { }
         }
 
         /// <summary>El repricing va aca, no en el timer: OnCalculate corre con
@@ -2124,6 +2159,16 @@ namespace PythiaGex
                     _esFuturo ? "EN VIVO · " + perfil.Count + " strikes"
                               : "15 min tarde · " + perfil.Count + " strikes",
                     _esFuturo ? ColPos : ColAviso));
+
+                // SI EL MAPA NO ES DEL 0DTE, HAY QUE DECIRLO.
+                //
+                // En MNQ el unico vencimiento listado es el trimestral. Un mapa
+                // de 15 dias tiene la gamma repartida y plana: sirve para ver
+                // estructura, no para scalpear, porque lo que aprieta intradia
+                // es la gamma que vence hoy. Callarlo seria dejar que se opere
+                // un mapa distinto del que se cree estar mirando.
+                if (_esFuturo && _viva.DiasReales > 1)
+                    ls.Add(Tuple.Create("OJO: vence en " + _viva.DiasReales + "d, no es 0DTE", ColAviso));
 
                 var fc = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamTablero - 1m)));
                 var medc = ls.Select(l => g.MeasureString(l.Item1, fc)).ToList();

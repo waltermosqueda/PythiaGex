@@ -421,8 +421,23 @@ namespace PythiaGex
             try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
         }
 
+        [Display(Name = "Escribir el informe en el grafico", GroupName = "Sonda", Order = 10,
+                 Description = "Apagado por defecto: el informe son 40 renglones y tapa el grafico entero. " +
+                               "Siempre queda en el archivo pythiagex-sonda.txt de la carpeta de ATAS.")]
+        public bool VerEnGrafico { get; set; } = false;
+
+        /// <summary>
+        /// LA SONDA NO DIBUJA POR DEFECTO.
+        ///
+        /// Es una herramienta de diagnostico y su informe son cuarenta
+        /// renglones: puesta en un grafico lo tapa entero, y como el workspace
+        /// la vuelve a cargar en cada arranque, sacarla a mano no alcanzaba.
+        /// El informe completo sigue yendo al archivo, que es donde se lee
+        /// comodo de todos modos.
+        /// </summary>
         protected override void OnRender(RenderContext g, DrawingLayouts layout)
         {
+            if (!VerEnGrafico) return;
             try
             {
                 List<string> ls;
