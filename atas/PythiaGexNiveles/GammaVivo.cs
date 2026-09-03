@@ -1281,7 +1281,7 @@ namespace PythiaGex
             // Guardar la foto de cada strike para poder dibujar la estela.
             // Se poda a 35 minutos: mas atras no lo pide ninguna ventana y el
             // diccionario crece sin techo con el grafico abierto todo el dia.
-            var ahora = DateTime.UtcNow;
+            var ahora = Ahora();
             var corte = ahora.AddMinutes(-35);
             double mcK = double.NaN, mcV = 0;
             lock (_estela)
@@ -1863,7 +1863,7 @@ namespace PythiaGex
             lock (_estela) { if (!_estela.TryGetValue(strike, out h)) return; h = new List<KeyValuePair<DateTime, double>>(h); }
             if (h.Count < 2) return;
 
-            var ahora = DateTime.UtcNow;
+            var ahora = Ahora();
             var col = izquierda ? ColCircIzq : ColCircDer;
             int cuantos = Math.Max(1, Math.Min(4, CirculosPorBarra));
 
@@ -2583,6 +2583,33 @@ namespace PythiaGex
             return string.Format(CultureInfo.InvariantCulture,
                 " lagdom_ms={0:F0} lagdom_p95_ms={1:F0} lagdom_n={2}",
                 mediana, p95, c.Count);
+        }
+
+        /// <summary>
+        /// LA HORA DEL GRAFICO, NO LA DE LA PARED.
+        ///
+        /// Todo lo que mide "hace cuanto" -- la estela, el Max Change, la poda
+        /// del historial -- tiene que usar el mismo reloj que las velas. Con el
+        /// reloj real, en Market Replay las velas avanzan por 2013 mientras el
+        /// reloj marca hoy: cada ventana da "hace tres mil dias" y no se dibuja
+        /// nada, o peor, se dibuja mal y parece que funciona.
+        ///
+        /// En vivo la ultima vela es de hace segundos, asi que devuelve
+        /// practicamente lo mismo que DateTime.UtcNow y no cambia nada.
+        ///
+        /// Lo que importa no es que sea la hora "correcta" sino que sea LA
+        /// MISMA al guardar y al leer: las ventanas son diferencias.
+        /// </summary>
+        private DateTime Ahora()
+        {
+            try
+            {
+                var c = GetCandle(Math.Max(0, CurrentBar - 1));
+                if (c != null && c.LastTime != default(DateTime)) return c.LastTime;
+                if (c != null && c.Time != default(DateTime)) return c.Time;
+            }
+            catch { }
+            return DateTime.UtcNow;
         }
 
         private static void Registrar2(string msg)
