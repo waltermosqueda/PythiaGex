@@ -487,6 +487,15 @@ namespace PythiaGex
                                "marcas contables.")]
         public int HuecoEntreMarcas { get; set; } = 3;
 
+        [Display(Name = "Separacion minima entre dominantes (pts)", GroupName = "Dominantes", Order = 85,
+                 Description = "En PUNTOS DE PRECIO, no en pixeles. Dos dominantes mas cerca que " +
+                               "esto cuentan como una sola y queda la mas fuerte. Se decide al " +
+                               "calcular, asi que el zoom no cambia cuantas hay.")]
+        public decimal SeparacionPuntos { get; set; } = 4m;
+
+        [Display(Name = "Cuantas dominantes como maximo", GroupName = "Dominantes", Order = 84)]
+        public int MaxDominantes { get; set; } = 6;
+
         [Display(Name = "Separacion minima entre marcas (px)", GroupName = "Dominantes", Order = 86,
                  Description = "Si dos dominantes caen mas cerca que esto en la misma vela, se dibuja " +
                                "solo la mas fuerte. Asi nunca se ven pegadas y no hay que agrandar la " +
@@ -1336,8 +1345,30 @@ namespace PythiaGex
                     double kInt = perfil[i].K + delta * paso;
                     picos.Add((double.IsNaN(baseUsada) ? kInt : kInt + baseUsada, b2));
                 }
+                // EL CONJUNTO SE DECIDE ACA, EN PUNTOS, NO AL DIBUJAR EN PIXELES.
+                //
+                // BUG QUE ESTO ARREGLA. El descarte de picos pegados se hacia
+                // al dibujar, comparando PIXELES. Dos dominantes separadas por
+                // 5 puntos quedan a 2 px con el grafico alejado y a 20 px con
+                // el grafico acercado: en un caso se descartaba una y en el
+                // otro se dibujaban las dos. Por eso CAMBIABA LA CANTIDAD al
+                // cambiar el tamano o al correr la pantalla.
+                //
+                // Decidiendolo en puntos de precio, el conjunto es el mismo
+                // siempre. El zoom cambia donde se ven, nunca cuantas hay.
                 picos.Sort((u, v) => v.Peso.CompareTo(u.Peso));
-                if (picos.Count > 6) picos.RemoveRange(6, picos.Count - 6);
+                double sepPts = (double)Math.Max(0m, SeparacionPuntos);
+                if (sepPts > 0)
+                {
+                    var filtrados = new List<(double Fut, double Peso)>();
+                    foreach (var p in picos)
+                        if (!filtrados.Any(q => Math.Abs(q.Fut - p.Fut) < sepPts))
+                            filtrados.Add(p);
+                    picos = filtrados;
+                }
+                if (picos.Count > Math.Max(1, MaxDominantes))
+                    picos.RemoveRange(Math.Max(1, MaxDominantes),
+                                      picos.Count - Math.Max(1, MaxDominantes));
                 lock (_candado) _picosUlt = picos.Select(p => p.Fut).ToArray();
             }
 
@@ -2102,7 +2133,18 @@ namespace PythiaGex
                 }
             }
             catch { }
-            pasoBarras = Math.Max(1, Math.Min(40, pasoBarras));
+            // EL PASO SE CUANTIZA A POTENCIAS DE DOS.
+            //
+            // Si se deja continuo, un movimiento minimo del zoom lo hace saltar
+            // de 3 a 4 y se redibuja otro conjunto de velas: el operador ve que
+            // "cambian de lugar" con solo tocar la pantalla. En potencias de
+            // dos solo cambia en saltos claros, y como la fase esta anclada al
+            // numero absoluto de vela, al duplicarse el paso las marcas que
+            // quedan son un subconjunto de las que ya estaban -- desaparecen
+            // algunas, pero ninguna se mueve.
+            int p2 = 1;
+            while (p2 < pasoBarras && p2 < 32) p2 *= 2;
+            pasoBarras = Math.Max(1, Math.Min(32, p2));
 
             // EL PASO SE ANCLA AL NUMERO DE VELA, NO A LA PRIMERA VISIBLE.
             //
@@ -2129,7 +2171,10 @@ namespace PythiaGex
                 // cerca que SeparacionMinima, se dibuja solo la mas fuerte:
                 // dos marcas que se tocan no informan mas que una, informan
                 // menos, porque ya no se sabe cuantas hay.
-                var yaEn = new List<int>();
+                // Ya NO se descarta nada aca: el conjunto se decidio en puntos
+                // cuando se calcularon los picos. Filtrar de nuevo por pixeles
+                // haria que la cantidad dependiera del zoom, que es justo el
+                // bug que se arreglo.
                 void Punto(double precio, Color col, double fuerza)
                 {
                     if (precio <= 0) return;
@@ -2138,8 +2183,6 @@ namespace PythiaGex
                     catch { return; }
                     if (y < ChartArea.Top - 4 || y > ChartArea.Bottom + 4) return;
                     int sep = Math.Max(2, SeparacionMinima);
-                    foreach (var u in yaEn) if (Math.Abs(u - y) < sep) return;
-                    yaEn.Add(y);
 
                     var f = Math.Max(0.25, Math.Min(1.0, fuerza));
                     // la fuerza cambia el tamano pero NO la proporcion: un
