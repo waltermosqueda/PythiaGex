@@ -199,6 +199,8 @@ namespace PythiaGex
         private int _ultimoMapeoPel = -1;
         private int _visiblesUlt;
         private Rectangle _tableroRect = Rectangle.Empty;
+        // atraso del libro de futuros, para poder AFIRMAR que esta en vivo
+        private readonly List<double> _atrasoDom = new();
         private readonly List<int> _etiquetasUsadas = new();
 
         /// <summary>La ultima base que dio confiable, con su hora.
@@ -518,6 +520,39 @@ namespace PythiaGex
                 _libro.MemoriaMin = Math.Max(1, MemoriaMin);
                 _libro.MaxMostrados = Math.Max(1, MaxPuntos);
                 _libro.ResolverUmbral();
+
+                // CUANTO TARDA EL LIBRO EN LLEGAR.
+                //
+                // Se le viene diciendo al operador que el flujo del libro de
+                // futuros esta en vivo mientras la cadena de opciones llega
+                // 902 s tarde. Eso hay que MEDIRLO, no suponerlo: se guarda
+                // la diferencia entre la hora del barrido y la hora en que
+                // llego, y sale en el renglon de auditoria.
+                try
+                {
+                    var th = trade.Time;
+                    if (th != default(DateTime))
+                    {
+                        // ATAS entrega la hora del barrido SIN zona horaria, asi
+                        // que restarle a ciegas la hora local daba tres horas de
+                        // diferencia y la ventana de cordura descartaba todas las
+                        // muestras: el renglon salia "sinmuestra" con el mercado
+                        // abierto y los circulos dibujandose en pantalla. Se
+                        // prueba contra las dos referencias y gana la que da la
+                        // diferencia mas chica.
+                        var lagLocal = (DateTime.Now - th).TotalMilliseconds;
+                        var lagUtc = (DateTime.UtcNow - th).TotalMilliseconds;
+                        var lag = Math.Abs(lagUtc) < Math.Abs(lagLocal) ? lagUtc : lagLocal;
+                        if (lag > -60000 && lag < 600000)
+                            lock (_atrasoDom)
+                            {
+                                _atrasoDom.Add(lag);
+                                if (_atrasoDom.Count > 4000) _atrasoDom.RemoveRange(0, 2000);
+                            }
+                    }
+                }
+                catch { }
+
                 _libro.Anotar(trade, ts > 0 ? ts : 0.25m);
             }
             catch (Exception e) { Registrar(e); }
@@ -982,7 +1017,7 @@ namespace PythiaGex
                     Registrar2(string.Format(CultureInfo.InvariantCulture,
                         "AUDIT spot_idx={0:F4} base={1:F4} origen=" + _baseOrigen.Replace(" ", "_") + " strikes={2} visibles=" + _visiblesUlt + " " +
                         "zero={3:F4} majorpos={4:F4} majorneg={5:F4} netgex={6:F6} netgexvol={7:F6} diasmax={8} " +
-                        "cadenafilas={9} cadenats={10}",
+                        "cadenafilas={9} cadenats={10}" + AtrasoDom(),
                         S, baseUsada, perfil.Count,
                         double.IsNaN(zero) ? 0 : zero, mp, mn, neto / 1e9, netoVol / 1e9, DiasMax,
                         c.Filas.Count, (c.Ts ?? "").Replace(" ", "_")));
@@ -1763,6 +1798,23 @@ namespace PythiaGex
 
         private static string Recortar(string s, int n)
             => string.IsNullOrEmpty(s) ? "" : (s.Length <= n ? s : s.Substring(0, n) + "...");
+
+        /// <summary>Mediana del atraso del libro, en ms, para el renglon de auditoria.</summary>
+        private string AtrasoDom()
+        {
+            List<double> c;
+            lock (_atrasoDom)
+            {
+                if (_atrasoDom.Count < 20) return " lagdom=sinmuestra";
+                c = new List<double>(_atrasoDom);
+            }
+            c.Sort();
+            double mediana = c[c.Count / 2];
+            double p95 = c[Math.Min(c.Count - 1, (int)(c.Count * 0.95))];
+            return string.Format(CultureInfo.InvariantCulture,
+                " lagdom_ms={0:F0} lagdom_p95_ms={1:F0} lagdom_n={2}",
+                mediana, p95, c.Count);
+        }
 
         private static void Registrar2(string msg)
         {
