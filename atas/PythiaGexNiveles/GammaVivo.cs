@@ -373,6 +373,13 @@ namespace PythiaGex
         [Display(Name = "Ver aceleracion (derecha)", GroupName = "Dibujo", Order = 61)]
         public bool VerAcel { get; set; } = true;
 
+        [Display(Name = "Radio para escalar el perfil (pts)", GroupName = "Dibujo", Order = 61,
+                 Description = "Contra que se mide el largo de las barras: los strikes dentro de " +
+                               "este radio del PRECIO. No contra los que se ven, porque entonces el " +
+                               "largo cambiaria al desplazar la pantalla y dejaria de significar lo " +
+                               "mismo.")]
+        public decimal RadioNormalizar { get; set; } = 80m;
+
         [Display(Name = "Ancho maximo de barra (px)", GroupName = "Dibujo", Order = 62,
                  Description = "El perfil vive en el borde. Ancho pisa las velas y no deja leer.")]
         public int AnchoBarra { get; set; } = 78;
@@ -1567,29 +1574,45 @@ namespace PythiaGex
             int alto = AltoBarra > 0 ? AltoBarra : AltoAutomatico(cont, perfil);
             int ancho = Math.Max(20, AnchoBarra);
 
-            // LA ESCALA SE NORMALIZA CONTRA LO QUE SE VE, NO CONTRA TODA LA CADENA.
+            // LA ESCALA SE NORMALIZA CONTRA EL ENTORNO DEL PRECIO, NO CONTRA
+            // LO QUE SE VE.
             //
-            // Con el maximo global, un strike enorme y lejano se lleva todo el
-            // ancho y los strikes de al lado del precio quedan en un pixel: o
-            // sea invisibles, que es exactamente lo que pasaba. Verificado en
-            // pantalla el 2026-09-03: 146 strikes calculados y ni una barra
-            // dibujada.
+            // BUG QUE ESTO ARREGLA. Antes se normalizaba contra los strikes
+            // VISIBLES. Al desplazar el grafico cambiaba el conjunto visible,
+            // cambiaba el maximo y por lo tanto CAMBIABA EL LARGO DE TODAS LAS
+            // BARRAS: la misma barra media distinto segun donde estuviera la
+            // pantalla, y algunas desaparecian. Eso no es un parpadeo, es que
+            // el largo dejaba de significar lo mismo de un momento a otro, y
+            // sobre eso no se puede decidir nada.
             //
-            // Renormalizar contra los strikes VISIBLES hace que el perfil
-            // siempre use el ancho completo y que la estructura de al lado del
-            // precio -- la unica que se puede operar hoy -- se lea.
+            // Tampoco sirve el maximo GLOBAL: un strike enorme y lejano se
+            // lleva todo el ancho y los de al lado del precio quedan en un
+            // pixel, que fue el problema original.
+            //
+            // La solucion es normalizar contra una ventana centrada en el
+            // PRECIO, que no se mueve cuando uno desplaza la pantalla. Da el
+            // mismo contraste cerca del dinero y es estable.
+            double pxNorm = 0;
+            try { pxNorm = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { }
+            double radioNorm = (double)Math.Max(20m, RadioNormalizar);
             double mxV = 0, mxAV = 0;
             int visibles = 0;
             foreach (var n in perfil)
             {
+                if (pxNorm > 0 && Math.Abs(n.Fut - pxNorm) <= radioNorm)
+                {
+                    mxV = Math.Max(mxV, Math.Abs(n.Gex));
+                    mxAV = Math.Max(mxAV, Math.Abs(n.Acel));
+                }
                 int yy;
                 try { yy = cont.GetYByPrice((decimal)n.Fut, false); }
                 catch { continue; }
-                if (yy < area.Top - 6 || yy > area.Bottom + 6) continue;
-                visibles++;
-                mxV = Math.Max(mxV, Math.Abs(n.Gex));
-                mxAV = Math.Max(mxAV, Math.Abs(n.Acel));
+                if (yy >= area.Top - 6 && yy <= area.Bottom + 6) visibles++;
             }
+            // si no hubo nada cerca del precio se cae al maximo global, que es
+            // estable aunque comprima: mejor comprimido que cambiante
+            if (mxV <= 0) foreach (var n in perfil) mxV = Math.Max(mxV, Math.Abs(n.Gex));
+            if (mxAV <= 0) foreach (var n in perfil) mxAV = Math.Max(mxAV, Math.Abs(n.Acel));
             if (mxV > 0) mx = mxV;
             if (mxAV > 0) mxA = mxAV;
             _visiblesUlt = visibles;
@@ -1868,6 +1891,16 @@ namespace PythiaGex
             // precio en la misma vela, eso es un solo evento mas grande, y el
             // circulo crece. Ademas es mas informativo que tres circulos
             // chicos, porque lo que importa es cuanto entro en ese nivel.
+            // el universo completo, agrupado igual que el visible, para que el
+            // corte no dependa de la pantalla
+            var juntadosTodos = new Dictionary<(int, decimal), decimal>();
+            foreach (var b0 in bs)
+            {
+                if (b0.Barra < 0) continue;
+                var cl = (b0.Barra, b0.Precio);
+                juntadosTodos[cl] = (juntadosTodos.TryGetValue(cl, out var v0) ? v0 : 0m) + b0.Volumen;
+            }
+
             var juntados = new Dictionary<(int, int), (Libro.Barrido B, decimal Vol, int X, int Y)>();
             foreach (var t in visibles)
             {
@@ -1879,7 +1912,25 @@ namespace PythiaGex
                     juntados[clave] = (t.Item1, t.Item1.Volumen, t.Item2, t.Item3);
             }
 
+            // EL RANKING NO PUEDE DEPENDER DE LO QUE SE VE.
+            //
+            // Mismo bug que el de las barras: se tomaban los N mayores DE LOS
+            // VISIBLES, asi que al desplazar el grafico cambiaba el conjunto y
+            // cambiaban cuales se dibujaban. Un barrido aparecia o desaparecia
+            // segun donde estuviera la pantalla, no segun su tamano.
+            //
+            // Ahora el corte sale del universo COMPLETO de la memoria: un
+            // barrido que entra en los N mayores se dibuja siempre que este en
+            // pantalla, y uno que no entra no se dibuja nunca. Estable.
+            decimal corte = 0;
+            {
+                var todosVol = juntadosTodos.Values
+                                            .OrderByDescending(v => v).ToList();
+                int k = Math.Max(1, CuantosDibujar) - 1;
+                if (todosVol.Count > 0) corte = todosVol[Math.Min(k, todosVol.Count - 1)];
+            }
             var elegidos = juntados.Values
+                .Where(t => t.Vol >= corte)
                 .OrderByDescending(t => t.Vol)
                 .Take(Math.Max(1, CuantosDibujar))
                 .ToList();
@@ -2053,7 +2104,17 @@ namespace PythiaGex
             catch { }
             pasoBarras = Math.Max(1, Math.Min(40, pasoBarras));
 
-            for (int b = desde; b <= hasta; b += pasoBarras)
+            // EL PASO SE ANCLA AL NUMERO DE VELA, NO A LA PRIMERA VISIBLE.
+            //
+            // BUG QUE ESTO ARREGLA, Y ERA MIO. Antes el bucle arrancaba en
+            // "desde" y sumaba el paso: al desplazar el grafico cambiaba
+            // "desde", cambiaba la fase, y se dibujaban OTRAS velas. Las marcas
+            // saltaban de lugar o desaparecian con solo mover la pantalla.
+            //
+            // Anclando la fase al numero absoluto de vela, la misma vela cae
+            // siempre del mismo lado del paso: se ve igual desde donde se mire.
+            if (pasoBarras > 1) desde = desde - (desde % pasoBarras);
+            for (int b = Math.Max(0, desde); b <= hasta; b += pasoBarras)
             {
                 if (!copia.TryGetValue(b, out var m) || !m.Hay) continue;
                 int x;
