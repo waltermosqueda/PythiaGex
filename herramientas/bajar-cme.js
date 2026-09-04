@@ -10,11 +10,23 @@
 // Comparar contra Settlements ya costo una conclusion falsa: parecia que el
 // major positive se corria 50 puntos segun la fuente, y era el dato viejo.
 //
-// El resultado se guarda en datos/cme/ES-<YYYYMMDD>.json
+// El resultado se guarda en datos/cme/<RAIZ>-<YYYYMMDD>.json
+// Se invoca con la raiz: la ultima linea del archivo es ()('ES') o ()('NQ').
 
-(async () => {
+// PRODUCTOS DE FUTUROS EN CME (el numero que va en TradeDateAndExpirations):
+//    ES = 133      NQ = 146      RTY = 156
+// Los tres tienen la misma estructura de 7 grupos con semanales por dia.
+// Verificado el 2026-09-03: NQ lista 0DTE y diarios igual que ES.
+const CFG = {
+  ES: {fut:133, ref:7752,  radio:120},
+  NQ: {fut:146, ref:29500, radio:450},   // NQ se mueve mas: radio mas ancho
+  RTY:{fut:156, ref:2450,  radio:60},
+};
+
+(async (RAIZ = 'ES') => {
+  const c = CFG[RAIZ]; if (!c) { console.error('raiz desconocida', RAIZ); return; }
   const TRADE = '20260902';          // ultimo dia con settlement publicado
-  const REF   = 7752, RADIO = 120;   // ventana de strikes alrededor del dinero
+  const REF   = c.ref, RADIO = c.radio;
 
   // dia de semana de cada grupo, para resolver "Week N-Mon YYYY" a fecha real
   const DIA = {'Weekly Monday Option':1,'Weekly Tuesday Option':2,
@@ -34,7 +46,7 @@
     return null;
   };
 
-  const idx = await (await fetch('/CmeWS/mvc/Settlements/Options/TradeDateAndExpirations/133',
+  const idx = await (await fetch('/CmeWS/mvc/Settlements/Options/TradeDateAndExpirations/'+c.fut,
                                  {credentials:'include'})).json();
   const hoy = new Date(); hoy.setHours(0,0,0,0);
   const cerca = [];
@@ -69,6 +81,7 @@
     out.v[o.f] = {pid:o.pid, n:Object.keys(fl).length, f:fl};
     await new Promise(s=>setTimeout(s,800));   // no apurar a Akamai
   }
+  out.raiz = RAIZ;
   console.log(JSON.stringify(out));
   return JSON.stringify(out);
-})();
+})('ES');   // <-- cambiar por 'NQ' o 'RTY' segun lo que se quiera bajar
