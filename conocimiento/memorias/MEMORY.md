@@ -34,3 +34,4 @@
 - [Cadena de ES en vivo por Rithmic](cadena-es-en-vivo-rithmic.md) — 0DTE con puntas reales desde adentro de ATAS; adios al retraso de CBOE.
 - [Los puntitos van sobre las barras](dominantes-no-son-linea.md) — no cruzan el grafico; y ojo: las velas naranjas contaminan la deteccion de ambar.
 - [El ChartArea de ATAS es mas alto que el visible](atas-chartarea-mas-alto.md) — lo anclado al fondo cae detras del eje de tiempo, sin error.
+- [El Settlements de CME va un dia atras](cme-settlements-un-dia-atras.md) — hay que sumarle el change; ATAS tenia el dato correcto y yo compare contra uno viejo.
