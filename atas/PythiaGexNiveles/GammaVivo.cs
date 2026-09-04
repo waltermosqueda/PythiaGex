@@ -273,6 +273,7 @@ namespace PythiaGex
         private double _majorPos, _majorNeg;
         private double _spotUsado = double.NaN;
         private double[] _picosUlt;
+        private int _marcasDibujadas, _marcasConRegistro;
         private bool _esFuturo;
         private string _fuente = "CBOE";
         // la cadena que REALMENTE se uso en el ultimo repricing: la cinta
@@ -498,12 +499,6 @@ namespace PythiaGex
                  Description = "0 = cuadradito  ·  1 = redondito  ·  2 = guioncito (mas ancho que alto)")]
         public int FormaDominante { get; set; } = 0;
 
-        [Display(Name = "Hueco horizontal entre marcas (px)", GroupName = "Dominantes", Order = 87,
-                 Description = "Cuanto aire dejar entre una marca y la de la vela siguiente. Si no " +
-                               "entra, se dibuja una cada N velas en vez de pegarlas: el nivel es el " +
-                               "mismo en velas contiguas, asi que no se pierde informacion y se ganan " +
-                               "marcas contables.")]
-        public int HuecoEntreMarcas { get; set; } = 3;
 
         [Display(Name = "Separacion minima entre dominantes (pts)", GroupName = "Dominantes", Order = 85,
                  Description = "En PUNTOS DE PRECIO, no en pixeles. Dos dominantes mas cerca que " +
@@ -2152,63 +2147,44 @@ namespace PythiaGex
             int desde = Math.Max(0, FirstVisibleBarNumber);
             int hasta = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
 
-            // QUE SE DISTINGAN TAMBIEN CUANDO EL GRAFICO ESTA ALEJADO.
+            // LA CANTIDAD DE MARCAS NO DEPENDE DEL ZOOM. NUNCA.
             //
-            // La regla de separacion que ya habia solo miraba entre NIVELES de
-            // la misma vela. Pero al alejar el grafico las velas se juntan en
-            // el eje X y las marcas de velas consecutivas se tocan de costado:
-            // ahi es donde se forma la rayita que el operador ve.
+            // ESTE FUE EL BUG QUE MAS COSTO Y LO CAUSO UN ARREGLO MIO ANTERIOR.
+            // Yo habia puesto que si las marcas se tocarian de costado se
+            // dibujara UNA CADA N VELAS. Al cambiar el zoom ese N saltaba de 2
+            // a 4 y desaparecia la mitad de las marcas. Lo justifique diciendo
+            // que "al menos ninguna se mueve", y estaba mal: desaparecer es
+            // exactamente lo inadmisible. Un mapa que cambia de contenido
+            // segun como uno mire la pantalla no se puede usar para decidir.
             //
-            // Se mide la separacion real entre velas y se hacen dos cosas: la
-            // marca nunca ocupa toda la vela, y si aun asi quedarian pegadas se
-            // dibuja una cada N velas. Perder algunas marcas no pierde
-            // informacion -- el nivel es el mismo en velas contiguas -- pero
-            // ganar el hueco es lo que deja contarlas.
-            int pasoBarras = 1;
+            // No hay salteo. Se dibuja una marca por cada vela registrada,
+            // siempre. El conjunto queda determinado SOLO por el dato: que
+            // velas tienen registro. El zoom no participa.
+            //
+            // Lo unico que se adapta al zoom es el TAMANO: con las velas muy
+            // juntas la marca se angosta para que no se coma a la vecina. Si al
+            // final igual se tocan, se tocan -- a suficiente zoom de salida
+            // TODO se junta, incluidas las velas, y eso es honesto. Lo que no
+            // es honesto es que falten marcas.
             try
             {
                 int xa = cont.GetXByBar(desde, false);
                 int xb = cont.GetXByBar(Math.Min(hasta, desde + 1), false);
                 int sepX = Math.Abs(xb - xa);
-                if (sepX > 0)
-                {
-                    w = Math.Min(w, Math.Max(2, sepX - 1));
-                    int necesita = w + Math.Max(1, HuecoEntreMarcas);
-                    if (sepX < necesita)
-                        pasoBarras = (int)Math.Ceiling((double)necesita / sepX);
-                }
+                if (sepX > 0) w = Math.Min(w, Math.Max(1, sepX - 1));
             }
             catch { }
-            // EL PASO SE CUANTIZA A POTENCIAS DE DOS.
-            //
-            // Si se deja continuo, un movimiento minimo del zoom lo hace saltar
-            // de 3 a 4 y se redibuja otro conjunto de velas: el operador ve que
-            // "cambian de lugar" con solo tocar la pantalla. En potencias de
-            // dos solo cambia en saltos claros, y como la fase esta anclada al
-            // numero absoluto de vela, al duplicarse el paso las marcas que
-            // quedan son un subconjunto de las que ya estaban -- desaparecen
-            // algunas, pero ninguna se mueve.
-            int p2 = 1;
-            while (p2 < pasoBarras && p2 < 32) p2 *= 2;
-            pasoBarras = Math.Max(1, Math.Min(32, p2));
 
-            // EL PASO SE ANCLA AL NUMERO DE VELA, NO A LA PRIMERA VISIBLE.
-            //
-            // BUG QUE ESTO ARREGLA, Y ERA MIO. Antes el bucle arrancaba en
-            // "desde" y sumaba el paso: al desplazar el grafico cambiaba
-            // "desde", cambiaba la fase, y se dibujaban OTRAS velas. Las marcas
-            // saltaban de lugar o desaparecian con solo mover la pantalla.
-            //
-            // Anclando la fase al numero absoluto de vela, la misma vela cae
-            // siempre del mismo lado del paso: se ve igual desde donde se mire.
-            if (pasoBarras > 1) desde = desde - (desde % pasoBarras);
-            for (int b = Math.Max(0, desde); b <= hasta; b += pasoBarras)
+            int dibujadas = 0, conRegistro = 0;
+            for (int b = Math.Max(0, desde); b <= hasta; b++)
             {
                 if (!copia.TryGetValue(b, out var m) || !m.Hay) continue;
+                conRegistro++;
                 int x;
                 try { x = cont.GetXByBar(b, false); }
                 catch { continue; }
                 if (x < x0 - 10 || x > x1 + 10) continue;
+                dibujadas++;
 
                 // NUNCA DOS MARCAS PEGADAS EN LA MISMA VELA.
                 //
@@ -2271,6 +2247,12 @@ namespace PythiaGex
                 Punto(m.MajorNeg, ColPuntoDom, 1.0);
                 Punto(m.Zero, ColPuntoZero, 1.0);
             }
+
+            // EL CONTROL: dibujadas tiene que ser IGUAL a las que tienen
+            // registro en el rango visible. Si alguna vez difieren, hay un
+            // salteo escondido en algun lado y el bug volvio.
+            _marcasDibujadas = dibujadas;
+            _marcasConRegistro = conRegistro;
 
             // POR QUE NO SE DIBUJA UNA BANDA A LO ANCHO.
             //
@@ -3007,7 +2989,7 @@ namespace PythiaGex
                 lock (_candado)
                     foreach (var n in _perfil) { vp += n.VolTot; if (n.VolTot > 0) strikes++; }
                 return string.Format(CultureInfo.InvariantCulture,
-                    " flujoviva={0:F0} flujoperfil={1:F0} strikesconflujo={2}", v, vp, strikes);
+                    " flujoviva={0:F0} flujoperfil={1:F0} strikesconflujo={2} marcas={3}/{4}", v, vp, strikes, _marcasDibujadas, _marcasConRegistro);
             }
             catch { return " flujohoy=?"; }
         }
