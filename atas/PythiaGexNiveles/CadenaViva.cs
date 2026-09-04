@@ -66,10 +66,20 @@ namespace PythiaGex
             public double IV;         // despejada del punto medio, no servida
             public bool EsCall;
             public string Codigo = "";
+            // CONTRATOS OPERADOS HOY EN ESE STRIKE, acumulados en vivo.
+            // Es el unico dato del mapa que NO es de ayer, y es el punto ciego
+            // de todos los tableros de GEX: construyen sobre interes abierto,
+            // que la OCC consolida de noche.
+            public double VolumenHoy;
         }
 
         private readonly object _llave = new();
         private List<Security> _suscritos = new();
+        // volumen acumulado por contrato, y la ultima operacion vista, para no
+        // contar dos veces el mismo print
+        private readonly Dictionary<string, double> _volHoy = new();
+        private readonly Dictionary<string, (decimal p, decimal v)> _ultPrint = new();
+        private readonly List<Security> _enganchados = new();
         private IDataFeedConnector _conn;
         private Security _futuro;
         private volatile bool _armando;
@@ -309,6 +319,19 @@ namespace PythiaGex
                 catch (Exception e) { L("la suscripcion fallo: " + e.Message); return; }
 
                 lock (_llave) _suscritos = elegidos;
+
+                // EL VOLUMEN DE HOY, POR EVENTO Y NO POR SONDEO.
+                //
+                // Security no tiene un campo de volumen acumulado de la sesion:
+                // solo LastTradeVolume, que es el de la ULTIMA operacion. Asi
+                // que hay que sumarlo a mano.
+                //
+                // Se hace por evento porque Security implementa
+                // INotifyPropertyChanged (verificado volcando la API): con
+                // sondeo cada N segundos se perderian todas las operaciones que
+                // ocurran entre dos consultas, que en un 0DTE al dinero son
+                // casi todas.
+                foreach (var sec in elegidos) EngancharVolumen(sec);
                 L("suscritos " + elegidos.Count + " contratos, esperando puntas");
 
                 // ESPERAR A QUE LLEGUEN DE VERDAD, CON PACIENCIA.
@@ -343,6 +366,50 @@ namespace PythiaGex
             }
             catch (Exception e) { Estado = "error al arrancar: " + e.Message; }
             finally { _armando = false; }
+        }
+
+        /// <summary>
+        /// Suma cada operacion que se imprima en ese contrato.
+        ///
+        /// Se compara contra la ultima vista (precio Y volumen) porque
+        /// PropertyChanged puede dispararse mas de una vez por el mismo print
+        /// -- por ejemplo si cambian precio y volumen en dos avisos separados --
+        /// y sin ese control el volumen del dia saldria inflado.
+        /// </summary>
+        private void EngancharVolumen(Security sec)
+        {
+            if (sec == null || string.IsNullOrEmpty(sec.Code)) return;
+            try
+            {
+                sec.PropertyChanged += (o, e) =>
+                {
+                    var n = e?.PropertyName;
+                    if (n != "LastTradeVolume" && n != "LastTradePrice") return;
+                    try
+                    {
+                        var s2 = o as Security; if (s2 == null) return;
+                        var p = s2.LastTradePrice ?? 0m;
+                        var v = s2.LastTradeVolume ?? 0m;
+                        if (v <= 0) return;
+                        lock (_llave)
+                        {
+                            if (_ultPrint.TryGetValue(s2.Code, out var ant)
+                                && ant.p == p && ant.v == v) return;
+                            _ultPrint[s2.Code] = (p, v);
+                            _volHoy[s2.Code] = (_volHoy.TryGetValue(s2.Code, out var a) ? a : 0) + (double)v;
+                        }
+                    }
+                    catch { }
+                };
+                lock (_llave) _enganchados.Add(sec);
+            }
+            catch { }
+        }
+
+        /// <summary>Contratos operados hoy en toda la ventana suscrita.</summary>
+        public double VolumenTotalHoy()
+        {
+            lock (_llave) { double t = 0; foreach (var v in _volHoy.Values) t += v; return t; }
         }
 
         // ------------------------------------------------------------------
@@ -386,8 +453,12 @@ namespace PythiaGex
                 double iv = Black76.DespejarIV(mid, Futuro, K, T, esCall);
                 if (double.IsNaN(iv) || iv <= 0) continue;
 
+                double vh = 0;
+                lock (_llave) _volHoy.TryGetValue(o.Code ?? "", out vh);
+
                 salida.Add(new Fila
                 {
+                    VolumenHoy = vh,
                     K = K,
                     Dias = Math.Max(dias, T * 365.0),
                     OI = (double)(o.OpenInterest ?? 0m),

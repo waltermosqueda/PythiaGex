@@ -101,6 +101,7 @@ namespace PythiaGex
             public double Gex;     // exposicion gamma por interes abierto
             public double GexVol;  // lo mismo pero sobre el volumen del dia
             public double Acel;    // cuanto cambia el GEX si S sube 1 %
+            public double VolTot;  // contratos operados HOY en ese strike
         }
 
         // ==============================================================
@@ -409,6 +410,23 @@ namespace PythiaGex
 
         [Display(Name = "Ver Zero Gamma y Majors", GroupName = "Dibujo", Order = 64)]
         public bool VerLineas { get; set; } = true;
+
+        [Display(Name = "Ver el FLUJO de hoy", GroupName = "Flujo", Order = 130,
+                 Description = "Los strikes donde MAS se opero hoy. Es el unico dato del mapa que " +
+                               "no es de ayer: el interes abierto lo consolida la OCC de noche, asi " +
+                               "que todos los tableros de GEX -- incluido el nuestro -- dibujan el " +
+                               "mapa de ayer. Esto muestra donde se esta reescribiendo AHORA.")]
+        public bool VerFlujo { get; set; } = true;
+
+        [Display(Name = "Cuantos niveles de flujo", GroupName = "Flujo", Order = 131)]
+        public int CuantosFlujo { get; set; } = 3;
+
+        [Display(Name = "Minimo de contratos", GroupName = "Flujo", Order = 132,
+                 Description = "Por debajo de esto no es flujo, es ruido.")]
+        public int MinContratosFlujo { get; set; } = 25;
+
+        [Display(Name = "Color del flujo", GroupName = "Flujo", Order = 133)]
+        public Color ColFlujo { get; set; } = Color.FromArgb(215, 180, 255);
 
         [Display(Name = "Ver los strikes CERCANOS", GroupName = "Cercanos", Order = 110,
                  Description = "Los mas cargados que estan al lado del precio. Medido: con el " +
@@ -878,8 +896,8 @@ namespace PythiaGex
                 var clave = (f.K, v);
                 if (!porClave.TryGetValue(clave, out var fila))
                     fila = new Fila { K = f.K, V = v };
-                if (f.EsCall) { fila.OiC = f.OI; fila.IvC = f.IV; }
-                else          { fila.OiP = f.OI; fila.IvP = f.IV; }
+                if (f.EsCall) { fila.OiC = f.OI; fila.IvC = f.IV; fila.VolC = f.VolumenHoy; }
+                else          { fila.OiP = f.OI; fila.IvP = f.IV; fila.VolP = f.VolumenHoy; }
                 porClave[clave] = fila;
             }
             // UNA CADENA FLACA NO SIRVE Y NO PUEDE TAPAR AL RESPALDO.
@@ -1254,7 +1272,7 @@ namespace PythiaGex
                     n = new Nivel { K = f.K, Gex = 0, GexVol = 0, Acel = 0 };
                 // el perfil de gamma (izquierda) y el de convexidad (derecha)
                 // se llenan cada uno con SU vencimiento
-                if (enIzq) { n.Gex += g; n.GexVol += gv; }
+                if (enIzq) { n.Gex += g; n.GexVol += gv; n.VolTot += f.VolC + f.VolP; }
                 if (enDer) { n.Acel += (gUp - g); }
                 porStrike[f.K] = n;
             }
@@ -1517,7 +1535,7 @@ namespace PythiaGex
                     Registrar2(string.Format(CultureInfo.InvariantCulture,
                         "AUDIT spot_idx={0:F4} base={1:F4} origen=" + _baseOrigen.Replace(" ", "_") + " strikes={2} visibles=" + _visiblesUlt + " " +
                         "zero={3:F4} majorpos={4:F4} majorneg={5:F4} netgex={6:F6} netgexvol={7:F6} diasmax={8} " +
-                        "cadenafilas={9} cadenats={10}" + AtrasoDom() + Picos(),
+                        "cadenafilas={9} cadenats={10}" + AtrasoDom() + Picos() + Flujo(),
                         S, baseUsada, perfil.Count,
                         double.IsNaN(zero) ? 0 : zero, mp, mn, neto / 1e9, netoVol / 1e9, DiasMax,
                         c.Filas.Count, (c.Ts ?? "").Replace(" ", "_")));
@@ -1734,6 +1752,34 @@ namespace PythiaGex
                     Linea(g, cont, xl0, xl1, nv.Fut, col,
                           nv.Gex >= 0 ? "freno" : "acel", false, spot, x1, true);
                 }
+            }
+
+            // DONDE SE ESTA REESCRIBIENDO EL MAPA HOY.
+            //
+            // Todos los tableros de GEX -- este incluido -- dibujan sobre el
+            // interes abierto, que la OCC consolida de NOCHE. O sea que el mapa
+            // es siempre el de ayer, y eso vale igual para GEXbot y para
+            // cualquiera que pague lo que pague: no hay interes abierto
+            // intradia, no existe.
+            //
+            // Lo que si existe es el VOLUMEN de hoy, contrato por contrato, y
+            // llega en vivo por Rithmic. Un strike con mucho volumen hoy es un
+            // strike donde se estan armando o cerrando posiciones AHORA: ahi el
+            // mapa de manana va a ser distinto del de hoy.
+            //
+            // No reemplaza al mapa de gamma. Lo complementa con lo unico que al
+            // mapa le falta: el presente.
+            if (VerFlujo && perfil.Count > 0)
+            {
+                var flujo = perfil
+                    .Where(nv => nv.VolTot >= Math.Max(1, MinContratosFlujo))
+                    .OrderByDescending(nv => nv.VolTot)
+                    .Take(Math.Max(1, CuantosFlujo))
+                    .ToList();
+                foreach (var nv in flujo)
+                    Linea(g, cont, xl0, xl1, nv.Fut, ColFlujo,
+                          "flujo " + ((int)nv.VolTot).ToString(CultureInfo.InvariantCulture),
+                          false, spot, x1, true);
             }
 
             if (VerLineas)
@@ -2602,6 +2648,13 @@ namespace PythiaGex
                 // no aporta y ocupa lugar. Pero cuando difieren hay que
                 // decirlo, porque dos perfiles con distinta forma en la misma
                 // pantalla parecen un error si no se sabe que es a proposito.
+                // el flujo del dia, que es lo unico que no es de ayer
+                double volTot = 0;
+                foreach (var nv in perfil) volTot += nv.VolTot;
+                if (volTot > 0)
+                    ls.Add(Tuple.Create("flujo hoy  " + ((int)volTot).ToString("N0",
+                        CultureInfo.GetCultureInfo("es-AR")) + " contr", ColFlujo));
+
                 if (VencIzq != VencDer)
                 {
                     string V(int m) => m <= 0 ? "0DTE" : m == 1 ? DiasMax + "d" : "todos";
@@ -2928,6 +2981,38 @@ namespace PythiaGex
         }
 
         /// <summary>
+        /// El volumen de opciones de hoy, al renglon de auditoria.
+        ///
+        /// Va al log a proposito: el acumulador solo cuenta operaciones que
+        /// llegan DESPUES de suscribirse, asi que la unica forma de comprobar
+        /// que funciona es verlo crecer a lo largo de una rueda. En la sesion
+        /// nocturna da cero y eso no prueba nada -- ni a favor ni en contra.
+        /// </summary>
+        private string Flujo()
+        {
+            try
+            {
+                // DOS NUMEROS DISTINTOS, Y HAY QUE DECIR CUAL ES CUAL.
+                //
+                // "viva" es lo que acumulo yo contrato por contrato desde
+                // Rithmic: solo cuenta operaciones posteriores a la suscripcion
+                // y en la sesion nocturna da cero, cosa que no prueba nada.
+                // "perfil" es el volumen que trae la cadena en uso, que si viene
+                // de CBOE ya llega con el dia entero pero 15 minutos tarde.
+                //
+                // Publicarlos con el mismo nombre hacia parecer que se
+                // contradecian cuando son cosas distintas.
+                var v = _viva.VolumenTotalHoy();
+                double vp = 0; int strikes = 0;
+                lock (_candado)
+                    foreach (var n in _perfil) { vp += n.VolTot; if (n.VolTot > 0) strikes++; }
+                return string.Format(CultureInfo.InvariantCulture,
+                    " flujoviva={0:F0} flujoperfil={1:F0} strikesconflujo={2}", v, vp, strikes);
+            }
+            catch { return " flujohoy=?"; }
+        }
+
+        /// <summary>
         /// Los picos interpolados, al renglon de auditoria.
         ///
         /// Sirve para PROBAR que son continuos y no strikes pelados: si
@@ -2966,6 +3051,7 @@ namespace PythiaGex
                       .Append(',').Append(f.IV.ToString("0.######", CultureInfo.InvariantCulture))
                       .Append(',').Append(f.Bid.ToString("0.####", CultureInfo.InvariantCulture))
                       .Append(',').Append(f.Ask.ToString("0.####", CultureInfo.InvariantCulture))
+                      .Append(',').Append(f.VolumenHoy.ToString("0.#", CultureInfo.InvariantCulture))
                       .Append(']');
                 }
                 sb.Append("]}");
