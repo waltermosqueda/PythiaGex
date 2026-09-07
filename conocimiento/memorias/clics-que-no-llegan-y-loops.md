@@ -92,3 +92,13 @@ Repetir el clic con esperas cada vez más largas, buscar la causa en el código 
 **Why:** el costo no fue el error, fue el tiempo. Diez minutos de sesión en un botón, mientras él miraba, y encima concluyendo mal ("ATAS lo rechaza") sobre algo que funcionaba bien. Es el mismo pecado que el proyecto entero viene a evitar: afirmar sin verificar.
 
 **How to apply:** antes de investigar por qué "no funcionó", verificar que la acción **se haya ejecutado**. Ver [[verificar-yo-no-el-usuario]] y [[compilar-indicadores-atas]].
+
+## Cuando el clic "no llega": correr la ventana y reintentar (2026-09-06)
+
+Lo dijo el operador: cuando el control de escritorio contesta "el escritorio
+esta al frente" o "TextInputHost esta al frente", casi siempre es que **su
+ventana de chat (la app de Claude) se superpone en pantalla con el punto donde
+quiero clickear**. La solucion que pide, en cualquier contexto: **correr la
+ventana un poco (por PowerShell, ver [[mover-ventana-atas-oft-platform]]) y
+volver a intentar el clic**, antes de cambiar de metodo o de pedirselo a el.
+Esa noche paso cuatro veces con el dialogo "Save current workspace?" de ATAS.

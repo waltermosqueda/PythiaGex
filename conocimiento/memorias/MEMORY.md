@@ -48,3 +48,4 @@
 - [Un indicador que cuelga ATAS](indicador-que-cuelga-atas.md) — OnCalculate corre por cada vela del grafico; y con el mercado cerrado no corre nunca.
 - [Retrospectiva del 6 de septiembre](retrospectiva-2026-09-06.md) — la bitacora paro en la sesion 6; el centinela dice 13 % de aguante contra el "4 de 4" narrado; Gamma Vivo pierde contra placebo; falta el registro de trades.
 - [Produccion en vivo, 6 de septiembre](produccion-en-vivo-2026-09-06.md) — siete errores con linea: el rotulo de regimen mezcla escalas, la absorcion es una prueba degenerada, la cadena viva no alimenta nada; y el lunes 7 es Labor Day.
+- [Como dibujan los pros](como-dibujan-los-pros.md) — GEXBot 3 lineas, SpotGamma 5, MenthorQ 3 + rango + 0DTE; nombres estandar, etiqueta corta a la derecha, vencimiento cercano para intradia; con fuentes.

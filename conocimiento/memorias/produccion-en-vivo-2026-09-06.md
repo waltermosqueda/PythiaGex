@@ -123,3 +123,21 @@ Commit `1ec1f69` y siguientes. ATAS es **8.0.14.398**.
 - Pendiente: NQ live chain (NullReference al buscar NQ) sigue sin arreglar.
 - Regla nueva de seguridad en [[verificar-yo-no-el-usuario]]: nunca ENTER a
   ciegas a ATAS (aparecio un dialogo de orden de compra a mercado).
+
+## Madrugada del 7 (01:50-02:40): modelo 3 instalado y auditado
+
+- Instalado (build 02:20): chips formato B de una linea con la parte desde
+  la griega atenuada, nunca sobre su raya ni sobre la vecina, apilados en el
+  borde, corridos a la izquierda del tablero si chocan; cercanos por lado
+  (el mas cercano primero, piso 15 %); nodos punteados con distancia y
+  chance; barras laterales en raiz cuadrada.
+- Auditoria independiente (Black-Scholes propio, misma cadena): 7706 ->
+  gex -1,4B / oi 20,2k / ac +876M / v52; 7711 -> -473M / 4,0k / +276M /
+  v184; 7686 -> -1,3B / 6,7k / +973M / v137. Coinciden con los chips. Zero
+  propio 7716,58 contra 7715,89 del indicador (0,7 pts, convenciones).
+- Compilado y NO instalado (commit c86d213): puntitos por vela, estela y
+  zonas del radar apagados por defecto. El operador pidio elegir por
+  maqueta: https://claude.ai/code/artifact/bf61ee06-8f39-4e4b-b4eb-9b185aa3e0a7
+  (etiqueta) y la del vocabulario (que se dibuja) publicada a las 02:40.
+- Regla que pidio: nuevas versiones = maquetas primero, el elige, recien
+  ahi se instala.
