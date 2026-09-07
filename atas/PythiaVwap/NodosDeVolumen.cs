@@ -726,6 +726,26 @@ namespace PythiaVwap
             double maxF = 1;
             foreach (var n in nodos) if (n.Fuerza > maxF) maxF = n.Fuerza;
 
+            // el precio y la volatilidad realizada que publica Gamma Vivo, para
+            // la distancia y la chance de toque en las etiquetas
+            double px = 0, sigH = 0;
+            try
+            {
+                string inst0 = (InstrumentInfo != null ? InstrumentInfo.Instrument : "").ToUpperInvariant().TrimStart('#');
+                var rawP = AppDomain.CurrentDomain.GetData("PythiaGex.Prob." + inst0) as string;
+                if (!string.IsNullOrEmpty(rawP))
+                {
+                    var q = rawP.Split(';');
+                    if (q.Length >= 3 && long.TryParse(q[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var tsP)
+                        && DateTimeOffset.UtcNow.ToUnixTimeSeconds() - tsP < 120)
+                    {
+                        double.TryParse(q[1], NumberStyles.Float, CultureInfo.InvariantCulture, out px);
+                        double.TryParse(q[2], NumberStyles.Float, CultureInfo.InvariantCulture, out sigH);
+                    }
+                }
+            }
+            catch { }
+
             // las rayas de gamma que publica Gamma Vivo (si esta en el grafico)
             var ysGamma = new List<int>();
             try
@@ -799,10 +819,28 @@ namespace PythiaVwap
                 if (AvisarRedondos && n.Redondez > 0)
                     red = "  redondo " + n.Redondez.ToString(CultureInfo.InvariantCulture);
                 string sig = n.Delta > 0 ? "+" : "";
+                // LA MISMA DISTANCIA Y LA MISMA CHANCE QUE LOS CHIPS DE GAMMA.
+                // Pedido del operador el 2026-09-07: "por que los nodos no
+                // tienen la misma info". Son otra cosa (volumen del futuro, no
+                // gamma de opciones), pero distancia y chance de toque valen
+                // igual para los dos. El precio y la volatilidad realizada los
+                // publica Gamma Vivo por AppDomain; si no esta, no se escribe.
+                string cerca = "";
+                if (px > 0)
+                {
+                    double d = (double)n.Precio - px;
+                    cerca = "   " + (d >= 0 ? "+" : "") + d.ToString("0", cultura);
+                    if (sigH > 0)
+                    {
+                        double z = Math.Abs(Math.Log((double)n.Precio / px)) / sigH;
+                        double pr = Math.Min(1.0, Math.Max(0.0, 2.0 * Phi(-z)));
+                        cerca += " " + (pr * 100).ToString("0", cultura) + "%";
+                    }
+                }
                 // el ranking va escrito ("#1"): asi el nodo de la linea y el de
                 // la escalera de Gamma Vivo se reconocen como el mismo
-                var txt = string.Format(cultura, "#{5}  {0:N2}   {1}   d {2}{3}{4}",
-                                        n.Precio, Corto(n.Volumen), sig, Corto(n.Delta), red, rango);
+                var txt = string.Format(cultura, "#{5}  {0:N2}   {1}   d {2}{3}{4}{6}",
+                                        n.Precio, Corto(n.Volumen), sig, Corto(n.Delta), red, rango, cerca);
                 var m = g.MeasureString(txt, f);
                 int x = area.Right - m.Width - MargenEje - DesplazarEtiquetas;
                 if (x < area.Left + 4) x = area.Left + 4;
@@ -931,6 +969,15 @@ namespace PythiaVwap
                              caja.Left + 7, y2);
                 y2 += m.Height + 1;
             }
+        }
+
+        /// <summary>Normal acumulada (Abramowitz-Stegun 7.1.26), la misma que usa Gamma Vivo.</summary>
+        private static double Phi(double x)
+        {
+            double t = 1.0 / (1.0 + 0.2316419 * Math.Abs(x));
+            double d = 0.3989422804014327 * Math.Exp(-x * x / 2.0);
+            double p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+            return x >= 0 ? 1.0 - p : p;
         }
 
         /// <summary>Volumen abreviado: 1,2M / 840K / 512.</summary>

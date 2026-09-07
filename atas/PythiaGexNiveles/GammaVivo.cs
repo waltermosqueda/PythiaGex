@@ -445,9 +445,13 @@ namespace PythiaGex
                  Description = "El perfil vive en el borde. Ancho pisa las velas y no deja leer.")]
         public int AnchoBarra { get; set; } = 78;
 
-        [Display(Name = "Intensidad del perfil (0-100)", GroupName = "Dibujo", Order = 62,
-                 Description = "El perfil es contexto, no protagonista: apagado deja ver el precio.")]
-        public int OpacidadPerfil { get; set; } = 58;
+        // RENOMBRADA (era OpacidadPerfil = 58) para que el default nuevo llegue
+        // al workspace: con 58 y escala lineal las barras "casi no se veian"
+        // (operador, 2026-09-07). Ahora raiz cuadrada y 75.
+        [Display(Name = "Intensidad de las barras (0-100)", GroupName = "Dibujo", Order = 62,
+                 Description = "Las barras de gamma (izquierda) y aceleracion (derecha) por strike. " +
+                               "El ancho va con la raiz del peso, para que los strikes medianos se vean.")]
+        public int OpacidadBarras { get; set; } = 75;
 
         [Display(Name = "Franja de regimen arriba", GroupName = "Dibujo", Order = 59,
                  Description = "Verde = gamma positiva (rango). Roja = negativa (expansion). " +
@@ -689,7 +693,11 @@ namespace PythiaGex
                                "cuerpo del grafico, pero las capturas del operador si -- una rotulada " +
                                "'niveles de mayor exposicion gamma'. Probablemente sea la version web " +
                                "contra la de NinjaTrader.")]
-        public bool VerPuntosDominantes { get; set; } = true;
+        // RENOMBRADA (era VerPuntosPorVela = true): los "puntitos" por vela
+        // de las dominantes eran una copia de GAMMAlito que no viene del
+        // original (ver memoria dominantes-no-son-linea) y confundian al
+        // operador con los niveles G (2026-09-07). Apagados por defecto.
+        public bool VerPuntosPorVela { get; set; } = false;
 
         [Display(Name = "Forma de la dominante", GroupName = "Dominantes", Order = 83,
                  Description = "0 = cuadradito  ·  1 = redondito  ·  2 = guioncito (mas ancho que alto)")]
@@ -835,7 +843,11 @@ namespace PythiaGex
         public Color ColPelotitaMax { get; set; } = Color.FromArgb(235, 185, 70);
 
         [Display(Name = "Ver zonas dominantes", GroupName = "Dominantes", Order = 80)]
-        public bool VerDominantes { get; set; } = true;
+        // RENOMBRADA (era VerZonasRadar = true): las zonas del radar suman
+        // vencimientos hasta 45 dias y los niveles G del grafico hasta 7; en la
+        // misma pantalla eran dos horizontes con corchetes y bandas que el
+        // operador no distinguia de los niveles (2026-09-07). Quedan opcionales.
+        public bool VerZonasRadar { get; set; } = false;
 
         [Display(Name = "Tambien las zonas debiles", GroupName = "Dominantes", Order = 85,
                  Description = "Las que hoy son decorativas. Apagadas: ensucian la pantalla.")]
@@ -882,7 +894,10 @@ namespace PythiaGex
                                "strike marcando donde estuvo su valor antes. Adentro de la barra = " +
                                "encogio, afuera = crecio. Verificado en cuadros de 1920x1080 del " +
                                "producto real (MES 30s, titulo 'GAMMAlito - Gexbot').")]
-        public bool VerEstela { get; set; } = true;
+        // RENOMBRADA (era VerEstelaEnBarras = true): el rastro de cada strike sobre su
+        // barra agregaba puntitos que se confundian con los niveles G. Con las
+        // barras en raiz cuadrada ya se ve el peso; la estela queda opcional.
+        public bool VerEstelaEnBarras { get; set; } = false;
 
         [Display(Name = "Cuantos circulos por barra", GroupName = "Perfil", Order = 54)]
         public int CirculosPorBarra { get; set; } = 3;
@@ -2579,31 +2594,36 @@ namespace PythiaGex
                 // centro queda limpio para el precio. La intensidad ademas
                 // sigue al tamano: las barras chicas casi no se ven y las
                 // grandes saltan, que es lo que hay que leer de un vistazo.
+                // RAIZ CUADRADA, NO LINEAL. Con escala lineal el strike mas
+                // grande de la ventana ocupa todo el ancho y los demas quedan
+                // en 15 o 20 pixeles: el operador dijo que "las barras casi no
+                // se ven" (2026-09-07). Con la raiz, un strike con un cuarto
+                // del peso del mayor mide la mitad del ancho, y se lee.
                 if (VerGamma && Math.Abs(n.Gex) > 0)
                 {
-                    double f = Math.Abs(n.Gex) / mx;
+                    double f = Math.Sqrt(Math.Abs(n.Gex) / mx);
                     int w = Math.Max(1, (int)(f * ancho));
                     var col = n.Gex >= 0 ? ColPos : ColNeg;
-                    int al = (int)(OpacidadPerfil * 2.55 * (0.45 + 0.55 * f));
+                    int al = (int)(OpacidadBarras * 2.55 * (0.45 + 0.55 * f));
                     g.FillRectangle(Color.FromArgb(Math.Min(255, Math.Max(12, al)), col),
                         new Rectangle(x0, y - alto / 2, w, alto));
-                    if (VerEstela) Estela(g, n.K, mx, ancho, x0, y, true, alto);
+                    if (VerEstelaEnBarras) Estela(g, n.K, mx, ancho, x0, y, true, alto);
                 }
                 if (VerAcel && mxA > 0 && Math.Abs(n.Acel) > 0)
                 {
-                    double f = Math.Abs(n.Acel) / mxA;
+                    double f = Math.Sqrt(Math.Abs(n.Acel) / mxA);
                     int w = Math.Max(1, (int)(f * ancho));
                     var col = n.Acel >= 0 ? ColAcelPos : ColAcelNeg;
-                    int al = (int)(OpacidadPerfil * 2.55 * (0.45 + 0.55 * f));
+                    int al = (int)(OpacidadBarras * 2.55 * (0.45 + 0.55 * f));
                     g.FillRectangle(Color.FromArgb(Math.Min(255, Math.Max(12, al)), col),
                         new Rectangle(x1 - w, y - alto / 2, w, alto));
-                    if (VerEstela) Estela(g, n.K, mxA, ancho, x1, y, false, alto);
+                    if (VerEstelaEnBarras) Estela(g, n.K, mxA, ancho, x1, y, false, alto);
                 }
             }
 
-            if (VerPuntosDominantes) PuntosDominantes(g, cont, x0, x1);
+            if (VerPuntosPorVela) PuntosDominantes(g, cont, x0, x1);
             if (VerPelotitas) Pelotitas(g, cont, x0, x1);
-            if (VerDominantes) Zonas(g, cont, x0, x1);
+            if (VerZonasRadar) Zonas(g, cont, x0, x1);
             if (VerBigTrades) Puntos(g, cont, x0, x1);
             if (VerVolumenVivo) VolumenVivo(g, cont, x1);
 
@@ -2637,7 +2657,11 @@ namespace PythiaGex
                 // "siguiente arriba". Ahora la mitad de los cercanos va por
                 // encima y la otra mitad por debajo. Llevan el chip completo
                 // (detalle = true): son exactamente los peldanos que se miran.
-                var cerca = SeleccionarCercanos(perfil, _pxRender, mp, mn, mx);
+                // con el maximo GLOBAL, no el visible: el ranking (PrepararRender)
+                // usa el global, y con dos pisos distintos un cercano quedaba
+                // dibujado pero sin su "G" (visto el 2026-09-07 con 7.736)
+                double mxGlobal; lock (_candado) mxGlobal = _maxGex;
+                var cerca = SeleccionarCercanos(perfil, _pxRender, mp, mn, mxGlobal);
                 foreach (var nv in cerca)
                 {
                     var col = nv.Gex >= 0 ? ColCercanoPos : ColCercanoNeg;
@@ -3374,6 +3398,17 @@ namespace PythiaGex
             _sigHRender = (sv > 0 && mv > 0) ? sv * Math.Sqrt(Math.Max(1.0, HorizonteProbMin / mv)) : 0;
             lock (_candado) _volVivoRender = _volVivoCache;
             _nodosRender = LeerNodos();
+            // el precio y la volatilidad realizada del cuadro, para que el
+            // indicador de nodos pueda escribir en sus etiquetas la misma
+            // distancia y la misma chance de toque que llevan los chips de gamma
+            try
+            {
+                string inst = (InstrumentInfo?.Instrument ?? "").ToUpperInvariant().TrimStart('#');
+                if (inst.Length > 0)
+                    AppDomain.CurrentDomain.SetData("PythiaGex.Prob." + inst, string.Format(CultureInfo.InvariantCulture,
+                        "{0};{1};{2};{3}", DateTimeOffset.UtcNow.ToUnixTimeSeconds(), _pxRender, _sigHRender, HorizonteProbMin));
+            }
+            catch { }
 
             _rangoNivel.Clear();
             List<Nivel> pf; double mp, mn, mpR, mnR, a0, b0, mx;
@@ -3656,14 +3691,16 @@ namespace PythiaGex
                 int yb2 = int.MinValue, xFin = xx;
                 for (int k = 0; k < 5 && yb2 == int.MinValue; k++)
                 {
+                    // 44 y no 26: el boton de reproduccion de ATAS ocupa la
+                    // franja de arriba (visto el 2026-09-07 pisando "v342")
                     int cand = arriba
-                        ? ChartArea.Top + 26 + k * (hc + 3)
+                        ? ChartArea.Top + 44 + k * (hc + 3)
                         : ChartArea.Bottom - Math.Max(18, MargenInferior + 4) - hc - k * (hc + 3);
                     if (Ubicar(xx, cand, wc, hc, int.MinValue, false, out xFin)) yb2 = cand;
                 }
                 if (yb2 == int.MinValue)
                 {
-                    yb2 = arriba ? ChartArea.Top + 26 : ChartArea.Bottom - Math.Max(18, MargenInferior + 4) - hc;
+                    yb2 = arriba ? ChartArea.Top + 44 : ChartArea.Bottom - Math.Max(18, MargenInferior + 4) - hc;
                     xFin = xx;
                     if (!_tableroRect.IsEmpty && VerTablero
                         && _tableroRect.IntersectsWith(new Rectangle(xx, yb2, wc, hc)))
