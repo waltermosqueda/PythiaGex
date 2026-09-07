@@ -698,10 +698,16 @@ namespace PythiaGex
         [Range(5, 600)]
         public int HorizonteProbMin { get; set; } = 60;
 
-        [Display(Name = "Escalera: velas para la volatilidad realizada", GroupName = "Pantalla", Order = 7,
-                 Description = "Cuantas velas cerradas se usan para medir cuanto se mueve el precio AHORA.")]
-        [Range(10, 500)]
-        public int EscaleraVelasVol { get; set; } = 60;
+        // RENOMBRADA (era EscaleraVelasVol = 60 velas): la ventana va en MINUTOS.
+        // Medido el 2026-09-07 04:00: la misma raya (7.721) decia 77 % en el MES
+        // de 1 min y 65 % en el de 5 min, porque 60 velas son una hora en uno y
+        // cinco horas en el otro. Ademas, si hay un grafico mas fino del mismo
+        // instrumento, los demas toman SU volatilidad (ver PrepararRender).
+        [Display(Name = "Volatilidad realizada: ventana (min)", GroupName = "Pantalla", Order = 7,
+                 Description = "Cuantos minutos de velas cerradas se usan para medir cuanto se mueve el precio AHORA. "
+                             + "Misma ventana en todos los graficos del instrumento; el mas fino manda.")]
+        [Range(15, 1440)]
+        public int VentanaVolMin { get; set; } = 90;
 
         [Display(Name = "Tablero a la derecha", GroupName = "Dibujo", Order = 67,
                  Description = "Para que no tape el perfil de gamma, que se dibuja a la izquierda.")]
@@ -2538,9 +2544,9 @@ namespace PythiaGex
             {
                 _latido = true;
                 Registrar2(string.Format(CultureInfo.InvariantCulture,
-                    "primer render: area={0},{1} {2}x{3}  cadena={4}  panel={5}",
+                    "primer render: area={0},{1} {2}x{3}  cadena={4}  panel={5}  clip={6}",
                     area.Left, area.Top, area.Width, area.Height,
-                    _c == null ? "null" : _c.Filas.Count.ToString(), Panel));
+                    _c == null ? "null" : _c.Filas.Count.ToString(), Panel, g.ClipBounds));
             }
             int x0 = area.Left, x1 = area.Right - Math.Max(0, MargenEje);
 
@@ -2798,10 +2804,10 @@ namespace PythiaGex
             //   fusionando los pegados del mismo signo; el mas cercano por arriba
             //   y por abajo PUNTEADOS con el chip completo y la chance en vivo.
             //   Nunca mas de seis lineas. El rival disputado va solo en el panel.
-            if (VerLineas) DibujarElegidos(g, cont, xl0, xl1, x1, perfil, spot, mp, mn, zero);
-
-            // la banda del peldano donde esta parado el precio
+            // la banda del peldano donde esta parado el precio: ANTES de los
+            // chips, para que ellos la esquiven (su rotulo entra en _rectsUsados)
             if (VerBandaAca) { try { BandaAca(g, cont, xl0, xl1); } catch (Exception e) { Registrar(e); } }
+            if (VerLineas) DibujarElegidos(g, cont, xl0, xl1, x1, perfil, spot, mp, mn, zero);
 
             // LA FRANJA DE REGIMEN.
             //
@@ -3227,6 +3233,8 @@ namespace PythiaGex
                     try { y = cont.GetYByPrice((decimal)precio, false); }
                     catch { return; }
                     if (y < ChartArea.Top - 4 || y > ChartArea.Bottom + 4) return;
+                    // tampoco encima del tablero: ahi no se leen ni el punto ni el texto
+                    if (!_tableroRect.IsEmpty && VerTablero && _tableroRect.Contains(x, y)) return;
                     int sep = Math.Max(2, SeparacionMinima);
 
                     var f = Math.Max(0.25, Math.Min(1.0, fuerza));
@@ -3402,6 +3410,8 @@ namespace PythiaGex
         /// </summary>
         // ---- lo que se calcula UNA vez por cuadro y usan todas las etiquetas ----
         private double _sigHRender, _pxRender, _probRender = double.NaN, _maxVolVivoRender;
+        private double _minVelaRender;
+        private string _sigHOrigen = "";
         private DateTime _ultimoLogElegidos = DateTime.MinValue;
         private Dictionary<double, (double total, double calls, double puts)> _volVivoRender;
         private List<(double precio, double vol, double delta, int rango, bool flojo)> _nodosRender;
@@ -3429,8 +3439,10 @@ namespace PythiaGex
         private void PrepararRender()
         {
             try { _pxRender = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { _pxRender = 0; }
-            var (sv, mv) = VolRealizada(Math.Max(10, EscaleraVelasVol));
+            var (sv, mv) = VolRealizada(VelasParaVol());
             _sigHRender = (sv > 0 && mv > 0) ? sv * Math.Sqrt(Math.Max(1.0, HorizonteProbMin / mv)) : 0;
+            _minVelaRender = mv;
+            _sigHOrigen = mv > 0 ? "velas " + mv.ToString("0.#", CultureInfo.InvariantCulture) + "m propias" : "sin vol";
             lock (_candado) _volVivoRender = _volVivoCache;
             _maxVolVivoRender = 0;
             if (_volVivoRender != null)
@@ -3439,12 +3451,38 @@ namespace PythiaGex
             // el precio y la volatilidad realizada del cuadro, para que el
             // indicador de nodos pueda escribir en sus etiquetas la misma
             // distancia y la misma chance de toque que llevan los chips de gamma
+            // UNA SOLA VOLATILIDAD POR INSTRUMENTO. Si hay otro grafico del mismo
+            // instrumento con velas mas finas, su medicion es mejor (mas muestras
+            // en la misma ventana) y ESTE la adopta; si no, publica la propia. Asi
+            // la misma raya dice la misma chance en el MES de 1 min y en el de 5.
+            // Se adopta solo si tiene menos de 90 s; el que adopta no publica,
+            // para no pisar al mas fino con su propio numero.
             try
             {
                 string inst = (InstrumentInfo?.Instrument ?? "").ToUpperInvariant().TrimStart('#');
                 if (inst.Length > 0)
-                    AppDomain.CurrentDomain.SetData("PythiaGex.Prob." + inst, string.Format(CultureInfo.InvariantCulture,
-                        "{0};{1};{2};{3}", DateTimeOffset.UtcNow.ToUnixTimeSeconds(), _pxRender, _sigHRender, HorizonteProbMin));
+                {
+                    bool adoptada = false;
+                    var raw = AppDomain.CurrentDomain.GetData("PythiaGex.Prob." + inst) as string;
+                    if (!string.IsNullOrEmpty(raw))
+                    {
+                        var q = raw.Split(';');
+                        if (q.Length >= 5
+                            && long.TryParse(q[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var ts)
+                            && DateTimeOffset.UtcNow.ToUnixTimeSeconds() - ts < 90
+                            && double.TryParse(q[2], NumberStyles.Float, CultureInfo.InvariantCulture, out var sigO)
+                            && double.TryParse(q[4], NumberStyles.Float, CultureInfo.InvariantCulture, out var mvO)
+                            && sigO > 0 && mvO > 0 && (mv <= 0 || mvO < mv - 0.01))
+                        {
+                            _sigHRender = sigO;
+                            _sigHOrigen = "velas " + mvO.ToString("0.#", CultureInfo.InvariantCulture) + "m de otro grafico";
+                            adoptada = true;
+                        }
+                    }
+                    if (!adoptada)
+                        AppDomain.CurrentDomain.SetData("PythiaGex.Prob." + inst, string.Format(CultureInfo.InvariantCulture,
+                            "{0};{1};{2};{3};{4}", DateTimeOffset.UtcNow.ToUnixTimeSeconds(), _pxRender, _sigHRender, HorizonteProbMin, mv));
+                }
             }
             catch { }
 
@@ -3481,11 +3519,18 @@ namespace PythiaGex
         {
             _ysNiveles.Clear();
             if (cont == null) return;
-            double zero, mp, mn, mpR, mnR, a0, b0;
-            lock (_candado) { zero = _zeroGamma; mp = _majorPos; mn = _majorNeg; mpR = _mpRival; mnR = _mnRival; a0 = _mp0Ult; b0 = _mn0Ult; }
+            // LAS RAYAS QUE SE PUBLICAN SON LAS QUE SE DIBUJAN. Antes iban los
+            // muros, los rivales y los 0DTE de antes, que ya no tienen raya, y
+            // faltaban los del vencimiento cercano y los punteados: los chips y
+            // las etiquetas de nodos esquivaban rayas invisibles y pisaban las
+            // visibles (visto el 2026-09-07 04:00).
+            double zero; List<Nivel> pf; double mp, mn;
+            lock (_candado) { zero = _zeroGamma; pf = _perfil; mp = _majorPos; mn = _majorNeg; }
+            try { SeleccionarElegidos(pf, mp, mn); } catch (Exception e) { Registrar(e); }
             var precios = new List<double>();
-            foreach (var p in new[] { zero, mp, mn, mpR, mnR, a0, b0 })
-                if (!double.IsNaN(p) && p > 0) precios.Add(p);
+            if (!double.IsNaN(zero) && zero > 0) precios.Add(zero);
+            foreach (var e in _fusRender) if (e.Precio > 0) precios.Add(e.Precio);
+            foreach (var e in _puntRender) if (e.Precio > 0) precios.Add(e.Precio);
             var sb = new System.Text.StringBuilder(DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
             foreach (var p in precios)
             {
@@ -3554,10 +3599,14 @@ namespace PythiaGex
                 double d = Math.Abs(p - _pxRender);
                 if (d <= tol && d < mejor) { mejor = d; nombre = n; precio = p; col = c; }
             }
-            double zero, mp, mn, mpR, mnR;
-            lock (_candado) { zero = _zeroGamma; mp = _majorPos; mn = _majorNeg; mpR = _mpRival; mnR = _mnRival; }
-            Cand("zero", zero, ColZero); Cand("+wall", mp, ColPos); Cand("-wall", mn, ColNeg);
-            Cand("+wall?", mpR, ColPos); Cand("-wall?", mnR, ColNeg);
+            // los candidatos son LOS NIVELES QUE SE DIBUJAN (zero, muros, los del
+            // vencimiento cercano, el mas cercano por arriba y por abajo) y los
+            // nodos; no los rivales, que ya no tienen raya
+            double zero;
+            lock (_candado) zero = _zeroGamma;
+            Cand("Zero Γ", zero, ColZero);
+            if (_fusRender != null) foreach (var e in _fusRender) Cand(e.Nombre, e.Precio, e.Col);
+            if (_puntRender != null) foreach (var e in _puntRender) Cand(e.Nombre, e.Precio, e.Col);
             if (_nodosRender != null)
                 foreach (var nd in _nodosRender)
                     if (!nd.flojo) Cand("nodo #" + nd.rango, nd.precio, Color.FromArgb(235, 200, 60));
@@ -3577,9 +3626,15 @@ namespace PythiaGex
             var m = g.MeasureString(t, f);
             int yt = top - m.Height - 3;
             if (yt < ChartArea.Top + 2) yt = top + alto + 3;
-            g.FillRectangle(Color.FromArgb(200, ColFondo), new Rectangle(x0 + 6, yt, m.Width + 8, m.Height + 2));
-            g.FillRectangle(Color.FromArgb(230, col), new Rectangle(x0 + 6, yt, 3, m.Height + 2));
-            g.DrawString(t, f, Color.FromArgb(245, col), x0 + 12, yt + 1);
+            // A LA DERECHA, no a la izquierda: a la izquierda lo tapaba la caja de
+            // Nodos de Volumen (visto el 2026-09-07 04:00 en el MES de 1 min). Y
+            // se anota en _rectsUsados para que ningun chip se le ponga encima.
+            int xt = Math.Max(x0 + 6, x1 - m.Width - 14);
+            var rt = new Rectangle(xt, yt, m.Width + 8, m.Height + 2);
+            _rectsUsados.Add(rt);
+            g.FillRectangle(Color.FromArgb(200, ColFondo), rt);
+            g.FillRectangle(Color.FromArgb(230, col), new Rectangle(xt, yt, 3, m.Height + 2));
+            g.DrawString(t, f, Color.FromArgb(245, col), xt + 6, yt + 1);
         }
 
         /// <summary>
@@ -3711,9 +3766,16 @@ namespace PythiaGex
         ///  5. Zero Γ rayado con su chance.
         /// Los demas solo llevan etiqueta corta: nombre, precio, distancia.
         /// </summary>
-        private void DibujarElegidos(RenderContext g, IChartContainer cont, int xl0, int xl1, int xEje,
-                                     List<Nivel> perfil, double spot, double mp, double mn, double zero)
+        private List<Elegido> _fusRender = new(), _puntRender = new();
+        private double _pasoRender = 5.0;
+
+        /// <summary>La SELECCION, separada del dibujo: corre en LlenarYsNiveles,
+        /// antes de dibujar nada, asi las rayas que se publican (para los chips y
+        /// para Nodos de Volumen) son exactamente las que se dibujan y no los
+        /// rivales de antes. Deja el resultado en _fusRender / _puntRender.</summary>
+        private void SeleccionarElegidos(List<Nivel> perfil, double mp, double mn)
         {
+            _fusRender = new List<Elegido>(); _puntRender = new List<Elegido>();
             double px = _pxRender;
             if (px <= 0 || perfil == null || perfil.Count == 0) return;
             double mxG = 0;
@@ -3731,8 +3793,11 @@ namespace PythiaGex
                 if (difs.Count > 0) { difs.Sort(); paso = difs[difs.Count / 2]; }
             }
 
+            // DTE por PISO, no por redondeo: el lunes a las 03:00 ET, el
+            // vencimiento del martes esta a 1,5 dias y se llama 1DTE (vence
+            // manana), no 2DTE. Visto el 2026-09-07 04:00, Labor Day.
             string Venc(Nivel n) => n.DiasVenc > 0
-                ? (n.DiasVenc < 1.0 ? "0DTE" : Math.Round(n.DiasVenc).ToString("0", CultureInfo.InvariantCulture) + "DTE")
+                ? (n.DiasVenc < 1.0 ? "0DTE" : Math.Floor(n.DiasVenc).ToString("0", CultureInfo.InvariantCulture) + "DTE")
                 : "";
 
             var cands = new List<Elegido>();
@@ -3814,22 +3879,70 @@ namespace PythiaGex
                 Registrar2(sb.ToString());
             }
 
-            // DIBUJO
-            Linea(g, cont, xl0, xl1, zero, ColZero, "Zero Γ", true, spot, xEje, false, false);
-            foreach (var e in fus)
+            _fusRender = fus; _puntRender = punteados; _pasoRender = paso;
+        }
+
+        private void DibujarElegidos(RenderContext g, IChartContainer cont, int xl0, int xl1, int xEje,
+                                     List<Nivel> perfil, double spot, double mp, double mn, double zero)
+        {
+            var fus = _fusRender; var punteados = _puntRender;
+            if (fus == null || punteados == null) return;
+
+            // DIBUJO. Primero los que quedan FUERA de pantalla, del mas lejano al
+            // mas cercano al borde: asi la pila de arriba se lee de arriba hacia
+            // abajo en orden de precio (7.831, 7.806, 7.756, 7.726) y la de abajo
+            // al reves. Antes salian en orden de dibujo (7.756, 7.806, 7.831,
+            // 7.726; visto el 2026-09-07 04:00). Y recien despues los de adentro,
+            // que asi ya saben donde estan los fijados y no se les ponen encima.
+            var orden = new List<Tuple<double, Action>>();
+            orden.Add(Tuple.Create(zero, (Action)(() =>
+                Linea(g, cont, xl0, xl1, zero, ColZero, "Zero Γ", true, spot, xEje, false, false))));
+            foreach (var e0 in fus)
             {
-                Linea(g, cont, xl0, xl1, e.Precio, e.Col, e.Nombre, false, spot, xEje, false, e.Chip, false, !e.Chip, e.Ancho);
-                if (e.Miembros.Count > 1)
-                    foreach (var m in e.Miembros)
-                    {
-                        int ym;
-                        try { ym = cont.GetYByPrice((decimal)m, false); } catch { continue; }
-                        if (ym < ChartArea.Top || ym > ChartArea.Bottom) continue;
-                        g.DrawLine(new RenderPen(Color.FromArgb(170, e.Col), 1f), xl0, ym, xl0 + 14, ym);
-                    }
+                var e = e0;
+                orden.Add(Tuple.Create(e.Precio, (Action)(() =>
+                {
+                    Linea(g, cont, xl0, xl1, e.Precio, e.Col, e.Nombre, false, spot, xEje, false, e.Chip, false, !e.Chip, e.Ancho);
+                    if (e.Miembros.Count > 1)
+                        foreach (var m in e.Miembros)
+                        {
+                            int ym;
+                            try { ym = cont.GetYByPrice((decimal)m, false); } catch { continue; }
+                            if (ym < ChartArea.Top || ym > ChartArea.Bottom) continue;
+                            g.DrawLine(new RenderPen(Color.FromArgb(170, e.Col), 1f), xl0, ym, xl0 + 14, ym);
+                        }
+                })));
             }
-            foreach (var e in punteados)
-                Linea(g, cont, xl0, xl1, e.Precio, e.Col, e.Nombre, false, spot, xEje, false, true, true, false, e.Ancho);
+            foreach (var e0 in punteados)
+            {
+                var e = e0;
+                orden.Add(Tuple.Create(e.Precio, (Action)(() =>
+                    Linea(g, cont, xl0, xl1, e.Precio, e.Col, e.Nombre, false, spot, xEje, false, true, true, false, e.Ancho))));
+            }
+            int Ypx(double p)
+            {
+                if (double.IsNaN(p) || p <= 0) return int.MinValue;
+                try { return cont.GetYByPrice((decimal)p, false); } catch { return int.MinValue; }
+            }
+            foreach (var t in orden.Where(t => Ypx(t.Item1) < ChartArea.Top).OrderByDescending(t => t.Item1)) t.Item2();
+            foreach (var t in orden.Where(t => Ypx(t.Item1) > ChartArea.Bottom).OrderBy(t => t.Item1)) t.Item2();
+            foreach (var t in orden.Where(t => { int yq = Ypx(t.Item1); return yq >= ChartArea.Top && yq <= ChartArea.Bottom; })) t.Item2();
+        }
+
+        /// <summary>La raya horizontal, cortada donde esta el tablero: una raya
+        /// que cruza el texto del tablero no se lee ni como raya ni como texto
+        /// (visto el 2026-09-07 04:00 con el Zero Γ sobre "zonas radar 45d").</summary>
+        private void RayaSinTablero(RenderContext g, RenderPen pluma, int x0, int x1, int y)
+        {
+            if (!_tableroRect.IsEmpty && VerTablero
+                && y >= _tableroRect.Top - 1 && y <= _tableroRect.Bottom + 1
+                && x0 < _tableroRect.Right + 3 && x1 > _tableroRect.Left - 3)
+            {
+                if (_tableroRect.Left - 3 > x0) g.DrawLine(pluma, x0, y, _tableroRect.Left - 3, y);
+                if (_tableroRect.Right + 3 < x1) g.DrawLine(pluma, _tableroRect.Right + 3, y, x1, y);
+                return;
+            }
+            g.DrawLine(pluma, x0, y, x1, y);
         }
 
         private void Linea(RenderContext g, IChartContainer cont, int x0, int x1,
@@ -3956,7 +4069,7 @@ namespace PythiaGex
                        : grueso ? System.Drawing.Drawing2D.DashStyle.Dash
                                 : System.Drawing.Drawing2D.DashStyle.Solid;
             var pluma = new RenderPen(Color.FromArgb(Math.Max(alfaLinea, punteada ? 170 : 0), col), anchoPen, estilo);
-            g.DrawLine(pluma, x0, y, x1, y);
+            RayaSinTablero(g, pluma, x0, x1, y);
 
             // EL CHIP: UNA O DOS LINEAS, Y NUNCA PISADO (modelo 3, 2026-09-06).
             //
@@ -3995,8 +4108,10 @@ namespace PythiaGex
             int yTxt = int.MinValue, xUb = xc;
             for (int k = 0; k < 8 && yTxt == int.MinValue; k++)
             {
-                int arriba = y - 3 - hChip - k * (hChip + 3);
-                int abajo = y + 3 + k * (hChip + 3);
+                // 5 px y no 3: con 3 el borde del chip se fundia con la raya
+                // (visto el 2026-09-07 04:00 en "+Γ·5d 7.726")
+                int arriba = y - 5 - hChip - k * (hChip + 3);
+                int abajo = y + 5 + k * (hChip + 3);
                 if (Ubicar(xc, arriba, wChip, hChip, y, true, out xUb)) yTxt = arriba;
                 else if (Ubicar(xc, abajo, wChip, hChip, y, true, out xUb)) yTxt = abajo;
             }
@@ -4005,7 +4120,7 @@ namespace PythiaGex
                 // no quedo lugar limpio: arriba de su raya, y si el tablero
                 // esta ahi, a la izquierda del tablero. Antes caia ENCIMA del
                 // tablero (visto el 2026-09-07 con "G5 acel 7.706").
-                yTxt = Math.Max(ChartArea.Top + 2, y - 3 - hChip);
+                yTxt = Math.Max(ChartArea.Top + 2, y - 5 - hChip);
                 xUb = xc;
                 if (!_tableroRect.IsEmpty && VerTablero
                     && _tableroRect.IntersectsWith(new Rectangle(xc, yTxt, wChip, hChip)))
@@ -4272,6 +4387,9 @@ namespace PythiaGex
                     string iv = cu != null && cu.EsFuturo ? "IV Rithmic vivo" : "IV CBOE retrasada";
                     ls.Add(Tuple.Create("OI de ayer (OCC) · " + iv + " · vol Rithmic vivo",
                                         Color.FromArgb(175, ColTexto)));
+                    // y la chance: en cuantos minutos, con que ventana y de que velas
+                    ls.Add(Tuple.Create("chance = tocar en " + HorizonteProbMin + " min · vol " + VentanaVolMin
+                                        + " min · " + _sigHOrigen, Color.FromArgb(175, ColTexto)));
                 }
 
                 if (VencIzq != VencDer)
@@ -4744,6 +4862,15 @@ namespace PythiaGex
         /// <summary>Desvio estandar de los retornos por vela de las ultimas n velas
         /// cerradas, y la duracion mediana de una vela en minutos. (0,0) si no hay
         /// con que.</summary>
+        /// <summary>Cuantas velas cerradas entran en VentanaVolMin minutos, segun
+        /// la duracion mediana de la vela de ESTE grafico. Minimo 12.</summary>
+        private int VelasParaVol()
+        {
+            var (_, mv) = VolRealizada(20);
+            if (mv <= 0) return 60;
+            return Math.Max(12, Math.Min(500, (int)Math.Round(VentanaVolMin / mv)));
+        }
+
         private (double sigmaVela, double minutosVela) VolRealizada(int n)
         {
             try
@@ -4887,7 +5014,7 @@ namespace PythiaGex
             if (arriba.Count + abajo.Count == 0) return;
 
             // la probabilidad de toque en el horizonte, con la vol realizada
-            var (sigVela, minVela) = VolRealizada(Math.Max(10, EscaleraVelasVol));
+            var (sigVela, minVela) = VolRealizada(VelasParaVol());
             double sigH = 0;
             if (sigVela > 0 && minVela > 0)
                 sigH = sigVela * Math.Sqrt(Math.Max(1.0, HorizonteProbMin / minVela));
@@ -4912,8 +5039,8 @@ namespace PythiaGex
 
             var f = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamTablero - 1m)));
             var filas = new List<Tuple<string, Color, bool>>();
-            string cab = string.Format(es, "ESCALERA  toque en {0} min · vol {1} velas",
-                                       HorizonteProbMin, EscaleraVelasVol);
+            string cab = string.Format(es, "ESCALERA  toque en {0} min · vol {1} min",
+                                       HorizonteProbMin, VentanaVolMin);
             filas.Add(Tuple.Create(cab, ColAviso, false));
             foreach (var c in arriba) filas.Add(Tuple.Create(Fila(c, true), c.Col, Math.Abs(c.Precio - S) <= (double)tick * 2));
             filas.Add(Tuple.Create(string.Format(es, "── precio {0,9:N2} ──", S), ColTexto, false));

@@ -53,6 +53,43 @@ class Program
 
         // Quien IMPLEMENTA una interfaz. Sirve para contestar si el conector
         // de Rithmic sabe servir opciones sin tener que abrir la plataforma.
+        // --miembros <tipo> vuelca metodos y propiedades (publicos y protegidos)
+        // del tipo y de sus bases, con el tipo que los declara; para un enum,
+        // sus valores. Agregado el 2026-09-07 para saber si un indicador puede
+        // dibujar en el eje de precio y recibir clics antes de prometerlo.
+        if (args.Length > 1 && args[0] == "--miembros")
+        {
+            var t = _ctx.Assemblies.SelectMany(Seguro).FirstOrDefault(x => x.FullName == args[1] || x.Name == args[1]);
+            if (t == null) { Console.WriteLine("!! no encontrado: " + args[1]); return; }
+            if (t.IsEnum)
+            {
+                foreach (var n in Enum.GetNames(t))
+                    Console.WriteLine("  enum " + n + " = " + Convert.ToInt64(Enum.Parse(t, n)));
+                return;
+            }
+            var fl = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic
+                   | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static
+                   | System.Reflection.BindingFlags.DeclaredOnly;
+            foreach (var i in t.GetInterfaces()) Console.WriteLine("  iface " + i.FullName);
+            for (var b = t; b != null && b != typeof(object); b = b.BaseType)
+            {
+                Console.WriteLine("== " + b.FullName);
+                foreach (var m in b.GetMethods(fl))
+                {
+                    if (!(m.IsPublic || m.IsFamily || m.IsFamilyOrAssembly) || m.IsSpecialName) continue;
+                    try
+                    {
+                        Console.WriteLine("  " + (m.IsVirtual ? "virtual " : "") + m.ReturnType.Name + " " + m.Name + "("
+                            + string.Join(", ", m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name)) + ")");
+                    }
+                    catch { }
+                }
+                foreach (var p in b.GetProperties(fl))
+                    try { Console.WriteLine("  prop " + p.PropertyType.Name + " " + p.Name); } catch { }
+            }
+            return;
+        }
+
         if (args.Length > 1 && args[0] == "--impl")
         {
             foreach (var f in new[] { "OFT.Rithmic", "OFT.IQFeed", "OFT.DxFeed",

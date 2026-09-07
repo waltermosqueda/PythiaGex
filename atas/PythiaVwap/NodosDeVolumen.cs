@@ -87,6 +87,8 @@ namespace PythiaVwap
         private int _barrasUsadas;
         private decimal _volMedioPorPrecioBarra;
         private string _firma = "";
+        private Rectangle _cajaRect = Rectangle.Empty;
+        private DateTime _ultimoLogNodos = DateTime.MinValue;
         private int _candidatos;      // cuantos precios pasaron el umbral antes de fusionar
         private int _velasVentana;    // a cuantas velas equivale la ventana en este grafico
 
@@ -286,6 +288,17 @@ namespace PythiaVwap
                              + "eje. Medido el 2026-09-06: los chips de dos lineas miden hasta 300 px.")]
         [Range(0, 900)]
         public int DesplazarEtiquetas { get; set; } = 330;
+
+        [Display(Name = "Panel de cuenta abajo a la izquierda: alto (px)", GroupName = "3. Pantalla", Order = 18,
+                 Description = "El panel de cuenta de ATAS (Account, Balance, Open PnL) vive abajo a la izquierda "
+                             + "del grafico de MNQ y tapaba la etiqueta del nodo #2 (visto el 2026-09-07 04:00). "
+                             + "Las etiquetas que caen en esa zona se corren a la derecha del panel. 0 = no hay panel.")]
+        [Range(0, 600)]
+        public int AltoPanelCuenta { get; set; } = 160;
+
+        [Display(Name = "Panel de cuenta abajo a la izquierda: ancho (px)", GroupName = "3. Pantalla", Order = 18)]
+        [Range(0, 900)]
+        public int AnchoPanelCuenta { get; set; } = 260;
 
         [Display(Name = "Estilo del nodo", GroupName = "3. Pantalla", Order = 19,
                  Description = "Muesca: una marca corta en el borde izquierdo, a la derecha de las barras " +
@@ -790,12 +803,17 @@ namespace PythiaVwap
             // segundo. El ranking lo da directo: la lista ya viene ordenada de
             // mayor a menor volumen.
             int rango = 0;
+            var usados = new List<Rectangle>();
+            var sbLog = new System.Text.StringBuilder();
             foreach (var n in nodos)
             {
                 rango++;
                 int y;
                 try { y = cont.GetYByPrice(n.Precio, false); }
                 catch { continue; }
+                if (sbLog.Length > 0) sbLog.Append("]");
+                sbLog.Append(string.Format(CultureInfo.InvariantCulture, " [#{0} {1} v{2} {3} y={4}",
+                             rango, n.Precio, n.Volumen, n.Flojo ? "flojo" : "ok", y));
 
                 // UN NODO FUERA DE PANTALLA NO SE CALLA.
                 //
@@ -876,11 +894,39 @@ namespace PythiaVwap
                 // Vivo publica por AppDomain. Pedido del operador el
                 // 2026-09-06: la etiqueta nunca sobre una raya, ni confundible
                 // con la vecina.
-                int yy = y - m.Height - 2;
-                if (yy < area.Top || TapaOtraRaya(yy, m.Height + 2, y, nodos, ysGamma, cont)) yy = y + 3;
-                g.FillRectangle(Color.FromArgb(170, 12, 14, 18),
-                                new Rectangle(x - 4, yy, m.Width + 8, m.Height + 2));
-                g.DrawString(txt, f, Color.FromArgb(235, col), x, yy + 1);
+                // ... y NUNCA sobre otra etiqueta: con dos nodos a un punto (7.721,25
+                // y 7.720,25 en el MES de 5 min) las dos etiquetas caian en la misma
+                // fila y se leian como una sola garabateada (visto el 2026-09-07
+                // 04:00). Se prueba arriba, abajo, y despues alejandose, contra las
+                // rayas y contra las etiquetas ya puestas. Si cae sobre la caja o
+                // sobre el panel de cuenta, se corre a la derecha de ellos.
+                int alto = m.Height + 2, anchoEt = m.Width + 8;
+                int yy = int.MinValue, xx = x;
+                for (int k = 0; k < 5 && yy == int.MinValue; k++)
+                {
+                    int ar = y - m.Height - 3 - k * (alto + 3);
+                    int ab = y + 4 + k * (alto + 3);
+                    xx = x;
+                    if (EtiquetaLibre(ar, alto, anchoEt, y, nodos, ysGamma, cont, area, usados, ref xx)) { yy = ar; break; }
+                    xx = x;
+                    if (EtiquetaLibre(ab, alto, anchoEt, y, nodos, ysGamma, cont, area, usados, ref xx)) { yy = ab; break; }
+                }
+                if (yy == int.MinValue) { yy = y - m.Height - 3; xx = x; }
+                var re = new Rectangle(xx - 4, yy, anchoEt, alto);
+                usados.Add(re);
+                sbLog.Append(string.Format(CultureInfo.InvariantCulture, " et={0},{1}", xx, yy));
+                g.FillRectangle(Color.FromArgb(170, 12, 14, 18), re);
+                g.DrawString(txt, f, Color.FromArgb(235, col), xx, yy + 1);
+            }
+            if (sbLog.Length > 0) sbLog.Append("]");
+            if ((DateTime.UtcNow - _ultimoLogNodos).TotalSeconds >= 60)
+            {
+                _ultimoLogNodos = DateTime.UtcNow;
+                RegistrarNodos(string.Format(CultureInfo.InvariantCulture,
+                    "nodos={0} fuera={1} rayasGamma={2} area={3}..{4} caja={5}{6}",
+                    nodos.Count, fuera, ysGamma.Count, area.Top, area.Bottom,
+                    _cajaRect.IsEmpty ? "-" : _cajaRect.Bottom.ToString(CultureInfo.InvariantCulture),
+                    sbLog.ToString()));
             }
 
             // los que quedaron afuera, avisados en el borde que corresponde
@@ -895,12 +941,51 @@ namespace PythiaVwap
             }
         }
 
+        /// <summary>true si la etiqueta cabe en [yy, yy+alto] sin salirse del area,
+        /// sin tapar otra raya y sin pisar otra etiqueta. Si cae sobre la caja o
+        /// sobre el panel de cuenta de ATAS, corre xx a la derecha de ellos y
+        /// prueba ahi (la muesca sigue a la izquierda, a la misma altura).</summary>
+        private bool EtiquetaLibre(int yy, int alto, int ancho, int yPropio, List<Nodo> nodos,
+                                   List<int> ysGamma, IChartContainer cont, Rectangle area,
+                                   List<Rectangle> usados, ref int xx)
+        {
+            if (yy < area.Top + 2 || yy + alto > area.Bottom - MargenInferior) return false;
+            if (TapaOtraRaya(yy, alto, yPropio, nodos, ysGamma, cont)) return false;
+            var r = new Rectangle(xx - 4, yy, ancho, alto);
+            var zonas = new List<Rectangle>();
+            if (VerCaja && !_cajaRect.IsEmpty) zonas.Add(_cajaRect);
+            if (AltoPanelCuenta > 0 && AnchoPanelCuenta > 0)
+                zonas.Add(new Rectangle(area.Left, area.Bottom - AltoPanelCuenta, AnchoPanelCuenta, AltoPanelCuenta));
+            foreach (var z in zonas)
+                if (z.IntersectsWith(r)) { xx = z.Right + 10; r = new Rectangle(xx - 4, yy, ancho, alto); }
+            foreach (var u in usados) if (u.IntersectsWith(Rectangle.Inflate(r, 2, 2))) return false;
+            return true;
+        }
+
+        private void RegistrarNodos(string linea)
+        {
+            try
+            {
+                var p = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "ATAS", "pythiaflow-nodos.log");
+                string inst = "";
+                try { inst = InstrumentInfo != null ? InstrumentInfo.Instrument : ""; } catch { }
+                string marco = "";
+                try { marco = ChartInfo != null ? ChartInfo.ChartType + "-" + ChartInfo.TimeFrame : ""; } catch { }
+                System.IO.File.AppendAllText(p, string.Format(CultureInfo.InvariantCulture,
+                    "{0:s} {1} {2} {3}\n", DateTime.Now, inst, marco, linea));
+            }
+            catch { }
+        }
+
         /// <summary>true si una etiqueta que ocupa [yy, yy+alto] cubre la raya de
-        /// otro nodo o de un nivel de gamma (no la propia, en yPropio).</summary>
+        /// otro nodo o de un nivel de gamma (no la propia, en yPropio). Con dos
+        /// pixeles de aire, porque a un pixel la raya vecina tocaba el borde.</summary>
         private static bool TapaOtraRaya(int yy, int alto, int yPropio, List<Nodo> nodos,
                                          List<int> ysGamma, IChartContainer cont)
         {
-            int top = yy - 1, bot = yy + alto + 1;
+            int top = yy - 2, bot = yy + alto + 2;
             foreach (var yg in ysGamma) if (yg >= top && yg <= bot) return true;
             foreach (var n in nodos)
             {
@@ -984,6 +1069,7 @@ namespace PythiaVwap
                 ? area.Bottom - (h + 8) - MargenInferior
                 : area.Top + MargenArriba;
             var caja = new Rectangle(area.Left + 8, yCaja, w + 14, h + 8);
+            _cajaRect = caja;   // para que las etiquetas de los nodos la esquiven
             g.FillRectangle(Color.FromArgb(180, 12, 14, 18), caja);
             g.DrawRectangle(new RenderPen(Color.FromArgb(90, 120, 130, 145), 1), caja);
             int y2 = caja.Top + 4;
