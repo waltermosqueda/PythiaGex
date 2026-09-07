@@ -152,9 +152,23 @@ namespace PythiaVwap
         [Range(1.5, 50.0)]
         public double Fuerza { get; set; } = 2.5;
 
-        [Display(Name = "Cuantos nodos como maximo", GroupName = "1. Nodos", Order = 30)]
+        // RENOMBRADA (era MaxNodos = 8): el operador vio "puras rayas amarillas
+        // iguales" el 2026-09-06. Ocho lineas del mismo color en 8 puntos de
+        // rango no jerarquizan nada. Cuatro, con grosor y brillo por ranking, y
+        // etiqueta solo en las tres primeras. ATAS guarda el valor viejo en el
+        // workspace, asi que hay que cambiar el nombre para que llegue el 4.
+        [Display(Name = "Cuantos nodos como maximo", GroupName = "1. Nodos", Order = 30,
+                 Description = "Cuatro: el primero grueso y brillante, el cuarto fino y apagado. "
+                             + "Mas que eso y la pantalla vuelve a ser una pila de rayas iguales.")]
         [Range(1, 40)]
-        public int MaxNodos { get; set; } = 8;
+        public int MaxNodosDibujados { get; set; } = 4;
+        private int MaxNodos => MaxNodosDibujados;
+
+        [Display(Name = "Etiquetas solo en los primeros N", GroupName = "1. Nodos", Order = 32,
+                 Description = "Los demas nodos llevan la linea pero no el texto: se ve la "
+                             + "jerarquia sin leer ocho numeros.")]
+        [Range(0, 40)]
+        public int EtiquetasMax { get; set; } = 3;
 
         [Display(Name = "Minimo que se muestra igual", GroupName = "1. Nodos", Order = 35,
                  Description = "Si ningun precio llega al umbral, igual se dibujan "
@@ -670,8 +684,17 @@ namespace PythiaVwap
             int fuera = 0;
             decimal precioArriba = 0, precioAbajo = 0;
 
+            // JERARQUIA POR RANKING, NO SOLO POR FUERZA RELATIVA.
+            //
+            // Con la fuerza relativa sola, cuatro nodos de 60K, 55K, 51K y 40K
+            // salian casi identicos: todos cerca del maximo. Para scalping lo
+            // que hace falta leer de un vistazo es CUAL es el primero, cual el
+            // segundo. El ranking lo da directo: la lista ya viene ordenada de
+            // mayor a menor volumen.
+            int rango = 0;
             foreach (var n in nodos)
             {
+                rango++;
                 int y;
                 try { y = cont.GetYByPrice(n.Precio, false); }
                 catch { continue; }
@@ -691,15 +714,17 @@ namespace PythiaVwap
 
                 // el grosor cuenta la historia: un nodo el doble de cargado se
                 // ve el doble de firme, sin tener que leer el numero
-                float ancho = 1.0f + (float)(2.2 * (n.Fuerza / maxF));
-                int alfa = 110 + (int)(120 * (n.Fuerza / maxF));
-                if (alfa > 245) alfa = 245;
+                float ancho = rango == 1 ? 3.2f : rango == 2 ? 2.4f : rango == 3 ? 1.6f : 1.0f;
+                int alfa = rango == 1 ? 235 : rango == 2 ? 185 : rango == 3 ? 140 : 100;
                 // el que no llego al umbral se ve, pero se ve flojo
                 var pluma = n.Flojo
                     ? new RenderPen(Color.FromArgb(alfa / 2, col), 1f,
                                     System.Drawing.Drawing2D.DashStyle.Dot)
                     : new RenderPen(Color.FromArgb(alfa, col), ancho);
                 g.DrawLine(pluma, area.Left, y, Math.Max(area.Left + 10, area.Right - MargenEje + 40), y);
+
+                // etiqueta solo en los primeros: los demas se leen por el grosor
+                if (rango > EtiquetasMax) continue;
 
                 string red = "";
                 if (AvisarRedondos && n.Redondez > 0)

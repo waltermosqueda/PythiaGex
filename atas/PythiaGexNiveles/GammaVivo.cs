@@ -587,6 +587,20 @@ namespace PythiaGex
         [Range(50, 99)]
         public int UmbralDisputa { get; set; } = 85;
 
+        [Display(Name = "Jerarquia visual por distancia y vencimiento", GroupName = "Pantalla", Order = 3,
+                 Description = "Los muros se atenuan si estan a mas de un movimiento esperado del precio " +
+                               "y si su gamma la sostiene un vencimiento lejano. Lo que esta cerca y vence " +
+                               "hoy se ve entero; lo que esta lejos y vence en dos semanas, apagado. " +
+                               "Pedido por el operador el 2026-09-06: 'no se cual es mas importante'.")]
+        public bool JerarquiaVisual { get; set; } = true;
+
+        [Display(Name = "Ver volumen vivo de opciones por strike (Rithmic)", GroupName = "Flujo", Order = 1,
+                 Description = "Circulos en el borde derecho, uno por strike, con tamano segun los contratos " +
+                               "operados HOY en las opciones de ES (SecuritySummaryChanged del conector). " +
+                               "Es el unico dato del mapa que no es de ayer, y es en vivo. Los tres " +
+                               "mayores llevan el numero.")]
+        public bool VerVolumenVivo { get; set; } = true;
+
         [Display(Name = "Tablero a la derecha", GroupName = "Dibujo", Order = 67,
                  Description = "Para que no tape el perfil de gamma, que se dibuja a la izquierda.")]
         public bool TableroDerecha { get; set; } = true;
@@ -2326,6 +2340,9 @@ namespace PythiaGex
                     _ultimoVolcado = ahora;
                     // LA FOTO, SELLADA EN EL MISMO INSTANTE QUE EL RENGLON.
                     VolcarCadenaViva();
+                    // el volumen vivo por strike, para los circulos del borde:
+                    // se refresca aca, una vez por minuto, no en cada render
+                    try { if (_viva.Activa) lock (_candado) _volVivoCache = _viva.VolumenPorStrike(); } catch { }
                     GuardarHistoria();
                     Registrar2(string.Format(CultureInfo.InvariantCulture,
                         "AUDIT spot_idx={0:F4} base={1:F4} origen=" + _baseOrigen.Replace(" ", "_") + " strikes={2} visibles=" + _visiblesUlt + " " +
@@ -2514,6 +2531,7 @@ namespace PythiaGex
             if (VerPelotitas) Pelotitas(g, cont, x0, x1);
             if (VerDominantes) Zonas(g, cont, x0, x1);
             if (VerBigTrades) Puntos(g, cont, x0, x1);
+            if (VerVolumenVivo) VolumenVivo(g, cont, x1);
 
             // LAS LINEAS NO CRUZAN EL PERFIL.
             //
@@ -3299,11 +3317,46 @@ namespace PythiaGex
                 return;
             }
 
+            // JERARQUIA: CERCA Y VENCE HOY = ENTERO; LEJOS Y VENCE EN DOS SEMANAS = APAGADO.
+            //
+            // Dos factores medibles, no una opinion:
+            //   distancia   contra el movimiento esperado del dia (1 sigma de la
+            //               cadena). A mas de un sigma el nivel probablemente no
+            //               se toca hoy; a mas de dos, casi seguro no.
+            //   vencimiento el que sostiene ese nivel (DiasDom). Un muro del 0DTE
+            //               es un poste clavado que se evapora a las 16:00 ET; uno
+            //               de dos semanas es un terraplen repartido.
+            // El zero gamma no se atenua: es la referencia del regimen.
+            double peso = 1.0;
+            if (JerarquiaVisual && !secundario && !grueso)
+            {
+                double em; lock (_candado) em = _movEspUlt;
+                if (!double.IsNaN(falta) && em > 0)
+                {
+                    double sig = Math.Abs(falta) / Math.Max(em, 10.0);
+                    peso *= sig <= 1.0 ? 1.0 : sig <= 2.0 ? 0.75 : 0.5;
+                }
+                List<Nivel> pf; lock (_candado) pf = _perfil;
+                if (pf != null)
+                {
+                    double mejor = double.MaxValue, dd = double.NaN;
+                    foreach (var q in pf)
+                    {
+                        double d0 = Math.Abs(q.Fut - precio);
+                        if (d0 < mejor) { mejor = d0; dd = q.DiasDom; }
+                    }
+                    if (mejor <= 3.0 && !double.IsNaN(dd))
+                        peso *= dd <= 1.1 ? 1.0 : dd <= 3.0 ? 0.85 : 0.7;
+                }
+                peso = Math.Max(0.35, Math.Min(1.0, peso));
+            }
+
             // la linea: fina y translucida, es una referencia y no un borde
             // Los cercanos van mas finos y mas apagados que los majors: son
             // mas, y si pesaran lo mismo la pantalla perderia jerarquia.
-            var pluma = new RenderPen(Color.FromArgb(secundario ? 95 : (grueso ? 190 : 140), col),
-                                      secundario ? 1f : (grueso ? 1.6f : 1.1f),
+            int alfaLinea = (int)((secundario ? 95 : (grueso ? 190 : 140)) * peso);
+            var pluma = new RenderPen(Color.FromArgb(alfaLinea, col),
+                                      (float)((secundario ? 1f : (grueso ? 1.6f : 1.1f)) * (0.6 + 0.4 * peso)),
                                       secundario ? System.Drawing.Drawing2D.DashStyle.Dot
                                       : grueso ? System.Drawing.Drawing2D.DashStyle.Dash
                                                : System.Drawing.Drawing2D.DashStyle.Solid);
@@ -3336,14 +3389,14 @@ namespace PythiaGex
 
             g.FillRectangle(Color.FromArgb(secundario ? 175 : 225, ColFondo),
                             new Rectangle(xc, yTxt, wChip, hChip));
-            g.DrawRectangle(new RenderPen(Color.FromArgb(secundario ? 90 : 150, col), 1f),
+            g.DrawRectangle(new RenderPen(Color.FromArgb((int)((secundario ? 90 : 150) * peso), col), 1f),
                             new Rectangle(xc, yTxt, wChip, hChip));
             // una barrita del color a la izquierda del chip: identifica el
             // nivel sin tener que leer el nombre
-            g.FillRectangle(Color.FromArgb(230, col), new Rectangle(xc, yTxt, 3, hChip));
-            g.DrawString(txt, f, Color.FromArgb(235, ColTexto), xc + 7, yTxt + 1);
+            g.FillRectangle(Color.FromArgb((int)(230 * peso), col), new Rectangle(xc, yTxt, 3, hChip));
+            g.DrawString(txt, f, Color.FromArgb((int)(235 * Math.Max(0.6, peso)), ColTexto), xc + 7, yTxt + 1);
             if (hayDist)
-                g.DrawString(dist, f, Color.FromArgb(165, ColTexto),
+                g.DrawString(dist, f, Color.FromArgb((int)(165 * Math.Max(0.6, peso)), ColTexto),
                              xc + mt.Width + 13, yTxt + 1);
 
             if (Math.Abs(yTxt + hChip / 2 - y) > 3)
@@ -3996,6 +4049,55 @@ namespace PythiaGex
                     "ATAS", "pythiagex-cadena-viva-" + Raiz() + ".json"), sb.ToString());
             }
             catch { }
+        }
+
+        private Dictionary<double, (double total, double calls, double puts)> _volVivoCache;
+
+        /// <summary>
+        /// EL VOLUMEN VIVO DE OPCIONES, POR STRIKE, EN EL BORDE DERECHO.
+        ///
+        /// Un circulo por strike con contratos operados HOY en las opciones de
+        /// ES (resumen del conector de Rithmic, ver CadenaViva). El radio va con
+        /// la raiz del volumen contra el mayor, como los BigTrades, para que un
+        /// strike enorme no convierta a los demas en un pixel. Los tres mayores
+        /// llevan el numero. Los strikes de ES ya son precio de futuro: sin base.
+        ///
+        /// Es lo unico del mapa que no es de ayer. Lo que NO dice: direccion.
+        /// Dice donde se esta armando o cerrando posicion hoy.
+        /// </summary>
+        private void VolumenVivo(RenderContext g, IChartContainer cont, int x1)
+        {
+            Dictionary<double, (double total, double calls, double puts)> vv;
+            lock (_candado) vv = _volVivoCache;
+            if (vv == null || vv.Count == 0)
+            {
+                // primer render antes del primer minuto: se pide una vez
+                try { if (_viva.Activa) { vv = _viva.VolumenPorStrike(); lock (_candado) _volVivoCache = vv; } } catch { }
+                if (vv == null || vv.Count == 0) return;
+            }
+            double mx = 0;
+            foreach (var kv in vv) if (kv.Value.total > mx) mx = kv.Value.total;
+            if (mx <= 0) return;
+            var top = vv.OrderByDescending(k => k.Value.total).Take(3).Select(k => k.Key).ToHashSet();
+            var f = new RenderFont("Arial", 7.5f);
+            int xc = x1 - 12;
+            foreach (var kv in vv)
+            {
+                int y;
+                try { y = cont.GetYByPrice((decimal)kv.Key, false); } catch { continue; }
+                if (y < ChartArea.Top + 4 || y > ChartArea.Bottom - 4) continue;
+                int r = 2 + (int)Math.Round(6 * Math.Sqrt(kv.Value.total / mx));
+                // el color dice de que lado del strike se opero mas: calls o puts
+                var col = kv.Value.calls >= kv.Value.puts ? ColPos : ColNeg;
+                g.FillEllipse(Color.FromArgb(150, ColFlujo), new Rectangle(xc - r, y - r, 2 * r, 2 * r));
+                g.DrawEllipse(new RenderPen(Color.FromArgb(200, col), 1f), new Rectangle(xc - r, y - r, 2 * r, 2 * r));
+                if (top.Contains(kv.Key))
+                {
+                    var t = ((int)kv.Value.total).ToString("N0", CultureInfo.GetCultureInfo("es-AR"));
+                    var m = g.MeasureString(t, f);
+                    g.DrawString(t, f, Color.FromArgb(220, ColFlujo), xc - r - m.Width - 3, y - m.Height / 2);
+                }
+            }
         }
 
         /// <summary>El muro disputado, para el renglon de auditoria: cuanto pesa

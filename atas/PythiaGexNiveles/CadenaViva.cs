@@ -575,6 +575,29 @@ namespace PythiaGex
             }
         }
 
+        /// <summary>Volumen del dia por STRIKE (call + put), desde los resumenes
+        /// del conector. Barato: no reprecia nada. Los strikes de las opciones
+        /// de ES ya estan en precio de FUTURO, sin base.</summary>
+        public Dictionary<double, (double total, double calls, double puts)> VolumenPorStrike()
+        {
+            var d = new Dictionary<double, (double total, double calls, double puts)>();
+            lock (_llave)
+            {
+                foreach (var code in _codigos)
+                {
+                    if (!_resumen.TryGetValue(code, out var s) || s.Security == null) continue;
+                    double v = (double)(s.CurrentDayTotalVolume ?? 0m);
+                    if (v <= 0) continue;
+                    double K = (double)(s.Security.StrikePrice ?? 0m);
+                    if (K <= 0) continue;
+                    bool call = s.Security.OptionType == OptionTypes.Call;
+                    d.TryGetValue(K, out var a);
+                    d[K] = (a.total + v, a.calls + (call ? v : 0), a.puts + (call ? 0 : v));
+                }
+            }
+            return d;
+        }
+
         /// <summary>Cuantos contratos suscritos traen volumen del dia en su resumen.</summary>
         public int ContratosConVolumen()
         {
