@@ -1,0 +1,317 @@
+<title>Rebobina Gamma Hoy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --fondo: #0d1218;
+    --panel: #141b24;
+    --panel2: #1a2330;
+    --linea: #263141;
+    --texto: #dde4ec;
+    --apagado: #8794a4;
+    --sube: #2ddc82;
+    --baja: #eb3c3c;
+    --dom: #e8c83c;
+    --cero: #ebebeb;
+    --ceroOi: #9aa3ad;
+    --aviso: #f0a058;
+    --agua: #5dd9d0;
+    --purpura: #a86bff;
+    --foco: #ffd166;
+    color-scheme: dark;
+  }
+  body { background: var(--fondo); color: var(--texto); font: 14px/1.45 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; margin: 0; }
+  .marco { max-width: 1240px; margin: 0 auto; padding: 22px 22px 48px; }
+  h1, h2, h3 { font-family: "IBM Plex Sans Condensed", "Arial Narrow", "IBM Plex Sans", sans-serif; text-wrap: balance; margin: 0; }
+  .cabeza { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 22px; border-bottom: 1px solid var(--linea); padding-bottom: 14px; }
+  .ojal { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--apagado); }
+  h1 { font-size: 30px; font-weight: 600; letter-spacing: -.01em; }
+  .sub { color: var(--apagado); flex-basis: 100%; max-width: 70ch; }
+  .mono, .num { font-family: "IBM Plex Mono", Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .controles { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 14px 0 10px; }
+  .dias { display: flex; flex-wrap: wrap; gap: 6px; }
+  button { font: inherit; color: var(--texto); background: var(--panel); border: 1px solid var(--linea); border-radius: 4px; padding: 5px 9px; cursor: pointer; }
+  button:hover { background: var(--panel2); }
+  button:focus-visible { outline: 2px solid var(--foco); outline-offset: 1px; }
+  button.activo { background: var(--texto); color: var(--fondo); border-color: var(--texto); }
+  button.chip { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 12px; padding: 4px 8px; }
+  button[disabled] { opacity: .4; cursor: default; }
+  .grupo { display: flex; align-items: center; gap: 6px; }
+  .grupo label { color: var(--apagado); font-size: 12px; }
+  select { font: inherit; color: var(--texto); background: var(--panel); border: 1px solid var(--linea); border-radius: 4px; padding: 5px 6px; }
+  .hora { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 20px; min-width: 6.5ch; }
+  .hora small { font-size: 12px; color: var(--apagado); margin-left: 6px; }
+
+  .escena { display: grid; grid-template-columns: 1fr 250px; gap: 12px; }
+  @media (max-width: 860px) { .escena { grid-template-columns: 1fr; } }
+  .lienzo { background: var(--panel); border: 1px solid var(--linea); border-radius: 4px; position: relative; min-height: 420px; }
+  canvas { display: block; width: 100%; height: 480px; }
+  .escalera { background: var(--panel); border: 1px solid var(--linea); border-radius: 4px; padding: 12px 12px 8px; display: flex; flex-direction: column; gap: 6px; }
+  .escalera h3 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--apagado); font-weight: 600; }
+  .cuad { font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 600; font-size: 18px; padding: 8px 10px; border-radius: 4px; border-left: 4px solid var(--linea); background: var(--panel2); }
+  .cuad small { display: block; font-family: "IBM Plex Sans", sans-serif; font-weight: 400; font-size: 12px; color: var(--apagado); }
+  .fila { display: grid; grid-template-columns: 14px 1fr auto auto; gap: 8px; align-items: center; font-family: "IBM Plex Mono", Consolas, monospace; font-size: 12.5px; padding: 3px 0; border-bottom: 1px dashed var(--linea); }
+  .fila:last-child { border-bottom: 0; }
+  .fila .m { width: 12px; height: 3px; border-radius: 2px; }
+  .fila .n { color: var(--apagado); }
+  .fila .d { color: var(--apagado); min-width: 5ch; text-align: right; }
+  .fila.vacia { opacity: .35; }
+  .precio { font-size: 26px; font-family: "IBM Plex Mono", Consolas, monospace; margin-top: 4px; }
+  .precio small { font-size: 12px; color: var(--apagado); display: block; font-family: "IBM Plex Sans", sans-serif; }
+
+  .tiempo { margin-top: 10px; display: grid; gap: 4px; }
+  .franja { height: 8px; border-radius: 2px; overflow: hidden; display: flex; background: var(--panel2); }
+  .franja i { display: block; height: 100%; }
+  input[type=range] { width: 100%; accent-color: var(--texto); margin: 0; }
+  .ejes { display: flex; justify-content: space-between; font-family: "IBM Plex Mono", Consolas, monospace; font-size: 11px; color: var(--apagado); }
+
+  .leyenda { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 12px 0 0; font-size: 12px; color: var(--apagado); }
+  .leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .leyenda i { width: 16px; height: 0; border-top: 2px solid; display: inline-block; }
+  .leyenda i.p { border-top-style: dotted; }
+  .leyenda i.r { border-top-style: dashed; }
+
+  section { margin-top: 34px; }
+  section h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  section p { max-width: 68ch; color: var(--texto); margin: 6px 0; }
+  section p.nota { color: var(--apagado); font-size: 13px; }
+  pre { background: var(--panel); border: 1px solid var(--linea); border-radius: 4px; padding: 12px 14px; overflow-x: auto; font: 12.5px/1.5 "IBM Plex Mono", Consolas, monospace; color: var(--texto); margin: 8px 0; }
+  .pie { margin-top: 30px; padding-top: 12px; border-top: 1px solid var(--linea); color: var(--apagado); font-size: 12px; display: flex; flex-wrap: wrap; gap: 6px 20px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="marco">
+  <header class="cabeza">
+    <span class="ojal">PythiaGex · Rebobina</span>
+    <h1>Rebobina Gamma Hoy</h1>
+    <p class="sub">La misma cuenta que corre en ATAS, minuto a minuto sobre ruedas pasadas: velas de ES de 1 minuto y la cadena de SPX que se tenía en cada momento, reconstruida desde Databento con el retraso real de CBOE. Nada de esto entró a ATAS.</p>
+  </header>
+
+  <div class="controles">
+    <div class="dias" id="dias"></div>
+    <div class="grupo" id="grupoRetraso">
+      <label>cadena</label>
+      <button id="btnR902" class="chip activo" title="lo que el indicador tenía: el volumen de CBOE llega 902 s tarde">con retraso 902 s</button>
+      <button id="btnR0" class="chip" title="el dato al instante, como si no hubiera retraso">sin retraso</button>
+    </div>
+    <div class="grupo">
+      <button id="btnPlay" title="espacio">▶ reproducir</button>
+      <select id="velocidad" aria-label="velocidad">
+        <option value="400">1 min / 0,4 s</option>
+        <option value="150" selected>1 min / 0,15 s</option>
+        <option value="40">1 min / 0,04 s</option>
+      </select>
+    </div>
+    <div class="hora"><span id="horaUtc">--:--</span><small id="horaEt"></small></div>
+  </div>
+
+  <div class="escena">
+    <div class="lienzo"><canvas id="lienzo"></canvas></div>
+    <aside class="escalera">
+      <h3>Escalera del minuto</h3>
+      <div class="cuad" id="cuad">—<small>régimen del cuadrante</small></div>
+      <div class="precio"><span id="cierre">—</span><small>cierre del futuro · <span id="spot">—</span> índice</small></div>
+      <div id="filas"></div>
+    </aside>
+  </div>
+
+  <div class="tiempo">
+    <div class="franja" id="franja" title="cuadrante por minuto: agua imán, púrpura explosivo, gris estable, rojo riesgo"></div>
+    <input type="range" id="cursor" min="0" max="0" value="0" aria-label="minuto">
+    <div class="ejes"><span>13:30 UTC · 9:30 ET</span><span>15:30</span><span>17:30</span><span>19:30</span><span>21:00 UTC · 17:00 ET</span></div>
+  </div>
+
+  <div class="leyenda">
+    <span><i style="border-color:var(--dom)"></i>dominantes D1 D2 (barras más largas del volumen) y su estela</span>
+    <span><i class="r" style="border-color:var(--cero)"></i>0Γ por volumen</span>
+    <span><i class="p" style="border-color:var(--ceroOi)"></i>0Γ por interés abierto (ayer)</span>
+    <span><i style="border-color:var(--sube)"></i>+Γ mayor</span>
+    <span><i style="border-color:var(--baja)"></i>−Γ mayor</span>
+    <span><i class="p" style="border-color:var(--aviso)"></i>pico cerca del precio</span>
+    <span><i class="p" style="border-color:var(--agua)"></i>Max Change 30'</span>
+  </div>
+
+  <section>
+    <h2>Qué dice el laboratorio con estas ruedas</h2>
+    <p>Cada nivel se juzga igual: cuando el precio llega hasta él viniendo de lejos, ¿frena o lo atraviesa? Y lo mismo se mide para el mismo nivel corrido a otro strike, el placebo. Gana el que tiene más ventaja sobre su placebo, no el que frena más.</p>
+    <pre id="lab"></pre>
+    <p class="nota">Un día son unos veinte strikes distintos: anécdota. Recién con quince o más ruedas los porcentajes empiezan a decir algo, y siempre contra placebo.</p>
+  </section>
+
+  <section>
+    <h2>Lo que se asume, dicho de frente</h2>
+    <p>El interés abierto viene de Databento y coincide contrato por contrato con CBOE (28.130 de 28.130 el 3 de septiembre). El volumen por strike se acumula minuto a minuto desde las barras de 1 minuto de cada opción: al mismo corte, el 82 % de los contratos da exacto lo que mostraba CBOE y la suma da 0,91.</p>
+    <p>La volatilidad implícita de cada contrato sale de su último precio operado en el día; los strikes sin operar toman la de sus vecinos. El índice se estima como futuro menos base: la base medida ese día si la hay, si no la teórica de tasa menos dividendos. Con retraso 902 s la cadena de cada minuto lleva el volumen de quince minutos antes, que es lo que el indicador tenía en pantalla.</p>
+  </section>
+
+  <div class="pie"><span id="pieGasto"></span><span id="pieGen"></span><span>Colores idénticos a los del indicador en ATAS.</span></div>
+</div>
+
+<script>
+const DATOS = __DATOS__;
+const C = getComputedStyle(document.documentElement);
+const col = n => C.getPropertyValue(n).trim();
+const NIV = [
+  ['dom0', 'D1 dominante', 'dom', 'solida'],
+  ['dom1', 'D2 dominante', 'dom', 'solida'],
+  ['zero_vol', '0Γ volumen', 'cero', 'rayada'],
+  ['zero_oi', '0Γ ayer (OI)', 'ceroOi', 'punteada'],
+  ['mp_vol', '+Γ mayor vol', 'sube', 'solida'],
+  ['mn_vol', '−Γ mayor vol', 'baja', 'solida'],
+  ['mp_oi', '+Γ mayor OI', 'sube', 'punteada'],
+  ['mn_oi', '−Γ mayor OI', 'baja', 'punteada'],
+  ['pico', 'pico cerca', 'aviso', 'punteada'],
+  ['mc30', 'Max Change 30\'', 'agua', 'punteada'],
+  ['mc5', 'Max Change 5\'', 'agua', 'rayada'],
+];
+const CUAD = {1: ['IMÁN', 'colchón: rango, reversión', 'agua'], 2: ['EXPLOSIVO', 'ruptura, momentum', 'purpura'], 3: ['ESTABLE', 'rangos amplios', 'ceroOi'], 4: ['RIESGO', 'tendencia, tamaño chico', 'baja'], 0: ['—', 'sin cadena', 'linea']};
+const dias = Object.keys(DATOS.dias).sort();
+let dia = dias[dias.length - 1], variante = 'r902', i = 0, reproduciendo = false, timer = null;
+
+const $ = id => document.getElementById(id);
+const lienzo = $('lienzo'), ctx = lienzo.getContext('2d');
+
+function serie() { return variante === 'r0' && DATOS.sinRetraso[dia] ? DATOS.sinRetraso[dia] : DATOS.dias[dia]; }
+function minutoIdx(hhmm) { const [h, m] = hhmm.split(':').map(Number); return (h * 60 + m) - (13 * 60 + 30); }
+const COLS = 450; // 13:30 a 21:00 UTC
+
+function armarDias() {
+  const d = $('dias'); d.innerHTML = '';
+  for (const k of dias) {
+    const b = document.createElement('button'); b.className = 'chip' + (k === dia ? ' activo' : '');
+    const f = new Date(k + 'T12:00:00Z');
+    b.textContent = f.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC' }).replace('.', '');
+    b.title = k + (DATOS.sinRetraso[k] ? ' · tiene variante sin retraso' : '');
+    b.onclick = () => { dia = k; i = serie().t.length - 1; if (!DATOS.sinRetraso[dia]) variante = 'r902'; armarDias(); armarRetraso(); refrescar(); };
+    d.appendChild(b);
+  }
+}
+function armarRetraso() {
+  const hay = !!DATOS.sinRetraso[dia];
+  $('btnR0').disabled = !hay;
+  $('btnR902').classList.toggle('activo', variante === 'r902');
+  $('btnR0').classList.toggle('activo', variante === 'r0');
+  $('grupoRetraso').title = hay ? '' : 'para este día solo hay la cadena con retraso';
+}
+$('btnR902').onclick = () => { variante = 'r902'; armarRetraso(); refrescar(); };
+$('btnR0').onclick = () => { if (DATOS.sinRetraso[dia]) { variante = 'r0'; armarRetraso(); refrescar(); } };
+
+function refrescar() {
+  const S = serie(); const n = S.t.length;
+  $('cursor').max = Math.max(0, n - 1); if (i > n - 1) i = n - 1; if (i < 0) i = 0; $('cursor').value = i;
+  const hh = S.t[i]; $('horaUtc').textContent = hh + ' UTC';
+  const [h, m] = hh.split(':').map(Number); $('horaEt').textContent = String(h - 4).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ' ET';
+  $('cierre').textContent = S.c[i].toFixed(2); $('spot').textContent = S.spot[i] ? S.spot[i].toFixed(2) : '—';
+  const q = S.q[i], cq = CUAD[q] || CUAD[0];
+  const cu = $('cuad'); cu.innerHTML = cq[0] + '<small>' + cq[1] + '</small>'; cu.style.borderLeftColor = col('--' + cq[2]);
+  const filas = $('filas'); filas.innerHTML = '';
+  for (const [k, nombre, c] of NIV) {
+    const v = S.niv[k][i]; const f = document.createElement('div'); f.className = 'fila' + (v ? '' : ' vacia');
+    const d = v ? (v - S.c[i]) : null;
+    f.innerHTML = '<span class="m" style="background:' + col('--' + c) + '"></span><span class="n">' + nombre + '</span><span>' + (v ? v.toFixed(2) : '—') + '</span><span class="d">' + (d === null ? '' : (d >= 0 ? '+' : '') + d.toFixed(1)) + '</span>';
+    filas.appendChild(f);
+  }
+  franja(S); dibujar(S);
+}
+
+function franja(S) {
+  const f = $('franja'); f.innerHTML = '';
+  let ini = 0;
+  for (let k = 1; k <= S.q.length; k++) {
+    if (k === S.q.length || S.q[k] !== S.q[ini]) {
+      const seg = document.createElement('i');
+      seg.style.width = (100 * (k - ini) / COLS) + '%'; seg.style.background = col('--' + (CUAD[S.q[ini]] || CUAD[0])[2]);
+      seg.style.opacity = S.q[ini] ? '.85' : '.2';
+      f.appendChild(seg); ini = k;
+    }
+  }
+}
+
+function dibujar(S) {
+  const dpr = window.devicePixelRatio || 1;
+  const W = lienzo.clientWidth, H = lienzo.clientHeight;
+  if (lienzo.width !== Math.round(W * dpr)) { lienzo.width = Math.round(W * dpr); lienzo.height = Math.round(H * dpr); }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  const izq = 8, der = 74, arr = 14, aba = 26;
+  const ancho = W - izq - der, alto = H - arr - aba;
+  // escala de precio: el rango del dia entero mas los niveles cercanos
+  let lo = Math.min(...S.l), hi = Math.max(...S.h);
+  for (const [k] of NIV) for (const v of S.niv[k]) if (v && v > lo - 30 && v < hi + 30) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  const pad = (hi - lo) * 0.06 || 5; lo -= pad; hi += pad;
+  const y = p => arr + alto * (1 - (p - lo) / (hi - lo));
+  const x = c => izq + ancho * (c + 0.5) / COLS;
+  const paso = (hi - lo) > 80 ? 10 : 5;
+  // grilla
+  ctx.font = '11px "IBM Plex Mono", Consolas, monospace'; ctx.textBaseline = 'middle';
+  ctx.strokeStyle = col('--linea'); ctx.fillStyle = col('--apagado'); ctx.lineWidth = 1;
+  for (let p = Math.ceil(lo / paso) * paso; p <= hi; p += paso) {
+    ctx.beginPath(); ctx.moveTo(izq, Math.round(y(p)) + .5); ctx.lineTo(izq + ancho, Math.round(y(p)) + .5); ctx.stroke();
+    ctx.textAlign = 'left'; ctx.fillText(p.toFixed(0), izq + ancho + 6, y(p));
+  }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let c = 0; c <= COLS; c += 60) {
+    ctx.beginPath(); ctx.moveTo(Math.round(x(c)) + .5, arr); ctx.lineTo(Math.round(x(c)) + .5, arr + alto); ctx.stroke();
+    const h = 13 + Math.floor((30 + c) / 60), m = (30 + c) % 60;
+    ctx.fillText(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'), x(c), arr + alto + 8);
+  }
+  // estela de dominantes y del zero, hasta el cursor
+  const estela = [['dom0', 'dom', .55, 2.2], ['dom1', 'dom', .3, 1.6], ['zero_vol', 'cero', .35, 1.4]];
+  for (const [k, c, alfa, r] of estela) {
+    ctx.fillStyle = col('--' + c); ctx.globalAlpha = alfa;
+    for (let j = 0; j <= i; j++) { const v = S.niv[k][j]; if (!v) continue; const cx = x(minutoIdx(S.t[j])); ctx.beginPath(); ctx.arc(cx, y(v), r, 0, Math.PI * 2); ctx.fill(); }
+  }
+  ctx.globalAlpha = 1;
+  // velas hasta el cursor
+  const w = Math.max(1, ancho / COLS * 0.7);
+  for (let j = 0; j <= i; j++) {
+    const cx = x(minutoIdx(S.t[j])), up = S.c[j] >= S.o[j];
+    ctx.strokeStyle = ctx.fillStyle = col(up ? '--sube' : '--baja');
+    ctx.beginPath(); ctx.moveTo(cx, y(S.h[j])); ctx.lineTo(cx, y(S.l[j])); ctx.stroke();
+    const y1 = y(Math.max(S.o[j], S.c[j])), y2 = y(Math.min(S.o[j], S.c[j]));
+    ctx.fillRect(cx - w / 2, y1, w, Math.max(1, y2 - y1));
+  }
+  // niveles del minuto: de la vela actual hacia la derecha, con rotulo en el eje
+  const cx0 = x(minutoIdx(S.t[i]));
+  const usados = [];
+  for (const [k, nombre, c, trazo] of NIV) {
+    const v = S.niv[k][i]; if (!v) continue;
+    ctx.strokeStyle = col('--' + c); ctx.lineWidth = (k === 'dom0' || k === 'dom1') ? 2 : 1.2;
+    ctx.setLineDash(trazo === 'rayada' ? [6, 4] : trazo === 'punteada' ? [2, 3] : []);
+    ctx.beginPath(); ctx.moveTo(cx0, y(v)); ctx.lineTo(izq + ancho, y(v)); ctx.stroke();
+    ctx.setLineDash([]);
+    // rotulo corto a la derecha, sin pisarse
+    let yy = y(v); while (usados.some(u => Math.abs(u - yy) < 12)) yy += 12; usados.push(yy);
+    const corto = {dom0: 'D1', dom1: 'D2', zero_vol: '0Γ', zero_oi: '0Γ ayer', mp_vol: '+Γ', mn_vol: '−Γ', mp_oi: '+Γ OI', mn_oi: '−Γ OI', pico: 'pico', mc30: 'Δ30', mc5: 'Δ5'}[k];
+    ctx.fillStyle = col('--panel'); ctx.fillRect(izq + ancho + 2, yy - 7, der - 4, 14);
+    ctx.fillStyle = col('--' + c); ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '10.5px "IBM Plex Mono", Consolas, monospace';
+    ctx.fillText(corto + ' ' + v.toFixed(0), izq + ancho + 5, yy);
+  }
+  // cursor
+  ctx.strokeStyle = col('--texto'); ctx.globalAlpha = .5; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(cx0, arr); ctx.lineTo(cx0, arr + alto); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+}
+
+$('cursor').oninput = e => { i = +e.target.value; refrescar(); };
+function paso(d) { const n = serie().t.length; i = Math.min(n - 1, Math.max(0, i + d)); refrescar(); }
+function reproducir(on) {
+  reproduciendo = on; $('btnPlay').textContent = on ? '❚❚ pausa' : '▶ reproducir';
+  clearInterval(timer);
+  if (on) timer = setInterval(() => { if (i >= serie().t.length - 1) { reproducir(false); return; } paso(1); }, +$('velocidad').value);
+}
+$('btnPlay').onclick = () => reproducir(!reproduciendo);
+$('velocidad').onchange = () => { if (reproduciendo) reproducir(true); };
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'SELECT') return;
+  if (e.key === 'ArrowRight') { paso(e.shiftKey ? 10 : 1); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft') { paso(e.shiftKey ? -10 : -1); e.preventDefault(); }
+  else if (e.key === ' ') { reproducir(!reproduciendo); e.preventDefault(); }
+});
+window.addEventListener('resize', () => dibujar(serie()));
+
+$('lab').textContent = DATOS.lab || 'sin informe';
+$('pieGasto').textContent = DATOS.gasto ? 'Databento: ' + DATOS.gasto.replace('GASTADO: ', 'gastado ') : '';
+$('pieGen').textContent = 'Generado ' + DATOS.generado + ' · ' + dias.length + ' ruedas';
+armarDias(); armarRetraso(); i = serie().t.length - 1; refrescar();
+</script>

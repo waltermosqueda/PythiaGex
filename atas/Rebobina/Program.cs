@@ -62,6 +62,10 @@ namespace PythiaGex
             string marco = Arg(args, "--marco", "M" + marcoMin);
             string nombre = Arg(args, "--nombre", "rebobinado");
             int auditCada = int.Parse(Arg(args, "--audit", "30"), inv);
+            // una cadena mas vieja que esto no vale: la vela queda sin niveles. En
+            // vivo el feed se refresca cada 5-15 min; fuera de la rueda (noche) la
+            // ultima cadena del dia envejece horas y NO hay que repreciar con ella.
+            double edadMaxMin = double.Parse(Arg(args, "--edad-max", "20"), inv);
             var nucleo = new GammaHoyNucleo();
             nucleo.A.Horizonte = Enum.Parse<GammaHoyNucleo.HorizonteVenc>(Arg(args, "--horizonte", "Hoy"), true);
             nucleo.A.CuantasDominantes = int.Parse(Arg(args, "--dominantes", "2"), inv);
@@ -110,7 +114,7 @@ namespace PythiaGex
                 if (v.T.Date != diaAnterior) { nucleo.Reiniciar(); diaAnterior = v.T.Date; }
                 while (iC + 1 < cadenas.Count && cadenas[iC + 1].GeneradoUtc <= cierreT) iC++;
                 var cad = cadenas[iC];
-                if (cad.GeneradoUtc > cierreT || (cierreT - cad.GeneradoUtc).TotalHours > 6)
+                if (cad.GeneradoUtc > cierreT || (cierreT - cad.GeneradoUtc).TotalMinutes > edadMaxMin)
                 {
                     sinCadena++;
                     continue;
