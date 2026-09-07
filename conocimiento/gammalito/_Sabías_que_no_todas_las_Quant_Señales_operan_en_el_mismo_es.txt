@@ -1,0 +1,3 @@
+[   0.2] las señales doble puede que para mí son las mejores obviamente las otras también son buenas pero las dos webs son solamente las que yo pero solamente funciona en cuando helene quizá está en gama negativa en y de en quien no qq en e x y cuando están gama positiva se activa
+[  20.2] las que son jefe o es tienes que mirar lo acá en el analizador en el en equis x agarras y poner saca en eq guión bajo en equis te vas a la analizador y miras el estado de la gama si está desde este número en rojo quiere decir que tenemos gama negativa fiesta en verdad
+[  40.3] quiere decir que es en gama positiva
