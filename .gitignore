@@ -20,3 +20,9 @@ atas/_test/bin/
 atas/_test/obj/
 atas/PythiaVwap/bin/
 atas/PythiaVwap/obj/
+
+# copias para Pages de datos/historico/cadena-*.jsonl.gz: se publican, no se commitean dos veces
+panel/datos/atas/cadenas/
+
+# descargas de Databento: pesan decenas de MB, viven fuera de git
+datos/databento/

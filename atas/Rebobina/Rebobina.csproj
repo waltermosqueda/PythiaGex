@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- EL SIMULADOR: la misma cuenta que el indicador, sin ATAS.
+       Compila los MISMOS archivos fuente del indicador (no una copia): si la
+       cuenta cambia en GammaHoyNucleo.cs, cambia en los dos a la vez. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>Rebobina</AssemblyName>
+    <RootNamespace>PythiaGex</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <NoWarn>CS1998</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\PythiaGexNiveles\Feed.cs" />
+    <Compile Include="..\PythiaGexNiveles\GammaHoyNucleo.cs" />
+    <Compile Include="..\PythiaGexNiveles\Centinela.cs" />
+  </ItemGroup>
+
+</Project>

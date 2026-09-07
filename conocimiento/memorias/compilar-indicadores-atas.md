@@ -60,3 +60,10 @@ Si el diálogo está tan abajo que no se ven los botones, arrastrar la barra de 
 **Why:** es la única forma de tener el precio en vivo de Rithmic y los niveles auditados en una sola pantalla, sin pagar un feed de opciones aparte.
 
 **How to apply:** el fuente está en `PythiaGex/atas/PythiaGexNiveles`. Recompilar con `dotnet build -c Release`, cerrar ATAS, copiar el DLL, reabrir. Ver [[navegar-atas-sin-pedir-permiso]] y [[atas-opciones-es]].
+
+## Dos trampas mas, medidas el 2026-09-07 con Gamma Hoy
+
+- **Sin `EnableCustomDrawing = true` y `SubscribeToDrawingEvents(DrawingLayouts.Final)` en el constructor (`: base(true)`), ATAS no llama a OnRender NUNCA.** El indicador arranca, baja datos, y la pantalla queda vacia sin error. Copiar el constructor de Gamma Vivo.
+- **Con el mercado cerrado no hay ticks y OnCalculate no corre**: si el calculo vive solo ahi, la pantalla queda vacia o vieja. Repreciar tambien desde el temporizador.
+- Recarga en caliente: al copiar el DLL, ATAS escribe `Changed library` y avisa "reload indicators in the status bar", pero por UI Automation no aparece ningun control de recarga en la barra de estado (solo Server, conectores, engranaje y version). Reiniciar sigue siendo el camino.
+- Agregar un indicador a un grafico sin clics: UI Automation sobre el boton "Indicators" del panel (Invoke), escribir el nombre en el buscador, seleccionar la fila, Invoke "Add to chart" y luego "Apply". Funciona aunque la ventana del chat tape los botones.

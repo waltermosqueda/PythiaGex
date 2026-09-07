@@ -113,6 +113,17 @@ jobs:
           done
           ls -la panel/datos/atas/ 2>/dev/null || true
 
+      # LA CADENA QUE EL INDICADOR TENIA, GUARDADA PARA EL BACKTEST.
+      #
+      # Hasta el 2026-09-07 cada ciclo pisaba <raiz>_radar.json y la cadena
+      # de quince minutos antes desaparecia. Sin eso no hay forma de volver
+      # a correr Gamma Hoy sobre un dia pasado con lo que sabia en cada
+      # momento. Una linea gzip por corrida, por dia y por raiz, solo si el
+      # sello de CBOE cambio; se publica al panel para que ATAS la baje.
+      - name: Archivar la cadena flaca
+        run: |
+          python archivar_cadena.py ES NQ || echo "no se pudo archivar la cadena"
+
       # Se guarda solo lo reciente: el cache no es un archivo historico, es el
       # eslabon anterior de la cadena. Sin la poda crece sin techo y la
       # restauracion se vuelve mas lenta que bajar el dato de nuevo.
@@ -163,6 +174,8 @@ jobs:
           # las series de precio pesan mas: se guardan 90 dias, que es el
           # horizonte con el que el centinela puede sacar alguna conclusion
           find datos/historico -name 'precio-*.json' -mtime +90 -delete 2>/dev/null || true
+          # las cadenas flacas pesan ~1 MB por dia: 60 dias en el arbol, el resto queda en git
+          find datos/historico -name 'cadena-*.jsonl.gz' -mtime +60 -delete 2>/dev/null || true
           du -sh datos/ 2>/dev/null || true
 
       - name: Guardar

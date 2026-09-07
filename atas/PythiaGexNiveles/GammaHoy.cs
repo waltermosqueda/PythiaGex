@@ -15,6 +15,9 @@ using OFT.Rendering.Tools;
 
 namespace PythiaGex
 {
+    using Strike = GammaHoyNucleo.Strike;
+    using Snap = GammaHoyNucleo.Snap;
+
     /// <summary>
     /// GAMMA HOY. Construido de cero el 2026-09-07 a pedido del operador, para
     /// contrastarlo al lado de Gamma Vivo y de GAMMAlito.
@@ -156,18 +159,8 @@ namespace PythiaGex
         // ==================================================================
         // Estado
         // ==================================================================
-        private sealed class Strike
-        {
-            public double K, Fut;
-            public double GexOi, GexVol, Conv;
-            public double Oi, VolHoy;
-        }
-
-        private sealed class Snap
-        {
-            public long Minuto;
-            public Dictionary<double, double> GexVol = new();
-        }
+        // la cuenta vive en GammaHoyNucleo: una sola fuente para ATAS y el simulador
+        private readonly GammaHoyNucleo _nucleo = new();
 
         private readonly object _candado = new();
         private Feed.Cadena _c;
@@ -196,13 +189,10 @@ namespace PythiaGex
         private int _cuadranteN;
         private double _picoFut = double.NaN, _picoGex, _convEnPrecio;
         private bool _mucho;
-        private int _ladoPico;             // +1 precio arriba del pico, -1 abajo
         private DateTime _alertaHasta = DateTime.MinValue;
         private string _alerta = "";
         // max change
-        private readonly List<Snap> _fotos = new();
-        private readonly int[] _ventanas = { 1, 5, 10, 15, 30 };
-        private (double Fut, double Delta)[] _maxChange = new (double, double)[5];
+        private (double Fut, double Delta)[] _maxChange = new (double, double)[GammaHoyNucleo.Ventanas.Length];
         // estela de dominantes por vela
         private readonly Dictionary<int, double[]> _estela = new();
         // centinela
@@ -210,9 +200,6 @@ namespace PythiaGex
         private int _barraCent = -1;
         private DateTime _ultimoAudit = DateTime.MinValue;
         private int _renders;
-
-        private const double MULT_INDICE = 100.0;
-        private const double PISO_DIAS = 1.0 / 1440.0;
 
         private static readonly Color ColPos = Color.FromArgb(45, 220, 130);
         private static readonly Color ColNeg = Color.FromArgb(235, 60, 60);
@@ -343,241 +330,53 @@ namespace PythiaGex
         }
 
         // ==================================================================
-        // La cuenta
+        // La cuenta: la hace el nucleo. Aca solo se eligen cadena, precio y hora
         // ==================================================================
-        private static double Fi(double x) => Math.Exp(-0.5 * x * x) / Math.Sqrt(2.0 * Math.PI);
-
-        private static double GammaBs(double S, double K, double T, double iv, double r)
-        {
-            if (S <= 0 || K <= 0 || T <= 0 || iv <= 0) return 0;
-            var v = iv * Math.Sqrt(T);
-            if (v <= 0) return 0;
-            var d1 = (Math.Log(S / K) + (r + 0.5 * iv * iv) * T) / v;
-            return Fi(d1) / (S * v);
-        }
-
-        /// <summary>GEX de una fila (un strike, un vencimiento) ponderado por lo
-        /// que se pida: interes abierto o volumen. Convencion estandar, +call
-        /// -put: es una ASUNCION sobre de que lado quedo la mesa, no un dato.</summary>
-        private static double Gex(Feed.Fila f, double S, double T, double r, bool porVolumen)
-        {
-            var gC = GammaBs(S, f.K, T, f.IvC, r);
-            var gP = GammaBs(S, f.K, T, f.IvP, r);
-            double wC = porVolumen ? f.VolC : f.OiC, wP = porVolumen ? f.VolP : f.OiP;
-            return (gC * wC - gP * wP) * MULT_INDICE * S * S * 0.01;
-        }
-
-        private bool PasaHorizonte(double dias, double masCerca)
-        {
-            switch (Horizonte)
-            {
-                case HorizonteVenc.Hoy: return dias >= 0 && dias <= Math.Max(1.0, masCerca + 0.01);
-                case HorizonteVenc.Semana: return dias >= 0 && dias <= Math.Max(7.0, masCerca + 0.01);
-                default: return dias >= 0;
-            }
-        }
-
         private void Repreciar()
         {
-            var c = _c;
-            if (c == null || c.Filas.Count == 0 || c.Dias == null || c.Dias.Length == 0) return;
-
             decimal cierre;
             try { cierre = GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { return; }
             if (cierre <= 0) return;
-            double futuro = (double)cierre;
+            RepreciarCon(_c, (double)cierre, DateTime.UtcNow, Math.Max(0, CurrentBar - 1));
+        }
 
-            // la base: medida > ultima buena reciente > cruda; nunca inventada
-            double baseUsada; string origen;
-            if (c.BaseConfiable && c.Base != 0) { baseUsada = c.Base; origen = "medida"; }
-            else if (c.BaseUltimaBuena != 0 && c.BaseUltimaBuenaEdad <= 360) { baseUsada = c.BaseUltimaBuena; origen = "medida hace " + c.BaseUltimaBuenaEdad.ToString("0", CultureInfo.InvariantCulture) + " min"; }
-            else if (c.BaseCruda != 0) { baseUsada = c.BaseCruda; origen = "CRUDA " + c.BaseErrorTicks.ToString("0", CultureInfo.InvariantCulture) + " ticks"; }
-            else { lock (_candado) { _baseOrigen = "sin base"; } return; }
+        private void RepreciarCon(Feed.Cadena c, double futuro, DateTime ahoraUtc, int barra)
+        {
+            if (c == null) return;
+            var a = _nucleo.A;
+            a.Tasa = (double)Tasa;
+            a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte;
+            a.CuantasDominantes = CuantasDominantes;
+            a.RadioDominantesPct = (double)RadioDominantesPct;
+            a.PicoRadioPct = (double)PicoRadioPct;
+            a.MuchoPct = MuchoPct;
+            a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
 
-            double S = futuro - baseUsada;
-            if (S <= 0) return;
-            double r = (double)Tasa, Sup = S * 1.01;
-
-            double masCerca = double.MaxValue;
-            foreach (var d in c.Dias) if (d >= 0 && d < masCerca) masCerca = d;
-            if (masCerca == double.MaxValue) masCerca = 0;
-
-            var por = new Dictionary<double, Strike>();
-            foreach (var f in c.Filas)
-            {
-                if (f.V < 0 || f.V >= c.Dias.Length) continue;
-                double dias = c.Dias[f.V];
-                if (!PasaHorizonte(dias, masCerca)) continue;
-                double T = Math.Max(dias, PISO_DIAS) / 365.0;
-                double gOi = Gex(f, S, T, r, false), gVol = Gex(f, S, T, r, true);
-                double gOiUp = Gex(f, Sup, T, r, false), gVolUp = Gex(f, Sup, T, r, true);
-                if (gOi == 0 && gVol == 0) continue;
-                if (!por.TryGetValue(f.K, out var s)) { s = new Strike { K = f.K, Fut = f.K + baseUsada }; por[f.K] = s; }
-                s.GexOi += gOi; s.GexVol += gVol;
-                s.Oi += f.OiC + f.OiP; s.VolHoy += f.VolC + f.VolP;
-                // la convexidad de cada libro se guarda aparte y se elige despues
-                s.Conv += (gVolUp - gVol);          // por volumen (provisorio)
-                s.GexOi += 0; // (el de OI se suma abajo con su propio acumulador)
-                _convOiTmp[f.K] = (_convOiTmp.TryGetValue(f.K, out var q) ? q : 0) + (gOiUp - gOi);
-            }
-            var perfil = por.Values.OrderBy(x => x.K).ToList();
-
-            double sumVol = perfil.Sum(x => Math.Abs(x.GexVol)), sumOi = perfil.Sum(x => Math.Abs(x.GexOi));
-            bool convPorVol = Convexidad == LibroConv.Volumen || (Convexidad == LibroConv.Auto && sumVol >= 0.2 * sumOi && sumVol > 0);
-            if (!convPorVol) foreach (var s in perfil) s.Conv = _convOiTmp.TryGetValue(s.K, out var q) ? q : 0;
-            _convOiTmp.Clear();
-
-            double netVol = perfil.Sum(x => x.GexVol), netOi = perfil.Sum(x => x.GexOi);
-            double maxAbsVol = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.GexVol)) : 0;
-            double maxAbsOi = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.GexOi)) : 0;
-            double maxAbsConv = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.Conv)) : 0;
-
-            // zero gamma de cada libro: donde la suma repreciada cruza cero
-            double zeroVol = Cruce(c, S, r, masCerca, true), zeroOi = Cruce(c, S, r, masCerca, false);
-            if (!double.IsNaN(zeroVol)) zeroVol += baseUsada;
-            if (!double.IsNaN(zeroOi)) zeroOi += baseUsada;
-
-            // majors de cada libro
-            double mpVol = double.NaN, mnVol = double.NaN, mpOi = double.NaN, mnOi = double.NaN;
-            if (perfil.Count > 0)
-            {
-                var pv = perfil.Where(x => x.GexVol > 0).OrderByDescending(x => x.GexVol).FirstOrDefault();
-                var nv = perfil.Where(x => x.GexVol < 0).OrderBy(x => x.GexVol).FirstOrDefault();
-                var po = perfil.Where(x => x.GexOi > 0).OrderByDescending(x => x.GexOi).FirstOrDefault();
-                var no = perfil.Where(x => x.GexOi < 0).OrderBy(x => x.GexOi).FirstOrDefault();
-                if (pv != null) mpVol = pv.Fut; if (nv != null) mnVol = nv.Fut;
-                if (po != null) mpOi = po.Fut; if (no != null) mnOi = no.Fut;
-            }
-
-            // dominantes: las barras mas largas del volumen cerca del precio;
-            // si todavia no hay volumen (noche), las del OI, y se dice
-            double radio = futuro * (double)RadioDominantesPct / 100.0;
-            string libroDom = "vol";
-            var candDom = perfil.Where(x => Math.Abs(x.Fut - futuro) <= radio && Math.Abs(x.GexVol) > 0)
-                                .OrderByDescending(x => Math.Abs(x.GexVol)).Take(Math.Max(1, CuantasDominantes))
-                                .Select(x => (x.Fut, x.GexVol)).ToList();
-            if (candDom.Count == 0)
-            {
-                libroDom = "OI";
-                candDom = perfil.Where(x => Math.Abs(x.Fut - futuro) <= radio && Math.Abs(x.GexOi) > 0)
-                                .OrderByDescending(x => Math.Abs(x.GexOi)).Take(Math.Max(1, CuantasDominantes))
-                                .Select(x => (x.Fut, x.GexOi)).ToList();
-            }
-
-            // el cuadrante: pico de GEX cerca del precio? convexidad ahi?
-            double rPico = futuro * (double)PicoRadioPct / 100.0;
-            var cerca = perfil.Where(x => Math.Abs(x.Fut - futuro) <= rPico).ToList();
-            double picoGex = 0, picoFut = double.NaN, convPrecio = 0;
-            bool porVolCuad = sumVol > 0 && sumVol >= 0.2 * sumOi;
-            foreach (var x in cerca)
-            {
-                double gg = porVolCuad ? x.GexVol : x.GexOi;
-                if (Math.Abs(gg) > Math.Abs(picoGex)) { picoGex = gg; picoFut = x.Fut; }
-                convPrecio += x.Conv;
-            }
-            if (cerca.Count == 0 && perfil.Count > 0)
-            {
-                var vecino = perfil.OrderBy(x => Math.Abs(x.Fut - futuro)).First();
-                convPrecio = vecino.Conv;
-            }
-            double maxLibro = porVolCuad ? maxAbsVol : maxAbsOi;
-            bool mucho = maxLibro > 0 && Math.Abs(picoGex) >= maxLibro * MuchoPct / 100.0;
-            bool convPos = convPrecio >= 0;
-            int cuadN; string nombre, corto;
-            if (mucho && convPos) { cuadN = 1; nombre = "iman colchon: rango, reversion"; corto = "IMAN"; }
-            else if (mucho && !convPos) { cuadN = 2; nombre = "nivel explosivo: ruptura, momentum"; corto = "EXPLOSIVO"; }
-            else if (!mucho && convPos) { cuadN = 3; nombre = "mercado estable: rangos amplios"; corto = "ESTABLE"; }
-            else { cuadN = 4; nombre = "salvese quien pueda: tendencia, tamaño chico"; corto = "RIESGO"; }
-
-            // transicion: perder el maximo GEX del libro con convexidad negativa
-            double maxFut = double.NaN; double maxG = 0;
-            foreach (var x in perfil) { double gg = porVolCuad ? x.GexVol : x.GexOi; if (Math.Abs(gg) > maxG) { maxG = Math.Abs(gg); maxFut = x.Fut; } }
-            int lado = double.IsNaN(maxFut) ? 0 : (futuro >= maxFut ? 1 : -1);
-            string alerta = ""; DateTime alertaHasta;
-            lock (_candado) { alertaHasta = _alertaHasta; alerta = _alerta; }
-            if (lado != 0 && _ladoPico != 0 && lado != _ladoPico && !convPos)
-            {
-                alerta = (lado < 0 ? "perdio" : "recupero") + " el maximo GEX " + maxFut.ToString("N0", CultureInfo.GetCultureInfo("es-AR")) + " con convexidad negativa: pensar en TENDENCIA";
-                alertaHasta = DateTime.UtcNow.AddMinutes(10);
-                Log("TRANSICION " + alerta);
-            }
-            if (lado != 0) _ladoPico = lado;
-
-            // max change: fotos por minuto del libro de volumen
-            long minuto = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMinute;
-            var foto = _fotos.LastOrDefault();
-            if (foto == null || foto.Minuto != minuto) { foto = new Snap { Minuto = minuto }; _fotos.Add(foto); while (_fotos.Count > 40) _fotos.RemoveAt(0); }
-            foto.GexVol.Clear();
-            foreach (var x in perfil) foto.GexVol[x.Fut] = x.GexVol;
-            var mc = new (double Fut, double Delta)[_ventanas.Length];
-            for (int i = 0; i < _ventanas.Length; i++)
-            {
-                var vieja = _fotos.Where(s0 => s0.Minuto <= minuto - _ventanas[i]).LastOrDefault();
-                double mejor = 0, futM = double.NaN;
-                if (vieja != null)
-                    foreach (var x in perfil)
-                    {
-                        double antes = vieja.GexVol.TryGetValue(x.Fut, out var a0) ? a0 : 0;
-                        double d = x.GexVol - antes;
-                        if (Math.Abs(d) > Math.Abs(mejor)) { mejor = d; futM = x.Fut; }
-                    }
-                mc[i] = (futM, mejor);
-            }
-
-            // estela: la dominante de esta vela
-            int barra = Math.Max(0, CurrentBar - 1);
-            var est = new double[Math.Max(1, CuantasDominantes)];
-            for (int i = 0; i < est.Length; i++) est[i] = i < candDom.Count ? candDom[i].Item1 : double.NaN;
+            var L = _nucleo.Calcular(c, futuro, ahoraUtc);
+            if (L == null) return;
+            if (L.SinBase) { lock (_candado) { _baseOrigen = "sin base"; } return; }
+            if (L.TransicionNueva) Log("TRANSICION " + L.Alerta);
 
             lock (_candado)
             {
-                _perfil = perfil; _S = S; _futuro = futuro; _base = baseUsada; _baseOrigen = origen;
-                _zeroVol = zeroVol; _zeroOi = zeroOi; _netVol = netVol; _netOi = netOi;
-                _mpVol = mpVol; _mnVol = mnVol; _mpOi = mpOi; _mnOi = mnOi;
-                _maxAbsVol = maxAbsVol; _maxAbsOi = maxAbsOi; _maxAbsConv = maxAbsConv;
-                _doms = candDom; _libroConvUsado = convPorVol ? "vol" : "OI"; _libroDomUsado = libroDom;
-                _cuadrante = nombre; _cuadranteCorto = corto; _cuadranteN = cuadN;
-                _picoFut = picoFut; _picoGex = picoGex; _convEnPrecio = convPrecio; _mucho = mucho;
-                _alerta = alerta; _alertaHasta = alertaHasta;
-                _maxChange = mc;
-                _estela[barra] = est;
+                _perfil = L.Perfil; _S = L.S; _futuro = L.Futuro; _base = L.Base; _baseOrigen = L.BaseOrigen;
+                _zeroVol = L.ZeroVol; _zeroOi = L.ZeroOi; _netVol = L.NetVol; _netOi = L.NetOi;
+                _mpVol = L.MpVol; _mnVol = L.MnVol; _mpOi = L.MpOi; _mnOi = L.MnOi;
+                _maxAbsVol = L.MaxAbsVol; _maxAbsOi = L.MaxAbsOi; _maxAbsConv = L.MaxAbsConv;
+                _doms = L.Doms; _libroConvUsado = L.LibroConv; _libroDomUsado = L.LibroDom;
+                _cuadrante = L.Cuadrante; _cuadranteCorto = L.CuadranteCorto; _cuadranteN = L.CuadranteN;
+                _picoFut = L.PicoFut; _picoGex = L.PicoGex; _convEnPrecio = L.ConvEnPrecio; _mucho = L.Mucho;
+                _alerta = L.Alerta; _alertaHasta = L.AlertaHasta;
+                _maxChange = L.MaxChange;
+                _estela[barra] = L.Estela;
                 if (_estela.Count > 6000) foreach (var k in _estela.Keys.Where(k => k < barra - 5000).ToList()) _estela.Remove(k);
             }
 
             if ((DateTime.UtcNow - _ultimoAudit).TotalSeconds >= 60)
             {
                 _ultimoAudit = DateTime.UtcNow;
-                var inv = CultureInfo.InvariantCulture;
-                Log(string.Format(inv, "AUDIT fut={0:F2} S={1:F2} base={2:F2} origen={3} strikes={4} netVol={5:F3}B netOi={6:F3}B zeroVol={7:F2} zeroOi={8:F2} mpVol={9:F2} mnVol={10:F2} doms={11} libroDom={12} conv={13} q={14} pico={15:F2} picoGex={16:F0}M mucho={17} convPrecio={18:F0}M mc30={19:F2}:{20:F0}M edadFeed={21:F1}min vivaActiva={22}",
-                    futuro, S, baseUsada, origen.Replace(' ', '_'), perfil.Count, netVol / 1e9, netOi / 1e9, zeroVol, zeroOi, mpVol, mnVol,
-                    string.Join("/", candDom.Select(d => d.Item1.ToString("F2", inv) + "=" + (d.Item2 / 1e6).ToString("F0", inv) + "M")),
-                    libroDom, convPorVol ? "vol" : "OI", cuadN, picoFut, picoGex / 1e6, mucho, convPrecio / 1e6, mc[4].Fut, mc[4].Delta / 1e6, c.EdadMin, _viva.Activa));
+                Log(GammaHoyNucleo.Audit(L, c, _viva.Activa));
             }
-        }
-
-        private readonly Dictionary<double, double> _convOiTmp = new();
-
-        /// <summary>El cruce por cero de la suma repreciada a cada precio de una
-        /// grilla de +-3 %, interpolado. Devuelve en precio de INDICE.</summary>
-        private double Cruce(Feed.Cadena c, double S, double r, double masCerca, bool porVolumen)
-        {
-            double lo = S * 0.97, hi = S * 1.03; const int pasos = 60;
-            double ant = double.NaN, xAnt = 0;
-            for (int i = 0; i <= pasos; i++)
-            {
-                double x = lo + (hi - lo) * i / pasos, t = 0;
-                foreach (var f in c.Filas)
-                {
-                    if (f.V < 0 || f.V >= c.Dias.Length) continue;
-                    double dias = c.Dias[f.V];
-                    if (!PasaHorizonte(dias, masCerca)) continue;
-                    t += Gex(f, x, Math.Max(dias, PISO_DIAS) / 365.0, r, porVolumen);
-                }
-                if (!double.IsNaN(ant) && ((ant < 0 && t >= 0) || (ant > 0 && t <= 0)))
-                    return (t != ant) ? xAnt + (x - xAnt) * (-ant) / (t - ant) : x;
-                ant = t; xAnt = x;
-            }
-            return double.NaN;
         }
 
         // ==================================================================
@@ -603,13 +402,12 @@ namespace PythiaGex
             lock (_candado)
             {
                 sp = _S;
-                void Add(string k, double v) { if (!double.IsNaN(v) && v > 0) niv.Add(new KeyValuePair<string, double>(k, v)); }
-                Add("zero_vol", _zeroVol); Add("zero_oi", _zeroOi);
-                Add("mp_vol", _mpVol); Add("mn_vol", _mnVol); Add("mp_oi", _mpOi); Add("mn_oi", _mnOi);
-                for (int i = 0; i < _doms.Count; i++) Add("dom" + i, _doms[i].Fut);
-                for (int i = 0; i < _ventanas.Length; i++) Add("mc" + _ventanas[i], _maxChange[i].Fut);
-                Add("pico", _picoFut);
-                Add("q_cuadrante", _cuadranteN);
+                var L = new GammaHoyNucleo.Lectura
+                {
+                    ZeroVol = _zeroVol, ZeroOi = _zeroOi, MpVol = _mpVol, MnVol = _mnVol, MpOi = _mpOi, MnOi = _mnOi,
+                    Doms = _doms, MaxChange = _maxChange, PicoFut = _picoFut, CuadranteN = _cuadranteN
+                };
+                niv = GammaHoyNucleo.Niveles(L);
             }
             _cent.Anotar(cerrada, c.LastTime != default(DateTime) ? c.LastTime : c.Time,
                 (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close,
@@ -687,7 +485,7 @@ namespace PythiaGex
             // ---- barras: sombra de OI, volumen encima, convexidad a la derecha
             int alto = 5;
             try { int y1 = cont.GetYByPrice((decimal)perfil[0].Fut, false); if (perfil.Count > 1) { int y2 = cont.GetYByPrice((decimal)perfil[1].Fut, false); alto = Math.Max(2, Math.Min(9, Math.Abs(y2 - y1) - 2)); } } catch { }
-            var fotos = _fotos.ToList();
+            var fotos = _nucleo.FotosCopia();
             foreach (var s in perfil)
             {
                 int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
@@ -818,7 +616,7 @@ namespace PythiaGex
             for (int i = 0; i < mc.Length; i++)
             {
                 if (double.IsNaN(mc[i].Fut) || mc[i].Delta == 0) continue;
-                string t = "Δ" + _ventanas[i].ToString(es).PadLeft(2) + "' " + mc[i].Fut.ToString("N0", es) + " " + Bm(mc[i].Delta);
+                string t = "Δ" + GammaHoyNucleo.Ventanas[i].ToString(es).PadLeft(2) + "' " + mc[i].Fut.ToString("N0", es) + " " + Bm(mc[i].Delta);
                 g.DrawString(t, fChica, mc[i].Delta >= 0 ? ColPos : ColNeg, rect.Left + 6, yc); yc += hf;
             }
             yc += 4;
