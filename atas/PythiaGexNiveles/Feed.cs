@@ -195,6 +195,17 @@ namespace PythiaGex
                 catch { return null; }
             }
 
+            /// <summary>La cadena viva de Rithmic, un renglon por minuto, por dia:
+            /// viva-ES-2026-09-07.jsonl. Solo existe mientras ATAS esta abierto; es
+            /// lo unico que la nube no puede grabar por nosotros.</summary>
+            public static void GuardarViva(string raiz, string json)
+            {
+                if (string.IsNullOrEmpty(json) || json.Length < 40) return;
+                var dir = Path.Combine(Carpeta, "..", "viva");
+                Directory.CreateDirectory(dir);
+                File.AppendAllText(Path.Combine(dir, "viva-" + raiz + "-" + DateTime.UtcNow.ToString("yyyy-MM-dd") + ".jsonl"), json + "\n");
+            }
+
             /// <summary>Lee un archivo por dia (gz de la nube o jsonl local) y
             /// devuelve las cadenas ordenadas por hora de publicacion.</summary>
             public static List<Cadena> Leer(string ruta)
@@ -259,7 +270,9 @@ namespace PythiaGex
                 {
                     var b = (url ?? "").Trim();
                     if (!b.EndsWith("/")) b += "/";
-                    var bytes = await Http.GetByteArrayAsync(b + "cadenas/" + nombre + "?t=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ConfigureAwait(false);
+                    // la rama "cadenas" de GitHub sirve los archivos en la raiz; el panel de Pages, en cadenas/
+                    var ruta = b.Contains("raw.githubusercontent.com") ? b + nombre : b + "cadenas/" + nombre;
+                    var bytes = await Http.GetByteArrayAsync(ruta + "?t=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ConfigureAwait(false);
                     if (bytes == null || bytes.Length < 20) return File.Exists(p);
                     Directory.CreateDirectory(Carpeta);
                     File.WriteAllBytes(p, bytes);

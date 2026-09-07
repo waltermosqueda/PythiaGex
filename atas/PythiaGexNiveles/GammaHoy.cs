@@ -70,6 +70,14 @@ namespace PythiaGex
         [Display(Name = "Archivo: bajar de la nube los dias que falten", GroupName = "1. Datos", Order = 10)]
         public bool BajarArchivo { get; set; } = true;
 
+        [Display(Name = "Archivo: url de las cadenas por dia", GroupName = "1. Datos", Order = 12,
+                 Description = "La rama 'cadenas' del repo: un archivo por dia y raiz, escrito cada minuto por GitHub Actions.")]
+        public string UrlArchivo { get; set; } = "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/";
+
+        [Display(Name = "Guardar la cadena viva de Rithmic por minuto", GroupName = "4. Auditoria", Order = 2,
+                 Description = "viva-ES-<dia>.jsonl en %APPDATA%\\ATAS\\PythiaGex\\viva. Solo mientras ATAS esta abierto: es lo unico que la nube no puede grabar.")]
+        public bool GuardarViva { get; set; } = true;
+
         [Display(Name = "Archivo: edad maxima de la cadena (horas)", GroupName = "1. Datos", Order = 11,
                  Description = "De noche la cadena de CBOE se congela y el indicador en vivo sigue mostrando la ultima: 20 horas reproduce eso. Con 0,3 (20 min) solo hay niveles en la rueda americana.")]
         public decimal ArchivoEdadMaxHoras { get; set; } = 20m;
@@ -223,6 +231,7 @@ namespace PythiaGex
         private volatile bool _archivoCargando, _archivoListo;
         private Centinela _centArchivo;
         private int _barraVivaUlt = -1;
+        private DateTime _ultimaViva = DateTime.MinValue;
         private string _rebRotulo = "";
         private DateTime _rebCadenaHora = DateTime.MinValue, _rebUltimoLog = DateTime.MinValue;
         private DateTime _ultimoAudit = DateTime.MinValue;
@@ -284,6 +293,12 @@ namespace PythiaGex
                     ArrancarViva();
                 }
                 _viva.UmbralGrande = UmbralBigTrade;
+                // la cadena viva, un renglon por minuto, al archivo local
+                if (GuardarViva && _viva.Activa && (ahora - _ultimaViva).TotalSeconds >= 60)
+                {
+                    _ultimaViva = ahora;
+                    try { Feed.Archivo.GuardarViva(Raiz(), VivaJson()); } catch (Exception e) { Registrar(e); }
+                }
                 // HIBRIDO: el archivo se carga desde aca (con el mercado cerrado no hay OnCalculate)
                 if (Fuente == FuenteDatos.Hibrido && !_archivoListo && !_archivoCargando && CurrentBar > 0)
                 {
@@ -457,7 +472,7 @@ namespace PythiaGex
                 {
                     if (BajarArchivo)
                         for (var d = desde.Date; d <= hasta.Date; d = d.AddDays(1))
-                            await Feed.Archivo.BajarDia(Url, raiz, d, Log).ConfigureAwait(false);
+                            await Feed.Archivo.BajarDia(string.IsNullOrWhiteSpace(UrlArchivo) ? Url : UrlArchivo, raiz, d, Log).ConfigureAwait(false);
                     var ls = Feed.Archivo.Cargar(raiz, desde, hasta, Log);
                     lock (_candado) { _archivo = ls; _iArchivo = 0; _barraReb = -1; _fotosBarra.Clear(); }
                     _archivoListo = true;
@@ -527,6 +542,34 @@ namespace PythiaGex
                 try { _centArchivo?.Volcar(true); } catch { }
                 try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
             }
+        }
+
+        /// <summary>La foto de la cadena viva de Rithmic con los mismos campos que
+        /// vuelca Gamma Vivo (pythiagex-cadena-viva-<raiz>.json), en una linea.</summary>
+        private string VivaJson()
+        {
+            List<CadenaViva.Fila> fs;
+            try { fs = _viva.Instantanea(); } catch { return null; }
+            if (fs == null || fs.Count == 0) return null;
+            var inv = CultureInfo.InvariantCulture;
+            var sb = new System.Text.StringBuilder(1 << 15);
+            sb.Append("{\"ts\":\"").Append(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", inv))
+              .Append("\",\"futuro\":").Append(_viva.Futuro.ToString("0.####", inv))
+              .Append(",\"grandes\":").Append(_viva.Grandes().Count.ToString(inv))
+              .Append(",\"campos\":\"strike,dias,es_call,oi,iv,bid,ask,vol_hoy,vol_cinta,vol_compra,vol_venta\",\"filas\":[");
+            bool primero = true;
+            foreach (var f in fs)
+            {
+                if (!primero) sb.Append(','); primero = false;
+                sb.Append('[').Append(f.K.ToString("0.##", inv)).Append(',').Append(f.Dias.ToString("0.#####", inv))
+                  .Append(',').Append(f.EsCall ? 1 : 0).Append(',').Append(f.OI.ToString("0.#", inv))
+                  .Append(',').Append(f.IV.ToString("0.######", inv)).Append(',').Append(f.Bid.ToString("0.####", inv))
+                  .Append(',').Append(f.Ask.ToString("0.####", inv)).Append(',').Append(f.VolumenHoy.ToString("0.#", inv))
+                  .Append(',').Append(f.VolCinta.ToString("0.#", inv)).Append(',').Append(f.VolCompra.ToString("0.#", inv))
+                  .Append(',').Append(f.VolVenta.ToString("0.#", inv)).Append(']');
+            }
+            sb.Append("]}");
+            return sb.ToString();
         }
 
         /// <summary>La vela bajo el mouse, o -1. En rebobinado la escalera y las

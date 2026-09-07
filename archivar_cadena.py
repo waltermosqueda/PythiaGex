@@ -119,8 +119,62 @@ def leer(ruta):
     return out
 
 
+INDICE = {"ES": "_SPX", "NQ": "_NDX", "RTY": "_RUT"}
+
+
+def bajar_y_archivar(raiz, destino):
+    """Modo autonomo (cadenas.yml): baja la cadena de CBOE, mide la base y arma la
+    linea con las MISMAS funciones que el feed del indicador. Sin radar."""
+    from pythiagex.fuentes import bajar
+    from pythiagex.base import medir
+    from pythiagex import cadena_atas as CAD
+    sim = INDICE[raiz]
+    crudo = bajar(sim, cache_dir=os.path.join(destino, "_cache"), guardar=False)
+    ts = crudo.get("timestamp")
+    ahora = dt.datetime.now(dt.timezone.utc)
+    ultimo = os.path.join(destino, "cadena-%s.ultimo" % raiz)
+    try:
+        if io.open(ultimo, encoding="utf-8").read().strip() == ts:
+            return "%s: CBOE sigue en %s, no se repite" % (raiz, ts)
+    except Exception:
+        pass
+    cad = CAD.construir(crudo, ahora=ahora)
+    try:
+        b = medir(crudo)
+    except Exception as e:
+        b = {"base": None, "confiable": False, "aviso": str(e)}
+    base = b.get("base") if b.get("confiable") else None
+    linea = {
+        "generado": ahora.isoformat(timespec="seconds"), "cadena_ts": ts,
+        "edad_min": round((ahora - dt.datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").replace(tzinfo=dt.timezone.utc)).total_seconds() / 60.0, 1),
+        "spot": crudo["data"].get("current_price"),
+        "base": base, "base_confiable": base is not None, "base_cruda": b.get("base"), "base_error_ticks": b.get("residuo_ticks"),
+        "fuente": "cboe directo (cadenas.yml)", "cadena": cad,
+    }
+    flaca = linea_flaca(linea)
+    dia = linea["generado"][:10]
+    ruta = os.path.join(destino, "cadena-%s-%s.jsonl.gz" % (raiz, dia))
+    with open(ruta, "ab") as f:
+        f.write(gzip.compress((json.dumps(flaca, ensure_ascii=False, separators=(",", ":")) + "\n").encode("utf-8")))
+    with io.open(ultimo, "w", encoding="utf-8") as f:
+        f.write(ts)
+    return "%s: %s anotada en %s (%d filas, base %s)" % (raiz, ts, os.path.basename(ruta), len(flaca["cadena"]["filas"]), base)
+
+
 if __name__ == "__main__":
-    raices = sys.argv[1:] or ["ES", "NQ", "RTY"]
-    for r in raices:
-        print(archivar(r))
-    print(publicar())
+    args = sys.argv[1:]
+    if args and args[0] == "--bajar":
+        destino = "datos/historico"
+        if "--destino" in args:
+            i = args.index("--destino"); destino = args[i + 1]; del args[i:i + 2]
+        os.makedirs(destino, exist_ok=True)
+        for r in args[1:] or ["ES", "NQ"]:
+            try:
+                print(bajar_y_archivar(r, destino))
+            except Exception as e:
+                print("%s: fallo (%s)" % (r, e))
+    else:
+        raices = args or ["ES", "NQ", "RTY"]
+        for r in raices:
+            print(archivar(r))
+        print(publicar())
