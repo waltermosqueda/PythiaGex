@@ -37,6 +37,19 @@ namespace PythiaGex
         private static int Main(string[] args)
         {
             var inv = CultureInfo.InvariantCulture;
+            // --prueba <radar.json> --precio 7709: una sola cuenta sobre una cadena
+            // del feed, para comparar con la linea AUDIT que dejo el indicador en
+            // ATAS con la misma cadena y el mismo precio (equivalencia del nucleo).
+            if (Arg(args, "--prueba") != null)
+            {
+                var c = Feed.Parsear(File.ReadAllText(Arg(args, "--prueba")));
+                if (c == null) { Console.Error.WriteLine("no pude parsear la cadena"); return 2; }
+                var n = new GammaHoyNucleo();
+                n.A.Horizonte = Enum.Parse<GammaHoyNucleo.HorizonteVenc>(Arg(args, "--horizonte", "Hoy"), true);
+                var L = n.Calcular(c, double.Parse(Arg(args, "--precio"), inv), DateTime.UtcNow);
+                Console.WriteLine(L == null ? "sin lectura" : GammaHoyNucleo.Audit(L, c, false));
+                return 0;
+            }
             var rutasCadenas = (Arg(args, "--cadenas") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
             var rutaVelas = Arg(args, "--velas");
             if (rutasCadenas.Length == 0 || rutaVelas == null)

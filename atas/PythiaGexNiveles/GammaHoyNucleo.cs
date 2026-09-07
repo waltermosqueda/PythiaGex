@@ -268,14 +268,32 @@ namespace PythiaGex
             else if (!mucho && convPos) { cuadN = 3; nombre = "mercado estable: rangos amplios"; corto = "ESTABLE"; }
             else { cuadN = 4; nombre = "salvese quien pueda: tendencia, tamaño chico"; corto = "RIESGO"; }
 
-            // transicion: perder el maximo GEX del libro con convexidad negativa
+            // transicion: perder el maximo GEX del libro con convexidad negativa.
+            // El maximo no es un strike sino una ZONA: los strikes con al menos
+            // el 80 % del maximo, mas una banda de un punto. Medido en el
+            // rebobinado del 2026-09-03: con un solo strike, 7.759 y 7.764 se
+            // alternaban el maximo y la alerta se disparaba a cada minuto.
+            // Adentro de la zona el lado no cambia; solo cuenta salir de ella.
             double maxFut = double.NaN; double maxG = 0;
             foreach (var x in perfil) { double gg = porVolCuad ? x.GexVol : x.GexOi; if (Math.Abs(gg) > maxG) { maxG = Math.Abs(gg); maxFut = x.Fut; } }
-            int lado = double.IsNaN(maxFut) ? 0 : (futuro >= maxFut ? 1 : -1);
+            double zonaAbajo = maxFut, zonaArriba = maxFut;
+            if (maxG > 0)
+                foreach (var x in perfil)
+                {
+                    double gg = Math.Abs(porVolCuad ? x.GexVol : x.GexOi);
+                    if (gg >= 0.8 * maxG) { if (x.Fut < zonaAbajo) zonaAbajo = x.Fut; if (x.Fut > zonaArriba) zonaArriba = x.Fut; }
+                }
+            // media distancia entre strikes (2,5 puntos): salir de la zona de verdad
+            const double banda = 2.5;
+            int lado = double.IsNaN(maxFut) ? 0 : (futuro >= zonaArriba + banda ? 1 : (futuro <= zonaAbajo - banda ? -1 : _ladoPico));
             bool nueva = false;
-            if (lado != 0 && _ladoPico != 0 && lado != _ladoPico && !convPos)
+            // una alerta por vez: mientras la anterior sigue en pantalla (10 min)
+            // el lado se actualiza pero no se vuelve a gritar
+            if (lado != 0 && _ladoPico != 0 && lado != _ladoPico && !convPos && ahoraUtc >= _alertaHasta)
             {
-                _alerta = (lado < 0 ? "perdio" : "recupero") + " el maximo GEX " + maxFut.ToString("N0", CultureInfo.GetCultureInfo("es-AR")) + " con convexidad negativa: pensar en TENDENCIA";
+                var es = CultureInfo.GetCultureInfo("es-AR");
+                string zona = zonaAbajo == zonaArriba ? maxFut.ToString("N0", es) : zonaAbajo.ToString("N0", es) + "-" + zonaArriba.ToString("N0", es);
+                _alerta = (lado < 0 ? "perdio" : "recupero") + " el maximo GEX " + zona + " con convexidad negativa: pensar en TENDENCIA";
                 _alertaHasta = ahoraUtc.AddMinutes(10);
                 nueva = true;
             }
