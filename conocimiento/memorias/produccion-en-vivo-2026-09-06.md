@@ -141,3 +141,16 @@ Commit `1ec1f69` y siguientes. ATAS es **8.0.14.398**.
   (etiqueta) y la del vocabulario (que se dibuja) publicada a las 02:40.
 - Regla que pidio: nuevas versiones = maquetas primero, el elige, recien
   ahi se instala.
+
+## 03:30 del lunes 7: el operador decide el diseño por maquetas
+
+Eligio la variante 8 de "Como lo Dibujan los Pros" con estas condiciones:
+mandan los cinco strikes mas pesados del vencimiento mas cercano; los que
+esten pegados (a un paso, mismo signo) se fusionan en una linea mas gruesa;
+los puntos de las barras tienen que significar algo (izquierda: parte de la
+gamma que vence en el mas cercano; derecha: volumen de opciones vivo);
+nunca 8 o 10 lineas; el mas cercano por arriba y por abajo siempre con
+chance de toque en tiempo real. Con la cadena real, el martes 8 concentra
+su gamma en 7656, 7756, 7676, 7706, 7691, 7686 (varios pegados: la fusion
+aplica). Cinco maquetas en la pagina "Cinco del Martes" (artifact). Elige y
+recien ahi se implementa. ATAS sigue con la version de las 02:20.
