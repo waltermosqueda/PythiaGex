@@ -43,7 +43,7 @@
   .hora { font-family: "IBM Plex Mono", Consolas, monospace; font-size: 20px; min-width: 6.5ch; }
   .hora small { font-size: 12px; color: var(--apagado); margin-left: 6px; }
 
-  .escena { display: grid; grid-template-columns: 1fr 250px; gap: 12px; }
+  .escena { display: grid; grid-template-columns: 1fr 300px; gap: 12px; }
   @media (max-width: 860px) { .escena { grid-template-columns: 1fr; } }
   .lienzo { background: var(--panel); border: 1px solid var(--linea); border-radius: 4px; position: relative; min-height: 420px; }
   canvas { display: block; width: 100%; height: 480px; }
@@ -51,7 +51,7 @@
   .escalera h3 { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--apagado); font-weight: 600; }
   .cuad { font-family: "IBM Plex Sans Condensed", sans-serif; font-weight: 600; font-size: 18px; padding: 8px 10px; border-radius: 4px; border-left: 4px solid var(--linea); background: var(--panel2); }
   .cuad small { display: block; font-family: "IBM Plex Sans", sans-serif; font-weight: 400; font-size: 12px; color: var(--apagado); }
-  .fila { display: grid; grid-template-columns: 14px 1fr auto auto; gap: 8px; align-items: center; font-family: "IBM Plex Mono", Consolas, monospace; font-size: 12.5px; padding: 3px 0; border-bottom: 1px dashed var(--linea); }
+  .fila { display: grid; grid-template-columns: 14px 1fr auto auto; gap: 8px; align-items: center; font-family: "IBM Plex Mono", Consolas, monospace; font-size: 12px; padding: 3px 0; border-bottom: 1px dashed var(--linea); white-space: nowrap; }
   .fila:last-child { border-bottom: 0; }
   .fila .m { width: 12px; height: 3px; border-radius: 2px; }
   .fila .n { color: var(--apagado); }
@@ -234,7 +234,7 @@ function dibujar(S) {
   if (lienzo.width !== Math.round(W * dpr)) { lienzo.width = Math.round(W * dpr); lienzo.height = Math.round(H * dpr); }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H);
-  const izq = 8, der = 74, arr = 14, aba = 26;
+  const izq = 44, der = 78, arr = 14, aba = 26;   // precios a la izquierda, rotulos de niveles a la derecha
   const ancho = W - izq - der, alto = H - arr - aba;
   // escala de precio: el rango del dia entero mas los niveles cercanos
   let lo = Math.min(...S.l), hi = Math.max(...S.h);
@@ -248,7 +248,7 @@ function dibujar(S) {
   ctx.strokeStyle = col('--linea'); ctx.fillStyle = col('--apagado'); ctx.lineWidth = 1;
   for (let p = Math.ceil(lo / paso) * paso; p <= hi; p += paso) {
     ctx.beginPath(); ctx.moveTo(izq, Math.round(y(p)) + .5); ctx.lineTo(izq + ancho, Math.round(y(p)) + .5); ctx.stroke();
-    ctx.textAlign = 'left'; ctx.fillText(p.toFixed(0), izq + ancho + 6, y(p));
+    ctx.textAlign = 'right'; ctx.fillText(p.toFixed(0), izq - 5, y(p));
   }
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   for (let c = 0; c <= COLS; c += 60) {

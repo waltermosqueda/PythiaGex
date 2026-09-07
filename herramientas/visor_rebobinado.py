@@ -63,7 +63,9 @@ def main():
     tpl = io.open(os.path.join(RAIZ, "herramientas", "visor_rebobinado.html"), encoding="utf-8").read()
     html = tpl.replace("__DATOS__", json.dumps(datos, ensure_ascii=False, separators=(",", ":")))
     os.makedirs(os.path.dirname(a.salida), exist_ok=True)
-    io.open(a.salida, "w", encoding="utf-8", newline="\n").write(html)
+    # la copia local se abre suelta en un navegador: necesita doctype y charset;
+    # la copia para publicar (artifact) no, porque el envoltorio ya los trae
+    io.open(a.salida, "w", encoding="utf-8", newline="\n").write("<!doctype html>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n" + html)
     print("visor: %s (%.1f MB, %d dias, %s)" % (a.salida, os.path.getsize(a.salida) / 1e6, len(dias), ", ".join(sorted(dias))))
     if a.copia:
         io.open(a.copia, "w", encoding="utf-8", newline="\n").write(html)
