@@ -21,6 +21,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="..\PythiaGexNiveles\Feed.cs" />
     <Compile Include="..\PythiaGexNiveles\GammaHoyNucleo.cs" />
+    <Compile Include="..\PythiaGexNiveles\GammaVivoNucleo.cs" />
     <Compile Include="..\PythiaGexNiveles\Centinela.cs" />
   </ItemGroup>
 

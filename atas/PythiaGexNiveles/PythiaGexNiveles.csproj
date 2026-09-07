@@ -35,6 +35,7 @@
     <Compile Include="Reloj.cs" />
     <Compile Include="Feed.cs" />
     <Compile Include="GammaHoyNucleo.cs" />
+    <Compile Include="GammaVivoNucleo.cs" />
     <Compile Include="GammaHoy.cs" />
   </ItemGroup>
 

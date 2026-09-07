@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rebobina Panel</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root { --fondo:#0d1218; --panel:#141b24; --panel2:#1a2330; --linea:#263141; --texto:#dde4ec; --apagado:#8794a4;
+          --sube:#2ddc82; --baja:#eb3c3c; --dom:#e8c83c; --agua:#5dd9d0; --purpura:#a86bff; --aviso:#f0a058; --foco:#ffd166; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--fondo); color:var(--texto); font:14px/1.45 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  h1,h2,h3 { font-family:"IBM Plex Sans Condensed","Arial Narrow",sans-serif; margin:0; text-wrap:balance; }
+  .mono { font-family:"IBM Plex Mono",Consolas,monospace; font-variant-numeric: tabular-nums; }
+  .ojal { font-family:"IBM Plex Mono",Consolas,monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--apagado); }
+  header { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 18px; padding:18px 22px 12px; border-bottom:1px solid var(--linea); }
+  header h1 { font-size:26px; font-weight:600; }
+  header .estado { margin-left:auto; color:var(--apagado); font-size:12px; display:flex; gap:14px; }
+  .ok { color:var(--sube); } .mal { color:var(--baja); }
+  main { display:grid; grid-template-columns: 360px 1fr; gap:14px; padding:14px 22px 40px; }
+  @media (max-width: 980px) { main { grid-template-columns: 1fr; } }
+  .col { display:flex; flex-direction:column; gap:14px; min-width:0; }
+  section { background:var(--panel); border:1px solid var(--linea); border-radius:4px; padding:12px 14px; }
+  section h2 { font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--apagado); font-weight:600; margin-bottom:10px; }
+  .campo { display:grid; grid-template-columns: 1fr 110px; gap:6px 10px; align-items:center; padding:4px 0; border-bottom:1px dashed var(--linea); }
+  .campo:last-of-type { border-bottom:0; }
+  .campo label { font-size:13px; } .campo small { display:block; color:var(--apagado); font-size:11.5px; }
+  input[type=number], select, input[type=date], input[type=text] { font:inherit; color:var(--texto); background:var(--panel2); border:1px solid var(--linea); border-radius:4px; padding:5px 7px; width:100%; }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline:2px solid var(--foco); outline-offset:1px; }
+  button { font:inherit; color:var(--texto); background:var(--panel2); border:1px solid var(--linea); border-radius:4px; padding:7px 12px; cursor:pointer; }
+  button:hover { border-color:var(--apagado); }
+  button.primario { background:var(--texto); color:var(--fondo); border-color:var(--texto); font-weight:500; }
+  button[disabled] { opacity:.45; cursor:default; }
+  .fila { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .chips { display:flex; flex-wrap:wrap; gap:5px; }
+  .chip { font-family:"IBM Plex Mono",Consolas,monospace; font-size:12px; padding:3px 7px; border-radius:4px; border:1px solid var(--linea); background:var(--panel2); cursor:pointer; user-select:none; }
+  .chip.activo { background:var(--texto); color:var(--fondo); border-color:var(--texto); }
+  .chip.sin { opacity:.45; text-decoration: line-through; }
+  .indic { display:flex; gap:10px; align-items:flex-start; padding:6px 0; border-bottom:1px dashed var(--linea); }
+  .indic:last-child { border-bottom:0; }
+  .indic input { margin-top:4px; }
+  .indic small { display:block; color:var(--apagado); }
+  .caja { border:1px dashed var(--apagado); border-radius:4px; padding:14px; text-align:center; color:var(--apagado); cursor:pointer; }
+  .caja.arrastrando { border-color:var(--agua); color:var(--texto); }
+  .log { font:12px/1.5 "IBM Plex Mono",Consolas,monospace; background:var(--fondo); border:1px solid var(--linea); border-radius:4px; padding:10px 12px; height:220px; overflow:auto; white-space:pre-wrap; color:var(--texto); }
+  pre.lab { font:12.5px/1.5 "IBM Plex Mono",Consolas,monospace; background:var(--fondo); border:1px solid var(--linea); border-radius:4px; padding:10px 12px; overflow-x:auto; margin:0; }
+  iframe { width:100%; height:820px; border:1px solid var(--linea); border-radius:4px; background:var(--fondo); }
+  .aviso { color:var(--aviso); font-size:12.5px; }
+  .presupuesto { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; text-align:center; }
+  .presupuesto b { display:block; font-family:"IBM Plex Mono",Consolas,monospace; font-size:20px; font-weight:500; }
+  .presupuesto span { color:var(--apagado); font-size:11.5px; }
+  .barra { height:6px; background:var(--panel2); border-radius:3px; overflow:hidden; margin-top:8px; }
+  .barra i { display:block; height:100%; background:var(--agua); }
+  .muted { color:var(--apagado); font-size:12.5px; }
+</style>
+</head>
+<body>
+<header>
+  <span class="ojal">PythiaGex · simulador local</span>
+  <h1>Rebobina Panel</h1>
+  <span class="muted">La misma cuenta que ATAS, sobre datos descargados. ATAS no se toca.</span>
+  <div class="estado" id="estado">cargando…</div>
+</header>
+
+<main>
+  <div class="col">
+    <section>
+      <h2>Parámetros del motor</h2>
+      <div class="campo"><label>Instrumento<small>el futuro que se rebobina; el libro de opciones es SPX</small></label>
+        <select id="instrumento"><option>MES</option><option>ES</option></select></div>
+      <div class="campo"><label>Temporalidad de las velas<small>las cadenas son por minuto; la vela junta minutos</small></label>
+        <select id="marco_min"><option value="1">1 min</option><option value="2">2 min</option><option value="5">5 min</option><option value="15">15 min</option></select></div>
+      <div class="campo"><label>Vencimientos del mapa<small>Hoy = 0DTE o el más cercano</small></label>
+        <select id="horizonte"><option>Hoy</option><option>Semana</option><option>Todo</option></select></div>
+      <div class="campo"><label>Dominantes<small>barras más largas del volumen</small></label><input type="number" id="dominantes" value="2" min="1" max="5"></div>
+      <div class="campo"><label>Radio de dominantes (%)</label><input type="number" id="radio" value="2.0" step="0.1" min="0.2" max="10"></div>
+      <div class="campo"><label>Pico "cerca del precio" (%)<small>para el cuadrante</small></label><input type="number" id="pico" value="0.35" step="0.05" min="0.05" max="3"></div>
+      <div class="campo"><label>"Mucho GEX" = pico ≥ % del máximo</label><input type="number" id="mucho" value="50" min="10" max="100"></div>
+      <div class="campo"><label>Convexidad: de qué libro</label>
+        <select id="convexidad"><option>Auto</option><option>Volumen</option><option>OI</option></select></div>
+      <div class="campo"><label>Tasa libre de riesgo</label><input type="number" id="tasa" value="0.0375" step="0.0025" min="0" max="0.2"></div>
+      <div class="campo"><label>Retraso del volumen (s)<small>902 = lo que tarda CBOE; 0 = al instante</small></label>
+        <select id="retraso"><option value="902">902 (real)</option><option value="0">0 (sin retraso)</option><option value="300">300</option></select></div>
+      <div class="campo"><label>Edad máxima de la cadena (min)<small>más vieja que esto, la vela queda sin niveles</small></label><input type="number" id="edad_max" value="20" min="2" max="240"></div>
+    </section>
+
+    <section>
+      <h2>Indicadores</h2>
+      <div id="indicadores"></div>
+    </section>
+
+    <section>
+      <h2>Ruedas a simular</h2>
+      <div class="fila" style="margin-bottom:8px"><button id="btnTodos">todas</button><button id="btnNinguno">ninguna</button><span class="muted" id="resumenDias"></span></div>
+      <div class="chips" id="dias"></div>
+      <p class="muted" style="margin:8px 0 0">Tachadas: falta algún archivo de Databento. Sin marcar: no entran.</p>
+    </section>
+
+    <section>
+      <h2>Simular</h2>
+      <div class="fila"><button class="primario" id="btnSimular">▶ Simular con estos parámetros</button><span class="muted" id="estadoTrabajo"></span></div>
+      <p class="muted" style="margin:8px 0 0">Convierte los días que falten (unos 5 minutos por día, de a 4), corre el motor, corre el laboratorio contra placebo y regenera el visor.</p>
+    </section>
+  </div>
+
+  <div class="col">
+    <section>
+      <h2>Registro</h2>
+      <div class="log" id="log">—</div>
+    </section>
+
+    <section>
+      <h2>Datos</h2>
+      <div class="presupuesto" id="presupuesto"></div>
+      <div class="barra"><i id="barraGasto" style="width:0%"></i></div>
+      <p class="aviso" style="margin:8px 0 0">La cuenta de Databento tiene tarjeta y "uso sin límite": el techo de este panel es la única traba. Conviene poner un límite también en Billing.</p>
+      <div class="fila" style="margin-top:10px">
+        <label class="muted">bajar SPX de</label><input type="date" id="desde" style="width:150px">
+        <label class="muted">a</label><input type="date" id="hasta" style="width:150px">
+        <button id="btnCotizar">cotizar</button>
+        <button id="btnBajar" disabled>bajar</button>
+        <span class="mono" id="cotizacion"></span>
+      </div>
+      <p class="muted" style="margin:10px 0 6px">Archivos a mano: arrastrá acá los <span class="mono">.dbn.zst</span> de Databento (definition, statistics, ohlcv-1m de OPRA; ohlcv-1m del futuro) o un <span class="mono">.csv</span> de velas con columnas <span class="mono">ts_event,open,high,low,close,volume</span> en UTC. Otros formatos necesitan un adaptador.</p>
+      <div class="caja" id="caja">soltá archivos acá o hacé clic para elegirlos<input type="file" id="archivos" multiple hidden></div>
+      <div class="muted" id="subidas"></div>
+      <p class="muted" style="margin:10px 0 0" id="inventario"></p>
+    </section>
+
+    <section>
+      <h2>Laboratorio (contra placebo)</h2>
+      <pre class="lab" id="lab">—</pre>
+    </section>
+
+    <section>
+      <h2>Visor</h2>
+      <div class="fila" style="margin-bottom:8px"><a href="/visor" target="_blank"><button>abrir el visor en pestaña aparte</button></a><span class="muted">se regenera al terminar cada simulación</span></div>
+      <iframe id="visor" src="/visor" title="visor del rebobinado"></iframe>
+    </section>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let EST = null, seleccion = new Set(), cotizacionOk = false;
+async function api(ruta, cuerpo) {
+  const r = await fetch(ruta, cuerpo ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) } : undefined);
+  return r.json();
+}
+function fmtDia(k) { const f = new Date(k + 'T12:00:00Z'); return f.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC' }).replace('.', ''); }
+
+async function cargarEstado() {
+  EST = await api('/api/estado');
+  $('estado').innerHTML = '<span class="' + (EST.motor ? 'ok' : 'mal') + '">motor ' + (EST.motor ? 'compilado' : 'falta compilar') + '</span><span>' + EST.hora + '</span>';
+  // indicadores
+  const ind = $('indicadores'); ind.innerHTML = '';
+  for (const x of EST.indicadores) {
+    const d = document.createElement('label'); d.className = 'indic';
+    d.innerHTML = '<input type="checkbox" value="' + x.id + '" ' + (x.listo ? 'checked' : 'disabled') + '><div><b>' + x.nombre + '</b><small>' + x.nota + '</small></div>';
+    ind.appendChild(d);
+  }
+  // dias
+  const dd = $('dias'); dd.innerHTML = '';
+  const dias = Object.keys(EST.dias_opra).sort();
+  if (seleccion.size === 0) for (const k of dias) if (EST.dias_opra[k].length === 3) seleccion.add(k);
+  for (const k of dias) {
+    const completo = EST.dias_opra[k].length === 3;
+    const c = document.createElement('span'); c.className = 'chip' + (completo ? '' : ' sin') + (seleccion.has(k) ? ' activo' : '');
+    c.textContent = fmtDia(k); c.title = k + (completo ? '' : ' · falta: ' + ['definition', 'statistics', 'ohlcv-1m'].filter(e => !EST.dias_opra[k].includes(e)).join(', ')) + (EST.cadenas[k] ? ' · cadenas: ' + EST.cadenas[k].map(z => 'r' + z.retraso).join(' ') : '');
+    if (completo) c.onclick = () => { seleccion.has(k) ? seleccion.delete(k) : seleccion.add(k); cargarDias(); };
+    dd.appendChild(c);
+  }
+  $('resumenDias').textContent = seleccion.size + ' de ' + dias.filter(k => EST.dias_opra[k].length === 3).length + ' ruedas';
+  // presupuesto
+  const b = EST.databento;
+  if (!b.error) {
+    $('presupuesto').innerHTML = '<div><b>USD ' + b.gastado.toFixed(2) + '</b><span>gastado (ledger)</span></div><div><b>USD ' + b.tope.toFixed(0) + '</b><span>techo del panel</span></div><div><b>USD ' + b.credito.toFixed(0) + '</b><span>crédito de la cuenta</span></div>';
+    $('barraGasto').style.width = Math.min(100, 100 * b.gastado / b.tope) + '%';
+  } else $('presupuesto').textContent = b.error;
+  $('inventario').textContent = 'Velas: ' + (EST.velas.map(v => v.archivo + ' (' + v.mb + ' MB)').join(', ') || 'ninguna') + '. Centinelas del simulador: ' + (EST.centinelas.map(c => c.archivo.replace('pythiagex-centinela-', '') + ' ' + c.velas + ' velas').join(' · ') || 'ninguno') + '.';
+  if (!$('desde').value) { const u = dias[dias.length - 1] || '2026-09-04'; $('desde').value = u; $('hasta').value = u; }
+}
+function cargarDias() { cargarEstado(); }
+$('btnTodos').onclick = () => { for (const k of Object.keys(EST.dias_opra)) if (EST.dias_opra[k].length === 3) seleccion.add(k); cargarEstado(); };
+$('btnNinguno').onclick = () => { seleccion.clear(); cargarEstado(); };
+
+function parametros() {
+  const inds = [...document.querySelectorAll('#indicadores input:checked')].map(i => i.value);
+  return { instrumento: $('instrumento').value, marco_min: +$('marco_min').value, horizonte: $('horizonte').value, dominantes: +$('dominantes').value,
+           radio: +$('radio').value, pico: +$('pico').value, mucho: +$('mucho').value, convexidad: $('convexidad').value, tasa: +$('tasa').value,
+           retraso: +$('retraso').value, edad_max: +$('edad_max').value, dias: [...seleccion].sort(), indicadores: inds };
+}
+let sondeo = null;
+async function seguir() {
+  const p = await api('/api/progreso');
+  $('log').textContent = p.log.join('\n') || '—'; $('log').scrollTop = $('log').scrollHeight;
+  $('estadoTrabajo').textContent = p.activo ? 'corriendo: ' + p.nombre + '…' : (p.resultado ? (p.resultado.ok ? 'terminó' : 'falló: ' + p.resultado.error) : '');
+  $('btnSimular').disabled = p.activo; $('btnBajar').disabled = p.activo || !cotizacionOk;
+  if (!p.activo) {
+    clearInterval(sondeo); sondeo = null;
+    if (p.resultado && p.resultado.lab) $('lab').textContent = p.resultado.lab;
+    $('visor').src = '/visor?t=' + Date.now();
+    cargarEstado();
+  }
+}
+function vigilar() { if (!sondeo) sondeo = setInterval(seguir, 1500); seguir(); }
+$('btnSimular').onclick = async () => {
+  const par = parametros();
+  if (!par.dias.length) { alert('elegí al menos una rueda'); return; }
+  if (!par.indicadores.length) { alert('elegí al menos un indicador'); return; }
+  const r = await api('/api/simular', par);
+  if (!r.ok) { alert(r.error); return; }
+  vigilar();
+};
+$('btnCotizar').onclick = async () => {
+  $('cotizacion').textContent = 'cotizando…'; cotizacionOk = false; $('btnBajar').disabled = true;
+  const r = await api('/api/databento/cotizar', { desde: $('desde').value, hasta: $('hasta').value });
+  if (r.error) { $('cotizacion').textContent = r.error; return; }
+  $('cotizacion').textContent = r.dias.length + ' ruedas · USD ' + r.usd.toFixed(2) + (r.usd === 0 ? ' (ya está todo)' : '') + ' · quedarían USD ' + (r.gastado + r.usd).toFixed(2) + ' de ' + r.tope + (r.entra ? '' : ' · NO ENTRA en el techo');
+  cotizacionOk = r.entra && r.usd > 0; $('btnBajar').disabled = !cotizacionOk;
+};
+$('btnBajar').onclick = async () => {
+  if (!confirm('Bajar de Databento con tu crédito: ' + $('cotizacion').textContent + '. ¿Confirmás?')) return;
+  const r = await api('/api/databento/bajar', { desde: $('desde').value, hasta: $('hasta').value, confirmar: true });
+  if (!r.ok) { alert(r.error); return; }
+  cotizacionOk = false; vigilar();
+};
+// subida de archivos
+const caja = $('caja');
+caja.onclick = () => $('archivos').click();
+caja.ondragover = e => { e.preventDefault(); caja.classList.add('arrastrando'); };
+caja.ondragleave = () => caja.classList.remove('arrastrando');
+caja.ondrop = e => { e.preventDefault(); caja.classList.remove('arrastrando'); subir(e.dataTransfer.files); };
+$('archivos').onchange = e => subir(e.target.files);
+async function subir(files) {
+  if (!files.length) return;
+  const fd = new FormData(); for (const f of files) fd.append('archivo', f, f.name);
+  $('subidas').textContent = 'subiendo ' + files.length + ' archivo(s)…';
+  const r = await (await fetch('/api/subir', { method: 'POST', body: fd })).json();
+  $('subidas').innerHTML = (r.mensajes || []).map(m => '· ' + m).join('<br>');
+  cargarEstado();
+}
+(async () => { await cargarEstado(); const l = await api('/api/lab'); $('lab').textContent = l.lab || '—'; seguir(); })();
+</script>
+</body>
+</html>

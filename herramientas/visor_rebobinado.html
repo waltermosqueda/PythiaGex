@@ -95,6 +95,12 @@
       <button id="btnR902" class="chip activo" title="lo que el indicador tenía: el volumen de CBOE llega 902 s tarde">con retraso 902 s</button>
       <button id="btnR0" class="chip" title="el dato al instante, como si no hubiera retraso">sin retraso</button>
     </div>
+    <div class="grupo" id="grupoIndic">
+      <label>indicador</label>
+      <button id="btnHoy" class="chip activo">Gamma Hoy</button>
+      <button id="btnVivo" class="chip" title="zero y muros por interes abierto a 7 dias y las 8 dominantes del OI, como los anota Gamma Vivo">Gamma Vivo</button>
+      <button id="btnAmbos" class="chip">ambos</button>
+    </div>
     <div class="grupo">
       <button id="btnPlay" title="espacio">▶ reproducir</button>
       <select id="velocidad" aria-label="velocidad">
@@ -166,8 +172,36 @@ const NIV = [
   ['mc5', 'Max Change 5\'', 'agua', 'rayada'],
 ];
 const CUAD = {1: ['IMÁN', 'colchón: rango, reversión', 'agua'], 2: ['EXPLOSIVO', 'ruptura, momentum', 'purpura'], 3: ['ESTABLE', 'rangos amplios', 'ceroOi'], 4: ['RIESGO', 'tendencia, tamaño chico', 'baja'], 0: ['—', 'sin cadena', 'linea']};
+// Gamma Vivo, como lo anota su centinela: zero y muros del OI a 7 dias, 8 picos del OI
+const NIV_VIVO = [
+  ['zero', 'V · 0Γ OI 7d', 'cero', 'punteada'],
+  ['wall_pos', 'V · +muro OI', 'sube', 'rayada'],
+  ['wall_neg', 'V · −muro OI', 'baja', 'rayada'],
+  ['dom0', 'V · dom 1', 'domVivo', 'solida'], ['dom1', 'V · dom 2', 'domVivo', 'solida'],
+  ['dom2', 'V · dom 3', 'domVivo', 'punteada'], ['dom3', 'V · dom 4', 'domVivo', 'punteada'],
+  ['dom4', 'V · dom 5', 'domVivo', 'punteada'], ['dom5', 'V · dom 6', 'domVivo', 'punteada'],
+  ['dom6', 'V · dom 7', 'domVivo', 'punteada'], ['dom7', 'V · dom 8', 'domVivo', 'punteada'],
+];
+document.documentElement.style.setProperty('--domVivo', '#e8a838');
 const dias = Object.keys(DATOS.dias).sort();
-let dia = dias[dias.length - 1], variante = 'r902', i = 0, reproduciendo = false, timer = null;
+let dia = dias[dias.length - 1], variante = 'r902', indic = 'hoy', i = 0, reproduciendo = false, timer = null;
+const VIVO = DATOS.vivo || {};
+function serieVivo() { return VIVO[dia] || null; }
+function capas() {
+  // [serie, definicion de niveles, es la capa principal]
+  const out = [];
+  if (indic !== 'vivo') out.push([serie(), NIV, true]);
+  if (indic !== 'hoy' && serieVivo()) out.push([serieVivo(), NIV_VIVO, indic === 'vivo']);
+  return out;
+}
+function armarIndic() {
+  const hay = !!serieVivo();
+  $('btnVivo').disabled = !hay; $('btnAmbos').disabled = !hay;
+  if (!hay && indic !== 'hoy') indic = 'hoy';
+  for (const [id, k] of [['btnHoy', 'hoy'], ['btnVivo', 'vivo'], ['btnAmbos', 'ambos']]) $(id).classList.toggle('activo', indic === k);
+  $('grupoIndic').title = hay ? '' : 'este dia no tiene rebobinado de Gamma Vivo';
+}
+for (const [id, k] of [['btnHoy', 'hoy'], ['btnVivo', 'vivo'], ['btnAmbos', 'ambos']]) $(id).onclick = () => { indic = k; armarIndic(); refrescar(); };
 
 const $ = id => document.getElementById(id);
 const lienzo = $('lienzo'), ctx = lienzo.getContext('2d');
@@ -183,7 +217,7 @@ function armarDias() {
     const f = new Date(k + 'T12:00:00Z');
     b.textContent = f.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC' }).replace('.', '');
     b.title = k + (DATOS.sinRetraso[k] ? ' · tiene variante sin retraso' : '');
-    b.onclick = () => { dia = k; i = serie().t.length - 1; if (!DATOS.sinRetraso[dia]) variante = 'r902'; armarDias(); armarRetraso(); refrescar(); };
+    b.onclick = () => { dia = k; i = serie().t.length - 1; if (!DATOS.sinRetraso[dia]) variante = 'r902'; armarDias(); armarRetraso(); armarIndic(); refrescar(); };
     d.appendChild(b);
   }
 }
@@ -206,11 +240,17 @@ function refrescar() {
   const q = S.q[i], cq = CUAD[q] || CUAD[0];
   const cu = $('cuad'); cu.innerHTML = cq[0] + '<small>' + cq[1] + '</small>'; cu.style.borderLeftColor = col('--' + cq[2]);
   const filas = $('filas'); filas.innerHTML = '';
-  for (const [k, nombre, c] of NIV) {
-    const v = S.niv[k][i]; const f = document.createElement('div'); f.className = 'fila' + (v ? '' : ' vacia');
-    const d = v ? (v - S.c[i]) : null;
-    f.innerHTML = '<span class="m" style="background:' + col('--' + c) + '"></span><span class="n">' + nombre + '</span><span>' + (v ? v.toFixed(2) : '—') + '</span><span class="d">' + (d === null ? '' : (d >= 0 ? '+' : '') + d.toFixed(1)) + '</span>';
-    filas.appendChild(f);
+  for (const [Sx, defs] of capas()) {
+    // la vela del vivo puede no coincidir en indice con la del hoy: se busca por hora
+    const j = Sx === S ? i : Sx.t.indexOf(S.t[i]);
+    if (j < 0) continue;
+    for (const [k, nombre, c] of defs) {
+      const v = Sx.niv[k][j]; if (!v && defs === NIV_VIVO && k.startsWith('dom') && k !== 'dom0') continue;
+      const f = document.createElement('div'); f.className = 'fila' + (v ? '' : ' vacia');
+      const d = v ? (v - S.c[i]) : null;
+      f.innerHTML = '<span class="m" style="background:' + col('--' + c) + '"></span><span class="n">' + nombre + '</span><span>' + (v ? v.toFixed(2) : '—') + '</span><span class="d">' + (d === null ? '' : (d >= 0 ? '+' : '') + d.toFixed(1)) + '</span>';
+      filas.appendChild(f);
+    }
   }
   franja(S); dibujar(S);
 }
@@ -275,18 +315,25 @@ function dibujar(S) {
   // niveles del minuto: de la vela actual hacia la derecha, con rotulo en el eje
   const cx0 = x(minutoIdx(S.t[i]));
   const usados = [];
-  for (const [k, nombre, c, trazo] of NIV) {
-    const v = S.niv[k][i]; if (!v) continue;
-    ctx.strokeStyle = col('--' + c); ctx.lineWidth = (k === 'dom0' || k === 'dom1') ? 2 : 1.2;
-    ctx.setLineDash(trazo === 'rayada' ? [6, 4] : trazo === 'punteada' ? [2, 3] : []);
-    ctx.beginPath(); ctx.moveTo(cx0, y(v)); ctx.lineTo(izq + ancho, y(v)); ctx.stroke();
-    ctx.setLineDash([]);
-    // rotulo corto a la derecha, sin pisarse
-    let yy = y(v); while (usados.some(u => Math.abs(u - yy) < 12)) yy += 12; usados.push(yy);
-    const corto = {dom0: 'D1', dom1: 'D2', zero_vol: '0Γ', zero_oi: '0Γ ayer', mp_vol: '+Γ', mn_vol: '−Γ', mp_oi: '+Γ OI', mn_oi: '−Γ OI', pico: 'pico', mc30: 'Δ30', mc5: 'Δ5'}[k];
-    ctx.fillStyle = col('--panel'); ctx.fillRect(izq + ancho + 2, yy - 7, der - 4, 14);
-    ctx.fillStyle = col('--' + c); ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '10.5px "IBM Plex Mono", Consolas, monospace';
-    ctx.fillText(corto + ' ' + v.toFixed(0), izq + ancho + 5, yy);
+  const CORTO = {dom0: 'D1', dom1: 'D2', zero_vol: '0Γ', zero_oi: '0Γ ayer', mp_vol: '+Γ', mn_vol: '−Γ', mp_oi: '+Γ OI', mn_oi: '−Γ OI', pico: 'pico', mc30: 'Δ30', mc5: 'Δ5'};
+  const CORTO_VIVO = {zero: 'V 0Γ', wall_pos: 'V +muro', wall_neg: 'V −muro', dom0: 'V d1', dom1: 'V d2', dom2: 'V d3', dom3: 'V d4', dom4: 'V d5', dom5: 'V d6', dom6: 'V d7', dom7: 'V d8'};
+  for (const [Sx, defs, principal] of capas()) {
+    const j = Sx === S ? i : Sx.t.indexOf(S.t[i]);
+    if (j < 0) continue;
+    for (const [k, nombre, c, trazo] of defs) {
+      const v = Sx.niv[k][j]; if (!v) continue;
+      ctx.strokeStyle = col('--' + c); ctx.lineWidth = (k === 'dom0' || k === 'dom1') ? 2 : 1.2;
+      ctx.globalAlpha = principal ? 1 : .6;
+      ctx.setLineDash(trazo === 'rayada' ? [6, 4] : trazo === 'punteada' ? [2, 3] : []);
+      ctx.beginPath(); ctx.moveTo(cx0, y(v)); ctx.lineTo(izq + ancho, y(v)); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha = 1;
+      // rotulo corto a la derecha, sin pisarse
+      let yy = y(v); while (usados.some(u => Math.abs(u - yy) < 12)) yy += 12; usados.push(yy);
+      const corto = (defs === NIV_VIVO ? CORTO_VIVO : CORTO)[k];
+      ctx.fillStyle = col('--panel'); ctx.fillRect(izq + ancho + 2, yy - 7, der - 4, 14);
+      ctx.fillStyle = col('--' + c); ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.font = '10.5px "IBM Plex Mono", Consolas, monospace';
+      ctx.fillText(corto + ' ' + v.toFixed(0), izq + ancho + 5, yy);
+    }
   }
   // cursor
   ctx.strokeStyle = col('--texto'); ctx.globalAlpha = .5; ctx.setLineDash([3, 3]);
@@ -313,5 +360,5 @@ window.addEventListener('resize', () => dibujar(serie()));
 $('lab').textContent = DATOS.lab || 'sin informe';
 $('pieGasto').textContent = DATOS.gasto ? 'Databento: ' + DATOS.gasto.replace('GASTADO: ', 'gastado ') : '';
 $('pieGen').textContent = 'Generado ' + DATOS.generado + ' · ' + dias.length + ' ruedas';
-armarDias(); armarRetraso(); i = serie().t.length - 1; refrescar();
+armarDias(); armarRetraso(); armarIndic(); i = serie().t.length - 1; refrescar();
 </script>

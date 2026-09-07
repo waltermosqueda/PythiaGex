@@ -19,9 +19,10 @@ import sys
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ATAS = os.path.join(os.environ.get("APPDATA", ""), "ATAS")
 NIVELES = ("zero_vol", "zero_oi", "mp_vol", "mn_vol", "mp_oi", "mn_oi", "dom0", "dom1", "pico", "mc30", "mc5")
+NIVELES_VIVO = ("zero", "wall_pos", "wall_neg", "dom0", "dom1", "dom2", "dom3", "dom4", "dom5", "dom6", "dom7")
 
 
-def leer(prefijo, inst="MES", marco="M1"):
+def leer(prefijo, inst="MES", marco="M1", niveles=NIVELES):
     p = os.path.join(ATAS, "pythiagex-centinela-%s-%s-TimeFrame-%s.jsonl" % (prefijo, inst, marco))
     dias = {}
     if not os.path.exists(p):
@@ -32,11 +33,11 @@ def leer(prefijo, inst="MES", marco="M1"):
         except Exception:
             continue
         dia = d["t"][:10]
-        D = dias.setdefault(dia, {"t": [], "o": [], "h": [], "l": [], "c": [], "spot": [], "niv": {k: [] for k in NIVELES}, "q": []})
+        D = dias.setdefault(dia, {"t": [], "o": [], "h": [], "l": [], "c": [], "spot": [], "niv": {k: [] for k in niveles}, "q": []})
         D["t"].append(d["t"][11:16]); D["o"].append(d["o"]); D["h"].append(d["h"]); D["l"].append(d["l"]); D["c"].append(d["c"])
         D["spot"].append(d.get("spot"))
         n = d.get("niv") or {}
-        for k in NIVELES:
+        for k in niveles:
             v = n.get(k)
             D["niv"][k].append(round(v, 2) if v else None)
         D["q"].append(int(n["q_cuadrante"]) if n.get("q_cuadrante") else 0)
@@ -47,18 +48,25 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--salida", default=os.path.join(RAIZ, "datos", "simulador", "visor.html"))
     ap.add_argument("--copia", default=None, help="segunda copia (p. ej. el scratchpad para publicar)")
+    ap.add_argument("--instrumento", default="MES")
+    ap.add_argument("--marco", default="M1")
     a = ap.parse_args()
-    dias = leer("rebobinado")
-    r0 = leer("rebobinado0")
-    lab = subprocess.run([sys.executable, os.path.join(RAIZ, "laboratorio", "rebobinado.py"), "MES", "M1"],
+    dias = leer("rebobinado", a.instrumento, a.marco)
+    r0 = leer("rebobinado0", a.instrumento, a.marco)
+    vivo = leer("rebobinado-vivo", a.instrumento, a.marco, NIVELES_VIVO)
+    lab = subprocess.run([sys.executable, os.path.join(RAIZ, "laboratorio", "rebobinado.py"), a.instrumento, a.marco],
                          capture_output=True, text=True, cwd=RAIZ).stdout
+    if vivo:
+        lab += "\n" + subprocess.run([sys.executable, os.path.join(RAIZ, "laboratorio", "rebobinado.py"), a.instrumento, a.marco, "--nombre", "rebobinado-vivo"],
+                                     capture_output=True, text=True, cwd=RAIZ).stdout
     gasto = ""
     try:
         gasto = subprocess.run([sys.executable, os.path.join(RAIZ, "herramientas", "databento_bajar.py"), "ledger"],
                                capture_output=True, text=True, cwd=RAIZ).stdout.strip().splitlines()[-1]
     except Exception:
         pass
-    datos = {"dias": dias, "sinRetraso": r0, "lab": lab, "gasto": gasto,
+    datos = {"dias": dias, "sinRetraso": r0, "vivo": vivo, "lab": lab, "gasto": gasto,
+             "instrumento": a.instrumento, "marco": a.marco,
              "generado": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}
     tpl = io.open(os.path.join(RAIZ, "herramientas", "visor_rebobinado.html"), encoding="utf-8").read()
     html = tpl.replace("__DATOS__", json.dumps(datos, ensure_ascii=False, separators=(",", ":")))

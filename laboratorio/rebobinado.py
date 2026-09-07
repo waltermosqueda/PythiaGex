@@ -48,7 +48,20 @@ def informe(titulo, vs, sacar, tol, lejos, placebos):
     return "  %-26s toques %3d  freno %5.1f%%  | placebo %4d  %5.1f%%  | ventaja %+5.1f pp | strikes %d" % (titulo, t0, r, tp, rp, r - rp, len(ks))
 
 
+def bloque_vivo(nombre, vs, placebos):
+    """Gamma Vivo anota otras llaves: zero, wall_pos, wall_neg, dom0..dom7 (picos del OI)."""
+    rt = rango_tipico(vs)
+    tol, lejos = 0.6 * rt, 2.5 * rt
+    print("\n%s: %d velas, %s a %s, rango tipico %.2f -> toque a %.2f, venir de mas de %.2f" % (nombre, len(vs), vs[0]["t"], vs[-1]["t"], rt, tol, lejos))
+    print(informe("dominantes (8, OI)", vs, lambda v: [v["niv"].get("dom%d" % i) for i in range(8)], tol, lejos, placebos))
+    print(informe("dominantes (2, OI)", vs, lambda v: [v["niv"].get("dom0"), v["niv"].get("dom1")], tol, lejos, placebos))
+    print(informe("zero (OI, 7 dias)", vs, lambda v: [v["niv"].get("zero")], tol, lejos, placebos))
+    print(informe("muros (OI)", vs, lambda v: [v["niv"].get("wall_pos"), v["niv"].get("wall_neg")], tol, lejos, placebos))
+
+
 def bloque(nombre, vs, placebos):
+    if vs and "wall_pos" in vs[0]["niv"] and "zero_vol" not in vs[0]["niv"]:
+        return bloque_vivo(nombre, vs, placebos)
     rt = rango_tipico(vs)
     tol, lejos = 0.6 * rt, 2.5 * rt
     print("\n%s: %d velas, %s a %s, rango tipico %.2f -> toque a %.2f, venir de mas de %.2f" % (nombre, len(vs), vs[0]["t"], vs[-1]["t"], rt, tol, lejos))

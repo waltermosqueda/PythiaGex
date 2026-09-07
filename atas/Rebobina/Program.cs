@@ -71,6 +71,9 @@ namespace PythiaGex
             nucleo.A.CuantasDominantes = int.Parse(Arg(args, "--dominantes", "2"), inv);
             nucleo.A.Tasa = double.Parse(Arg(args, "--tasa", "0.0375"), inv);
             nucleo.A.Convexidad = Enum.Parse<GammaHoyNucleo.LibroConv>(Arg(args, "--convexidad", "Auto"), true);
+            nucleo.A.RadioDominantesPct = double.Parse(Arg(args, "--radio", "2.0"), inv);
+            nucleo.A.PicoRadioPct = double.Parse(Arg(args, "--pico", "0.35"), inv);
+            nucleo.A.MuchoPct = int.Parse(Arg(args, "--mucho", "50"), inv);
 
             // ---- cadenas
             var cadenas = new List<Feed.Cadena>();
@@ -100,10 +103,28 @@ namespace PythiaGex
             Console.WriteLine("velas: " + velas.Count + " de " + marcoMin + " min entre " + desde.ToString("yyyy-MM-dd HH:mm") + " y " + hasta.ToString("yyyy-MM-dd HH:mm") + " UTC");
             if (velas.Count == 0) return 2;
 
-            // ---- el centinela, limpio: este archivo es del simulador
-            var cent = new Centinela(nombre + "-" + instrumento, "TimeFrame-" + marco);
-            var rutaCent = RutaCentinela(nombre + "-" + instrumento, "TimeFrame-" + marco);
-            try { if (File.Exists(rutaCent)) File.Delete(rutaCent); } catch { }
+            // ---- que indicadores se rebobinan: "hoy", "vivo" o "hoy+vivo"
+            var indicadores = (Arg(args, "--indicadores", "hoy") ?? "hoy").ToLowerInvariant().Split('+', ',', ' ');
+            bool conHoy = indicadores.Contains("hoy"), conVivo = indicadores.Contains("vivo");
+            var vivo = new GammaVivoNucleo();
+            vivo.A.Tasa = nucleo.A.Tasa;
+            vivo.A.DiasMax = int.Parse(Arg(args, "--vivo-dias", "7"), inv);
+            vivo.A.ModoDominante = int.Parse(Arg(args, "--vivo-modo", "1"), inv);
+
+            // ---- los centinelas, limpios: estos archivos son del simulador
+            Centinela cent = null, centV = null; string rutaCent = "", rutaCentV = "";
+            if (conHoy)
+            {
+                cent = new Centinela(nombre + "-" + instrumento, "TimeFrame-" + marco);
+                rutaCent = RutaCentinela(nombre + "-" + instrumento, "TimeFrame-" + marco);
+                try { if (File.Exists(rutaCent)) File.Delete(rutaCent); } catch { }
+            }
+            if (conVivo)
+            {
+                centV = new Centinela(nombre + "-vivo-" + instrumento, "TimeFrame-" + marco);
+                rutaCentV = RutaCentinela(nombre + "-vivo-" + instrumento, "TimeFrame-" + marco);
+                try { if (File.Exists(rutaCentV)) File.Delete(rutaCentV); } catch { }
+            }
 
             int iC = 0, conCadena = 0, sinCadena = 0;
             DateTime diaAnterior = DateTime.MinValue;
@@ -119,16 +140,34 @@ namespace PythiaGex
                     sinCadena++;
                     continue;
                 }
-                var L = nucleo.Calcular(cad, v.C, cierreT);
-                if (L == null || L.SinBase) { sinCadena++; continue; }
-                conCadena++;
-                if (L.TransicionNueva) Console.WriteLine("  " + cierreT.ToString("HH:mm") + " TRANSICION " + L.Alerta);
-                cent.Anotar(k, cierreT, v.O, v.H, v.L, v.C, v.V, 0, 0, L.S, GammaHoyNucleo.Niveles(L));
-                if (auditCada > 0 && k % auditCada == 0)
-                    Console.WriteLine("  " + cierreT.ToString("HH:mm") + " " + GammaHoyNucleo.Audit(L, cad, false));
+                bool alguna = false;
+                if (conHoy)
+                {
+                    var L = nucleo.Calcular(cad, v.C, cierreT);
+                    if (L != null && !L.SinBase)
+                    {
+                        alguna = true;
+                        if (L.TransicionNueva) Console.WriteLine("  " + cierreT.ToString("HH:mm") + " TRANSICION " + L.Alerta);
+                        cent.Anotar(k, cierreT, v.O, v.H, v.L, v.C, v.V, 0, 0, L.S, GammaHoyNucleo.Niveles(L));
+                        if (auditCada > 0 && k % auditCada == 0)
+                            Console.WriteLine("  " + cierreT.ToString("HH:mm") + " " + GammaHoyNucleo.Audit(L, cad, false));
+                    }
+                }
+                if (conVivo)
+                {
+                    var LV = vivo.Calcular(cad, v.C);
+                    if (LV != null && !LV.SinBase)
+                    {
+                        alguna = true;
+                        centV.Anotar(k, cierreT, v.O, v.H, v.L, v.C, v.V, 0, 0, LV.S, GammaVivoNucleo.Niveles(LV));
+                        if (auditCada > 0 && k % auditCada == 0)
+                            Console.WriteLine("  " + cierreT.ToString("HH:mm") + " VIVO zero=" + LV.Zero.ToString("F2", inv) + " +muro=" + LV.WallPos.ToString("F2", inv) + " -muro=" + LV.WallNeg.ToString("F2", inv) + " picos=" + string.Join("/", LV.Picos.Take(4).Select(p => p.ToString("F0", inv))) + " netOI=" + (LV.NetGex / 1e9).ToString("F3", inv) + "B");
+                    }
+                }
+                if (alguna) conCadena++; else sinCadena++;
             }
-            cent.Volcar(true);
-            Console.WriteLine("listo: " + conCadena + " velas con cadena, " + sinCadena + " sin. Centinela: " + rutaCent);
+            cent?.Volcar(true); centV?.Volcar(true);
+            Console.WriteLine("listo: " + conCadena + " velas con cadena, " + sinCadena + " sin. Centinela: " + (conHoy ? rutaCent : "") + (conVivo ? " | vivo: " + rutaCentV : ""));
             return 0;
         }
 
