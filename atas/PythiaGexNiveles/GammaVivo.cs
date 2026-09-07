@@ -3646,7 +3646,7 @@ namespace PythiaGex
             // A LA DERECHA, no a la izquierda: a la izquierda lo tapaba la caja de
             // Nodos de Volumen (visto el 2026-09-07 04:00 en el MES de 1 min). Y
             // se anota en _rectsUsados para que ningun chip se le ponga encima.
-            int xt = Math.Max(x0 + 6, x1 - m.Width - 14);
+            int xt = Math.Max(x0 + 6, x1 - m.Width - 24);
             var rt = new Rectangle(xt, yt, m.Width + 8, m.Height + 2);
             _rectsUsados.Add(rt);
             g.FillRectangle(Color.FromArgb(200, ColFondo), rt);
@@ -4494,15 +4494,21 @@ namespace PythiaGex
             var m1 = g.MeasureString(cab1, f); var m2 = g.MeasureString(cab2, f);
             ancho = Math.Max(ancho, Math.Max(m1.Width, m2.Width) + 14);
             foreach (var d in detalle) ancho = Math.Max(ancho, g.MeasureString(d.Item1, fMin).Width + 14);
-            var rect = new Rectangle(xEje - ancho, area.Top, ancho, Math.Max(40, area.Bottom - margen - area.Top));
+            // el lienzo termina antes del eje (ClipBounds 849 de 913 px, medido):
+            // la columna se pega al borde REAL, si no el porcentaje se corta
+            int xr = xEje;
+            try { var cb = g.ClipBounds; if (cb.Width > 0) xr = Math.Min(xEje, cb.Right - 2); } catch { }
+            var rect = new Rectangle(xr - ancho, area.Top, ancho, Math.Max(40, area.Bottom - margen - area.Top));
             _escRect = rect;
             _tableroRect = rect;   // la banda ACA y cualquier chip la esquivan como al tablero
             g.FillRectangle(Color.FromArgb(235, ColFondo), rect);
             g.DrawLine(new RenderPen(Color.FromArgb(90, ColTexto), 1f), rect.Left, rect.Top, rect.Left, rect.Bottom);
 
             int hf = m1.Height;
-            int yc = rect.Top + 4;
-            _escCabRect = new Rectangle(rect.Left, rect.Top, rect.Width, 2 * (hf + 2) + 6);
+            // 26 y no 4: arriba a la derecha ATAS tiene su boton de reproduccion
+            // y tapaba el primer renglon (visto el 2026-09-07 04:48)
+            int yc = rect.Top + 26;
+            _escCabRect = new Rectangle(rect.Left, yc - 3, rect.Width, 2 * (hf + 2) + 6);
             g.FillRectangle(Color.FromArgb(28, ColTexto), _escCabRect);
             g.DrawString(cab1, f, hayZero ? (positiva ? ColPos : ColNeg) : ColAviso, rect.Left + 6, yc); yc += hf + 2;
             g.DrawString(cab2, f, Color.FromArgb(220, ColTexto), rect.Left + 6, yc); yc += hf + 2;
@@ -4552,44 +4558,71 @@ namespace PythiaGex
                 return Math.Min(1.0, Math.Max(0.0, 2.0 * Phi(-z)));
             }
 
+            // CADA FILA A LA ALTURA DE SU PRECIO, COMO UN DOM.
+            //
+            // La primera version las apilaba parejas desde arriba y el operador
+            // lo vio enseguida: "esta desfasado, corrido" (04:48). La fila del
+            // 7.722 quedaba 150 px arriba del 7.722 de la escala. Ahora cada
+            // fila se apoya en la altura de su precio; si dos se pisan se
+            // corren lo minimo sin cambiar el orden; las que estan fuera de
+            // pantalla se apilan en el borde que corresponde (arriba las de
+            // arriba, abajo las de abajo). Una marquita de color en el borde
+            // derecho la une con el eje.
+            var cont = ChartInfo != null ? ChartInfo.PriceChartContainer : null;
             int hfila = hf + 4;
-            for (int i = 0; i < filas.Count; i++)
+            int yTop = yc, yBot = rect.Bottom - 4;
+            int nF = filas.Count;
+            var alt = new int[nF]; var y = new int[nF]; var enPant = new bool[nF];
+            for (int i = 0; i < nF; i++)
+            {
+                bool vecina = ip >= 0 && (i == ip - 1 || i == ip + 1);
+                alt[i] = hfila + (vecina ? 8 : 0);
+                int yp = int.MinValue;
+                try { if (cont != null) yp = cont.GetYByPrice((decimal)filas[i].Precio, false); } catch { }
+                enPant[i] = yp != int.MinValue && yp >= area.Top && yp <= area.Bottom;
+                y[i] = enPant[i] ? yp - alt[i] / 2 : (yp != int.MinValue && yp < area.Top ? yTop : yBot - alt[i]);
+            }
+            // barrido hacia abajo: ninguna por encima de la anterior (la lista
+            // viene por precio descendente, asi que el orden ya es el del eje)
+            int minY = yTop;
+            for (int i = 0; i < nF; i++) { if (y[i] < minY) y[i] = minY; minY = y[i] + alt[i] + 1; }
+            // barrido hacia arriba: ninguna por debajo del piso
+            int maxY = yBot;
+            for (int i = nF - 1; i >= 0; i--) { if (y[i] + alt[i] > maxY) y[i] = maxY - alt[i]; maxY = y[i] - 1; }
+
+            for (int i = 0; i < nF; i++)
             {
                 var q = filas[i];
+                if (y[i] < yTop) continue;   // no entro: se sacrifica la de mas arriba
                 bool vecina = ip >= 0 && (i == ip - 1 || i == ip + 1);
-                int alto = hfila + (vecina ? 8 : 0);
-                if (yc + alto > rect.Bottom - 4)
-                {
-                    g.DrawString("…", f, Color.FromArgb(160, ColTexto), rect.Left + 6, yc);
-                    break;
-                }
+                int yy = y[i];
                 if (q.EsPrecio)
                 {
-                    g.FillRectangle(colPrecio, new Rectangle(rect.Left + 2, yc, rect.Width - 4, hfila - 1));
-                    g.DrawString("▶ " + px.ToString("N2", es), f, Color.White, rect.Left + 6, yc + 1);
-                    yc += hfila;
+                    g.FillRectangle(colPrecio, new Rectangle(rect.Left + 2, yy, rect.Width - 4, hfila - 1));
+                    g.DrawString("▶ " + px.ToString("N2", es), f, Color.White, rect.Left + 6, yy + 1);
                     continue;
                 }
                 double dist = q.Precio - px;
                 string tDist = px > 0 ? (dist >= 0 ? "+" : "") + dist.ToString("0", es) : "";
                 string izq = q.Nombre + " " + P0(q.Precio) + (tDist.Length > 0 ? " " + tDist : "");
                 string der = Prob(q.Precio);
-                g.FillRectangle(Color.FromArgb(230, q.Col), new Rectangle(rect.Left + 3, yc + 2, 3, hf - 2));
+                g.FillRectangle(Color.FromArgb(230, q.Col), new Rectangle(rect.Left + 3, yy + 2, 3, hf - 2));
                 var mi = g.MeasureString(izq, f);
                 var md = der.Length > 0 ? g.MeasureString(der, f) : default;
                 // si el nombre no entra, se corta por la derecha antes de pisar la chance
-                int libre = rect.Width - 12 - (der.Length > 0 ? md.Width + 6 : 0);
+                int libre = rect.Width - 16 - (der.Length > 0 ? md.Width + 6 : 0);
                 while (izq.Length > 3 && mi.Width > libre) { izq = izq.Substring(0, izq.Length - 1); mi = g.MeasureString(izq, f); }
-                g.DrawString(izq, f, Color.FromArgb(q.EsNodo ? 215 : 240, q.EsNodo ? colNodo : ColTexto), rect.Left + 9, yc + 1);
-                if (der.Length > 0) g.DrawString(der, f, Color.FromArgb(230, q.Col), rect.Right - 6 - md.Width, yc + 1);
+                g.DrawString(izq, f, Color.FromArgb(q.EsNodo ? 215 : 240, q.EsNodo ? colNodo : ColTexto), rect.Left + 9, yy + 1);
+                if (der.Length > 0) g.DrawString(der, f, Color.FromArgb(230, q.Col), rect.Right - 8 - md.Width, yy + 1);
+                // la marquita que la une con el eje: solo si el nivel esta en pantalla
+                if (enPant[i]) g.FillRectangle(Color.FromArgb(230, q.Col), new Rectangle(rect.Right - 5, yy + hf / 2, 5, 2));
                 if (vecina)
                 {
                     double p = ProbNum(q.Precio);
-                    int bw = rect.Width - 18, bx = rect.Left + 9, by = yc + hf + 3;
+                    int bw = rect.Width - 20, bx = rect.Left + 9, by = yy + hf + 3;
                     g.FillRectangle(Color.FromArgb(90, ColTexto), new Rectangle(bx, by, bw, 4));
                     if (!double.IsNaN(p)) g.FillRectangle(Color.FromArgb(220, q.Col), new Rectangle(bx, by, Math.Max(1, (int)(bw * p)), 4));
                 }
-                yc += alto;
             }
         }
 
