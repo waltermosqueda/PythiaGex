@@ -108,3 +108,18 @@ Todo probado antes con calculo independiente y despues en pantalla:
 - Cadena viva: ver [[volumen-opciones-en-vivo]]. ARREGLADA.
 
 Commit `1ec1f69` y siguientes. ATAS es **8.0.14.398**.
+
+## Estado al cierre de la noche (23:20 AR)
+
+- **Instalado en ATAS** (build 22:48): las siete correcciones, la cadena viva
+  por eventos del conector, nodos con ranking (4 maximo), muros atenuados por
+  distancia y vencimiento, circulos de volumen vivo por strike.
+- **Compilado pero NO instalado**: la ESCALERA (peldanos cercanos con
+  probabilidad de toque por vol realizada) y el puente AppDomain entre los dos
+  indicadores. El operador pidio elegir el modelo visual primero: seis
+  maquetas en https://claude.ai/code/artifact/44ed6b61-8f24-47d3-86a6-2f3e26b207f0
+  (1 escalera lateral, 2 etiquetas en el eje, 3 peso por cercania, 4 columna
+  de calor, 5 semaforo minimo, 6 tarjetas). Instalar lo que elija y verificar.
+- Pendiente: NQ live chain (NullReference al buscar NQ) sigue sin arreglar.
+- Regla nueva de seguridad en [[verificar-yo-no-el-usuario]]: nunca ENTER a
+  ciegas a ATAS (aparecio un dialogo de orden de compra a mercado).

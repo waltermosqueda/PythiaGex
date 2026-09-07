@@ -107,6 +107,7 @@ namespace PythiaGex
             public double GexVol;  // lo mismo pero sobre el volumen del dia
             public double Acel;    // cuanto cambia el GEX si S sube 1 %
             public double VolTot;  // contratos operados HOY en ese strike
+            public double Oi;      // interes abierto del strike (de ayer, para todos)
             // LA PARTE QUE VENCE HOY, aparte. Hoy el 0DTE entra sumado adentro
             // de Gex y no hay forma de saber cuanto de un nivel es de hoy y
             // cuanto es estructura de la semana. Son cosas distintas: el 0DTE
@@ -594,6 +595,24 @@ namespace PythiaGex
                                "Pedido por el operador el 2026-09-06: 'no se cual es mas importante'.")]
         public bool JerarquiaVisual { get; set; } = true;
 
+        [Display(Name = "Etiqueta detallada (GEX, OI, aceleracion, volumen vivo)", GroupName = "Pantalla", Order = 8,
+                 Description = "Cada nivel de gamma lleva una segunda linea con su GEX repreciado al precio de " +
+                               "ahora, su interes abierto (de ayer, para todos), su aceleracion (cuanto cambia " +
+                               "el GEX si el precio sube 1 %) y los contratos de opciones operados HOY en ese " +
+                               "strike (Rithmic, en vivo). Modelo 3 elegido por el operador el 2026-09-06.")]
+        public bool EtiquetaDetallada { get; set; } = true;
+
+        [Display(Name = "Tamano de letra de las etiquetas", GroupName = "Pantalla", Order = 10,
+                 Description = "Una sola linea, chica pero legible. 8 es el compromiso medido el 2026-09-06; " +
+                               "con 7 la coma decimal deja de distinguirse.")]
+        [Range(6.5, 12.0)]
+        public decimal TamEtiqueta { get; set; } = 8.0m;
+
+        [Display(Name = "Banda ACA sobre el nivel donde esta el precio", GroupName = "Pantalla", Order = 9,
+                 Description = "Si el precio esta a dos ticks o menos de un nivel (gamma o nodo de volumen), " +
+                               "se pinta una banda tenue de su color y se escribe ACA con su nombre.")]
+        public bool VerBandaAca { get; set; } = true;
+
         [Display(Name = "Ver volumen vivo de opciones por strike (Rithmic)", GroupName = "Flujo", Order = 1,
                  Description = "Circulos en el borde derecho, uno por strike, con tamano segun los contratos " +
                                "operados HOY en las opciones de ES (SecuritySummaryChanged del conector). " +
@@ -608,7 +627,7 @@ namespace PythiaGex
                                "probabilidad de tocarlo dentro del horizonte, calculada con la volatilidad " +
                                "REALIZADA del propio grafico: de noche da poco, en la rueda da mucho. Es " +
                                "un modelo, no un pronostico.")]
-        public bool VerEscalera { get; set; } = true;
+        public bool VerEscalera { get; set; } = false;   // el operador eligio el modelo 3; esta queda opcional
 
         [Display(Name = "Escalera: peldanos por lado", GroupName = "Pantalla", Order = 5)]
         [Range(1, 6)]
@@ -1747,6 +1766,7 @@ namespace PythiaGex
                 if (enIzq)
                 {
                     n.Gex += g; n.GexVol += gv; n.VolTot += f.VolC + f.VolP;
+                    n.Oi += f.OiC + f.OiP;
                     if (dias < 1.0) n.Gex0 += g;   // lo que vence hoy
                     if (Math.Abs(g) > n.GexDom) { n.GexDom = Math.Abs(g); n.DiasDom = dias; }
                 }
@@ -2431,6 +2451,7 @@ namespace PythiaGex
             if (ChartInfo == null) return;
             try { g.SetSmoothingMode(OFT.Rendering.Context.RenderSmoothingModes.AntiAlias); } catch { }
             _etiquetasUsadas.Clear();
+            try { PrepararRender(); } catch (Exception e) { Registrar(e); }
             MapearHistoria();
             var area = ChartArea;
             if (!_latido)
@@ -2600,7 +2621,7 @@ namespace PythiaGex
                 {
                     var col = nv.Gex >= 0 ? ColCercanoPos : ColCercanoNeg;
                     Linea(g, cont, xl0, xl1, nv.Fut, col,
-                          nv.Gex >= 0 ? "freno" : "acel", false, spot, x1, true);
+                          nv.Gex >= 0 ? "freno" : "acel", false, spot, x1, true, false);
                 }
             }
 
@@ -2629,7 +2650,7 @@ namespace PythiaGex
                 foreach (var nv in flujo)
                     Linea(g, cont, xl0, xl1, nv.Fut, ColFlujo,
                           "flujo " + ((int)nv.VolTot).ToString(CultureInfo.InvariantCulture),
-                          false, spot, x1, true);
+                          false, spot, x1, true, false);
             }
 
             // LA ANOTACION VA ADENTRO DEL CHIP QUE YA EXISTE.
@@ -2689,14 +2710,19 @@ namespace PythiaGex
 
             if (VerLineas)
             {
-                Linea(g, cont, xl0, xl1, mp, ColPos, "+wall" + Tam(mp), false, spot, x1);
-                Linea(g, cont, xl0, xl1, mn, ColNeg, "-wall" + Tam(mn), false, spot, x1);
-                Linea(g, cont, xl0, xl1, zero, ColZero, "zero", true, spot, x1);
+                // con la etiqueta detallada el tamano y el vencimiento van en
+                // la segunda linea; sin ella, en el nombre como antes
+                Linea(g, cont, xl0, xl1, mp, ColPos, "+wall" + (EtiquetaDetallada ? "" : Tam(mp)), false, spot, x1);
+                Linea(g, cont, xl0, xl1, mn, ColNeg, "-wall" + (EtiquetaDetallada ? "" : Tam(mn)), false, spot, x1);
+                Linea(g, cont, xl0, xl1, zero, ColZero, "zero " + DiasMax + "d", true, spot, x1, false, false);
                 // el rival del muro disputado, fino: es el otro candidato, no
                 // un nivel mas. Ver el comentario donde se calcula.
                 if (!double.IsNaN(mpRiv)) Linea(g, cont, xl0, xl1, mpRiv, ColPos, "+wall? disputado", false, spot, x1, true);
                 if (!double.IsNaN(mnRiv)) Linea(g, cont, xl0, xl1, mnRiv, ColNeg, "-wall? disputado", false, spot, x1, true);
             }
+
+            // la banda del peldano donde esta parado el precio
+            if (VerBandaAca) { try { BandaAca(g, cont, xl0, xl1); } catch (Exception e) { Registrar(e); } }
 
             // LA FRANJA DE REGIMEN.
             //
@@ -3295,9 +3321,118 @@ namespace PythiaGex
         /// y CUANTOS PUNTOS FALTAN, que es el numero con el que se decide una
         /// entrada.
         /// </summary>
+        // ---- lo que se calcula UNA vez por cuadro y usan todas las etiquetas ----
+        private double _sigHRender, _pxRender, _probRender = double.NaN;
+        private Dictionary<double, (double total, double calls, double puts)> _volVivoRender;
+        private List<(double precio, double vol, double delta, int rango, bool flojo)> _nodosRender;
+        private readonly Dictionary<double, int> _rangoNivel = new();
+
+        /// <summary>El nivel del perfil mas cercano a un precio de futuro, si esta a
+        /// 3 puntos o menos.</summary>
+        private static Nivel? NivelCerca(List<Nivel> pf, double fut)
+        {
+            double mejor = double.MaxValue; Nivel q = default; bool hay = false;
+            foreach (var n in pf)
+            {
+                double d = Math.Abs(n.Fut - fut);
+                if (d < mejor) { mejor = d; q = n; hay = true; }
+            }
+            return hay && mejor <= 3.0 ? q : (Nivel?)null;
+        }
+
+        /// <summary>
+        /// UNA VEZ POR CUADRO: el precio actual, la volatilidad realizada para la
+        /// chance de toque, el volumen vivo por strike, los nodos del otro
+        /// indicador y el RANKING de los niveles de gamma que se van a dibujar
+        /// (G1 = mas |GEX|). Asi todas las etiquetas del cuadro cuentan lo mismo.
+        /// </summary>
+        private void PrepararRender()
+        {
+            try { _pxRender = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { _pxRender = 0; }
+            var (sv, mv) = VolRealizada(Math.Max(10, EscaleraVelasVol));
+            _sigHRender = (sv > 0 && mv > 0) ? sv * Math.Sqrt(Math.Max(1.0, HorizonteProbMin / mv)) : 0;
+            lock (_candado) _volVivoRender = _volVivoCache;
+            _nodosRender = LeerNodos();
+
+            _rangoNivel.Clear();
+            List<Nivel> pf; double mp, mn, mpR, mnR, a0, b0;
+            lock (_candado) { pf = _perfil; mp = _majorPos; mn = _majorNeg; mpR = _mpRival; mnR = _mnRival; a0 = _mp0Ult; b0 = _mn0Ult; }
+            if (pf == null || pf.Count == 0) return;
+            var cands = new List<(double fut, double g)>();
+            foreach (var p in new[] { mp, mn, mpR, mnR, a0, b0 })
+            {
+                if (double.IsNaN(p) || p <= 0) continue;
+                var n = NivelCerca(pf, p);
+                if (n.HasValue) cands.Add((p, Math.Abs(n.Value.Gex)));
+            }
+            int r = 0;
+            foreach (var c in cands.OrderByDescending(c => c.g))
+            {
+                r++;
+                if (!_rangoNivel.ContainsKey(c.fut)) _rangoNivel[c.fut] = r;
+            }
+        }
+
+        /// <summary>Miles de millones o millones, con signo: +3,4B / -791M.</summary>
+        private static string Bm(double v)
+        {
+            var es = CultureInfo.GetCultureInfo("es-AR");
+            if (Math.Abs(v) >= 1e9) return (v / 1e9).ToString("+0.0;-0.0", es) + "B";
+            return (v / 1e6).ToString("+0;-0", es) + "M";
+        }
+
+        /// <summary>
+        /// LA BANDA "ACA": el nivel donde esta parado el precio.
+        ///
+        /// Si el precio esta a dos ticks o menos de un nivel de gamma o de un
+        /// nodo de volumen, se pinta una banda tenue del color de ese nivel y se
+        /// escribe ACA con su nombre. Es la respuesta a "en que nivel estamos".
+        /// Si no hay ninguno tan cerca, no se pinta nada: no hay peldano.
+        /// </summary>
+        private void BandaAca(RenderContext g, IChartContainer cont, int x0, int x1)
+        {
+            if (_pxRender <= 0) return;
+            decimal tick = 0.25m;
+            try { if (InstrumentInfo != null && InstrumentInfo.TickSize > 0) tick = InstrumentInfo.TickSize; } catch { }
+            double tol = (double)tick * 2;
+            string nombre = null; double precio = 0; Color col = ColTexto; double mejor = double.MaxValue;
+            void Cand(string n, double p, Color c)
+            {
+                if (double.IsNaN(p) || p <= 0) return;
+                double d = Math.Abs(p - _pxRender);
+                if (d <= tol && d < mejor) { mejor = d; nombre = n; precio = p; col = c; }
+            }
+            double zero, mp, mn, mpR, mnR;
+            lock (_candado) { zero = _zeroGamma; mp = _majorPos; mn = _majorNeg; mpR = _mpRival; mnR = _mnRival; }
+            Cand("zero", zero, ColZero); Cand("+wall", mp, ColPos); Cand("-wall", mn, ColNeg);
+            Cand("+wall?", mpR, ColPos); Cand("-wall?", mnR, ColNeg);
+            if (_nodosRender != null)
+                foreach (var nd in _nodosRender)
+                    if (!nd.flojo) Cand("nodo #" + nd.rango, nd.precio, Color.FromArgb(235, 200, 60));
+            if (nombre == null) return;
+
+            int ya, yb;
+            try
+            {
+                ya = cont.GetYByPrice((decimal)precio + tick, false);
+                yb = cont.GetYByPrice((decimal)precio - tick, false);
+            }
+            catch { return; }
+            int top = Math.Min(ya, yb), alto = Math.Max(2, Math.Abs(yb - ya));
+            g.FillRectangle(Color.FromArgb(30, col), new Rectangle(x0, top, Math.Max(1, x1 - x0), alto));
+            var f = new RenderFont("Arial", 9.5f);
+            string t = "ACA  " + nombre + "  " + precio.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
+            var m = g.MeasureString(t, f);
+            int yt = top - m.Height - 3;
+            if (yt < ChartArea.Top + 2) yt = top + alto + 3;
+            g.FillRectangle(Color.FromArgb(200, ColFondo), new Rectangle(x0 + 6, yt, m.Width + 8, m.Height + 2));
+            g.FillRectangle(Color.FromArgb(230, col), new Rectangle(x0 + 6, yt, 3, m.Height + 2));
+            g.DrawString(t, f, Color.FromArgb(245, col), x0 + 12, yt + 1);
+        }
+
         private void Linea(RenderContext g, IChartContainer cont, int x0, int x1,
                            double precio, Color col, string nombre, bool grueso,
-                           double spot, int xEje, bool secundario = false)
+                           double spot, int xEje, bool secundario = false, bool detalle = true)
         {
             if (double.IsNaN(precio) || precio <= 0) return;
             int y;
@@ -3310,7 +3445,8 @@ namespace PythiaGex
             string dist = double.IsNaN(falta) ? "" :
                 (falta >= 0 ? "+" : "") + falta.ToString("N0", CultureInfo.GetCultureInfo("es-AR"));
 
-            var f = new RenderFont("Arial", 8.5f);
+            // chica pero legible: el operador pidio una sola linea, minimizada
+            var f = new RenderFont("Arial", (float)Math.Max(6.5m, Math.Min(12m, TamEtiqueta)));
 
             // NIVEL FUERA DE PANTALLA: no se calla, se marca en el borde.
             //
@@ -3387,17 +3523,66 @@ namespace PythiaGex
                                                : System.Drawing.Drawing2D.DashStyle.Solid);
             g.DrawLine(pluma, x0, y, x1, y);
 
-            // el chip, todo junto, contra el eje
-            var txt = string.Format(CultureInfo.GetCultureInfo("es-AR"),
-                                    "{0} {1:N2}", nombre, precio);
+            // EL CHIP: UNA O DOS LINEAS, Y NUNCA PISADO (modelo 3, 2026-09-06).
+            //
+            // Linea 1: ranking por |GEX| (G1, G2...), nombre, que vencimiento lo
+            //          sostiene ("hoy", "2d"), precio, distancia y chance de
+            //          tocarlo en el horizonte (vol realizada del grafico).
+            // Linea 2: GEX repreciado al precio de ahora, interes abierto (de
+            //          AYER, para todos), aceleracion (cuanto cambia el GEX si
+            //          el precio sube 1 %) y contratos de opciones operados HOY
+            //          en ese strike (Rithmic, en vivo). Solo en los niveles de
+            //          gamma; los "cercanos" y los de flujo van con una linea.
+            // El texto nunca baja del 80 % de brillo: la jerarquia la lleva la
+            // linea, no la legibilidad de la etiqueta.
+            var es = CultureInfo.GetCultureInfo("es-AR");
+            string rango = _rangoNivel.TryGetValue(precio, out var rk) ? "G" + rk + " " : "";
+            string tag = "", extra = "";
+            if (detalle && EtiquetaDetallada)
+            {
+                List<Nivel> pf2; lock (_candado) pf2 = _perfil;
+                var nq = pf2 != null ? NivelCerca(pf2, precio) : null;
+                if (nq.HasValue)
+                {
+                    var n = nq.Value;
+                    tag = n.DiasDom > 0
+                        ? (n.DiasDom < 1.0 ? " hoy" : " " + Math.Round(n.DiasDom).ToString("0", es) + "d") : "";
+                    string vv = "-";
+                    var vr = _volVivoRender;
+                    if (vr != null)
+                    {
+                        double mejor = 2.6, tot = double.NaN;
+                        foreach (var kv in vr)
+                        {
+                            double d0 = Math.Abs(kv.Key - precio);
+                            if (d0 < mejor) { mejor = d0; tot = kv.Value.total; }
+                        }
+                        if (!double.IsNaN(tot)) vv = ((int)tot).ToString("N0", es);
+                    }
+                    string oi = n.Oi >= 1000 ? (n.Oi / 1000).ToString("0.#", es) + "k" : n.Oi.ToString("0", es);
+                    // todo en la misma linea, separado por un punto: gex, oi,
+                    // aceleracion (ac) y contratos de opciones operados hoy (vol)
+                    extra = string.Format(es, "  ·  gex {0}  oi {1}  ac {2}  vol {3}", Bm(n.Gex), oi, Bm(n.Acel), vv);
+                }
+            }
+            string prob = "";
+            _probRender = double.NaN;
+            if (_sigHRender > 0 && _pxRender > 0)
+            {
+                double z = Math.Abs(Math.Log(precio / _pxRender)) / _sigHRender;
+                double p = Math.Min(1.0, Math.Max(0.0, 2.0 * Phi(-z)));
+                prob = "  " + (p * 100).ToString("0", es) + "%";
+                _probRender = p;
+            }
+            var txt = rango + nombre + tag + "  " + precio.ToString("N2", es)
+                    + (string.IsNullOrEmpty(dist) ? "" : "  " + dist) + prob + extra;
             var mt = g.MeasureString(txt, f);
-            bool hayDist = !string.IsNullOrEmpty(dist);
-            var md = hayDist ? g.MeasureString(dist, f) : default;
-            int wChip = mt.Width + 10 + (hayDist ? md.Width + 10 : 0);
+            int wChip = mt.Width + 14;
             int hChip = mt.Height + 3;
 
             // que no se pisen entre ellos: se corren en vertical y se les deja
-            // un tirante fino para saber a que linea pertenecen
+            // un tirante fino para saber a que linea pertenecen. La altura que
+            // se reserva es la REAL del chip, con sus dos lineas.
             int yTxt = y - hChip / 2;
             while (_etiquetasUsadas.Any(u => Math.Abs(u - yTxt) < hChip + 1))
                 yTxt -= hChip + 2;
@@ -3412,17 +3597,23 @@ namespace PythiaGex
                 && xc + wChip > _tableroRect.Left)
                 xc = _tableroRect.Left - wChip - 6;
 
-            g.FillRectangle(Color.FromArgb(secundario ? 175 : 225, ColFondo),
+            g.FillRectangle(Color.FromArgb(secundario ? 190 : 230, ColFondo),
                             new Rectangle(xc, yTxt, wChip, hChip));
             g.DrawRectangle(new RenderPen(Color.FromArgb((int)((secundario ? 90 : 150) * peso), col), 1f),
                             new Rectangle(xc, yTxt, wChip, hChip));
             // una barrita del color a la izquierda del chip: identifica el
             // nivel sin tener que leer el nombre
             g.FillRectangle(Color.FromArgb((int)(230 * peso), col), new Rectangle(xc, yTxt, 3, hChip));
-            g.DrawString(txt, f, Color.FromArgb((int)(235 * Math.Max(0.6, peso)), ColTexto), xc + 7, yTxt + 1);
-            if (hayDist)
-                g.DrawString(dist, f, Color.FromArgb((int)(165 * Math.Max(0.6, peso)), ColTexto),
-                             xc + mt.Width + 13, yTxt + 1);
+            g.DrawString(txt, f, Color.FromArgb((int)(240 * Math.Max(0.8, peso)), ColTexto), xc + 7, yTxt + 1);
+
+            // la barrita de chance, a la izquierda del chip: se lee sin leer
+            if (!double.IsNaN(_probRender))
+            {
+                int bw = 40, bx = xc - bw - 6, by = yTxt + hChip / 2 - 3;
+                g.FillRectangle(Color.FromArgb(160, ColFondo), new Rectangle(bx, by, bw, 6));
+                g.FillRectangle(Color.FromArgb((int)(210 * Math.Max(0.6, peso)), col),
+                                new Rectangle(bx, by, Math.Max(1, (int)(bw * _probRender)), 6));
+            }
 
             if (Math.Abs(yTxt + hChip / 2 - y) > 3)
                 g.DrawLine(new RenderPen(Color.FromArgb(90, col), 1f),
@@ -3649,6 +3840,17 @@ namespace PythiaGex
                     ls.Add(Tuple.Create("vivo Rithmic  " + ((int)vv).ToString("N0",
                         CultureInfo.GetCultureInfo("es-AR")) + " contr  " + cv + " strikes",
                         vv > 0 ? ColFlujo : ColAviso));
+                }
+
+                // DE DONDE SALE CADA NUMERO, EN UNA LINEA. El operador pregunto
+                // si "todo" podia ser en tiempo real: esto es la respuesta
+                // honesta, siempre a la vista. El OI es de ayer para todo el
+                // mundo; la IV depende del libro elegido; el volumen es vivo.
+                {
+                    var cu = _cUsada;
+                    string iv = cu != null && cu.EsFuturo ? "IV Rithmic vivo" : "IV CBOE retrasada";
+                    ls.Add(Tuple.Create("OI de ayer (OCC) · " + iv + " · vol Rithmic vivo",
+                                        Color.FromArgb(175, ColTexto)));
                 }
 
                 if (VencIzq != VencDer)

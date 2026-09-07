@@ -275,6 +275,13 @@ namespace PythiaVwap
         [Range(0, 400)]
         public int MargenInferior { get; set; } = 48;
 
+        [Display(Name = "Corrimiento de las etiquetas hacia la izquierda", GroupName = "3. Pantalla", Order = 18,
+                 Description = "Las etiquetas de los nodos se corren esta cantidad de pixeles a la izquierda "
+                             + "para no compartir columna con los chips de Gamma Vivo, que viven pegados al "
+                             + "eje. Medido el 2026-09-06: los chips de dos lineas miden hasta 300 px.")]
+        [Range(0, 900)]
+        public int DesplazarEtiquetas { get; set; } = 380;
+
         [Display(Name = "Color de los nodos", GroupName = "3. Pantalla", Order = 20)]
         public MColor ColorNodo { get; set; } = MColor.FromArgb(255, 235, 200, 60);
 
@@ -773,7 +780,7 @@ namespace PythiaVwap
                 var txt = string.Format(cultura, "#{5}  {0:N2}   {1}   d {2}{3}{4}",
                                         n.Precio, Corto(n.Volumen), sig, Corto(n.Delta), red, rango);
                 var m = g.MeasureString(txt, f);
-                int x = area.Right - m.Width - MargenEje;
+                int x = area.Right - m.Width - MargenEje - DesplazarEtiquetas;
                 if (x < area.Left + 4) x = area.Left + 4;
                 int yy = y - m.Height - 2;
                 if (yy < area.Top) yy = y + 2;

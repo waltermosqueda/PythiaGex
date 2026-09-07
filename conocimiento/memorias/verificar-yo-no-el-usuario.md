@@ -61,3 +61,17 @@ Una etiqueta superpuesta molesta; **una etiqueta lejos de su nivel miente** sobr
 **Why:** el proyecto entero existe para que ningún número llegue sin verificar. Entregar sin mirar la pantalla es exactamente el problema que vinimos a resolver, aplicado a mi propio trabajo.
 
 **How to apply:** compilar → instalar → reiniciar ATAS → captura → medir → recién ahí contarle. Ver [[mirar-pantalla-antes-de-responder-atas]] y [[cambios-atas-de-a-uno]].
+
+## Nunca mandar un ENTER "a ciegas" a ATAS (2026-09-06)
+
+Para conectar y para el dialogo "Save current workspace?" use
+`WScript.Shell.AppActivate(pid)` + `SendKeys('{ENTER}')` cuando el clic del
+control de escritorio no llegaba (TextInputHost o el escritorio al frente).
+Funciono cuatro veces, pero a las 22:55 aparecio en el grafico de MES 5m un
+dialogo **"Order confirmation: MESU6 Buy/Long, Market, 2 Lots"** que nadie
+pidio. No se confirmo y desaparecio solo (cuenta ATAS Sim). No pude probar si
+lo causo un ENTER que cayo en la ventana principal con "Trading on chart"
+activo o un clic del operador, pero la regla queda: **el ENTER solo va a un
+dialogo verificado con captura un segundo antes; si no se puede verificar, se
+le pide al operador que lo apriete el.** Y despues de cualquier reinicio,
+mirar `Open PnL` en el panel de cuenta antes de seguir.
