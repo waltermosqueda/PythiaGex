@@ -16,6 +16,11 @@ namespace PythiaVwap
     /// <summary>Donde se dibuja la caja de control.</summary>
     public enum EsquinaCaja { ArribaIzquierda, AbajoIzquierda }
 
+    /// <summary>Como se dibuja cada nodo: una muesca corta en el borde izquierdo
+    /// (elegido por el operador el 2026-09-07 para no confundirlos con las
+    /// lineas de gamma) o una raya punteada que cruza el grafico.</summary>
+    public enum EstiloNodo { Muesca, Raya }
+
     /// <summary>
     /// PythiaFlow - Nodos de Volumen.
     ///
@@ -281,6 +286,16 @@ namespace PythiaVwap
                              + "eje. Medido el 2026-09-06: los chips de dos lineas miden hasta 300 px.")]
         [Range(0, 900)]
         public int DesplazarEtiquetas { get; set; } = 330;
+
+        [Display(Name = "Estilo del nodo", GroupName = "3. Pantalla", Order = 19,
+                 Description = "Muesca: una marca corta en el borde izquierdo, a la derecha de las barras " +
+                               "de Gamma Vivo, con su etiqueta al lado. Raya: la linea punteada de antes.")]
+        public EstiloNodo Estilo { get; set; } = EstiloNodo.Muesca;
+
+        [Display(Name = "Donde arranca la muesca (px desde el borde)", GroupName = "3. Pantalla", Order = 19,
+                 Description = "Las barras de Gamma Vivo ocupan unos 78 px a la izquierda; la muesca va despues.")]
+        [Range(0, 400)]
+        public int MargenMuesca { get; set; } = 84;
 
         [Display(Name = "Color de los nodos", GroupName = "3. Pantalla", Order = 20)]
         public MColor ColorNodo { get; set; } = MColor.FromArgb(255, 235, 200, 60);
@@ -810,7 +825,15 @@ namespace PythiaVwap
                                     System.Drawing.Drawing2D.DashStyle.Dot)
                     : new RenderPen(Color.FromArgb(alfa, col), ancho,
                                     System.Drawing.Drawing2D.DashStyle.Dot);
-                g.DrawLine(pluma, area.Left, y, Math.Max(area.Left + 10, area.Right - MargenEje + 40), y);
+                if (Estilo == EstiloNodo.Muesca)
+                {
+                    // muesca corta: largo por ranking, misma altura de trazo
+                    int largo = Math.Max(8, 26 - rango * 4);
+                    g.FillRectangle(Color.FromArgb(n.Flojo ? alfa / 2 : alfa, col),
+                                    new Rectangle(area.Left + MargenMuesca, y - 2, largo, 4));
+                }
+                else
+                    g.DrawLine(pluma, area.Left, y, Math.Max(area.Left + 10, area.Right - MargenEje + 40), y);
 
                 // etiqueta solo en los primeros: los demas se leen por el grosor
                 if (rango > EtiquetasMax) continue;
@@ -842,7 +865,11 @@ namespace PythiaVwap
                 var txt = string.Format(cultura, "#{5}  {0:N2}   {1}   d {2}{3}{4}{6}",
                                         n.Precio, Corto(n.Volumen), sig, Corto(n.Delta), red, rango, cerca);
                 var m = g.MeasureString(txt, f);
-                int x = area.Right - m.Width - MargenEje - DesplazarEtiquetas;
+                // con muesca la etiqueta va al lado de la muesca, a la izquierda;
+                // con raya, corrida a la izquierda de los chips de Gamma Vivo
+                int x = Estilo == EstiloNodo.Muesca
+                    ? area.Left + MargenMuesca + 32
+                    : area.Right - m.Width - MargenEje - DesplazarEtiquetas;
                 if (x < area.Left + 4) x = area.Left + 4;
                 // ARRIBA DE LA RAYA, O ABAJO SI ARRIBA TAPA OTRA. Otra raya es
                 // cualquier otro nodo o cualquier nivel de gamma que Gamma

@@ -108,6 +108,12 @@ namespace PythiaGex
             public double Acel;    // cuanto cambia el GEX si S sube 1 %
             public double VolTot;  // contratos operados HOY en ese strike
             public double Oi;      // interes abierto del strike (de ayer, para todos)
+            // LA PARTE DEL VENCIMIENTO MAS CERCANO. El operador eligio (2026-09-07)
+            // que manden los tres strikes mas pesados del vencimiento que vence
+            // primero, y que el punto de la barra izquierda mida cuanto de la
+            // gamma del strike vence ahi.
+            public double GexVenc;
+            public double DiasVenc;
             // LA PARTE QUE VENCE HOY, aparte. Hoy el 0DTE entra sumado adentro
             // de Gex y no hay forma de saber cuanto de un nivel es de hoy y
             // cuanto es estructura de la semana. Son cosas distintas: el 0DTE
@@ -648,7 +654,31 @@ namespace PythiaGex
                                "operados HOY en las opciones de ES (SecuritySummaryChanged del conector). " +
                                "Es el unico dato del mapa que no es de ayer, y es en vivo. Los tres " +
                                "mayores llevan el numero.")]
-        public bool VerVolumenVivo { get; set; } = true;
+        // RENOMBRADA (era VerVolumenVivo = true): desde el diseño del 2026-09-07
+        // el volumen vivo va como punto sobre la barra de aceleracion de cada
+        // strike; los circulos sueltos del borde quedan opcionales.
+        public bool VerVolumenVivoBorde { get; set; } = false;
+
+        [Display(Name = "Puntos en las barras (vence pronto / volumen vivo)", GroupName = "Dibujo", Order = 63,
+                 Description = "A la izquierda, sobre la punta de la barra de gamma, un punto cuyo tamaño " +
+                               "es la parte de esa gamma que vence en el vencimiento mas cercano. A la " +
+                               "derecha, sobre la barra de aceleracion, un punto cuyo tamaño es el volumen " +
+                               "de opciones operado hoy en ese strike (Rithmic, vivo). Centrados en la fila.")]
+        public bool VerPuntosBarras { get; set; } = true;
+
+        [Display(Name = "Cuantos strikes del vencimiento mas cercano", GroupName = "Calculo", Order = 48,
+                 Description = "Los N mas pesados del vencimiento que vence primero (0DTE si existe). " +
+                               "Elegido por el operador el 2026-09-07: tres. Los pegados del mismo signo " +
+                               "se fusionan en una sola linea mas gruesa.")]
+        [Range(1, 5)]
+        public int CuantosDelVencimiento { get; set; } = 3;
+
+        [Display(Name = "Piso para 'el mas cercano' (% del mayor)", GroupName = "Calculo", Order = 49,
+                 Description = "El strike mas cercano por arriba y por abajo del precio se dibuja punteado " +
+                               "con su chip completo, siempre que tenga al menos este porcentaje de la gamma " +
+                               "del mayor. Con 0 se toma el strike mas cercano pese lo que pese.")]
+        [Range(0, 50)]
+        public int PisoCercanoPct { get; set; } = 5;
 
         [Display(Name = "Ver la ESCALERA de niveles", GroupName = "Pantalla", Order = 4,
                  Description = "Los peldanos mas cercanos al precio, arriba y abajo, en una sola lista: " +
@@ -1783,6 +1813,11 @@ namespace PythiaGex
               : modo == 1 ? dias <= horizonte     // la ventana elegida
               : true;                             // todo lo que haya
 
+            // el vencimiento mas cercano que entra en la ventana: la gamma que
+            // vence ahi se guarda aparte (GexVenc) para el diseño elegido
+            double diasMin = double.MaxValue;
+            foreach (var dd in c.Dias) if (dd > 0 && dd <= horizonte && dd < diasMin) diasMin = dd;
+
             foreach (var f in c.Filas)
             {
                 if (f.V < 0 || f.V >= c.Dias.Length) continue;
@@ -1809,6 +1844,7 @@ namespace PythiaGex
                     n.Gex += g; n.GexVol += gv; n.VolTot += f.VolC + f.VolP;
                     n.Oi += f.OiC + f.OiP;
                     if (dias < 1.0) n.Gex0 += g;   // lo que vence hoy
+                    if (Math.Abs(dias - diasMin) < 0.01) { n.GexVenc += g; n.DiasVenc = dias; }
                     if (Math.Abs(g) > n.GexDom) { n.GexDom = Math.Abs(g); n.DiasDom = dias; }
                 }
                 if (enDer) { n.Acel += (gUp - g); }
@@ -2607,6 +2643,16 @@ namespace PythiaGex
                     int al = (int)(OpacidadBarras * 2.55 * (0.45 + 0.55 * f));
                     g.FillRectangle(Color.FromArgb(Math.Min(255, Math.Max(12, al)), col),
                         new Rectangle(x0, y - alto / 2, w, alto));
+                    // EL PUNTO DE LA IZQUIERDA: cuanto de esta gamma vence en el
+                    // vencimiento mas cercano. Grande = poste que se evapora a
+                    // las 16:00 ET; chico = terraplen que sigue mañana.
+                    if (VerPuntosBarras)
+                    {
+                        double parte = Math.Min(1.0, Math.Abs(n.GexVenc) / Math.Max(1e-9, Math.Abs(n.Gex)));
+                        int r = (int)Math.Round(1.5 + 4.5 * parte);
+                        g.FillEllipse(Color.FromArgb(235, 255, 255, 255), new Rectangle(x0 + w - r, y - r, 2 * r, 2 * r));
+                        g.DrawEllipse(new RenderPen(Color.FromArgb(220, col), 1f), new Rectangle(x0 + w - r, y - r, 2 * r, 2 * r));
+                    }
                     if (VerEstelaEnBarras) Estela(g, n.K, mx, ancho, x0, y, true, alto);
                 }
                 if (VerAcel && mxA > 0 && Math.Abs(n.Acel) > 0)
@@ -2617,6 +2663,23 @@ namespace PythiaGex
                     int al = (int)(OpacidadBarras * 2.55 * (0.45 + 0.55 * f));
                     g.FillRectangle(Color.FromArgb(Math.Min(255, Math.Max(12, al)), col),
                         new Rectangle(x1 - w, y - alto / 2, w, alto));
+                    // EL PUNTO DE LA DERECHA: contratos de opciones operados HOY
+                    // en el strike de ES mas cercano (Rithmic, en vivo). Es el
+                    // unico dato del mapa que no es de ayer.
+                    if (VerPuntosBarras && _volVivoRender != null && _maxVolVivoRender > 0)
+                    {
+                        double mejor = 2.6, tot = 0;
+                        foreach (var kv in _volVivoRender)
+                        {
+                            double d0 = Math.Abs(kv.Key - n.Fut);
+                            if (d0 < mejor) { mejor = d0; tot = kv.Value.total; }
+                        }
+                        if (tot > 0)
+                        {
+                            int r = (int)Math.Round(1.5 + 5.5 * Math.Sqrt(tot / _maxVolVivoRender));
+                            g.FillEllipse(Color.FromArgb(220, ColFlujo), new Rectangle(x1 - w - r, y - r, 2 * r, 2 * r));
+                        }
+                    }
                     if (VerEstelaEnBarras) Estela(g, n.K, mxA, ancho, x1, y, false, alto);
                 }
             }
@@ -2625,7 +2688,7 @@ namespace PythiaGex
             if (VerPelotitas) Pelotitas(g, cont, x0, x1);
             if (VerZonasRadar) Zonas(g, cont, x0, x1);
             if (VerBigTrades) Puntos(g, cont, x0, x1);
-            if (VerVolumenVivo) VolumenVivo(g, cont, x1);
+            if (VerVolumenVivoBorde) VolumenVivo(g, cont, x1);
 
             // LAS LINEAS NO CRUZAN EL PERFIL.
             //
@@ -2649,26 +2712,8 @@ namespace PythiaGex
             // El signo dice que hace la mesa en ese nivel: gamma positiva la
             // obliga a comprar caidas y vender subas (frena), negativa a lo
             // contrario (acelera).
-            if (VerNivelesCercanos && perfil.Count > 0 && spot > 0)
-            {
-                // POR LADO, NO EN BLOQUE. Antes se tomaban los N mas pesados
-                // dentro del radio, y como abajo del precio suele haber mas
-                // gamma, arriba no quedaba ninguno: el operador no tenia
-                // "siguiente arriba". Ahora la mitad de los cercanos va por
-                // encima y la otra mitad por debajo. Llevan el chip completo
-                // (detalle = true): son exactamente los peldanos que se miran.
-                // con el maximo GLOBAL, no el visible: el ranking (PrepararRender)
-                // usa el global, y con dos pisos distintos un cercano quedaba
-                // dibujado pero sin su "G" (visto el 2026-09-07 con 7.736)
-                double mxGlobal; lock (_candado) mxGlobal = _maxGex;
-                var cerca = SeleccionarCercanos(perfil, _pxRender, mp, mn, mxGlobal);
-                foreach (var nv in cerca)
-                {
-                    var col = nv.Gex >= 0 ? ColCercanoPos : ColCercanoNeg;
-                    Linea(g, cont, xl0, xl1, nv.Fut, col,
-                          nv.Gex >= 0 ? "freno" : "acel", false, spot, x1, true, true);
-                }
-            }
+            // (los "cercanos por lado" de la version anterior fueron reemplazados
+            // por el diseño elegido el 2026-09-07: ver DibujarElegidos)
 
             // DONDE SE ESTA REESCRIBIENDO EL MAPA HOY.
             //
@@ -2745,26 +2790,13 @@ namespace PythiaGex
                 return (string.IsNullOrEmpty(tot) ? "" : "  " + tot) + dte + hoy;
             }
 
-            if (VerNiveles0DTE)
-            {
-                double a0, b0;
-                lock (_candado) { a0 = _mp0Ult; b0 = _mn0Ult; }
-                if (a0 > 0) Linea(g, cont, xl0, xl1, a0, ColPos, "0DTE +", false, spot, x1, true);
-                if (b0 > 0) Linea(g, cont, xl0, xl1, b0, ColNeg, "0DTE -", false, spot, x1, true);
-            }
-
-            if (VerLineas)
-            {
-                // con la etiqueta detallada el tamano y el vencimiento van en
-                // la segunda linea; sin ella, en el nombre como antes
-                Linea(g, cont, xl0, xl1, mp, ColPos, "+wall" + (EtiquetaDetallada ? "" : Tam(mp)), false, spot, x1);
-                Linea(g, cont, xl0, xl1, mn, ColNeg, "-wall" + (EtiquetaDetallada ? "" : Tam(mn)), false, spot, x1);
-                Linea(g, cont, xl0, xl1, zero, ColZero, "zero " + DiasMax + "d", true, spot, x1, false, false);
-                // el rival del muro disputado, fino: es el otro candidato, no
-                // un nivel mas. Ver el comentario donde se calcula.
-                if (!double.IsNaN(mpRiv)) Linea(g, cont, xl0, xl1, mpRiv, ColPos, "+wall? disputado", false, spot, x1, true);
-                if (!double.IsNaN(mnRiv)) Linea(g, cont, xl0, xl1, mnRiv, ColNeg, "-wall? disputado", false, spot, x1, true);
-            }
+            // EL DISEÑO ELEGIDO POR EL OPERADOR (2026-09-07, 03:40), por maqueta:
+            //   Zero Γ rayado; Call Wall y Put Wall solidos; los tres strikes mas
+            //   pesados del VENCIMIENTO MAS CERCANO solidos con grosor por ranking,
+            //   fusionando los pegados del mismo signo; el mas cercano por arriba
+            //   y por abajo PUNTEADOS con el chip completo y la chance en vivo.
+            //   Nunca mas de seis lineas. El rival disputado va solo en el panel.
+            if (VerLineas) DibujarElegidos(g, cont, xl0, xl1, x1, perfil, spot, mp, mn, zero);
 
             // la banda del peldano donde esta parado el precio
             if (VerBandaAca) { try { BandaAca(g, cont, xl0, xl1); } catch (Exception e) { Registrar(e); } }
@@ -3367,7 +3399,7 @@ namespace PythiaGex
         /// entrada.
         /// </summary>
         // ---- lo que se calcula UNA vez por cuadro y usan todas las etiquetas ----
-        private double _sigHRender, _pxRender, _probRender = double.NaN;
+        private double _sigHRender, _pxRender, _probRender = double.NaN, _maxVolVivoRender;
         private Dictionary<double, (double total, double calls, double puts)> _volVivoRender;
         private List<(double precio, double vol, double delta, int rango, bool flojo)> _nodosRender;
         private readonly Dictionary<double, int> _rangoNivel = new();
@@ -3397,6 +3429,9 @@ namespace PythiaGex
             var (sv, mv) = VolRealizada(Math.Max(10, EscaleraVelasVol));
             _sigHRender = (sv > 0 && mv > 0) ? sv * Math.Sqrt(Math.Max(1.0, HorizonteProbMin / mv)) : 0;
             lock (_candado) _volVivoRender = _volVivoCache;
+            _maxVolVivoRender = 0;
+            if (_volVivoRender != null)
+                foreach (var kv in _volVivoRender) _maxVolVivoRender = Math.Max(_maxVolVivoRender, kv.Value.total);
             _nodosRender = LeerNodos();
             // el precio y la volatilidad realizada del cuadro, para que el
             // indicador de nodos pueda escribir en sus etiquetas la misma
@@ -3557,12 +3592,14 @@ namespace PythiaGex
         /// Deja en _probRender la chance, para la barrita.
         /// </summary>
         private void TextoChip(double precio, string nombre, string dist, bool detalle,
-                               out string txt1, out string txt2)
+                               out string txt1, out string txt2, bool conProb = true)
         {
             var es = CultureInfo.GetCultureInfo("es-AR");
-            // el ranking solo en los niveles de gamma con detalle: una linea de
-            // flujo al mismo precio NO es "G2" otra vez
-            string rango = detalle && _rangoNivel.TryGetValue(precio, out var rk) ? "G" + rk + " " : "";
+            // Sin prefijo "G1": desde el diseño del 2026-09-07 el nombre ya trae
+            // el ranking donde importa ("2DTE #1") y los muros se llaman por su
+            // nombre estandar. El ranking interno sigue calculandose por si se
+            // quiere volver a mostrar.
+            string rango = "";
             string tag = "", extra = "";
             if (detalle && EtiquetaDetallada)
             {
@@ -3591,7 +3628,7 @@ namespace PythiaGex
             }
             string prob = "";
             _probRender = double.NaN;
-            if (_sigHRender > 0 && _pxRender > 0)
+            if (conProb && _sigHRender > 0 && _pxRender > 0)
             {
                 double z = Math.Abs(Math.Log(precio / _pxRender)) / _sigHRender;
                 double p = Math.Min(1.0, Math.Max(0.0, 2.0 * Phi(-z)));
@@ -3642,9 +3679,150 @@ namespace PythiaGex
             return false;
         }
 
+        private sealed class Elegido
+        {
+            public double Precio, Gex;
+            public Color Col;
+            public string Nombre = "";
+            public float Ancho = 1.4f;
+            public bool Punteada, Chip;
+            public readonly List<double> Miembros = new();
+        }
+
+        /// <summary>
+        /// LOS NIVELES QUE SE DIBUJAN, SEGUN EL DISEÑO ELEGIDO EL 2026-09-07.
+        ///
+        ///  1. Call Wall y Put Wall: los strikes mas pesados a cada lado en el
+        ///     mapa de DiasMax dias. Solidos, gruesos.
+        ///  2. Los N (3) strikes mas pesados del VENCIMIENTO MAS CERCANO (0DTE
+        ///     si existe; hoy el martes). Solidos, grosor por ranking, nombre
+        ///     "2DTE #1".
+        ///  3. FUSION: si dos de los anteriores estan a un paso de strike y
+        ///     tienen el mismo signo, son UNA linea mas gruesa en el precio
+        ///     ponderado por gamma, con las dos etiquetas y una muesca en cada
+        ///     miembro. Signos opuestos nunca se fusionan.
+        ///  4. El mas cercano por ARRIBA y por ABAJO del precio, con al menos
+        ///     PisoCercanoPct de la gamma del mayor: PUNTEADO, con el chip
+        ///     completo (distancia, chance de toque en vivo, gex, oi, ac, vol).
+        ///     Si coincide con uno de los anteriores, ese se lleva el chip.
+        ///  5. Zero Γ rayado con su chance.
+        /// Los demas solo llevan etiqueta corta: nombre, precio, distancia.
+        /// </summary>
+        private void DibujarElegidos(RenderContext g, IChartContainer cont, int xl0, int xl1, int xEje,
+                                     List<Nivel> perfil, double spot, double mp, double mn, double zero)
+        {
+            double px = _pxRender;
+            if (px <= 0 || perfil == null || perfil.Count == 0) return;
+            double mxG = 0;
+            foreach (var n in perfil) mxG = Math.Max(mxG, Math.Abs(n.Gex));
+
+            // el paso entre strikes, medido en la cadena (5 en SPX, 5 en ES)
+            var ks = new List<double>();
+            foreach (var n in perfil) ks.Add(n.Fut);
+            ks.Sort();
+            double paso = 5.0;
+            if (ks.Count > 2)
+            {
+                var difs = new List<double>();
+                for (int i = 1; i < ks.Count; i++) if (ks[i] - ks[i - 1] > 0.01) difs.Add(ks[i] - ks[i - 1]);
+                if (difs.Count > 0) { difs.Sort(); paso = difs[difs.Count / 2]; }
+            }
+
+            string Venc(Nivel n) => n.DiasVenc > 0
+                ? (n.DiasVenc < 1.0 ? "0DTE" : Math.Round(n.DiasVenc).ToString("0", CultureInfo.InvariantCulture) + "DTE")
+                : "";
+
+            var cands = new List<Elegido>();
+            void Agregar(Nivel n, string nombre, float ancho, Color col)
+            {
+                foreach (var e in cands)
+                    if (Math.Abs(e.Precio - n.Fut) < 0.01)
+                    { e.Nombre += " + " + nombre; e.Ancho = Math.Max(e.Ancho, ancho) + 0.8f; return; }
+                var el = new Elegido { Precio = n.Fut, Gex = n.Gex, Col = col, Nombre = nombre, Ancho = ancho };
+                el.Miembros.Add(n.Fut);
+                cands.Add(el);
+            }
+            var nmp = NivelCerca(perfil, mp); if (nmp.HasValue) Agregar(nmp.Value, "Call Wall", 2.6f, ColPos);
+            var nmn = NivelCerca(perfil, mn); if (nmn.HasValue) Agregar(nmn.Value, "Put Wall", 2.6f, ColNeg);
+
+            var top = new List<Nivel>();
+            foreach (var n in perfil) if (Math.Abs(n.GexVenc) > 0) top.Add(n);
+            top.Sort((a, b) => Math.Abs(b.GexVenc).CompareTo(Math.Abs(a.GexVenc)));
+            int cuantos = Math.Max(1, CuantosDelVencimiento);
+            for (int i = 0; i < Math.Min(cuantos, top.Count); i++)
+            {
+                var n = top[i];
+                Agregar(n, Venc(n) + " #" + (i + 1), 2.2f - 0.4f * i, n.GexVenc >= 0 ? ColPos : ColNeg);
+            }
+
+            // FUSION de pegados del mismo signo
+            cands.Sort((a, b) => a.Precio.CompareTo(b.Precio));
+            var fus = new List<Elegido>();
+            foreach (var c in cands)
+            {
+                Elegido ult = fus.Count > 0 ? fus[fus.Count - 1] : null;
+                if (ult != null && Math.Sign(ult.Gex) == Math.Sign(c.Gex)
+                    && c.Precio - ult.Miembros.Max() <= paso + 0.01)
+                {
+                    double w1 = Math.Abs(ult.Gex), w2 = Math.Abs(c.Gex);
+                    ult.Precio = (ult.Precio * w1 + c.Precio * w2) / Math.Max(1e-9, w1 + w2);
+                    ult.Gex += c.Gex;
+                    ult.Miembros.AddRange(c.Miembros);
+                    ult.Nombre += " + " + c.Nombre;
+                    ult.Ancho = Math.Max(ult.Ancho, c.Ancho) + 1.2f;
+                }
+                else fus.Add(c);
+            }
+
+            // EL MAS CERCANO POR ARRIBA Y POR ABAJO
+            double piso = mxG * Math.Max(0, Math.Min(50, PisoCercanoPct)) / 100.0;
+            bool hayA = false, hayB = false; Nivel na = default, nb = default;
+            double da = double.MaxValue, db = double.MaxValue;
+            foreach (var n in perfil)
+            {
+                if (Math.Abs(n.Gex) < piso) continue;
+                if (n.Fut > px && n.Fut - px < da) { da = n.Fut - px; na = n; hayA = true; }
+                if (n.Fut < px && px - n.Fut < db) { db = px - n.Fut; nb = n; hayB = true; }
+            }
+            var punteados = new List<Elegido>();
+            void Cercano(Nivel n)
+            {
+                foreach (var e in fus)
+                    foreach (var m in e.Miembros)
+                        if (Math.Abs(m - n.Fut) < 0.01) { e.Chip = true; return; }
+                var el = new Elegido
+                {
+                    Precio = n.Fut, Gex = n.Gex, Col = n.Gex >= 0 ? ColPos : ColNeg,
+                    Nombre = n.Gex >= 0 ? "+Γ" : "−Γ", Ancho = 1.4f, Punteada = true, Chip = true,
+                };
+                el.Miembros.Add(n.Fut);
+                punteados.Add(el);
+            }
+            if (hayA) Cercano(na);
+            if (hayB) Cercano(nb);
+
+            // DIBUJO
+            Linea(g, cont, xl0, xl1, zero, ColZero, "Zero Γ", true, spot, xEje, false, false);
+            foreach (var e in fus)
+            {
+                Linea(g, cont, xl0, xl1, e.Precio, e.Col, e.Nombre, false, spot, xEje, false, e.Chip, false, !e.Chip, e.Ancho);
+                if (e.Miembros.Count > 1)
+                    foreach (var m in e.Miembros)
+                    {
+                        int ym;
+                        try { ym = cont.GetYByPrice((decimal)m, false); } catch { continue; }
+                        if (ym < ChartArea.Top || ym > ChartArea.Bottom) continue;
+                        g.DrawLine(new RenderPen(Color.FromArgb(170, e.Col), 1f), xl0, ym, xl0 + 14, ym);
+                    }
+            }
+            foreach (var e in punteados)
+                Linea(g, cont, xl0, xl1, e.Precio, e.Col, e.Nombre, false, spot, xEje, false, true, true, false, e.Ancho);
+        }
+
         private void Linea(RenderContext g, IChartContainer cont, int x0, int x1,
                            double precio, Color col, string nombre, bool grueso,
-                           double spot, int xEje, bool secundario = false, bool detalle = true)
+                           double spot, int xEje, bool secundario = false, bool detalle = true,
+                           bool punteada = false, bool corto = false, float anchoLinea = 0f)
         {
             if (double.IsNaN(precio) || precio <= 0) return;
             int y;
@@ -3671,7 +3849,7 @@ namespace PythiaGex
                 if (!MarcarFueraDePantalla) return;
                 bool arriba = y < ChartArea.Top;
                 // el mismo texto que el chip sobre la raya, con la flecha adelante
-                TextoChip(precio, nombre, dist, detalle, out var o1, out var o2);
+                TextoChip(precio, nombre, dist, detalle && !corto, out var o1, out var o2, !corto);
                 o1 = (arriba ? "▲ " : "▼ ") + o1;
                 var m1 = g.MeasureString(o1, f);
                 var m2 = o2.Length > 0 ? g.MeasureString(o2, f) : default;
@@ -3756,11 +3934,15 @@ namespace PythiaGex
             // Los cercanos van mas finos y mas apagados que los majors: son
             // mas, y si pesaran lo mismo la pantalla perderia jerarquia.
             int alfaLinea = (int)((secundario ? 95 : (grueso ? 190 : 140)) * peso);
-            var pluma = new RenderPen(Color.FromArgb(alfaLinea, col),
-                                      (float)((secundario ? 1f : (grueso ? 1.6f : 1.1f)) * (0.6 + 0.4 * peso)),
-                                      secundario ? System.Drawing.Drawing2D.DashStyle.Dot
-                                      : grueso ? System.Drawing.Drawing2D.DashStyle.Dash
-                                               : System.Drawing.Drawing2D.DashStyle.Solid);
+            // el ancho explicito (fusiones, ranking) le gana al calculado; el
+            // punteado es para "el mas cercano por arriba y por abajo"
+            float anchoPen = anchoLinea > 0 ? (float)(anchoLinea * (0.7 + 0.3 * peso))
+                           : (float)((secundario ? 1f : (grueso ? 1.6f : 1.1f)) * (0.6 + 0.4 * peso));
+            var estilo = punteada ? System.Drawing.Drawing2D.DashStyle.Dot
+                       : secundario ? System.Drawing.Drawing2D.DashStyle.Dot
+                       : grueso ? System.Drawing.Drawing2D.DashStyle.Dash
+                                : System.Drawing.Drawing2D.DashStyle.Solid;
+            var pluma = new RenderPen(Color.FromArgb(Math.Max(alfaLinea, punteada ? 170 : 0), col), anchoPen, estilo);
             g.DrawLine(pluma, x0, y, x1, y);
 
             // EL CHIP: UNA O DOS LINEAS, Y NUNCA PISADO (modelo 3, 2026-09-06).
@@ -3776,8 +3958,9 @@ namespace PythiaGex
             // El texto nunca baja del 80 % de brillo: la jerarquia la lleva la
             // linea, no la legibilidad de la etiqueta.
             // el texto lo arma TextoChip, el mismo para el chip sobre la raya y
-            // para el chip fijado en el borde cuando el nivel esta fuera de pantalla
-            TextoChip(precio, nombre, dist, detalle, out var txt1, out var txt2);
+            // para el chip fijado en el borde cuando el nivel esta fuera de pantalla.
+            // "corto" = etiqueta breve (nombre, precio, distancia), sin chance ni datos
+            TextoChip(precio, nombre, dist, detalle && !corto, out var txt1, out var txt2, !corto);
             var mt1 = g.MeasureString(txt1, f);
             var mt2 = txt2.Length > 0 ? g.MeasureString(txt2, f) : default;
             int wChip = mt1.Width + (txt2.Length > 0 ? mt2.Width : 0) + 14;
