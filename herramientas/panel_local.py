@@ -11,8 +11,9 @@ No toca ATAS. Todo queda en datos/simulador y datos/databento.
 Uso:  python herramientas/panel_local.py [--puerto 8770] [--sin-navegador]
 """
 import argparse
-import cgi
 import datetime as dt
+import email.parser
+import email.policy
 import glob
 import io
 import json
@@ -295,19 +296,22 @@ class Manejador(BaseHTTPRequestHandler):
     def do_POST(self):
         u = urlparse(self.path)
         if u.path == "/api/subir":
+            # multipart/form-data a mano con el paquete email (Python 3.13 quito cgi)
             ct = self.headers.get("Content-Type", "")
-            form = cgi.FieldStorage(fp=self.rfile, headers=self.headers, environ={"REQUEST_METHOD": "POST", "CONTENT_TYPE": ct})
+            n = int(self.headers.get("Content-Length", "0") or 0)
+            cuerpo = self.rfile.read(n)
+            msg = email.parser.BytesParser(policy=email.policy.default).parsebytes(
+                ("Content-Type: %s\r\nMIME-Version: 1.0\r\n\r\n" % ct).encode("utf-8") + cuerpo)
             res = []
-            for k in form.keys():
-                item = form[k]
-                items = item if isinstance(item, list) else [item]
-                for it in items:
-                    if it.filename:
-                        try:
-                            res.append(guardar_subida(it.filename, it.file.read()))
-                        except Exception as e:
-                            res.append("%s: no se pudo guardar (%s)" % (it.filename, e))
-            return self._json({"ok": True, "mensajes": res})
+            for parte in msg.iter_parts() if msg.is_multipart() else []:
+                nombre = parte.get_filename()
+                if not nombre:
+                    continue
+                try:
+                    res.append(guardar_subida(nombre, parte.get_payload(decode=True)))
+                except Exception as e:
+                    res.append("%s: no se pudo guardar (%s)" % (nombre, e))
+            return self._json({"ok": True, "mensajes": res or ["no llego ningun archivo"]})
         n = int(self.headers.get("Content-Length", "0") or 0)
         par = json.loads(self.rfile.read(n).decode("utf-8") or "{}") if n else {}
         if u.path == "/api/simular":
