@@ -11,7 +11,11 @@ name: Actualizar datos
 # y cada 30 el resto.
 on:
   schedule:
-    - cron: '*/15 12-22 * * 1-5'   # rueda americana, cubre verano e invierno
+    # Cada CINCO minutos en la rueda americana desde el 2026-09-07: el feed que
+    # lee el indicador se refrescaba cada 15 y eso se sumaba a los 902 s de
+    # CBOE; ademas el archivo de cadenas por dia (backtest) sale de aca y
+    # con 15 minutos era demasiado grueso. Un ciclo tarda ~2,5 min.
+    - cron: '*/5 12-22 * * 1-5'    # rueda americana, cubre verano e invierno
     - cron: '*/30 0-11 * * 1-5'    # asiatica y europea
     # La reapertura de Globex. En verano ES abre el domingo a las 22:00 UTC
     # (17:00 de Chicago) y en invierno a las 23:00, porque Chicago cambia la
