@@ -21,6 +21,8 @@
     <Compile Include="VwapAnclado.cs" />
     <Compile Include="VwapTwapDelta.cs" />
     <Compile Include="FlujoTendencia.cs" />
+    <Compile Include="NodosDeVolumen.cs" />
+    <Compile Include="AbsorcionRegla.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.

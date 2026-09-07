@@ -1,0 +1,48 @@
+==============================================================================
+DIA 2026-09-03
+==============================================================================
+300 fotos usadas   |   toque = 2 pts, viniendo de 8, se miran 20 min
+
+formula                        niv  beta   toques  freno   placebo   ventaja
+  I muros (max y min)            2   2.84       0   muestra chica
+  D volumen puro, sin gamma      6   1.00      39  61.5%    19.1%    +42.4 pp
+  B volumen de hoy               6   0.78      78  57.7%    35.7%    +22.0 pp
+  G solo 0DTE                    6   1.01      81  67.9%    49.3%    +18.6 pp
+  K delta x OI (muro de delta)   6   1.02      63  58.7%    51.2%     +7.5 pp
+  E concentracion |gamma x OI|   6   1.02      63  58.7%    54.1%     +4.6 pp
+  M vega x OI                    6   1.02      63  58.7%    54.2%     +4.5 pp
+  L gamma x (OI + volumen)       6   0.68      56  66.1%    62.6%     +3.5 pp
+  J zero gamma                   1  -0.88      15  66.7%    67.7%     -1.1 pp
+  A base: gamma x OI             6   1.05      35  68.6%    72.6%     -4.0 pp
+  C OI puro, sin gamma           6   1.18      15   0.0%     5.0%     -5.0 pp
+  F lejos del precio (>15 pts)   6   1.20      15  46.7%    62.2%    -15.5 pp
+  H sin el 0DTE                  6   1.36      11   0.0%    76.5%    -76.5 pp
+
+  beta cerca de 1 = el nivel sigue al precio (no sirve para avisar)
+  ventaja = cuanto le gana al placebo. Si no es claramente positiva,
+            la formula no informa mas que una linea cualquiera.
+
+==============================================================================
+DIA 2026-08-31
+==============================================================================
+17 fotos usadas   |   toque = 2 pts, viniendo de 8, se miran 20 min
+
+formula                        niv  beta   toques  freno   placebo   ventaja
+  A base: gamma x OI             6    nan       0   muestra chica
+  B volumen de hoy               6    nan       0   muestra chica
+  C OI puro, sin gamma           6    nan       0   muestra chica
+  D volumen puro, sin gamma      6    nan       0   muestra chica
+  E concentracion |gamma x OI|   6    nan       0   muestra chica
+  F lejos del precio (>15 pts)   6    nan       0   muestra chica
+  G solo 0DTE                    6    nan       0   muestra chica
+  H sin el 0DTE                  6    nan       0   muestra chica
+  I muros (max y min)            2    nan       0   muestra chica
+  J zero gamma                   0    nan       0   muestra chica
+  K delta x OI (muro de delta)   6    nan       0   muestra chica
+  L gamma x (OI + volumen)       6    nan       0   muestra chica
+  M vega x OI                    6    nan       0   muestra chica
+
+  beta cerca de 1 = el nivel sigue al precio (no sirve para avisar)
+  ventaja = cuanto le gana al placebo. Si no es claramente positiva,
+            la formula no informa mas que una linea cualquiera.
+

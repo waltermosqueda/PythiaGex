@@ -80,6 +80,25 @@ namespace PythiaGex
         private readonly Dictionary<string, double> _volHoy = new();
         private readonly Dictionary<string, (decimal p, decimal v)> _ultPrint = new();
         private readonly List<Security> _enganchados = new();
+        // contadores del camino del volumen, para poder decir DONDE se corta
+        private long _evAvisos, _evConVol, _evContados;
+        // TODOS los avisos, sin filtrar por nombre de campo, y que campos son.
+        //
+        // El operador objeto -- con razon -- que la tabla de opciones de ATAS
+        // SI se mueve de noche, asi que "cero avisos" no puede significar que
+        // los contratos esten mudos. Y no lo significa: yo solo contaba los
+        // avisos de OPERACION. Si la tabla se mueve por cotizacion (bid/ask) y
+        // nunca hay operaciones, mi contador da cero sin que nada este roto...
+        // pero tambien daria cero si estuviera escuchando el campo equivocado.
+        // Contando todo y anotando los nombres, las dos cosas se separan.
+        private long _evTodos;
+        private readonly HashSet<string> _nombresVistos = new();
+        // Y la prueba que no depende de eventos: leer el campo directo al armar
+        // la cadena. Si algun contrato tiene LastTradeVolume > 0 y mi
+        // acumulador sigue en cero, el roto soy yo, y queda probado sin esperar
+        // a la rueda americana.
+        private int _conUltimoVol;
+        private double _maxUltimoVol;
         private IDataFeedConnector _conn;
         private Security _futuro;
         private volatile bool _armando;
@@ -208,7 +227,14 @@ namespace PythiaGex
 
                 // las series y sus contratos
                 List<Security> ops = new();
-                var hoy = DateTime.Now.Date;
+                // LA FECHA DE HOY ES LA DE NUEVA YORK, NO LA DE ACA.
+            //
+            // Estaba tomada de DateTime.Now.Date, o sea la fecha local del
+            // operador. Entre medianoche y las 2 de la manana en Argentina, en
+            // Nueva York todavia es el dia anterior, y ahi la cuenta de dias al
+            // vencimiento salia corrida en uno justo en la franja horaria en la
+            // que el mercado esta abierto.
+            var hoy = HoyEnNuevaYork();
                 try
                 {
                     var ss = await ((dynamic)feed).GetOptionSeriesAsync(_futuro);
@@ -384,19 +410,36 @@ namespace PythiaGex
                 sec.PropertyChanged += (o, e) =>
                 {
                     var n = e?.PropertyName;
+                    System.Threading.Interlocked.Increment(ref _evTodos);
+                    if (n != null)
+                        lock (_llave) { if (_nombresVistos.Count < 25) _nombresVistos.Add(n); }
                     if (n != "LastTradeVolume" && n != "LastTradePrice") return;
+                    // UN CONTADOR EN CADA ESCALON DEL CAMINO.
+                    //
+                    // El acumulador dio cero dos noches seguidas y hay dos
+                    // explicaciones que NO se pueden distinguir sin
+                    // operaciones: o de noche no se opera, o esto esta roto.
+                    // Con los contadores el registro lo dice solo:
+                    //   avisos=0                    -> no llega nada: es la suscripcion
+                    //   avisos>0 y convol=0         -> LastTradeVolume viene vacio
+                    //   convol>0 y contados=0       -> el filtro de duplicado se come todo
+                    //   contados>0 y flujoviva=0    -> la clave de guardado no coincide
+                    //                                  con la de lectura
+                    System.Threading.Interlocked.Increment(ref _evAvisos);
                     try
                     {
                         var s2 = o as Security; if (s2 == null) return;
                         var p = s2.LastTradePrice ?? 0m;
                         var v = s2.LastTradeVolume ?? 0m;
                         if (v <= 0) return;
+                        System.Threading.Interlocked.Increment(ref _evConVol);
                         lock (_llave)
                         {
                             if (_ultPrint.TryGetValue(s2.Code, out var ant)
                                 && ant.p == p && ant.v == v) return;
                             _ultPrint[s2.Code] = (p, v);
                             _volHoy[s2.Code] = (_volHoy.TryGetValue(s2.Code, out var a) ? a : 0) + (double)v;
+                            _evContados++;
                         }
                     }
                     catch { }
@@ -410,6 +453,31 @@ namespace PythiaGex
         public double VolumenTotalHoy()
         {
             lock (_llave) { double t = 0; foreach (var v in _volHoy.Values) t += v; return t; }
+        }
+
+        /// <summary>
+        /// Donde se corta el camino del volumen, si se corta.
+        ///
+        /// El acumulador dio cero dos noches seguidas y sin operaciones no hay
+        /// forma de distinguir "no se opera de noche" de "esto esta roto". Esto
+        /// lo resuelve en una sola mirada al registro, sin esperar otra noche.
+        /// </summary>
+        public string Diagnostico()
+        {
+            long a, c, k; int eng;
+            lock (_llave) { a = _evAvisos; c = _evConVol; k = _evContados; eng = _enganchados.Count; }
+            long tod; int conUlt; double maxUlt; string nombres;
+            lock (_llave)
+            {
+                tod = _evTodos; conUlt = _conUltimoVol; maxUlt = _maxUltimoVol;
+                nombres = _nombresVistos.Count == 0 ? "ninguno"
+                        : string.Join(",", _nombresVistos);
+            }
+            return " volenganchados=" + eng + " volavisostodos=" + tod
+                 + " volavisos=" + a + " volconvol=" + c + " volcontados=" + k
+                 + " volconultimo=" + conUlt
+                 + " volmaxultimo=" + maxUlt.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)
+                 + " volcampos=" + nombres;
         }
 
         // ------------------------------------------------------------------
@@ -435,6 +503,9 @@ namespace PythiaGex
 
             var hoy = DateTime.Now.Date;
             var salida = new List<Fila>(ss.Count);
+            // foto del momento, no acumulado: cuantos contratos tienen
+            // volumen de ultima operacion AHORA
+            lock (_llave) { _conUltimoVol = 0; _maxUltimoVol = 0; }
             foreach (var o in ss)
             {
                 double bid = (double)o.BestBidPrice, ask = (double)o.BestAskPrice;
@@ -442,12 +513,30 @@ namespace PythiaGex
                 double mid = (bid + ask) / 2.0;
                 double K = (double)(o.StrikePrice ?? 0m);
                 if (K <= 0) continue;
-                double dias = (o.Expiration.Date - hoy).Days;
-                // El 0DTE no vale cero: con T=0 la formula explota. Se le da la
-                // fraccion de dia que le queda, con un piso para no dividir por
-                // algo ridiculamente chico.
-                double T = Math.Max(dias, 0.0) / 365.0;
-                if (dias <= 0) T = Math.Max(TiempoQueQuedaHoy(), 0.5 / 24.0) / 365.0;
+                // EL TIEMPO AL VENCIMIENTO LLEVA LA HORA, NO SOLO EL DIA.
+                //
+                // Antes esto contaba DIAS ENTEROS desde la medianoche de hoy y
+                // le daba tratamiento aparte al 0DTE. Se vio en el volcado de
+                // la cadena: un vencimiento decia "4,0000 dias" exacto, y
+                // ningun contrato vence a las cuatro de la manana.
+                //
+                // Cuanto costaba: a las 03:01 de Nueva York, un vencimiento del
+                // dia 8 a las 16:00 esta a 4,54 dias y nosotros le poniamos
+                // 4,00. Doce por ciento de menos en T, y como el gamma va como
+                // uno sobre raiz de T, el gamma de esa serie salia un 6 % mas
+                // grande de lo que es. No es un desplazamiento parejo: pesa
+                // distinto en cada vencimiento, asi que DESBALANCEA la mezcla
+                // entre el 0DTE y el resto, y eso si mueve los niveles.
+                //
+                // Ahora el 0DTE deja de ser un caso especial: sale de la misma
+                // formula, porque con dias=0 queda justo la fraccion que falta
+                // hasta el cierre.
+                double diasCal = (o.Expiration.Date - hoy).Days;
+                double dias = Math.Max(0.0, diasCal) + TiempoQueQuedaHoy();
+                // piso de un minuto, no de media hora: ver PISO_DIAS en
+                // GammaVivo. Medido: con 29 minutos subestimabamos el muro del
+                // 0DTE un 12 % en la ultima lectura de la rueda.
+                double T = Math.Max(dias, 1.0 / 1440.0) / 365.0;
 
                 bool esCall = o.OptionType == OptionTypes.Call;
                 double iv = Black76.DespejarIV(mid, Futuro, K, T, esCall);
@@ -456,11 +545,25 @@ namespace PythiaGex
                 double vh = 0;
                 lock (_llave) _volHoy.TryGetValue(o.Code ?? "", out vh);
 
+                // LA PRUEBA QUE NO DEPENDE DE EVENTOS.
+                //
+                // Se lee el campo directo, aca, cada vez que se arma la cadena.
+                // Si algun contrato tiene LastTradeVolume > 0 y el acumulador
+                // por eventos sigue en cero, el problema es MIO y no del
+                // horario -- y queda demostrado sin esperar a la rueda.
+                var ulv = (double)(o.LastTradeVolume ?? 0m);
+                if (ulv > 0)
+                    lock (_llave)
+                    {
+                        _conUltimoVol++;
+                        if (ulv > _maxUltimoVol) _maxUltimoVol = ulv;
+                    }
+
                 salida.Add(new Fila
                 {
                     VolumenHoy = vh,
                     K = K,
-                    Dias = Math.Max(dias, T * 365.0),
+                    Dias = dias,
                     OI = (double)(o.OpenInterest ?? 0m),
                     Bid = bid, Ask = ask, Mid = mid,
                     IV = iv, EsCall = esCall,
@@ -472,6 +575,18 @@ namespace PythiaGex
         }
 
         /// <summary>Fraccion de dia que le queda al 0DTE hasta las 16:00 de Nueva York.</summary>
+        /// <summary>La fecha de HOY en Nueva York, que es la que manda para
+        /// contar dias al vencimiento de un contrato de CME.</summary>
+        private static DateTime HoyEnNuevaYork()
+        {
+            try
+            {
+                var ny = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                return TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.Utc, ny).Date;
+            }
+            catch { return DateTime.UtcNow.AddHours(-5).Date; }
+        }
+
         private static double TiempoQueQuedaHoy()
         {
             try

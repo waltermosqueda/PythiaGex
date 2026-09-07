@@ -37,3 +37,14 @@
 - [El Settlements de CME va un dia atras](cme-settlements-un-dia-atras.md) — hay que sumarle el change; ATAS tenia el dato correcto y yo compare contra uno viejo.
 - [Volumen de opciones en vivo](volumen-opciones-en-vivo.md) — se acumula por evento; es el unico dato del mapa que no es de ayer.
 - [NQ: el libro propio pesa](nq-libro-propio-pesa.md) — NDX es solo 2x NQ, no 10x como SPX/ES; y los muros no coinciden.
+- [Las pelotitas son eventos, no niveles](pelotitas-son-eventos.md) — medido en 2443 cuadros: son operaciones grandes; y las barras si se mueven, 1,5 puntos.
+- [La formula del GEX, auditada](gex-formula-auditada.md) — multiplicador y muros corregidos; y el gamma no depende del tiempo si la IV se despeja con el mismo T.
+- [Son dos libros distintos](dos-libros-distintos.md) — SPX y ES no coinciden en nada; al alternar entre ellos todos los niveles saltan 23 a 33 puntos.
+- [El laboratorio de formulas](laboratorio-formulas.md) — juzga contra placebo; la formula que usamos pierde y solo ganan las del volumen de hoy.
+- [Que afirma GAMMAlito](que-afirma-gammalito.md) — no dicen que el precio rebote, dicen que se acelera el tape; mediamos la pregunta equivocada.
+- [Mover la ventana de ATAS](mover-ventana-atas-oft-platform.md) — el proceso es OFT.Platform y esta maximizada: restaurar antes de mover o el clic no llega.
+- [Que reproduce el Market Replay](market-replay-que-reproduce.md) — la cinta si, la cadena de opciones no; y el modo por defecto inventa las operaciones.
+- [La muestra son niveles, no minutos](la-muestra-son-niveles-no-minutos.md) — 105 minutos dieron 4 strikes; y el placebo de 11/19/31 caia siempre entre strikes.
+- [Un indicador que cuelga ATAS](indicador-que-cuelga-atas.md) — OnCalculate corre por cada vela del grafico; y con el mercado cerrado no corre nunca.
+- [Retrospectiva del 6 de septiembre](retrospectiva-2026-09-06.md) — la bitacora paro en la sesion 6; el centinela dice 13 % de aguante contra el "4 de 4" narrado; Gamma Vivo pierde contra placebo; falta el registro de trades.
+- [Produccion en vivo, 6 de septiembre](produccion-en-vivo-2026-09-06.md) — siete errores con linea: el rotulo de regimen mezcla escalas, la absorcion es una prueba degenerada, la cadena viva no alimenta nada; y el lunes 7 es Labor Day.

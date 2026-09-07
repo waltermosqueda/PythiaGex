@@ -59,7 +59,15 @@ def construir(crudo, ahora=None, ancho=ANCHO, dias_max=DIAS_MAX):
     ahora = ahora or dt.datetime.now(dt.timezone.utc)
 
     vencs, filas = {}, {}
+    # EL ULTIMO TRADE DE LA CADENA ENTERA. El sello 'timestamp' del archivo
+    # avanza aunque el contenido no: un domingo a la noche dice hoy y el
+    # volumen es del viernes. Con esto el indicador puede rotular el flujo
+    # con el dia al que pertenece, en vez de decir 'hoy' sin saberlo.
+    ultimo_trade = ""
     for o in d["options"]:
+        lt = o.get("last_trade_time") or ""
+        if lt > ultimo_trade:
+            ultimo_trade = lt
         p = parse_occ(o["option"])
         if not p:
             continue
@@ -108,6 +116,8 @@ def construir(crudo, ahora=None, ancho=ANCHO, dias_max=DIAS_MAX):
         "vencimientos": [{"f": v["f"], "dias": v["dias"]} for v in orden],
         "filas": datos,
         "n_filas": len(datos),
+        "ultimo_trade": ultimo_trade,        # hora de Nueva York, sin zona
+        "horizonte_dias": dias_max,           # hasta donde llegan las filas
         "aviso": ("el interes abierto es de ayer para todo el mundo; lo que se "
                   "reprecia tick a tick es el precio, no la cadena"),
     }

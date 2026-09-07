@@ -91,6 +91,11 @@ namespace PythiaGex
             // precio de FUTURO y corresponde Black-76 en vez de Black-Scholes.
             public bool EsFuturo;
             public string Fuente = "CBOE";
+            // Lo que el feed agrego el 2026-09-06 para poder rotular con
+            // honestidad: el ultimo trade de la cadena entera (hora de Nueva
+            // York, sin zona) y hasta cuantos dias llegan las filas.
+            public string UltimoTrade = "";
+            public double HorizonteCadena = double.NaN;
         }
 
         /// <summary>Lo que sale de repreciar: un renglon por strike.</summary>
@@ -102,6 +107,24 @@ namespace PythiaGex
             public double GexVol;  // lo mismo pero sobre el volumen del dia
             public double Acel;    // cuanto cambia el GEX si S sube 1 %
             public double VolTot;  // contratos operados HOY en ese strike
+            // LA PARTE QUE VENCE HOY, aparte. Hoy el 0DTE entra sumado adentro
+            // de Gex y no hay forma de saber cuanto de un nivel es de hoy y
+            // cuanto es estructura de la semana. Son cosas distintas: el 0DTE
+            // se evapora al cierre y el resto sigue manana.
+            public double Gex0;
+            // EL VENCIMIENTO QUE SOSTIENE ESE NIVEL.
+            //
+            // Un muro de 0DTE y uno semanal del mismo tamano NO son lo mismo:
+            // la gamma crece como uno sobre raiz del tiempo que falta, asi que
+            // al acercarse el vencimiento se dispara Y SE ANGOSTA. El de hoy es
+            // un poste clavado en un punto; el semanal es un terraplen
+            // repartido. Cerca del precio manda el de hoy; lejos, no existe.
+            // Y el de hoy se evapora al cierre.
+            //
+            // Se guarda el vencimiento de la MAYOR contribucion, no un promedio:
+            // lo que importa es quien lo sostiene, no el reparto.
+            public double DiasDom;
+            public double GexDom;
         }
 
         // ==============================================================
@@ -119,6 +142,10 @@ namespace PythiaGex
             public string Caracter = "", Lado = "", Criollo = "";
             public double Incentivo;
             public bool Relevante;
+            // El strike en INDICE, la gamma que le dio el radar (Python, su
+            // horizonte) y la gamma que le da ESTE indicador (su horizonte),
+            // para poder decir en el AUDIT cuando los dos no coinciden.
+            public double Idx = double.NaN, GexPy = double.NaN, GexCs = double.NaN;
         }
 
         private volatile Cadena _c;
@@ -196,6 +223,11 @@ namespace PythiaGex
             // NUMERO de vela no es estable entre sesiones, la hora si.
             public DateTime Hora;
             public double MajorPos, MajorNeg, Zero;
+            // las dos hipotesis: lo mismo pero sobre el VOLUMEN de hoy, que es
+            // lo unico del mapa que se mueve durante la rueda
+            public double MajorPosVol, MajorNegVol, ZeroVol;
+            // hipotesis 3 y 4: continuas y sin depender del volumen
+            public double MaxChange;
             // Donde estaban las dominantes EN ESE MOMENTO. Guardarlas por vela
             // es lo que hace que los guiones ondulen y tengan huecos, en vez de
             // salir una linea recta que seria mentira. Ver PuntosDominantes().
@@ -257,6 +289,16 @@ namespace PythiaGex
         private static readonly int[] VentanasTablero = { 1, 5, 10, 15, 30 };
 
         private double _netGexVol, _zeroVol;
+        private double _maxChangeUlt = double.NaN;
+        // los muros de lo que vence hoy, ya en precio de futuro
+        private double _mp0Ult, _mn0Ult;
+        private Centinela _centinela;
+        private int _barraCentinela = -1;
+        // volatilidad al dinero, movimiento esperado y GEX total en magnitud
+        private double _ivAtmUlt, _movEspUlt, _gexTotalUlt;
+        // el zero calculado sobre la cadena ancha, y cuantos strikes tenia
+        private double _zeroAnchoUlt = double.NaN;
+        private int _strikesAnchoUlt;
         private bool _gammaPositiva;
         private double _majorPosVol, _majorNegVol;
 
@@ -273,6 +315,17 @@ namespace PythiaGex
         private double _majorPos, _majorNeg;
         private double _spotUsado = double.NaN;
         private double[] _picosUlt;
+        // los extremos SIN la condicion del lado, para poder medir
+        // cuanto se apartan de los muros que se dibujan
+        private double _mpGlobal, _mnGlobal;
+        // el rival de cada muro (en precio de futuro) cuando esta disputado,
+        // y cuanto pesa contra el lider (0..1)
+        private double _mpRival = double.NaN, _mnRival = double.NaN, _mpRatio, _mnRatio;
+        // hasta cuantos dias sumo el radar para armar sus zonas (viene en el feed)
+        private double _horizonteZonas = double.NaN;
+        // los strikes que REALMENTE tiene la cadena en ese momento,
+        // para poder auditar si un pico cae sobre uno de ellos
+        private double[] _futsUlt;
         private int _marcasDibujadas, _marcasConRegistro;
         private bool _esFuturo;
         private string _fuente = "CBOE";
@@ -399,6 +452,49 @@ namespace PythiaGex
                  Description = "Con la distancia en puntos. Ahi ya esta mirando el ojo.")]
         public bool RotulosDerecha { get; set; } = true;
 
+        [Display(Name = "Anotar el CENTINELA de actividad", GroupName = "Calculo", Order = 44,
+                 Description = "Escribe una fila por vela con la hora, el rango, el volumen, las " +
+                               "OPERACIONES (la velocidad del tape) y los niveles vigentes. No " +
+                               "dibuja nada y no concluye nada: junta materia prima para poder " +
+                               "medir despues, afuera y con placebo, si la actividad se acelera " +
+                               "cuando el precio llega a un nivel. Cuesta una linea de texto por " +
+                               "vela.")]
+        public bool AnotarCentinela { get; set; } = true;
+
+        [Display(Name = "Ver los niveles del 0DTE aparte", GroupName = "Dibujo", Order = 66,
+                 Description = "Los muros calculados SOLO con lo que vence hoy. Hoy el 0DTE esta " +
+                               "mezclado adentro del perfil y no se ve. Se separa porque el " +
+                               "laboratorio lo midio: sobre 300 fotos de una rueda, los niveles " +
+                               "de solo 0DTE frenaron al precio el 67,9 % contra 49,3 % de su " +
+                               "placebo, y con 81 toques, la muestra mas grande de todas las " +
+                               "formulas probadas.")]
+        public bool VerNiveles0DTE { get; set; } = true;
+
+        [Display(Name = "Anotar el tamano en las etiquetas", GroupName = "Dibujo", Order = 67,
+                 Description = "Le agrega al chip que ya existe cuanta gamma hay en ese nivel y si " +
+                               "la manda el 0DTE. Queda '+wall 7.832  1,2B 0D'. No agrega ningun " +
+                               "dibujo nuevo: escribe adentro de la etiqueta que ya esta.")]
+        public bool AnotarTamano { get; set; } = true;
+
+        [Display(Name = "Usar el libro de ES en vivo (en vez de SPX)", GroupName = "Calculo", Order = 46,
+                 Description = "APAGADO (recomendado): todos los niveles salen del libro de SPX, " +
+                               "que es 8 veces mas grande y cuyas mesas cubren con futuros de ES. " +
+                               "PRENDIDO: usa la cadena de ES en vivo cuando esta.  |  Lo que NO se " +
+                               "puede hacer es alternar: son dos mercados distintos y al cambiar de " +
+                               "uno a otro los muros saltan 33 puntos sin que el precio se mueva.")]
+        public bool LibroViva { get; set; } = false;
+
+        [Display(Name = "El ZERO GAMMA sale de la cadena mas ANCHA", GroupName = "Calculo", Order = 47,
+                 Description = "El zero gamma es el punto donde EQUILIBRA la suma de toda la cadena, " +
+                               "asi que depende de las puntas y no solo del centro. La cadena viva " +
+                               "solo suscribe una ventana angosta alrededor del precio -- unos 41 " +
+                               "strikes contra 141 de la cadena completa -- y con esa ventana el " +
+                               "cruce queda corrido. Medido sobre 1112 lecturas: al cambiar de " +
+                               "fuente el zero gamma pega saltos de 28 puntos que NO son mercado. " +
+                               "Prendido, el zero se calcula siempre sobre la cadena mas ancha " +
+                               "disponible, repreciada al precio de AHORA.")]
+        public bool ZeroDeCadenaAncha { get; set; } = true;
+
         [Display(Name = "Ver los titulos de las mitades", GroupName = "Dibujo", Order = 69)]
         public bool VerTitulos { get; set; } = false;
 
@@ -412,12 +508,22 @@ namespace PythiaGex
         [Display(Name = "Ver Zero Gamma y Majors", GroupName = "Dibujo", Order = 64)]
         public bool VerLineas { get; set; } = true;
 
+        // NACEN APAGADOS, A PROPOSITO.
+        //
+        // Cada uno de estos dibuja su propio chip contra el eje, con su propio
+        // color. Con todos prendidos quedan seis colores apilados en la misma
+        // columna -- flujo, acel, freno, +wall, -wall, zero -- y el operador ya
+        // no distingue cual es cual. Lo llamo "el arcoiris", y tenia razon.
+        //
+        // El que los quiera los prende. Lo que no puede pasar es que una
+        // instancia nueva nazca con todo encendido y haya que limpiarla a mano
+        // cada vez.
         [Display(Name = "Ver el FLUJO de hoy", GroupName = "Flujo", Order = 130,
                  Description = "Los strikes donde MAS se opero hoy. Es el unico dato del mapa que " +
                                "no es de ayer: el interes abierto lo consolida la OCC de noche, asi " +
                                "que todos los tableros de GEX -- incluido el nuestro -- dibujan el " +
                                "mapa de ayer. Esto muestra donde se esta reescribiendo AHORA.")]
-        public bool VerFlujo { get; set; } = true;
+        public bool VerFlujo { get; set; } = false;
 
         [Display(Name = "Cuantos niveles de flujo", GroupName = "Flujo", Order = 131)]
         public int CuantosFlujo { get; set; } = 3;
@@ -434,7 +540,7 @@ namespace PythiaGex
                                "futuro en 7752 el major positive apuntaba a 7800 -- 48 puntos -- " +
                                "mientras 7760, a OCHO puntos, tenia el 96 % de esa gamma y no se " +
                                "dibujaba. Para scalpear eso es al reves de lo que sirve.")]
-        public bool VerCercanos { get; set; } = true;
+        public bool VerCercanos { get; set; } = false;
 
         [Display(Name = "Cuantos cercanos", GroupName = "Cercanos", Order = 111)]
         public int CuantosCercanos { get; set; } = 4;
@@ -473,6 +579,14 @@ namespace PythiaGex
                                "con volumen, interes abierto y max change.")]
         public bool TableroCompacto { get; set; } = true;
 
+        [Display(Name = "Muro disputado: segundo >= % del primero", GroupName = "Calculo", Order = 47,
+                 Description = "Si el segundo strike del mismo lado pesa al menos este porcentaje del " +
+                               "primero, el muro se marca DISPUTADO: el panel muestra al rival y se dibuja " +
+                               "una linea fina. Medido el 2026-08-31: un call wall salto 50 puntos con el " +
+                               "segundo al 89 %. El 2026-09-06, 7750 y 7825 se alternaron toda la noche.")]
+        [Range(50, 99)]
+        public int UmbralDisputa { get; set; } = 85;
+
         [Display(Name = "Tablero a la derecha", GroupName = "Dibujo", Order = 67,
                  Description = "Para que no tape el perfil de gamma, que se dibuja a la izquierda.")]
         public bool TableroDerecha { get; set; } = true;
@@ -507,7 +621,27 @@ namespace PythiaGex
         public decimal SeparacionPuntos { get; set; } = 4m;
 
         [Display(Name = "Cuantas dominantes como maximo", GroupName = "Dominantes", Order = 84)]
-        public int MaxDominantes { get; set; } = 6;
+        public int MaxDominantes { get; set; } = 14;
+
+        [Display(Name = "Como se ubica la dominante", GroupName = "Dominantes", Order = 83,
+                 Description = "1 = EL STRIKE (por defecto, y es la definicion estandar): el " +
+                               "strike donde el GEX es mas alto en valor absoluto. Se dibuja plano " +
+                               "PORQUE ES PLANO.  |  0 = centro de gravedad: promedio de precio " +
+                               "ponderado por gamma; ondula, pero es invento nuestro y no coincide " +
+                               "con ninguna fuente.  |  2 = el pico interpolado: se queda clavado y " +
+                               "despues salta.")]
+        public int ModoDominante { get; set; } = 1;
+
+        [Display(Name = "Radio del centro de gravedad (pts)", GroupName = "Dominantes", Order = 88,
+                 Description = "Cuanto perfil entra en el promedio a cada lado del cumulo. Mas " +
+                               "chico sigue mas de cerca al strike mandante; mas grande se mueve " +
+                               "mas suave.")]
+        public decimal RadioCentroide { get; set; } = 15m;
+
+        [Display(Name = "Fuerza minima de una dominante (% del maximo)", GroupName = "Dominantes", Order = 87,
+                 Description = "Por debajo de esto el strike no tiene gamma suficiente para " +
+                               "merecer una marca. Subilo si ves demasiadas.")]
+        public int MinFuerzaDominante { get; set; } = 15;
 
         [Display(Name = "Separacion minima entre marcas (px)", GroupName = "Dominantes", Order = 86,
                  Description = "Si dos dominantes caen mas cerca que esto en la misma vela, se dibuja " +
@@ -527,8 +661,74 @@ namespace PythiaGex
         [Display(Name = "Punto del Zero Gamma", GroupName = "Colores", Order = 88)]
         public Color ColPuntoZero { get; set; } = Color.FromArgb(225, 228, 232);
 
+        // ------------------------------------------------------------------
+        // DOS HIPOTESIS SOBRE QUE ES LO QUE SE MUEVE.
+        //
+        // El problema medido: nuestras marcas por vela salen planas. La causa
+        // es que de los tres niveles que calculamos, el unico que anotamos por
+        // vela es el de INTERES ABIERTO -- y el interes abierto lo consolida la
+        // OCC de noche, asi que el strike ganador es el mismo de la apertura al
+        // cierre. Estabamos dibujando justo el unico que no se puede mover.
+        //
+        // HIPOTESIS 1 (escalones): los majors por VOLUMEN. Tambien se paran
+        // sobre un strike, pero el volumen se acumula durante la rueda: si el
+        // strike ganador cambia varias veces por dia, eso dibuja una escalera
+        // sin necesidad de inventar ningun promedio.
+        //
+        // HIPOTESIS 2 (ondulacion): el zero gamma sobre el VOLUMEN de hoy. No
+        // esta clavado a un strike -- es el precio donde la suma cruza cero --
+        // y ademas lo mueve el flujo del dia. Tiene las dos propiedades a la
+        // vez, y es la que mas cierra.
+        //
+        // CADA UNA CON SU COLOR, a proposito: asi la pantalla misma dice cual
+        // acierta, sin que haya que creerle a nadie. Y cada una con su
+        // interruptor, para poder volver atras sin recompilar.
+        // ------------------------------------------------------------------
+
+        [Display(Name = "HIPOTESIS 1: majors por VOLUMEN (celeste)", GroupName = "Hipotesis", Order = 200,
+                 Description = "El strike con mas gamma por volumen de HOY. Deberia dar escalones, " +
+                               "porque el volumen se acumula durante la rueda y el ganador cambia.")]
+        public bool VerMajorsVolumen { get; set; } = false;
+
+        [Display(Name = "Color de la hipotesis 1", GroupName = "Hipotesis", Order = 201)]
+        public Color ColPuntoVol { get; set; } = Color.FromArgb(120, 220, 255);
+
+        [Display(Name = "HIPOTESIS 2: zero gamma por VOLUMEN (violeta)", GroupName = "Hipotesis", Order = 202,
+                 Description = "El precio donde la suma ponderada por el volumen de hoy cruza cero. " +
+                               "No es un strike, asi que se mueve continuo, y ademas responde al " +
+                               "flujo del dia.")]
+        public bool VerZeroVolumen { get; set; } = false;
+
+        [Display(Name = "Color de la hipotesis 2", GroupName = "Hipotesis", Order = 203)]
+        public Color ColPuntoZeroVol { get; set; } = Color.FromArgb(200, 130, 255);
+
+        // Las hipotesis 1 y 2 se alimentan del VOLUMEN, y de noche el volumen
+        // es cero: quedan en negro y no se pueden comparar. Estas dos usan solo
+        // el interes abierto, que esta siempre, asi que dibujan a cualquier
+        // hora. Las dos son CONTINUAS -- se recalculan repreciando la cadena al
+        // precio del momento -- asi que se mueven con cada tick sin estar
+        // clavadas a ningun strike.
+
+        [Display(Name = "HIPOTESIS 3: donde el gamma CAMBIA mas rapido (verde)", GroupName = "Hipotesis", Order = 204,
+                 Description = "El precio donde la suma de gamma cambia mas rapido si el precio se " +
+                               "mueve. Uno de los videos de GAMMAlito se llama justamente 'Max " +
+                               "Change'. Es continuo: no cae sobre un strike.")]
+        public bool VerMaxChange { get; set; } = false;
+
+        [Display(Name = "Color de la hipotesis 3", GroupName = "Hipotesis", Order = 205)]
+        public Color ColPuntoMaxChange { get; set; } = Color.FromArgb(140, 240, 120);
+
+        // LA HIPOTESIS 4 SE ELIMINO. No se apago: se saco.
+        //
+        // Era el centro de gravedad del perfil, y la propuse yo. Se midio sobre
+        // 228 lecturas de una rueda americana: correlacion 0,995 con el precio
+        // y beta 0,93. O sea que no era un nivel, era el precio con retardo.
+        //
+        // Se saca en vez de dejarla apagada porque el codigo refutado que
+        // queda dando vueltas es el que un dia se vuelve a prender solo.
+
         [Display(Name = "Ver Max Change (las pelotitas)", GroupName = "Max Change", Order = 100)]
-        public bool VerPelotitas { get; set; } = true;
+        public bool VerPelotitas { get; set; } = false;
 
         [Display(Name = "Tamano de la pelotita (px)", GroupName = "Max Change", Order = 101)]
         public int TamPelotita { get; set; } = 11;
@@ -563,7 +763,7 @@ namespace PythiaGex
         public int OpacidadZona { get; set; } = 10;
 
         [Display(Name = "Ver BigTrades del libro", GroupName = "BigTrades", Order = 90)]
-        public bool VerBigTrades { get; set; } = true;
+        public bool VerBigTrades { get; set; } = false;
 
         [Display(Name = "Cuantos BigTrades dibujar", GroupName = "BigTrades", Order = 92,
                  Description = "Solo se dibujan los N mas grandes de los que hay en pantalla. " +
@@ -705,6 +905,11 @@ namespace PythiaGex
             {
                 var ahora = DateTime.UtcNow;
 
+                // re-medir el reloj cada media hora: la deriva se acumula
+                if (Reloj.UltimaMedicion == DateTime.MinValue
+                    || (ahora - Reloj.UltimaMedicion).TotalMinutes >= 30)
+                    _ = Reloj.Medir(Registrar2);
+
                 if ((ahora - _ultimaBajada).TotalSeconds >= Math.Max(60, SegundosRefresco))
                 {
                     _ultimaBajada = ahora;
@@ -737,6 +942,9 @@ namespace PythiaGex
 
             // el primer arranque no espera al tick
             LeerHistoria();
+
+            // el desfase del reloj, para que el atraso del libro salga corregido
+            _ = Reloj.Medir(Registrar2);
 
             _ultimaBajada = DateTime.UtcNow;
             _ultimoIntentoViva = DateTime.UtcNow;
@@ -776,6 +984,62 @@ namespace PythiaGex
         {
             if (bar != CurrentBar - 1) return;
             try { Repreciar(); } catch (Exception e) { Registrar(e); }
+            try { AnotarVela(bar); } catch (Exception e) { Registrar(e); }
+        }
+
+        /// <summary>
+        /// Anota la vela que acaba de cerrar, con los niveles que estaban
+        /// vigentes en ese momento.
+        ///
+        /// Se anota la ANTERIOR, no la que se esta formando: una vela a medio
+        /// hacer tiene un volumen y un conteo de operaciones que todavia van a
+        /// crecer, y compararlos contra velas completas seria comparar peras
+        /// con medias peras.
+        /// </summary>
+        private void AnotarVela(int bar)
+        {
+            if (!AnotarCentinela) return;
+            if (bar <= _barraCentinela) return;
+            int cerrada = bar - 1;
+            if (cerrada < 1) { _barraCentinela = bar; return; }
+            _barraCentinela = bar;
+
+            if (_centinela == null)
+            {
+                var instr = InstrumentInfo != null ? InstrumentInfo.Instrument : "x";
+                var marco = ChartInfo != null && ChartInfo.ChartType != null
+                          ? ChartInfo.ChartType + "-" + ChartInfo.TimeFrame : "x";
+                _centinela = new Centinela(instr, marco);
+            }
+
+            IndicatorCandle c;
+            try { c = GetCandle(cerrada); } catch { return; }
+            if (c == null) return;
+
+            double mp, mn, ze, a0, b0, sp;
+            lock (_candado)
+            {
+                mp = _majorPos; mn = _majorNeg; ze = _zeroGamma;
+                a0 = _mp0Ult; b0 = _mn0Ult; sp = _spotUsado;
+            }
+            var niv = new List<KeyValuePair<string, double>>
+            {
+                new KeyValuePair<string, double>("wall_pos", mp),
+                new KeyValuePair<string, double>("wall_neg", mn),
+                new KeyValuePair<string, double>("zero", double.IsNaN(ze) ? 0 : ze),
+                new KeyValuePair<string, double>("dte0_pos", a0),
+                new KeyValuePair<string, double>("dte0_neg", b0),
+            };
+            double[] pp;
+            lock (_candado) pp = _picosUlt;
+            if (pp != null)
+                for (int i = 0; i < pp.Length && i < 8; i++)
+                    niv.Add(new KeyValuePair<string, double>(
+                        "dom" + i.ToString(CultureInfo.InvariantCulture), pp[i]));
+
+            _centinela.Anotar(cerrada, c.LastTime != default(DateTime) ? c.LastTime : c.Time,
+                (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close,
+                (double)c.Volume, (double)c.Ticks, (double)c.Delta, sp, niv);
         }
 
         /// <summary>Cada barrido de un agresor, tal como los agrupa ATAS.
@@ -1011,7 +1275,12 @@ namespace PythiaGex
                     BaseUltimaBuenaEdad = Num(r, "base_ultima_buena_edad_min") ?? 0,
                     Contrato = Txt(r, "contrato"),
                     EdadMin = Num(r, "edad_min") ?? 0,
+                    UltimoTrade = Txt(cd, "ultimo_trade"),
+                    HorizonteCadena = Num(cd, "horizonte_dias") ?? double.NaN,
                 };
+                // con que horizonte se armaron las zonas del radar; si el feed
+                // es viejo y no lo trae, queda NaN y el panel no afirma nada
+                _horizonteZonas = Num(r, "horizonte_zonas_dias") ?? double.NaN;
 
                 // las zonas dominantes viajan en el mismo archivo, ya calculadas
                 lock (_zonas)
@@ -1024,11 +1293,34 @@ namespace PythiaGex
                                 var fut = Num(z, "fut");
                                 var d1 = Num(z, "desde");
                                 var d2 = Num(z, "hasta");
+
+                                // EL ARCHIVO YA NO TRAE LOS VALORES CONVERTIDOS.
+                                //
+                                // Vienen en null -- 'fut', 'desde' y 'hasta' --
+                                // y los buenos estan en 'idx', 'idx_desde' e
+                                // 'idx_hasta', que son precios de INDICE.
+                                //
+                                // Con el descarte de abajo se caian TODAS las
+                                // zonas, una por una y en silencio: la lista
+                                // quedaba vacia y las franjas desaparecian del
+                                // grafico sin ningun error a la vista. El
+                                // operador lo noto mirando la pantalla, no yo
+                                // mirando el codigo.
+                                //
+                                // Se convierten con la base, igual que todos los
+                                // demas niveles del proyecto. Un nivel de indice
+                                // dibujado en el futuro esta ~21 puntos corrido.
+                                if (fut == null) { var i0 = Num(z, "idx"); if (i0 != null) fut = i0 + c.Base; }
+                                if (d1 == null) { var i1 = Num(z, "idx_desde"); if (i1 != null) d1 = i1 + c.Base; }
+                                if (d2 == null) { var i2 = Num(z, "idx_hasta"); if (i2 != null) d2 = i2 + c.Base; }
+
                                 if (fut == null || d1 == null || d2 == null) continue;
                                 if (_zonas.Any(x => Math.Abs(x.Fut - fut.Value) < 0.01)) continue;
                                 _zonas.Add(new ZonaDom
                                 {
                                     Fut = fut.Value, Desde = d1.Value, Hasta = d2.Value,
+                                    Idx = Num(z, "idx") ?? double.NaN,
+                                    GexPy = (Num(z, "gex_M") ?? double.NaN) * 1e6,
                                     Caracter = Txt(z, "caracter"), Lado = Txt(z, "lado"),
                                     Criollo = Txt(z, "criollo"),
                                     Incentivo = Num(z, "incentivo") ?? 0,
@@ -1066,11 +1358,84 @@ namespace PythiaGex
         // ==============================================================
         // La cuenta
         // ==============================================================
-        private const double MULT = 100.0;   // multiplicador de opciones de indice
+        private const double MULT = 100.0;   // multiplicador de opciones de INDICE (SPX, NDX)
+
+        /// <summary>
+        /// EL PISO DEL TIEMPO AL VENCIMIENTO: UN MINUTO.
+        ///
+        /// Hace falta un piso porque con T tendiendo a cero la gamma tiende a
+        /// infinito y un 0DTE a punto de liquidar se comeria todo el mapa.
+        ///
+        /// Estaba en 0,02 dias, o sea 29 minutos, y eso recortaba el muro justo
+        /// en la media hora en que mas aprieta. Medido sobre las fotos
+        /// archivadas de la rueda del 3 de septiembre, con el 0DTE VERDADERO:
+        ///
+        ///   09:34 a 15:13  ->  diferencia 0 % en todas las lecturas
+        ///   15:44 (cierre) ->  subestimabamos un 12 %
+        ///
+        /// Y el muro NO se movio en ninguna fila: 7750 contra 7750 en la
+        /// ultima. El piso cambia el TAMANO, nunca la ubicacion.
+        ///
+        /// El efecto real es otro y es mas interesante: con menos tiempo la
+        /// gamma no crece pareja, se CONCENTRA. Los strikes al dinero se
+        /// disparan y los de los costados se apagan. Por eso el total sube
+        /// solo 12 % mientras el pico se afila muchisimo mas. Es el poste
+        /// contra el terraplen, medido.
+        /// </summary>
+        private const double PISO_DIAS = 1.0 / 1440.0;
+
+        /// <summary>
+        /// El multiplicador del contrato, que NO es 100 para opciones sobre futuros.
+        ///
+        /// Las opciones de indice (SPX, NDX) valen 100 dolares por punto. Las
+        /// opciones sobre futuros de CME valen lo mismo que su futuro:
+        /// ES 50, NQ 20, RTY 50. Aplicarles 100 infla el GEX en dolares por 2
+        /// en ES y por 5 en NQ.
+        ///
+        /// QUE CAMBIA Y QUE NO. Es una constante que multiplica a TODOS los
+        /// strikes por igual, asi que no mueve ningun nivel: no cambia cual es
+        /// el strike de maximo GEX, ni donde la suma cruza el cero, ni la forma
+        /// del perfil, ni los picos. Lo unico que estaba mal era el NUMERO EN
+        /// DOLARES del titular -- que es justamente el error que este proyecto
+        /// le encontro a los tableros ajenos, asi que con mas razon hay que
+        /// arreglarlo en el propio.
+        ///
+        /// Se usa la raiz de tamano completo porque la cadena que se suscribe
+        /// es la del contrato grande: un grafico de MES lee opciones de ES.
+        /// </summary>
+        private double Multiplicador()
+        {
+            if (!_esFuturo) return MULT;
+            switch (Raiz())
+            {
+                case "NQ":  return 20.0;
+                case "RTY": return 50.0;
+                default:    return 50.0;   // ES
+            }
+        }
 
         private static double Fi(double x) => Math.Exp(-0.5 * x * x) / Math.Sqrt(2.0 * Math.PI);
 
         /// <summary>Gamma de Black-Scholes. Devuelve 0 si los datos no dan.</summary>
+        /// <summary>
+        /// Un numero de gamma en dolares, abreviado y legible de un vistazo.
+        ///
+        /// El chip vive contra el eje y tiene lugar para tres o cuatro
+        /// caracteres: "3B", "2,1B", "840M". Con el numero entero -- 3.052.117.884 --
+        /// no se lee nada y ademas no aporta: nadie decide por el septimo digito.
+        /// </summary>
+        private static string Magnitud(double v)
+        {
+            v = Math.Abs(v);
+            var es = CultureInfo.GetCultureInfo("es-AR");
+            if (v >= 1e12) return (v / 1e12).ToString("0.#", es) + "T";
+            if (v >= 1e9) return (v / 1e9).ToString("0.#", es) + "B";
+            if (v >= 1e6) return (v / 1e6).ToString("0", es) + "M";
+            if (v >= 1e5) return (v / 1e6).ToString("0.0", es) + "M";
+            if (v > 0) return (v / 1e3).ToString("0", es) + "K";
+            return "";
+        }
+
         private static double GammaBs(double S, double K, double T, double iv, double r)
         {
             if (S <= 0 || K <= 0 || T <= 0 || iv <= 0) return 0;
@@ -1098,7 +1463,61 @@ namespace PythiaGex
         {
             var gC = GammaBs(S, f.K, T, f.IvC, r);
             var gP = GammaBs(S, f.K, T, f.IvP, r);
-            return (gC * f.VolC - gP * f.VolP) * MULT * S * S * 0.01;
+            return (gC * f.VolC - gP * f.VolP) * Multiplicador() * S * S * 0.01;
+        }
+
+        /// <summary>
+        /// Igual que GexStrike pero con el modelo y el multiplicador EXPLICITOS,
+        /// para poder evaluar una cadena que no es la que esta en uso.
+        ///
+        /// Hace falta porque el zero gamma se calcula sobre la cadena ancha
+        /// aunque el perfil venga de la viva, y las dos no comparten ni modelo
+        /// ni multiplicador: una es sobre futuro y la otra sobre indice.
+        /// </summary>
+        private double GexStrikeCon(Fila f, double S, double T, double r, bool esFut, double mult)
+        {
+            var gC = esFut ? Black76.Gamma(S, f.K, T, f.IvC) : GammaBs(S, f.K, T, f.IvC, r);
+            var gP = esFut ? Black76.Gamma(S, f.K, T, f.IvP) : GammaBs(S, f.K, T, f.IvP, r);
+            return (gC * f.OiC - gP * f.OiP) * mult * S * S * 0.01;
+        }
+
+        /// <summary>
+        /// EL CRUCE POR CERO SOBRE UNA CADENA CUALQUIERA.
+        ///
+        /// Se ancla la grilla al precio de AHORA, no al spot que traia la
+        /// cadena: asi lo unico atrasado es el interes abierto y la volatilidad
+        /// -- que es lo que de verdad se consolida de noche -- y el precio es
+        /// del segundo. Devuelve el cruce en el espacio de precios de ESA
+        /// cadena; el que llama le suma la base si hace falta.
+        /// </summary>
+        private double CruceCero(Cadena cc, double futuro, double baseCc, double r)
+        {
+            if (cc == null || cc.Filas == null || cc.Filas.Count == 0 || cc.Dias == null)
+                return double.NaN;
+            bool esFut = cc.EsFuturo;
+            double mult = esFut ? Multiplicador() : MULT;
+            double S = esFut ? futuro : futuro - baseCc;
+            if (S <= 0) return double.NaN;
+
+            double lo = S * 0.97, hi = S * 1.03;
+            const int pasos = 60;
+            double ant = double.NaN, xAnt = 0;
+            for (int i = 0; i <= pasos; i++)
+            {
+                double x = lo + (hi - lo) * i / pasos;
+                double t = 0;
+                foreach (var f in cc.Filas)
+                {
+                    if (f.V < 0 || f.V >= cc.Dias.Length) continue;
+                    var dias = cc.Dias[f.V];
+                    if (dias > DiasMax) continue;
+                    t += GexStrikeCon(f, x, Math.Max(dias, PISO_DIAS) / 365.0, r, esFut, mult);
+                }
+                if (!double.IsNaN(ant) && ((ant < 0 && t >= 0) || (ant > 0 && t <= 0)))
+                    return (t != ant) ? xAnt + (x - xAnt) * (-ant) / (t - ant) : x;
+                ant = t; xAnt = x;
+            }
+            return double.NaN;
         }
 
         private double GexStrike(Fila f, double S, double T, double r)
@@ -1115,7 +1534,7 @@ namespace PythiaGex
             // Convencion estandar de la industria: +1 para calls, -1 para puts.
             // Es una ASUNCION sobre de que lado quedo la mesa, no un dato
             // medido. Cuando el flujo dominante se da vuelta, el signo miente.
-            return (gC * f.OiC - gP * f.OiP) * MULT * S * S * 0.01;
+            return (gC * f.OiC - gP * f.OiP) * Multiplicador() * S * S * 0.01;
         }
 
         /// <summary>Reprecia toda la cadena contra el precio de ahora.
@@ -1135,7 +1554,28 @@ namespace PythiaGex
             // retraso no le sirven. Tiene razon: un dato que llega tarde obliga
             // a confiar en que nada cambio en el medio, y esa confianza no se
             // puede auditar. Cuando Rithmic esta entregando, se usa Rithmic.
-            var c = ArmarDesdeViva() ?? _c;
+            // UN SOLO LIBRO, SIEMPRE EL MISMO.
+            //
+            // Antes esto decia "la viva manda cuando esta", y alternaba entre
+            // dos MERCADOS DISTINTOS varias veces por hora: opciones de SPX
+            // (CBOE) y opciones sobre el futuro de ES (Rithmic).
+            //
+            // LO MEDIDO, 1140 lecturas de una rueda, con el PRECIO como control:
+            //   sin cambiar de libro   el precio salta 0,25 y los muros 0,00
+            //   AL CAMBIAR DE LIBRO    el precio salta 0,25 y los muros 33,10
+            // El mercado no se movia: el salto era puro cambio de libro.
+            //
+            // Y no se parecen en nada. Mismo instante, misma ventana de strikes:
+            // el call wall difiere 92,51 puntos, el neto tiene SIGNOS OPUESTOS,
+            // de los 6 strikes mas fuertes de cada uno coinciden CERO, y SPX
+            // tiene 7,8 veces mas interes abierto.
+            //
+            // El operador eligio SPX, y el motivo es solido: sus mesas cubren
+            // con futuros de ES, asi que es esa gamma la que empuja el precio
+            // que el opera. El precio de referencia igual es del segundo --
+            // la cadena se reprecia al futuro de ahora -- lo unico atrasado es
+            // el interes abierto, que es de ayer para todo el mundo.
+            var c = LibroViva ? (ArmarDesdeViva() ?? _c) : (_c ?? ArmarDesdeViva());
             if (c == null || c.Filas.Count == 0) return;
             _esFuturo = c.EsFuturo;
             _fuente = c.Fuente;
@@ -1256,7 +1696,7 @@ namespace PythiaGex
                 // El plazo nunca baja de media hora: con T tendiendo a cero la
                 // gamma explota y un 0DTE a punto de liquidar se comeria todo
                 // el mapa con un numero que no significa nada.
-                var T = Math.Max(dias, 0.02) / 365.0;
+                var T = Math.Max(dias, PISO_DIAS) / 365.0;
 
                 var g = GexStrike(f, S, T, r);
                 var gUp = GexStrike(f, Sup, T, r);
@@ -1267,7 +1707,12 @@ namespace PythiaGex
                     n = new Nivel { K = f.K, Gex = 0, GexVol = 0, Acel = 0 };
                 // el perfil de gamma (izquierda) y el de convexidad (derecha)
                 // se llenan cada uno con SU vencimiento
-                if (enIzq) { n.Gex += g; n.GexVol += gv; n.VolTot += f.VolC + f.VolP; }
+                if (enIzq)
+                {
+                    n.Gex += g; n.GexVol += gv; n.VolTot += f.VolC + f.VolP;
+                    if (dias < 1.0) n.Gex0 += g;   // lo que vence hoy
+                    if (Math.Abs(g) > n.GexDom) { n.GexDom = Math.Abs(g); n.DiasDom = dias; }
+                }
                 if (enDer) { n.Acel += (gUp - g); }
                 porStrike[f.K] = n;
             }
@@ -1301,7 +1746,7 @@ namespace PythiaGex
                         if (f.V < 0 || f.V >= c.Dias.Length) continue;
                         var dias = c.Dias[f.V];
                         if (dias > DiasMax) continue;
-                        t += GexStrike(f, x, Math.Max(dias, 0.02) / 365.0, r);
+                        t += GexStrike(f, x, Math.Max(dias, PISO_DIAS) / 365.0, r);
                     }
                     if (!double.IsNaN(ant) && ((ant < 0 && t >= 0) || (ant > 0 && t <= 0)))
                     {
@@ -1315,12 +1760,194 @@ namespace PythiaGex
                 }
             }
 
-            double mp = 0, mn = 0;
+            // EL MISMO CRUCE, PERO SOBRE EL VOLUMEN DE HOY.
+            //
+            // Identico al de arriba y a proposito: misma grilla, mismo paso,
+            // misma interpolacion en el cruce. Lo unico que cambia es que suma
+            // GexVolStrike en vez de GexStrike, o sea que pondera por los
+            // contratos operados HOY en vez de por el interes abierto de ayer.
+            //
+            // El campo _zeroVol estaba declarado desde hace rato y nunca se
+            // llenaba; el compilador lo venia avisando.
+            double zeroVol = double.NaN;
+            {
+                double lo = S * 0.97, hi = S * 1.03;
+                int pasos = 60;
+                double ant = double.NaN, xAnt = 0;
+                for (int i = 0; i <= pasos; i++)
+                {
+                    double x = lo + (hi - lo) * i / pasos;
+                    double t = 0;
+                    foreach (var f in c.Filas)
+                    {
+                        if (f.V < 0 || f.V >= c.Dias.Length) continue;
+                        var dias = c.Dias[f.V];
+                        if (dias > DiasMax) continue;
+                        t += GexVolStrike(f, x, Math.Max(dias, PISO_DIAS) / 365.0, r);
+                    }
+                    if (!double.IsNaN(ant) && ((ant < 0 && t >= 0) || (ant > 0 && t <= 0)))
+                    {
+                        zeroVol = (t != ant) ? xAnt + (x - xAnt) * (-ant) / (t - ant) : x;
+                        break;
+                    }
+                    ant = t; xAnt = x;
+                }
+            }
+            lock (_candado) _zeroVol = zeroVol;
+
+            // HIPOTESIS 3: DONDE EL GAMMA CAMBIA MAS RAPIDO.
+            //
+            // Se recorre la misma grilla de +/-3 % repreciando toda la cadena y
+            // se busca el tramo donde la suma total pega el mayor salto de un
+            // paso al siguiente. Ese es el precio donde la cobertura de las
+            // mesas cambia mas de golpe. Es continuo por construccion: sale de
+            // la grilla, no de la rejilla de strikes.
+            double maxChange = double.NaN;
+            {
+                double lo = S * 0.97, hi = S * 1.03;
+                int pasos = 60;
+                double ant = double.NaN, xAnt = 0, mejor = 0;
+                for (int i = 0; i <= pasos; i++)
+                {
+                    double x = lo + (hi - lo) * i / pasos;
+                    double t = 0;
+                    foreach (var f in c.Filas)
+                    {
+                        if (f.V < 0 || f.V >= c.Dias.Length) continue;
+                        var dias = c.Dias[f.V];
+                        if (dias > DiasMax) continue;
+                        t += GexStrike(f, x, Math.Max(dias, PISO_DIAS) / 365.0, r);
+                    }
+                    if (!double.IsNaN(ant))
+                    {
+                        double cambio = Math.Abs(t - ant);
+                        if (cambio > mejor) { mejor = cambio; maxChange = (x + xAnt) / 2.0; }
+                    }
+                    ant = t; xAnt = x;
+                }
+            }
+
+            // EL ZERO GAMMA SOBRE LA CADENA ANCHA (apagado por defecto).
+            //
+            // Queda disponible pero NO se usa: mezclar el zero de un libro con
+            // los muros de otro produce un mapa que no describe a ningun
+            // mercado. Se probo y el operador lo vio en pantalla al toque.
+            // Los dos libros -- SPX y ES -- discrepan en TODO: el call wall
+            // difiere 92 puntos y de los 6 strikes mas fuertes coinciden cero.
+            double zeroAncho = double.NaN;
+            int strikesAncho = 0;
+            if (ZeroDeCadenaAncha && _c != null && !ReferenceEquals(_c, c)
+                && _c.Filas != null && _c.Filas.Count > c.Filas.Count)
+            {
+                double bA = _c.EsFuturo ? 0
+                          : (_c.BaseConfiable ? _c.Base
+                             : (_baseBuena != 0 ? _baseBuena : _c.BaseCruda));
+                double zi = CruceCero(_c, futuro, bA, r);
+                if (!double.IsNaN(zi))
+                {
+                    zeroAncho = zi + (_c.EsFuturo ? 0 : bA);
+                    var vistos = new HashSet<double>();
+                    foreach (var f in _c.Filas) vistos.Add(f.K);
+                    strikesAncho = vistos.Count;
+                }
+            }
+            lock (_candado) { _zeroAnchoUlt = zeroAncho; _strikesAnchoUlt = strikesAncho; }
+
+            lock (_candado) { _maxChangeUlt = maxChange; }
+
+            // EL CALL WALL VA ARRIBA DEL PRECIO Y EL PUT WALL ABAJO.
+            //
+            // Antes se tomaba el maximo y el minimo GLOBALES de la cadena, sin
+            // mirar de que lado del precio caian. Se midio sobre 1777 renglones
+            // del registro propio: el "call wall" quedo POR DEBAJO del precio
+            // 217 veces (12,2 %) y el "put wall" POR ENCIMA 167 veces (9,4 %).
+            // Un caso real de NQ: precio 29.516 y put wall dibujado en 29.600,
+            // ochenta y cuatro puntos arriba. Eso es dibujar un piso por encima
+            // del techo, y en scalping se opera contra el nivel equivocado.
+            //
+            // La definicion estandar tiene la condicion del lado justamente por
+            // esto: el call wall es la resistencia de arriba y el put wall el
+            // soporte de abajo. Un cumulo de gamma positiva POR DEBAJO del
+            // precio existe y es informacion, pero no es una resistencia y no
+            // se puede etiquetar como tal.
+            //
+            // Si de un lado no hay ningun strike, se cae al global antes que
+            // no dar nada: es mejor un nivel con la etiqueta puesta que un
+            // hueco silencioso.
+            double mp = 0, mn = 0, mpGlobal = 0, mnGlobal = 0;
+
+            // EL RIVAL DE CADA MURO.
+            //
+            // Un argmax entre dos strikes casi empatados es una moneda al aire
+            // presentada como dato: con el 2do al 89 % del 1ro, un movimiento
+            // minimo del precio da vuelta cual gana y el muro "salta" 50 o 75
+            // puntos sin que el mercado haya hecho nada. Paso el 2026-08-31
+            // (7750 -> 7800) y otra vez el 2026-09-06 (7750 <-> 7825 toda la
+            // noche, registrado por el centinela). NivelesGamma ya lo marcaba
+            // como DISPUTADO; este indicador no, y era el que estaba en
+            // pantalla. Aca se calcula el segundo de cada lado y su peso
+            // relativo; si pasa el umbral, el rival se publica y se dibuja.
+            double mpRival = double.NaN, mnRival = double.NaN, mpRatio = 0, mnRatio = 0;
             if (perfil.Count > 0)
             {
-                mp = perfil.Aggregate((a, b) => a.Gex >= b.Gex ? a : b).K;
-                mn = perfil.Aggregate((a, b) => a.Gex <= b.Gex ? a : b).K;
+                mpGlobal = perfil.Aggregate((a, b) => a.Gex >= b.Gex ? a : b).K;
+                mnGlobal = perfil.Aggregate((a, b) => a.Gex <= b.Gex ? a : b).K;
+
+                var arriba = perfil.Where(p => p.K > S).ToList();
+                var abajo  = perfil.Where(p => p.K < S).ToList();
+                mp = arriba.Count > 0
+                     ? arriba.Aggregate((a, b) => a.Gex >= b.Gex ? a : b).K
+                     : mpGlobal;
+                mn = abajo.Count > 0
+                     ? abajo.Aggregate((a, b) => a.Gex <= b.Gex ? a : b).K
+                     : mnGlobal;
+
+                double umbral = Math.Max(0.5, Math.Min(0.99, UmbralDisputa / 100.0));
+                if (arriba.Count > 1)
+                {
+                    var lider = arriba.Aggregate((a, b) => a.Gex >= b.Gex ? a : b);
+                    var segundo = arriba.Where(q => q.K != lider.K)
+                                        .Aggregate((a, b) => a.Gex >= b.Gex ? a : b);
+                    if (lider.Gex > 0 && segundo.Gex > 0)
+                    {
+                        mpRatio = segundo.Gex / lider.Gex;
+                        if (mpRatio >= umbral) mpRival = segundo.K;
+                    }
+                }
+                if (abajo.Count > 1)
+                {
+                    var lider = abajo.Aggregate((a, b) => a.Gex <= b.Gex ? a : b);
+                    var segundo = abajo.Where(q => q.K != lider.K)
+                                       .Aggregate((a, b) => a.Gex <= b.Gex ? a : b);
+                    if (lider.Gex < 0 && segundo.Gex < 0)
+                    {
+                        mnRatio = segundo.Gex / lider.Gex;   // los dos negativos: sale positivo
+                        if (mnRatio >= umbral) mnRival = segundo.K;
+                    }
+                }
             }
+            lock (_candado) { _mpGlobal = mpGlobal; _mnGlobal = mnGlobal; }
+
+            // LA GAMMA DE ESTE INDICADOR EN CADA ZONA DEL RADAR.
+            //
+            // El radar (Python) suma la gamma de cada strike hasta 45 dias; este
+            // indicador la corta en DiasMax (7 por defecto). Medido el
+            // 2026-09-06 desde la cadena cruda de CBOE: el 7700 de SPX daba
+            // -1.350 M a 7 dias y -2.844 M a 45, y la diferencia era casi toda
+            // el vencimiento del 30 de septiembre (21.716 puts). Por eso el
+            // radar marcaba 7700 como "acelerador" mientras el muro de este
+            // indicador caia en 7675: no es un error de calculo de ninguno de
+            // los dos, son dos horizontes. Aca se guarda la cifra propia de
+            // cada zona para publicarla junto a la del radar en el AUDIT.
+            lock (_zonas)
+                foreach (var z in _zonas)
+                {
+                    if (double.IsNaN(z.Idx)) continue;
+                    double g = 0; bool hay = false;
+                    foreach (var q in perfil)
+                        if (Math.Abs(q.K - z.Idx) < 0.01) { g += q.Gex; hay = true; }
+                    z.GexCs = hay ? g : double.NaN;
+                }
 
             // LOS PICOS DEL PERFIL, INTERPOLADOS.
             //
@@ -1337,9 +1964,132 @@ namespace PythiaGex
             // cae ENTRE strikes: se ajusta una parabola por el maximo y sus dos
             // vecinos y se toma el vertice. Se mueve con cada tick, que es lo
             // que se ve en los videos.
+            // LO DE ARRIBA QUEDO REFUTADO. Se deja como opcion, no como camino.
+            //
+            // Aquella medicion se hizo con deteccion de color sobre capturas
+            // donde las VELAS NARANJAS se contaban como marcas del indicador.
+            // Estaba contaminada y ya se retracto.
+            //
+            // La medicion buena: 2443 cuadros de dos videos, con control de
+            // paneo (en 816 pares de cuadros NUNCA se movieron todas las barras
+            // lo mismo, asi que el movimiento es dato y no camara). El producto
+            // real dibuja UNA BARRA POR STRIKE sobre una rejilla fija -- la
+            // separacion medida entre barras vecinas es de 28 px y se repite --
+            // y no elige ganadores. Lo que se mueve es el LARGO de cada barra.
+            //
+            // Y nuestro propio registro dice por que habia que cambiarlo: 731
+            // muestras de ES en 399 minutos seguidos, con las dominantes
+            // clavadas en el mismo lugar entre el 65 % y el 92 % de las
+            // muestras y saltos de hasta 117 puntos cuando cambiaba el ganador.
+            // Eso no es una escalera, es una raya con precipicios, y el
+            // precipicio es el sintoma de estar eligiendo.
+            //
+            // Sobre la rejilla no hay ganador que cambiar, asi que no hay salto.
             var picos = new List<(double Fut, double Peso)>();
             if (perfil.Count < 3) lock (_candado) _picosUlt = null;   // no dejar los viejos colgados
-            if (perfil.Count >= 3)
+
+            // MODO 0: EL CENTRO DE GRAVEDAD. Un PROMEDIO, no una eleccion.
+            //
+            // ---------------------------------------------------------------
+            // NO ES EL MODO POR DEFECTO, Y ESTE COMENTARIO EXPLICA POR QUE NO.
+            //
+            // Lo propuse yo porque medi que unas lineas de nivel de un video
+            // del producto real ondulan (284 lineas, ninguna plana). Esa
+            // medicion esta bien hecha. El problema es otro: NUNCA IDENTIFIQUE
+            // QUE NIVEL ERAN ESAS LINEAS. Uno de los videos se llama "Max
+            // Change", que no es un muro de gamma.
+            //
+            // Las dos fuentes que trajo el operador coinciden entre si: la zona
+            // dominante es EL STRIKE donde |GEX| es mas alto. Es una ELECCION
+            // sobre strikes. Un nivel definido asi se dibuja plano porque es
+            // plano, y eso no es un defecto.
+            //
+            // Ademas se verifico por un camino independiente, recalculando en
+            // Python desde la cadena cruda: las dos formulas que circulan
+            // (cruda OIxGamma, y en dolares xMULTxS^2/100) dan LOS MISMOS ocho
+            // strikes en el MISMO orden, y coinciden con lo que sacaba el modo
+            // 1. Solo cambian las unidades del titular.
+            //
+            // Queda disponible por si algun dia se identifica cual es la linea
+            // que ondula. Hasta entonces, el estandar manda.
+            // ---------------------------------------------------------------
+            //
+            // POR QUE ESTE Y NO LOS OTROS DOS. Se midieron 284 lineas de nivel
+            // del producto real, cada una por separado y sobre el amarillo, que
+            // ninguna vela de ese grafico tiene y por lo tanto no se contamina:
+            // NINGUNA es plana. Cero de 284. Cada una toma unas 13 alturas
+            // distintas en la misma pantalla, con 15 px de recorrido y
+            // escalones de 2,4 px.
+            //
+            // Los tres comportamientos salen de una sola diferencia:
+            //   - elegir un STRIKE     -> no se mueve nunca (raya perfecta)
+            //   - elegir el PICO       -> clavado, y salta un intervalo entero
+            //                             cuando cambia el strike ganador (se
+            //                             midieron saltos de 117 puntos)
+            //   - PROMEDIAR            -> se mueve un poco siempre que cambia
+            //                             cualquier peso, y no salta nunca
+            //
+            // Un promedio no tiene ganador que cambiar. Por eso ondula en vez
+            // de pegar acantilados, y por eso es este.
+            if (perfil.Count >= 3 && ModoDominante == 0)
+            {
+                double piso = mx * Math.Max(0.0, Math.Min(0.95, MinFuerzaDominante / 100.0));
+                double rad = (double)Math.Max(1m, RadioCentroide);
+                for (int i = 1; i < perfil.Count - 1; i++)
+                {
+                    double a = Math.Abs(perfil[i - 1].Gex);
+                    double b2 = Math.Abs(perfil[i].Gex);
+                    double c2 = Math.Abs(perfil[i + 1].Gex);
+                    if (b2 <= a || b2 <= c2) continue;      // el cumulo se ubica con el maximo local
+                    if (b2 < piso) continue;
+
+                    // ...pero el nivel NO es ese maximo: es el promedio de
+                    // precio ponderado por gamma en su entorno. Se usa n.Fut,
+                    // la misma conversion con la que se dibuja el perfil.
+                    double sw = 0, sx = 0;
+                    foreach (var n in perfil)
+                    {
+                        if (Math.Abs(n.Fut - perfil[i].Fut) > rad) continue;
+                        double w = Math.Abs(n.Gex);
+                        if (w <= 0) continue;
+                        sw += w; sx += w * n.Fut;
+                    }
+                    if (sw <= 0) continue;
+                    picos.Add((sx / sw, b2));
+                }
+                picos.Sort((u, v) => v.Peso.CompareTo(u.Peso));
+                double sepC = (double)Math.Max(0m, SeparacionPuntos);
+                if (sepC > 0)
+                {
+                    var fl = new List<(double Fut, double Peso)>();
+                    foreach (var q in picos)
+                        if (!fl.Any(z => Math.Abs(z.Fut - q.Fut) < sepC)) fl.Add(q);
+                    picos = fl;
+                }
+                if (picos.Count > Math.Max(1, MaxDominantes))
+                    picos.RemoveRange(Math.Max(1, MaxDominantes),
+                                      picos.Count - Math.Max(1, MaxDominantes));
+                lock (_candado) _picosUlt = picos.Select(q => q.Fut).ToArray();
+            }
+            else if (perfil.Count >= 3 && ModoDominante == 1)
+            {
+                // Se usa n.Fut, la MISMA conversion a futuro con la que se
+                // dibujan las barras del perfil, para que una dominante no
+                // pueda quedar corrida respecto de su propia barra.
+                double piso = mx * Math.Max(0.0, Math.Min(0.95, MinFuerzaDominante / 100.0));
+                foreach (var n in perfil)
+                {
+                    double p = Math.Abs(n.Gex);
+                    if (p <= 0 || p < piso) continue;
+                    picos.Add((n.Fut, p));
+                }
+                picos.Sort((u, v) => v.Peso.CompareTo(u.Peso));
+                if (picos.Count > Math.Max(1, MaxDominantes))
+                    picos.RemoveRange(Math.Max(1, MaxDominantes),
+                                      picos.Count - Math.Max(1, MaxDominantes));
+                lock (_candado) _picosUlt = picos.Select(p => p.Fut).ToArray();
+            }
+            else if (perfil.Count >= 3)
             {
                 for (int i = 1; i < perfil.Count - 1; i++)
                 {
@@ -1471,6 +2221,40 @@ namespace PythiaGex
             }
 
             double netoVol = 0, mpv = 0, mnv = 0;
+            // LA VOLATILIDAD AL DINERO Y EL MOVIMIENTO ESPERADO.
+            //
+            // Es lo que el propio mercado de opciones esta cobrando por el
+            // rango de HOY, y no lo teniamos. Sale del strike mas cercano al
+            // precio en el vencimiento mas corto: un desvio estandar es
+            //     S x IV x raiz(T)
+            // que para un 0DTE a media rueda son unos pocos puntos y da un
+            // marco honesto de cuanto se espera que se mueva.
+            //
+            // Tambien se publica el GEX TOTAL en magnitud, para que el neto
+            // tenga escala: un neto de 36 M no significa nada si no se sabe si
+            // el total es 100 M o 8.000 M. En el segundo caso el mercado esta
+            // en el filo y se da vuelta con nada.
+            {
+                double mejorD = double.MaxValue, ivC = 0, ivP = 0, diasAtm = 0;
+                foreach (var f in c.Filas)
+                {
+                    if (f.V < 0 || f.V >= c.Dias.Length) continue;
+                    var dd = c.Dias[f.V];
+                    if (dd > DiasMax) continue;
+                    double dist = Math.Abs(f.K - S) + dd * 1000.0;   // primero el mas corto
+                    if (dist < mejorD && (f.IvC > 0 || f.IvP > 0))
+                    { mejorD = dist; ivC = f.IvC; ivP = f.IvP; diasAtm = dd; }
+                }
+                double iv = (ivC > 0 && ivP > 0) ? (ivC + ivP) / 2.0 : Math.Max(ivC, ivP);
+                double tt = Math.Max(diasAtm, PISO_DIAS) / 365.0;
+                double em = (iv > 0 && tt > 0) ? S * iv * Math.Sqrt(tt) : 0;
+                double tg = 0;
+                foreach (var n5 in perfil) tg += Math.Abs(n5.Gex);
+                lock (_candado) { _ivAtmUlt = iv; _movEspUlt = em; _gexTotalUlt = tg; }
+            }
+
+            lock (_candado) _futsUlt = perfil.Select(p => p.Fut).ToArray();
+
             if (perfil.Count > 0)
             {
                 foreach (var n3 in perfil) netoVol += n3.GexVol;
@@ -1478,6 +2262,16 @@ namespace PythiaGex
                 mnv = perfil.Aggregate((a, b) => a.GexVol <= b.GexVol ? a : b).K;
                 if (!double.IsNaN(baseUsada)) { mpv += baseUsada; mnv += baseUsada; }
             }
+
+            // PUBLICARLOS ACA, NO CIEN LINEAS MAS ABAJO.
+            //
+            // Estaban calculados aca pero se publicaban recien despues de
+            // escribir el renglon de auditoria, asi que la auditoria leia el
+            // valor de la pasada ANTERIOR -- y en la primera pasada leia cero.
+            // Salio a la luz sola: la hipotesis 1 aparecia como majorposvol=0
+            // con netgexvol=47,5, y un maximo no puede ser cero si la suma no
+            // lo es. El dato estaba bien; lo que estaba mal era cuando lo miraba.
+            lock (_candado) { _netGexVol = netoVol; _majorPosVol = mpv; _majorNegVol = mnv; }
 
             // ANOTAR LA VELA. Un punto por vela al nivel de ese momento: eso
             // es lo que forma las bandas de puntitos de las capturas.
@@ -1500,8 +2294,14 @@ namespace PythiaGex
                     {
                         Hora = ahora,
                         MajorPos = mp, MajorNeg = mn,
-                        Zero = double.IsNaN(zero) ? 0
-                             : (double.IsNaN(baseUsada) ? zero : zero + baseUsada),
+                        Zero = !double.IsNaN(zeroAncho) ? zeroAncho
+                             : (double.IsNaN(zero) ? 0
+                                : (double.IsNaN(baseUsada) ? zero : zero + baseUsada)),
+                        MajorPosVol = mpv, MajorNegVol = mnv,
+                        MaxChange = double.IsNaN(maxChange) ? 0
+                                  : (double.IsNaN(baseUsada) ? maxChange : maxChange + baseUsada),
+                        ZeroVol = double.IsNaN(zeroVol) ? 0
+                                : (double.IsNaN(baseUsada) ? zeroVol : zeroVol + baseUsada),
                         Doms = dd, Incs = ii,
                         Hay = true,
                     };
@@ -1530,7 +2330,10 @@ namespace PythiaGex
                     Registrar2(string.Format(CultureInfo.InvariantCulture,
                         "AUDIT spot_idx={0:F4} base={1:F4} origen=" + _baseOrigen.Replace(" ", "_") + " strikes={2} visibles=" + _visiblesUlt + " " +
                         "zero={3:F4} majorpos={4:F4} majorneg={5:F4} netgex={6:F6} netgexvol={7:F6} diasmax={8} " +
-                        "cadenafilas={9} cadenats={10}" + AtrasoDom() + Picos() + Flujo(),
+                        // el regimen tal como lo va a mostrar el panel, para poder
+                        // auditar el rotulo contra estos mismos numeros (los dos en indice)
+                        "regimen=" + ((!double.IsNaN(zero) && S > zero) ? "positivo" : (double.IsNaN(zero) ? "sindato" : "negativo")) + " " +
+                        "cadenafilas={9} cadenats={10}" + AtrasoDom() + Picos() + Flujo() + Disputa() + ZonasAudit(),
                         S, baseUsada, perfil.Count,
                         double.IsNaN(zero) ? 0 : zero, mp, mn, neto / 1e9, netoVol / 1e9, DiasMax,
                         c.Filas.Count, (c.Ts ?? "").Replace(" ", "_")));
@@ -1559,8 +2362,15 @@ namespace PythiaGex
                 _netGex = neto; _maxGex = mx; _maxAcel = mxA;
                 _zeroGamma = double.IsNaN(zero) ? double.NaN
                            : (double.IsNaN(baseUsada) ? zero : zero + baseUsada);
+                // si hay zero de cadena ancha, ESE es el que se dibuja
+                if (!double.IsNaN(zeroAncho)) _zeroGamma = zeroAncho;
                 _majorPos = double.IsNaN(baseUsada) ? mp : mp + baseUsada;
                 _majorNeg = double.IsNaN(baseUsada) ? mn : mn + baseUsada;
+                _mpRival = double.IsNaN(mpRival) ? double.NaN
+                         : (double.IsNaN(baseUsada) ? mpRival : mpRival + baseUsada);
+                _mnRival = double.IsNaN(mnRival) ? double.NaN
+                         : (double.IsNaN(baseUsada) ? mnRival : mnRival + baseUsada);
+                _mpRatio = mpRatio; _mnRatio = mnRatio;
                 _spotUsado = S;
             }
         }
@@ -1594,11 +2404,13 @@ namespace PythiaGex
             int x0 = area.Left, x1 = area.Right - Math.Max(0, MargenEje);
 
             List<Nivel> perfil; double mx, mxA, zero, mp, mn, neto, spot;
+            bool positiva; double mpRiv, mnRiv;
             lock (_candado)
             {
                 perfil = _perfil; mx = _maxGex; mxA = _maxAcel;
                 zero = _zeroGamma; mp = _majorPos; mn = _majorNeg;
                 neto = _netGex; spot = _spotUsado;
+                positiva = _gammaPositiva; mpRiv = _mpRival; mnRiv = _mnRival;
             }
 
             if (VerTablero) Tablero(g, area);
@@ -1777,11 +2589,70 @@ namespace PythiaGex
                           false, spot, x1, true);
             }
 
+            // LA ANOTACION VA ADENTRO DEL CHIP QUE YA EXISTE.
+            //
+            // El operador pidio ver el tamano y el vencimiento sin recargar la
+            // pantalla. No hace falta ningun dibujo nuevo: la etiqueta recibe
+            // el nombre como texto, asi que se le agrega ahi. Queda
+            // "+wall 7.832  1,2B 0D" en el mismo chip de siempre.
+            string Tam(double precioFut)
+            {
+                if (!AnotarTamano) return "";
+                // Nivel es un struct: no admite null, se usa una bandera
+                Nivel n = default;
+                bool hay = false;
+                double mejor = double.MaxValue;
+                foreach (var q in perfil)
+                {
+                    double dd = Math.Abs(q.Fut - precioFut);
+                    if (dd < mejor) { mejor = dd; n = q; hay = true; }
+                }
+                if (!hay || mejor > 3.0) return "";
+                double g0 = Math.Abs(n.Gex0), gt = Math.Abs(n.Gex);
+
+                // EL VENCIMIENTO, SIEMPRE, Y CUANTO DE ESO VENCE HOY.
+                //
+                // El operador scalpea intradia: saber si el nivel que tiene
+                // enfrente vence hoy o el viernes le cambia la decision. Si
+                // solo se marcara el 0DTE, la ausencia de marca seria ambigua
+                // -- no se sabria si es de otro dia o si no se pudo calcular.
+                //
+                // Y cuando el nivel es MIXTO se separan los dos numeros, porque
+                // no son lo mismo: la parte de hoy se evapora al cierre y la
+                // otra sigue manana. Un muro de "2,1B 7DTE +0,9B 0D" al cierre
+                // pasa a valer 1,2B y se corre.
+                string dte;
+                if (n.GexDom <= 0) dte = "";
+                else if (n.DiasDom < 1.0) dte = " 0DTE";
+                else dte = " " + Math.Round(n.DiasDom).ToString("0", CultureInfo.InvariantCulture) + "DTE";
+
+                string tot = Magnitud(gt);
+                // la porcion de hoy, aparte, solo cuando el nivel es mixto:
+                // si TODO vence hoy el "0DTE" de arriba ya lo dice
+                string hoy = "";
+                if (g0 > 0 && n.DiasDom >= 1.0 && g0 / Math.Max(1e-9, gt) >= 0.10)
+                    hoy = " +" + Magnitud(g0) + " 0D";
+
+                return (string.IsNullOrEmpty(tot) ? "" : "  " + tot) + dte + hoy;
+            }
+
+            if (VerNiveles0DTE)
+            {
+                double a0, b0;
+                lock (_candado) { a0 = _mp0Ult; b0 = _mn0Ult; }
+                if (a0 > 0) Linea(g, cont, xl0, xl1, a0, ColPos, "0DTE +", false, spot, x1, true);
+                if (b0 > 0) Linea(g, cont, xl0, xl1, b0, ColNeg, "0DTE -", false, spot, x1, true);
+            }
+
             if (VerLineas)
             {
-                Linea(g, cont, xl0, xl1, mp, ColPos, "+wall", false, spot, x1);
-                Linea(g, cont, xl0, xl1, mn, ColNeg, "-wall", false, spot, x1);
+                Linea(g, cont, xl0, xl1, mp, ColPos, "+wall" + Tam(mp), false, spot, x1);
+                Linea(g, cont, xl0, xl1, mn, ColNeg, "-wall" + Tam(mn), false, spot, x1);
                 Linea(g, cont, xl0, xl1, zero, ColZero, "zero", true, spot, x1);
+                // el rival del muro disputado, fino: es el otro candidato, no
+                // un nivel mas. Ver el comentario donde se calcula.
+                if (!double.IsNaN(mpRiv)) Linea(g, cont, xl0, xl1, mpRiv, ColPos, "+wall? disputado", false, spot, x1, true);
+                if (!double.IsNaN(mnRiv)) Linea(g, cont, xl0, xl1, mnRiv, ColNeg, "-wall? disputado", false, spot, x1, true);
             }
 
             // LA FRANJA DE REGIMEN.
@@ -1798,7 +2669,11 @@ namespace PythiaGex
                                     new Rectangle(x0, area.Top, x1 - x0, 3));
                 else
                 {
-                    bool pos = spot > zero;
+                    // NO comparar spot con zero aca: spot esta en INDICE y zero
+                    // ya lleva la base sumada (precio de FUTURO). Con base 6,17
+                    // la franja salia roja con el precio 2 puntos ARRIBA del
+                    // zero. _gammaPositiva se calcula con los dos en indice.
+                    bool pos = positiva;
                     var cr = pos ? ColPos : ColNeg;
                     g.FillRectangle(Color.FromArgb(pos ? 42 : 58, cr),
                                     new Rectangle(x0, area.Top, x1 - x0, 3));
@@ -2246,6 +3121,16 @@ namespace PythiaGex
                 Punto(m.MajorPos, ColPuntoDom, 1.0);
                 Punto(m.MajorNeg, ColPuntoDom, 1.0);
                 Punto(m.Zero, ColPuntoZero, 1.0);
+
+                // las dos hipotesis, cada una con su color, para poder
+                // distinguirlas a simple vista de las de interes abierto
+                if (VerMajorsVolumen)
+                {
+                    Punto(m.MajorPosVol, ColPuntoVol, 1.0);
+                    Punto(m.MajorNegVol, ColPuntoVol, 1.0);
+                }
+                if (VerZeroVolumen) Punto(m.ZeroVol, ColPuntoZeroVol, 1.0);
+                if (VerMaxChange) Punto(m.MaxChange, ColPuntoMaxChange, 1.0);
             }
 
             // EL CONTROL: dibujadas tiene que ser IGUAL a las que tienen
@@ -2394,7 +3279,10 @@ namespace PythiaGex
             {
                 if (!MarcarFueraDePantalla) return;
                 bool arriba = y < ChartArea.Top;
-                int yb2 = arriba ? ChartArea.Top + 6
+                // 26 y no 6: en la primera fila, pegado a la derecha, ATAS pone
+                // su boton de reproduccion y tapaba el chip ("+wall 3B 2DTE
+                // 7.756 (|> pts)"). Visto en pantalla el 2026-09-06.
+                int yb2 = arriba ? ChartArea.Top + 26
                                  : ChartArea.Bottom - Math.Max(18, MargenInferior + 4);
                 var t2 = string.Format(CultureInfo.GetCultureInfo("es-AR"),
                     "{0} {1} {2:N0} ({3} pts)", arriba ? "▲" : "▼", nombre, precio, dist);
@@ -2541,12 +3429,16 @@ namespace PythiaGex
             var fb = new RenderFont("Consolas", (float)Math.Max(7m, Math.Min(14m, TamTablero)));
             List<Nivel> perfil; double neto, zero, mp, mn, netoV, mpv, mnv, spot;
             FilaCambio[] cam;
+            bool positiva; double mpRiv, mnRiv, mpRat, mnRat, hz;
             lock (_candado)
             {
                 perfil = _perfil; neto = _netGex; zero = _zeroGamma; spot = _spotUsado;
                 mp = _majorPos; mn = _majorNeg;
                 netoV = _netGexVol; mpv = _majorPosVol; mnv = _majorNegVol;
                 cam = (FilaCambio[])_cambios.Clone();
+                positiva = _gammaPositiva;
+                mpRiv = _mpRival; mnRiv = _mnRival; mpRat = _mpRatio; mnRat = _mnRatio;
+                hz = _horizonteZonas;
             }
             if (perfil == null || perfil.Count == 0) return;
 
@@ -2590,12 +3482,38 @@ namespace PythiaGex
                 if (!haySzero)
                     ls.Add(Tuple.Create("REGIMEN  sin dato", ColAviso));
                 else
-                    ls.Add(Tuple.Create(spot > zero ? "GAMMA +  rango" : "GAMMA -  expansion",
-                                        spot > zero ? ColPos : ColNeg));
-                ls.Add(Tuple.Create("zero  " + P(zero), ColZero));
-                ls.Add(Tuple.Create("+wall " + P(mp), ColPos));
-                ls.Add(Tuple.Create("-wall " + P(mn), ColNeg));
-                ls.Add(Tuple.Create("net   " + M(neto), colNet));
+                    // EL REGIMEN SE LEE DE _gammaPositiva, NO DE spot > zero.
+                    //
+                    // spot esta en INDICE (_spotUsado = S) y zero ya lleva la
+                    // base sumada (precio de FUTURO). Compararlos decia
+                    // "expansion" con el net en +3,06 B y el precio 2 puntos
+                    // arriba del zero: mentia en toda la franja de 6 puntos
+                    // entre zero y zero+base, que es donde el precio estuvo la
+                    // noche entera del 2026-09-06. _gammaPositiva se calcula
+                    // en Repreciar con los dos numeros en indice.
+                    ls.Add(Tuple.Create(positiva ? "GAMMA +  rango" : "GAMMA -  expansion",
+                                        positiva ? ColPos : ColNeg));
+                // EL HORIZONTE VA AL LADO DEL NUMERO. Opensera publica el zero
+                // de SPX sumando todos los vencimientos y da 7688; este
+                // indicador corta a 7 dias y da 7713 (medido el 2026-09-06,
+                // misma cadena). Los dos son correctos en su definicion; sin el
+                // horizonte escrito, el operador cree que uno de los dos miente.
+                ls.Add(Tuple.Create("zero  " + P(zero) + "   " + DiasMax + "d", ColZero));
+                ls.Add(Tuple.Create("+wall " + P(mp) + (double.IsNaN(mpRiv) ? "" : "  disp " + P(mpRiv)), ColPos));
+                ls.Add(Tuple.Create("-wall " + P(mn) + (double.IsNaN(mnRiv) ? "" : "  disp " + P(mnRiv)), ColNeg));
+                if (!double.IsNaN(hz) && Math.Abs(hz - DiasMax) > 0.5)
+                    ls.Add(Tuple.Create("zonas radar " + hz.ToString("0", CultureInfo.InvariantCulture)
+                                        + "d, barras " + DiasMax + "d", ColAviso));
+                double ivA, emA, tgA;
+                lock (_candado) { ivA = _ivAtmUlt; emA = _movEspUlt; tgA = _gexTotalUlt; }
+                // el neto CON su escala: sin el total, un neto chico no se
+                // distingue de un mercado equilibrado en el filo
+                ls.Add(Tuple.Create(tgA > 0
+                    ? "net   " + M(neto) + "  de " + Magnitud(tgA)
+                    : "net   " + M(neto), colNet));
+                if (ivA > 0)
+                    ls.Add(Tuple.Create(string.Format(CultureInfo.GetCultureInfo("es-AR"),
+                        "IV {0:N1}%   mov esp +-{1:N1}", ivA * 100.0, emA), ColTexto));
                 // la procedencia viaja CON los numeros, no en otra caja: un
                 // nivel sin fuente no se publica, y separarlos hacia que el ojo
                 // tuviera que cruzar el grafico para saber de donde salio
@@ -2634,7 +3552,7 @@ namespace PythiaGex
                 double volTot = 0;
                 foreach (var nv in perfil) volTot += nv.VolTot;
                 if (volTot > 0)
-                    ls.Add(Tuple.Create("flujo hoy  " + ((int)volTot).ToString("N0",
+                    ls.Add(Tuple.Create(RotuloFlujo() + "  " + ((int)volTot).ToString("N0",
                         CultureInfo.GetCultureInfo("es-AR")) + " contr", ColFlujo));
 
                 if (VencIzq != VencDer)
@@ -2989,7 +3907,8 @@ namespace PythiaGex
                 lock (_candado)
                     foreach (var n in _perfil) { vp += n.VolTot; if (n.VolTot > 0) strikes++; }
                 return string.Format(CultureInfo.InvariantCulture,
-                    " flujoviva={0:F0} flujoperfil={1:F0} strikesconflujo={2} marcas={3}/{4}", v, vp, strikes, _marcasDibujadas, _marcasConRegistro);
+                    " flujoviva={0:F0} flujoperfil={1:F0} strikesconflujo={2} marcas={3}/{4}", v, vp, strikes, _marcasDibujadas, _marcasConRegistro)
+                    + _viva.Diagnostico();
             }
             catch { return " flujohoy=?"; }
         }
@@ -3044,6 +3963,93 @@ namespace PythiaGex
             catch { }
         }
 
+        /// <summary>El muro disputado, para el renglon de auditoria: cuanto pesa
+        /// el segundo contra el primero de cada lado y cual es.</summary>
+        private string Disputa()
+        {
+            double a, b, ra, rb;
+            lock (_candado) { a = _mpRival; b = _mnRival; ra = _mpRatio; rb = _mnRatio; }
+            var inv = CultureInfo.InvariantCulture;
+            return string.Format(inv, " mpratio={0:F2} mpdisp={1} mnratio={2:F2} mndisp={3}",
+                ra, double.IsNaN(a) ? "no" : a.ToString("F2", inv),
+                rb, double.IsNaN(b) ? "no" : b.ToString("F2", inv));
+        }
+
+        /// <summary>Cada zona del radar con la gamma que le dio el radar (py) y la
+        /// que le da este indicador (cs), en millones. Cuando difieren mucho es el
+        /// horizonte, y el numero de horizonte va adelante.</summary>
+        private string ZonasAudit()
+        {
+            List<ZonaDom> zs;
+            lock (_zonas) zs = new List<ZonaDom>(_zonas);
+            double hz = _horizonteZonas;
+            var inv = CultureInfo.InvariantCulture;
+            var sb = new System.Text.StringBuilder(" zonashorizonte=")
+                .Append(double.IsNaN(hz) ? "?" : hz.ToString("0", inv))
+                .Append(" zonas=");
+            bool primero = true;
+            foreach (var z in zs)
+            {
+                if (double.IsNaN(z.Idx)) continue;
+                if (!primero) sb.Append(';');
+                primero = false;
+                sb.Append(z.Idx.ToString("0", inv)).Append(':')
+                  .Append(double.IsNaN(z.GexPy) ? "?" : (z.GexPy / 1e6).ToString("+0;-0", inv)).Append("Mpy/")
+                  .Append(double.IsNaN(z.GexCs) ? "?" : (z.GexCs / 1e6).ToString("+0;-0", inv)).Append("Mcs");
+            }
+            if (primero) sb.Append("ninguna");
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// EL ROTULO DEL FLUJO DICE DE QUE DIA ES.
+        ///
+        /// Decia "flujo hoy" siempre. El domingo 2026-09-06 a la noche la
+        /// cadena de CBOE tenia el sello del domingo pero el ultimo trade era
+        /// del viernes 4 a las 16:14 (verificado en el crudo): los 622.725
+        /// contratos eran del viernes y la pantalla decia "hoy". Si el feed
+        /// trae el ultimo trade, el rotulo lleva ese dia; si no, la hora de la
+        /// cadena; y "hoy" solo si el ultimo trade es de hoy en Nueva York.
+        /// </summary>
+        private string RotuloFlujo()
+        {
+            var c = _c;
+            if (c == null) return "flujo";
+            var inv = CultureInfo.InvariantCulture;
+            DateTime t;
+            if (!string.IsNullOrEmpty(c.UltimoTrade)
+                && DateTime.TryParse(c.UltimoTrade, inv, DateTimeStyles.None, out t))
+            {
+                DateTime hoyNy;
+                try
+                {
+                    var ny = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                    hoyNy = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, ny).Date;
+                }
+                catch { hoyNy = DateTime.UtcNow.AddHours(-4).Date; }
+                string dia = t.Date == hoyNy ? "hoy" : DiaCorto(t) + " " + t.ToString("dd/MM", inv);
+                return "flujo " + dia + " " + t.ToString("HH:mm", inv) + " NY";
+            }
+            if (DateTime.TryParseExact(c.Ts ?? "", "yyyy-MM-dd HH:mm:ss", inv,
+                                       DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out t))
+                return "flujo cadena " + t.ToLocalTime().ToString("dd/MM HH:mm", inv);
+            return "flujo cadena";
+        }
+
+        private static string DiaCorto(DateTime t)
+        {
+            switch (t.DayOfWeek)
+            {
+                case DayOfWeek.Monday: return "lun";
+                case DayOfWeek.Tuesday: return "mar";
+                case DayOfWeek.Wednesday: return "mie";
+                case DayOfWeek.Thursday: return "jue";
+                case DayOfWeek.Friday: return "vie";
+                case DayOfWeek.Saturday: return "sab";
+                default: return "dom";
+            }
+        }
+
         private string Picos()
         {
             double[] pp;
@@ -3055,27 +4061,94 @@ namespace PythiaGex
                 if (i > 0) sb.Append('/');
                 sb.Append(pp[i].ToString("F3", CultureInfo.InvariantCulture));
             }
+            // CONTRA LOS STRIKES DE VERDAD, no contra una rejilla supuesta.
+            //
+            // Antes esto comparaba p/5 contra un entero, y estaba mal por dos
+            // motivos a la vez. Primero, p es el precio de FUTURO, que ya lleva
+            // la base sumada: con base 9,42 un strike exacto de 7825 sale
+            // 7834,42 y jamas es multiplo de 5. Segundo, ni siquiera todos los
+            // productos tienen strikes de a 5 -- NQ no los tiene -- asi que la
+            // rejilla de 5 era una suposicion mia disfrazada de medicion.
+            //
+            // Daba 0 de 6 justo cuando los picos SI estaban sobre los strikes.
+            // Un control que dice que fallo cuando funciono es peor que no
+            // tener control, porque manda a buscar el problema al lugar
+            // equivocado.
+            double[] ff;
+            lock (_candado) ff = _futsUlt;
             int enRejilla = 0;
-            foreach (var p in pp) if (Math.Abs(p / 5.0 - Math.Round(p / 5.0)) < 0.002) enRejilla++;
+            if (ff != null && ff.Length > 0)
+                foreach (var p in pp)
+                    if (ff.Any(k => Math.Abs(k - p) < 0.001)) enRejilla++;
             sb.Append(" picos_en_rejilla=").Append(enRejilla).Append('/').Append(pp.Length);
+            double gp, gn;
+            lock (_candado) { gp = _mpGlobal; gn = _mnGlobal; }
+            // LOS MAJORS POR VOLUMEN, AL RENGLON DE AUDITORIA.
+            //
+            // HIPOTESIS QUE ESTO SIRVE PARA PROBAR O TIRAR ABAJO. Los niveles
+            // de INTERES ABIERTO no se pueden mover en todo el dia: la OCC
+            // consolida el OI de noche, asi que el strike ganador es el mismo
+            // de la apertura al cierre. Por eso nuestras marcas salen planas
+            // -- estamos dibujando justo el unico de los tres que esta
+            // congelado por definicion.
+            //
+            // El VOLUMEN, en cambio, se acumula durante la rueda. Si el strike
+            // con mas gamma por volumen cambia varias veces por dia, ESO dibuja
+            // una escalera, sin necesidad de inventar ningun promedio.
+            //
+            // No se dibuja nada todavia: primero se mide. Si mpv/mnv resultan
+            // tan quietos como majorpos/majorneg, la hipotesis es falsa y hay
+            // que buscar por otro lado.
+            double mvp, mvn;
+            lock (_candado) { mvp = _majorPosVol; mvn = _majorNegVol; }
+            double zv;
+            lock (_candado) zv = _zeroVol;
+            sb.Append(" majorposvol=").Append(mvp.ToString("F2", CultureInfo.InvariantCulture))
+              .Append(" majornegvol=").Append(mvn.ToString("F2", CultureInfo.InvariantCulture))
+              .Append(" zerovol=").Append(double.IsNaN(zv) ? "sindato"
+                     : zv.ToString("F2", CultureInfo.InvariantCulture));
+            double mc;
+            lock (_candado) { mc = _maxChangeUlt; }
+            double za; int sa;
+            lock (_candado) { za = _zeroAnchoUlt; sa = _strikesAnchoUlt; }
+            sb.Append(" zeroancho=").Append(double.IsNaN(za) ? "sindato"
+                     : za.ToString("F2", CultureInfo.InvariantCulture))
+              .Append(" strikesancho=").Append(sa);
+            sb.Append(" maxchange=").Append(double.IsNaN(mc) ? "sindato"
+                     : mc.ToString("F2", CultureInfo.InvariantCulture));
+            sb.Append(" maxglobal=").Append(gp.ToString("F2", CultureInfo.InvariantCulture))
+              .Append(" minglobal=").Append(gn.ToString("F2", CultureInfo.InvariantCulture));
             return sb.ToString();
         }
 
         /// <summary>Mediana del atraso del libro, en ms, para el renglon de auditoria.</summary>
         private string AtrasoDom()
         {
+            // EL DESFASE DEL RELOJ SE DESCUENTA, Y SE PUBLICA.
+            //
+            // El atraso crudo es hora de la maquina menos hora del servidor.
+            // Si la maquina atrasa, sale negativo: el 2026-09-06 el AUDIT decia
+            // lagdom_ms=-3158 con w32tm dando +3,27 s de desfase. Un atraso
+            // negativo es imposible y publicarlo era una mentira por omision.
+            // Reloj.Medir lo mide contra NTP al arrancar y cada media hora; si
+            // no pudo, se publica el crudo con la marca "sin corregir".
+            double des = Reloj.DesfaseMs;
+            string reloj = double.IsNaN(des)
+                ? " reloj=sinmedir"
+                : string.Format(CultureInfo.InvariantCulture, " reloj_ms={0:F0}", des);
             List<double> c;
             lock (_atrasoDom)
             {
-                if (_atrasoDom.Count < 20) return " lagdom=sinmuestra";
+                if (_atrasoDom.Count < 20) return " lagdom=sinmuestra" + reloj;
                 c = new List<double>(_atrasoDom);
             }
             c.Sort();
             double mediana = c[c.Count / 2];
             double p95 = c[Math.Min(c.Count - 1, (int)(c.Count * 0.95))];
+            if (!double.IsNaN(des)) { mediana += des; p95 += des; }
             return string.Format(CultureInfo.InvariantCulture,
-                " lagdom_ms={0:F0} lagdom_p95_ms={1:F0} lagdom_n={2}",
-                mediana, p95, c.Count);
+                " lagdom_ms={0:F0} lagdom_p95_ms={1:F0} lagdom_n={2}{3}{4}",
+                mediana, p95, c.Count, reloj, double.IsNaN(des) ? " lagdom_sin_corregir=1" : "");
         }
 
         /// <summary>

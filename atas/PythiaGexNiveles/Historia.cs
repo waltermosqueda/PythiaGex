@@ -47,6 +47,10 @@ namespace PythiaGex
         {
             public long T;                 // unix segundos, UTC
             public double Mp, Mn, Z;
+            // las dos hipotesis. Un archivo viejo no las trae y quedan en 0,
+            // que es justo el valor que el dibujo descarta: compatible hacia atras.
+            public double Mpv, Mnv, Zv;
+            public double Mc, Cg;
             public double[] D, I;
         }
 

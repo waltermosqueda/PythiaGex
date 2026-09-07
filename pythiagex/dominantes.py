@@ -58,6 +58,15 @@ MULT_INDICE = 100
 # cobertura se reparte entre muchas sesiones y no se siente en el intradia.
 HORIZONTE_DIAS = 2.0
 
+# Hasta que vencimiento se SUMA la gamma de cada strike. Es distinto del
+# horizonte de arriba: aquel pesa (inmediatez), este recorta. Medido el
+# 2026-09-06 desde la cadena cruda de CBOE: el 7700 de SPX pesaba -1.350 M
+# a 7 dias y -2.844 M a 45, y la diferencia era casi toda el EOM del 30 de
+# septiembre (21.716 puts). El indicador de ATAS corta a 7 dias por defecto,
+# asi que este numero VIAJA en el archivo (horizonte_zonas_dias) para que el
+# consumidor pueda decir en pantalla con que horizonte se armo cada cosa.
+DIAS_MAX_PERFIL = 45
+
 # Cuanto se mira alrededor del precio. Un 3 % de SPX son unos 230 puntos:
 # mucho mas de lo que se recorre en una sesion normal, asi que no deja fuera
 # nada relevante y no carga el mapa de ruido lejano.
@@ -81,7 +90,7 @@ PASOS_ZONA = 3
 ANCHO_MAX_ZONA = 4
 
 
-def _por_strike_y_venc(crudo, ahora=None, dias_max=45, ancho=ANCHO):
+def _por_strike_y_venc(crudo, ahora=None, dias_max=DIAS_MAX_PERFIL, ancho=ANCHO):
     """Gamma por strike ABIERTA POR VENCIMIENTO.
 
     exposicion.calcular() ya suma la gamma de cada strike, pero suma TODOS

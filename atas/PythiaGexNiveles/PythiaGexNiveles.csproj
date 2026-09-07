@@ -31,6 +31,8 @@
     <Compile Include="Black76.cs" />
     <Compile Include="CadenaViva.cs" />
     <Compile Include="Historia.cs" />
+    <Compile Include="Centinela.cs" />
+    <Compile Include="Reloj.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.

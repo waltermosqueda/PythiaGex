@@ -53,7 +53,83 @@ Al principio salían con el mismo nombre y parecía que se contradecían —
 `flujohoy=0` con `strikesconflujo=232`— cuando son cosas distintas de fuentes
 distintas.
 
-## Estado: SIN VERIFICAR
+## Como saber DONDE se corta (agregado el 2026-09-04)
+
+Dio cero **dos noches seguidas**, y sin operaciones no se puede distinguir "de
+noche no se opera" de "esto esta roto". Se instrumento cada escalon del camino;
+el renglon `AUDIT` ahora trae:
+
+```
+volenganchados=N   contratos con el enganche puesto
+volavisos=N        avisos de PropertyChanged que llegaron
+volconvol=N        los que traian LastTradeVolume > 0
+volcontados=N      los que efectivamente se sumaron
+```
+
+Como leerlo, en una sola mirada:
+
+- `volavisos=0` -> no llega nada: el problema es la **suscripcion**, no el mercado
+- `volavisos>0` y `volconvol=0` -> **LastTradeVolume viene vacio**: campo equivocado
+- `volconvol>0` y `volcontados=0` -> el **filtro de duplicado se come todo**
+- `volcontados>0` y `flujoviva=0` -> la **clave de guardado no coincide** con la de lectura
+
+Mirarlo en la rueda americana, no de noche.
+
+**De esto dependen las dos hipotesis** sobre las dominantes que se mueven (ver
+[[pelotitas-son-eventos]]): las dos se alimentan del volumen, asi que si esto no
+cuenta, las dos quedan en negro y no se pueden probar.
+
+## Estado: ROTO, Y <cuenta> (2026-09-04, 04:44)
+
+**El enganche por eventos NO funciona.** No es el horario -- esa fue mi excusa
+comoda dos noches seguidas, y el operador la puso en duda con razon.
+
+La prueba, sobre dos volcados de la cadena separados **57 segundos**:
+
+```
+contratos en las dos fotos : 169
+cambio la punta COMPRADORA : 131 de 169  (78 %)
+cambio la punta VENDEDORA  : 130 de 169  (77 %)
+cambio el interes abierto  : 0     <- esperado, la OCC lo congela
+cambio el volumen del dia  : 0
+```
+
+Y al mismo tiempo, en el renglon AUDIT:
+
+```
+volenganchados=140   los enganches ESTAN puestos
+volavisostodos=0     cero avisos de CUALQUIER tipo
+volcampos=ninguno    ni un nombre de campo visto
+volconultimo=0       ningun contrato tiene LastTradeVolume > 0 leido directo
+```
+
+**Los objetos Security se actualizan constantemente y nunca levantan
+PropertyChanged.** Implementar INotifyPropertyChanged no obliga a dispararlo.
+
+## Lo que NO sirve como arreglo
+
+**Sondear `LastTradeVolume`** tampoco: leido directo da 0 en los 140 contratos
+(`volconultimo=0`). O sea que ese campo no lo llena este feed, ni por evento ni
+por lectura. Hay puntas frescas y no hay dato de operaciones.
+
+## Por donde seguir
+
+Buscar el evento REAL de operaciones del conector -- no en `Security` sino en
+`IDataFeedConnector` o en lo que entregue `SubscribeToMarketData(..., Prints)`.
+Volcar por reflexion los eventos disponibles de las dos clases, como se hizo con
+`atas/_api` para descubrir la cadena.
+
+**De esto dependen las hipotesis 1 y 2** sobre las dominantes que se mueven (ver
+[[pelotitas-son-eventos]]). Mientras esto no ande, las dos quedan en negro. Las
+hipotesis 3 y 4 no dependen del volumen y si dibujan.
+
+## Trampa de medicion, para no repetirla
+
+Al comparar dos volcados de la cadena, **la clave NO puede incluir los dias al
+vencimiento**: desde que el tiempo lleva la hora, cambian a cada segundo y el
+cruce da CERO pares. La primera comparacion "probo" que las puntas no se movian
+sobre 0 contratos comparados. Clave estable: strike, call/put, y la parte ENTERA
+de los dias.
 
 Compila, no tira excepciones y la cadena está viva con 89 de 142 contratos
 cotizando, pero el acumulador **dio cero** porque se probó en sesión nocturna,

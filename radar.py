@@ -285,6 +285,12 @@ def _feed_atas(s, crudo=None, sello=None):
         "revivida": s.get("revivida"),
         "edad_min": s["cadena_edad_min"], "hora_mercado": s["hora_mercado"],
         "retraso_s": s["retraso_s"],
+        # CON QUE HORIZONTE SE ARMARON LAS ZONAS. El indicador corta la gamma
+        # a 7 dias y estas zonas suman hasta 45: sin este numero en el archivo
+        # el consumidor no puede avisar que esta mirando dos horizontes en la
+        # misma pantalla. Medido: eso movia el "acelerador" de 7675 a 7700.
+        "horizonte_zonas_dias": DOM.DIAS_MAX_PERFIL,
+        "horizonte_inmediatez_dias": DOM.HORIZONTE_DIAS,
         "spot": s["spot"], "base": s["base"],
         "base_confiable": s["base_confiable"],
         # La base CRUDA viaja igual aunque no sea confiable. Sin esto el
