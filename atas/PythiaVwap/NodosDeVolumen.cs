@@ -280,7 +280,7 @@ namespace PythiaVwap
                              + "para no compartir columna con los chips de Gamma Vivo, que viven pegados al "
                              + "eje. Medido el 2026-09-06: los chips de dos lineas miden hasta 300 px.")]
         [Range(0, 900)]
-        public int DesplazarEtiquetas { get; set; } = 380;
+        public int DesplazarEtiquetas { get; set; } = 330;
 
         [Display(Name = "Color de los nodos", GroupName = "3. Pantalla", Order = 20)]
         public MColor ColorNodo { get; set; } = MColor.FromArgb(255, 235, 200, 60);
@@ -726,6 +726,24 @@ namespace PythiaVwap
             double maxF = 1;
             foreach (var n in nodos) if (n.Fuerza > maxF) maxF = n.Fuerza;
 
+            // las rayas de gamma que publica Gamma Vivo (si esta en el grafico)
+            var ysGamma = new List<int>();
+            try
+            {
+                string inst = (InstrumentInfo != null ? InstrumentInfo.Instrument : "").ToUpperInvariant().TrimStart('#');
+                var raw = AppDomain.CurrentDomain.GetData("PythiaGex.Niveles." + inst) as string;
+                if (!string.IsNullOrEmpty(raw))
+                {
+                    var partes = raw.Split(';');
+                    if (partes.Length > 1 && long.TryParse(partes[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var ts)
+                        && DateTimeOffset.UtcNow.ToUnixTimeSeconds() - ts < 600)
+                        for (int i = 1; i < partes.Length; i++)
+                            if (double.TryParse(partes[i], NumberStyles.Float, CultureInfo.InvariantCulture, out var p))
+                                try { ysGamma.Add(cont.GetYByPrice((decimal)p, false)); } catch { }
+                }
+            }
+            catch { }
+
             int fuera = 0;
             decimal precioArriba = 0, precioAbajo = 0;
 
@@ -761,11 +779,17 @@ namespace PythiaVwap
                 // ve el doble de firme, sin tener que leer el numero
                 float ancho = rango == 1 ? 3.2f : rango == 2 ? 2.4f : rango == 3 ? 1.6f : 1.0f;
                 int alfa = rango == 1 ? 235 : rango == 2 ? 185 : rango == 3 ? 140 : 100;
-                // el que no llego al umbral se ve, pero se ve flojo
+                // PUNTEADAS, TODAS. Pedido del operador el 2026-09-07: con los
+                // nodos solidos se confundian con las lineas de gamma. El trazo
+                // dice que es: punteado = volumen del futuro (esto), solido =
+                // gamma de opciones (Gamma Vivo), rayado = zero gamma. La
+                // jerarquia entre nodos la llevan el grosor y el brillo; el que
+                // no llego al umbral va fino y apagado.
                 var pluma = n.Flojo
                     ? new RenderPen(Color.FromArgb(alfa / 2, col), 1f,
                                     System.Drawing.Drawing2D.DashStyle.Dot)
-                    : new RenderPen(Color.FromArgb(alfa, col), ancho);
+                    : new RenderPen(Color.FromArgb(alfa, col), ancho,
+                                    System.Drawing.Drawing2D.DashStyle.Dot);
                 g.DrawLine(pluma, area.Left, y, Math.Max(area.Left + 10, area.Right - MargenEje + 40), y);
 
                 // etiqueta solo en los primeros: los demas se leen por el grosor
@@ -782,8 +806,13 @@ namespace PythiaVwap
                 var m = g.MeasureString(txt, f);
                 int x = area.Right - m.Width - MargenEje - DesplazarEtiquetas;
                 if (x < area.Left + 4) x = area.Left + 4;
+                // ARRIBA DE LA RAYA, O ABAJO SI ARRIBA TAPA OTRA. Otra raya es
+                // cualquier otro nodo o cualquier nivel de gamma que Gamma
+                // Vivo publica por AppDomain. Pedido del operador el
+                // 2026-09-06: la etiqueta nunca sobre una raya, ni confundible
+                // con la vecina.
                 int yy = y - m.Height - 2;
-                if (yy < area.Top) yy = y + 2;
+                if (yy < area.Top || TapaOtraRaya(yy, m.Height + 2, y, nodos, ysGamma, cont)) yy = y + 3;
                 g.FillRectangle(Color.FromArgb(170, 12, 14, 18),
                                 new Rectangle(x - 4, yy, m.Width + 8, m.Height + 2));
                 g.DrawString(txt, f, Color.FromArgb(235, col), x, yy + 1);
@@ -799,6 +828,23 @@ namespace PythiaVwap
                     Aviso(g, f, col, area, false,
                           string.Format(cultura, "▼ nodo {0:N2}", precioAbajo));
             }
+        }
+
+        /// <summary>true si una etiqueta que ocupa [yy, yy+alto] cubre la raya de
+        /// otro nodo o de un nivel de gamma (no la propia, en yPropio).</summary>
+        private static bool TapaOtraRaya(int yy, int alto, int yPropio, List<Nodo> nodos,
+                                         List<int> ysGamma, IChartContainer cont)
+        {
+            int top = yy - 1, bot = yy + alto + 1;
+            foreach (var yg in ysGamma) if (yg >= top && yg <= bot) return true;
+            foreach (var n in nodos)
+            {
+                int yn;
+                try { yn = cont.GetYByPrice(n.Precio, false); } catch { continue; }
+                if (yn == yPropio) continue;
+                if (yn >= top && yn <= bot) return true;
+            }
+            return false;
         }
 
         private void Aviso(RenderContext g, RenderFont f, Color col,
@@ -850,7 +896,9 @@ namespace PythiaVwap
                 // "3 x N por precio" con N el promedio de la ventana, y el codigo
                 // usaba OTRO numero (el promedio de la propia vela). La caja y el
                 // codigo tienen que decir lo mismo o la caja no audita nada.
-                string.Format(cultura, "absorcion: extremo {0}x el resto, rango >= {1} tk, vela >= mediana",
+                // corta a proposito: la caja no puede llegar hasta donde arrancan
+                // las etiquetas de los nodos (medido el 2026-09-07: pisaba "#3")
+                string.Format(cultura, "absorcion {0}x · rango >= {1} tk · vela >= mediana",
                               FuerzaAbsorcion.ToString("0.#", cultura), RangoMinimoTicks),
             };
 

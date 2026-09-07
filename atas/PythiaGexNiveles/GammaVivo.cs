@@ -248,6 +248,11 @@ namespace PythiaGex
         // atraso del libro de futuros, para poder AFIRMAR que esta en vivo
         private readonly List<double> _atrasoDom = new();
         private readonly List<int> _etiquetasUsadas = new();
+        // los rectangulos de los chips ya puestos en este cuadro, y la altura
+        // en pixeles de TODAS las rayas (gamma y nodos): un chip no puede
+        // tapar la raya de otro nivel
+        private readonly List<Rectangle> _rectsUsados = new();
+        private readonly List<int> _ysNiveles = new();
 
         /// <summary>La ultima base que dio confiable, con su hora.
         ///
@@ -519,12 +524,19 @@ namespace PythiaGex
         // El que los quiera los prende. Lo que no puede pasar es que una
         // instancia nueva nazca con todo encendido y haya que limpiarla a mano
         // cada vez.
-        [Display(Name = "Ver el FLUJO de hoy", GroupName = "Flujo", Order = 130,
-                 Description = "Los strikes donde MAS se opero hoy. Es el unico dato del mapa que " +
-                               "no es de ayer: el interes abierto lo consolida la OCC de noche, asi " +
-                               "que todos los tableros de GEX -- incluido el nuestro -- dibujan el " +
-                               "mapa de ayer. Esto muestra donde se esta reescribiendo AHORA.")]
-        public bool VerFlujo { get; set; } = false;
+        // RENOMBRADA (era VerFlujo) para que el default APAGADO llegue al
+        // workspace guardado. Estas lineas usan el volumen de la cadena de
+        // CBOE: 15 minutos tarde, y de noche el del dia anterior. Desde el
+        // 2026-09-06 el volumen vivo de Rithmic va en cada chip ("v181"), asi
+        // que estas lineas duplicaban el strike con un numero viejo al lado
+        // del vivo. Visto el 2026-09-07: "G2 freno 7.756" y "G2 flujo 20618
+        // 7.756" uno arriba del otro.
+        [Display(Name = "Ver el FLUJO de CBOE (retrasado)", GroupName = "Flujo", Order = 130,
+                 Description = "Los strikes donde mas se opero segun la cadena de CBOE, que llega 15 " +
+                               "minutos tarde y de noche trae el dia anterior. El volumen VIVO de " +
+                               "Rithmic ya va en cada chip; esto queda apagado salvo que quieras " +
+                               "comparar los dos.")]
+        public bool VerFlujoCboe { get; set; } = false;
 
         [Display(Name = "Cuantos niveles de flujo", GroupName = "Flujo", Order = 131)]
         public int CuantosFlujo { get; set; } = 3;
@@ -541,7 +553,11 @@ namespace PythiaGex
                                "futuro en 7752 el major positive apuntaba a 7800 -- 48 puntos -- " +
                                "mientras 7760, a OCHO puntos, tenia el 96 % de esa gamma y no se " +
                                "dibujaba. Para scalpear eso es al reves de lo que sirve.")]
-        public bool VerCercanos { get; set; } = false;
+        // RENOMBRADA (era VerCercanos = false): el operador no veia ningun
+        // strike entre el precio y los muros, que estaban a 116 y 59 puntos.
+        // Los cercanos son justamente "el siguiente arriba y el siguiente
+        // abajo" con su chip completo. Renombrar fuerza el default nuevo.
+        public bool VerNivelesCercanos { get; set; } = true;
 
         [Display(Name = "Cuantos cercanos", GroupName = "Cercanos", Order = 111)]
         public int CuantosCercanos { get; set; } = 4;
@@ -554,7 +570,11 @@ namespace PythiaGex
         [Display(Name = "Minimo, en % del mayor", GroupName = "Cercanos", Order = 113,
                  Description = "Un strike chico al lado del precio no frena nada. Por debajo de " +
                                "este porcentaje del strike mas grande de la cadena, no se dibuja.")]
-        public int MinimoCercano { get; set; } = 22;
+        // RENOMBRADA (era MinimoCercano = 22). Medido el 2026-09-07 00:11 con el
+        // maximo en 2,9 B: con 22 % ningun strike de ARRIBA pasaba (7726 tenia
+        // 546 M) y el operador se quedaba sin "siguiente arriba". Con 15 %
+        // entran 7726 y 7736 arriba, 7706 y 7691 abajo.
+        public int MinimoCercanoPct { get; set; } = 15;
 
         [Display(Name = "Freno (gamma +)", GroupName = "Cercanos", Order = 114,
                  Description = "Donde la mesa absorbe: compra caidas y vende subas.")]
@@ -606,7 +626,13 @@ namespace PythiaGex
                  Description = "Una sola linea, chica pero legible. 8 es el compromiso medido el 2026-09-06; " +
                                "con 7 la coma decimal deja de distinguirse.")]
         [Range(6.5, 12.0)]
-        public decimal TamEtiqueta { get; set; } = 8.0m;
+        public decimal TamEtiqueta { get; set; } = 7.5m;
+
+        [Display(Name = "Decimales del precio en la etiqueta", GroupName = "Pantalla", Order = 11,
+                 Description = "0 = '7831', como en la maqueta B aprobada. Los niveles de SPX llevan la base " +
+                               "sumada (7831,16): con 0 se redondea al entero. Subilo a 2 si queres verla.")]
+        [Range(0, 2)]
+        public int DecimalesPrecio { get; set; } = 0;
 
         [Display(Name = "Banda ACA sobre el nivel donde esta el precio", GroupName = "Pantalla", Order = 9,
                  Description = "Si el precio esta a dos ticks o menos de un nivel (gamma o nodo de volumen), " +
@@ -2451,6 +2477,7 @@ namespace PythiaGex
             if (ChartInfo == null) return;
             try { g.SetSmoothingMode(OFT.Rendering.Context.RenderSmoothingModes.AntiAlias); } catch { }
             _etiquetasUsadas.Clear();
+            _rectsUsados.Clear();
             try { PrepararRender(); } catch (Exception e) { Registrar(e); }
             MapearHistoria();
             var area = ChartArea;
@@ -2481,6 +2508,7 @@ namespace PythiaGex
             if (perfil.Count == 0 || mx <= 0) return;
 
             var cont = ChartInfo.PriceChartContainer;
+            try { LlenarYsNiveles(cont); } catch (Exception e) { Registrar(e); }
             var c = _cUsada ?? _c;   // la que de verdad se uso, no la de CBOE por defecto
             var br = _baseResuelta;
             var baseUsada = br == null ? double.NaN : (double)br;
@@ -2601,27 +2629,20 @@ namespace PythiaGex
             // El signo dice que hace la mesa en ese nivel: gamma positiva la
             // obliga a comprar caidas y vender subas (frena), negativa a lo
             // contrario (acelera).
-            if (VerCercanos && perfil.Count > 0 && spot > 0)
+            if (VerNivelesCercanos && perfil.Count > 0 && spot > 0)
             {
-                // el precio del GRAFICO, que es contra el que se mide "cerca"
-                double pxAhora = 0;
-                try { pxAhora = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { }
-                double radio = (double)Math.Max(5m, RadioCercanos);
-                double piso = mx * Math.Max(0, Math.Min(90, MinimoCercano)) / 100.0;
-                var cerca = pxAhora <= 0 ? new List<Nivel>() : perfil
-                    .Where(nv => Math.Abs(nv.Fut - pxAhora) <= radio
-                              && Math.Abs(nv.Gex) >= piso
-                              && Math.Abs(nv.Fut - mp) > 0.01
-                              && Math.Abs(nv.Fut - mn) > 0.01)
-                    .OrderByDescending(nv => Math.Abs(nv.Gex))
-                    .Take(Math.Max(1, CuantosCercanos))
-                    .ToList();
-
+                // POR LADO, NO EN BLOQUE. Antes se tomaban los N mas pesados
+                // dentro del radio, y como abajo del precio suele haber mas
+                // gamma, arriba no quedaba ninguno: el operador no tenia
+                // "siguiente arriba". Ahora la mitad de los cercanos va por
+                // encima y la otra mitad por debajo. Llevan el chip completo
+                // (detalle = true): son exactamente los peldanos que se miran.
+                var cerca = SeleccionarCercanos(perfil, _pxRender, mp, mn, mx);
                 foreach (var nv in cerca)
                 {
                     var col = nv.Gex >= 0 ? ColCercanoPos : ColCercanoNeg;
                     Linea(g, cont, xl0, xl1, nv.Fut, col,
-                          nv.Gex >= 0 ? "freno" : "acel", false, spot, x1, true, false);
+                          nv.Gex >= 0 ? "freno" : "acel", false, spot, x1, true, true);
                 }
             }
 
@@ -2640,7 +2661,7 @@ namespace PythiaGex
             //
             // No reemplaza al mapa de gamma. Lo complementa con lo unico que al
             // mapa le falta: el presente.
-            if (VerFlujo && perfil.Count > 0)
+            if (VerFlujoCboe && perfil.Count > 0)
             {
                 var flujo = perfil
                     .Where(nv => nv.VolTot >= Math.Max(1, MinContratosFlujo))
@@ -3355,8 +3376,8 @@ namespace PythiaGex
             _nodosRender = LeerNodos();
 
             _rangoNivel.Clear();
-            List<Nivel> pf; double mp, mn, mpR, mnR, a0, b0;
-            lock (_candado) { pf = _perfil; mp = _majorPos; mn = _majorNeg; mpR = _mpRival; mnR = _mnRival; a0 = _mp0Ult; b0 = _mn0Ult; }
+            List<Nivel> pf; double mp, mn, mpR, mnR, a0, b0, mx;
+            lock (_candado) { pf = _perfil; mp = _majorPos; mn = _majorNeg; mpR = _mpRival; mnR = _mnRival; a0 = _mp0Ult; b0 = _mn0Ult; mx = _maxGex; }
             if (pf == null || pf.Count == 0) return;
             var cands = new List<(double fut, double g)>();
             foreach (var p in new[] { mp, mn, mpR, mnR, a0, b0 })
@@ -3365,12 +3386,70 @@ namespace PythiaGex
                 var n = NivelCerca(pf, p);
                 if (n.HasValue) cands.Add((p, Math.Abs(n.Value.Gex)));
             }
+            // los cercanos entran al mismo ranking: G1 es el mas pesado de
+            // TODO lo que se dibuja, este donde este
+            if (VerNivelesCercanos)
+                foreach (var nv in SeleccionarCercanos(pf, _pxRender, mp, mn, mx))
+                    cands.Add((nv.Fut, Math.Abs(nv.Gex)));
             int r = 0;
             foreach (var c in cands.OrderByDescending(c => c.g))
             {
                 r++;
                 if (!_rangoNivel.ContainsKey(c.fut)) _rangoNivel[c.fut] = r;
             }
+        }
+
+        /// <summary>La altura en pixeles de todas las rayas de este cuadro (gamma
+        /// propias y nodos del otro indicador), para que ningun chip tape una
+        /// raya ajena. Ademas publica los precios de los niveles de gamma por
+        /// AppDomain, para que el indicador de nodos esquive estas rayas con
+        /// sus propias etiquetas.</summary>
+        private void LlenarYsNiveles(IChartContainer cont)
+        {
+            _ysNiveles.Clear();
+            if (cont == null) return;
+            double zero, mp, mn, mpR, mnR, a0, b0;
+            lock (_candado) { zero = _zeroGamma; mp = _majorPos; mn = _majorNeg; mpR = _mpRival; mnR = _mnRival; a0 = _mp0Ult; b0 = _mn0Ult; }
+            var precios = new List<double>();
+            foreach (var p in new[] { zero, mp, mn, mpR, mnR, a0, b0 })
+                if (!double.IsNaN(p) && p > 0) precios.Add(p);
+            var sb = new System.Text.StringBuilder(DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
+            foreach (var p in precios)
+            {
+                try { _ysNiveles.Add(cont.GetYByPrice((decimal)p, false)); } catch { }
+                sb.Append(';').Append(p.ToString("0.####", CultureInfo.InvariantCulture));
+            }
+            if (_nodosRender != null)
+                foreach (var nd in _nodosRender)
+                    try { _ysNiveles.Add(cont.GetYByPrice((decimal)nd.precio, false)); } catch { }
+            try
+            {
+                string inst = (InstrumentInfo?.Instrument ?? "").ToUpperInvariant().TrimStart('#');
+                if (inst.Length > 0) AppDomain.CurrentDomain.SetData("PythiaGex.Niveles." + inst, sb.ToString());
+            }
+            catch { }
+        }
+
+        /// <summary>Los strikes cercanos que se dibujan: dentro del radio, con al
+        /// menos el minimo de |GEX| relativo al mayor, distintos de los muros, y
+        /// la mitad por encima del precio y la otra mitad por debajo. La misma
+        /// seleccion la usan el dibujo y el ranking, para que cuenten lo mismo.</summary>
+        private List<Nivel> SeleccionarCercanos(List<Nivel> perfil, double px, double mp, double mn, double mx)
+        {
+            var salida = new List<Nivel>();
+            if (perfil == null || px <= 0 || mx <= 0) return salida;
+            double radio = (double)Math.Max(5m, RadioCercanos);
+            double piso = mx * Math.Max(0, Math.Min(90, MinimoCercanoPct)) / 100.0;
+            int porLado = Math.Max(1, (Math.Max(1, CuantosCercanos) + 1) / 2);
+            bool Ok(Nivel nv) => Math.Abs(nv.Fut - px) <= radio && Math.Abs(nv.Gex) >= piso
+                                 && Math.Abs(nv.Fut - mp) > 0.01 && Math.Abs(nv.Fut - mn) > 0.01;
+            // EL MAS CERCANO PRIMERO, no el mas pesado. Con "mas pesado" el
+            // siguiente arriba salia 7.756 (+43) y se salteaba 7.726 (+13),
+            // que es el que el precio toca antes. El piso de peso ya filtro
+            // los que no cuentan; entre los que cuentan, manda la distancia.
+            salida.AddRange(perfil.Where(nv => Ok(nv) && nv.Fut > px).OrderBy(nv => nv.Fut - px).Take(porLado));
+            salida.AddRange(perfil.Where(nv => Ok(nv) && nv.Fut <= px).OrderBy(nv => px - nv.Fut).Take(porLado));
+            return salida;
         }
 
         /// <summary>Miles de millones o millones, con signo: +3,4B / -791M.</summary>
@@ -3430,6 +3509,104 @@ namespace PythiaGex
             g.DrawString(t, f, Color.FromArgb(245, col), x0 + 12, yt + 1);
         }
 
+        /// <summary>
+        /// EL TEXTO DEL CHIP, FORMATO B (elegido el 2026-09-06):
+        ///   txt1  "G1 +wall·3d 7831 +111 0%"     brillante: ranking por |GEX|,
+        ///         nombre, vencimiento que lo sostiene, precio, distancia y
+        ///         chance de toque en el horizonte (vol realizada del grafico)
+        ///   txt2  " | γ+3,4B oi9,6k ac+0,8B v181" atenuado: GEX repreciado al
+        ///         precio de ahora, interes abierto (de AYER, para todos),
+        ///         aceleracion (cuanto cambia el GEX si el precio sube 1 %) y
+        ///         contratos de opciones operados HOY en el strike de ES mas
+        ///         cercano (Rithmic, en vivo). Solo con detalle.
+        /// Deja en _probRender la chance, para la barrita.
+        /// </summary>
+        private void TextoChip(double precio, string nombre, string dist, bool detalle,
+                               out string txt1, out string txt2)
+        {
+            var es = CultureInfo.GetCultureInfo("es-AR");
+            // el ranking solo en los niveles de gamma con detalle: una linea de
+            // flujo al mismo precio NO es "G2" otra vez
+            string rango = detalle && _rangoNivel.TryGetValue(precio, out var rk) ? "G" + rk + " " : "";
+            string tag = "", extra = "";
+            if (detalle && EtiquetaDetallada)
+            {
+                List<Nivel> pf2; lock (_candado) pf2 = _perfil;
+                var nq = pf2 != null ? NivelCerca(pf2, precio) : null;
+                if (nq.HasValue)
+                {
+                    var n = nq.Value;
+                    tag = n.DiasDom > 0
+                        ? (n.DiasDom < 1.0 ? "hoy" : Math.Round(n.DiasDom).ToString("0", es) + "d") : "";
+                    string vv = "-";
+                    var vr = _volVivoRender;
+                    if (vr != null)
+                    {
+                        double mejor = 2.6, tot = double.NaN;
+                        foreach (var kv in vr)
+                        {
+                            double d0 = Math.Abs(kv.Key - precio);
+                            if (d0 < mejor) { mejor = d0; tot = kv.Value.total; }
+                        }
+                        if (!double.IsNaN(tot)) vv = ((int)tot).ToString("N0", es);
+                    }
+                    string oi = n.Oi >= 1000 ? (n.Oi / 1000).ToString("0.#", es) + "k" : n.Oi.ToString("0", es);
+                    extra = string.Format(es, " | γ{0} oi{1} ac{2} v{3}", Bm(n.Gex), oi, Bm(n.Acel), vv);
+                }
+            }
+            string prob = "";
+            _probRender = double.NaN;
+            if (_sigHRender > 0 && _pxRender > 0)
+            {
+                double z = Math.Abs(Math.Log(precio / _pxRender)) / _sigHRender;
+                double p = Math.Min(1.0, Math.Max(0.0, 2.0 * Phi(-z)));
+                prob = (p * 100).ToString("0", es) + "%";
+                _probRender = p;
+            }
+            string precioTxt = DecimalesPrecio <= 0
+                ? Math.Round(precio).ToString("N0", es)
+                : precio.ToString("N" + Math.Min(2, DecimalesPrecio), es);
+            txt1 = rango + nombre + (tag.Length > 0 ? "·" + tag : "") + " " + precioTxt
+                 + (string.IsNullOrEmpty(dist) ? "" : " " + dist)
+                 + (prob.Length > 0 ? " " + prob : "");
+            txt2 = extra;
+        }
+
+        /// <summary>Un lugar para un chip vale si esta dentro del area visible, no
+        /// choca con otro chip ya puesto, no cubre la raya de OTRO nivel (gamma
+        /// o nodo) y no pisa el tablero. yPropio es la raya del propio nivel
+        /// (int.MinValue si no tiene, como los fijados en el borde).</summary>
+        private bool LugarLibre(Rectangle r, int yPropio, bool mirarRayas = true)
+        {
+            int piso = ChartArea.Bottom - Math.Max(6, MargenInferior);
+            if (r.Top < ChartArea.Top + 2 || r.Bottom > piso) return false;
+            var r2 = Rectangle.Inflate(r, 2, 2);
+            foreach (var u in _rectsUsados) if (u.IntersectsWith(r2)) return false;
+            if (mirarRayas)
+                foreach (var yl in _ysNiveles)
+                    if (yl != yPropio && yl >= r.Top - 1 && yl <= r.Bottom + 1) return false;
+            if (!_tableroRect.IsEmpty && VerTablero && _tableroRect.IntersectsWith(r2)) return false;
+            return true;
+        }
+
+        /// <summary>Intenta poner el chip en la fila yy: primero contra el eje; si
+        /// lo unico que molesta es el tablero, a la izquierda del tablero en la
+        /// MISMA fila (asi el chip no sube a flotar a mitad de grafico, que fue
+        /// lo que paso el 2026-09-07 con el "-wall? disputado"). Devuelve la x.</summary>
+        private bool Ubicar(int xc, int yy, int w, int h, int yPropio, bool mirarRayas, out int xFinal)
+        {
+            xFinal = xc;
+            var r = new Rectangle(xc, yy, w, h);
+            if (LugarLibre(r, yPropio, mirarRayas)) return true;
+            if (!_tableroRect.IsEmpty && VerTablero && _tableroRect.IntersectsWith(Rectangle.Inflate(r, 2, 2)))
+            {
+                int x2 = _tableroRect.Left - w - 6;
+                if (x2 >= ChartArea.Left + 2 && LugarLibre(new Rectangle(x2, yy, w, h), yPropio, mirarRayas))
+                { xFinal = x2; return true; }
+            }
+            return false;
+        }
+
         private void Linea(RenderContext g, IChartContainer cont, int x0, int x1,
                            double precio, Color col, string nombre, bool grueso,
                            double spot, int xEje, bool secundario = false, bool detalle = true)
@@ -3458,23 +3635,49 @@ namespace PythiaGex
             {
                 if (!MarcarFueraDePantalla) return;
                 bool arriba = y < ChartArea.Top;
-                // 26 y no 6: en la primera fila, pegado a la derecha, ATAS pone
-                // su boton de reproduccion y tapaba el chip ("+wall 3B 2DTE
-                // 7.756 (|> pts)"). Visto en pantalla el 2026-09-06.
-                int yb2 = arriba ? ChartArea.Top + 26
-                                 : ChartArea.Bottom - Math.Max(18, MargenInferior + 4);
-                var t2 = string.Format(CultureInfo.GetCultureInfo("es-AR"),
-                    "{0} {1} {2:N0} ({3} pts)", arriba ? "▲" : "▼", nombre, precio, dist);
-                var mm = g.MeasureString(t2, f);
-                int xx = xEje - mm.Width - 10;
-                // el marcador tampoco puede pisar el tablero
-                if (VerTablero && !_tableroRect.IsEmpty
-                    && yb2 + mm.Height > _tableroRect.Top && yb2 < _tableroRect.Bottom
-                    && xx + mm.Width > _tableroRect.Left)
-                    xx = _tableroRect.Left - mm.Width - 12;
-                g.FillRectangle(Color.FromArgb(150, ColFondo),
-                    new Rectangle(xx, yb2, mm.Width + 8, mm.Height + 2));
-                g.DrawString(t2, f, Color.FromArgb(190, col), xx + 4, yb2 + 1);
+                // el mismo texto que el chip sobre la raya, con la flecha adelante
+                TextoChip(precio, nombre, dist, detalle, out var o1, out var o2);
+                o1 = (arriba ? "▲ " : "▼ ") + o1;
+                var m1 = g.MeasureString(o1, f);
+                var m2 = o2.Length > 0 ? g.MeasureString(o2, f) : default;
+                int wc = m1.Width + (o2.Length > 0 ? m2.Width : 0) + 14, hc = m1.Height + 3;
+                int xx = xEje - wc - 2;
+                // APILADOS, NO ENCIMADOS. Antes todos los niveles fuera de
+                // pantalla caian en la misma fila (Top + 26) y solo se veia el
+                // ultimo dibujado: el "siguiente arriba" quedaba tapado por el
+                // +wall. Visto el 2026-09-07. Ahora cada uno toma la primera
+                // fila libre desde el borde. 26 y no 6 en la primera porque ahi
+                // ATAS pone su boton de reproduccion.
+                // Solo cinco filas desde el borde y SIN mirar las rayas: un chip
+                // fijado al borde que baja hasta el medio del grafico esquivando
+                // rayas deja de parecer "fuera de pantalla" (visto el 2026-09-07
+                // con el +wall a la altura de los nodos). Si choca con el
+                // tablero, va a la izquierda del tablero en la misma fila.
+                int yb2 = int.MinValue, xFin = xx;
+                for (int k = 0; k < 5 && yb2 == int.MinValue; k++)
+                {
+                    int cand = arriba
+                        ? ChartArea.Top + 26 + k * (hc + 3)
+                        : ChartArea.Bottom - Math.Max(18, MargenInferior + 4) - hc - k * (hc + 3);
+                    if (Ubicar(xx, cand, wc, hc, int.MinValue, false, out xFin)) yb2 = cand;
+                }
+                if (yb2 == int.MinValue)
+                {
+                    yb2 = arriba ? ChartArea.Top + 26 : ChartArea.Bottom - Math.Max(18, MargenInferior + 4) - hc;
+                    xFin = xx;
+                    if (!_tableroRect.IsEmpty && VerTablero
+                        && _tableroRect.IntersectsWith(new Rectangle(xx, yb2, wc, hc)))
+                        xFin = Math.Max(ChartArea.Left + 2, _tableroRect.Left - wc - 6);
+                }
+                xx = xFin;
+                var rc = new Rectangle(xx, yb2, wc, hc);
+                _rectsUsados.Add(rc);
+                g.FillRectangle(Color.FromArgb(170, ColFondo), rc);
+                g.DrawRectangle(new RenderPen(Color.FromArgb(120, col), 1f), rc);
+                g.FillRectangle(Color.FromArgb(200, col), new Rectangle(xx, yb2, 3, hc));
+                g.DrawString(o1, f, Color.FromArgb(215, ColTexto), xx + 7, yb2 + 1);
+                if (o2.Length > 0)
+                    g.DrawString(o2, f, Color.FromArgb((int)(215 * 0.55), ColTexto), xx + 7 + m1.Width, yb2 + 1);
                 return;
             }
 
@@ -3535,76 +3738,60 @@ namespace PythiaGex
             //          gamma; los "cercanos" y los de flujo van con una linea.
             // El texto nunca baja del 80 % de brillo: la jerarquia la lleva la
             // linea, no la legibilidad de la etiqueta.
-            var es = CultureInfo.GetCultureInfo("es-AR");
-            string rango = _rangoNivel.TryGetValue(precio, out var rk) ? "G" + rk + " " : "";
-            string tag = "", extra = "";
-            if (detalle && EtiquetaDetallada)
-            {
-                List<Nivel> pf2; lock (_candado) pf2 = _perfil;
-                var nq = pf2 != null ? NivelCerca(pf2, precio) : null;
-                if (nq.HasValue)
-                {
-                    var n = nq.Value;
-                    tag = n.DiasDom > 0
-                        ? (n.DiasDom < 1.0 ? " hoy" : " " + Math.Round(n.DiasDom).ToString("0", es) + "d") : "";
-                    string vv = "-";
-                    var vr = _volVivoRender;
-                    if (vr != null)
-                    {
-                        double mejor = 2.6, tot = double.NaN;
-                        foreach (var kv in vr)
-                        {
-                            double d0 = Math.Abs(kv.Key - precio);
-                            if (d0 < mejor) { mejor = d0; tot = kv.Value.total; }
-                        }
-                        if (!double.IsNaN(tot)) vv = ((int)tot).ToString("N0", es);
-                    }
-                    string oi = n.Oi >= 1000 ? (n.Oi / 1000).ToString("0.#", es) + "k" : n.Oi.ToString("0", es);
-                    // todo en la misma linea, separado por un punto: gex, oi,
-                    // aceleracion (ac) y contratos de opciones operados hoy (vol)
-                    extra = string.Format(es, "  ·  gex {0}  oi {1}  ac {2}  vol {3}", Bm(n.Gex), oi, Bm(n.Acel), vv);
-                }
-            }
-            string prob = "";
-            _probRender = double.NaN;
-            if (_sigHRender > 0 && _pxRender > 0)
-            {
-                double z = Math.Abs(Math.Log(precio / _pxRender)) / _sigHRender;
-                double p = Math.Min(1.0, Math.Max(0.0, 2.0 * Phi(-z)));
-                prob = "  " + (p * 100).ToString("0", es) + "%";
-                _probRender = p;
-            }
-            var txt = rango + nombre + tag + "  " + precio.ToString("N2", es)
-                    + (string.IsNullOrEmpty(dist) ? "" : "  " + dist) + prob + extra;
-            var mt = g.MeasureString(txt, f);
-            int wChip = mt.Width + 14;
-            int hChip = mt.Height + 3;
-
-            // que no se pisen entre ellos: se corren en vertical y se les deja
-            // un tirante fino para saber a que linea pertenecen. La altura que
-            // se reserva es la REAL del chip, con sus dos lineas.
-            int yTxt = y - hChip / 2;
-            while (_etiquetasUsadas.Any(u => Math.Abs(u - yTxt) < hChip + 1))
-                yTxt -= hChip + 2;
-            _etiquetasUsadas.Add(yTxt);
+            // el texto lo arma TextoChip, el mismo para el chip sobre la raya y
+            // para el chip fijado en el borde cuando el nivel esta fuera de pantalla
+            TextoChip(precio, nombre, dist, detalle, out var txt1, out var txt2);
+            var mt1 = g.MeasureString(txt1, f);
+            var mt2 = txt2.Length > 0 ? g.MeasureString(txt2, f) : default;
+            int wChip = mt1.Width + (txt2.Length > 0 ? mt2.Width : 0) + 14;
+            int hChip = mt1.Height + 3;
 
             // contra el EJE, no contra el final de la linea: la linea ahora
             // termina antes del perfil de la derecha y el chip quedaba
             // flotando en el medio del grafico, que es donde menos sirve.
             int xc = xEje - wChip - 2;
-            if (!_tableroRect.IsEmpty && VerTablero
-                && yTxt + hChip > _tableroRect.Top && yTxt < _tableroRect.Bottom
-                && xc + wChip > _tableroRect.Left)
-                xc = _tableroRect.Left - wChip - 6;
 
-            g.FillRectangle(Color.FromArgb(secundario ? 190 : 230, ColFondo),
-                            new Rectangle(xc, yTxt, wChip, hChip));
-            g.DrawRectangle(new RenderPen(Color.FromArgb((int)((secundario ? 90 : 150) * peso), col), 1f),
-                            new Rectangle(xc, yTxt, wChip, hChip));
+            // ARRIBA O ABAJO DE LA RAYA, NUNCA ENCIMA. Y SIN TAPAR LA VECINA.
+            //
+            // Pedido del operador: la etiqueta no puede pisar su propia raya ni
+            // confundirse con la de al lado. Se prueba primero pegada arriba,
+            // despues pegada abajo, y despues alejandose alternadamente; un
+            // lugar vale si no choca con otro chip, no cubre la raya de OTRO
+            // nivel (gamma o nodo de volumen) y no se sale del area visible.
+            // Si el chip queda lejos de su raya, un tirante fino lo une.
+            int yTxt = int.MinValue, xUb = xc;
+            for (int k = 0; k < 8 && yTxt == int.MinValue; k++)
+            {
+                int arriba = y - 3 - hChip - k * (hChip + 3);
+                int abajo = y + 3 + k * (hChip + 3);
+                if (Ubicar(xc, arriba, wChip, hChip, y, true, out xUb)) yTxt = arriba;
+                else if (Ubicar(xc, abajo, wChip, hChip, y, true, out xUb)) yTxt = abajo;
+            }
+            if (yTxt == int.MinValue)
+            {
+                // no quedo lugar limpio: arriba de su raya, y si el tablero
+                // esta ahi, a la izquierda del tablero. Antes caia ENCIMA del
+                // tablero (visto el 2026-09-07 con "G5 acel 7.706").
+                yTxt = Math.Max(ChartArea.Top + 2, y - 3 - hChip);
+                xUb = xc;
+                if (!_tableroRect.IsEmpty && VerTablero
+                    && _tableroRect.IntersectsWith(new Rectangle(xc, yTxt, wChip, hChip)))
+                    xUb = Math.Max(ChartArea.Left + 2, _tableroRect.Left - wChip - 6);
+            }
+            xc = xUb;
+            var rectChip = new Rectangle(xc, yTxt, wChip, hChip);
+            _rectsUsados.Add(rectChip);
+            _etiquetasUsadas.Add(yTxt);
+
+            g.FillRectangle(Color.FromArgb(secundario ? 190 : 230, ColFondo), rectChip);
+            g.DrawRectangle(new RenderPen(Color.FromArgb((int)((secundario ? 90 : 150) * peso), col), 1f), rectChip);
             // una barrita del color a la izquierda del chip: identifica el
             // nivel sin tener que leer el nombre
             g.FillRectangle(Color.FromArgb((int)(230 * peso), col), new Rectangle(xc, yTxt, 3, hChip));
-            g.DrawString(txt, f, Color.FromArgb((int)(240 * Math.Max(0.8, peso)), ColTexto), xc + 7, yTxt + 1);
+            g.DrawString(txt1, f, Color.FromArgb((int)(240 * Math.Max(0.8, peso)), ColTexto), xc + 7, yTxt + 1);
+            if (txt2.Length > 0)
+                g.DrawString(txt2, f, Color.FromArgb((int)(240 * 0.55 * Math.Max(0.8, peso)), ColTexto),
+                             xc + 7 + mt1.Width, yTxt + 1);
 
             // la barrita de chance, a la izquierda del chip: se lee sin leer
             if (!double.IsNaN(_probRender))
@@ -3615,9 +3802,10 @@ namespace PythiaGex
                                 new Rectangle(bx, by, Math.Max(1, (int)(bw * _probRender)), 6));
             }
 
-            if (Math.Abs(yTxt + hChip / 2 - y) > 3)
-                g.DrawLine(new RenderPen(Color.FromArgb(90, col), 1f),
-                           xc + 1, yTxt + hChip / 2, xc + 1, y);
+            // el tirante: del borde del chip mas cercano a la raya, hasta la raya
+            int borde = yTxt > y ? yTxt : yTxt + hChip;
+            if (Math.Abs(borde - y) > 4)
+                g.DrawLine(new RenderPen(Color.FromArgb(110, col), 1f), xc + 1, borde, xc + 1, y);
         }
 
         /// <summary>
