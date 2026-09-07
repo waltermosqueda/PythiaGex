@@ -171,11 +171,14 @@ namespace PythiaVwap
         public int MaxNodosDibujados { get; set; } = 4;
         private int MaxNodos => MaxNodosDibujados;
 
-        [Display(Name = "Etiquetas solo en los primeros N", GroupName = "1. Nodos", Order = 32,
-                 Description = "Los demas nodos llevan la linea pero no el texto: se ve la "
-                             + "jerarquia sin leer ocho numeros.")]
+        // RENOMBRADA (era EtiquetasMax = 3): con la escalera al eje de Gamma Vivo
+        // (2026-09-07) los nodos se leen en la columna y en el grafico queda
+        // solo la muesca. 0 = ninguna etiqueta.
+        [Display(Name = "Etiquetas en el grafico (0 = solo muescas)", GroupName = "1. Nodos", Order = 32,
+                 Description = "Cuantos nodos llevan texto al lado de la muesca. Con la escalera al eje de "
+                             + "Gamma Vivo los nodos ya se leen ahi, por eso 0.")]
         [Range(0, 40)]
-        public int EtiquetasMax { get; set; } = 3;
+        public int EtiquetasEnGrafico { get; set; } = 0;
 
         [Display(Name = "Minimo que se muestra igual", GroupName = "1. Nodos", Order = 35,
                  Description = "Si ningun precio llega al umbral, igual se dibujan "
@@ -247,8 +250,14 @@ namespace PythiaVwap
                              + "delta del extremo, cierre. Una flecha sin sus numeros no se puede discutir.")]
         public bool RegistrarAbsorcion { get; set; } = true;
 
-        [Display(Name = "Ver la caja de control", GroupName = "3. Pantalla", Order = 10)]
-        public bool VerCaja { get; set; } = true;
+        [Browsable(false)]
+        public bool VerCaja { get; set; } = true;   // (vieja, sin efecto: ver VerCajaNodos)
+
+        // RENOMBRADA (era VerCaja = true): el operador pidio minimalismo el
+        // 2026-09-07; la caja de diagnostico se prende a mano cuando hace falta.
+        [Display(Name = "Ver la caja de control", GroupName = "3. Pantalla", Order = 13,
+                 Description = "Velas usadas, cuantos pasaron el umbral, umbral y reglas. Apagada por defecto.")]
+        public bool VerCajaNodos { get; set; } = false;
 
         [Display(Name = "Margen de la escala de precios", GroupName = "3. Pantalla", Order = 12,
                  Description = "ChartArea.Right incluye la escala de precios, asi que "
@@ -733,7 +742,7 @@ namespace PythiaVwap
                     try { RehacerPerfil(CurrentBar - 1); } catch { }
                 }
                 if (VerNodos) PintarNodos(g);
-                if (VerCaja) PintarCaja(g);
+                if (VerCajaNodos) PintarCaja(g);
             }
             catch { /* el render nunca puede tirar abajo el grafico */ }
         }
@@ -854,7 +863,7 @@ namespace PythiaVwap
                     g.DrawLine(pluma, area.Left, y, Math.Max(area.Left + 10, area.Right - MargenEje + 40), y);
 
                 // etiqueta solo en los primeros: los demas se leen por el grosor
-                if (rango > EtiquetasMax) continue;
+                if (rango > EtiquetasEnGrafico) continue;
 
                 string red = "";
                 if (AvisarRedondos && n.Redondez > 0)
@@ -953,7 +962,7 @@ namespace PythiaVwap
             if (TapaOtraRaya(yy, alto, yPropio, nodos, ysGamma, cont)) return false;
             var r = new Rectangle(xx - 4, yy, ancho, alto);
             var zonas = new List<Rectangle>();
-            if (VerCaja && !_cajaRect.IsEmpty) zonas.Add(_cajaRect);
+            if (VerCajaNodos && !_cajaRect.IsEmpty) zonas.Add(_cajaRect);
             if (AltoPanelCuenta > 0 && AnchoPanelCuenta > 0)
                 zonas.Add(new Rectangle(area.Left, area.Bottom - AltoPanelCuenta, AnchoPanelCuenta, AltoPanelCuenta));
             foreach (var z in zonas)

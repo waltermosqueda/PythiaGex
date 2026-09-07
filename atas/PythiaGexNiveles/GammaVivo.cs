@@ -2549,6 +2549,10 @@ namespace PythiaGex
                     _c == null ? "null" : _c.Filas.Count.ToString(), Panel, g.ClipBounds));
             }
             int x0 = area.Left, x1 = area.Right - Math.Max(0, MargenEje);
+            // ESCALERA AL EJE (elegida el 2026-09-07 04:35): la columna vive
+            // pegada al eje y todo lo demas termina a su izquierda
+            int xEjeOrig = x1;
+            if (EscaleraAlEje) x1 = xEjeOrig - Math.Max(80, AnchoEscalera) - 4;
 
             List<Nivel> perfil; double mx, mxA, zero, mp, mn, neto, spot;
             bool positiva; double mpRiv, mnRiv;
@@ -2560,11 +2564,15 @@ namespace PythiaGex
                 positiva = _gammaPositiva; mpRiv = _mpRival; mnRiv = _mnRival;
             }
 
-            if (VerTablero) Tablero(g, area);
+            if (VerTablero && !EscaleraAlEje) Tablero(g, area);
             // despues del tablero, porque se apoya encima de su rectangulo
             if (VerEscalera) { try { Escalera(g, area); } catch (Exception e) { Registrar(e); } }
             if (VerCinta) Cinta(g, x0, area, perfil.Count, neto, spot);
-            if (perfil.Count == 0 || mx <= 0) return;
+            if (perfil.Count == 0 || mx <= 0)
+            {
+                if (EscaleraAlEje) { try { DibujarEscaleraEje(g, area, xEjeOrig); } catch (Exception e) { Registrar(e); } }
+                return;
+            }
 
             var cont = ChartInfo.PriceChartContainer;
             try { LlenarYsNiveles(cont); } catch (Exception e) { Registrar(e); }
@@ -2575,7 +2583,11 @@ namespace PythiaGex
             // Si no hay base confiable no se dibuja NADA sobre el grafico. Un
             // nivel de SPX puesto crudo sobre el ES esta unos veinte puntos
             // corrido, y eso es una perdida sistematica en cada operacion.
-            if (double.IsNaN(baseUsada)) return;
+            if (double.IsNaN(baseUsada))
+            {
+                if (EscaleraAlEje) { try { DibujarEscaleraEje(g, area, xEjeOrig); } catch (Exception e) { Registrar(e); } }
+                return;
+            }
 
             int alto = AltoBarra > 0 ? AltoBarra : AltoAutomatico(cont, perfil);
             int ancho = Math.Max(20, AnchoBarra);
@@ -2663,7 +2675,9 @@ namespace PythiaGex
                     }
                     if (VerEstelaEnBarras) Estela(g, n.K, mx, ancho, x0, y, true, alto);
                 }
-                if (VerAcel && mxA > 0 && Math.Abs(n.Acel) > 0)
+                // con la escalera al eje no hay barras de aceleracion: la
+                // columna ocupa ese lugar y la aceleracion se lee desplegada
+                if (VerAcel && !EscaleraAlEje && mxA > 0 && Math.Abs(n.Acel) > 0)
                 {
                     double f = Math.Sqrt(Math.Abs(n.Acel) / mxA);
                     int w = Math.Max(1, (int)(f * ancho));
@@ -2705,7 +2719,7 @@ namespace PythiaGex
             // solo. Empiezan despues del perfil y terminan antes del de la
             // derecha, asi cada cosa ocupa su franja.
             int xl0 = x0 + (VerGamma ? ancho + 6 : 2);
-            int xl1 = x1 - (VerAcel ? ancho + 6 : 2);
+            int xl1 = x1 - (VerAcel && !EscaleraAlEje ? ancho + 6 : 2);
             if (xl1 - xl0 < 60) { xl0 = x0 + 2; xl1 = x1 - 2; }
             // LOS CERCANOS PRIMERO, PARA QUE LOS MAJORS LES GANEN EL LUGAR.
             //
@@ -2844,13 +2858,16 @@ namespace PythiaGex
                 if (VerGamma)
                     g.DrawString("EXPOSICION GAMMA", f8, Color.FromArgb(95, ColTexto),
                                  x0 + 4, area.Top + 22);
-                if (VerAcel)
+                if (VerAcel && !EscaleraAlEje)
                 {
                     var m = g.MeasureString("ACELERACION", f8);
                     g.DrawString("ACELERACION", f8, Color.FromArgb(95, ColTexto),
                                  x1 - m.Width - 4, area.Top + 22);
                 }
             }
+
+            // la escalera va ULTIMA: encima de todo, nada la cruza
+            if (EscaleraAlEje) { try { DibujarEscaleraEje(g, area, xEjeOrig); } catch (Exception e) { Registrar(e); } }
         }
 
         /// <summary>Las zonas dominantes, como bandas al fondo.</summary>
@@ -3888,6 +3905,18 @@ namespace PythiaGex
             var fus = _fusRender; var punteados = _puntRender;
             if (fus == null || punteados == null) return;
 
+            if (EscaleraAlEje)
+            {
+                // MODO ESCALERA: adentro del grafico solo el zero y los dos mas
+                // cercanos, sin etiqueta; todo lo demas se lee en la columna.
+                Linea(g, cont, xl0, xl1, zero, ColZero, "Zero Γ", true, spot, xEje, false, false, false, false, 0f, true);
+                foreach (var e in fus)
+                    if (e.Chip) Linea(g, cont, xl0, xl1, e.Precio, e.Col, e.Nombre, false, spot, xEje, false, false, true, false, e.Ancho, true);
+                foreach (var e in punteados)
+                    Linea(g, cont, xl0, xl1, e.Precio, e.Col, e.Nombre, false, spot, xEje, false, false, true, false, e.Ancho, true);
+                return;
+            }
+
             // DIBUJO. Primero los que quedan FUERA de pantalla, del mas lejano al
             // mas cercano al borde: asi la pila de arriba se lee de arriba hacia
             // abajo en orden de precio (7.831, 7.806, 7.756, 7.726) y la de abajo
@@ -3948,7 +3977,8 @@ namespace PythiaGex
         private void Linea(RenderContext g, IChartContainer cont, int x0, int x1,
                            double precio, Color col, string nombre, bool grueso,
                            double spot, int xEje, bool secundario = false, bool detalle = true,
-                           bool punteada = false, bool corto = false, float anchoLinea = 0f)
+                           bool punteada = false, bool corto = false, float anchoLinea = 0f,
+                           bool soloRaya = false)
         {
             if (double.IsNaN(precio) || precio <= 0) return;
             int y;
@@ -3972,7 +4002,7 @@ namespace PythiaGex
             // dibujaba en silencio y parecia roto.
             if (y < ChartArea.Top || y > ChartArea.Bottom)
             {
-                if (!MarcarFueraDePantalla) return;
+                if (!MarcarFueraDePantalla || soloRaya) return;
                 bool arriba = y < ChartArea.Top;
                 // el mismo texto que el chip sobre la raya, con la flecha adelante
                 TextoChip(precio, nombre, dist, detalle && !corto, out var o1, out var o2, !corto);
@@ -4070,6 +4100,7 @@ namespace PythiaGex
                                 : System.Drawing.Drawing2D.DashStyle.Solid;
             var pluma = new RenderPen(Color.FromArgb(Math.Max(alfaLinea, punteada ? 170 : 0), col), anchoPen, estilo);
             RayaSinTablero(g, pluma, x0, x1, y);
+            if (soloRaya) return;   // modo escalera: la etiqueta vive en la columna
 
             // EL CHIP: UNA O DOS LINEAS, Y NUNCA PISADO (modelo 3, 2026-09-06).
             //
@@ -4229,53 +4260,26 @@ namespace PythiaGex
         /// y abajo el max change por ventana. Separarlos no es cosmetico: el
         /// interes abierto es el mapa de ayer y el volumen es lo de hoy.
         /// </summary>
-        private void Tablero(RenderContext g, Rectangle area)
+        /// <summary>Los renglones del tablero compacto: los usa el tablero y la
+        /// escalera al eje cuando esta desplegada. Una sola fuente de verdad,
+        /// asi los dos dicen exactamente lo mismo.</summary>
+        private List<Tuple<string, Color>> LineasTablero()
         {
-            var fb = new RenderFont("Consolas", (float)Math.Max(7m, Math.Min(14m, TamTablero)));
-            List<Nivel> perfil; double neto, zero, mp, mn, netoV, mpv, mnv, spot;
-            FilaCambio[] cam;
-            bool positiva; double mpRiv, mnRiv, mpRat, mnRat, hz;
+            List<Nivel> perfil; double neto, zero, mp, mn, spot; bool positiva; double mpRiv, mnRiv, hz;
             lock (_candado)
             {
                 perfil = _perfil; neto = _netGex; zero = _zeroGamma; spot = _spotUsado;
-                mp = _majorPos; mn = _majorNeg;
-                netoV = _netGexVol; mpv = _majorPosVol; mnv = _majorNegVol;
-                cam = (FilaCambio[])_cambios.Clone();
-                positiva = _gammaPositiva;
-                mpRiv = _mpRival; mnRiv = _mnRival; mpRat = _mpRatio; mnRat = _mnRatio;
-                hz = _horizonteZonas;
+                mp = _majorPos; mn = _majorNeg; positiva = _gammaPositiva;
+                mpRiv = _mpRival; mnRiv = _mnRival; hz = _horizonteZonas;
             }
-            if (perfil == null || perfil.Count == 0) return;
-
+            var ls = new List<Tuple<string, Color>>();
+            if (perfil == null || perfil.Count == 0) return ls;
             string P(double v) => v <= 0 || double.IsNaN(v) ? "--"
                 : v.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
             string M(double v) => Math.Abs(v) >= 1e9
                 ? (v / 1e9).ToString("N2", CultureInfo.GetCultureInfo("es-AR")) + "B"
                 : (v / 1e6).ToString("N0", CultureInfo.GetCultureInfo("es-AR")) + "M";
-
-            // EL TABLERO, COPIADO DE LAS CAPTURAS DEL OPERADOR.
-            //
-            // Cuatro bloques en este orden, con los mismos rotulos en minuscula
-            // y el mismo codigo de color: verde el major positive, rojo el
-            // major negative, cyan el net gex. Los rotulos van en ingles
-            // porque asi estan en la fuente y asi los reconoce el operador;
-            // la aclaracion entre parentesis va en castellano porque es
-            // nuestra, no de ellos.
-            // El zero gamma por volumen todavia no se calcula aparte: se
-            // muestra el de interes abierto y NO se inventa otro numero.
-            double zeroVol = 0;
             var colNet = Color.FromArgb(90, 210, 230);
-            var ls = new List<Tuple<string, Color>>();
-
-            // MODO COMPACTO, QUE ES EL POR DEFECTO.
-            //
-            // El tablero completo son catorce renglones y le tapa el grafico.
-            // El operador pidio que sea chiquito y a un costado, y que se
-            // despliegue solo si quiere mas. Aca va lo minimo que hace falta
-            // para operar: en que regimen esta, donde cambia, y de donde salio
-            // el dato -- porque un nivel sin fuente no se publica.
-            if (TableroCompacto)
-            {
                 // SIN ZERO GAMMA NO HAY REGIMEN.
                 //
                 // Cuando la suma no cruza cero dentro de lo observado, el zero
@@ -4399,6 +4403,244 @@ namespace PythiaGex
                                         Color.FromArgb(170, ColTexto)));
                 }
 
+            return ls;
+        }
+
+        // ===================== ESCALERA PEGADA AL EJE =====================
+        //
+        // El diseño elegido el 2026-09-07 a las 04:35 ("la 3"): una columna
+        // angosta pegada al eje de precio, ordenada por precio como un DOM,
+        // con TODOS los niveles (entren o no en pantalla), nombre corto,
+        // precio, distancia y chance de toque. La fila del precio va
+        // resaltada; las dos vecinas llevan la barrita de chance. Adentro
+        // del grafico quedan solo tres rayas sin etiqueta: el zero y los dos
+        // cercanos. El tablero desaparece: su cabecera (regimen, zero, muros,
+        // atraso) es la cabecera de la escalera y un clic en ella despliega
+        // el resto (los mismos renglones de LineasTablero).
+        //
+        // POR QUE NO EN EL EJE MISMO: medido el 2026-09-07, el lienzo del
+        // indicador termina donde empieza el eje (ClipBounds 849 de 913 px).
+        // Lo que se dibuje ahi no aparece. La columna va pegada, por adentro.
+
+        [Display(Name = "Escalera pegada al eje", GroupName = "Pantalla", Order = 1,
+                 Description = "Todos los niveles en una columna pegada al eje de precio, ordenados por precio, "
+                             + "con nombre corto, distancia y chance. Adentro del grafico solo el zero y los dos "
+                             + "mas cercanos, sin etiqueta. El tablero se pliega en la cabecera (clic para abrir).")]
+        public bool EscaleraAlEje { get; set; } = true;
+
+        [Display(Name = "Escalera: ancho (px)", GroupName = "Pantalla", Order = 2)]
+        [Range(80, 320)]
+        public int AnchoEscalera { get; set; } = 124;
+
+        [Display(Name = "Escalera: nodos de volumen como filas", GroupName = "Pantalla", Order = 3,
+                 Description = "Los HVN de Nodos de Volumen entran en la columna, en ambar, en su lugar por precio.")]
+        public bool EscaleraConNodos { get; set; } = true;
+
+        private bool _escAbierta;
+        private Rectangle _escRect = Rectangle.Empty, _escCabRect = Rectangle.Empty;
+
+        /// <summary>Un clic en la cabecera de la escalera la despliega o la pliega.
+        /// Cualquier otro clic sigue su camino normal (el grafico lo recibe).</summary>
+        public override bool ProcessMouseClick(OFT.Rendering.Control.RenderControlMouseEventArgs e)
+        {
+            try
+            {
+                if (EscaleraAlEje && !_escCabRect.IsEmpty && _escCabRect.Contains(e.X, e.Y))
+                {
+                    _escAbierta = !_escAbierta;
+                    try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
+                    return true;
+                }
+            }
+            catch { }
+            return base.ProcessMouseClick(e);
+        }
+
+        private sealed class FilaEsc
+        {
+            public string Nombre = "";
+            public double Precio;
+            public Color Col;
+            public bool EsPrecio, EsNodo;
+        }
+
+        private static string NombreCorto(string n) => n
+            .Replace("Call Wall", "CW").Replace("Put Wall", "PW")
+            .Replace("DTE #", "D#").Replace(" + ", "+").Replace("Zero Γ", "0Γ");
+
+        private void DibujarEscaleraEje(RenderContext g, Rectangle area, int xEje)
+        {
+            var es = CultureInfo.GetCultureInfo("es-AR");
+            var f = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamTablero - 1m)));
+            var fMin = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(11m, TamTablero - 2m)));
+            var colNodo = Color.FromArgb(235, 200, 60);
+            var colPrecio = Color.FromArgb(31, 143, 124);
+            int margen = Math.Max(6, MargenInferior);
+
+            // cabecera: regimen, zero, atraso; muros y la flecha
+            double zero, mp, mn, spot; bool positiva; List<Nivel> perfil;
+            lock (_candado) { zero = _zeroGamma; mp = _majorPos; mn = _majorNeg; spot = _spotUsado; positiva = _gammaPositiva; perfil = _perfil; }
+            bool hayZero = !double.IsNaN(zero) && zero > 0 && spot > 0;
+            string P0(double v) => v <= 0 || double.IsNaN(v) ? "--" : Math.Round(v).ToString("N0", es);
+            var cc = _cUsada ?? _c;
+            string atraso = _esFuturo ? "vivo"
+                : (902.0 / 60.0 + Math.Max(0, cc?.EdadMin ?? 0)).ToString("0", es) + "'";
+            string cab1 = (hayZero ? (positiva ? "Γ+" : "Γ−") : "Γ?") + "  zero " + P0(zero) + "  " + atraso;
+            string cab2 = "CW " + P0(mp) + " · PW " + P0(mn) + "  " + (_escAbierta ? "▴" : "▾");
+            var detalle = _escAbierta ? LineasTablero() : new List<Tuple<string, Color>>();
+
+            // el ancho: el pedido, o mas si el detalle desplegado no entra
+            int ancho = Math.Max(80, AnchoEscalera);
+            var m1 = g.MeasureString(cab1, f); var m2 = g.MeasureString(cab2, f);
+            ancho = Math.Max(ancho, Math.Max(m1.Width, m2.Width) + 14);
+            foreach (var d in detalle) ancho = Math.Max(ancho, g.MeasureString(d.Item1, fMin).Width + 14);
+            var rect = new Rectangle(xEje - ancho, area.Top, ancho, Math.Max(40, area.Bottom - margen - area.Top));
+            _escRect = rect;
+            _tableroRect = rect;   // la banda ACA y cualquier chip la esquivan como al tablero
+            g.FillRectangle(Color.FromArgb(235, ColFondo), rect);
+            g.DrawLine(new RenderPen(Color.FromArgb(90, ColTexto), 1f), rect.Left, rect.Top, rect.Left, rect.Bottom);
+
+            int hf = m1.Height;
+            int yc = rect.Top + 4;
+            _escCabRect = new Rectangle(rect.Left, rect.Top, rect.Width, 2 * (hf + 2) + 6);
+            g.FillRectangle(Color.FromArgb(28, ColTexto), _escCabRect);
+            g.DrawString(cab1, f, hayZero ? (positiva ? ColPos : ColNeg) : ColAviso, rect.Left + 6, yc); yc += hf + 2;
+            g.DrawString(cab2, f, Color.FromArgb(220, ColTexto), rect.Left + 6, yc); yc += hf + 2;
+            yc += 4;
+            if (_escAbierta)
+            {
+                int hm = g.MeasureString("X", fMin).Height;
+                foreach (var d in detalle)
+                {
+                    if (yc + hm > rect.Bottom - 4) break;
+                    g.DrawString(d.Item1, fMin, d.Item2, rect.Left + 6, yc);
+                    yc += hm + 1;
+                }
+                g.DrawLine(new RenderPen(Color.FromArgb(60, ColTexto), 1f), rect.Left + 4, yc + 2, rect.Right - 4, yc + 2);
+                yc += 6;
+            }
+
+            // las filas: todo lo que se dibuja o se dibujaria, mas los nodos y el precio
+            double px = _pxRender;
+            var filas = new List<FilaEsc>();
+            void Add(string nombre, double precio, Color col, bool nodo)
+            {
+                if (double.IsNaN(precio) || precio <= 0) return;
+                foreach (var q in filas)
+                    if (!q.EsPrecio && Math.Abs(q.Precio - precio) < 0.01) { q.Nombre += "+" + nombre; return; }
+                filas.Add(new FilaEsc { Nombre = nombre, Precio = precio, Col = col, EsNodo = nodo });
+            }
+            Add("0Γ", zero, ColZero, false);
+            if (_fusRender != null) foreach (var e in _fusRender) Add(NombreCorto(e.Nombre), e.Precio, e.Col, false);
+            if (_puntRender != null) foreach (var e in _puntRender) Add(e.Nombre, e.Precio, e.Col, false);
+            if (EscaleraConNodos && _nodosRender != null)
+                foreach (var nd in _nodosRender) if (!nd.flojo) Add("HVN" + nd.rango, nd.precio, colNodo, true);
+            if (px > 0) filas.Add(new FilaEsc { Nombre = "", Precio = px, Col = colPrecio, EsPrecio = true });
+            filas.Sort((a, b) => b.Precio.CompareTo(a.Precio));
+            int ip = filas.FindIndex(q => q.EsPrecio);
+
+            string Prob(double K)
+            {
+                if (_sigHRender <= 0 || px <= 0) return "";
+                double z = Math.Abs(Math.Log(K / px)) / _sigHRender;
+                return (Math.Min(1.0, Math.Max(0.0, 2.0 * Phi(-z))) * 100).ToString("0", es) + "%";
+            }
+            double ProbNum(double K)
+            {
+                if (_sigHRender <= 0 || px <= 0) return double.NaN;
+                double z = Math.Abs(Math.Log(K / px)) / _sigHRender;
+                return Math.Min(1.0, Math.Max(0.0, 2.0 * Phi(-z)));
+            }
+
+            int hfila = hf + 4;
+            for (int i = 0; i < filas.Count; i++)
+            {
+                var q = filas[i];
+                bool vecina = ip >= 0 && (i == ip - 1 || i == ip + 1);
+                int alto = hfila + (vecina ? 8 : 0);
+                if (yc + alto > rect.Bottom - 4)
+                {
+                    g.DrawString("…", f, Color.FromArgb(160, ColTexto), rect.Left + 6, yc);
+                    break;
+                }
+                if (q.EsPrecio)
+                {
+                    g.FillRectangle(colPrecio, new Rectangle(rect.Left + 2, yc, rect.Width - 4, hfila - 1));
+                    g.DrawString("▶ " + px.ToString("N2", es), f, Color.White, rect.Left + 6, yc + 1);
+                    yc += hfila;
+                    continue;
+                }
+                double dist = q.Precio - px;
+                string tDist = px > 0 ? (dist >= 0 ? "+" : "") + dist.ToString("0", es) : "";
+                string izq = q.Nombre + " " + P0(q.Precio) + (tDist.Length > 0 ? " " + tDist : "");
+                string der = Prob(q.Precio);
+                g.FillRectangle(Color.FromArgb(230, q.Col), new Rectangle(rect.Left + 3, yc + 2, 3, hf - 2));
+                var mi = g.MeasureString(izq, f);
+                var md = der.Length > 0 ? g.MeasureString(der, f) : default;
+                // si el nombre no entra, se corta por la derecha antes de pisar la chance
+                int libre = rect.Width - 12 - (der.Length > 0 ? md.Width + 6 : 0);
+                while (izq.Length > 3 && mi.Width > libre) { izq = izq.Substring(0, izq.Length - 1); mi = g.MeasureString(izq, f); }
+                g.DrawString(izq, f, Color.FromArgb(q.EsNodo ? 215 : 240, q.EsNodo ? colNodo : ColTexto), rect.Left + 9, yc + 1);
+                if (der.Length > 0) g.DrawString(der, f, Color.FromArgb(230, q.Col), rect.Right - 6 - md.Width, yc + 1);
+                if (vecina)
+                {
+                    double p = ProbNum(q.Precio);
+                    int bw = rect.Width - 18, bx = rect.Left + 9, by = yc + hf + 3;
+                    g.FillRectangle(Color.FromArgb(90, ColTexto), new Rectangle(bx, by, bw, 4));
+                    if (!double.IsNaN(p)) g.FillRectangle(Color.FromArgb(220, q.Col), new Rectangle(bx, by, Math.Max(1, (int)(bw * p)), 4));
+                }
+                yc += alto;
+            }
+        }
+
+        private void Tablero(RenderContext g, Rectangle area)
+        {
+            var fb = new RenderFont("Consolas", (float)Math.Max(7m, Math.Min(14m, TamTablero)));
+            List<Nivel> perfil; double neto, zero, mp, mn, netoV, mpv, mnv, spot;
+            FilaCambio[] cam;
+            bool positiva; double mpRiv, mnRiv, mpRat, mnRat, hz;
+            lock (_candado)
+            {
+                perfil = _perfil; neto = _netGex; zero = _zeroGamma; spot = _spotUsado;
+                mp = _majorPos; mn = _majorNeg;
+                netoV = _netGexVol; mpv = _majorPosVol; mnv = _majorNegVol;
+                cam = (FilaCambio[])_cambios.Clone();
+                positiva = _gammaPositiva;
+                mpRiv = _mpRival; mnRiv = _mnRival; mpRat = _mpRatio; mnRat = _mnRatio;
+                hz = _horizonteZonas;
+            }
+            if (perfil == null || perfil.Count == 0) return;
+
+            string P(double v) => v <= 0 || double.IsNaN(v) ? "--"
+                : v.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
+            string M(double v) => Math.Abs(v) >= 1e9
+                ? (v / 1e9).ToString("N2", CultureInfo.GetCultureInfo("es-AR")) + "B"
+                : (v / 1e6).ToString("N0", CultureInfo.GetCultureInfo("es-AR")) + "M";
+
+            // EL TABLERO, COPIADO DE LAS CAPTURAS DEL OPERADOR.
+            //
+            // Cuatro bloques en este orden, con los mismos rotulos en minuscula
+            // y el mismo codigo de color: verde el major positive, rojo el
+            // major negative, cyan el net gex. Los rotulos van en ingles
+            // porque asi estan en la fuente y asi los reconoce el operador;
+            // la aclaracion entre parentesis va en castellano porque es
+            // nuestra, no de ellos.
+            // El zero gamma por volumen todavia no se calcula aparte: se
+            // muestra el de interes abierto y NO se inventa otro numero.
+            double zeroVol = 0;
+            var colNet = Color.FromArgb(90, 210, 230);
+            var ls = new List<Tuple<string, Color>>();
+
+            // MODO COMPACTO, QUE ES EL POR DEFECTO.
+            //
+            // El tablero completo son catorce renglones y le tapa el grafico.
+            // El operador pidio que sea chiquito y a un costado, y que se
+            // despliegue solo si quiere mas. Aca va lo minimo que hace falta
+            // para operar: en que regimen esta, donde cambia, y de donde salio
+            // el dato -- porque un nivel sin fuente no se publica.
+            if (TableroCompacto)
+            {
+                ls = LineasTablero();
                 var fc = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamTablero - 1m)));
                 var medc = ls.Select(l => g.MeasureString(l.Item1, fc)).ToList();
                 int wc = 0, hc = 6;
