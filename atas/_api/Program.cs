@@ -25,6 +25,31 @@ class Program
                                   "OFT.Attributes", "OFT.Localization", "ATAS.DataFeedsCore",
                                   "ATAS.Indicators.Technical", "ATAS.Indicators.Other" })
             try { _ctx.LoadFromAssemblyPath(Path.Combine(Dir, f + ".dll")); } catch { }
+        // --dll X,Y carga ensamblados extra (el conector de Rithmic, la
+        // plataforma) para poder volcar tipos que no estan en la lista fija.
+        // Agregado el 2026-09-06 para buscar por donde entra el volumen de
+        // opciones que el Options Board muestra y el indicador no consigue.
+        if (args.Length > 1 && args[0] == "--dll")
+        {
+            foreach (var f in args[1].Split(','))
+                try { _ctx.LoadFromAssemblyPath(Path.Combine(Dir, f.Trim() + ".dll")); }
+                catch (Exception e) { Console.WriteLine("!! no cargo " + f + ": " + e.Message); }
+            args = args.Skip(2).ToArray();
+        }
+        // --eventos <tipo> vuelca solo los eventos (publicos y privados) de un tipo
+        if (args.Length > 1 && args[0] == "--eventos")
+        {
+            var t = _ctx.Assemblies.SelectMany(Seguro).FirstOrDefault(x => x.FullName == args[1] || x.Name == args[1]);
+            if (t == null) { Console.WriteLine("!! no encontrado: " + args[1]); return; }
+            var tt = t;
+            while (tt != null && tt != typeof(object))
+            {
+                foreach (var ev in tt.GetEvents(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+                    Console.WriteLine($"  evento {Corto(ev.EventHandlerType)} {ev.Name}   ({tt.Name})");
+                tt = tt.BaseType;
+            }
+            return;
+        }
 
         // Quien IMPLEMENTA una interfaz. Sirve para contestar si el conector
         // de Rithmic sabe servir opciones sin tener que abrir la plataforma.

@@ -2,7 +2,7 @@
 - [Mirar la pantalla antes de responder sobre ATAS](mirar-pantalla-antes-de-responder-atas.md) — nada de suponer: screenshot primero, después explicar.
 - [Freeze del portapapeles = TextInputHost en bucle](freeze-portapapeles-textinputhost.md) — no es corrupción, SFC ya salió limpio; es un hilo al 98% de CPU.
 - [Cómo enseñarle trading](como-ensenarle-trading.md) — analogía concreta primero, una idea por vez, cero tablas y cero jerga.
-- [Setup de ATAS verificado](setup-atas-verificado.md) — Ultra vitalicia, 8.0.14.396, Rithmic; el tablero de opciones funciona pero sin agregación GEX.
+- [Setup de ATAS verificado](setup-atas-verificado.md) — Ultra vitalicia, 8.0.14.398, Rithmic; el tablero de opciones funciona pero sin agregación GEX.
 - [Plan para aprender gamma/GEX](plan-gamma-gex.md) — gratis primero, GEX Metrix después, GEXbot dentro de ATAS al final.
 - [Páginas GEX auditadas](paginas-gex-auditadas.md) — cinco tableros; solo Opensera refresca de verdad, un timestamp que avanza no prueba nada.
 - [Conversión SPX a ES](conversion-spx-a-es.md) — la base se mide restando dos forwards de la misma cadena, nunca contra el índice; se valida contra el carry teórico.
@@ -35,7 +35,7 @@
 - [Los puntitos van sobre las barras](dominantes-no-son-linea.md) — no cruzan el grafico; y ojo: las velas naranjas contaminan la deteccion de ambar.
 - [El ChartArea de ATAS es mas alto que el visible](atas-chartarea-mas-alto.md) — lo anclado al fondo cae detras del eje de tiempo, sin error.
 - [El Settlements de CME va un dia atras](cme-settlements-un-dia-atras.md) — hay que sumarle el change; ATAS tenia el dato correcto y yo compare contra uno viejo.
-- [Volumen de opciones en vivo](volumen-opciones-en-vivo.md) — se acumula por evento; es el unico dato del mapa que no es de ayer.
+- [Volumen de opciones en vivo](volumen-opciones-en-vivo.md) — ARREGLADO 06-09: llega por SecuritySummaryChanged y NewTrades del conector; 114 de 180 contratos con volumen en la primera prueba.
 - [NQ: el libro propio pesa](nq-libro-propio-pesa.md) — NDX es solo 2x NQ, no 10x como SPX/ES; y los muros no coinciden.
 - [Las pelotitas son eventos, no niveles](pelotitas-son-eventos.md) — medido en 2443 cuadros: son operaciones grandes; y las barras si se mueven, 1,5 puntos.
 - [La formula del GEX, auditada](gex-formula-auditada.md) — multiplicador y muros corregidos; y el gamma no depende del tiempo si la IV se despeja con el mismo T.

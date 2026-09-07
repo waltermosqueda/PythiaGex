@@ -1,6 +1,6 @@
 ---
 name: volumen-opciones-en-vivo
-description: "El volumen de opciones por strike se acumula a mano desde Rithmic, por evento. Es el único dato del mapa que no es de ayer — ni GEXbot lo tiene."
+description: "ARREGLADO el 2026-09-06: el volumen de opciones por strike llega por SecuritySummaryChanged y NewTrades del conector (no por Security.PropertyChanged, que nunca dispara). Es el único dato del mapa que no es de ayer — ni GEXbot lo tiene."
 metadata: 
   node_type: memory
   type: project
@@ -9,6 +9,43 @@ metadata:
 ---
 
 Implementado el 2026-09-03. **Es el punto ciego de todos los tableros de GEX.**
+
+## ARREGLADO Y MEDIDO (2026-09-06, 22:33 AR)
+
+El acumulador estaba colgado de `Security.PropertyChanged`, que el conector de
+Rithmic **nunca dispara** (tres noches en cero). Volcando la API por reflexion
+(`atas/_api --dll OFT.Rithmic --eventos ...`) aparecieron los dos eventos por
+donde SI viaja el dato, en `IDataFeedConnector`:
+
+- **`SecuritySummaryChanged`** entrega un `SecuritySummary` con
+  `CurrentDayTotalVolume`, `PrevDayTotalVolume`, `OpenInterest`,
+  `SettlementPrice`, maximo/minimo del dia. Es exactamente lo que consume el
+  Options Board de ATAS (`OptionModel.ProcessSummary`). Incluye lo operado
+  ANTES de suscribirse.
+- **`NewTrades`** entrega cada operacion con `Security`, `Price`, `Volume`,
+  `Time` y **`OrderDirection`** (Buy/Sell/Between): el lado del agresor, sin
+  Lee-Ready.
+
+Los dos llegan para cualquier contrato suscrito con `Prints|Summary`.
+
+**Medido dos minutos despues del reinicio, domingo de noche (Asia):**
+
+```
+ES  (180 contratos)  volresumenes=46363  volresconvol=114  volresconoi=175
+                     flujoviva=3842 contratos del dia   voltradesprop=5  flujocinta=10
+MNQ (142 contratos)  volresumenes=3114   volresconvol=4    volresconoi=99
+```
+
+`flujoviva` toma el volumen del resumen si llego y si no el de la cinta;
+`flujocinta` es solo lo visto desde la suscripcion. Cada `Fila` de la cadena
+viva trae ahora `VolumenDia`, `VolCinta`, `VolCompra`, `VolVenta` y `OIResumen`.
+
+**Lo que todavia no se hizo con el dato:** dibujarlo por strike y probarlo en
+el laboratorio contra placebo (la formula "volumen de hoy" fue la unica que
+gano el 2026-09-03, pero con volumen de CBOE 15 min tarde). Esto es el mismo
+dato en vivo: hay que registrarlo hacia adelante.
+
+## HISTORIA: como estaba roto (2026-09-03 y 04)
 
 ## Por qué importa
 
@@ -79,7 +116,7 @@ Mirarlo en la rueda americana, no de noche.
 [[pelotitas-son-eventos]]): las dos se alimentan del volumen, asi que si esto no
 cuenta, las dos quedan en negro y no se pueden probar.
 
-## Estado: ROTO, Y <cuenta> (2026-09-04, 04:44)
+## Estado del 2026-09-04: ROTO, Y <cuenta> (ya arreglado, ver arriba)
 
 **El enganche por eventos NO funciona.** No es el horario -- esa fue mi excusa
 comoda dos noches seguidas, y el operador la puso en duda con razon.
@@ -112,7 +149,7 @@ PropertyChanged.** Implementar INotifyPropertyChanged no obliga a dispararlo.
 (`volconultimo=0`). O sea que ese campo no lo llena este feed, ni por evento ni
 por lectura. Hay puntas frescas y no hay dato de operaciones.
 
-## Por donde seguir
+## Por donde seguir (esto fue lo que se hizo el 2026-09-06)
 
 Buscar el evento REAL de operaciones del conector -- no en `Security` sino en
 `IDataFeedConnector` o en lo que entregue `SubscribeToMarketData(..., Prints)`.

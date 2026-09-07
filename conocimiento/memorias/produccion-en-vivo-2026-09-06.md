@@ -75,6 +75,36 @@ anticipado (confirmar hora en CME; la pagina no cargo).
 **Why:** el operador creia que el lunes era "el gran movimiento" y que los
 indicadores estaban listos; ni una cosa ni la otra.
 
-**How to apply:** arreglar 1, 2 y 4 antes del martes; apagar `UsarCadenaViva`
-hasta que el volumen cuente. Ver [[retrospectiva-2026-09-06]],
+**How to apply:** los siete quedaron arreglados y verificados esa misma noche (ver
+abajo). La cadena viva NO se apaga: quedo alimentada por los eventos del conector. Ver [[retrospectiva-2026-09-06]],
 [[volumen-opciones-en-vivo]] y [[indicador-que-cuelga-atas]].
+
+## Resultado de las correcciones (misma noche, tres reinicios verificados)
+
+Todo probado antes con calculo independiente y despues en pantalla:
+
+- Rotulo de regimen: con precio 7717,50 y zero 7717,41 (dentro de la franja de
+  6 puntos donde mentia) el panel dijo "GAMMA + rango" y el AUDIT
+  `regimen=positivo`. El codigo viejo habria dicho "expansion".
+- Reloj: `reloj_ms=3278..3288` contra +3.270 ms de `w32tm`. El atraso del libro
+  paso de -3158 a **+111 ms** (NQ), coherente con los 157 ms medidos el 03-09.
+- Absorcion: de 13 flechas en 84 velas a 20 en TODA la historia del grafico de
+  1 minuto, cada una con sus numeros en `pythiaflow-absorcion.log`. La primera
+  prueba del arnes (`atas/_test_flow`) demuestra que la regla vieja disparaba
+  con una vela pareja.
+- Ventana en horas de mercado: el mismo nodo 7721,25 dice **69,2K d +265** en
+  las pestañas de 1 y 5 minutos (antes 26,7K d -479 contra 69,2K d +248).
+  Primera version usaba horas de reloj y el domingo daba 37 velas: corregido.
+- Muro disputado: aparecio solo, `mnratio=1.00 mndisp=7656`, panel
+  "-wall 7.681,16 disp 7.656,16". Y al refrescar la cadena a las 00:38 UTC el
+  call wall paso a 7825, lo mismo que dio la recalculacion manual desde el
+  crudo de CBOE con esa cadena.
+- Zonas del radar contra el indicador, en el AUDIT: `7750:+6193Mpy/+2628Mcs;
+  7700:-3184Mpy/-1723Mcs` (45 d contra 7 d). En MNQ `29550:+466Mpy/+29Mcs`:
+  la zona es casi toda gamma lejana.
+- Flujo: el panel dice "flujo cadena 06/09 21:38"; dira "flujo vie 04/09
+  16:14 NY" cuando el feed publicado traiga `ultimo_trade` (Python ya lo
+  emite; falta que corra el workflow).
+- Cadena viva: ver [[volumen-opciones-en-vivo]]. ARREGLADA.
+
+Commit `1ec1f69` y siguientes. ATAS es **8.0.14.398**.

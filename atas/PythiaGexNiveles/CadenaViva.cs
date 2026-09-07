@@ -71,6 +71,18 @@ namespace PythiaGex
             // de todos los tableros de GEX: construyen sobre interes abierto,
             // que la OCC consolida de noche.
             public double VolumenHoy;
+            // DE DONDE SALE CADA NUMERO (agregado el 2026-09-06):
+            //   VolumenDia  = CurrentDayTotalVolume del resumen que manda el
+            //                 conector (SecuritySummaryChanged). Es el mismo
+            //                 dato que muestra la columna Volume del Options
+            //                 Board de ATAS. Incluye lo operado ANTES de que
+            //                 nos suscribieramos. NaN si no llego resumen.
+            //   VolCinta    = suma de las operaciones recibidas por NewTrades
+            //                 desde la suscripcion, con su lado agresor.
+            // VolumenHoy toma el del resumen si existe, y si no el de la cinta.
+            public double VolumenDia = double.NaN;
+            public double VolCinta, VolCompra, VolVenta;
+            public double OIResumen = double.NaN;
         }
 
         private readonly object _llave = new();
@@ -101,6 +113,28 @@ namespace PythiaGex
         private double _maxUltimoVol;
         private IDataFeedConnector _conn;
         private Security _futuro;
+
+        // LO QUE LLEGA POR EL CONECTOR, NO POR Security.
+        //
+        // Tres noches el acumulador dio cero y la explicacion no era el
+        // horario: Security implementa INotifyPropertyChanged pero el conector
+        // de Rithmic nunca dispara PropertyChanged (medido: 0 avisos de
+        // cualquier tipo en 140 contratos con las puntas cambiando). El dato
+        // viaja por OTRO lado, y se encontro volcando la API por reflexion el
+        // 2026-09-06:
+        //   IDataFeedConnector.SecuritySummaryChanged -> SecuritySummary con
+        //       CurrentDayTotalVolume, PrevDayTotalVolume, OpenInterest,
+        //       SettlementPrice. Es lo que el propio Options Board de ATAS
+        //       consume (OptionModel.ProcessSummary).
+        //   IDataFeedConnector.NewTrades -> cada operacion con Security,
+        //       Price, Volume, Time y OrderDirection (el lado del agresor).
+        // Los dos llegan para cualquier contrato suscrito con Prints|Summary.
+        private readonly Dictionary<string, SecuritySummary> _resumen = new();
+        private readonly Dictionary<string, (double compra, double venta, double total, long n)> _cinta = new();
+        private readonly HashSet<long> _tradesVistos = new();
+        private HashSet<string> _codigos = new();
+        private long _evResumenes, _evTrades, _evTradesPropios;
+        private bool _enganchadoConector;
         private volatile bool _armando;
 
         /// <summary>Ultimo estado legible, para mostrar en pantalla sin mentir.</summary>
@@ -344,7 +378,28 @@ namespace PythiaGex
                 }
                 catch (Exception e) { L("la suscripcion fallo: " + e.Message); return; }
 
-                lock (_llave) _suscritos = elegidos;
+                lock (_llave)
+                {
+                    _suscritos = elegidos;
+                    _codigos = new HashSet<string>(elegidos.Select(x => x.Code ?? "")
+                                                           .Where(x => x.Length > 0));
+                }
+
+                // EL ENGANCHE QUE SI FUNCIONA: LOS EVENTOS DEL CONECTOR.
+                // Una sola vez por instancia; los manejadores filtran por el
+                // codigo del contrato contra _codigos, que se rearma en cada
+                // suscripcion. Ver el comentario de los campos.
+                if (!_enganchadoConector)
+                {
+                    try
+                    {
+                        _conn.SecuritySummaryChanged += AlResumen;
+                        _conn.NewTrades += AlTrades;
+                        _enganchadoConector = true;
+                        L("enganchados SecuritySummaryChanged y NewTrades del conector");
+                    }
+                    catch (Exception e) { L("no se pudo enganchar el conector: " + e.Message); }
+                }
 
                 // EL VOLUMEN DE HOY, POR EVENTO Y NO POR SONDEO.
                 //
@@ -449,8 +504,91 @@ namespace PythiaGex
             catch { }
         }
 
-        /// <summary>Contratos operados hoy en toda la ventana suscrita.</summary>
+        /// <summary>El resumen diario de un contrato: se guarda el ultimo por codigo.</summary>
+        private void AlResumen(IDataFeedConnector c, SecuritySummary s)
+        {
+            try
+            {
+                var code = s?.Security?.Code;
+                if (string.IsNullOrEmpty(code)) return;
+                lock (_llave)
+                {
+                    if (!_codigos.Contains(code)) return;
+                    _evResumenes++;
+                    _resumen[code] = s;
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>Cada operacion de opciones, con su lado. Se descarta el
+        /// duplicado por Id cuando el feed lo trae.</summary>
+        private void AlTrades(IDataFeedConnector c, IEnumerable<Trade> ts)
+        {
+            if (ts == null) return;
+            try
+            {
+                foreach (var t in ts)
+                {
+                    if (t == null) continue;
+                    Interlocked.Increment(ref _evTrades);
+                    var code = t.Security?.Code;
+                    if (string.IsNullOrEmpty(code)) continue;
+                    lock (_llave)
+                    {
+                        if (!_codigos.Contains(code)) continue;
+                        _evTradesPropios++;
+                        if (t.Id != 0)
+                        {
+                            if (_tradesVistos.Contains(t.Id)) continue;
+                            _tradesVistos.Add(t.Id);
+                            if (_tradesVistos.Count > 200000) _tradesVistos.Clear();
+                        }
+                        double v = (double)t.Volume;
+                        if (v <= 0) continue;
+                        _cinta.TryGetValue(code, out var a);
+                        bool compra = t.OrderDirection == TradeDirection.Buy;
+                        bool venta = t.OrderDirection == TradeDirection.Sell;
+                        _cinta[code] = (a.compra + (compra ? v : 0), a.venta + (venta ? v : 0), a.total + v, a.n + 1);
+                        // el acumulador viejo sigue: es "desde la suscripcion"
+                        _volHoy[code] = (_volHoy.TryGetValue(code, out var b) ? b : 0) + v;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>Volumen del dia en toda la ventana suscrita: el del resumen
+        /// del conector cuando llego, y si no el de la cinta.</summary>
         public double VolumenTotalHoy()
+        {
+            lock (_llave)
+            {
+                double t = 0;
+                foreach (var code in _codigos)
+                {
+                    if (_resumen.TryGetValue(code, out var s) && s.CurrentDayTotalVolume.HasValue)
+                        t += (double)s.CurrentDayTotalVolume.Value;
+                    else if (_volHoy.TryGetValue(code, out var v)) t += v;
+                }
+                return t;
+            }
+        }
+
+        /// <summary>Cuantos contratos suscritos traen volumen del dia en su resumen.</summary>
+        public int ContratosConVolumen()
+        {
+            lock (_llave)
+            {
+                int n = 0;
+                foreach (var code in _codigos)
+                    if (_resumen.TryGetValue(code, out var s) && (s.CurrentDayTotalVolume ?? 0m) > 0) n++;
+                return n;
+            }
+        }
+
+        /// <summary>Solo lo visto por la cinta desde la suscripcion.</summary>
+        public double VolumenCintaTotal()
         {
             lock (_llave) { double t = 0; foreach (var v in _volHoy.Values) t += v; return t; }
         }
@@ -473,11 +611,28 @@ namespace PythiaGex
                 nombres = _nombresVistos.Count == 0 ? "ninguno"
                         : string.Join(",", _nombresVistos);
             }
+            long res, tr, trp; int resConVol, resOI;
+            lock (_llave)
+            {
+                res = _evResumenes; tr = _evTrades; trp = _evTradesPropios;
+                resConVol = 0; resOI = 0;
+                foreach (var s in _resumen.Values)
+                {
+                    if ((s.CurrentDayTotalVolume ?? 0m) > 0) resConVol++;
+                    if ((s.OpenInterest ?? 0m) > 0) resOI++;
+                }
+            }
+            // COMO LEERLO:
+            //   volresumenes=0                 -> el conector no manda resumenes: la suscripcion Summary no llego
+            //   volresumenes>0 y volresconvol=0 -> llegan resumenes pero nadie opero hoy en la ventana (de noche puede pasar)
+            //   voltrades>0 y voltradesprop=0  -> llegan operaciones pero de otros instrumentos (el futuro), no de las opciones
             return " volenganchados=" + eng + " volavisostodos=" + tod
                  + " volavisos=" + a + " volconvol=" + c + " volcontados=" + k
                  + " volconultimo=" + conUlt
                  + " volmaxultimo=" + maxUlt.ToString("F0", System.Globalization.CultureInfo.InvariantCulture)
-                 + " volcampos=" + nombres;
+                 + " volcampos=" + nombres
+                 + " volresumenes=" + res + " volresconvol=" + resConVol + " volresconoi=" + resOI
+                 + " voltrades=" + tr + " voltradesprop=" + trp;
         }
 
         // ------------------------------------------------------------------
@@ -542,8 +697,20 @@ namespace PythiaGex
                 double iv = Black76.DespejarIV(mid, Futuro, K, T, esCall);
                 if (double.IsNaN(iv) || iv <= 0) continue;
 
-                double vh = 0;
-                lock (_llave) _volHoy.TryGetValue(o.Code ?? "", out vh);
+                double vh = 0, volDia = double.NaN, oiRes = double.NaN, vc = 0, vcomp = 0, vvent = 0;
+                lock (_llave)
+                {
+                    var code = o.Code ?? "";
+                    _volHoy.TryGetValue(code, out vc);
+                    if (_cinta.TryGetValue(code, out var ci)) { vcomp = ci.compra; vvent = ci.venta; }
+                    if (_resumen.TryGetValue(code, out var rs))
+                    {
+                        if (rs.CurrentDayTotalVolume.HasValue) volDia = (double)rs.CurrentDayTotalVolume.Value;
+                        if (rs.OpenInterest.HasValue) oiRes = (double)rs.OpenInterest.Value;
+                    }
+                    // el resumen manda: incluye lo operado antes de suscribirnos
+                    vh = !double.IsNaN(volDia) ? volDia : vc;
+                }
 
                 // LA PRUEBA QUE NO DEPENDE DE EVENTOS.
                 //
@@ -562,9 +729,14 @@ namespace PythiaGex
                 salida.Add(new Fila
                 {
                     VolumenHoy = vh,
+                    VolumenDia = volDia, VolCinta = vc, VolCompra = vcomp, VolVenta = vvent,
+                    OIResumen = oiRes,
                     K = K,
                     Dias = dias,
-                    OI = (double)(o.OpenInterest ?? 0m),
+                    // el OI de Security viene en cero hasta que el feed lo manda;
+                    // el del resumen es el mismo dato por otro camino
+                    OI = (double)(o.OpenInterest ?? 0m) > 0 ? (double)(o.OpenInterest ?? 0m)
+                       : (!double.IsNaN(oiRes) ? oiRes : 0.0),
                     Bid = bid, Ask = ask, Mid = mid,
                     IV = iv, EsCall = esCall,
                     Codigo = o.Code ?? "",
@@ -649,6 +821,16 @@ namespace PythiaGex
                 if (_conn != null && ss.Count > 0)
                     _conn.UnsubscribeFromMarketData(ss,
                         SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+            }
+            catch { }
+            try
+            {
+                if (_conn != null && _enganchadoConector)
+                {
+                    _conn.SecuritySummaryChanged -= AlResumen;
+                    _conn.NewTrades -= AlTrades;
+                    _enganchadoConector = false;
+                }
             }
             catch { }
             Activa = false;

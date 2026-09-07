@@ -26,7 +26,7 @@ No prometas ni insinúes rentabilidad. No presentes como probado nada que no se 
 
 ## Herramientas verificadas
 
-- **ATAS Ultra vitalicia, 8.0.14.397, Rithmic.** Nunca le recomiendes upgrades ni alternativas (Bookmap, Jigsaw, Sierra): ya tiene lo mejor. Su tablero de opciones no agrega gamma de la cadena.
+- **ATAS Ultra vitalicia, 8.0.14.398, Rithmic.** Nunca le recomiendes upgrades ni alternativas (Bookmap, Jigsaw, Sierra): ya tiene lo mejor. Su tablero de opciones no agrega gamma de la cadena.
 - **Los endpoints crudos de cada web están en `memory/rutas-y-apis-gex.md`.** Empezá siempre por el dato crudo, nunca por el gráfico.
 - **El método de cálculo propio está en `memory/calcular-gex-propio.md`.** Es mejor que los cinco tableros y es la fuente de niveles que se le entrega.
 - **La conversión SPX→ES está en `memory/conversion-spx-a-es.md`.**

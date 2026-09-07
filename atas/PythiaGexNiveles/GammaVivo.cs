@@ -3555,6 +3555,24 @@ namespace PythiaGex
                     ls.Add(Tuple.Create(RotuloFlujo() + "  " + ((int)volTot).ToString("N0",
                         CultureInfo.GetCultureInfo("es-AR")) + " contr", ColFlujo));
 
+                // EL VOLUMEN EN VIVO DE RITHMIC, AL LADO DEL DE CBOE Y CON SU NOMBRE.
+                //
+                // Son dos libros distintos (SPX arriba, opciones de ES aca) y
+                // dos relojes distintos (15 min tarde arriba, en vivo aca). Se
+                // muestran los dos porque los dos son verdad, cada uno con su
+                // etiqueta. Llega por SecuritySummaryChanged del conector: es
+                // el mismo dato que la columna Volume del Options Board. Medido
+                // el 2026-09-06: 114 de 180 contratos con volumen, 3.842 en
+                // total, dos minutos despues de suscribirse.
+                if (_viva.Activa)
+                {
+                    double vv = _viva.VolumenTotalHoy();
+                    int cv = _viva.ContratosConVolumen();
+                    ls.Add(Tuple.Create("vivo Rithmic  " + ((int)vv).ToString("N0",
+                        CultureInfo.GetCultureInfo("es-AR")) + " contr  " + cv + " strikes",
+                        vv > 0 ? ColFlujo : ColAviso));
+                }
+
                 if (VencIzq != VencDer)
                 {
                     string V(int m) => m <= 0 ? "0DTE" : m == 1 ? DiasMax + "d" : "todos";
@@ -3907,7 +3925,8 @@ namespace PythiaGex
                 lock (_candado)
                     foreach (var n in _perfil) { vp += n.VolTot; if (n.VolTot > 0) strikes++; }
                 return string.Format(CultureInfo.InvariantCulture,
-                    " flujoviva={0:F0} flujoperfil={1:F0} strikesconflujo={2} marcas={3}/{4}", v, vp, strikes, _marcasDibujadas, _marcasConRegistro)
+                    " flujoviva={0:F0} flujocinta={5:F0} flujoperfil={1:F0} strikesconflujo={2} marcas={3}/{4}",
+                    v, vp, strikes, _marcasDibujadas, _marcasConRegistro, _viva.VolumenCintaTotal())
                     + _viva.Diagnostico();
             }
             catch { return " flujohoy=?"; }
@@ -3933,12 +3952,23 @@ namespace PythiaGex
             List<CadenaViva.Fila> fs;
             Cadena c;
             lock (_candado) { fs = _vivaFilasCache; c = _cUsada; }
-            if (fs == null || fs.Count == 0 || c == null || !c.EsFuturo) return;
+            // SE VUELCA AUNQUE EL LIBRO EN USO SEA EL DE SPX. Antes solo se
+            // escribia cuando la cadena viva era la que dibujaba, y con
+            // LibroViva apagado el archivo quedo congelado el 2026-09-04 a las
+            // 14:02: el volumen en vivo que se arreglo el 06-09 no se podia
+            // auditar desde afuera. Ahora la foto sale siempre que la cadena
+            // viva este activa, con su propio sello.
+            if ((fs == null || fs.Count == 0) && _viva.Activa)
+                try { fs = _viva.Instantanea(); } catch { fs = null; }
+            if (fs == null || fs.Count == 0) return;
+            bool usada = c != null && c.EsFuturo;
             try
             {
                 var sb = new System.Text.StringBuilder(1 << 16);
-                sb.Append("{\"ts\":\"").Append(c.Ts)
-                  .Append("\",\"futuro\":").Append(c.SpotIdx.ToString("0.####", CultureInfo.InvariantCulture))
+                sb.Append("{\"ts\":\"").Append(usada ? c.Ts : DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))
+                  .Append("\",\"futuro\":").Append((usada ? c.SpotIdx : _viva.Futuro).ToString("0.####", CultureInfo.InvariantCulture))
+                  .Append(",\"libro_en_uso\":\"").Append(usada ? "ES" : "SPX")
+                  .Append("\",\"campos\":\"strike,dias,es_call,oi,iv,bid,ask,vol_hoy,vol_dia_resumen,vol_cinta,vol_compra,vol_venta,oi_resumen\"")
                   .Append(",\"filas\":[");
                 bool primero = true;
                 foreach (var f in fs)
@@ -3953,6 +3983,11 @@ namespace PythiaGex
                       .Append(',').Append(f.Bid.ToString("0.####", CultureInfo.InvariantCulture))
                       .Append(',').Append(f.Ask.ToString("0.####", CultureInfo.InvariantCulture))
                       .Append(',').Append(f.VolumenHoy.ToString("0.#", CultureInfo.InvariantCulture))
+                      .Append(',').Append(double.IsNaN(f.VolumenDia) ? "null" : f.VolumenDia.ToString("0.#", CultureInfo.InvariantCulture))
+                      .Append(',').Append(f.VolCinta.ToString("0.#", CultureInfo.InvariantCulture))
+                      .Append(',').Append(f.VolCompra.ToString("0.#", CultureInfo.InvariantCulture))
+                      .Append(',').Append(f.VolVenta.ToString("0.#", CultureInfo.InvariantCulture))
+                      .Append(',').Append(double.IsNaN(f.OIResumen) ? "null" : f.OIResumen.ToString("0.#", CultureInfo.InvariantCulture))
                       .Append(']');
                 }
                 sb.Append("]}");
