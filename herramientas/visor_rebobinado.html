@@ -156,6 +156,7 @@
 
 <script>
 const DATOS = __DATOS__;
+const $ = id => document.getElementById(id);
 const C = getComputedStyle(document.documentElement);
 const col = n => C.getPropertyValue(n).trim();
 const NIV = [
@@ -203,7 +204,6 @@ function armarIndic() {
 }
 for (const [id, k] of [['btnHoy', 'hoy'], ['btnVivo', 'vivo'], ['btnAmbos', 'ambos']]) $(id).onclick = () => { indic = k; armarIndic(); refrescar(); };
 
-const $ = id => document.getElementById(id);
 const lienzo = $('lienzo'), ctx = lienzo.getContext('2d');
 
 function serie() { return variante === 'r0' && DATOS.sinRetraso[dia] ? DATOS.sinRetraso[dia] : DATOS.dias[dia]; }
