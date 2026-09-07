@@ -51,11 +51,19 @@ cada vez que el precio entra en un nivel, y acumular sesiones. Es el
 Eso no se puede backtestear con lo archivado: hay que registrarlo hacia
 adelante.
 
+HECHO el 2026-09-07 con el centinela (vol/ops/delta del futuro por vela
+de 1 min, 1.051 velas de MES): en nivel vol x1,17 contra placebo x1,13;
+ops x1,15 contra x1,11; |delta| x1,24 contra x1,18. No hay aceleracion
+atribuible al nivel: cualquier raya la muestra igual, porque las velas
+grandes tocan mas rayas. Script: laboratorio/tape_en_nivel.py.
+
 ## Detalles visuales confirmados
 
 - Las etiquetas de los niveles son **"Major Positive"** y **"Zero Gamma"**.
-- Cada barra lleva **tres puntos redondos de tamano decreciente** adentro,
-  grande a la izquierda. No se establecio que codifican.
+- Cada barra lleva **tres puntos redondos de tamano decreciente** adentro.
+  RESUELTO el 2026-09-07 con el video 'Te explico en vivo el Max Change':
+  son donde estuvo la punta de la barra hace 15 (grande), 5 (mediana) y
+  1 minuto (chica). Ver [[anatomia-gammalito]].
 - El panel tiene selectores de temporalidad **H1** y **M15**.
 
 **Why:** doce horas de laboratorio midiendo rebote pueden haber respondido bien

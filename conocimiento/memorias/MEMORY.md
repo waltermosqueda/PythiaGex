@@ -49,3 +49,6 @@
 - [Retrospectiva del 6 de septiembre](retrospectiva-2026-09-06.md) — la bitacora paro en la sesion 6; el centinela dice 13 % de aguante contra el "4 de 4" narrado; Gamma Vivo pierde contra placebo; falta el registro de trades.
 - [Produccion en vivo, 6 de septiembre](produccion-en-vivo-2026-09-06.md) — siete errores con linea: el rotulo de regimen mezcla escalas, la absorcion es una prueba degenerada, la cadena viva no alimenta nada; y el lunes 7 es Labor Day.
 - [Como dibujan los pros](como-dibujan-los-pros.md) — GEXBot 3 lineas, SpotGamma 5, MenthorQ 3 + rango + 0DTE; nombres estandar, etiqueta corta a la derecha, vencimiento cercano para intradia; con fuentes.
+- [Pestañas por UIA y el eje](atas-tabs-por-uia-y-eje.md) — si el clic no cambia la pestaña, SelectionItemPattern; y el lienzo del indicador no llega al eje de precio (clip medido).
+- [ES contra NQ: el respeto medido](es-vs-nq-respeto.md) — NQ parece respetar mas por grilla doble de densa y 1,7x de movimiento; contra placebo no gana (62 vs 65 %); en ES ni muestra.
+- [Anatomia de GAMMAlito](anatomia-gammalito.md) — 17 videos transcriptos: Max Change = punta de la barra hace 15/5/1 min; el perfil respira por volumen; "se acelera el tape" no le gana al placebo; las zonas del video en vivo son de Zenith.

@@ -154,3 +154,52 @@ chance de toque en tiempo real. Con la cadena real, el martes 8 concentra
 su gamma en 7656, 7756, 7676, 7706, 7691, 7686 (varios pegados: la fusion
 aplica). Cinco maquetas en la pagina "Cinco del Martes" (artifact). Elige y
 recien ahi se implementa. ATAS sigue con la version de las 02:20.
+
+## 04:00-04:35 del lunes 7: control visual del diseño elegido, arreglos y "la 3"
+
+Control con capturas de los tres graficos y contraste con el registro
+ELEGIDOS: la seleccion coincide con el calculo independiente (CW 7831, PW
+7681, 1DTE 7756 / 7656 / 7806, cercanos 7726 y 7721). Sin excepciones.
+Lo que estaba mal, y se arreglo (commit 2cc0ad4, instalado 04:24):
+- la pila de chips fijados al borde salia en orden de dibujo (7756, 7806,
+  7831, 7726); ahora del mas lejano al mas cercano al borde;
+- dos etiquetas de nodos a un punto (7721,25 y 7720,25 en el 5m) caian en
+  la misma fila y se leian garabateadas; ahora se prueban arriba, abajo y
+  alejandose, contra rayas y contra etiquetas ya puestas (registro por
+  minuto en pythiaflow-nodos.log con las posiciones);
+- la etiqueta del nodo #2 del MNQ pisaba el panel de cuenta de ATAS; hay
+  zona reservada abajo a la izquierda (AltoPanelCuenta 160, Ancho 260);
+- el rotulo "ACA" quedaba detras de la caja de nodos; va a la derecha;
+- el Zero cruzaba el texto del tablero; la raya se corta ahi;
+- "2DTE" el lunes para el vencimiento del martes: DTE por piso, es 1DTE;
+- la misma raya decia 77 % en el 1m y 65 % en el 5m: la ventana de la vol
+  realizada es en minutos (90) y el grafico mas fino publica su sigma por
+  AppDomain para que los demas la adopten; el tablero dice de que velas
+  sale ("velas 1m propias" / "de otro grafico");
+- las rayas publicadas para esquivar eran las viejas (rivales, 0DTE); ahora
+  son exactamente las que se dibujan.
+Medido: ClipBounds 849x558 con ChartArea 913x580: el lienzo NO llega al
+eje de precio ni al de tiempo. Ver [[atas-tabs-por-uia-y-eje]].
+
+Despues pidio: chips al eje o como los pros, tablero minimo y plegable,
+nodos escondidos, dominantes donde corresponden. Cinco maquetas en "Chips
+al Eje" (https://claude.ai/code/artifact/ad4447ad-6e07-44e1-8e11-3ebd09e96fcc).
+Eligio LA 3: escalera pegada al eje (columna ordenada por precio con todos
+los niveles, nombre corto, distancia y chance; fila del precio resaltada;
+vecinas con barrita; adentro del grafico solo zero y los dos cercanos sin
+etiqueta; tablero plegado en la cabecera, clic para abrir; nodos como
+filas ambar; sin barras de aceleracion). Implementada con EscaleraAlEje=true,
+ProcessMouseClick sobre la cabecera, LineasTablero() compartido.
+- 04:48: la primera escalera apilaba las filas parejas desde arriba y el
+  operador la vio "desfasada, corrida" al instante. Segunda pasada
+  (commit 5989ef4, instalada 04:55): cada fila a la altura de su precio
+  como un DOM, dos barridos para que no se pisen sin cambiar el orden,
+  fuera de pantalla apiladas en el borde, marquita de color hacia el eje,
+  cabecera 26 px mas abajo (boton ▶ de ATAS), borde derecho en
+  ClipBounds.Right. Verificado en MES 1m: fila 7.723,50 = precio del eje.
+- El MNQ sigue con base CRUDA (30,02; +-25 ticks): la cadena NDX no pasa
+  el control de forwards y no hay base guardada. Los niveles de MNQ pueden
+  estar corridos hasta 6 puntos; el ES esta con base medida 6,14.
+- 04:43:50 el ATAS recien abierto se cerro solo con "WARN Main window:
+  User request:" y volvio a arrancar; no fue el indicador (sin excepciones,
+  sin evento de Windows). Probablemente el operador o el aviso de recarga.
