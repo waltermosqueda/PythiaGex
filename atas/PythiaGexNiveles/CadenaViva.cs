@@ -85,6 +85,21 @@ namespace PythiaGex
             public double OIResumen = double.NaN;
         }
 
+        /// <summary>Un bloque grande de opciones visto en el tape (para Gamma
+        /// Hoy, 2026-09-07). GAMMAlito los llama Big Trades y los define como
+        /// "operaciones institucionales en el mercado de opciones".</summary>
+        public sealed class Grande
+        {
+            public DateTime Hora;      // UTC, cuando llego
+            public double K;           // strike (precio de FUTURO, sin base)
+            public bool EsCall, Compra;
+            public double Contratos, Precio;
+        }
+        /// <summary>Tamaño minimo para anotar un bloque. 0 = no anotar.</summary>
+        public double UmbralGrande;
+        private readonly List<Grande> _grandes = new();
+        public List<Grande> Grandes() { lock (_llave) return new List<Grande>(_grandes); }
+
         private readonly object _llave = new();
         private List<Security> _suscritos = new();
         // volumen acumulado por contrato, y la ultima operacion vista, para no
@@ -550,6 +565,18 @@ namespace PythiaGex
                         bool compra = t.OrderDirection == TradeDirection.Buy;
                         bool venta = t.OrderDirection == TradeDirection.Sell;
                         _cinta[code] = (a.compra + (compra ? v : 0), a.venta + (venta ? v : 0), a.total + v, a.n + 1);
+                        // los bloques grandes, con su strike y su lado, para dibujarlos
+                        if (UmbralGrande > 0 && v >= UmbralGrande && t.Security != null)
+                        {
+                            _grandes.Add(new Grande
+                            {
+                                Hora = DateTime.UtcNow,
+                                K = (double)(t.Security.StrikePrice ?? 0m),
+                                EsCall = t.Security.OptionType == OptionTypes.Call,
+                                Compra = compra, Contratos = v, Precio = (double)t.Price,
+                            });
+                            if (_grandes.Count > 400) _grandes.RemoveRange(0, 100);
+                        }
                         // el acumulador viejo sigue: es "desde la suscripcion"
                         _volHoy[code] = (_volHoy.TryGetValue(code, out var b) ? b : 0) + v;
                     }
