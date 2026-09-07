@@ -107,6 +107,14 @@ Corrida: `Rebobina --cadenas ... --velas ... --instrumento MES --marco M1`
 que `laboratorio/rebobinado.py` juzga contra placebo. 2026-09-03: 451 velas
 en 2,7 s; un dia son 6 strikes distintos: hacen falta 15+ ruedas.
 
-Hallazgo del primer rebobinado: la alerta de TRANSICION se dispara a cada
-minuto cuando dos strikes vecinos se alternan el maximo GEX (7.759/7.764 el
-09-03 de 19:16 a 20:16). Falta histeresis: pendiente en el nucleo.
+Hallazgo del primer rebobinado, ya corregido: la alerta de TRANSICION se
+disparaba a cada minuto cuando dos strikes vecinos se alternaban el maximo
+GEX (7.759/7.764 el 09-03 de 19:16 a 20:16). Ahora el maximo es una zona
+(strikes con >= 80 % del maximo, banda de 2,5 puntos) y se grita una vez
+cada 10 minutos: el 09-03 paso de ~40 alertas a 6.
+
+Equivalencia con ATAS: `Rebobina --prueba <cadena.json> --precio 7709` da la
+misma linea AUDIT que dejo el indicador vivo con esa cadena (2026-09-07:
+netVol -9.327B, netOi -4.629B, zeroVol 7718.89, zeroOi 7717.06, majors
+7726.08/7706.08, doms, q=1, pico 7706.08). El DLL recompilado con el nucleo
+NO se instalo en ATAS todavia: se instala con mercado cerrado y aviso.
