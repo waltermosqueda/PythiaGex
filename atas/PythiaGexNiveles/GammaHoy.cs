@@ -227,6 +227,23 @@ namespace PythiaGex
         // ==================================================================
         // Ciclo de vida
         // ==================================================================
+        /// <summary>Sin esto ATAS no llama a OnRender nunca (verificado el
+        /// 2026-09-07: el indicador arrancaba, bajaba la cadena y no dibujaba
+        /// ni la cabecera). La serie por defecto se esconde: todo es dibujo propio.</summary>
+        public GammaHoy() : base(true)
+        {
+            DenyToChangePanel = true;
+            EnableCustomDrawing = true;
+            SubscribeToDrawingEvents(DrawingLayouts.Final);
+            DrawAbovePrice = false;
+            if (DataSeries.Count > 0 && DataSeries[0] is ValueDataSeries v)
+            {
+                v.IsHidden = true;
+                v.VisualType = VisualMode.Hide;
+                v.ShowCurrentValue = false;
+            }
+        }
+
         protected override void OnInitialize()
         {
             try
@@ -253,6 +270,13 @@ namespace PythiaGex
                     ArrancarViva();
                 }
                 _viva.UmbralGrande = UmbralBigTrade;
+                // CON EL MERCADO CERRADO NO HAY TICKS Y OnCalculate NO CORRE
+                // (Labor Day 2026-09-07, 13:00 ET: el indicador arranco, bajo la
+                // cadena y nunca calculo). El mapa se reprecia tambien desde el
+                // temporizador, con el ultimo cierre, para que la pantalla no
+                // quede vacia ni vieja.
+                try { Repreciar(); } catch (Exception e) { Registrar(e); }
+                try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
             };
             SubscribeToTimer(_periodo, _tick);
             _ = Reloj.Medir(Log);
