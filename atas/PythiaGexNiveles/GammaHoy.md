@@ -170,3 +170,42 @@ spot igual; +Γ vol, dom0, pico, max change 30' coinciden (mediana 0,1 pts,
 62-71 % a 2,5 pts); cuadrante igual 94 %. Difieren zero vol (3,4), zero OI
 (5,4), -Γ vol (10) y -Γ OI (45): la IV de los puts lejanos sin operar esta
 interpolada. Mejora pendiente: quotes cbbo-1m en ventanas de 1 minuto cada 15.
+
+## Re-auditoria visual contra los videos de GAMMAlito (2026-09-07, noche)
+
+Preguntas del operador: por que en GAMMAlito los puntos dominantes parecen
+una "nube" y aca salen en filas horizontales; si las barras laterales se
+mueven igual; que falta. Cuadros revisados: maxchange (NinjaTrader),
+Big Trades (web ES_SPY 2m), Las Dominantes.
+
+1. LA "NUBE" SON TRES COSAS JUNTAS, NINGUNA ES UNA DOMINANTE DISTINTA:
+   - hasta 5 dominantes por vela (la web trae 2 por defecto, hasta 5), cada
+     una un guion amarillo corto; cuando el ranking se reacomoda, los guiones
+     saltan de altura y quedan desparramados;
+   - el libro es SPY (strikes de 1 dolar = ~10 puntos de ES): cada salto se
+     ve el doble de grande que con SPX (5 puntos);
+   - los Big Trades: burbujas verdes/rojas con el tamaño (452, 340, 384)
+     sobre la vela del momento, a la altura del precio del futuro. En el
+     corto "Big Trades" eso es lo que llena la pantalla.
+   Nosotros teniamos 2 dominantes, feed cada 5 min y strikes de SPX: filas.
+   Hecho en 0.6: guiones por vela (primaria gruesa, secundaria fina), feed
+   por minuto (rama cadenas, ultima-<raiz>.json), semillas del Max Change
+   (30/5/1) y zero por vela como puntos. Falta que el operador suba
+   "Dominantes" a 3-5 si quiere la nube. Los Big Trades de SPY/SPX no los
+   tenemos: solo el tape de opciones de ES por Rithmic (mucho mas fino);
+   la cinta de OPRA en vivo es paga.
+2. LAS BARRAS LATERALES: en los cuadros de maxchange el perfil izquierdo
+   (verde/rojo) cambia de largo minuto a minuto y el derecho (aguamarina/
+   violeta) casi no cambia. Coincide con lo medido en la anatomia: el
+   izquierdo respira por VOLUMEN del dia, el derecho es convexidad hasta 90
+   DTE. Las nuestras: izquierda GEX por volumen con sombra de OI (respira
+   igual, pero antes cada 5 min: ahora por minuto), derecha convexidad del
+   MISMO horizonte que el mapa (Hoy). Diferencia real: su ladder derecho
+   mira toda la cadena; el nuestro, el 0DTE. Pendiente: horizonte propio
+   para la convexidad (Todo) en el nucleo.
+3. QUE FALTA TODAVIA (critico): (a) Big Trades del libro SPX/SPY (no hay
+   fuente gratis en vivo); (b) convexidad a 90 DTE; (c) medir con el
+   rebobinado si "semilla alineada 45 min -> dominante" se cumple (Max
+   Change predice dominante): es medible con mc30 y dom0 del centinela y no
+   se hizo; (d) las zonas de dominancia como banda (la web pinta una franja
+   amarilla alrededor de la dominante), hoy solo la raya.
