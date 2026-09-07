@@ -601,6 +601,29 @@ namespace PythiaGex
                                "mayores llevan el numero.")]
         public bool VerVolumenVivo { get; set; } = true;
 
+        [Display(Name = "Ver la ESCALERA de niveles", GroupName = "Pantalla", Order = 4,
+                 Description = "Los peldanos mas cercanos al precio, arriba y abajo, en una sola lista: " +
+                               "nodos de volumen (del indicador PythiaFlow, si esta en el grafico), zero, " +
+                               "muros, pin y el vencimiento mas cercano. Cada uno con distancia y con la " +
+                               "probabilidad de tocarlo dentro del horizonte, calculada con la volatilidad " +
+                               "REALIZADA del propio grafico: de noche da poco, en la rueda da mucho. Es " +
+                               "un modelo, no un pronostico.")]
+        public bool VerEscalera { get; set; } = true;
+
+        [Display(Name = "Escalera: peldanos por lado", GroupName = "Pantalla", Order = 5)]
+        [Range(1, 6)]
+        public int EscaleraPorLado { get; set; } = 3;
+
+        [Display(Name = "Escalera: horizonte de la probabilidad (min)", GroupName = "Pantalla", Order = 6,
+                 Description = "En cuantos minutos se pregunta si el precio toca el nivel. 60 para scalping.")]
+        [Range(5, 600)]
+        public int HorizonteProbMin { get; set; } = 60;
+
+        [Display(Name = "Escalera: velas para la volatilidad realizada", GroupName = "Pantalla", Order = 7,
+                 Description = "Cuantas velas cerradas se usan para medir cuanto se mueve el precio AHORA.")]
+        [Range(10, 500)]
+        public int EscaleraVelasVol { get; set; } = 60;
+
         [Display(Name = "Tablero a la derecha", GroupName = "Dibujo", Order = 67,
                  Description = "Para que no tape el perfil de gamma, que se dibuja a la izquierda.")]
         public bool TableroDerecha { get; set; } = true;
@@ -2431,6 +2454,8 @@ namespace PythiaGex
             }
 
             if (VerTablero) Tablero(g, area);
+            // despues del tablero, porque se apoya encima de su rectangulo
+            if (VerEscalera) { try { Escalera(g, area); } catch (Exception e) { Registrar(e); } }
             if (VerCinta) Cinta(g, x0, area, perfil.Count, neto, spot);
             if (perfil.Count == 0 || mx <= 0) return;
 
@@ -4052,6 +4077,255 @@ namespace PythiaGex
         }
 
         private Dictionary<double, (double total, double calls, double puts)> _volVivoCache;
+
+        // ==============================================================
+        // LA ESCALERA
+        // ==============================================================
+
+        private sealed class Peldano
+        {
+            public string Nombre = "", Tag = "";
+            public double Precio;
+            public Color Col;
+        }
+
+        /// <summary>Los nodos que publica PythiaFlow por AppDomain, si esta en el
+        /// grafico y publico hace menos de diez minutos. Ver PublicarNodos() alla.</summary>
+        private List<(double precio, double vol, double delta, int rango, bool flojo)> LeerNodos()
+        {
+            var salida = new List<(double, double, double, int, bool)>();
+            try
+            {
+                string inst = (InstrumentInfo?.Instrument ?? "").ToUpperInvariant().TrimStart('#');
+                var raw = AppDomain.CurrentDomain.GetData("PythiaFlow.Nodos." + inst) as string;
+                if (string.IsNullOrEmpty(raw)) return salida;
+                var partes = raw.Split(';');
+                var inv = CultureInfo.InvariantCulture;
+                if (partes.Length < 2 || !long.TryParse(partes[0], NumberStyles.Integer, inv, out var ts)) return salida;
+                if (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - ts > 600) return salida;
+                for (int i = 1; i < partes.Length; i++)
+                {
+                    var c = partes[i].Split('|');
+                    if (c.Length < 5) continue;
+                    if (!double.TryParse(c[0], NumberStyles.Float, inv, out var p)) continue;
+                    double.TryParse(c[1], NumberStyles.Float, inv, out var v);
+                    double.TryParse(c[2], NumberStyles.Float, inv, out var d);
+                    int.TryParse(c[3], NumberStyles.Integer, inv, out var r);
+                    salida.Add((p, v, d, r, c[4] == "1"));
+                }
+            }
+            catch { }
+            return salida;
+        }
+
+        /// <summary>Desvio estandar de los retornos por vela de las ultimas n velas
+        /// cerradas, y la duracion mediana de una vela en minutos. (0,0) si no hay
+        /// con que.</summary>
+        private (double sigmaVela, double minutosVela) VolRealizada(int n)
+        {
+            try
+            {
+                int fin = CurrentBar - 1;
+                if (fin < 3) return (0, 0);
+                int ini = Math.Max(1, fin - n + 1);
+                var rets = new List<double>();
+                var durs = new List<double>();
+                for (int i = ini; i <= fin; i++)
+                {
+                    var a = GetCandle(i - 1); var b = GetCandle(i);
+                    if (a == null || b == null || a.Close <= 0 || b.Close <= 0) continue;
+                    rets.Add(Math.Log((double)(b.Close / a.Close)));
+                    double m = (b.Time - a.Time).TotalMinutes;
+                    if (m > 0) durs.Add(m);
+                }
+                if (rets.Count < 10 || durs.Count < 3) return (0, 0);
+                double med = rets.Average();
+                double var2 = rets.Sum(r => (r - med) * (r - med)) / (rets.Count - 1);
+                durs.Sort();
+                double dur = durs[durs.Count / 2];
+                return (Math.Sqrt(var2), dur);
+            }
+            catch { return (0, 0); }
+        }
+
+        /// <summary>Normal acumulada (Abramowitz-Stegun 7.1.26, error 1,5e-7).</summary>
+        private static double Phi(double x)
+        {
+            double t = 1.0 / (1.0 + 0.2316419 * Math.Abs(x));
+            double d = 0.3989422804014327 * Math.Exp(-x * x / 2.0);
+            double p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+            return x >= 0 ? 1.0 - p : p;
+        }
+
+        /// <summary>
+        /// LA ESCALERA: EN QUE PELDANO ESTAS, CUAL ES EL SIGUIENTE.
+        ///
+        /// Junta en una sola lista, ordenada por distancia al precio, los
+        /// niveles que este indicador calcula (zero, muros, rivales, pin, el
+        /// vencimiento mas cercano) y los nodos de volumen que publica
+        /// PythiaFlow. Muestra los N mas cercanos arriba y los N mas cercanos
+        /// abajo, con:
+        ///   - el nombre y su color (el mismo que la linea en el grafico)
+        ///   - que lo sostiene: "hoy", "2d", "7d" o "vol 24h"
+        ///   - la distancia en puntos
+        ///   - la probabilidad de TOCARLO dentro del horizonte
+        ///
+        /// LA PROBABILIDAD, Y POR QUE ES HONESTA. Se calcula con la volatilidad
+        /// REALIZADA de las ultimas velas del propio grafico, no con la
+        /// implicita de la cadena: la implicita es anual y de noche
+        /// sobreestima diez veces lo que el precio se mueve de verdad. La
+        /// formula es la del principio de reflexion, P = 2 * Phi(-|ln(K/S)| /
+        /// (sigma * raiz(n))), sin deriva. Es un MODELO: dice cuan lejos esta
+        /// el nivel medido en "cuanto se movio el precio en la ultima hora".
+        /// No es un pronostico y no dice direccion.
+        ///
+        /// EL PIN. El strike con mas |gamma| dentro del 0,5 % del precio. Es
+        /// donde la mesa tiene mas que cubrir si el precio se mueve poco, y por
+        /// eso "pega" el precio los dias de mucho 0DTE.
+        /// </summary>
+        private void Escalera(RenderContext g, Rectangle area)
+        {
+            decimal px = 0;
+            try { px = GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { }
+            if (px <= 0) return;
+            double S = (double)px;
+            decimal tick = 0.25m;
+            try { if (InstrumentInfo != null && InstrumentInfo.TickSize > 0) tick = InstrumentInfo.TickSize; } catch { }
+
+            List<Nivel> pf; double zero, mp, mn, mpR, mnR;
+            lock (_candado) { pf = _perfil; zero = _zeroGamma; mp = _majorPos; mn = _majorNeg; mpR = _mpRival; mnR = _mnRival; }
+            if (pf == null || pf.Count == 0) return;
+
+            var es = CultureInfo.GetCultureInfo("es-AR");
+            var colNodo = Color.FromArgb(235, 200, 60);
+            var cand = new List<Peldano>();
+
+            string TagDe(double fut)
+            {
+                double mejor = double.MaxValue, dd = double.NaN;
+                foreach (var q in pf)
+                {
+                    double d0 = Math.Abs(q.Fut - fut);
+                    if (d0 < mejor) { mejor = d0; dd = q.DiasDom; }
+                }
+                if (mejor > 3.0 || double.IsNaN(dd) || dd <= 0) return "";
+                return dd < 1.0 ? "hoy" : Math.Round(dd).ToString("0", es) + "d";
+            }
+            void Add(string nombre, double precio, Color col, string tag)
+            {
+                if (double.IsNaN(precio) || precio <= 0) return;
+                cand.Add(new Peldano { Nombre = nombre, Precio = precio, Col = col, Tag = tag ?? "" });
+            }
+
+            Add("zero", zero, ColZero, DiasMax + "d");
+            Add("+wall", mp, ColPos, TagDe(mp));
+            Add("-wall", mn, ColNeg, TagDe(mn));
+            Add("+wall?", mpR, ColPos, TagDe(mpR));
+            Add("-wall?", mnR, ColNeg, TagDe(mnR));
+
+            // el pin: mas |gamma| dentro del 0,5 % del precio
+            double best = 0; Nivel pin = default; bool hayPin = false;
+            foreach (var q in pf)
+                if (Math.Abs(q.Fut - S) <= S * 0.005 && Math.Abs(q.Gex) > best) { best = Math.Abs(q.Gex); pin = q; hayPin = true; }
+            if (hayPin) Add("pin", pin.Fut, pin.Gex >= 0 ? ColPos : ColNeg, TagDe(pin.Fut));
+
+            // el vencimiento mas cercano: su strike mas pesado arriba y abajo
+            double dmin = double.MaxValue;
+            foreach (var q in pf) if (q.DiasDom > 0 && q.DiasDom < dmin) dmin = q.DiasDom;
+            if (dmin < double.MaxValue)
+            {
+                Nivel ba = default, bb = default; double ga = 0, gb = 0; bool ha = false, hb = false;
+                foreach (var q in pf)
+                {
+                    if (q.DiasDom > dmin + 0.01) continue;
+                    if (q.Fut > S && Math.Abs(q.Gex) > ga) { ga = Math.Abs(q.Gex); ba = q; ha = true; }
+                    if (q.Fut < S && Math.Abs(q.Gex) > gb) { gb = Math.Abs(q.Gex); bb = q; hb = true; }
+                }
+                string tv = dmin < 1.0 ? "hoy" : Math.Round(dmin).ToString("0", es) + "d";
+                if (ha) Add("venc+", ba.Fut, ba.Gex >= 0 ? ColPos : ColNeg, tv);
+                if (hb) Add("venc-", bb.Fut, bb.Gex >= 0 ? ColPos : ColNeg, tv);
+            }
+
+            // los nodos de volumen, si PythiaFlow esta en el grafico
+            var nodos = LeerNodos();
+            foreach (var nd in nodos)
+                if (!nd.flojo) Add("nodo #" + nd.rango, nd.precio, colNodo, "vol 24h");
+
+            // sin duplicados: dos peldanos a menos de un tick son el mismo
+            var lista = new List<Peldano>();
+            foreach (var c in cand.OrderBy(c => Math.Abs(c.Precio - S)))
+            {
+                var igual = lista.FirstOrDefault(x => Math.Abs(x.Precio - c.Precio) < (double)tick);
+                if (igual != null) { if (!igual.Nombre.Contains(c.Nombre)) igual.Nombre += "+" + c.Nombre; continue; }
+                lista.Add(c);
+            }
+            var arriba = lista.Where(c => c.Precio >= S).OrderBy(c => c.Precio).Take(EscaleraPorLado).Reverse().ToList();
+            var abajo  = lista.Where(c => c.Precio <  S).OrderByDescending(c => c.Precio).Take(EscaleraPorLado).ToList();
+            if (arriba.Count + abajo.Count == 0) return;
+
+            // la probabilidad de toque en el horizonte, con la vol realizada
+            var (sigVela, minVela) = VolRealizada(Math.Max(10, EscaleraVelasVol));
+            double sigH = 0;
+            if (sigVela > 0 && minVela > 0)
+                sigH = sigVela * Math.Sqrt(Math.Max(1.0, HorizonteProbMin / minVela));
+            string Prob(double K)
+            {
+                if (sigH <= 0) return "  --";
+                double z = Math.Abs(Math.Log(K / S)) / sigH;
+                double p = Math.Min(1.0, Math.Max(0.0, 2.0 * Phi(-z)));
+                return (p * 100).ToString("0", es).PadLeft(3) + "%";
+            }
+            string Fila(Peldano c, bool esArriba)
+            {
+                double d = c.Precio - S;
+                bool aca = Math.Abs(d) <= (double)tick * 2;
+                string nom = (c.Nombre + (c.Tag.Length > 0 ? " " + c.Tag : ""));
+                if (nom.Length > 15) nom = nom.Substring(0, 15);
+                return string.Format(es, "{0} {1,-15} {2,9:N2} {3,5} {4}{5}",
+                    esArriba ? "▲" : "▼", nom, c.Precio,
+                    (d >= 0 ? "+" : "") + d.ToString("0", es), Prob(c.Precio),
+                    aca ? "  ◀ aca" : "");
+            }
+
+            var f = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamTablero - 1m)));
+            var filas = new List<Tuple<string, Color, bool>>();
+            string cab = string.Format(es, "ESCALERA  toque en {0} min · vol {1} velas",
+                                       HorizonteProbMin, EscaleraVelasVol);
+            filas.Add(Tuple.Create(cab, ColAviso, false));
+            foreach (var c in arriba) filas.Add(Tuple.Create(Fila(c, true), c.Col, Math.Abs(c.Precio - S) <= (double)tick * 2));
+            filas.Add(Tuple.Create(string.Format(es, "── precio {0,9:N2} ──", S), ColTexto, false));
+            foreach (var c in abajo) filas.Add(Tuple.Create(Fila(c, false), c.Col, Math.Abs(c.Precio - S) <= (double)tick * 2));
+            if (nodos.Count == 0)
+                filas.Add(Tuple.Create("(sin nodos: PythiaFlow no esta en este grafico)", Color.FromArgb(150, ColTexto), false));
+
+            var med = filas.Select(l => g.MeasureString(l.Item1, f)).ToList();
+            int w = 0, h = 6;
+            foreach (var m in med) { w = Math.Max(w, m.Width); h += m.Height + 1; }
+            int x, y;
+            if (!_tableroRect.IsEmpty && VerTablero)
+            {
+                x = _tableroRect.Right - (w + 14);
+                y = _tableroRect.Top - h - 6;
+            }
+            else
+            {
+                x = area.Right - w - MargenEje - 46;
+                y = area.Bottom - h - Math.Max(6, MargenInferior);
+            }
+            if (x < area.Left + 4) x = area.Left + 4;
+            if (y < area.Top + 4) y = area.Top + 4;
+            var rect = new Rectangle(x, y, w + 14, h);
+            g.FillRectangle(Color.FromArgb(205, ColFondo), rect);
+            g.DrawRectangle(new RenderPen(Color.FromArgb(70, ColTexto), 1f), rect);
+            int yy = y + 3;
+            for (int i = 0; i < filas.Count; i++)
+            {
+                if (filas[i].Item3)
+                    g.FillRectangle(Color.FromArgb(45, filas[i].Item2), new Rectangle(x + 2, yy - 1, w + 10, med[i].Height + 2));
+                g.DrawString(filas[i].Item1, f, filas[i].Item2, x + 7, yy);
+                yy += med[i].Height + 1;
+            }
+        }
 
         /// <summary>
         /// EL VOLUMEN VIVO DE OPCIONES, POR STRIKE, EN EL BORDE DERECHO.

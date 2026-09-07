@@ -474,6 +474,44 @@ namespace PythiaVwap
                 _volMedioPorPrecioBarra = nivelesVistos > 0
                     ? volTotal / nivelesVistos : 0;
             }
+            PublicarNodos(salida);
+        }
+
+        /// <summary>
+        /// EL PUENTE HACIA GAMMA VIVO, SIN ARCHIVOS.
+        ///
+        /// Los dos indicadores corren en el mismo proceso de ATAS, asi que se
+        /// pueden pasar datos por AppDomain.SetData, con una clave por
+        /// instrumento. Gamma Vivo lo lee para armar la ESCALERA: los peldanos
+        /// mas cercanos al precio, mezclando nodos de volumen y niveles de
+        /// gamma en una sola lista ordenada. Pedido por el operador el
+        /// 2026-09-06: "en que nivel estamos, cual es el siguiente".
+        ///
+        /// Formato: "unix;precio|vol|delta|rango|flojo;precio|...". Con el sello
+        /// para que el lector descarte datos viejos si este indicador se saco
+        /// del grafico.
+        /// </summary>
+        private void PublicarNodos(List<Nodo> nodos)
+        {
+            try
+            {
+                string inst = (InstrumentInfo != null ? InstrumentInfo.Instrument : "").ToUpperInvariant().TrimStart('#');
+                if (inst.Length == 0) return;
+                var inv = CultureInfo.InvariantCulture;
+                var sb = new System.Text.StringBuilder();
+                sb.Append(DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(inv));
+                int r = 0;
+                foreach (var nd in nodos)
+                {
+                    r++;
+                    sb.Append(';').Append(nd.Precio.ToString(inv)).Append('|')
+                      .Append(nd.Volumen.ToString("0", inv)).Append('|')
+                      .Append(nd.Delta.ToString("0", inv)).Append('|')
+                      .Append(r).Append('|').Append(nd.Flojo ? 1 : 0);
+                }
+                AppDomain.CurrentDomain.SetData("PythiaFlow.Nodos." + inst, sb.ToString());
+            }
+            catch { }
         }
 
         /// <summary>Duracion mediana de una vela, en minutos, sobre las ultimas n.
@@ -730,8 +768,10 @@ namespace PythiaVwap
                 if (AvisarRedondos && n.Redondez > 0)
                     red = "  redondo " + n.Redondez.ToString(CultureInfo.InvariantCulture);
                 string sig = n.Delta > 0 ? "+" : "";
-                var txt = string.Format(cultura, "{0:N2}   {1}   d {2}{3}{4}",
-                                        n.Precio, Corto(n.Volumen), sig, Corto(n.Delta), red);
+                // el ranking va escrito ("#1"): asi el nodo de la linea y el de
+                // la escalera de Gamma Vivo se reconocen como el mismo
+                var txt = string.Format(cultura, "#{5}  {0:N2}   {1}   d {2}{3}{4}",
+                                        n.Precio, Corto(n.Volumen), sig, Corto(n.Delta), red, rango);
                 var m = g.MeasureString(txt, f);
                 int x = area.Right - m.Width - MargenEje;
                 if (x < area.Left + 4) x = area.Left + 4;
