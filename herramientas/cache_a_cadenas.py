@@ -42,6 +42,7 @@ def main():
     ap.add_argument("--dia", default=None, help="AAAA-MM-DD (UTC del sello); vacio = todos")
     ap.add_argument("--cada", type=int, default=60, help="segundos minimos entre fotos")
     ap.add_argument("--salida", default=None)
+    ap.add_argument("--base-cada", type=int, default=10, help="medir la base cada N fotos (8 s cada medicion)")
     a = ap.parse_args()
     sim = normalizar(a.simbolo)
     fut = FUTURO.get(sim, sim.lstrip("_"))
@@ -68,13 +69,20 @@ def main():
                     continue
                 ahora = sello.replace(tzinfo=dt.timezone.utc)
                 cad = CAD.construir(crudo, ahora=ahora)
-                try:
-                    b = medir_base(crudo)
-                except Exception as e:
-                    b = {"base": None, "confiable": False, "aviso": str(e)}
+                # medir la base cuesta ~8 s por foto (ajusta forwards de varios
+                # vencimientos) y la base se mueve lento: se mide cada N fotos o
+                # mientras no haya ninguna buena, y en el medio se reusa la ultima
+                if ultima_base_buena is None or hechas % a.base_cada == 0:
+                    try:
+                        b = medir_base(crudo)
+                    except Exception as e:
+                        b = {"base": None, "confiable": False, "aviso": str(e)}
+                else:
+                    b = {"base": ultima_base_buena, "confiable": True, "residuo_ticks": 0, "reusada": True}
                 base = b.get("base") if b.get("confiable") else None
                 if base is not None:
-                    ultima_base_buena, ultima_base_hora = base, ahora
+                    if not b.get("reusada"):
+                        ultima_base_buena, ultima_base_hora = base, ahora
                 edad_buena = (ahora - ultima_base_hora).total_seconds() / 60.0 if ultima_base_hora else None
                 linea = {
                     "generado": ahora.isoformat(timespec="seconds"), "cadena_ts": ts,
