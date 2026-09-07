@@ -723,11 +723,13 @@ namespace PythiaGex
                                "cuerpo del grafico, pero las capturas del operador si -- una rotulada " +
                                "'niveles de mayor exposicion gamma'. Probablemente sea la version web " +
                                "contra la de NinjaTrader.")]
-        // RENOMBRADA (era VerPuntosPorVela = true): los "puntitos" por vela
+        // RENOMBRADA (era VerPuntosDominantesPorVela = true): los "puntitos" por vela
         // de las dominantes eran una copia de GAMMAlito que no viene del
         // original (ver memoria dominantes-no-son-linea) y confundian al
         // operador con los niveles G (2026-09-07). Apagados por defecto.
-        public bool VerPuntosPorVela { get; set; } = false;
+        // RENOMBRADA otra vez (era VerPuntosDominantesPorVela = false): el operador los pidio
+        // de vuelta el 2026-09-07 a las 03:45 ("quiero ver los dominantes puntos").
+        public bool VerPuntosDominantesPorVela { get; set; } = true;
 
         [Display(Name = "Forma de la dominante", GroupName = "Dominantes", Order = 83,
                  Description = "0 = cuadradito  ·  1 = redondito  ·  2 = guioncito (mas ancho que alto)")]
@@ -2684,7 +2686,7 @@ namespace PythiaGex
                 }
             }
 
-            if (VerPuntosPorVela) PuntosDominantes(g, cont, x0, x1);
+            if (VerPuntosDominantesPorVela) PuntosDominantes(g, cont, x0, x1);
             if (VerPelotitas) Pelotitas(g, cont, x0, x1);
             if (VerZonasRadar) Zonas(g, cont, x0, x1);
             if (VerBigTrades) Puntos(g, cont, x0, x1);
@@ -3400,6 +3402,7 @@ namespace PythiaGex
         /// </summary>
         // ---- lo que se calcula UNA vez por cuadro y usan todas las etiquetas ----
         private double _sigHRender, _pxRender, _probRender = double.NaN, _maxVolVivoRender;
+        private DateTime _ultimoLogElegidos = DateTime.MinValue;
         private Dictionary<double, (double total, double calls, double puts)> _volVivoRender;
         private List<(double precio, double vol, double delta, int rango, bool flojo)> _nodosRender;
         private readonly Dictionary<double, int> _rangoNivel = new();
@@ -3800,6 +3803,16 @@ namespace PythiaGex
             }
             if (hayA) Cercano(na);
             if (hayB) Cercano(nb);
+
+            // registro de lo elegido (una vez por minuto): nombres, precios y miembros
+            if ((DateTime.UtcNow - _ultimoLogElegidos).TotalSeconds >= 60)
+            {
+                _ultimoLogElegidos = DateTime.UtcNow;
+                var sb = new System.Text.StringBuilder("ELEGIDOS px=" + px.ToString("F2", CultureInfo.InvariantCulture) + " paso=" + paso.ToString("F2", CultureInfo.InvariantCulture) + " ");
+                foreach (var e in fus) sb.Append("[").Append(e.Nombre).Append(" @").Append(e.Precio.ToString("F2", CultureInfo.InvariantCulture)).Append(" gex=").Append((e.Gex / 1e6).ToString("+0;-0", CultureInfo.InvariantCulture)).Append("M m=").Append(string.Join("/", e.Miembros.Select(m => m.ToString("F2", CultureInfo.InvariantCulture)))).Append(e.Chip ? " chip" : "").Append("] ");
+                foreach (var e in punteados) sb.Append("{").Append(e.Nombre).Append(" @").Append(e.Precio.ToString("F2", CultureInfo.InvariantCulture)).Append("} ");
+                Registrar2(sb.ToString());
+            }
 
             // DIBUJO
             Linea(g, cont, xl0, xl1, zero, ColZero, "Zero Γ", true, spot, xEje, false, false);
