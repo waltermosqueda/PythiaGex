@@ -90,6 +90,12 @@ namespace PythiaGex
                 await udp.SendAsync(pkt, pkt.Length, ep).ConfigureAwait(false);
                 var recv = udp.ReceiveAsync();
                 var done = await Task.WhenAny(recv, Task.Delay(timeoutMs)).ConfigureAwait(false);
+                // Si gano el timeout, el ReceiveAsync queda pendiente y al cerrar el
+                // socket muere con SocketException 995 SIN que nadie la observe:
+                // ATAS la atrapa como "Unobserved task exception" y muestra un
+                // cartel de error al arrancar (visto el 2026-09-07 21:49 UTC).
+                // Observarla aca la deja muda.
+                if (done != recv) _ = recv.ContinueWith(t => { var _ = t.Exception; }, TaskContinuationOptions.OnlyOnFaulted);
                 if (done != recv) return null;
                 var t4 = DateTime.UtcNow;
                 var b = recv.Result.Buffer;

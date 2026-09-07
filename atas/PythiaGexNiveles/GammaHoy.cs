@@ -295,9 +295,22 @@ namespace PythiaGex
                 // REBOBINADO: nada de vivo. La carga del archivo arranca en la
                 // primera vela (ahi se sabe desde que dia va el grafico). El
                 // temporizador queda solo para redibujar mientras carga.
-                _tick = () => { try { RedrawChart(new RedrawArg(ChartArea)); } catch { } };
+                _tick = () =>
+                {
+                    // CON EL MERCADO CERRADO ATAS NO LLAMA A OnCalculate (visto el
+                    // 2026-09-07 al aplicar el modo: "esperando la primera vela" para
+                    // siempre). El archivo se carga desde aca en cuanto haya velas, y
+                    // RecalculateValues() recorre el grafico.
+                    try
+                    {
+                        if (!_archivoListo && !_archivoCargando && CurrentBar > 0)
+                            CargarArchivo(Utc(GetCandle(0).Time).AddDays(-1));
+                    }
+                    catch (Exception e) { Registrar(e); }
+                    try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
+                };
                 SubscribeToTimer(_periodo, _tick);
-                Log("Gamma Hoy 0.3 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 0.3b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
