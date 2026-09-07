@@ -332,7 +332,7 @@ namespace PythiaGex
                     try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
                 };
                 SubscribeToTimer(_periodo, _tick);
-                Log("Gamma Hoy 0.3b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 0.5 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -341,7 +341,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 0.4 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : "") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 0.5 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : "") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -395,8 +395,8 @@ namespace PythiaGex
 
         protected override void OnCalculate(int bar, decimal value)
         {
-            if (Fuente == FuenteDatos.Archivo) { try { RebobinarBarra(bar); } catch (Exception e) { Registrar(e); } return; }
-            if (Fuente == FuenteDatos.Hibrido && bar < CurrentBar - 1) { try { RebobinarBarra(bar); } catch (Exception e) { Registrar(e); } return; }
+            // el archivo se recorre en su propio hilo (RecorrerArchivo): aca solo el vivo
+            if (Fuente == FuenteDatos.Archivo) return;
             if (bar != CurrentBar - 1) return;
             try { Repreciar(); } catch (Exception e) { Registrar(e); }
             try { Anotar(bar); } catch (Exception e) { Registrar(e); }
@@ -430,34 +430,19 @@ namespace PythiaGex
 
         /// <summary>El centinela del archivo, separado del vivo ("hoy-"): asi el
         /// laboratorio no mezcla lo rebobinado con lo que paso en pantalla.</summary>
-        private void AnotarArchivo(int bar)
+        private void AnotarArchivo(int bar, IndicatorCandle c, GammaHoyNucleo.Lectura L)
         {
-            if (!AnotarCentinela) return;
+            if (!AnotarCentinela || c == null || L == null) return;
             if (_centArchivo == null)
             {
                 var instr = InstrumentInfo != null ? InstrumentInfo.Instrument : "x";
                 var marco = ChartInfo != null && ChartInfo.ChartType != null ? ChartInfo.ChartType + "-" + ChartInfo.TimeFrame : "x";
                 _centArchivo = new Centinela("rebobinado-atas-" + instr, marco);
             }
-            IndicatorCandle c; try { c = GetCandle(bar); } catch { return; }
-            if (c == null) return;
-            List<KeyValuePair<string, double>> niv; double sp;
-            lock (_candado)
-            {
-                sp = _S;
-                niv = GammaHoyNucleo.Niveles(new GammaHoyNucleo.Lectura
-                {
-                    ZeroVol = _zeroVol, ZeroOi = _zeroOi, MpVol = _mpVol, MnVol = _mnVol, MpOi = _mpOi, MnOi = _mnOi,
-                    Doms = _doms, MaxChange = _maxChange, PicoFut = _picoFut, CuadranteN = _cuadranteN
-                });
-            }
             _centArchivo.Anotar(bar, c.LastTime != default(DateTime) ? c.LastTime : c.Time,
-                (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close, (double)c.Volume, (double)c.Ticks, (double)c.Delta, sp, niv);
+                (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close, (double)c.Volume, (double)c.Ticks, (double)c.Delta, L.S, GammaHoyNucleo.Niveles(L));
         }
 
-        // ==================================================================
-        // Rebobinado: la historia cargada del grafico con la cadena de cada minuto
-        // ==================================================================
         private static DateTime Utc(DateTime t) => t.Kind == DateTimeKind.Utc ? t : (t.Kind == DateTimeKind.Local ? t.ToUniversalTime() : DateTime.SpecifyKind(t, DateTimeKind.Utc));
 
         private void CargarArchivo(DateTime desde)
@@ -475,73 +460,85 @@ namespace PythiaGex
                             await Feed.Archivo.BajarDia(string.IsNullOrWhiteSpace(UrlArchivo) ? Url : UrlArchivo, raiz, d, Log).ConfigureAwait(false);
                     var ls = Feed.Archivo.Cargar(raiz, desde, hasta, Log);
                     lock (_candado) { _archivo = ls; _iArchivo = 0; _barraReb = -1; _fotosBarra.Clear(); }
+                    Log("REBOBINADO: " + ls.Count + " cadenas cargadas; recorro el grafico en un hilo aparte");
+                    RecorrerArchivo(ls);
                     _archivoListo = true;
-                    Log("REBOBINADO: " + ls.Count + " cadenas cargadas; recalculo el grafico");
-                    try { RecalculateValues(); } catch (Exception e) { Registrar(e); }
                 }
                 catch (Exception e) { Registrar(e); }
                 finally { _archivoCargando = false; }
             });
         }
 
-        private void RebobinarBarra(int bar)
+        /// <summary>Recorre todas las velas cargadas (menos la que se forma) con la
+        /// cadena vigente al cierre de cada una. Corre en el hilo de fondo que cargo
+        /// el archivo, con un nucleo PROPIO para no mezclar sus fotos del Max Change
+        /// con las del vivo. No toca RecalculateValues: el hilo de ticks de ATAS no
+        /// se entera (antes, 5.472 velas en el hilo de ticks = "Slow ticks
+        /// processing 6 s" en el log de ATAS).</summary>
+        private void RecorrerArchivo(List<Feed.Cadena> arch)
         {
-            IndicatorCandle c;
-            try { c = GetCandle(bar); } catch { return; }
-            if (c == null) return;
-            var abre = Utc(c.Time);
-            if (!_archivoListo)
-            {
-                if (bar == 0) CargarArchivo(abre.AddDays(-1));
-                return;
-            }
-            List<Feed.Cadena> arch; lock (_candado) arch = _archivo;
             if (arch == null || arch.Count == 0) return;
-            // el cierre de la vela: la siguiente abre ahi; la ultima, ahora
-            DateTime cierra;
-            try { cierra = bar + 1 < CurrentBar ? Utc(GetCandle(bar + 1).Time) : DateTime.UtcNow; } catch { cierra = abre.AddMinutes(1); }
-            if (cierra <= abre) cierra = abre.AddMinutes(1);
-            // puntero monotono; si ATAS recalcula desde cero, se reinicia todo
-            if (bar <= _barraReb) { _iArchivo = 0; _nucleo.Reiniciar(); lock (_candado) _fotosBarra.Clear(); _rebConCadena = _rebSinCadena = 0; }
-            _barraReb = bar;
-            while (_iArchivo + 1 < arch.Count && arch[_iArchivo + 1].GeneradoUtc <= cierra) _iArchivo++;
-            var cad = arch[_iArchivo];
+            var nuc = new GammaHoyNucleo();
+            var a = nuc.A; var b0 = _nucleo.A;
+            a.Tasa = (double)Tasa; a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte; a.CuantasDominantes = CuantasDominantes;
+            a.RadioDominantesPct = (double)RadioDominantesPct; a.PicoRadioPct = (double)PicoRadioPct; a.MuchoPct = MuchoPct; a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
             double edadMax = (double)Math.Max(0.05m, ArchivoEdadMaxHoras);
-            if (cad.GeneradoUtc > cierra || (cierra - cad.GeneradoUtc).TotalHours > edadMax)
+            int fin = Math.Max(0, CurrentBar - 1);      // la ultima vela es del vivo (Hibrido) o se muestra con la ultima foto (Archivo)
+            int i = 0, con = 0, sin = 0;
+            DateTime ultimaCad = DateTime.MinValue, ultLog = DateTime.UtcNow;
+            for (int bar = 0; bar < fin; bar++)
             {
-                _rebSinCadena++;
-                lock (_candado) { _estela[bar] = new double[0]; _fotosBarra.Remove(bar); }
-                return;
-            }
-            _rebConCadena++;
-            _rebCadenaHora = cad.GeneradoUtc;
-            // la misma cuenta que en vivo: esta cadena, este cierre, esta hora, esta vela
-            RepreciarCon(cad, (double)c.Close, cierra, bar);
-            lock (_candado)
-            {
-                _fotosBarra[bar] = new Foto
+                IndicatorCandle c;
+                try { c = GetCandle(bar); } catch { break; }
+                if (c == null) continue;
+                var abre = Utc(c.Time);
+                DateTime cierra;
+                try { cierra = Utc(GetCandle(bar + 1).Time); } catch { cierra = abre.AddMinutes(1); }
+                if (cierra <= abre) cierra = abre.AddMinutes(1);
+                while (i + 1 < arch.Count && arch[i + 1].GeneradoUtc <= cierra) i++;
+                var cad = arch[i];
+                if (cad.GeneradoUtc > cierra || (cierra - cad.GeneradoUtc).TotalHours > edadMax)
                 {
-                    S = _S, Futuro = _futuro, ZeroVol = _zeroVol, ZeroOi = _zeroOi, MpVol = _mpVol, MnVol = _mnVol, MpOi = _mpOi, MnOi = _mnOi,
-                    PicoFut = _picoFut, ConvEnPrecio = _convEnPrecio, NetVol = _netVol, NetOi = _netOi, Doms = _doms, Cuad = _cuadrante, Corto = _cuadranteCorto,
-                    LibroDom = _libroDomUsado, LibroConv = _libroConvUsado, Mucho = _mucho, Mc = _maxChange, Vela = abre, Cadena = cad.GeneradoUtc,
+                    sin++;
+                    lock (_candado) { _estela[bar] = new double[0]; _fotosBarra.Remove(bar); }
+                    continue;
+                }
+                var L = nuc.Calcular(cad, (double)c.Close, cierra);
+                if (L == null || L.SinBase) { sin++; continue; }
+                con++; ultimaCad = cad.GeneradoUtc;
+                var foto = new Foto
+                {
+                    S = L.S, Futuro = L.Futuro, ZeroVol = L.ZeroVol, ZeroOi = L.ZeroOi, MpVol = L.MpVol, MnVol = L.MnVol, MpOi = L.MpOi, MnOi = L.MnOi,
+                    PicoFut = L.PicoFut, ConvEnPrecio = L.ConvEnPrecio, NetVol = L.NetVol, NetOi = L.NetOi, Doms = L.Doms, Cuad = L.Cuadrante, Corto = L.CuadranteCorto,
+                    LibroDom = L.LibroDom, LibroConv = L.LibroConv, Mucho = L.Mucho, Mc = L.MaxChange, Vela = abre, Cadena = cad.GeneradoUtc,
                 };
-                if (_fotosBarra.Count > 40000) foreach (var k in _fotosBarra.Keys.Where(k => k < bar - 35000).ToList()) _fotosBarra.Remove(k);
+                lock (_candado) { _fotosBarra[bar] = foto; _estela[bar] = L.Estela; }
+                try { AnotarArchivo(bar, c, L); } catch (Exception e) { Registrar(e); }
+                if ((DateTime.UtcNow - ultLog).TotalSeconds >= 10)
+                {
+                    ultLog = DateTime.UtcNow;
+                    Log("REBOBINADO avanza: vela " + bar + " de " + fin + " (" + abre.ToString("yyyy-MM-dd HH:mm") + " UTC), con cadena " + con + ", sin " + sin);
+                    try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
+                }
             }
-            // la vela ya cerrada, con el estado vigente, al centinela del archivo
-            try { AnotarArchivo(bar); } catch (Exception e) { Registrar(e); }
-            if ((DateTime.UtcNow - _rebUltimoLog).TotalSeconds >= 10)
+            // en Archivo puro la pantalla muestra la ultima foto (no hay vivo)
+            if (Fuente == FuenteDatos.Archivo)
             {
-                _rebUltimoLog = DateTime.UtcNow;
-                Log("REBOBINADO avanza: vela " + bar + " de " + CurrentBar + " (" + abre.ToString("yyyy-MM-dd HH:mm") + " UTC), con cadena " + _rebConCadena + ", sin " + _rebSinCadena);
+                Foto f = null; lock (_candado) { for (int bar = fin; bar >= 0 && f == null; bar--) _fotosBarra.TryGetValue(bar, out f); }
+                if (f != null) lock (_candado)
+                {
+                    _S = f.S; _futuro = f.Futuro; _zeroVol = f.ZeroVol; _zeroOi = f.ZeroOi; _mpVol = f.MpVol; _mnVol = f.MnVol; _mpOi = f.MpOi; _mnOi = f.MnOi;
+                    _picoFut = f.PicoFut; _convEnPrecio = f.ConvEnPrecio; _netVol = f.NetVol; _netOi = f.NetOi; _doms = f.Doms; _cuadrante = f.Cuad; _cuadranteCorto = f.Corto;
+                    _libroDomUsado = f.LibroDom; _libroConvUsado = f.LibroConv; _mucho = f.Mucho; _maxChange = f.Mc; _baseOrigen = "archivo";
+                    _perfil = nuc.Calcular(arch[i], f.Futuro, f.Vela)?.Perfil ?? _perfil;
+                }
             }
-            if (bar >= CurrentBar - (Fuente == FuenteDatos.Hibrido ? 2 : 1))
-            {
-                var es = CultureInfo.GetCultureInfo("es-AR");
-                _rebRotulo = (Fuente == FuenteDatos.Hibrido ? "HIBRIDO  archivo " : "REBOBINADO  ") + _rebConCadena.ToString("N0", es) + " velas con cadena, " + _rebSinCadena.ToString("N0", es) + " sin";
-                Log("REBOBINADO termino: " + _rebConCadena + " velas con cadena, " + _rebSinCadena + " sin; ultima cadena " + cad.GeneradoUtc.ToString("yyyy-MM-dd HH:mm") + " UTC");
-                try { _centArchivo?.Volcar(true); } catch { }
-                try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
-            }
+            _rebConCadena = con; _rebSinCadena = sin; _rebCadenaHora = ultimaCad;
+            var es = CultureInfo.GetCultureInfo("es-AR");
+            _rebRotulo = (Fuente == FuenteDatos.Hibrido ? "HIBRIDO  archivo " : "REBOBINADO  ") + con.ToString("N0", es) + " velas con cadena, " + sin.ToString("N0", es) + " sin";
+            Log("REBOBINADO termino: " + con + " velas con cadena, " + sin + " sin; ultima cadena " + (ultimaCad == DateTime.MinValue ? "--" : ultimaCad.ToString("yyyy-MM-dd HH:mm") + " UTC"));
+            try { _centArchivo?.Volcar(true); } catch { }
+            try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
         }
 
         /// <summary>La foto de la cadena viva de Rithmic con los mismos campos que
