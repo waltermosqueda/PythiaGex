@@ -137,7 +137,33 @@ def base_del_dia(dia, base_manual):
                 return bases, "medida ese dia en las fotos crudas (%d)" % len(bases)
         except Exception as e:
             print("no pude medir la base con radar:", e)
-    return [(None, base_manual)], "manual %.2f" % base_manual
+    if base_manual is not None:
+        return [(None, base_manual)], "manual %.2f" % base_manual
+    return None, "carry teorico (tasa - dividendos) x tiempo al vencimiento del futuro"
+
+
+def tercer_viernes(anio, mes):
+    d = dt.date(anio, mes, 15)
+    while d.weekday() != 4:
+        d += dt.timedelta(days=1)
+    return d
+
+
+def vencimiento_futuro(contrato):
+    """ESU6 -> 2026-09-18 09:30 ET (13:30 UTC). Codigos: H=3 M=6 U=9 Z=12."""
+    mes = {"H": 3, "M": 6, "U": 9, "Z": 12}[contrato[-2]]
+    anio = 2020 + int(contrato[-1])
+    return dt.datetime.combine(tercer_viernes(anio, mes), dt.time(13, 30), tzinfo=dt.timezone.utc)
+
+
+def base_carry(fut, t, venc_fut, tasa, dividendos):
+    """base = S (r - q) T con S = fut - base  =>  base = fut (r-q) T / (1 + (r-q) T).
+    Es lo que vale el futuro por encima del indice por el costo de tenerlo hasta
+    el vencimiento. Se valida contra la medida: 2026-09-03 dio 7,8-8,9 medida y
+    8,1 por carry con q = 1,2 %."""
+    T = max(0.0, (venc_fut - t).total_seconds() / (365.0 * 86400.0))
+    k = (tasa - dividendos) * T
+    return fut * k / (1.0 + k)
 
 
 def base_en(bases, t_iso):
@@ -155,7 +181,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("dia")
     ap.add_argument("--retraso", type=int, default=902, help="segundos de retraso del volumen (CBOE: 902)")
-    ap.add_argument("--base", type=float, default=6.1, help="base ES-SPX si no hay medida ese dia")
+    ap.add_argument("--base", type=float, default=None, help="base ES-SPX fija; si no se da y no hay medida ese dia, carry teorico")
+    ap.add_argument("--div", type=float, default=0.012, help="rendimiento por dividendos del SPX para el carry (1,2 %%)")
     ap.add_argument("--cada", type=int, default=1, help="minutos entre cadenas")
     ap.add_argument("--desde", default="13:30", help="UTC")
     ap.add_argument("--hasta", default="20:59", help="UTC")
@@ -197,7 +224,8 @@ def main():
     # volumen y ultimo precio por contrato, acumulados minuto a minuto
     oh = oh.sort_index()
     bases, origen_base = base_del_dia(dia, a.base)
-    print("base:", origen_base)
+    venc_fut = vencimiento_futuro(contrato)
+    print("base:", origen_base, "| futuro vence", venc_fut.date())
 
     os.makedirs(SALIDA, exist_ok=True)
     os.makedirs(VELAS, exist_ok=True)
@@ -228,7 +256,7 @@ def main():
             if S_fut is None:
                 t += paso
                 continue
-            base = base_en(bases, t.isoformat(timespec="seconds"))
+            base = base_en(bases, t.isoformat(timespec="seconds")) if bases else base_carry(float(S_fut), t, venc_fut, a.tasa, a.div)
             S = float(S_fut) - base
             # por (strike, venc): oi/vol/iv de call y put
             por = {}
@@ -289,7 +317,7 @@ def main():
                 "cadena_ts": corte.strftime("%Y-%m-%d %H:%M:%S"),
                 "edad_min": round(a.retraso / 60.0, 1), "retraso_s": a.retraso,
                 "spot": round(S, 2), "base": round(base, 4), "base_confiable": True, "base_cruda": round(base, 4),
-                "base_error_ticks": 0, "contrato": contrato, "fuente": "databento OPRA %s" % dia,
+                "base_error_ticks": 0, "base_origen": origen_base, "contrato": contrato, "fuente": "databento OPRA %s" % dia,
                 "cadena": {"ts": corte.strftime("%Y-%m-%d %H:%M:%S"), "spot_idx": round(S, 2),
                            "campos": "strike,venc,oi_call,oi_put,iv_call,iv_put,vol_call,vol_put",
                            "vencimientos": [{"f": e.isoformat(), "dias": round((vencs[e] - t).total_seconds() / 86400.0, 4)} for e in vlist],

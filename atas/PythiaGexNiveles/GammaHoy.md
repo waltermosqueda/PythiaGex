@@ -80,3 +80,33 @@ edades, y la alerta de transicion.
 - Libro de QQQ/SPY como fuente alternativa (el feed solo sirve SPX/NDX/RUT).
 - Chance de toque en las filas (esta en Gamma Vivo, falta aca).
 - Calibrar el umbral de big trade en ES midiendo la distribucion de tamaños.
+
+## Rebobina: el simulador afuera de ATAS (2026-09-07)
+
+El operador no quiere meterle archivos de afuera a ATAS ("apenas anda"). El
+backtest entonces corre en una consola aparte, `atas/Rebobina`, que compila
+LOS MISMOS archivos fuente del indicador: `GammaHoyNucleo.cs` (toda la
+cuenta, sin una referencia a ATAS), `Feed.cs` (lector de cadenas) y
+`Centinela.cs` (la anotacion por vela). El indicador quedo reducido a elegir
+cadena, precio y hora, y dibujar. Si la cuenta cambia, cambia en los dos.
+
+Datos (gratis con el credito de Databento, ledger y techo en
+`herramientas/databento_bajar.py`):
+- Futuro: ES.FUT ohlcv-1m (3 meses, USD 0,55) -> `datos/simulador/velas/ESU6-1m.csv`.
+- Cadena SPX/SPXW por minuto: OPRA definition + statistics (OI, stat_type 9,
+  coincide 100 % con CBOE) + ohlcv-1m (volumen por contrato y minuto; al
+  mismo corte 82 % exacto contra CBOE, suma 0,91) -> `herramientas/
+  databento_a_cadenas.py` arma `datos/simulador/cadenas/sim-ES-<dia>-r<retraso>.jsonl.gz`
+  con el mismo formato que archiva la nube. IV: del ultimo precio operado
+  (Black-Scholes invertido) e interpolada por strike donde no opero. Base:
+  medida del dia si la hay, si no carry teorico (tasa - 1,2 % dividendos).
+- El retraso de CBOE (902 s) es un parametro: con r0 se mide lo que cuesta.
+
+Corrida: `Rebobina --cadenas ... --velas ... --instrumento MES --marco M1`
+-> `%APPDATA%\ATAS\pythiagex-centinela-rebobinado-MES-TimeFrame-M1.jsonl`,
+que `laboratorio/rebobinado.py` juzga contra placebo. 2026-09-03: 451 velas
+en 2,7 s; un dia son 6 strikes distintos: hacen falta 15+ ruedas.
+
+Hallazgo del primer rebobinado: la alerta de TRANSICION se dispara a cada
+minuto cuando dos strikes vecinos se alternan el maximo GEX (7.759/7.764 el
+09-03 de 19:16 a 20:16). Falta histeresis: pendiente en el nucleo.
