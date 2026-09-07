@@ -139,3 +139,34 @@ archivos y Gamma Vivo al lado de Gamma Hoy.
   dominantes por volumen -10,4 pp contra placebo, majors por volumen +6,7, por
   OI +4,3, max change 0, pico -6; Gamma Vivo dominantes (8, OI) -3,4, (2, OI)
   -7,1, muros +0,4, zero casi sin toques.
+
+## Fuente = Archivo: el rebobinado adentro de ATAS (2026-09-07, noche)
+
+Con el OK del operador ("dale hacelo ahora") se instalo Gamma Hoy 0.3b y se
+probo en vivo en su ATAS, en el grafico limpio MES 5m:
+
+- Ajuste "Fuente" = Archivo. El indicador no baja feed ni abre la cadena viva:
+  carga las cadenas por dia de `%APPDATA%\ATAS\PythiaGex\cadenas` (13 dias de
+  Databento copiados como cadena-ES-<dia>.jsonl.gz, lo que grabo la maquina
+  como local-ES-<dia>.jsonl y lo que baja de la nube), y con
+  `RecalculateValues()` recorre toda la historia cargada: 5.472 velas de 5 min
+  en 6 segundos, 3.031 con cadena. Centinela `rebobinado-atas-<inst>`.
+- Con el mercado cerrado ATAS no llama a OnCalculate: la carga se dispara desde
+  el temporizador (0.3b). Antes quedaba "esperando la primera vela".
+- La escalera y las rayas siguen la vela bajo el mouse (BarBelowMouse): la raya
+  nace en esa vela con un punto. La cabecera dice la hora de la vela y cuando
+  se publico la cadena que se uso.
+- "Archivo: edad maxima" = 20 h reproduce la noche (CBOE congelada, el vivo
+  sigue mostrando la ultima cadena). Los 13 dias de Databento solo tienen
+  cadena en la rueda americana: de noche se ve la ultima del dia. Desde el
+  2026-09-07 la nube archiva cada 5 min (rueda) y cada 30 (Asia/Europa).
+- Cualquier temporalidad: la cuenta es por vela, con la cadena vigente al
+  cierre de esa vela. Con 1 minuto y 20 dias son ~27.000 cuentas (~1 min).
+- Reloj.cs: el ReceiveAsync que vencia quedaba sin observar y ATAS mostraba
+  "Unobserved task exception" al arrancar; corregido.
+
+Cruce CBOE vs Databento del 09-03 (laboratorio/cruzar_fuentes.py, 451 min):
+spot igual; +Γ vol, dom0, pico, max change 30' coinciden (mediana 0,1 pts,
+62-71 % a 2,5 pts); cuadrante igual 94 %. Difieren zero vol (3,4), zero OI
+(5,4), -Γ vol (10) y -Γ OI (45): la IV de los puts lejanos sin operar esta
+interpolada. Mejora pendiente: quotes cbbo-1m en ventanas de 1 minuto cada 15.
