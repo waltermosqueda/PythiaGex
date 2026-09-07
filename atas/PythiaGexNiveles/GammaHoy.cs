@@ -74,6 +74,27 @@ namespace PythiaGex
                  Description = "La rama 'cadenas' del repo: un archivo por dia y raiz, escrito cada minuto por GitHub Actions.")]
         public string UrlArchivo { get; set; } = "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/";
 
+        [Display(Name = "Feed por minuto (rama cadenas)", GroupName = "1. Datos", Order = 13,
+                 Description = "Ademas del feed de la nube (cada 5 min) baja ultima-<raiz>.json de la rama cadenas, que se escribe cada minuto en la rueda americana, y usa la mas nueva.")]
+        public bool FeedMinuto { get; set; } = true;
+
+        public enum EstiloRayas { Ninguna, Tenues, Normales }
+
+        [Display(Name = "Rayas de los niveles", GroupName = "3. Pantalla", Order = 11,
+                 Description = "GAMMAlito no cruza el grafico con rayas: los niveles viven en los guiones por vela y en el eje. Tenues = al 30 %.")]
+        public EstiloRayas Rayas { get; set; } = EstiloRayas.Tenues;
+
+        [Display(Name = "Guion de dominante por vela: grosor (px)", GroupName = "3. Pantalla", Order = 12)]
+        [Range(1, 8)]
+        public int GrosorGuion { get; set; } = 3;
+
+        [Display(Name = "Semillas del Max Change por vela (30, 5 y 1 min)", GroupName = "3. Pantalla", Order = 13,
+                 Description = "Tres puntos naranjas por vela con el strike de mayor cambio de GEX a 30, 5 y 1 min. Alineados varios minutos = ahi suele nacer la proxima dominante (GAMMAlito: 'la semillita').")]
+        public bool VerSemillas { get; set; } = true;
+
+        [Display(Name = "Zero gamma por vela (puntitos)", GroupName = "3. Pantalla", Order = 14)]
+        public bool VerZeroPorVela { get; set; } = true;
+
         [Display(Name = "Guardar la cadena viva de Rithmic por minuto", GroupName = "4. Auditoria", Order = 2,
                  Description = "viva-ES-<dia>.jsonl en %APPDATA%\\ATAS\\PythiaGex\\viva. Solo mientras ATAS esta abierto: es lo unico que la nube no puede grabar.")]
         public bool GuardarViva { get; set; } = true;
@@ -90,7 +111,7 @@ namespace PythiaGex
 
         [Display(Name = "Refresco del feed (s)", GroupName = "1. Datos", Order = 3)]
         [Range(60, 3600)]
-        public int SegundosRefresco { get; set; } = 120;
+        public int SegundosRefresco { get; set; } = 60;
 
         [Display(Name = "Tasa libre de riesgo", GroupName = "1. Datos", Order = 4)]
         public decimal Tasa { get; set; } = 0.0375m;
@@ -215,6 +236,8 @@ namespace PythiaGex
         private (double Fut, double Delta)[] _maxChange = new (double, double)[GammaHoyNucleo.Ventanas.Length];
         // estela de dominantes por vela
         private readonly Dictionary<int, double[]> _estela = new();
+        // por vela: zero por volumen y el strike del Max Change a 30, 5 y 1 min (semillas)
+        private readonly Dictionary<int, (double Zero, double[] Mc)> _marcas = new();
         // centinela
         private Centinela _cent;
         private int _barraCent = -1;
@@ -329,10 +352,22 @@ namespace PythiaGex
                             CargarArchivo(Utc(GetCandle(0).Time).AddDays(-1));
                     }
                     catch (Exception e) { Registrar(e); }
+                    // LA CADENA VIVA SE GRABA EN TODOS LOS MODOS: es lo unico que la nube no puede
+                    // hacer por nosotros y el operador la quiere siempre ("no es excusa valida")
+                    var ahora = DateTime.UtcNow;
+                    if (UsarCadenaViva && !_viva.Activa && !_vivaCorriendo && (ahora - _ultimoIntentoViva).TotalSeconds >= 180) { _ultimoIntentoViva = ahora; ArrancarViva(); }
+                    _viva.UmbralGrande = UmbralBigTrade;
+                    if (GuardarViva && _viva.Activa && (ahora - _ultimaViva).TotalSeconds >= 60)
+                    {
+                        _ultimaViva = ahora;
+                        try { Feed.Archivo.GuardarViva(Raiz(), VivaJson()); } catch (Exception e) { Registrar(e); }
+                    }
                     try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
                 };
                 SubscribeToTimer(_periodo, _tick);
-                Log("Gamma Hoy 0.5 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                _ultimoIntentoViva = DateTime.UtcNow;
+                if (UsarCadenaViva) ArrancarViva();
+                Log("Gamma Hoy 0.6 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -341,7 +376,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 0.5 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : "") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 0.6 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : "") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -375,6 +410,11 @@ namespace PythiaGex
             try
             {
                 var c = await Feed.Bajar(Url, Raiz(), m => _error = m).ConfigureAwait(false);
+                if (FeedMinuto)
+                {
+                    var u = await Feed.BajarUltima(UrlArchivo, Raiz(), null).ConfigureAwait(false);
+                    if (u != null && (c == null || u.GeneradoUtc > c.GeneradoUtc)) c = u;
+                }
                 if (c != null) { _c = c; _error = ""; }
             }
             finally
@@ -512,7 +552,7 @@ namespace PythiaGex
                     PicoFut = L.PicoFut, ConvEnPrecio = L.ConvEnPrecio, NetVol = L.NetVol, NetOi = L.NetOi, Doms = L.Doms, Cuad = L.Cuadrante, Corto = L.CuadranteCorto,
                     LibroDom = L.LibroDom, LibroConv = L.LibroConv, Mucho = L.Mucho, Mc = L.MaxChange, Vela = abre, Cadena = cad.GeneradoUtc,
                 };
-                lock (_candado) { _fotosBarra[bar] = foto; _estela[bar] = L.Estela; }
+                lock (_candado) { _fotosBarra[bar] = foto; _estela[bar] = L.Estela; _marcas[bar] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut }); }
                 try { AnotarArchivo(bar, c, L); } catch (Exception e) { Registrar(e); }
                 if ((DateTime.UtcNow - ultLog).TotalSeconds >= 10)
                 {
@@ -623,7 +663,8 @@ namespace PythiaGex
                 _alerta = L.Alerta; _alertaHasta = L.AlertaHasta;
                 _maxChange = L.MaxChange;
                 _estela[barra] = L.Estela;
-                if (_estela.Count > 6000) foreach (var k in _estela.Keys.Where(k => k < barra - 5000).ToList()) _estela.Remove(k);
+                _marcas[barra] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut });
+                if (_estela.Count > 6000) foreach (var k in _estela.Keys.Where(k => k < barra - 5000).ToList()) { _estela.Remove(k); _marcas.Remove(k); }
             }
 
             if ((DateTime.UtcNow - _ultimoAudit).TotalSeconds >= 60)
@@ -817,6 +858,8 @@ namespace PythiaGex
             void Raya(double p, Color col, float w, System.Drawing.Drawing2D.DashStyle ds, int alfa)
             {
                 if (double.IsNaN(p) || p <= 0) return;
+                if (Rayas == EstiloRayas.Ninguna) return;
+                if (Rayas == EstiloRayas.Tenues) { alfa = Math.Max(30, (int)(alfa * 0.3)); w = Math.Max(1f, w - 0.4f); }
                 int y; try { y = cont.GetYByPrice((decimal)p, false); } catch { return; }
                 if (y < area.Top || y > piso) return;
                 // en rebobinado la raya nace en la vela del mouse: se ve desde
@@ -832,20 +875,46 @@ namespace PythiaGex
             for (int i = 0; i < doms.Count; i++) Raya(doms[i].Fut, ColDom, i == 0 ? 1.6f : 1.1f, System.Drawing.Drawing2D.DashStyle.Solid, i == 0 ? 220 : 160);
 
             // ---- estela: la dominante que regia en cada vela
-            if (VerEstela)
+            if (VerEstela || VerSemillas || VerZeroPorVela)
             {
-                Dictionary<int, double[]> est; lock (_candado) est = new Dictionary<int, double[]>(_estela);
+                Dictionary<int, double[]> est; Dictionary<int, (double Zero, double[] Mc)> mar;
+                lock (_candado) { est = new Dictionary<int, double[]>(_estela); mar = new Dictionary<int, (double, double[])>(_marcas); }
                 int desde = Math.Max(0, FirstVisibleBarNumber), hasta = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
+                // ancho de una vela en pixeles, medido en el grafico (no supuesto)
+                int bw = 5;
+                try { if (hasta > desde) bw = Math.Max(3, (cont.GetXByBar(hasta, false) - cont.GetXByBar(desde, false)) / Math.Max(1, hasta - desde)); } catch { }
+                int grueso = Math.Max(1, GrosorGuion), fino = Math.Max(1, GrosorGuion - 1);
                 for (int b = desde; b <= hasta; b++)
                 {
-                    if (!est.TryGetValue(b, out var d)) continue;
                     int x; try { x = cont.GetXByBar(b, false); } catch { continue; }
-                    for (int i = 0; i < d.Length; i++)
+                    // GAMMAlito: la dominante es un GUION amarillo por vela, primaria gruesa y secundaria fina.
+                    // Puesto uno al lado del otro forman la linea sola: se ve donde nacio y cuando salto.
+                    if (VerEstela && est.TryGetValue(b, out var d))
+                        for (int i = 0; i < d.Length; i++)
+                        {
+                            if (double.IsNaN(d[i])) continue;
+                            int y; try { y = cont.GetYByPrice((decimal)d[i], false); } catch { continue; }
+                            if (y < area.Top || y > piso) continue;
+                            int h = i == 0 ? grueso : fino;
+                            g.FillRectangle(Color.FromArgb(i == 0 ? 235 : 150, ColDom), new Rectangle(x - bw / 2, y - h / 2, bw, h));
+                        }
+                    if (mar.TryGetValue(b, out var m))
                     {
-                        if (double.IsNaN(d[i])) continue;
-                        int y; try { y = cont.GetYByPrice((decimal)d[i], false); } catch { continue; }
-                        if (y < area.Top || y > piso) continue;
-                        g.FillRectangle(Color.FromArgb(i == 0 ? 210 : 130, ColDom), new Rectangle(x - 1, y - 1, 3, 2));
+                        if (VerZeroPorVela && !double.IsNaN(m.Zero))
+                        {
+                            int y; try { y = cont.GetYByPrice((decimal)m.Zero, false); } catch { y = int.MinValue; }
+                            if (y >= area.Top && y <= piso) g.FillEllipse(Color.FromArgb(150, ColZero), new Rectangle(x - 1, y - 1, 3, 3));
+                        }
+                        // las semillas: el strike de mayor cambio a 30 (grande), 5 (mediana) y 1 min (chica)
+                        if (VerSemillas && m.Mc != null)
+                            for (int i = 0; i < m.Mc.Length && i < 3; i++)
+                            {
+                                if (double.IsNaN(m.Mc[i]) || m.Mc[i] <= 0) continue;
+                                int y; try { y = cont.GetYByPrice((decimal)m.Mc[i], false); } catch { continue; }
+                                if (y < area.Top || y > piso) continue;
+                                int r = i == 0 ? 3 : (i == 1 ? 2 : 1);
+                                g.FillEllipse(Color.FromArgb(i == 0 ? 220 : (i == 1 ? 170 : 130), ColAviso), new Rectangle(x - r, y - r, 2 * r + 1, 2 * r + 1));
+                            }
                     }
                 }
             }

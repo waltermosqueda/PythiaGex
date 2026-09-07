@@ -60,6 +60,24 @@ namespace PythiaGex
             return c;
         }
 
+        /// <summary>La ULTIMA cadena de la rama "cadenas" (ultima-<raiz>.json, la escribe
+        /// cadenas.yml cada minuto en la rueda). Mismo formato que una linea del archivo.</summary>
+        public static async Task<Cadena> BajarUltima(string urlArchivo, string raiz, Action<string> error)
+        {
+            try
+            {
+                var b = (urlArchivo ?? "").Trim();
+                if (b.Length == 0) return null;
+                if (!b.EndsWith("/")) b += "/";
+                var txt = await Http.GetStringAsync(b + "ultima-" + raiz + ".json?t=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ConfigureAwait(false);
+                var c = Parsear(txt);
+                if (c == null || c.Filas.Count == 0) return null;
+                try { Archivo.GuardarLocal(raiz, txt, c); } catch { }
+                return c;
+            }
+            catch (Exception e) { error?.Invoke(e.Message.Length > 80 ? e.Message.Substring(0, 80) : e.Message); return null; }
+        }
+
         /// <summary>Baja <raiz>_radar.json de la url base. Devuelve null si fallo;
         /// el motivo queda en <paramref name="error"/> via el callback.</summary>
         public static async Task<Cadena> Bajar(string url, string raiz, Action<string> error)
@@ -198,9 +216,17 @@ namespace PythiaGex
             /// <summary>La cadena viva de Rithmic, un renglon por minuto, por dia:
             /// viva-ES-2026-09-07.jsonl. Solo existe mientras ATAS esta abierto; es
             /// lo unico que la nube no puede grabar por nosotros.</summary>
+            private static readonly Dictionary<string, long> _minutoViva = new();
             public static void GuardarViva(string raiz, string json)
             {
                 if (string.IsNullOrEmpty(json) || json.Length < 40) return;
+                // los dos indicadores (Gamma Hoy y Gamma Vivo) graban: un renglon por minuto y raiz, no dos
+                long min = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMinute;
+                lock (_minutoViva)
+                {
+                    if (_minutoViva.TryGetValue(raiz, out var u) && u == min) return;
+                    _minutoViva[raiz] = min;
+                }
                 var dir = Path.Combine(Carpeta, "..", "viva");
                 Directory.CreateDirectory(dir);
                 File.AppendAllText(Path.Combine(dir, "viva-" + raiz + "-" + DateTime.UtcNow.ToString("yyyy-MM-dd") + ".jsonl"), json + "\n");

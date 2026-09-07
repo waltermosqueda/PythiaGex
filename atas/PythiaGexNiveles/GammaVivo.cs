@@ -5088,6 +5088,8 @@ namespace PythiaGex
                 File.WriteAllText(Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "ATAS", "pythiagex-cadena-viva-" + Raiz() + ".json"), sb.ToString());
+                // y al archivo por dia: la cadena viva de Rithmic es lo unico que la nube no graba
+                try { Feed.Archivo.GuardarViva(Raiz(), sb.ToString()); } catch { }
             }
             catch { }
         }

@@ -158,6 +158,9 @@ def bajar_y_archivar(raiz, destino):
         f.write(gzip.compress((json.dumps(flaca, ensure_ascii=False, separators=(",", ":")) + "\n").encode("utf-8")))
     with io.open(ultimo, "w", encoding="utf-8") as f:
         f.write(ts)
+    # la ultima suelta, sin comprimir: el indicador en vivo la baja cada minuto (Feed.BajarUltima)
+    with io.open(os.path.join(destino, "ultima-%s.json" % raiz), "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(flaca, ensure_ascii=False, separators=(",", ":")))
     return "%s: %s anotada en %s (%d filas, base %s)" % (raiz, ts, os.path.basename(ruta), len(flaca["cadena"]["filas"]), base)
 
 
