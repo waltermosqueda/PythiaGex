@@ -118,3 +118,24 @@ misma linea AUDIT que dejo el indicador vivo con esa cadena (2026-09-07:
 netVol -9.327B, netOi -4.629B, zeroVol 7718.89, zeroOi 7717.06, majors
 7726.08/7706.08, doms, q=1, pico 7706.08). El DLL recompilado con el nucleo
 NO se instalo en ATAS todavia: se instala con mercado cerrado y aviso.
+
+## El panel local y Gamma Vivo en el simulador (2026-09-07, tarde)
+
+El operador eligio "panel local en la PC" y pidio todo: parametros, carga de
+archivos y Gamma Vivo al lado de Gamma Hoy.
+
+- `herramientas/panel_local.py` (+ `.html`) sirve http://127.0.0.1:8770.
+  Lanzador: `ATAS nada/Rebobina Panel.bat`. Parametros del motor (los mismos
+  que muestra ATAS), ruedas disponibles, arrastrar `.dbn.zst` de Databento
+  (se ubican por su metadata) o `.csv` de velas, cotizar/bajar de Databento
+  con el techo del ledger, "Simular" (convierte lo que falte, corre Rebobina,
+  laboratorio contra placebo, regenera el visor), visor embebido.
+- `GammaVivoNucleo.cs` reproduce lo que Gamma Vivo ANOTA (zero y muros del OI
+  a 7 dias, picos modo 1 = dominantes del centinela), copiado de GammaVivo.cs
+  con las lineas citadas en el fuente. No es el nucleo entero de ese
+  indicador. `Rebobina --indicadores hoy+vivo` escribe el centinela
+  `rebobinado-vivo-<inst>`; el visor tiene la capa "Gamma Vivo" y "ambos".
+- 13 ruedas (08-19 a 09-04, velas de 1 min, cadena <= 20 min): Gamma Hoy
+  dominantes por volumen -10,4 pp contra placebo, majors por volumen +6,7, por
+  OI +4,3, max change 0, pico -6; Gamma Vivo dominantes (8, OI) -3,4, (2, OI)
+  -7,1, muros +0,4, zero casi sin toques.
