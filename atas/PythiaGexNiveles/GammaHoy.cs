@@ -61,6 +61,18 @@ namespace PythiaGex
         // ==================================================================
         public enum HorizonteVenc { Hoy, Semana, Todo }
         public enum LibroConv { Auto, Volumen, OI }
+        public enum FuenteDatos { Vivo, Archivo }
+
+        [Display(Name = "Fuente", GroupName = "1. Datos", Order = 0,
+                 Description = "Vivo: el feed de la nube y la cadena de Rithmic. Archivo: REBOBINADO, recorre toda la historia cargada del grafico con la cadena que se tenia en cada minuto (archivo por dia en %APPDATA%\\ATAS\\PythiaGex\\cadenas; los dias que falten se bajan de la nube). Las velas siguen siendo las de Rithmic. La escalera y las rayas siguen la vela bajo el mouse.")]
+        public FuenteDatos Fuente { get; set; } = FuenteDatos.Vivo;
+
+        [Display(Name = "Archivo: bajar de la nube los dias que falten", GroupName = "1. Datos", Order = 10)]
+        public bool BajarArchivo { get; set; } = true;
+
+        [Display(Name = "Archivo: edad maxima de la cadena (horas)", GroupName = "1. Datos", Order = 11,
+                 Description = "De noche la cadena de CBOE se congela y el indicador en vivo sigue mostrando la ultima: 20 horas reproduce eso. Con 0,3 (20 min) solo hay niveles en la rueda americana.")]
+        public decimal ArchivoEdadMaxHoras { get; set; } = 20m;
 
         [Display(Name = "Feed (url base)", GroupName = "1. Datos", Order = 1)]
         public string Url { get; set; } = "https://waltermosqueda.github.io/PythiaGex/datos/atas/";
@@ -198,6 +210,19 @@ namespace PythiaGex
         // centinela
         private Centinela _cent;
         private int _barraCent = -1;
+        // rebobinado (Fuente = Archivo)
+        private sealed class Foto
+        {
+            public double S, Futuro, ZeroVol, ZeroOi, MpVol, MnVol, MpOi, MnOi, PicoFut, ConvEnPrecio, NetVol, NetOi;
+            public List<(double Fut, double Gex)> Doms; public string Cuad, Corto, LibroDom, LibroConv; public bool Mucho;
+            public (double Fut, double Delta)[] Mc; public DateTime Vela, Cadena;
+        }
+        private readonly Dictionary<int, Foto> _fotosBarra = new();
+        private List<Feed.Cadena> _archivo;
+        private int _iArchivo, _barraReb = -1, _rebConCadena, _rebSinCadena;
+        private volatile bool _archivoCargando, _archivoListo;
+        private string _rebRotulo = "";
+        private DateTime _rebCadenaHora = DateTime.MinValue, _rebUltimoLog = DateTime.MinValue;
         private DateTime _ultimoAudit = DateTime.MinValue;
         private int _renders;
 
@@ -265,6 +290,16 @@ namespace PythiaGex
                 try { Repreciar(); } catch (Exception e) { Registrar(e); }
                 try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
             };
+            if (Fuente == FuenteDatos.Archivo)
+            {
+                // REBOBINADO: nada de vivo. La carga del archivo arranca en la
+                // primera vela (ahi se sabe desde que dia va el grafico). El
+                // temporizador queda solo para redibujar mientras carga.
+                _tick = () => { try { RedrawChart(new RedrawArg(ChartArea)); } catch { } };
+                SubscribeToTimer(_periodo, _tick);
+                Log("Gamma Hoy 0.3 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                return;
+            }
             SubscribeToTimer(_periodo, _tick);
             _ = Reloj.Medir(Log);
             _ultimaBajada = DateTime.UtcNow;
@@ -324,9 +359,113 @@ namespace PythiaGex
 
         protected override void OnCalculate(int bar, decimal value)
         {
+            if (Fuente == FuenteDatos.Archivo) { try { RebobinarBarra(bar); } catch (Exception e) { Registrar(e); } return; }
             if (bar != CurrentBar - 1) return;
             try { Repreciar(); } catch (Exception e) { Registrar(e); }
             try { Anotar(bar); } catch (Exception e) { Registrar(e); }
+        }
+
+        // ==================================================================
+        // Rebobinado: la historia cargada del grafico con la cadena de cada minuto
+        // ==================================================================
+        private static DateTime Utc(DateTime t) => t.Kind == DateTimeKind.Utc ? t : (t.Kind == DateTimeKind.Local ? t.ToUniversalTime() : DateTime.SpecifyKind(t, DateTimeKind.Utc));
+
+        private void CargarArchivo(DateTime desde)
+        {
+            if (_archivoCargando || _archivoListo) return;
+            _archivoCargando = true;
+            var raiz = Raiz();
+            var hasta = DateTime.UtcNow;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if (BajarArchivo)
+                        for (var d = desde.Date; d <= hasta.Date; d = d.AddDays(1))
+                            await Feed.Archivo.BajarDia(Url, raiz, d, Log).ConfigureAwait(false);
+                    var ls = Feed.Archivo.Cargar(raiz, desde, hasta, Log);
+                    lock (_candado) { _archivo = ls; _iArchivo = 0; _barraReb = -1; _fotosBarra.Clear(); }
+                    _archivoListo = true;
+                    Log("REBOBINADO: " + ls.Count + " cadenas cargadas; recalculo el grafico");
+                    try { RecalculateValues(); } catch (Exception e) { Registrar(e); }
+                }
+                catch (Exception e) { Registrar(e); }
+                finally { _archivoCargando = false; }
+            });
+        }
+
+        private void RebobinarBarra(int bar)
+        {
+            IndicatorCandle c;
+            try { c = GetCandle(bar); } catch { return; }
+            if (c == null) return;
+            var abre = Utc(c.Time);
+            if (!_archivoListo)
+            {
+                if (bar == 0) CargarArchivo(abre.AddDays(-1));
+                return;
+            }
+            List<Feed.Cadena> arch; lock (_candado) arch = _archivo;
+            if (arch == null || arch.Count == 0) return;
+            // el cierre de la vela: la siguiente abre ahi; la ultima, ahora
+            DateTime cierra;
+            try { cierra = bar + 1 < CurrentBar ? Utc(GetCandle(bar + 1).Time) : DateTime.UtcNow; } catch { cierra = abre.AddMinutes(1); }
+            if (cierra <= abre) cierra = abre.AddMinutes(1);
+            // puntero monotono; si ATAS recalcula desde cero, se reinicia todo
+            if (bar <= _barraReb) { _iArchivo = 0; _nucleo.Reiniciar(); lock (_candado) _fotosBarra.Clear(); _rebConCadena = _rebSinCadena = 0; }
+            _barraReb = bar;
+            while (_iArchivo + 1 < arch.Count && arch[_iArchivo + 1].GeneradoUtc <= cierra) _iArchivo++;
+            var cad = arch[_iArchivo];
+            double edadMax = (double)Math.Max(0.05m, ArchivoEdadMaxHoras);
+            if (cad.GeneradoUtc > cierra || (cierra - cad.GeneradoUtc).TotalHours > edadMax)
+            {
+                _rebSinCadena++;
+                lock (_candado) { _estela[bar] = new double[0]; _fotosBarra.Remove(bar); }
+                return;
+            }
+            _rebConCadena++;
+            _rebCadenaHora = cad.GeneradoUtc;
+            // la misma cuenta que en vivo: esta cadena, este cierre, esta hora, esta vela
+            RepreciarCon(cad, (double)c.Close, cierra, bar);
+            lock (_candado)
+            {
+                _fotosBarra[bar] = new Foto
+                {
+                    S = _S, Futuro = _futuro, ZeroVol = _zeroVol, ZeroOi = _zeroOi, MpVol = _mpVol, MnVol = _mnVol, MpOi = _mpOi, MnOi = _mnOi,
+                    PicoFut = _picoFut, ConvEnPrecio = _convEnPrecio, NetVol = _netVol, NetOi = _netOi, Doms = _doms, Cuad = _cuadrante, Corto = _cuadranteCorto,
+                    LibroDom = _libroDomUsado, LibroConv = _libroConvUsado, Mucho = _mucho, Mc = _maxChange, Vela = abre, Cadena = cad.GeneradoUtc,
+                };
+                if (_fotosBarra.Count > 40000) foreach (var k in _fotosBarra.Keys.Where(k => k < bar - 35000).ToList()) _fotosBarra.Remove(k);
+            }
+            // anota la vela ya cerrada con el estado vigente (Anotar(b) anota b-1)
+            if (bar + 1 < CurrentBar) try { Anotar(bar + 1); } catch (Exception e) { Registrar(e); }
+            if ((DateTime.UtcNow - _rebUltimoLog).TotalSeconds >= 10)
+            {
+                _rebUltimoLog = DateTime.UtcNow;
+                Log("REBOBINADO avanza: vela " + bar + " de " + CurrentBar + " (" + abre.ToString("yyyy-MM-dd HH:mm") + " UTC), con cadena " + _rebConCadena + ", sin " + _rebSinCadena);
+            }
+            if (bar >= CurrentBar - 1)
+            {
+                var es = CultureInfo.GetCultureInfo("es-AR");
+                _rebRotulo = "REBOBINADO  " + _rebConCadena.ToString("N0", es) + " velas con cadena, " + _rebSinCadena.ToString("N0", es) + " sin";
+                Log("REBOBINADO termino: " + _rebConCadena + " velas con cadena, " + _rebSinCadena + " sin; ultima cadena " + cad.GeneradoUtc.ToString("yyyy-MM-dd HH:mm") + " UTC");
+                try { _cent?.Volcar(true); } catch { }
+                try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
+            }
+        }
+
+        /// <summary>La vela bajo el mouse, o -1. En rebobinado la escalera y las
+        /// rayas muestran ESA vela: asi se revisa cualquier hora del archivo.</summary>
+        private int BarraBajoMouse()
+        {
+            try
+            {
+                var m = ChartInfo?.MouseLocationInfo;
+                if (m == null) return -1;
+                int b = m.BarBelowMouse;
+                return (b >= 0 && b < CurrentBar) ? b : -1;
+            }
+            catch { return -1; }
         }
 
         // ==================================================================
@@ -392,7 +531,7 @@ namespace PythiaGex
             {
                 var instr = InstrumentInfo != null ? InstrumentInfo.Instrument : "x";
                 var marco = ChartInfo != null && ChartInfo.ChartType != null ? ChartInfo.ChartType + "-" + ChartInfo.TimeFrame : "x";
-                _cent = new Centinela("hoy-" + instr, marco);
+                _cent = new Centinela((Fuente == FuenteDatos.Archivo ? "rebobinado-atas-" : "hoy-") + instr, marco);
             }
             IndicatorCandle c;
             try { c = GetCandle(cerrada); } catch { return; }
@@ -443,6 +582,7 @@ namespace PythiaGex
             List<Strike> perfil; double S, futuro, zeroVol, zeroOi, mpVol, mnVol, mpOi, mnOi, maxV, maxO, maxC, netVol, netOi;
             List<(double Fut, double Gex)> doms; string cuad, corto, origenBase, libroConv, libroDom, alerta; DateTime alertaHasta;
             (double Fut, double Delta)[] mc; bool mucho; double convPrecio, picoFut;
+            Foto foto = null; int barFoto = -1;
             lock (_candado)
             {
                 perfil = _perfil; S = _S; futuro = _futuro; zeroVol = _zeroVol; zeroOi = _zeroOi;
@@ -450,6 +590,18 @@ namespace PythiaGex
                 netVol = _netVol; netOi = _netOi; doms = _doms; cuad = _cuadrante; corto = _cuadranteCorto; origenBase = _baseOrigen;
                 libroConv = _libroConvUsado; libroDom = _libroDomUsado; alerta = _alerta; alertaHasta = _alertaHasta;
                 mc = _maxChange; mucho = _mucho; convPrecio = _convEnPrecio; picoFut = _picoFut;
+                if (Fuente == FuenteDatos.Archivo)
+                {
+                    barFoto = BarraBajoMouse();
+                    if (barFoto >= 0 && _fotosBarra.TryGetValue(barFoto, out foto))
+                    {
+                        S = foto.S; futuro = foto.Futuro; zeroVol = foto.ZeroVol; zeroOi = foto.ZeroOi; mpVol = foto.MpVol; mnVol = foto.MnVol;
+                        mpOi = foto.MpOi; mnOi = foto.MnOi; netVol = foto.NetVol; netOi = foto.NetOi; doms = foto.Doms; cuad = foto.Cuad; corto = foto.Corto;
+                        libroConv = foto.LibroConv; libroDom = foto.LibroDom; mc = foto.Mc; mucho = foto.Mucho; convPrecio = foto.ConvEnPrecio; picoFut = foto.PicoFut;
+                        alerta = "";
+                    }
+                    else foto = null;
+                }
             }
 
             var c = _c;
@@ -460,6 +612,15 @@ namespace PythiaGex
                 : "GAMMA HOY  " + corto + "  " + cuad + "   conv " + (convPrecio >= 0 ? "+" : "-") + " (" + libroConv + ")  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)) + (mucho ? " mucho" : " poco");
             string l2 = "vol CBOE " + edad + " · OI de ayer · base " + origenBase + " · dominantes por " + libroDom
                       + (_viva.Activa ? " · vivo Rithmic " + ((int)_viva.VolumenTotalHoy()).ToString("N0", es) + " contr" : " · vivo: " + _viva.Estado);
+            if (Fuente == FuenteDatos.Archivo)
+            {
+                string estado = _archivoListo ? (string.IsNullOrEmpty(_rebRotulo) ? "REBOBINADO  recorriendo el grafico..." : _rebRotulo)
+                              : (_archivoCargando ? "REBOBINADO  cargando el archivo de cadenas..." : "REBOBINADO  esperando la primera vela");
+                l1 = estado + (perfil.Count == 0 ? "" : "  |  " + corto + "  " + cuad + "  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)));
+                l2 = foto != null
+                    ? "vela " + foto.Vela.ToString("yyyy-MM-dd HH:mm") + " UTC · cadena publicada " + foto.Cadena.ToString("HH:mm") + " UTC (" + ((foto.Vela - foto.Cadena).TotalMinutes).ToString("0", es) + " min antes) · fut " + foto.Futuro.ToString("N2", es) + " · dominantes por " + libroDom + " · MOUSE sobre la vela"
+                    : "ultima vela · cadena " + (_rebCadenaHora == DateTime.MinValue ? "--" : _rebCadenaHora.ToString("yyyy-MM-dd HH:mm") + " UTC") + " · base " + origenBase + " · sin vivo · pasa el mouse por una vela para ver su escalera";
+            }
             int yc = area.Top + 26;
             var m1 = g.MeasureString(l1, f); var m2 = g.MeasureString(l2, fChica);
             int wc = Math.Max(m1.Width, m2.Width) + 12;
@@ -529,12 +690,18 @@ namespace PythiaGex
             if (VerConvexidad) { var mcx = g.MeasureString("convexity ladder (" + libroConv + ")", fChica); g.DrawString("convexity ladder (" + libroConv + ")", fChica, Color.FromArgb(110, ColTexto), xConv - mcx.Width, area.Top + 8); }
 
             // ---- rayas: zero de cada libro, majors del volumen, dominantes
+            int xRaya = int.MinValue;
+            if (foto != null) { try { xRaya = cont.GetXByBar(barFoto, false); } catch { xRaya = int.MinValue; } }
             void Raya(double p, Color col, float w, System.Drawing.Drawing2D.DashStyle ds, int alfa)
             {
                 if (double.IsNaN(p) || p <= 0) return;
                 int y; try { y = cont.GetYByPrice((decimal)p, false); } catch { return; }
                 if (y < area.Top || y > piso) return;
-                g.DrawLine(new RenderPen(Color.FromArgb(alfa, col), w, ds), xl0, y, xl1, y);
+                // en rebobinado la raya nace en la vela del mouse: se ve desde
+                // donde regia ese nivel hacia adelante, no una linea de punta a punta
+                int xa = xRaya != int.MinValue ? Math.Max(xl0, Math.Min(xl1 - 4, xRaya)) : xl0;
+                g.DrawLine(new RenderPen(Color.FromArgb(alfa, col), w, ds), xa, y, xl1, y);
+                if (xRaya != int.MinValue) g.FillEllipse(Color.FromArgb(alfa, col), new Rectangle(xa - 3, y - 3, 6, 6));
             }
             Raya(zeroOi, Color.FromArgb(160, 160, 170), 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
             Raya(zeroVol, ColZero, 1.4f, System.Drawing.Drawing2D.DashStyle.Dash, 200);
