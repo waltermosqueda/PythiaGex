@@ -47,6 +47,11 @@ SALIDA = os.path.join(RAIZ, "datos", "simulador", "cadenas")
 VELAS = os.path.join(RAIZ, "datos", "simulador", "velas")
 DIAS_MAX = 8.0
 TASA = 0.0375
+# los dos libros que sabe armar: indice de CBOE -> futuro de CME
+LIBROS = {
+    "SPX": {"padres": "SPX_OPT+SPXW_OPT", "fut": "ES_FUT", "raiz": "ES", "am": ("SPX",), "div": 0.012},
+    "NDX": {"padres": "NDX_OPT+NDXP_OPT", "fut": "NQ_FUT", "raiz": "NQ", "am": ("NDX",), "div": 0.008},
+}
 
 
 def carga(pat):
@@ -93,17 +98,19 @@ def iv_de(precio, S, K, T, r, call):
 
 
 # ---------------------------------------------------------------- vencimientos
-def hora_vencimiento(exp_date, asset):
-    """SPXW liquida al cierre (16:15 ET); SPX mensual, a la apertura (09:30 ET)."""
+def hora_vencimiento(exp_date, asset, am=("SPX",)):
+    """Las semanales (SPXW, NDXP) liquidan al cierre (16:15 ET); las mensuales AM
+    (SPX, NDX) a la apertura (09:30 ET)."""
     # horario de verano en septiembre: ET = UTC-4
-    h = dt.time(13, 30) if asset == "SPX" else dt.time(20, 15)
+    h = dt.time(13, 30) if asset in am else dt.time(20, 15)
     return dt.datetime.combine(exp_date, h, tzinfo=dt.timezone.utc)
 
 
-def base_del_dia(dia, base_manual):
+def base_del_dia(dia, base_manual, raiz="ES", sim="_SPX"):
     """La base medida ese dia por radar.py, si el archivo propio la tiene."""
-    for pat in (os.path.join(RAIZ, "datos", "historico", "cadena-ES-%s.jsonl.gz" % dia),
-                os.path.join(os.environ.get("APPDATA", ""), "ATAS", "PythiaGex", "cadenas", "local-ES-%s.jsonl" % dia)):
+    for pat in (os.path.join(RAIZ, "datos", "historico", "cadena-%s-%s.jsonl.gz" % (raiz, dia)),
+                os.path.join(os.environ.get("APPDATA", ""), "ATAS", "PythiaGex", "cadenas", "cadena-%s-%s.jsonl.gz" % (raiz, dia)),
+                os.path.join(os.environ.get("APPDATA", ""), "ATAS", "PythiaGex", "cadenas", "local-%s-%s.jsonl" % (raiz, dia))):
         if not os.path.exists(pat):
             continue
         op = gzip.open if pat.endswith(".gz") else io.open
@@ -119,7 +126,7 @@ def base_del_dia(dia, base_manual):
         if bases:
             return bases, "medida ese dia (%d corridas)" % len(bases)
     # las fotos crudas del cache: radar mide la base al vuelo
-    fotos = sorted(glob.glob(os.path.join(RAIZ, "datos", "cache", "_SPX-%s-*.json.gz" % dia.replace("-", ""))))
+    fotos = sorted(glob.glob(os.path.join(RAIZ, "datos", "cache", "%s-%s-*.json.gz" % (sim, dia.replace("-", "")))))
     if fotos:
         try:
             import radar
@@ -182,7 +189,8 @@ def main():
     ap.add_argument("dia")
     ap.add_argument("--retraso", type=int, default=902, help="segundos de retraso del volumen (CBOE: 902)")
     ap.add_argument("--base", type=float, default=None, help="base ES-SPX fija; si no se da y no hay medida ese dia, carry teorico")
-    ap.add_argument("--div", type=float, default=0.012, help="rendimiento por dividendos del SPX para el carry (1,2 %%)")
+    ap.add_argument("--div", type=float, default=None, help="rendimiento por dividendos para el carry (SPX 1,2 %%, NDX 0,8 %%)")
+    ap.add_argument("--libro", default="SPX", choices=sorted(LIBROS), help="SPX -> ES (defecto) o NDX -> NQ")
     ap.add_argument("--cada", type=int, default=1, help="minutos entre cadenas")
     ap.add_argument("--desde", default="13:30", help="UTC")
     ap.add_argument("--hasta", default="20:59", help="UTC")
@@ -190,12 +198,15 @@ def main():
     a = ap.parse_args()
     dia = a.dia
     d0 = dt.date.fromisoformat(dia)
+    LB = LIBROS[a.libro]
+    if a.div is None:
+        a.div = LB["div"]
 
     import pandas as pd
-    dfn = carga(os.path.join(D, "OPRA_PILLAR", "definition", "SPX_OPT+SPXW_OPT-%s-*.dbn.zst" % dia))
-    st = carga(os.path.join(D, "OPRA_PILLAR", "statistics", "SPX_OPT+SPXW_OPT-%s-*.dbn.zst" % dia))
-    oh = carga(os.path.join(D, "OPRA_PILLAR", "ohlcv-1m", "SPX_OPT+SPXW_OPT-%s-*.dbn.zst" % dia))
-    fut = carga(os.path.join(D, "GLBX_MDP3", "ohlcv-1m", "ES_FUT-*.dbn.zst"))
+    dfn = carga(os.path.join(D, "OPRA_PILLAR", "definition", "%s-%s-*.dbn.zst" % (LB["padres"], dia)))
+    st = carga(os.path.join(D, "OPRA_PILLAR", "statistics", "%s-%s-*.dbn.zst" % (LB["padres"], dia)))
+    oh = carga(os.path.join(D, "OPRA_PILLAR", "ohlcv-1m", "%s-%s-*.dbn.zst" % (LB["padres"], dia)))
+    fut = carga(os.path.join(D, "GLBX_MDP3", "ohlcv-1m", "%s-*.dbn.zst" % LB["fut"]))
 
     # el futuro vigente ese dia: el ES con mas volumen en la sesion
     fdia = fut[(fut.index >= pd.Timestamp(dia, tz="UTC")) & (fut.index < pd.Timestamp(d0 + dt.timedelta(days=1), tz="UTC"))]
@@ -210,7 +221,7 @@ def main():
     vencs = {}
     for r in dfn.itertuples():
         e = r.expiration.date()
-        vencs.setdefault(e, hora_vencimiento(e, r.asset))
+        vencs.setdefault(e, hora_vencimiento(e, r.asset, LB["am"]))
     vlist = sorted(vencs)
     vidx = {e: i for i, e in enumerate(vlist)}
     info = {}
@@ -223,13 +234,13 @@ def main():
 
     # volumen y ultimo precio por contrato, acumulados minuto a minuto
     oh = oh.sort_index()
-    bases, origen_base = base_del_dia(dia, a.base)
+    bases, origen_base = base_del_dia(dia, a.base, LB["raiz"], "_" + a.libro)
     venc_fut = vencimiento_futuro(contrato)
     print("base:", origen_base, "| futuro vence", venc_fut.date())
 
     os.makedirs(SALIDA, exist_ok=True)
     os.makedirs(VELAS, exist_ok=True)
-    salida = os.path.join(SALIDA, "sim-ES-%s-r%d.jsonl.gz" % (dia, a.retraso))
+    salida = os.path.join(SALIDA, "sim-%s-%s-r%d.jsonl.gz" % (LB["raiz"], dia, a.retraso))
     if os.path.exists(salida):
         os.remove(salida)
     t = dt.datetime.combine(d0, dt.time.fromisoformat(a.desde), tzinfo=dt.timezone.utc)
@@ -317,7 +328,7 @@ def main():
                 "cadena_ts": corte.strftime("%Y-%m-%d %H:%M:%S"),
                 "edad_min": round(a.retraso / 60.0, 1), "retraso_s": a.retraso,
                 "spot": round(S, 2), "base": round(base, 4), "base_confiable": True, "base_cruda": round(base, 4),
-                "base_error_ticks": 0, "base_origen": origen_base, "contrato": contrato, "fuente": "databento OPRA %s" % dia,
+                "base_error_ticks": 0, "base_origen": origen_base, "contrato": contrato, "fuente": "databento OPRA %s %s" % (a.libro, dia),
                 "cadena": {"ts": corte.strftime("%Y-%m-%d %H:%M:%S"), "spot_idx": round(S, 2),
                            "campos": "strike,venc,oi_call,oi_put,iv_call,iv_put,vol_call,vol_put",
                            "vencimientos": [{"f": e.isoformat(), "dias": round((vencs[e] - t).total_seconds() / 86400.0, 4)} for e in vlist],
