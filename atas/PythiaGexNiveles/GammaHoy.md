@@ -284,3 +284,30 @@ tabla por strike del nucleo; en pantalla, la fila 7706 mostraba "OI 7,2k v
 +2460M. Mismo nucleo, misma cadena: no hay otra fuente posible.
 Lo que NO esta: vanna y charm (no se calculan; ponerlos seria inventar) y la
 cinta de Rithmic por strike (otro libro, strikes del futuro; pendiente).
+
+## Por que las dominantes salen en linea recta de noche, y el libro de Rithmic (2026-09-08, madrugada)
+
+El operador comparo un tramo con datos de Databento (nube dispersa de guiones,
+"como queria") contra el tramo en vivo de la noche (lineas rectas). Medido en
+el archivo propio (volumen total de la cadena, cadena a cadena):
+- 09-03 (Databento, rueda americana): 60 cadenas por hora y el volumen cambio
+  en 59 de cada 60. La dominante (centroide) se mueve con cada cambio: banda.
+- 07 noche y 08 madrugada (nuestro archivo de CBOE): 9-10 cadenas en total y
+  casi sin cambios: CBOE congela la cadena fuera de la rueda. Sin cambios no
+  hay movimiento: linea recta. No es un bug ni una logica que falte; es la
+  hora. En la rueda, la rama "cadenas" trae una cadena por minuto y se vera
+  parecido a Databento (misma fuente de fondo: OI 100 % igual, volumen 82 %).
+Diferencias que quedan aun de dia: el retraso de CBOE (902 s: los cambios
+llegan tarde y en bloques) y la IV (CBOE de puntas, Databento del ultimo
+precio operado: mas ruidosa, parte de la "nube" de Databento es ese ruido).
+
+Gamma Hoy 1.0, "Libro en vivo": CBOE_SPX (como hasta ahora) o Rithmic_ES:
+la cadena de opciones de ES armada desde tu ATAS cada 10 s, con el volumen
+del dia por strike en tiempo real (CurrentDayTotalVolume del conector), OI
+de ayer, IV despejada de las puntas, strikes del futuro (base 0) y gamma
+Black-76. Es lo que se puede obtener desde ATAS sin nube ni retraso: el mapa
+respira con cada operacion. Salvedades: es OTRO libro (ES, no SPX: niveles
+20-30 puntos distintos, medido antes), mas fino, y de noche tambien esta
+quieto porque no opera nadie. El archivo del pasado sigue siendo SPX. Si el
+libro de Rithmic no llega a 12 strikes con las dos puntas, sigue con CBOE y
+lo dice en la cabecera ("RITHMIC FLACO").
