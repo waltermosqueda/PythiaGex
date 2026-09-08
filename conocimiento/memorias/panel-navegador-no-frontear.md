@@ -19,3 +19,10 @@ Lo que queda es el panel de la app. Los errores lo decían: *"the Browser pane i
 **Why:** el panel muestra una pestaña por vez y es superficie compartida. Cada `tabs_select` o `navigate` mío le mueve la vista abajo de los pies.
 
 **How to apply:** trabajar **siempre en pestañas de fondo** (`tabs_create` con `foreground:false` y `navigate` con `tabId`) y **no llamar nunca `tabs_select`** salvo que él pida expresamente mirar algo. Toda la extracción funciona igual en pestañas ocultas — la auditoría completa de las cinco webs se hizo así. Si él quiere navegar mientras tanto, que lo haga en Edge. Ver [[rutas-y-apis-gex]].
+
+**Ampliado 2026-09-07 (observacion propia, no un reclamo suyo):** el panel se abre y se pone adelante tambien con `preview_start` y,
+peor, cada vez que se escribe o edita un `.html` con Write/Edit (el hook
+"is now visible in the Browser pane" lo abre solo). Regla: los .html se
+parchean con Python desde Bash, nunca con Write/Edit; no usar preview_start
+salvo pedido; si el panel quedo abierto, cerrarlo con tabs_close (el ultimo
+tab cierra el panel) antes de seguir.

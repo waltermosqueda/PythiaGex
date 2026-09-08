@@ -177,3 +177,21 @@ de YouTube (panel girando, get_transcript 400): hay que transcribir el audio.
 - El de 51 min ("Deja de adivinar") es el stream completo del que salio el
   de 27: mismas afirmaciones (volumen, pelotitas 1/5/15, QQQ->NQ, Big Trades
   en cobertura, order flow proximo, version 13).
+
+**Re-auditoria 2026-09-07 noche (pregunta del operador por la "nube" de
+puntos):** la nube = hasta 5 dominantes por vela como guiones + libro SPY
+(strikes de ~10 pts de ES) + burbujas de Big Trades con tamaño sobre la vela.
+No es un nivel distinto. Nuestras filas horizontales venian de 2 dominantes,
+feed cada 5 min y strikes de SPX. Gamma Hoy 0.6 dibuja guiones por vela,
+semillas del Max Change (30/5/1) y feed por minuto; los Big Trades de
+SPY/SPX no tienen fuente gratis. El ladder derecho de GAMMAlito es a 90 DTE,
+el nuestro al horizonte del mapa: pendiente. Ver GammaHoy.md.
+
+**Medido con OpenCV el 2026-09-07 (analizar_guiones.py, 4 videos, 1.300
+cuadros):** (1) un guion por ACTUALIZACION, hasta 4-6 por vela reciente;
+(2) la dominante es una BANDA de ~5 pts de NQ que ondula: centroide ponderado
+por gamma, no argmax de strike (confirma las 284 lineas no planas); (3) dos
+colores: amarillo hue 29 (primaria) y naranja hue 19; (4) las barras NO se
+mueven en vertical (|dy| propio p90 <= 1,9 px), cambian de largo; el sube y
+baja es la autoescala del grafico; tres pelotitas en la punta (15/5/1).
+Gamma Hoy 0.7 lo aplica (centroide radio 12, guion por actualizacion).

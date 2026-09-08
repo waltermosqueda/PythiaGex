@@ -48,3 +48,9 @@ una etiqueta pegada al borde derecho queda cortada por los numeros del eje.
 Medido: hacen falta unos **70 pixeles** de margen.
 
 Ver [[compilar-indicadores-atas]] y [[datos-ocultos-de-atas]].
+
+**Matizado 2026-09-07:** con el mercado cerrado ATAS no llama a OnCalculate ni
+al aplicar el indicador; pero `RecalculateValues()` llamado desde el propio
+indicador SI recorre todo el grafico (5.472 velas de 5 min en 6 segundos con
+Gamma Hoy en modo Archivo, sin colgar nada). La carga pesada hay que
+dispararla uno mismo desde el temporizador, no esperar la primera vela.

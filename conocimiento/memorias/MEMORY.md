@@ -52,3 +52,8 @@
 - [Pestañas por UIA y el eje](atas-tabs-por-uia-y-eje.md) — si el clic no cambia la pestaña, SelectionItemPattern; y el lienzo del indicador no llega al eje de precio (clip medido).
 - [ES contra NQ: el respeto medido](es-vs-nq-respeto.md) — NQ parece respetar mas por grilla doble de densa y 1,7x de movimiento; contra placebo no gana (62 vs 65 %); en ES ni muestra.
 - [Anatomia de GAMMAlito](anatomia-gammalito.md) — 17 videos transcriptos: Max Change = punta de la barra hace 15/5/1 min; el perfil respira por volumen; "se acelera el tape" no le gana al placebo; las zonas del video en vivo son de Zenith.
+- [Fuentes de datos historicos](fuentes-datos-historicos.md) — el futuro ya lo tenemos por Rithmic; lo escaso es la cadena intradia: 1 dia completo grabado (09-03), Databento con USD 125 gratis, ThetaData USD 40/mes; ATAS no importa archivos.
+- [Databento: cuenta y costos](databento-cuenta-y-costos.md) — USD 125 de credito pero tarjeta sin limite: techo de 60 en el script; una rueda entera (ES+SPX opciones+futuro) cuesta ~4,3.
+- [Rebobina: el simulador](rebobina-simulador.md) — Gamma Hoy afuera de ATAS con los mismos .cs; equivalencia AUDIT probada; el DLL nuevo no esta instalado en ATAS.
+- [Archivo de cadenas y respaldo](archivo-cadenas-y-respaldo.md) — rama cadenas cada minuto, viva de Rithmic solo con su ATAS abierto, espejo a Inversiones (OneDrive no corria).
+- [Medir videos con OpenCV](medir-videos-con-opencv.md) — analizar_guiones.py: guiones y barras de GAMMAlito medidos cuadro a cuadro; las trampas (velas naranjas, rotulos, scroll).

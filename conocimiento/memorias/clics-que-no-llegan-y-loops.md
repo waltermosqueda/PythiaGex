@@ -102,3 +102,9 @@ quiero clickear**. La solucion que pide, en cualquier contexto: **correr la
 ventana un poco (por PowerShell, ver [[mover-ventana-atas-oft-platform]]) y
 volver a intentar el clic**, antes de cambiar de metodo o de pedirselo a el.
 Esa noche paso cuatro veces con el dialogo "Save current workspace?" de ATAS.
+
+**Reafirmado 2026-09-07 (dos veces, molesto):** "cuando los clicks no te
+funcionan es porque chocan con el chat: corre TU ventana y volve a intentar".
+No cerrar nada, no cambiar de metodo primero: mover la ventana del chat
+(Claude) fuera del area y repetir el clic. UIA (InvokePattern) sigue siendo
+el camino que no depende de eso.

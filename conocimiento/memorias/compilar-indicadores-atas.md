@@ -67,3 +67,12 @@ Si el diálogo está tan abajo que no se ven los botones, arrastrar la barra de 
 - **Con el mercado cerrado no hay ticks y OnCalculate no corre**: si el calculo vive solo ahi, la pantalla queda vacia o vieja. Repreciar tambien desde el temporizador.
 - Recarga en caliente: al copiar el DLL, ATAS escribe `Changed library` y avisa "reload indicators in the status bar", pero por UI Automation no aparece ningun control de recarga en la barra de estado (solo Server, conectores, engranaje y version). Reiniciar sigue siendo el camino.
 - Agregar un indicador a un grafico sin clics: UI Automation sobre el boton "Indicators" del panel (Invoke), escribir el nombre en el buscador, seleccionar la fila, Invoke "Add to chart" y luego "Apply". Funciona aunque la ventana del chat tape los botones.
+
+**Reinicio de ATAS por script (2026-09-07):** CloseMainWindow -> dialogo "Save
+current workspace?" -> UIA Invoke "Save and close" -> esperar que muera
+OFT.Platform (~8 s) -> Start-Process OFT.Platform.exe -> ventana
+"Authorization" con la clave recordada -> el boton "Connect" NO es Button para
+UIA: es un Text con InvokePattern (clic_elemento.ps1 lo invoca) -> ~30 s hasta
+"ATAS - [Default workspace]" -> ShowWindow(3)+SetForegroundWindow porque
+arranca minimizada. Todo sin tocar credenciales. Los .html NO se editan con
+Write/Edit (abre el panel del navegador): parchear con Python.
