@@ -291,7 +291,14 @@ namespace PythiaGex
                 var nombre = "cadena-" + raiz + "-" + dia + ".jsonl.gz";
                 var p = Path.Combine(Carpeta, nombre);
                 bool hoy = diaUtc.Date == DateTime.UtcNow.Date;
-                if (File.Exists(p) && (!hoy || (DateTime.UtcNow - File.GetLastWriteTimeUtc(p)).TotalMinutes < 15)) return true;
+                if (File.Exists(p))
+                {
+                    // hoy: se refresca cada 15 min. Un dia pasado: sirve si se bajo DESPUES
+                    // de que el dia termino (un archivo bajado a media tarde es parcial y se
+                    // vuelve a bajar entero una vez; sin esto el 7 quedaba cortado a las 22:47).
+                    if (hoy && (DateTime.UtcNow - File.GetLastWriteTimeUtc(p)).TotalMinutes < 15) return true;
+                    if (!hoy && File.GetLastWriteTimeUtc(p) > diaUtc.Date.AddDays(1).AddHours(1)) return true;
+                }
                 try
                 {
                     var b = (url ?? "").Trim();
