@@ -457,3 +457,10 @@ CBOE directo). Resultados, con numeros:
 Lo que NO se pudo cotejar con una fuente independiente: el volumen y la IV
 intradia (CBOE es la unica fuente gratis; Databento sin credito). La gamma
 si, contra la de CBOE.
+
+Cierre de la auditoria (12:52 local): el reintento solo no alcanzo (NullReference
+6 de 6 con Type+Exchange; Code = "ES" devuelve la raiz sin series). Lo que
+funciona: buscar POR CODIGO DE CONTRATO derivado del micro local (MESU6 ->
+ESU6, y ESZ6 como siguiente). Resultado en el log: "6 vencimientos, 4318
+contratos (ESU6)" y, por primera vez, "6 vencimientos, 3720 contratos (NQU6)":
+el libro de Rithmic vuelve a tener 0DTE en ES y lo tiene tambien en NQ.

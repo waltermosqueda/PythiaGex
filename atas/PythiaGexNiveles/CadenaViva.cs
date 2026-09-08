@@ -221,115 +221,86 @@ namespace PythiaGex
                                 && string.Equals(Raiz(x.Code), cod, StringComparison.OrdinalIgnoreCase))
                          .OrderBy(x => x.Expiration).FirstOrDefault();
 
-                _futuro = Buscar(grande);
-
-                // Si el grande no esta en el catalogo local se lo pide al
-                // servidor: el catalogo solo trae lo que ya esta suscrito, y
-                // quedarse con el micro cuesta los vencimientos diarios.
-                if (_futuro == null)
+                // CANDIDATOS DEL FUTURO GRANDE, EN ORDEN: el local por raiz; si no esta, el
+                // servidor POR CODIGO DE CONTRATO (Code = "ESU6"), derivado del micro que si
+                // esta local (MESU6 -> ESU6), y su trimestre siguiente (ESZ6). Medido el
+                // 2026-09-08: el filtro Type+Exchange tira NullReference siempre, y Code = "ES"
+                // devuelve la raiz sin series ("Get option series error: no data"): hace falta
+                // el contrato con vencimiento. El micro queda de ultimo recurso (solo trimestral).
+                var candidatos = new List<Security>();
+                var localGrande = Buscar(grande);
+                if (localGrande != null) candidatos.Add(localGrande);
+                var microSec = Buscar(micro);
+                if (localGrande == null && microSec != null)
                 {
-                    // OJO CON EL FILTRO POR CODIGO: ESTA ROTO.
-                    //
-                    // SearchSecuritiesAsync con Code puesto tira
-                    // ArgumentOutOfRangeException("length ('-1')"), medido con
-                    // Code=MNQ y con Code=NQ. Se busca por mercado y se filtra
-                    // del lado nuestro, que ademas es mas robusto.
-                    // CON ATAS RECIEN ABIERTO LA BUSQUEDA TIRA NullReference (medido el
-                    // 2026-09-08 en cada reinicio): el servicio todavia no esta listo. Se
-                    // reintenta hasta 6 veces cada 15 s antes de resignarse al micro, que
-                    // solo lista el trimestral y deja el mapa de Rithmic sin 0DTE.
-                    for (int intento = 1; intento <= 6 && _futuro == null; intento++)
+                    foreach (var cod in CodigosGrande(microSec.Code, grande))
                     {
                         try
                         {
-                            var r = await _conn.SearchSecuritiesAsync(
-                                new SecurityFilter { Type = SecType.Future, Exchange = "CME" })
+                            var r = await _conn.SearchSecuritiesAsync(new SecurityFilter { Code = cod, Exchange = "CME", RequestId = DateTime.UtcNow.Ticks % 1000000000L })
                                 .ConfigureAwait(false);
-                            _futuro = (r ?? Enumerable.Empty<Security>())
-                                .Where(x => string.Equals(Raiz(x.Code), grande, StringComparison.OrdinalIgnoreCase)
-                                         && x.Expiration > DateTime.Now.Date)
-                                .OrderBy(x => x.Expiration).FirstOrDefault();
-                            if (_futuro != null) L("el grande no estaba local, vino del servidor" + (intento > 1 ? " (intento " + intento + ")" : "") + ": " + _futuro.Code);
-                            else if (intento == 6) L("el servidor no devolvio " + grande + " en 6 intentos");
+                            var lista = (r ?? Enumerable.Empty<Security>()).ToList();
+                            var hit = lista.FirstOrDefault(x => string.Equals(x.Code, cod, StringComparison.OrdinalIgnoreCase))
+                                   ?? lista.Where(x => string.Equals(Raiz(x.Code), grande, StringComparison.OrdinalIgnoreCase) && x.Expiration > DateTime.Now.Date)
+                                           .OrderBy(x => x.Expiration).FirstOrDefault();
+                            if (hit != null) { candidatos.Add(hit); L("del servidor: " + hit.Code + " (pedido " + cod + ", " + lista.Count + " devueltos)"); }
+                            else L("el servidor no devolvio " + cod + " (" + lista.Count + " devueltos)");
                         }
-                        catch (Exception e)
-                        {
-                            L("no se pudo buscar " + grande + " (intento " + intento + " de 6): " + e.Message);
-                            if (intento < 6) await Task.Delay(15000).ConfigureAwait(false);
-                        }
+                        catch (Exception e) { L("no se pudo buscar " + cod + ": " + e.Message); }
                     }
                 }
+                if (microSec != null) candidatos.Add(microSec);
+                if (candidatos.Count == 0) { L("no esta el futuro de " + raiz + " en el catalogo"); return; }
 
-                if (_futuro == null)
-                {
-                    _futuro = Buscar(micro);
-                    if (_futuro != null)
-                        L("sin " + grande + ": se usa el micro " + _futuro.Code +
-                          " (puede no tener vencimientos diarios)");
-                }
-                if (_futuro == null) { L("no esta el futuro de " + raiz + " en el catalogo"); return; }
-
-                // EL PRECIO DE REFERENCIA ES EL DEL FUTURO DE LA CADENA.
-                // Tomarlo del grafico fue un error que ya se cometio: desde un
-                // grafico de MNQ se buscaron los strikes de ES alrededor de
-                // 29511 y se cayo en 10800-12000, donde no cotiza nadie.
-                try { _conn.SubscribeToMarketData(new[] { _futuro },
-                          SubscriptionType.Prints | SubscriptionType.Best); }
-                catch { }
-                for (int i = 0; i < 15 && Futuro <= 0; i++)
-                {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    Futuro = (double)(_futuro.LastTradePrice ?? 0m);
-                    if (Futuro <= 0 && _futuro.BestBidPrice > 0 && _futuro.BestAskPrice > 0)
-                        Futuro = (double)((_futuro.BestBidPrice + _futuro.BestAskPrice) / 2m);
-                }
-                if (Futuro <= 0) { L("no llego el precio del futuro"); return; }
-                L("futuro " + _futuro.Code + " en " + Futuro.ToString("0.##", CultureInfo.InvariantCulture));
-
-                // las series y sus contratos
+                // LA FECHA DE HOY ES LA DE NUEVA YORK, NO LA DE ACA (entre medianoche y las 2
+                // en Argentina en Nueva York todavia es el dia anterior).
+                var hoy = HoyEnNuevaYork();
                 List<Security> ops = new();
-                // LA FECHA DE HOY ES LA DE NUEVA YORK, NO LA DE ACA.
-            //
-            // Estaba tomada de DateTime.Now.Date, o sea la fecha local del
-            // operador. Entre medianoche y las 2 de la manana en Argentina, en
-            // Nueva York todavia es el dia anterior, y ahi la cuenta de dias al
-            // vencimiento salia corrida en uno justo en la franja horaria en la
-            // que el mercado esta abierto.
-            var hoy = HoyEnNuevaYork();
-                try
+                List<OptionSeries> series = new(), todasSeries = new();
+                foreach (var cand in candidatos)
                 {
-                    var ss = await ((dynamic)feed).GetOptionSeriesAsync(_futuro);
-                    var todasSeries = ((IEnumerable<OptionSeries>)ss)
+                    _futuro = cand; Futuro = 0; ops.Clear(); series.Clear(); todasSeries.Clear();
+                    // EL PRECIO DE REFERENCIA ES EL DEL FUTURO DE LA CADENA.
+                    try { _conn.SubscribeToMarketData(new[] { _futuro }, SubscriptionType.Prints | SubscriptionType.Best); }
+                    catch { }
+                    for (int i = 0; i < 15 && Futuro <= 0; i++)
+                    {
+                        await Task.Delay(1000).ConfigureAwait(false);
+                        Futuro = (double)(_futuro.LastTradePrice ?? 0m);
+                        if (Futuro <= 0 && _futuro.BestBidPrice > 0 && _futuro.BestAskPrice > 0)
+                            Futuro = (double)((_futuro.BestBidPrice + _futuro.BestAskPrice) / 2m);
+                    }
+                    if (Futuro <= 0) { L("no llego el precio de " + _futuro.Code); continue; }
+                    L("futuro " + _futuro.Code + " en " + Futuro.ToString("0.##", CultureInfo.InvariantCulture));
+                    try
+                    {
+                        var ss = await ((dynamic)feed).GetOptionSeriesAsync(_futuro);
+                        todasSeries = ((IEnumerable<OptionSeries>)ss)
                                       .Where(z => (z.Expiration.Date - hoy).Days >= 0)
                                       .OrderBy(z => z.Expiration).ToList();
-                    var series = todasSeries
-                                 .Where(z => (z.Expiration.Date - hoy).Days <= diasMax).ToList();
-
-                    // ANTES DE NO DIBUJAR NADA, DIBUJAR LO QUE HAY Y DECIRLO.
-                    //
-                    // En MNQ el unico vencimiento listado es el trimestral, a
-                    // 15 dias: con el horizonte de 7 quedaban CERO series y el
-                    // indicador no dibujaba nada sin explicar por que. Un mapa
-                    // de 15 dias es peor que uno de 0DTE para scalpear -- la
-                    // gamma del dia es la que aprieta -- pero es muchisimo
-                    // mejor que una pantalla en blanco, siempre que se avise.
-                    if (series.Count == 0 && todasSeries.Count > 0)
-                    {
-                        series = todasSeries.Take(Math.Max(1, vencMax)).ToList();
-                        DiasReales = (series[0].Expiration.Date - hoy).Days;
-                        L("sin vencimientos a " + diasMax + " dias; el mas cercano esta a "
-                          + DiasReales + ": se usa igual y se avisa en pantalla");
+                        series = todasSeries.Where(z => (z.Expiration.Date - hoy).Days <= diasMax).ToList();
+                        // ANTES DE NO DIBUJAR NADA, DIBUJAR LO QUE HAY Y DECIRLO.
+                        if (series.Count == 0 && todasSeries.Count > 0)
+                        {
+                            series = todasSeries.Take(Math.Max(1, vencMax)).ToList();
+                            DiasReales = (series[0].Expiration.Date - hoy).Days;
+                            L("sin vencimientos a " + diasMax + " dias en " + _futuro.Code + "; el mas cercano esta a "
+                              + DiasReales + ": se usa igual y se avisa en pantalla");
+                        }
+                        else if (series.Count > 0)
+                            DiasReales = (series[0].Expiration.Date - hoy).Days;
+                        foreach (var serie in series)
+                        {
+                            var cc = await ((dynamic)feed).GetOptionsAsync(serie);
+                            ops.AddRange(((IEnumerable<Security>)cc).Where(o => o.StrikePrice.HasValue));
+                        }
+                        L(series.Count + " vencimientos, " + ops.Count + " contratos (" + _futuro.Code + ")");
                     }
-                    else if (series.Count > 0)
-                        DiasReales = (series[0].Expiration.Date - hoy).Days;
-                    foreach (var serie in series)
-                    {
-                        var cc = await ((dynamic)feed).GetOptionsAsync(serie);
-                        ops.AddRange(((IEnumerable<Security>)cc).Where(o => o.StrikePrice.HasValue));
-                    }
-                    L(series.Count + " vencimientos, " + ops.Count + " contratos");
+                    catch (Exception e) { L("no se pudieron listar las series de " + _futuro.Code + ": " + e.Message); continue; }
+                    bool ultimo = ReferenceEquals(cand, candidatos[candidatos.Count - 1]);
+                    if (ops.Count > 0 && (DiasReales <= diasMax || ultimo)) break;
+                    if (ops.Count > 0) L(_futuro.Code + " solo lista vencimientos lejanos: pruebo el siguiente candidato");
                 }
-                catch (Exception e) { L("no se pudieron listar las series: " + e.Message); return; }
                 if (ops.Count == 0) { L("las series vinieron vacias"); return; }
 
                 // VENTANA ALREDEDOR DEL DINERO.
@@ -842,6 +813,28 @@ namespace PythiaGex
         /// El codigo termina en letra de mes + digito(s) de ano. Se cortan
         /// desde atras mientras haya digitos, y despues una letra mas.
         /// </summary>
+        /// <summary>Del codigo del micro al del grande y su trimestre siguiente:
+        /// MESU6 -> ESU6, ESZ6 (y M2KU6 -> RTYU6, RTYZ6).</summary>
+        private static IEnumerable<string> CodigosGrande(string codMicro, string grande)
+        {
+            var salida = new List<string>();
+            string cod = codMicro ?? "";
+            if (cod.StartsWith("M2K", StringComparison.OrdinalIgnoreCase)) cod = "RTY" + cod.Substring(3);
+            else if (cod.Length > 1 && cod.StartsWith("M", StringComparison.OrdinalIgnoreCase)
+                     && cod.Substring(1).StartsWith(grande, StringComparison.OrdinalIgnoreCase)) cod = cod.Substring(1);
+            if (!cod.StartsWith(grande, StringComparison.OrdinalIgnoreCase) || cod.Length < grande.Length + 2) { salida.Add(grande); return salida; }
+            salida.Add(cod);
+            const string meses = "HMUZ";
+            char m = char.ToUpperInvariant(cod[cod.Length - 2]); char y = cod[cod.Length - 1];
+            int im = meses.IndexOf(m);
+            if (im >= 0 && char.IsDigit(y))
+            {
+                int im2 = (im + 1) % 4; int y2 = (y - '0') + (im2 == 0 ? 1 : 0);
+                salida.Add(grande + meses[im2] + (char)('0' + (y2 % 10)));
+            }
+            return salida;
+        }
+
         private static string Raiz(string codigo)
         {
             var c = (codigo ?? "").Trim().ToUpperInvariant();
