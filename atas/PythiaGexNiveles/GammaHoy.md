@@ -338,3 +338,55 @@ cercana hacia atras (hasta 30 velas) en vez de saltar al vivo.
 Verificado en pantalla (MNQ M5, CBOE): mouse sobre 07-09-2026 09:05 y 21:55
 UTC-3, las bandas y rayas quedaron en 29.780 / 29.523 en las dos capturas y
 solo cambio el renglon; con el mouse fuera del grafico el renglon desaparece.
+
+## 1.3: gatillos de order flow en la banda, medidos antes de dibujar (2026-09-08, madrugada)
+
+Pedido: un detector (delta inusual, prints grandes, tren de deltas, absorcion,
+"ballena") que dispare SOLO en los extremos de las bandas dominantes, que el
+precio le de la razon y que no llene el grafico de humo. Se hizo al reves de
+lo habitual: primero el laboratorio (laboratorio/gatillos.py) sobre lo que el
+propio indicador ya habia anotado (15 dias de ES minuto a minuto: O/H/L/C,
+volumen, ops, delta y dominantes por vela), despues el dibujo.
+
+La regla del laboratorio es simetrica y no admite interpretacion: desde el
+cierre de la vela del gatillo, ¿llego G puntos a favor antes que G en contra
+en H minutos? Placebo: la misma condicion de order flow con la dominante
+corrida a otro strike. Control: la misma condicion en cualquier vela.
+
+Lo que salio (ES M1, rueda americana, 6/6 pts en 30 min):
+- El order flow SOLO, sin banda, es una moneda: 46-53 % en 460-2300 casos,
+  para todas las condiciones (delta z, prints grandes, tren, divergencia).
+- Con la banda pero SIN filtrar como se movio la dominante: nada (384
+  entradas, todo entre 42 y 53 %, placebo igual). Causa: la dominante
+  centroide persigue al volumen y "entra" sola en el precio.
+- Con la dominante QUIETA (se movio <= 2 pts en 5 velas): 99 entradas en 14
+  ruedas. La unica condicion que se repite en todas las variantes es "tres
+  deltas seguidos EN CONTRA de la llegada -> rechazo": 70 % de 27 casos
+  (IC 52-84) contra 37 % del placebo, y en las dos mitades (100 % de 8, 53 %
+  de 17). Con 10 a favor / 5 en contra: 53 % de 15 contra 20 %.
+- Consistente con eso: "tres deltas HACIA la banda -> continuacion" pierde
+  contra el placebo en todas las variantes (40-48 % contra 54-57 %), y
+  "ruptura con delta a favor" tambien (25 % de 20).
+- De noche se diluye (60 % de 35 contra 50 %). En velas de 5 minutos hay 12
+  entradas en 14 dias: no se puede decir nada.
+- ADVERTENCIA: son 13 hipotesis por 10 configuraciones. Un 70 % de 27 puede
+  ser azar. Es una pista, no una prueba; hacen falta 60+ casos.
+
+El indicador (GatilloBanda.cs, la misma logica que el laboratorio):
+- Ajuste "Gatillos de order flow en la banda (EXPERIMENTAL)": RechazoTren
+  (default: solo la pista), Todos (tambien rechazo por delta, divergencia y
+  ruptura con delta en gris), Ninguno. "Dominante quieta" 0,026 % del precio
+  en 5 velas. "Solo en la rueda americana" (default si).
+- Dibujo: un triangulo apuntando hacia adentro del canal pegado a la vela
+  (arriba del maximo para cortos, abajo del minimo para largos) con el rotulo
+  "tren". Se calcula sobre el pasado (recorrido del archivo) y en vivo.
+- Registro: cada disparo a pythiagex-gatillos-<inst>-<marco>.jsonl (vivo, se
+  agrega) y pythiagex-gatillos-archivo-... (se pisa en cada recorrido), con
+  hora, tipo, lado, precio, dominante y dz. El laboratorio los juzga.
+- Centinela: campo nuevo "of" por vela con dmax/dmin (delta maximo y minimo,
+  historico) y en vivo big_n/big_max/big_buy/big_sell (operaciones acumuladas
+  de OnCumulativeTrade con >= "Print grande" contratos, default 50). Es la
+  materia prima para medir "ballenas" cuando haya muestra: hoy no se puede.
+Primer recorrido sobre MES M5 (15 dias, todas las horas): 46 entradas a banda
+quieta, 53 disparos, 16 rechazo·tren. Lo que se ve es exactamente lo que se
+midio; si el laboratorio lo tira abajo, se saca.

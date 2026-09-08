@@ -68,6 +68,15 @@ namespace PythiaGex
                            double volumen, double ticks, double delta,
                            double spot, IEnumerable<KeyValuePair<string, double>> niveles)
         {
+            Anotar(barra, hora, o, h, l, c, volumen, ticks, delta, spot, niveles, null);
+        }
+
+        /// <summary>Igual, con campos extra de order flow ya en JSON (sin la coma
+        /// inicial): p. ej. "dmax":12,"dmin":-30,"big_n":2,"big_max":85. Van en "of".</summary>
+        public void Anotar(int barra, DateTime hora, double o, double h, double l, double c,
+                           double volumen, double ticks, double delta,
+                           double spot, IEnumerable<KeyValuePair<string, double>> niveles, string extra)
+        {
             if (barra <= _ultimaBarra) return;
             lock (_llave)
             {
@@ -101,7 +110,9 @@ namespace PythiaGex
                     sb.Append('"').Append(kv.Key).Append("\":")
                       .Append(kv.Value.ToString("0.####", iv));
                 }
-                sb.Append("}}").Append('\n');
+                sb.Append('}');
+                if (!string.IsNullOrEmpty(extra)) sb.Append(",\"of\":{").Append(extra).Append('}');
+                sb.Append('}').Append('\n');
                 _buf.Append(sb);
             }
             Volcar(false);

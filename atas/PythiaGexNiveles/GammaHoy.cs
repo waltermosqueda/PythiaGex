@@ -111,6 +111,25 @@ namespace PythiaGex
                  Description = "Cabecera: las bandas, las rayas y las barras quedan quietas con el vivo; al pasar el mouse por una vela solo aparece un renglon en la cabecera con lo que regia en esa vela (dominantes, zero, precio). Todo: la escalera, las rayas y las bandas saltan a esa vela (asi funciona el rebobinado). Nunca: el mouse no hace nada. Con Fuente = Archivo, Cabecera se comporta como Todo.")]
         public MouseVela MouseSobreVela { get; set; } = MouseVela.Cabecera;
 
+        public enum GatillosEnPantalla { RechazoTren, Todos, Ninguno }
+
+        [Display(Name = "Gatillos de order flow en la banda (EXPERIMENTAL)", GroupName = "3. Pantalla", Order = 18,
+                 Description = "Triangulo en la vela donde, recien entrado el precio en la banda de una dominante QUIETA, el order flow dio un gatillo. RechazoTren: solo 'tres deltas seguidos en contra de la llegada' (la unica pista del laboratorio del 08-09: 27 casos, 70 % contra 37 % del placebo en ES; POCOS casos, no es una prueba). Todos: tambien rechazo por delta fuerte, divergencia y ruptura con delta (esta salio al reves: se dibuja gris). Cada disparo se registra en pythiagex-gatillos-<inst>.jsonl para que laboratorio/gatillos.py lo juzgue contra placebo.")]
+        public GatillosEnPantalla VerGatillos { get; set; } = GatillosEnPantalla.RechazoTren;
+
+        [Display(Name = "Gatillos: dominante quieta (% del precio en 5 velas)", GroupName = "3. Pantalla", Order = 19,
+                 Description = "El toque cuenta solo si la dominante se movio menos que esto en las 5 velas previas (0,026 % = 2 pts en ES, ~8 en NQ): el precio fue a la banda, no la banda al precio.")]
+        public decimal GatilloQuietaPct { get; set; } = 0.026m;
+
+        [Display(Name = "Gatillos: solo en la rueda americana (13:30-20:00 UTC)", GroupName = "3. Pantalla", Order = 20,
+                 Description = "Donde el laboratorio vio la pista. De noche la cadena de CBOE esta congelada y el order flow es fino: la misma regla dio 60 % contra 50 % del placebo (nada) frente a 70 % contra 37 % en la rueda.")]
+        public bool GatillosSoloRueda { get; set; } = true;
+
+        [Display(Name = "Print grande: contratos por operacion acumulada", GroupName = "4. Auditoria", Order = 3,
+                 Description = "Se registran por vela en el centinela (of: big_n, big_max, big_buy, big_sell) para medir despues si las 'ballenas' en la banda sirven. No se dibuja nada.")]
+        [Range(1, 100000)]
+        public int UmbralPrintGrande { get; set; } = 50;
+
         [Display(Name = "Zona de dominancia: banda alrededor de cada dominante (% del precio)", GroupName = "3. Pantalla", Order = 16,
                  Description = "Franja desde la dominante HACIA ADENTRO (hacia el lado del precio), con el borde interno marcado. 0,08 % = ~24 puntos en NQ, ~6 en ES. 0 = sin banda. La banda es DIBUJO: si el precio la respeta o no lo mide laboratorio/canal.py contra placebo.")]
         public decimal BandaDominantesPct { get; set; } = 0.08m;
@@ -292,6 +311,14 @@ namespace PythiaGex
         }
         // por vela: zero por volumen y el strike del Max Change a 30, 5 y 1 min (semillas)
         private readonly Dictionary<int, (double Zero, double[] Mc)> _marcas = new();
+        // gatillos de order flow en la banda (GatilloBanda): por vela, para dibujar y registrar
+        private readonly GatilloBanda _gatVivo = new();
+        private readonly Dictionary<int, List<GatilloBanda.Marca>> _disparos = new();
+        private int _barraGat = -1, _barraBig = -1, _bigVistos;
+        private readonly object _bigLlave = new();
+        private double _bigMax, _bigBuy, _bigSell; private int _bigN;          // prints grandes de la vela en curso
+        private (int N, double Max, double Buy, double Sell) _bigCerrada;       // ... y de la ultima cerrada
+        private CumulativeTrade _bigActual;
         // centinela
         private Centinela _cent, _centES;      // vivo por libro: CBOE (SPX) y Rithmic (ES), aparte
         private int _barraCent = -1;
@@ -431,7 +458,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.2b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.3b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -440,7 +467,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.2b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.3b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -504,7 +531,9 @@ namespace PythiaGex
             if (Fuente == FuenteDatos.Archivo) return;
             if (bar != CurrentBar - 1) return;
             try { Repreciar(); } catch (Exception e) { Registrar(e); }
+            if (bar != _barraBig) { CerrarBig(); _barraBig = bar; }
             try { Anotar(bar); } catch (Exception e) { Registrar(e); }
+            try { GatillosVivo(bar); } catch (Exception e) { Registrar(e); }
             // HIBRIDO: cuando arranca una vela nueva, la que acaba de cerrar guarda
             // su foto con el estado vivo de ese instante: la historia sigue creciendo
             // con lo de verdad y el mouse la puede revisar como al archivo
@@ -545,7 +574,7 @@ namespace PythiaGex
                 _centArchivo = new Centinela("rebobinado-atas-" + instr, marco);
             }
             _centArchivo.Anotar(bar, c.LastTime != default(DateTime) ? c.LastTime : c.Time,
-                (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close, (double)c.Volume, (double)c.Ticks, (double)c.Delta, L.S, GammaHoyNucleo.Niveles(L));
+                (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close, (double)c.Volume, (double)c.Ticks, (double)c.Delta, L.S, GammaHoyNucleo.Niveles(L), ExtraOf(c, null));
         }
 
         private static DateTime Utc(DateTime t) => t.Kind == DateTimeKind.Utc ? t : (t.Kind == DateTimeKind.Local ? t.ToUniversalTime() : DateTime.SpecifyKind(t, DateTimeKind.Utc));
@@ -608,6 +637,18 @@ namespace PythiaGex
             int fin = Math.Max(0, CurrentBar - 1);      // la ultima vela es del vivo (Hibrido) o se muestra con la ultima foto (Archivo)
             int i = 0, con = 0, sin = 0;
             DateTime ultimaCad = DateTime.MinValue, ultLog = DateTime.UtcNow;
+            // los gatillos de order flow sobre el pasado: la misma logica que en vivo, vela a
+            // vela y en orden, con las dominantes que regian en cada una (sin cadena: sin banda)
+            var gat = new GatilloBanda(); ConfigurarGatillo(gat);
+            var tirosArch = new List<GatilloBanda.Marca>();
+            lock (_candado) _disparos.Clear();
+            void Gat(int barG, IndicatorCandle cg, DateTime horaG, List<(double Fut, double Gex)> domsG)
+            {
+                var ts = gat.Procesar(barG, horaG, (double)cg.Open, (double)cg.High, (double)cg.Low, (double)cg.Close, (double)cg.Delta, domsG);
+                if (ts.Count == 0) return;
+                lock (_candado) _disparos[barG] = ts;
+                tirosArch.AddRange(ts);
+            }
             for (int bar = 0; bar < fin; bar++)
             {
                 IndicatorCandle c;
@@ -624,6 +665,7 @@ namespace PythiaGex
                 {
                     sin++;
                     lock (_candado) { _estela[bar] = new double[0]; _fotosBarra.Remove(bar); _guiones.Remove(bar); }
+                    Gat(bar, c, cierra, null);
                     continue;
                 }
                 // un guion por cada cadena que llego DURANTE la vela (varias por vela, como
@@ -638,7 +680,7 @@ namespace PythiaGex
                     lock (_candado) AgregarGuiones(bar, Lj.Estela);
                     L = Lj;
                 }
-                if (L == null) { sin++; continue; }
+                if (L == null) { sin++; Gat(bar, c, cierra, null); continue; }
                 con++; ultimaCad = cad.GeneradoUtc;
                 var foto = new Foto
                 {
@@ -649,6 +691,7 @@ namespace PythiaGex
                 };
                 lock (_candado) { _fotosBarra[bar] = foto; _estela[bar] = L.Estela; _marcas[bar] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut }); }
                 try { AnotarArchivo(bar, c, L); } catch (Exception e) { Registrar(e); }
+                try { Gat(bar, c, cierra, L.Doms); } catch (Exception e) { Registrar(e); }
                 if ((DateTime.UtcNow - ultLog).TotalSeconds >= 10)
                 {
                     ultLog = DateTime.UtcNow;
@@ -672,6 +715,8 @@ namespace PythiaGex
             var es = CultureInfo.GetCultureInfo("es-AR");
             _rebRotulo = (Fuente != FuenteDatos.Archivo ? "archivo " : "REBOBINADO  ") + con.ToString("N0", es) + " velas con cadena, " + sin.ToString("N0", es) + " sin";
             Log("REBOBINADO termino: " + con + " velas con cadena, " + sin + " sin; ultima cadena " + (ultimaCad == DateTime.MinValue ? "--" : ultimaCad.ToString("yyyy-MM-dd HH:mm") + " UTC"));
+            Log("gatillos en el archivo: " + gat.Entradas + " entradas a banda quieta, " + gat.Disparos + " disparos (" + tirosArch.Count(t => t.Principal) + " rechazo·tren)");
+            RegistrarGatillos(tirosArch, "archivo", true);
             try { _centArchivo?.Volcar(true); } catch { }
             try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
         }
@@ -839,9 +884,132 @@ namespace PythiaGex
                 };
                 niv = GammaHoyNucleo.Niveles(L);
             }
+            (int N, double Max, double Buy, double Sell) big; lock (_bigLlave) big = _bigCerrada;
             centUsar.Anotar(cerrada, c.LastTime != default(DateTime) ? c.LastTime : c.Time,
                 (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close,
-                (double)c.Volume, (double)c.Ticks, (double)c.Delta, sp, niv);
+                (double)c.Volume, (double)c.Ticks, (double)c.Delta, sp, niv, ExtraOf(c, big));
+        }
+
+        // ==================================================================
+        // Gatillos de order flow en la banda (EXPERIMENTAL) y prints grandes
+        // ==================================================================
+        private void ConfigurarGatillo(GatilloBanda g)
+        {
+            g.BandaPct = (double)Math.Max(0.01m, BandaDominantesPct); g.QuietaPct = (double)GatilloQuietaPct; g.SoloRueda = GatillosSoloRueda;
+        }
+
+        /// <summary>La vela que acaba de cerrar pasa por GatilloBanda con las dominantes
+        /// vivas. Al primer llamado se calientan las estadisticas con las 60 velas previas
+        /// (sin banda: no dispara sobre el pasado, eso ya lo hizo el recorrido del archivo).</summary>
+        private void GatillosVivo(int bar)
+        {
+            int cerrada = bar - 1;
+            if (cerrada < 1 || cerrada <= _barraGat) return;
+            ConfigurarGatillo(_gatVivo);
+            if (_barraGat < 0)
+                for (int b = Math.Max(1, cerrada - 70); b < cerrada; b++)
+                {
+                    IndicatorCandle cb; try { cb = GetCandle(b); } catch { continue; }
+                    if (cb != null) _gatVivo.Procesar(b, Utc(cb.Time), (double)cb.Open, (double)cb.High, (double)cb.Low, (double)cb.Close, (double)cb.Delta, null);
+                }
+            _barraGat = cerrada;
+            IndicatorCandle c; try { c = GetCandle(cerrada); } catch { return; }
+            if (c == null) return;
+            List<(double Fut, double Gex)> domsG; lock (_candado) domsG = _doms != null ? _doms.ToList() : new List<(double Fut, double Gex)>();
+            var tiros = _gatVivo.Procesar(cerrada, Utc(c.LastTime != default(DateTime) ? c.LastTime : c.Time), (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close, (double)c.Delta, domsG);
+            if (tiros.Count == 0) return;
+            lock (_candado) _disparos[cerrada] = tiros;
+            RegistrarGatillos(tiros, "vivo", false);
+            var iv = CultureInfo.InvariantCulture;
+            foreach (var t in tiros)
+                Log("GATILLO " + t.Tipo + " " + (t.Lado > 0 ? "LARGO" : "CORTO") + " en " + t.Precio.ToString("0.00", iv) + " dominante " + t.Dom.ToString("0.00", iv) + (t.Arriba ? " (arriba)" : " (abajo)") + " dz " + t.Dz.ToString("0.0", iv));
+            try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
+        }
+
+        /// <summary>Cada disparo a un JSONL propio (vivo: se agrega; archivo: se pisa en cada
+        /// recorrido), para que laboratorio/gatillos.py lo juzgue contra placebo.</summary>
+        private void RegistrarGatillos(IEnumerable<GatilloBanda.Marca> tiros, string fuente, bool pisar)
+        {
+            try
+            {
+                var instr = InstrumentInfo != null ? InstrumentInfo.Instrument : "x";
+                var marco = ChartInfo != null && ChartInfo.ChartType != null ? ChartInfo.ChartType + "-" + ChartInfo.TimeFrame : "x";
+                var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS");
+                var ruta = Path.Combine(dir, "pythiagex-gatillos-" + (fuente == "vivo" ? "" : "archivo-") + Lim(instr) + "-" + Lim(marco) + ".jsonl");
+                var iv = CultureInfo.InvariantCulture;
+                var sb = new System.Text.StringBuilder();
+                foreach (var t in tiros)
+                    sb.Append("{\"t\":\"").Append(t.Hora.ToString("yyyy-MM-ddTHH:mm:ss", iv)).Append("\",\"tipo\":\"").Append(t.Tipo).Append("\",\"lado\":").Append(t.Lado)
+                      .Append(",\"precio\":").Append(t.Precio.ToString("0.####", iv)).Append(",\"dom\":").Append(t.Dom.ToString("0.####", iv))
+                      .Append(",\"arriba\":").Append(t.Arriba ? "true" : "false").Append(",\"dz\":").Append(t.Dz.ToString("0.00", iv))
+                      .Append(",\"principal\":").Append(t.Principal ? "true" : "false").Append(",\"fuente\":\"").Append(fuente).Append("\"}\n");
+                if (pisar) File.WriteAllText(ruta, sb.ToString(), new System.Text.UTF8Encoding(false));
+                else File.AppendAllText(ruta, sb.ToString(), new System.Text.UTF8Encoding(false));
+            }
+            catch (Exception e) { Registrar(e); }
+        }
+
+        private static string Lim(string s)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var ch in s ?? "x") sb.Append(char.IsLetterOrDigit(ch) ? ch : '-');
+            return sb.ToString();
+        }
+
+        /// <summary>Cambio de vela: lo acumulado de prints grandes pasa a ser "de la vela cerrada".</summary>
+        private void CerrarBig()
+        {
+            lock (_bigLlave)
+            {
+                if (_bigActual != null) { ContarBig(_bigActual); _bigActual = null; }
+                _bigCerrada = (_bigN, _bigMax, _bigBuy, _bigSell);
+                _bigN = 0; _bigMax = _bigBuy = _bigSell = 0;
+            }
+        }
+
+        private void ContarBig(CumulativeTrade t)
+        {
+            double v = (double)t.Volume;
+            if (v > _bigMax) _bigMax = v;
+            if (v >= UmbralPrintGrande)
+            {
+                _bigN++;
+                if (t.Direction == ATAS.Indicators.TradeDirection.Buy) _bigBuy += v;
+                else if (t.Direction == ATAS.Indicators.TradeDirection.Sell) _bigSell += v;
+            }
+        }
+
+        /// <summary>Operaciones acumuladas (una orden agresora que se llena en varios prints):
+        /// lo que ATAS llama Big Trades. Solo en vivo. La anterior se cuenta cuando llega una
+        /// nueva, asi entra con su volumen final.</summary>
+        protected override void OnCumulativeTrade(CumulativeTrade trade)
+        {
+            try
+            {
+                if (trade == null) return;
+                lock (_bigLlave)
+                {
+                    if (_bigActual != null && !ReferenceEquals(_bigActual, trade)) ContarBig(_bigActual);
+                    _bigActual = trade;
+                    if (_bigVistos++ == 0) Log("prints acumulados: llegan por OnCumulativeTrade (primero " + trade.Volume.ToString(CultureInfo.InvariantCulture) + " contratos)");
+                }
+            }
+            catch (Exception e) { Registrar(e); }
+        }
+
+        protected override void OnUpdateCumulativeTrade(CumulativeTrade trade)
+        {
+            try { lock (_bigLlave) { if (trade != null) _bigActual = trade; } } catch { }
+        }
+
+        /// <summary>Los campos extra del centinela ("of"): delta maximo y minimo de la vela
+        /// (los tiene el historico) y los prints grandes (solo en vivo).</summary>
+        private static string ExtraOf(IndicatorCandle c, (int N, double Max, double Buy, double Sell)? big)
+        {
+            var iv = CultureInfo.InvariantCulture;
+            string s = "\"dmax\":" + ((double)c.MaxDelta).ToString("0.#", iv) + ",\"dmin\":" + ((double)c.MinDelta).ToString("0.#", iv);
+            if (big != null) s += ",\"big_n\":" + big.Value.N + ",\"big_max\":" + big.Value.Max.ToString("0.#", iv) + ",\"big_buy\":" + big.Value.Buy.ToString("0.#", iv) + ",\"big_sell\":" + big.Value.Sell.ToString("0.#", iv);
+            return s;
         }
 
         // ==================================================================
@@ -1109,13 +1277,15 @@ namespace PythiaGex
             for (int i = 0; i < doms.Count; i++) Raya(doms[i].Fut, ColDom, i == 0 ? 1.6f : 1.1f, System.Drawing.Drawing2D.DashStyle.Solid, i == 0 ? 220 : 160);
 
             // ---- estela: la dominante que regia en cada vela
-            if (VerEstela || VerSemillas || VerZeroPorVela)
+            if (VerEstela || VerSemillas || VerZeroPorVela || VerGatillos != GatillosEnPantalla.Ninguno)
             {
                 Dictionary<int, double[]> est; Dictionary<int, (double Zero, double[] Mc)> mar; Dictionary<int, List<(double Fut, int Rango)>> gui;
+                Dictionary<int, List<GatilloBanda.Marca>> dis;
                 lock (_candado)
                 {
                     est = new Dictionary<int, double[]>(_estela); mar = new Dictionary<int, (double, double[])>(_marcas);
                     gui = _guiones.ToDictionary(kv => kv.Key, kv => kv.Value.ToList());
+                    dis = _disparos.ToDictionary(kv => kv.Key, kv => kv.Value);
                 }
                 int desde = Math.Max(0, FirstVisibleBarNumber), hasta = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
                 // ancho de una vela en pixeles, medido en el grafico (no supuesto)
@@ -1125,6 +1295,29 @@ namespace PythiaGex
                 for (int b = desde; b <= hasta; b++)
                 {
                     int x; try { x = cont.GetXByBar(b, false); } catch { continue; }
+                    // los gatillos de order flow: un triangulo apuntando hacia adentro del canal,
+                    // pegado a la vela (arriba del maximo para cortos, abajo del minimo para largos)
+                    if (VerGatillos != GatillosEnPantalla.Ninguno && dis.TryGetValue(b, out var lt))
+                        foreach (var t in lt)
+                        {
+                            if (!t.Principal && VerGatillos != GatillosEnPantalla.Todos) continue;
+                            IndicatorCandle cb; try { cb = GetCandle(b); } catch { continue; }
+                            int yv; try { yv = cont.GetYByPrice(t.Lado < 0 ? cb.High : cb.Low, false); } catch { continue; }
+                            int r = t.Principal ? 6 : 4;
+                            int yy = t.Lado < 0 ? yv - r - 4 : yv + r + 4;
+                            if (yy - r < area.Top || yy + r > piso) continue;
+                            var col = t.Tipo == "ruptura·delta" ? Color.FromArgb(160, 150, 150, 160) : (t.Principal ? ColDom : ColDom2);
+                            var pts = t.Lado < 0
+                                ? new[] { new Point(x - r, yy - r), new Point(x + r, yy - r), new Point(x, yy + r) }
+                                : new[] { new Point(x - r, yy + r), new Point(x + r, yy + r), new Point(x, yy - r) };
+                            g.FillPolygon(Color.FromArgb(235, col), pts);
+                            g.DrawPolygon(new RenderPen(Color.FromArgb(200, ColFondo), 1f), pts);
+                            if (t.Principal)
+                            {
+                                var mr = g.MeasureString("tren", fChica);
+                                g.DrawString("tren", fChica, Color.FromArgb(230, col), x + r + 3, yy - mr.Height / 2);
+                            }
+                        }
                     // GAMMAlito: la dominante es un GUION amarillo por vela, primaria gruesa y secundaria fina.
                     // Puesto uno al lado del otro forman la linea sola: se ve donde nacio y cuando salto.
                     if (VerEstela && gui.TryGetValue(b, out var lg))
