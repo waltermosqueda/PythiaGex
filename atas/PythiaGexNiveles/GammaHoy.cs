@@ -105,6 +105,10 @@ namespace PythiaGex
         [Display(Name = "Zero gamma por vela (puntitos)", GroupName = "3. Pantalla", Order = 14)]
         public bool VerZeroPorVela { get; set; } = true;
 
+        [Display(Name = "Zona de dominancia: banda alrededor de cada dominante (% del precio)", GroupName = "3. Pantalla", Order = 16,
+                 Description = "GAMMAlito pinta una franja alrededor de la dominante. 0,08 % = ~24 puntos en NQ, ~6 en ES. 0 = sin banda. La banda es DIBUJO: si el precio la respeta o no lo mide laboratorio/canal.py contra placebo.")]
+        public decimal BandaDominantesPct { get; set; } = 0.08m;
+
         public enum RotulosBarras { Auto, Siempre, Nunca }
 
         [Display(Name = "Datos en las barras", GroupName = "3. Pantalla", Order = 15,
@@ -417,7 +421,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.0 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.0b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -426,7 +430,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.0 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.0b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1022,6 +1026,19 @@ namespace PythiaGex
                 int xa = xRaya != int.MinValue ? Math.Max(xl0, Math.Min(xl1 - 4, xRaya)) : xl0;
                 g.DrawLine(new RenderPen(Color.FromArgb(alfa, col), w, ds), xa, y, xl1, y);
                 if (xRaya != int.MinValue) g.FillEllipse(Color.FromArgb(alfa, col), new Rectangle(xa - 3, y - 3, 6, 6));
+            }
+            // la zona de dominancia: una franja tenue alrededor de cada dominante, del ancho elegido
+            if (BandaDominantesPct > 0 && !double.IsNaN(futuro))
+            {
+                double semi = futuro * (double)BandaDominantesPct / 100.0;
+                int xa = xRaya != int.MinValue ? Math.Max(xl0, Math.Min(xl1 - 4, xRaya)) : xl0;
+                for (int i = 0; i < doms.Count; i++)
+                {
+                    int ya, yb; try { ya = cont.GetYByPrice((decimal)(doms[i].Fut + semi), false); yb = cont.GetYByPrice((decimal)(doms[i].Fut - semi), false); } catch { continue; }
+                    int yt = Math.Max(area.Top, Math.Min(ya, yb)), ybt = Math.Min(piso, Math.Max(ya, yb));
+                    if (ybt <= yt) continue;
+                    g.FillRectangle(Color.FromArgb(i == 0 ? 26 : 16, ColDom), new Rectangle(xa, yt, Math.Max(1, xl1 - xa), ybt - yt));
+                }
             }
             Raya(zeroOi, Color.FromArgb(160, 160, 170), 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
             Raya(zeroVol, ColZero, 1.4f, System.Drawing.Drawing2D.DashStyle.Dash, 200);
