@@ -248,3 +248,16 @@ Trades" (web ES_SPY 2 min, 160) y "Que es GAMMAlito powered by Gexbot" (web,
 
 Lo que sigue sin fuente: los Big Trades de SPY (burbujas verdes con el
 tamaño, 326/340/384/452 en el clip): OPRA en vivo es paga.
+
+## 0.8: la memoria del pasado en todos los modos (2026-09-07, noche)
+
+El operador saco y volvio a poner el indicador y no aparecio el pasado. Causa:
+al agregarlo de nuevo ATAS lo crea con los ajustes por defecto, y el defecto
+era Fuente = Vivo, que no rellenaba la historia (solo Archivo e Hibrido). La
+memoria existe (archivo de cadenas por dia: nube por minuto + local); ese modo
+no la usaba. Ahora: Fuente por defecto = Hibrido, y Vivo tambien carga el
+archivo al arrancar y recorre las velas cargadas (guiones, semillas, fotos,
+centinela rebobinado-atas). Ademas cada foto guarda el perfil (las barras de
+ese minuto): con el mouse sobre una vela se ven sus niveles Y sus barras.
+Lo que no hay: el pasado anterior al 19 de agosto y las madrugadas de los 13
+dias de Databento (solo rueda americana); esas velas quedan sin dibujo.

@@ -65,7 +65,7 @@ namespace PythiaGex
 
         [Display(Name = "Fuente", GroupName = "1. Datos", Order = 0,
                  Description = "Vivo: el feed de la nube y la cadena de Rithmic. Archivo: REBOBINADO, recorre toda la historia cargada del grafico con la cadena que se tenia en cada minuto (archivo por dia en %APPDATA%\\ATAS\\PythiaGex\\cadenas; los dias que falten se bajan de la nube). Hibrido: la historia con el archivo Y la vela que se forma con el vivo; cada vela que cierra queda guardada, asi lo de hoy es el archivo de manana. La escalera y las rayas siguen la vela bajo el mouse.")]
-        public FuenteDatos Fuente { get; set; } = FuenteDatos.Vivo;
+        public FuenteDatos Fuente { get; set; } = FuenteDatos.Hibrido;
 
         [Display(Name = "Archivo: bajar de la nube los dias que falten", GroupName = "1. Datos", Order = 10)]
         public bool BajarArchivo { get; set; } = true;
@@ -271,6 +271,7 @@ namespace PythiaGex
             public double S, Futuro, ZeroVol, ZeroOi, MpVol, MnVol, MpOi, MnOi, PicoFut, ConvEnPrecio, NetVol, NetOi;
             public List<(double Fut, double Gex)> Doms; public string Cuad, Corto, LibroDom, LibroConv; public bool Mucho;
             public (double Fut, double Delta)[] Mc; public DateTime Vela, Cadena;
+            public List<Strike> Perfil;      // las barras de ese minuto, para el mouse
         }
         private readonly Dictionary<int, Foto> _fotosBarra = new();
         private List<Feed.Cadena> _archivo;
@@ -348,7 +349,7 @@ namespace PythiaGex
                     try { Feed.Archivo.GuardarViva(Raiz(), VivaJson()); } catch (Exception e) { Registrar(e); }
                 }
                 // HIBRIDO: el archivo se carga desde aca (con el mercado cerrado no hay OnCalculate)
-                if (Fuente == FuenteDatos.Hibrido && !_archivoListo && !_archivoCargando && CurrentBar > 0)
+                if (Fuente != FuenteDatos.Archivo && !_archivoListo && !_archivoCargando && CurrentBar > 0)
                 {
                     try { CargarArchivo(Utc(GetCandle(0).Time).AddDays(-1)); } catch (Exception e) { Registrar(e); }
                 }
@@ -392,7 +393,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 0.7 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 0.8 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -401,7 +402,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 0.7 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : "") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 0.8 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -468,7 +469,7 @@ namespace PythiaGex
             // HIBRIDO: cuando arranca una vela nueva, la que acaba de cerrar guarda
             // su foto con el estado vivo de ese instante: la historia sigue creciendo
             // con lo de verdad y el mouse la puede revisar como al archivo
-            if (Fuente == FuenteDatos.Hibrido && bar > _barraVivaUlt)
+            if (Fuente != FuenteDatos.Archivo && bar > _barraVivaUlt)
             {
                 if (_barraVivaUlt >= 0) try { GuardarFotoViva(bar - 1); } catch (Exception e) { Registrar(e); }
                 _barraVivaUlt = bar;
@@ -487,7 +488,7 @@ namespace PythiaGex
                 {
                     S = _S, Futuro = _futuro, ZeroVol = _zeroVol, ZeroOi = _zeroOi, MpVol = _mpVol, MnVol = _mnVol, MpOi = _mpOi, MnOi = _mnOi,
                     PicoFut = _picoFut, ConvEnPrecio = _convEnPrecio, NetVol = _netVol, NetOi = _netOi, Doms = _doms, Cuad = _cuadrante, Corto = _cuadranteCorto,
-                    LibroDom = _libroDomUsado, LibroConv = _libroConvUsado, Mucho = _mucho, Mc = _maxChange, Vela = Utc(c.Time),
+                    LibroDom = _libroDomUsado, LibroConv = _libroConvUsado, Mucho = _mucho, Mc = _maxChange, Vela = Utc(c.Time), Perfil = _perfil,
                     Cadena = cad != null && cad.GeneradoUtc != default ? cad.GeneradoUtc : (cad != null ? cad.RecibidoUtc : DateTime.MinValue),
                 };
             }
@@ -589,6 +590,7 @@ namespace PythiaGex
                     S = L.S, Futuro = L.Futuro, ZeroVol = L.ZeroVol, ZeroOi = L.ZeroOi, MpVol = L.MpVol, MnVol = L.MnVol, MpOi = L.MpOi, MnOi = L.MnOi,
                     PicoFut = L.PicoFut, ConvEnPrecio = L.ConvEnPrecio, NetVol = L.NetVol, NetOi = L.NetOi, Doms = L.Doms, Cuad = L.Cuadrante, Corto = L.CuadranteCorto,
                     LibroDom = L.LibroDom, LibroConv = L.LibroConv, Mucho = L.Mucho, Mc = L.MaxChange, Vela = abre, Cadena = cad.GeneradoUtc,
+                    Perfil = L.Perfil,
                 };
                 lock (_candado) { _fotosBarra[bar] = foto; _estela[bar] = L.Estela; _marcas[bar] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut }); }
                 try { AnotarArchivo(bar, c, L); } catch (Exception e) { Registrar(e); }
@@ -613,7 +615,7 @@ namespace PythiaGex
             }
             _rebConCadena = con; _rebSinCadena = sin; _rebCadenaHora = ultimaCad;
             var es = CultureInfo.GetCultureInfo("es-AR");
-            _rebRotulo = (Fuente == FuenteDatos.Hibrido ? "HIBRIDO  archivo " : "REBOBINADO  ") + con.ToString("N0", es) + " velas con cadena, " + sin.ToString("N0", es) + " sin";
+            _rebRotulo = (Fuente != FuenteDatos.Archivo ? "archivo " : "REBOBINADO  ") + con.ToString("N0", es) + " velas con cadena, " + sin.ToString("N0", es) + " sin";
             Log("REBOBINADO termino: " + con + " velas con cadena, " + sin + " sin; ultima cadena " + (ultimaCad == DateTime.MinValue ? "--" : ultimaCad.ToString("yyyy-MM-dd HH:mm") + " UTC"));
             try { _centArchivo?.Volcar(true); } catch { }
             try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
@@ -795,6 +797,11 @@ namespace PythiaGex
                         mpOi = foto.MpOi; mnOi = foto.MnOi; netVol = foto.NetVol; netOi = foto.NetOi; doms = foto.Doms; cuad = foto.Cuad; corto = foto.Corto;
                         libroConv = foto.LibroConv; libroDom = foto.LibroDom; mc = foto.Mc; mucho = foto.Mucho; convPrecio = foto.ConvEnPrecio; picoFut = foto.PicoFut;
                         alerta = "";
+                        if (foto.Perfil != null && foto.Perfil.Count > 0)
+                        {
+                            perfil = foto.Perfil;
+                            maxV = perfil.Max(z => Math.Abs(z.GexVol)); maxO = perfil.Max(z => Math.Abs(z.GexOi)); maxC = perfil.Max(z => Math.Abs(z.Conv));
+                        }
                     }
                     else foto = null;
                 }
@@ -808,7 +815,7 @@ namespace PythiaGex
                 : "GAMMA HOY  " + corto + "  " + cuad + "   conv " + (convPrecio >= 0 ? "+" : "-") + " (" + libroConv + ")  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)) + (mucho ? " mucho" : " poco");
             string l2 = "vol CBOE " + edad + " · OI de ayer · base " + origenBase + " · dominantes por " + libroDom
                       + (_viva.Activa ? " · vivo Rithmic " + ((int)_viva.VolumenTotalHoy()).ToString("N0", es) + " contr" : " · vivo: " + _viva.Estado);
-            if (Fuente == FuenteDatos.Hibrido)
+            if (Fuente != FuenteDatos.Archivo)
             {
                 if (foto != null)
                     l2 = "vela " + foto.Vela.ToString("yyyy-MM-dd HH:mm") + " UTC · cadena publicada " + foto.Cadena.ToString("HH:mm") + " UTC · fut " + foto.Futuro.ToString("N2", es) + " · dominantes por " + libroDom + " · MOUSE sobre la vela (archivo)";
