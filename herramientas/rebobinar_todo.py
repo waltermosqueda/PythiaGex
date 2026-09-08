@@ -24,24 +24,28 @@ os.chdir(RAIZ)
 PY = sys.executable
 
 
-def dias_bajados():
+PADRES = {"SPX": "SPX_OPT+SPXW_OPT", "NDX": "NDX_OPT+NDXP_OPT"}
+RAIZ_DE = {"SPX": "ES", "NDX": "NQ"}
+
+
+def dias_bajados(libro="SPX"):
     dias = set()
-    for p in glob.glob("datos/databento/OPRA_PILLAR/ohlcv-1m/SPX_OPT+SPXW_OPT-*.dbn.zst"):
+    for p in glob.glob("datos/databento/OPRA_PILLAR/ohlcv-1m/%s-*.dbn.zst" % PADRES[libro]):
         m = re.search(r"-(\d{4}-\d{2}-\d{2})-\d{4}-\d{2}-\d{2}\.dbn\.zst$", p)
         if not m:
             continue
         d = m.group(1)
-        if (glob.glob("datos/databento/OPRA_PILLAR/definition/SPX_OPT+SPXW_OPT-%s-*.dbn.zst" % d)
-                and glob.glob("datos/databento/OPRA_PILLAR/statistics/SPX_OPT+SPXW_OPT-%s-*.dbn.zst" % d)):
+        if (glob.glob("datos/databento/OPRA_PILLAR/definition/%s-%s-*.dbn.zst" % (PADRES[libro], d))
+                and glob.glob("datos/databento/OPRA_PILLAR/statistics/%s-%s-*.dbn.zst" % (PADRES[libro], d))):
             dias.add(d)
     return sorted(dias)
 
 
-def convertir(dia, retraso):
-    salida = "datos/simulador/cadenas/sim-ES-%s-r%d.jsonl.gz" % (dia, retraso)
+def convertir(dia, retraso, libro="SPX"):
+    salida = "datos/simulador/cadenas/sim-%s-%s-r%d.jsonl.gz" % (RAIZ_DE[libro], dia, retraso)
     if os.path.exists(salida) and os.path.getsize(salida) > 100000:
         return dia, "ya estaba"
-    r = subprocess.run([PY, "herramientas/databento_a_cadenas.py", dia, "--retraso", str(retraso)],
+    r = subprocess.run([PY, "herramientas/databento_a_cadenas.py", dia, "--retraso", str(retraso), "--libro", libro],
                        capture_output=True, text=True)
     ult = (r.stdout.strip().splitlines() or ["?"])[-1]
     return dia, ("ok: " + ult) if r.returncode == 0 else ("FALLO: " + (r.stderr.strip().splitlines() or ["?"])[-1])
@@ -55,13 +59,17 @@ def main():
     ap.add_argument("--paralelo", type=int, default=4)
     ap.add_argument("--nombre", default="rebobinado")
     ap.add_argument("--horizonte", default="Hoy")
+    ap.add_argument("--libro", default="SPX", choices=("SPX", "NDX"))
+    ap.add_argument("--solo-convertir", action="store_true")
     a = ap.parse_args()
-    dias = dias_bajados()
+    dias = dias_bajados(a.libro)
     print("dias con OPRA completo:", len(dias), dias)
     with ThreadPoolExecutor(max_workers=a.paralelo) as ex:
-        for dia, res in ex.map(lambda d: convertir(d, a.retraso), dias):
+        for dia, res in ex.map(lambda d: convertir(d, a.retraso, a.libro), dias):
             print("  %s %s" % (dia, res))
-    cadenas = [p for p in ("datos/simulador/cadenas/sim-ES-%s-r%d.jsonl.gz" % (d, a.retraso) for d in dias) if os.path.exists(p)]
+    if a.solo_convertir:
+        return
+    cadenas = [p for p in ("datos/simulador/cadenas/sim-%s-%s-r%d.jsonl.gz" % (RAIZ_DE[a.libro], d, a.retraso) for d in dias) if os.path.exists(p)]
     if not cadenas:
         print("sin cadenas"); return
     exe = os.path.join("atas", "Rebobina", "bin", "Release", "Rebobina.exe")
