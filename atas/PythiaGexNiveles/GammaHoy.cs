@@ -400,7 +400,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 0.9 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 0.9b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -409,7 +409,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 0.9 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 0.9b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -870,11 +870,17 @@ namespace PythiaGex
             var fRot = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(11m, TamLetra - 1m)));
             int altoRot = g.MeasureString("0", fRot).Height;
             bool rotAuto = DatosEnBarras == RotulosBarras.Auto, rotSiempre = DatosEnBarras == RotulosBarras.Siempre;
-            bool rotTodas = rotSiempre || (rotAuto && esp >= altoRot + 1);
-            bool rotDos = rotSiempre ? esp >= 2 * altoRot + 1 : (rotAuto && esp >= 2 * altoRot + 2);
+            // PROFESIONAL = POCO: en Auto se rotulan solo las barras que importan (las 3
+            // mas grandes de cada lado del libro, las dominantes y los majors), en una
+            // linea, y solo si la fila tiene lugar. "Siempre" rotula todas con dos lineas.
+            bool rotTodas = rotSiempre && esp >= altoRot + 1;
+            bool rotDos = rotSiempre && esp >= 2 * altoRot + 2;
             var elegidos = new HashSet<double>();
             foreach (var dm in doms) elegidos.Add(dm.Fut);
             if (!double.IsNaN(mpVol)) elegidos.Add(mpVol); if (!double.IsNaN(mnVol)) elegidos.Add(mnVol);
+            foreach (var z in perfil.Where(z => z.GexVol > 0).OrderByDescending(z => z.GexVol).Take(3)) elegidos.Add(z.Fut);
+            foreach (var z in perfil.Where(z => z.GexVol < 0).OrderBy(z => z.GexVol).Take(3)) elegidos.Add(z.Fut);
+            bool rotHayLugar = esp >= altoRot + 1;
             string Km(double v) => Math.Abs(v) >= 1e6 ? (v / 1e6).ToString("0.0", es) + "M" : Math.Abs(v) >= 1e3 ? (v / 1e3).ToString("0.0", es) + "k" : v.ToString("0", es);
             string BmR(double v) => Math.Abs(v) >= 1e9 ? (v / 1e9).ToString("+0.0;-0.0", es) + "B" : Math.Abs(v) >= 1e6 ? (v / 1e6).ToString("+0;-0", es) + "M" : (v / 1e3).ToString("+0;-0", es) + "k";
             // titulo del perfil: que libro y que vencimiento
@@ -889,7 +895,7 @@ namespace PythiaGex
             {
                 int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                 if (y < area.Top || y > piso) continue;
-                bool rotEsta = DatosEnBarras != RotulosBarras.Nunca && (rotTodas || elegidos.Contains(s.Fut));
+                bool rotEsta = DatosEnBarras != RotulosBarras.Nunca && rotHayLugar && (rotTodas || elegidos.Contains(s.Fut));
                 if (VerSombraOI && maxO > 0 && Math.Abs(s.GexOi) > 0)
                 {
                     int w = Math.Max(1, (int)(Math.Sqrt(Math.Abs(s.GexOi) / maxO) * ancho));
@@ -1006,14 +1012,16 @@ namespace PythiaGex
                             if (y >= area.Top && y <= piso) g.FillEllipse(Color.FromArgb(150, ColZero), new Rectangle(x - 1, y - 1, 3, 3));
                         }
                         // las semillas: el strike de mayor cambio a 30 (grande), 5 (mediana) y 1 min (chica)
-                        if (VerSemillas && m.Mc != null)
+                        // las semillas solo en las ultimas 90 velas (lo "adelantado" es de ahora,
+                        // no de hace tres dias) y chicas: no compiten con las velas
+                        if (VerSemillas && m.Mc != null && b >= CurrentBar - 90)
                             for (int i = 0; i < m.Mc.Length && i < 3; i++)
                             {
                                 if (double.IsNaN(m.Mc[i]) || m.Mc[i] <= 0) continue;
                                 int y; try { y = cont.GetYByPrice((decimal)m.Mc[i], false); } catch { continue; }
                                 if (y < area.Top || y > piso) continue;
-                                int r = i == 0 ? 3 : (i == 1 ? 2 : 1);
-                                g.FillEllipse(Color.FromArgb(i == 0 ? 220 : (i == 1 ? 170 : 130), ColAviso), new Rectangle(x - r, y - r, 2 * r + 1, 2 * r + 1));
+                                int r = i == 0 ? 2 : 1;
+                                g.FillEllipse(Color.FromArgb(i == 0 ? 190 : (i == 1 ? 140 : 100), ColAviso), new Rectangle(x - r, y - r, 2 * r + 1, 2 * r + 1));
                             }
                     }
                 }
