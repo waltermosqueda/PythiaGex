@@ -236,6 +236,64 @@ namespace PythiaGex
                 File.AppendAllText(Path.Combine(dir, "viva-" + raiz + "-" + DateTime.UtcNow.ToString("yyyy-MM-dd") + ".jsonl"), json + "\n");
             }
 
+            /// <summary>El archivo de la cadena viva de Rithmic (viva-<raiz>-<dia>.jsonl, un
+            /// renglon por minuto mientras ATAS estuvo abierto) convertido a cadenas de
+            /// futuro, con la misma regla que DesdeViva: 12 strikes con las dos puntas.</summary>
+            public static List<Cadena> CargarViva(string raiz, DateTime desdeUtc, DateTime hastaUtc, Action<string> log)
+            {
+                var salida = new List<Cadena>();
+                var dir = Path.Combine(Carpeta, "..", "viva");
+                int archivos = 0, flacas = 0;
+                for (var d = desdeUtc.Date; d <= hastaUtc.Date; d = d.AddDays(1))
+                {
+                    var p = Path.Combine(dir, "viva-" + raiz + "-" + d.ToString("yyyy-MM-dd") + ".jsonl");
+                    if (!File.Exists(p)) continue;
+                    archivos++;
+                    foreach (var l in File.ReadLines(p))
+                    {
+                        if (l.Length < 40) continue;
+                        try
+                        {
+                            using var doc = JsonDocument.Parse(l);
+                            var r = doc.RootElement;
+                            if (!DateTime.TryParseExact(Txt(r, "ts"), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture,
+                                    System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var ts)) continue;
+                            if (!r.TryGetProperty("filas", out var fs) || fs.ValueKind != JsonValueKind.Array) continue;
+                            var dias = new List<double>();
+                            var porClave = new Dictionary<(double, double), Fila>();
+                            foreach (var f in fs.EnumerateArray())
+                            {
+                                var a = f.EnumerateArray().ToArray();
+                                if (a.Length < 8) continue;
+                                double G(int i) => a[i].TryGetDouble(out var x) ? x : 0;
+                                double K = G(0), di = Math.Round(G(1), 4), oi = G(3), iv = G(4), vol = G(7);
+                                bool call = G(2) >= 0.5;
+                                if (iv <= 0 || (oi <= 0 && vol <= 0)) continue;
+                                if (!dias.Contains(di)) dias.Add(di);
+                                if (!porClave.TryGetValue((K, di), out var fila)) { fila = new Fila { K = K }; porClave[(K, di)] = fila; }
+                                if (call) { fila.OiC = oi; fila.IvC = iv; fila.VolC = vol; } else { fila.OiP = oi; fila.IvP = iv; fila.VolP = vol; }
+                                fila.V = -1; // se resuelve abajo
+                            }
+                            dias.Sort();
+                            var filas = new List<Fila>();
+                            foreach (var kv in porClave) { kv.Value.V = dias.IndexOf(kv.Key.Item2); filas.Add(kv.Value); }
+                            int utiles = filas.Where(x => x.IvC > 0 && x.IvP > 0).Select(x => x.K).Distinct().Count();
+                            if (utiles < 12) { flacas++; continue; }
+                            salida.Add(new Cadena
+                            {
+                                Ts = Txt(r, "ts"), SpotIdx = Num(r, "futuro") ?? 0, Dias = dias.ToArray(), Filas = filas.OrderBy(x => x.K).ThenBy(x => x.V).ToList(),
+                                Base = 0, BaseConfiable = true, EdadMin = 0, HorizonteCadena = dias.Count > 0 ? dias[dias.Count - 1] : double.NaN,
+                                RecibidoUtc = ts, GeneradoUtc = ts, EsFuturo = true, Fuente = "Rithmic ES (grabado)",
+                            });
+                        }
+                        catch { }
+                    }
+                }
+                salida.Sort((x, y) => x.GeneradoUtc.CompareTo(y.GeneradoUtc));
+                log?.Invoke("archivo viva (Rithmic): " + archivos + " dias, " + salida.Count + " cadenas utiles, " + flacas + " flacas");
+                return salida;
+            }
+
             /// <summary>Lee un archivo por dia (gz de la nube o jsonl local) y
             /// devuelve las cadenas ordenadas por hora de publicacion.</summary>
             public static List<Cadena> Leer(string ruta)

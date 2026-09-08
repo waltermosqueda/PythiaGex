@@ -287,7 +287,7 @@ namespace PythiaGex
         // por vela: zero por volumen y el strike del Max Change a 30, 5 y 1 min (semillas)
         private readonly Dictionary<int, (double Zero, double[] Mc)> _marcas = new();
         // centinela
-        private Centinela _cent;
+        private Centinela _cent, _centES;      // vivo por libro: CBOE (SPX) y Rithmic (ES), aparte
         private int _barraCent = -1;
         // rebobinado (Fuente = Archivo)
         private sealed class Foto
@@ -425,7 +425,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.1 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.2 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -434,13 +434,14 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.1 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.2 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
         {
             try { if (_tick != null) UnsubscribeFromTimer(_periodo, _tick); } catch { }
             try { _cent?.Volcar(true); } catch { }
+            try { _centES?.Volcar(true); } catch { }
             try { _centArchivo?.Volcar(true); } catch { }
             try { _viva.Dispose(); } catch { }
         }
@@ -557,6 +558,22 @@ namespace PythiaGex
                         for (var d = desde.Date; d <= hasta.Date; d = d.AddDays(1))
                             await Feed.Archivo.BajarDia(string.IsNullOrWhiteSpace(UrlArchivo) ? Url : UrlArchivo, raiz, d, Log).ConfigureAwait(false);
                     var ls = Feed.Archivo.Cargar(raiz, desde, hasta, Log);
+                    if (Libro == LibroEnVivo.Rithmic_ES)
+                    {
+                        // el mismo libro que el vivo: la grabacion de Rithmic de las horas en que
+                        // ATAS estuvo abierto; CBOE solo en los dias sin grabacion
+                        var viva = Feed.Archivo.CargarViva(raiz, desde, hasta, Log);
+                        if (viva.Count >= 30)
+                        {
+                            var diasViva = new HashSet<DateTime>(viva.Select(v => v.GeneradoUtc.Date));
+                            var mezcla = ls.Where(x => !diasViva.Contains(x.GeneradoUtc.Date)).ToList();
+                            mezcla.AddRange(viva);
+                            mezcla.Sort((x, y) => x.GeneradoUtc.CompareTo(y.GeneradoUtc));
+                            Log("archivo con libro Rithmic: " + viva.Count + " cadenas grabadas en " + diasViva.Count + " dias + " + (mezcla.Count - viva.Count) + " de CBOE en los demas");
+                            ls = mezcla;
+                        }
+                        else Log("archivo con libro Rithmic: grabacion insuficiente (" + viva.Count + "), el pasado queda con CBOE");
+                    }
                     lock (_candado) { _archivo = ls; _iArchivo = 0; _barraReb = -1; _fotosBarra.Clear(); }
                     Log("REBOBINADO: " + ls.Count + " cadenas cargadas; recorro el grafico en un hilo aparte");
                     RecorrerArchivo(ls);
@@ -791,12 +808,14 @@ namespace PythiaGex
             int cerrada = bar - 1;
             if (cerrada < 1) { _barraCent = bar; return; }
             _barraCent = bar;
-            if (_cent == null)
-            {
-                var instr = InstrumentInfo != null ? InstrumentInfo.Instrument : "x";
-                var marco = ChartInfo != null && ChartInfo.ChartType != null ? ChartInfo.ChartType + "-" + ChartInfo.TimeFrame : "x";
-                _cent = new Centinela("hoy-" + instr, marco);
-            }
+            // el centinela del vivo, por libro: los niveles del libro de ES (Rithmic) no se
+            // mezclan con los del libro de SPX (CBOE); el laboratorio los juzga aparte
+            bool esFut = _c != null && _c.EsFuturo;
+            var instrC = InstrumentInfo != null ? InstrumentInfo.Instrument : "x";
+            var marcoC = ChartInfo != null && ChartInfo.ChartType != null ? ChartInfo.ChartType + "-" + ChartInfo.TimeFrame : "x";
+            if (esFut && _centES == null) _centES = new Centinela("hoyrithmic-" + instrC, marcoC);
+            if (!esFut && _cent == null) _cent = new Centinela("hoy-" + instrC, marcoC);
+            var centUsar = esFut ? _centES : _cent;
             IndicatorCandle c;
             try { c = GetCandle(cerrada); } catch { return; }
             if (c == null) return;
@@ -812,7 +831,7 @@ namespace PythiaGex
                 };
                 niv = GammaHoyNucleo.Niveles(L);
             }
-            _cent.Anotar(cerrada, c.LastTime != default(DateTime) ? c.LastTime : c.Time,
+            centUsar.Anotar(cerrada, c.LastTime != default(DateTime) ? c.LastTime : c.Time,
                 (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close,
                 (double)c.Volume, (double)c.Ticks, (double)c.Delta, sp, niv);
         }
