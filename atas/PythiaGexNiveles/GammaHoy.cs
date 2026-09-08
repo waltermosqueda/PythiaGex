@@ -125,6 +125,20 @@ namespace PythiaGex
                  Description = "Donde el laboratorio vio la pista. De noche la cadena de CBOE esta congelada y el order flow es fino: la misma regla dio 60 % contra 50 % del placebo (nada) frente a 70 % contra 37 % en la rueda.")]
         public bool GatillosSoloRueda { get; set; } = true;
 
+        [Display(Name = "Dominantes nuevas: resaltar los guiones de los ultimos (min)", GroupName = "3. Pantalla", Order = 21,
+                 Description = "Los guiones de dominante que se dibujaron en vivo hace menos de estos minutos salen mas grandes, claros y con borde: ahi esta el tren de dominantes de este instante. Pasado el tiempo vuelven solos al amarillo normal. 0 = sin resaltar.")]
+        [Range(0, 120)]
+        public int EnfasisNuevasMin { get; set; } = 3;
+
+        [Display(Name = "Barras pesadas cercanas: cuantas por lado (raya punteada)", GroupName = "3. Pantalla", Order = 22,
+                 Description = "Las N barras del perfil con mas GEX (del libro que dibuja) arriba y abajo del precio, dentro del radio, con una raya punteada tenue y su GEX; 0DTE pesa 1,5x. No repite las que ya son dominante o major. 0 = sin rayas.")]
+        [Range(0, 6)]
+        public int RayasPesadas { get; set; } = 2;
+
+        [Display(Name = "Barras pesadas cercanas: radio (% del precio)", GroupName = "3. Pantalla", Order = 23,
+                 Description = "0,6 % = ~46 pts en ES, ~180 en NQ.")]
+        public decimal RadioPesadasPct { get; set; } = 0.6m;
+
         [Display(Name = "Print grande: contratos por operacion acumulada", GroupName = "4. Auditoria", Order = 3,
                  Description = "Se registran por vela en el centinela (of: big_n, big_max, big_buy, big_sell) para medir despues si las 'ballenas' en la banda sirven. No se dibuja nada.")]
         [Range(1, 100000)]
@@ -296,17 +310,18 @@ namespace PythiaGex
         // UN GUION POR CADA ACTUALIZACION, no uno por vela: medido en GAMMAlito hasta
         // 4-6 guiones por columna en las velas recientes. Cada vez que se reprecia y
         // la dominante se movio mas de un cuarto de punto, se agrega un guion a la vela.
-        private readonly Dictionary<int, List<(double Fut, int Rango)>> _guiones = new();
-        private void AgregarGuiones(int bar, double[] est)
+        // Cada guion lleva la hora en que nacio: los del vivo recientes se resaltan (1.4).
+        private readonly Dictionary<int, List<(double Fut, int Rango, DateTime Hora)>> _guiones = new();
+        private void AgregarGuiones(int bar, double[] est, DateTime hora)
         {
             if (est == null) return;
-            if (!_guiones.TryGetValue(bar, out var lg)) { lg = new List<(double, int)>(); _guiones[bar] = lg; }
+            if (!_guiones.TryGetValue(bar, out var lg)) { lg = new List<(double, int, DateTime)>(); _guiones[bar] = lg; }
             for (int i = 0; i < est.Length; i++)
             {
                 if (double.IsNaN(est[i]) || est[i] <= 0) continue;
                 bool hay = false;
                 for (int k = lg.Count - 1; k >= 0; k--) if (lg[k].Rango == i) { hay = Math.Abs(lg[k].Fut - est[i]) < 0.25; break; }
-                if (!hay && lg.Count < 24) lg.Add((est[i], i));
+                if (!hay && lg.Count < 24) lg.Add((est[i], i, hora));
             }
         }
         // por vela: zero por volumen y el strike del Max Change a 30, 5 y 1 min (semillas)
@@ -351,6 +366,7 @@ namespace PythiaGex
         private static readonly Color ColConvNeg = Color.FromArgb(168, 107, 255);
         private static readonly Color ColDom = Color.FromArgb(232, 200, 60);    // primaria: amarillo (hue 29 medido en GAMMAlito)
         private static readonly Color ColDom2 = Color.FromArgb(232, 168, 56);   // secundaria: naranja (hue 19 medido)
+        private static readonly Color ColNuevo = Color.FromArgb(255, 255, 255, 200);  // guion recien nacido en vivo: amarillo claro casi blanco
         private static readonly Color ColZero = Color.FromArgb(235, 235, 235);
         private static readonly Color ColTexto = Color.FromArgb(225, 230, 236);
         private static readonly Color ColFondo = Color.FromArgb(11, 16, 23);
@@ -458,7 +474,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.3b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.4 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -467,7 +483,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.3b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.4 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -677,7 +693,7 @@ namespace PythiaGex
                     if (j < i && cj.GeneradoUtc <= abre) continue;
                     var Lj = nuc.Calcular(cj, (double)c.Close, j == i ? cierra : cj.GeneradoUtc);
                     if (Lj == null || Lj.SinBase) continue;
-                    lock (_candado) AgregarGuiones(bar, Lj.Estela);
+                    lock (_candado) AgregarGuiones(bar, Lj.Estela, DateTime.MinValue);   // del archivo: nunca "nuevo"
                     L = Lj;
                 }
                 if (L == null) { sin++; Gat(bar, c, cierra, null); continue; }
@@ -840,7 +856,7 @@ namespace PythiaGex
                 _alerta = L.Alerta; _alertaHasta = L.AlertaHasta;
                 _maxChange = L.MaxChange;
                 _estela[barra] = L.Estela;
-                AgregarGuiones(barra, L.Estela);
+                AgregarGuiones(barra, L.Estela, DateTime.UtcNow);
                 _marcas[barra] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut });
                 if (_estela.Count > 6000) foreach (var k in _estela.Keys.Where(k => k < barra - 5000).ToList()) { _estela.Remove(k); _marcas.Remove(k); _guiones.Remove(k); }
             }
@@ -1233,6 +1249,30 @@ namespace PythiaGex
             g.DrawString("volumen hoy · sombra OI ayer", fChica, Color.FromArgb(110, ColTexto), x0 + 4, area.Top + 8);
             if (VerConvexidad) { var mcx = g.MeasureString("convexity ladder (" + libroConv + ")", fChica); g.DrawString("convexity ladder (" + libroConv + ")", fChica, Color.FromArgb(110, ColTexto), xConv - mcx.Width, area.Top + 8); }
 
+            // ---- barras pesadas cercanas: raya punteada tenue en las N barras con mas GEX de
+            // cada lado del precio, dentro del radio; 0DTE pesa 1,5x; sin repetir dominantes/majors
+            if (RayasPesadas > 0 && !double.IsNaN(futuro) && perfil.Count > 0)
+            {
+                double radioP = futuro * (double)Math.Max(0.05m, RadioPesadasPct) / 100.0;
+                bool Repetida(double fut) => doms.Any(dd => Math.Abs(dd.Fut - fut) < 0.5)
+                                              || (!double.IsNaN(mpVol) && Math.Abs(mpVol - fut) < 0.5)
+                                              || (!double.IsNaN(mnVol) && Math.Abs(mnVol - fut) < 0.5);
+                var cerca = perfil.Where(s => Math.Abs(s.Fut - futuro) <= radioP && Math.Abs(s.GexVol) > 0 && !Repetida(s.Fut)).ToList();
+                Func<Strike, double> pesoP = s => Math.Abs(s.GexVol) * (s.Dte < 1.0 ? 1.5 : 1.0);
+                var pesadas = cerca.Where(s => s.Fut > futuro).OrderByDescending(pesoP).Take(RayasPesadas)
+                         .Concat(cerca.Where(s => s.Fut <= futuro).OrderByDescending(pesoP).Take(RayasPesadas)).ToList();
+                foreach (var s in pesadas)
+                {
+                    int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
+                    if (y < area.Top || y > piso) continue;
+                    var colP = s.GexVol >= 0 ? ColPos : ColNeg;
+                    g.DrawLine(new RenderPen(Color.FromArgb(80, colP), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xl0, y, xl1, y);
+                    string rotP = BmR(s.GexVol) + (s.Dte < 1.0 ? " 0DTE" : "");
+                    var mrP = g.MeasureString(rotP, fRot);
+                    g.DrawString(rotP, fRot, Color.FromArgb(150, colP), xl1 - mrP.Width - 2, y - mrP.Height - 1);
+                }
+            }
+
             // ---- rayas: zero de cada libro, majors del volumen, dominantes
             int xRaya = int.MinValue;
             if (foto != null) { try { xRaya = cont.GetXByBar(barFoto, false); } catch { xRaya = int.MinValue; } }
@@ -1279,7 +1319,8 @@ namespace PythiaGex
             // ---- estela: la dominante que regia en cada vela
             if (VerEstela || VerSemillas || VerZeroPorVela || VerGatillos != GatillosEnPantalla.Ninguno)
             {
-                Dictionary<int, double[]> est; Dictionary<int, (double Zero, double[] Mc)> mar; Dictionary<int, List<(double Fut, int Rango)>> gui;
+                Dictionary<int, double[]> est; Dictionary<int, (double Zero, double[] Mc)> mar; Dictionary<int, List<(double Fut, int Rango, DateTime Hora)>> gui;
+                var ahoraUtc = DateTime.UtcNow;
                 Dictionary<int, List<GatilloBanda.Marca>> dis;
                 lock (_candado)
                 {
@@ -1321,13 +1362,28 @@ namespace PythiaGex
                     // GAMMAlito: la dominante es un GUION amarillo por vela, primaria gruesa y secundaria fina.
                     // Puesto uno al lado del otro forman la linea sola: se ve donde nacio y cuando salto.
                     if (VerEstela && gui.TryGetValue(b, out var lg))
-                        foreach (var (fut, rango) in lg)
-                        {
-                            int y; try { y = cont.GetYByPrice((decimal)fut, false); } catch { continue; }
-                            if (y < area.Top || y > piso) continue;
-                            int h = rango == 0 ? grueso : fino;
-                            g.FillRectangle(Color.FromArgb(rango == 0 ? 230 : 170, rango == 0 ? ColDom : ColDom2), new Rectangle(x - bw / 2, y - h / 2, bw, h));
-                        }
+                    {
+                        // primero los viejos, encima los NUEVOS (nacidos en vivo hace menos de
+                        // EnfasisNuevasMin): mas grandes, claros y con borde oscuro, para ubicar
+                        // el tren de dominantes de este instante; despues vuelven solos al normal
+                        for (int pasada = 0; pasada < 2; pasada++)
+                            foreach (var (fut, rango, hora) in lg)
+                            {
+                                bool nueva = EnfasisNuevasMin > 0 && hora != DateTime.MinValue && (ahoraUtc - hora).TotalMinutes <= EnfasisNuevasMin;
+                                if (nueva != (pasada == 1)) continue;
+                                int y; try { y = cont.GetYByPrice((decimal)fut, false); } catch { continue; }
+                                if (y < area.Top || y > piso) continue;
+                                int h = rango == 0 ? grueso : fino;
+                                if (!nueva)
+                                {
+                                    g.FillRectangle(Color.FromArgb(rango == 0 ? 230 : 170, rango == 0 ? ColDom : ColDom2), new Rectangle(x - bw / 2, y - h / 2, bw, h));
+                                    continue;
+                                }
+                                int hn = h + 2, wn = bw + 2;
+                                g.FillRectangle(Color.FromArgb(230, ColFondo), new Rectangle(x - wn / 2 - 1, y - hn / 2 - 1, wn + 2, hn + 2));
+                                g.FillRectangle(rango == 0 ? ColNuevo : Color.FromArgb(255, 255, 225, 150), new Rectangle(x - wn / 2, y - hn / 2, wn, hn));
+                            }
+                    }
                     if (mar.TryGetValue(b, out var m))
                     {
                         if (VerZeroPorVela && !double.IsNaN(m.Zero))

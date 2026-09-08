@@ -390,3 +390,23 @@ El indicador (GatilloBanda.cs, la misma logica que el laboratorio):
 Primer recorrido sobre MES M5 (15 dias, todas las horas): 46 entradas a banda
 quieta, 53 disparos, 16 rechazo·tren. Lo que se ve es exactamente lo que se
 midio; si el laboratorio lo tira abajo, se saca.
+
+## 1.4: los guiones nuevos resaltados y las barras pesadas cercanas (2026-09-08, mediodia)
+
+Pedido: "hacer enfasis, cambiar de color o agrandar los puntos dominantes
+nuevos que se estan dibujando en vivo, solo los nuevos; despues al mismo
+color que los otros", y "una linea punteada tenue en las barras mas pesadas
+cercanas al precio, arriba y abajo, solo las significativas".
+
+- Cada guion lleva ahora la hora en que nacio. Los del vivo con menos de
+  "Dominantes nuevas: resaltar los guiones de los ultimos (min)" (default 3)
+  se dibujan encima, 2 px mas altos y anchos, amarillo casi blanco con borde
+  oscuro. Los del archivo nunca cuentan como nuevos. El temporizador redibuja
+  cada 10 s, asi que vuelven solos al amarillo normal.
+- "Barras pesadas cercanas": las N barras del perfil (default 2 por lado)
+  con mas GEX del libro que dibuja, dentro de un radio (0,6 % del precio),
+  con raya punteada tenue del color de la barra y rotulo con su GEX y "0DTE"
+  si vence hoy (el 0DTE pesa 1,5x en la jerarquia). No repite las que ya son
+  dominante o major. Es una ayuda de lectura: no esta medida contra placebo.
+Verificado en pantalla (MNQ M1 y M5): "+1,3B 0DTE" arriba y "-541M 0DTE /
+-549M 0DTE" abajo del precio, y los triangulos "tren" en el M1.
