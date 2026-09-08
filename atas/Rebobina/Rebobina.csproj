@@ -23,6 +23,7 @@
     <Compile Include="..\PythiaGexNiveles\GammaHoyNucleo.cs" />
     <Compile Include="..\PythiaGexNiveles\GammaVivoNucleo.cs" />
     <Compile Include="..\PythiaGexNiveles\Centinela.cs" />
+    <Compile Include="..\PythiaGexNiveles\Black76.cs" />
   </ItemGroup>
 
 </Project>

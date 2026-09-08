@@ -74,6 +74,16 @@ namespace PythiaGex
                  Description = "La rama 'cadenas' del repo: un archivo por dia y raiz, escrito cada minuto por GitHub Actions.")]
         public string UrlArchivo { get; set; } = "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/";
 
+        public enum LibroEnVivo { CBOE_SPX, Rithmic_ES }
+
+        [Display(Name = "Libro en vivo", GroupName = "1. Datos", Order = 0,
+                 Description = "CBOE_SPX: la cadena de SPX de la nube (llega 902 s tarde, cada minuto en la rueda). Rithmic_ES: las opciones de ES desde tu ATAS, volumen del dia por strike EN TIEMPO REAL e IV de las puntas, sin retraso y sin nube; strikes del futuro, sin base. Con Rithmic el mapa respira con cada operacion, como GAMMAlito. El pasado (archivo) sigue siendo SPX.")]
+        public LibroEnVivo Libro { get; set; } = LibroEnVivo.CBOE_SPX;
+
+        [Display(Name = "Rithmic: rearmar el libro cada (s)", GroupName = "1. Datos", Order = 14)]
+        [Range(5, 120)]
+        public int SegundosLibroRithmic { get; set; } = 10;
+
         [Display(Name = "Feed por minuto (rama cadenas)", GroupName = "1. Datos", Order = 13,
                  Description = "Ademas del feed de la nube (cada 5 min) baja ultima-<raiz>.json de la rama cadenas, que se escribe cada minuto en la rueda americana, y usa la mas nueva.")]
         public bool FeedMinuto { get; set; } = true;
@@ -287,6 +297,8 @@ namespace PythiaGex
         private int _barraVivaUlt = -1;
         private DateTime _ultimaViva = DateTime.MinValue;
         private double _masCercaUlt = double.NaN;    // dias al vencimiento mas cercano del mapa (para el titulo)
+        private DateTime _ultimoLibroViva = DateTime.MinValue;
+        private int _vivaFlaca = -1;                 // strikes utiles cuando el libro de Rithmic no alcanzo
         private string _rebRotulo = "";
         private DateTime _rebCadenaHora = DateTime.MinValue, _rebUltimoLog = DateTime.MinValue;
         private DateTime _ultimoAudit = DateTime.MinValue;
@@ -332,10 +344,15 @@ namespace PythiaGex
             }
             catch (Exception e) { Registrar(e); }
 
-            _periodo = TimeSpan.FromSeconds(30);
+            _periodo = TimeSpan.FromSeconds(10);
             _tick = () =>
             {
                 var ahora = DateTime.UtcNow;
+                if (Libro == LibroEnVivo.Rithmic_ES && _viva.Activa && (ahora - _ultimoLibroViva).TotalSeconds >= Math.Max(5, SegundosLibroRithmic))
+                {
+                    _ultimoLibroViva = ahora;
+                    try { var cv = DesdeViva(); if (cv != null) { _c = cv; _error = ""; } } catch (Exception e) { Registrar(e); }
+                }
                 if (Reloj.UltimaMedicion == DateTime.MinValue || (ahora - Reloj.UltimaMedicion).TotalMinutes >= 30)
                     _ = Reloj.Medir(Log);
                 if ((ahora - _ultimaBajada).TotalSeconds >= Math.Max(60, SegundosRefresco))
@@ -400,7 +417,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 0.9b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.0 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -409,7 +426,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 0.9b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.0 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -448,7 +465,7 @@ namespace PythiaGex
                     var u = await Feed.BajarUltima(UrlArchivo, Raiz(), null).ConfigureAwait(false);
                     if (u != null && (c == null || u.GeneradoUtc > c.GeneradoUtc)) c = u;
                 }
-                if (c != null) { _c = c; _error = ""; }
+                if (c != null && !(Libro == LibroEnVivo.Rithmic_ES && _c != null && _c.EsFuturo)) { _c = c; _error = ""; }
             }
             finally
             {
@@ -626,6 +643,40 @@ namespace PythiaGex
             Log("REBOBINADO termino: " + con + " velas con cadena, " + sin + " sin; ultima cadena " + (ultimaCad == DateTime.MinValue ? "--" : ultimaCad.ToString("yyyy-MM-dd HH:mm") + " UTC"));
             try { _centArchivo?.Volcar(true); } catch { }
             try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
+        }
+
+        /// <summary>La cadena de opciones de ES armada con lo que llega por Rithmic:
+        /// interes abierto (de ayer), IV despejada de las puntas y VOLUMEN DEL DIA por
+        /// contrato en tiempo real. Strikes del futuro: base 0. Copiado del
+        /// ArmarDesdeViva de Gamma Vivo (2026-09-08).</summary>
+        private Feed.Cadena DesdeViva()
+        {
+            List<CadenaViva.Fila> fs;
+            try { fs = _viva.Instantanea(); } catch { return null; }
+            if (fs == null || fs.Count == 0) return null;
+            var dias = fs.Select(f => Math.Round(f.Dias, 4)).Distinct().OrderBy(x => x).ToList();
+            var idx = new Dictionary<double, int>();
+            for (int i = 0; i < dias.Count; i++) idx[dias[i]] = i;
+            var porClave = new Dictionary<(double, int), Feed.Fila>();
+            foreach (var f in fs)
+            {
+                if (f.IV <= 0 || (f.OI <= 0 && f.VolumenHoy <= 0)) continue;
+                int v = idx[Math.Round(f.Dias, 4)];
+                if (!porClave.TryGetValue((f.K, v), out var fila)) { fila = new Feed.Fila { K = f.K, V = v }; porClave[(f.K, v)] = fila; }
+                if (f.EsCall) { fila.OiC = f.OI; fila.IvC = f.IV; fila.VolC = f.VolumenHoy; }
+                else { fila.OiP = f.OI; fila.IvP = f.IV; fila.VolP = f.VolumenHoy; }
+            }
+            int utiles = porClave.Values.Where(x => x.IvC > 0 && x.IvP > 0).Select(x => x.K).Distinct().Count();
+            if (utiles < 12) { _vivaFlaca = utiles; return null; }
+            _vivaFlaca = -1;
+            var ahora = DateTime.UtcNow;
+            return new Feed.Cadena
+            {
+                Ts = ahora.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), SpotIdx = _viva.Futuro,
+                Dias = dias.ToArray(), Filas = porClave.Values.OrderBy(x => x.K).ThenBy(x => x.V).ToList(),
+                Base = 0, BaseConfiable = true, EdadMin = 0, UltimoTrade = "", HorizonteCadena = dias.Count > 0 ? dias[dias.Count - 1] : double.NaN,
+                RecibidoUtc = ahora, GeneradoUtc = ahora, EsFuturo = true, Fuente = "Rithmic ES",
+            };
         }
 
         /// <summary>La foto de la cadena viva de Rithmic con los mismos campos que
@@ -816,11 +867,12 @@ namespace PythiaGex
 
             var c = _c;
             // ---- cabecera: siempre, aunque no haya datos, para que se sepa por que
-            string edad = c == null ? "sin feed" : (c.EdadMin + 902.0 / 60.0).ToString("0", es) + " min tarde";
+            string edad = c == null ? "sin feed" : (c.EsFuturo ? "en tiempo real" : (c.EdadMin + 902.0 / 60.0).ToString("0", es) + " min tarde");
             string l1 = perfil.Count == 0
                 ? "GAMMA HOY  esperando cadena" + (string.IsNullOrEmpty(_error) ? "" : " (" + _error + ")")
                 : "GAMMA HOY  " + corto + "  " + cuad + "   conv " + (convPrecio >= 0 ? "+" : "-") + " (" + libroConv + ")  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)) + (mucho ? " mucho" : " poco");
-            string l2 = "vol CBOE " + edad + " · OI de ayer · base " + origenBase + " · dominantes por " + libroDom
+            string l2 = (c != null && c.EsFuturo ? "libro ES Rithmic " + edad + " · " + c.Filas.Count + " filas" : "vol CBOE " + edad) + " · OI de ayer · base " + origenBase + " · dominantes por " + libroDom
+                      + (Libro == LibroEnVivo.Rithmic_ES && _vivaFlaca >= 0 ? " · RITHMIC FLACO: " + _vivaFlaca + " strikes con puntas, sigo con CBOE" : "")
                       + (_viva.Activa ? " · vivo Rithmic " + ((int)_viva.VolumenTotalHoy()).ToString("N0", es) + " contr" : " · vivo: " + _viva.Estado);
             if (Fuente != FuenteDatos.Archivo)
             {

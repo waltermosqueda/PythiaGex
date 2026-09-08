@@ -50,6 +50,10 @@ namespace PythiaGex
             /// a la que el indicador HUBIERA tenido esta cadena: en el
             /// rebobinado manda esto, no el sello de CBOE.</summary>
             public DateTime GeneradoUtc;
+            /// <summary>Cadena de opciones SOBRE EL FUTURO (ES por Rithmic): los strikes
+            /// ya estan en precio del futuro, no hay base que sumar, y la gamma es Black-76.</summary>
+            public bool EsFuturo;
+            public string Fuente = "";
         }
 
         private static readonly HttpClient Http = Crear();

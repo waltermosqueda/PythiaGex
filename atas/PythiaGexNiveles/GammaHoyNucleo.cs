@@ -120,10 +120,11 @@ namespace PythiaGex
         /// <summary>GEX de una fila (un strike, un vencimiento) ponderado por lo
         /// que se pida: interes abierto o volumen. Convencion estandar, +call
         /// -put: es una ASUNCION sobre de que lado quedo la mesa, no un dato.</summary>
-        public static double Gex(Feed.Fila f, double S, double T, double r, bool porVolumen)
+        public static double Gex(Feed.Fila f, double S, double T, double r, bool porVolumen, bool esFut = false)
         {
-            var gC = GammaBs(S, f.K, T, f.IvC, r);
-            var gP = GammaBs(S, f.K, T, f.IvP, r);
+            // opciones sobre el futuro (ES por Rithmic): Black-76; sobre el indice (SPX): Black-Scholes
+            var gC = esFut ? Black76.Gamma(S, f.K, T, f.IvC) : GammaBs(S, f.K, T, f.IvC, r);
+            var gP = esFut ? Black76.Gamma(S, f.K, T, f.IvP) : GammaBs(S, f.K, T, f.IvP, r);
             double wC = porVolumen ? f.VolC : f.OiC, wP = porVolumen ? f.VolP : f.OiP;
             return (gC * wC - gP * wP) * MULT_INDICE * S * S * 0.01;
         }
@@ -152,7 +153,7 @@ namespace PythiaGex
                     if (f.V < 0 || f.V >= c.Dias.Length) continue;
                     double dias = c.Dias[f.V];
                     if (!PasaHorizonte(dias, masCerca)) continue;
-                    t += Gex(f, x, Math.Max(dias, PISO_DIAS) / 365.0, r, porVolumen);
+                    t += Gex(f, x, Math.Max(dias, PISO_DIAS) / 365.0, r, porVolumen, c.EsFuturo);
                 }
                 if (!double.IsNaN(ant) && ((ant < 0 && t >= 0) || (ant > 0 && t <= 0)))
                     return (t != ant) ? xAnt + (x - xAnt) * (-ant) / (t - ant) : x;
@@ -178,7 +179,8 @@ namespace PythiaGex
 
             // la base: medida > ultima buena reciente > cruda; nunca inventada
             double baseUsada; string origen;
-            if (c.BaseConfiable && c.Base != 0) { baseUsada = c.Base; origen = "medida"; }
+            if (c.EsFuturo) { baseUsada = 0; origen = "libro ES (Rithmic), sin base"; }
+            else if (c.BaseConfiable && c.Base != 0) { baseUsada = c.Base; origen = "medida"; }
             else if (c.BaseUltimaBuena != 0 && c.BaseUltimaBuenaEdad <= 360) { baseUsada = c.BaseUltimaBuena; origen = "medida hace " + c.BaseUltimaBuenaEdad.ToString("0", CultureInfo.InvariantCulture) + " min"; }
             else if (c.BaseCruda != 0) { baseUsada = c.BaseCruda; origen = "CRUDA " + c.BaseErrorTicks.ToString("0", CultureInfo.InvariantCulture) + " ticks"; }
             else { L.SinBase = true; L.BaseOrigen = "sin base"; return L; }
@@ -199,8 +201,8 @@ namespace PythiaGex
                 double dias = c.Dias[f.V];
                 if (!PasaHorizonte(dias, masCerca)) continue;
                 double T = Math.Max(dias, PISO_DIAS) / 365.0;
-                double gOi = Gex(f, S, T, r, false), gVol = Gex(f, S, T, r, true);
-                double gOiUp = Gex(f, Sup, T, r, false), gVolUp = Gex(f, Sup, T, r, true);
+                double gOi = Gex(f, S, T, r, false, c.EsFuturo), gVol = Gex(f, S, T, r, true, c.EsFuturo);
+                double gOiUp = Gex(f, Sup, T, r, false, c.EsFuturo), gVolUp = Gex(f, Sup, T, r, true, c.EsFuturo);
                 if (gOi == 0 && gVol == 0) continue;
                 if (!por.TryGetValue(f.K, out var s)) { s = new Strike { K = f.K, Fut = f.K + baseUsada }; por[f.K] = s; }
                 s.GexOi += gOi; s.GexVol += gVol;
