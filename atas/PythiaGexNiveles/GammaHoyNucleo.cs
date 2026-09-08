@@ -34,6 +34,13 @@ namespace PythiaGex
             public double PicoRadioPct = 0.35;
             public int MuchoPct = 50;
             public LibroConv Convexidad = LibroConv.Auto;
+            // LA DOMINANTE COMO CENTROIDE. Medido en los videos de GAMMAlito
+            // (2026-09-07, analizar_guiones.py): la dominante no es una raya plana en
+            // un strike; sus guiones forman una banda de ~5 puntos de NQ que ondula
+            // minuto a minuto. Un promedio de precio ponderado por gamma alrededor
+            // del pico se mueve con cada cambio de peso y no salta de strike en strike.
+            public bool Centroide = true;
+            public double RadioCentroidePts = 12.0;    // ~2 strikes de SPX a cada lado
         }
 
         public sealed class Strike
@@ -241,6 +248,24 @@ namespace PythiaGex
                 candDom = perfil.Where(x => Math.Abs(x.Fut - futuro) <= radio && Math.Abs(x.GexOi) > 0)
                                 .OrderByDescending(x => Math.Abs(x.GexOi)).Take(cuantas)
                                 .Select(x => (x.Fut, x.GexOi)).ToList();
+            }
+
+            if (A.Centroide && candDom.Count > 0)
+            {
+                var conCentro = new List<(double Fut, double Gex)>();
+                foreach (var dcand in candDom)
+                {
+                    double sw = 0, sx = 0;
+                    foreach (var x in perfil)
+                    {
+                        if (Math.Abs(x.Fut - dcand.Fut) > A.RadioCentroidePts) continue;
+                        double w = Math.Abs(libroDom == "vol" ? x.GexVol : x.GexOi);
+                        if (w <= 0) continue;
+                        sw += w; sx += w * x.Fut;
+                    }
+                    conCentro.Add((sw > 0 ? sx / sw : dcand.Fut, dcand.Item2));
+                }
+                candDom = conCentro;
             }
 
             // el cuadrante: pico de GEX cerca del precio? convexidad ahi?

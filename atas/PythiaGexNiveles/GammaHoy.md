@@ -209,3 +209,42 @@ Big Trades (web ES_SPY 2m), Las Dominantes.
    Change predice dominante): es medible con mc30 y dom0 del centinela y no
    se hizo; (d) las zonas de dominancia como banda (la web pinta una franja
    amarilla alrededor de la dominante), hoy solo la raya.
+
+## Medido en los videos, no mirado: como dibuja GAMMAlito (2026-09-07, noche)
+
+El operador desconfio con razon: "varias dominantes por instante, arriba y
+abajo, como una nube; y las barras se mueven en vertical". Se midio con
+`herramientas/analizar_guiones.py` (OpenCV: componentes amarillas anchas y
+bajas = guiones; barras verdes/rojas del perfil izquierdo; seguimiento cuadro
+a cuadro) sobre cuatro videos: "Miren esto en vivo" (NinjaTrader MNQ 1 min,
+145 cuadros), "Las dominantes actuan de iman" (NinjaTrader NQ, 109), "Big
+Trades" (web ES_SPY 2 min, 160) y "Que es GAMMAlito powered by Gexbot" (web,
+900 cuadros). Cuadros anotados en datos/simulador/guiones/.
+
+1. GUIONES POR VELA: mediana 1, pero en las velas recientes hasta 4 (Miren),
+   3 (Las), 6 (Big Trades, con ruido de rotulos). O sea: un guion por cada
+   ACTUALIZACION del calculo, no uno por vela. Con 1 minuto y varias
+   actualizaciones por minuto, quedan varios guiones a alturas distintas.
+2. LA "NUBE" ES UNA BANDA: en "Las dominantes" los guiones forman una franja
+   de ~12 px de alto con el eje a 25 px por 10 puntos de NQ = ~5 puntos de NQ.
+   Los strikes de NQ van de 10 en 10 y los de QQQ cada ~41: la dominante NO
+   esta clavada en un strike, ondula. Coincide con lo medido antes en 284
+   lineas del producto (ninguna plana). La cuenta que da eso es un promedio
+   de precio ponderado por gamma alrededor del pico (centroide), no el argmax.
+3. DOS COLORES: guiones de hue 29 (amarillo) cerca del precio y de hue 19
+   (naranja) en la fila de abajo: primaria y secundaria (o reciente/vieja).
+4. LAS BARRAS NO SE MUEVEN EN VERTICAL: movimiento propio de una barra
+   (quitado el corrimiento comun del grafico) |dy| mediana 0,00-0,23 px, p90
+   0,04-1,9 px en los cuatro videos; lo que cambia es el LARGO (p90 6-77 px).
+   El "sube y baja" que se ve es la autoescala/scroll del grafico (corrimiento
+   comun p90 hasta 8,9 px en el clip web) y barras que aparecen/desaparecen.
+   Las barras llevan tres pelotitas en la punta (grande 15 min, mediana 5,
+   chica 1): confirmado en el recorte de NinjaTrader.
+5. Gamma Hoy 0.7 lo aplica: dominante como centroide (radio 12 pts, ajuste
+   "Dominante como centroide"), un guion por cada actualizacion (hasta 24 por
+   vela, solo si se movio > 0,25 pt), primaria amarilla y secundaria naranja;
+   en el rebobinado, un guion por cada cadena que llego durante la vela.
+   Todo medible: el centinela sigue anotando dom0/dom1 por vela.
+
+Lo que sigue sin fuente: los Big Trades de SPY (burbujas verdes con el
+tamaño, 326/340/384/452 en el clip): OPRA en vivo es paga.

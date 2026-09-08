@@ -142,6 +142,14 @@ namespace PythiaGex
         [Display(Name = "Dominantes: radio alrededor del precio (%)", GroupName = "2. Lectura", Order = 2)]
         public decimal RadioDominantesPct { get; set; } = 2.0m;
 
+        [Display(Name = "Dominante como centroide (ondula, como GAMMAlito)", GroupName = "2. Lectura", Order = 7,
+                 Description = "Promedio de precio ponderado por gamma alrededor del strike ganador. Medido en los videos: la dominante de GAMMAlito es una banda de ~5 puntos que ondula, no una raya plana en un strike.")]
+        public bool DominanteCentroide { get; set; } = true;
+
+        [Display(Name = "Centroide: radio (puntos)", GroupName = "2. Lectura", Order = 8)]
+        [Range(2, 60)]
+        public decimal RadioCentroidePts { get; set; } = 12m;
+
         [Display(Name = "Pico de GEX 'cerca del precio': radio (%)", GroupName = "2. Lectura", Order = 3,
                  Description = "Para el cuadrante. El pico del volumen dentro de este radio se compara con el maximo de todo el libro.")]
         public decimal PicoRadioPct { get; set; } = 0.35m;
@@ -236,6 +244,22 @@ namespace PythiaGex
         private (double Fut, double Delta)[] _maxChange = new (double, double)[GammaHoyNucleo.Ventanas.Length];
         // estela de dominantes por vela
         private readonly Dictionary<int, double[]> _estela = new();
+        // UN GUION POR CADA ACTUALIZACION, no uno por vela: medido en GAMMAlito hasta
+        // 4-6 guiones por columna en las velas recientes. Cada vez que se reprecia y
+        // la dominante se movio mas de un cuarto de punto, se agrega un guion a la vela.
+        private readonly Dictionary<int, List<(double Fut, int Rango)>> _guiones = new();
+        private void AgregarGuiones(int bar, double[] est)
+        {
+            if (est == null) return;
+            if (!_guiones.TryGetValue(bar, out var lg)) { lg = new List<(double, int)>(); _guiones[bar] = lg; }
+            for (int i = 0; i < est.Length; i++)
+            {
+                if (double.IsNaN(est[i]) || est[i] <= 0) continue;
+                bool hay = false;
+                for (int k = lg.Count - 1; k >= 0; k--) if (lg[k].Rango == i) { hay = Math.Abs(lg[k].Fut - est[i]) < 0.25; break; }
+                if (!hay && lg.Count < 24) lg.Add((est[i], i));
+            }
+        }
         // por vela: zero por volumen y el strike del Max Change a 30, 5 y 1 min (semillas)
         private readonly Dictionary<int, (double Zero, double[] Mc)> _marcas = new();
         // centinela
@@ -264,7 +288,8 @@ namespace PythiaGex
         private static readonly Color ColNeg = Color.FromArgb(235, 60, 60);
         private static readonly Color ColConvPos = Color.FromArgb(93, 217, 208);
         private static readonly Color ColConvNeg = Color.FromArgb(168, 107, 255);
-        private static readonly Color ColDom = Color.FromArgb(232, 200, 60);
+        private static readonly Color ColDom = Color.FromArgb(232, 200, 60);    // primaria: amarillo (hue 29 medido en GAMMAlito)
+        private static readonly Color ColDom2 = Color.FromArgb(232, 168, 56);   // secundaria: naranja (hue 19 medido)
         private static readonly Color ColZero = Color.FromArgb(235, 235, 235);
         private static readonly Color ColTexto = Color.FromArgb(225, 230, 236);
         private static readonly Color ColFondo = Color.FromArgb(11, 16, 23);
@@ -367,7 +392,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 0.6 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 0.7 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -376,7 +401,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 0.6 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : "") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 0.7 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : "") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -522,6 +547,7 @@ namespace PythiaGex
             var a = nuc.A; var b0 = _nucleo.A;
             a.Tasa = (double)Tasa; a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte; a.CuantasDominantes = CuantasDominantes;
             a.RadioDominantesPct = (double)RadioDominantesPct; a.PicoRadioPct = (double)PicoRadioPct; a.MuchoPct = MuchoPct; a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
+            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts;
             double edadMax = (double)Math.Max(0.05m, ArchivoEdadMaxHoras);
             int fin = Math.Max(0, CurrentBar - 1);      // la ultima vela es del vivo (Hibrido) o se muestra con la ultima foto (Archivo)
             int i = 0, con = 0, sin = 0;
@@ -535,16 +561,28 @@ namespace PythiaGex
                 DateTime cierra;
                 try { cierra = Utc(GetCandle(bar + 1).Time); } catch { cierra = abre.AddMinutes(1); }
                 if (cierra <= abre) cierra = abre.AddMinutes(1);
+                int i0 = i;
                 while (i + 1 < arch.Count && arch[i + 1].GeneradoUtc <= cierra) i++;
                 var cad = arch[i];
                 if (cad.GeneradoUtc > cierra || (cierra - cad.GeneradoUtc).TotalHours > edadMax)
                 {
                     sin++;
-                    lock (_candado) { _estela[bar] = new double[0]; _fotosBarra.Remove(bar); }
+                    lock (_candado) { _estela[bar] = new double[0]; _fotosBarra.Remove(bar); _guiones.Remove(bar); }
                     continue;
                 }
-                var L = nuc.Calcular(cad, (double)c.Close, cierra);
-                if (L == null || L.SinBase) { sin++; continue; }
+                // un guion por cada cadena que llego DURANTE la vela (varias por vela, como
+                // GAMMAlito); la ultima es la que queda como foto y centinela de la vela
+                GammaHoyNucleo.Lectura L = null;
+                for (int j = Math.Max(i0, i - 12); j <= i; j++)
+                {
+                    var cj = arch[j];
+                    if (j < i && cj.GeneradoUtc <= abre) continue;
+                    var Lj = nuc.Calcular(cj, (double)c.Close, j == i ? cierra : cj.GeneradoUtc);
+                    if (Lj == null || Lj.SinBase) continue;
+                    lock (_candado) AgregarGuiones(bar, Lj.Estela);
+                    L = Lj;
+                }
+                if (L == null) { sin++; continue; }
                 con++; ultimaCad = cad.GeneradoUtc;
                 var foto = new Foto
                 {
@@ -645,6 +683,7 @@ namespace PythiaGex
             a.PicoRadioPct = (double)PicoRadioPct;
             a.MuchoPct = MuchoPct;
             a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
+            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts;
 
             var L = _nucleo.Calcular(c, futuro, ahoraUtc);
             if (L == null) return;
@@ -663,8 +702,9 @@ namespace PythiaGex
                 _alerta = L.Alerta; _alertaHasta = L.AlertaHasta;
                 _maxChange = L.MaxChange;
                 _estela[barra] = L.Estela;
+                AgregarGuiones(barra, L.Estela);
                 _marcas[barra] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut });
-                if (_estela.Count > 6000) foreach (var k in _estela.Keys.Where(k => k < barra - 5000).ToList()) { _estela.Remove(k); _marcas.Remove(k); }
+                if (_estela.Count > 6000) foreach (var k in _estela.Keys.Where(k => k < barra - 5000).ToList()) { _estela.Remove(k); _marcas.Remove(k); _guiones.Remove(k); }
             }
 
             if ((DateTime.UtcNow - _ultimoAudit).TotalSeconds >= 60)
@@ -877,8 +917,12 @@ namespace PythiaGex
             // ---- estela: la dominante que regia en cada vela
             if (VerEstela || VerSemillas || VerZeroPorVela)
             {
-                Dictionary<int, double[]> est; Dictionary<int, (double Zero, double[] Mc)> mar;
-                lock (_candado) { est = new Dictionary<int, double[]>(_estela); mar = new Dictionary<int, (double, double[])>(_marcas); }
+                Dictionary<int, double[]> est; Dictionary<int, (double Zero, double[] Mc)> mar; Dictionary<int, List<(double Fut, int Rango)>> gui;
+                lock (_candado)
+                {
+                    est = new Dictionary<int, double[]>(_estela); mar = new Dictionary<int, (double, double[])>(_marcas);
+                    gui = _guiones.ToDictionary(kv => kv.Key, kv => kv.Value.ToList());
+                }
                 int desde = Math.Max(0, FirstVisibleBarNumber), hasta = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
                 // ancho de una vela en pixeles, medido en el grafico (no supuesto)
                 int bw = 5;
@@ -889,14 +933,13 @@ namespace PythiaGex
                     int x; try { x = cont.GetXByBar(b, false); } catch { continue; }
                     // GAMMAlito: la dominante es un GUION amarillo por vela, primaria gruesa y secundaria fina.
                     // Puesto uno al lado del otro forman la linea sola: se ve donde nacio y cuando salto.
-                    if (VerEstela && est.TryGetValue(b, out var d))
-                        for (int i = 0; i < d.Length; i++)
+                    if (VerEstela && gui.TryGetValue(b, out var lg))
+                        foreach (var (fut, rango) in lg)
                         {
-                            if (double.IsNaN(d[i])) continue;
-                            int y; try { y = cont.GetYByPrice((decimal)d[i], false); } catch { continue; }
+                            int y; try { y = cont.GetYByPrice((decimal)fut, false); } catch { continue; }
                             if (y < area.Top || y > piso) continue;
-                            int h = i == 0 ? grueso : fino;
-                            g.FillRectangle(Color.FromArgb(i == 0 ? 235 : 150, ColDom), new Rectangle(x - bw / 2, y - h / 2, bw, h));
+                            int h = rango == 0 ? grueso : fino;
+                            g.FillRectangle(Color.FromArgb(rango == 0 ? 230 : 170, rango == 0 ? ColDom : ColDom2), new Rectangle(x - bw / 2, y - h / 2, bw, h));
                         }
                     if (mar.TryGetValue(b, out var m))
                     {
