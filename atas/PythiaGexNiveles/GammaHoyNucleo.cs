@@ -146,7 +146,16 @@ namespace PythiaGex
 
         /// <summary>El cruce por cero de la suma repreciada a cada precio de una
         /// grilla de +-3 %, interpolado. Devuelve en precio de INDICE.</summary>
-        private double Cruce(Feed.Cadena c, double S, double r, double masCerca, bool porVolumen)
+        /// <summary>Cuanto envejecio la cadena desde que se calcularon sus dias al
+        /// vencimiento: se resta a cada vencimiento para que la gamma use el tiempo que
+        /// de verdad queda y para que el 0DTE vencido salga solo del perfil.</summary>
+        public static double Envejecer(Feed.Cadena c, DateTime ahoraUtc)
+        {
+            if (c == null || c.GeneradoUtc == default(DateTime) || ahoraUtc <= c.GeneradoUtc) return 0;
+            return Math.Min(2.0, (ahoraUtc - c.GeneradoUtc).TotalDays);
+        }
+
+        private double Cruce(Feed.Cadena c, double S, double r, double masCerca, double envejecer, bool porVolumen)
         {
             double lo = S * 0.97, hi = S * 1.03; const int pasos = 60;
             double ant = double.NaN, xAnt = 0;
@@ -156,7 +165,7 @@ namespace PythiaGex
                 foreach (var f in c.Filas)
                 {
                     if (f.V < 0 || f.V >= c.Dias.Length) continue;
-                    double dias = c.Dias[f.V];
+                    double dias = c.Dias[f.V] - envejecer;
                     if (!PasaHorizonte(dias, masCerca)) continue;
                     t += Gex(f, x, Math.Max(dias, PISO_DIAS) / 365.0, r, porVolumen, c.EsFuturo);
                 }
@@ -194,8 +203,10 @@ namespace PythiaGex
             if (S <= 0) return null;
             double r = A.Tasa, Sup = S * 1.01;
 
+            // los dias de la cadena son de cuando se genero: se envejecen a la hora de la cuenta
+            double envejecer = Envejecer(c, ahoraUtc);
             double masCerca = double.MaxValue;
-            foreach (var d in c.Dias) if (d >= 0 && d < masCerca) masCerca = d;
+            foreach (var d in c.Dias) { double dd = d - envejecer; if (dd >= 0 && dd < masCerca) masCerca = dd; }
             if (masCerca == double.MaxValue) masCerca = 0;
 
             var por = new Dictionary<double, Strike>();
@@ -203,7 +214,7 @@ namespace PythiaGex
             foreach (var f in c.Filas)
             {
                 if (f.V < 0 || f.V >= c.Dias.Length) continue;
-                double dias = c.Dias[f.V];
+                double dias = c.Dias[f.V] - envejecer;
                 if (!PasaHorizonte(dias, masCerca)) continue;
                 double T = Math.Max(dias, PISO_DIAS) / 365.0;
                 double gOi = Gex(f, S, T, r, false, c.EsFuturo), gVol = Gex(f, S, T, r, true, c.EsFuturo);
@@ -231,7 +242,7 @@ namespace PythiaGex
             double maxAbsConv = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.Conv)) : 0;
 
             // zero gamma de cada libro: donde la suma repreciada cruza cero
-            double zeroVol = Cruce(c, S, r, masCerca, true), zeroOi = Cruce(c, S, r, masCerca, false);
+            double zeroVol = Cruce(c, S, r, masCerca, envejecer, true), zeroOi = Cruce(c, S, r, masCerca, envejecer, false);
             if (!double.IsNaN(zeroVol)) zeroVol += baseUsada;
             if (!double.IsNaN(zeroOi)) zeroOi += baseUsada;
 

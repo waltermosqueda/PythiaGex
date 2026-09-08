@@ -234,18 +234,30 @@ namespace PythiaGex
                     // ArgumentOutOfRangeException("length ('-1')"), medido con
                     // Code=MNQ y con Code=NQ. Se busca por mercado y se filtra
                     // del lado nuestro, que ademas es mas robusto.
-                    try
+                    // CON ATAS RECIEN ABIERTO LA BUSQUEDA TIRA NullReference (medido el
+                    // 2026-09-08 en cada reinicio): el servicio todavia no esta listo. Se
+                    // reintenta hasta 6 veces cada 15 s antes de resignarse al micro, que
+                    // solo lista el trimestral y deja el mapa de Rithmic sin 0DTE.
+                    for (int intento = 1; intento <= 6 && _futuro == null; intento++)
                     {
-                        var r = await _conn.SearchSecuritiesAsync(
-                            new SecurityFilter { Type = SecType.Future, Exchange = "CME" })
-                            .ConfigureAwait(false);
-                        _futuro = (r ?? Enumerable.Empty<Security>())
-                            .Where(x => string.Equals(Raiz(x.Code), grande, StringComparison.OrdinalIgnoreCase)
-                                     && x.Expiration > DateTime.Now.Date)
-                            .OrderBy(x => x.Expiration).FirstOrDefault();
-                        if (_futuro != null) L("el grande no estaba local, vino del servidor: " + _futuro.Code);
+                        try
+                        {
+                            var r = await _conn.SearchSecuritiesAsync(
+                                new SecurityFilter { Type = SecType.Future, Exchange = "CME" })
+                                .ConfigureAwait(false);
+                            _futuro = (r ?? Enumerable.Empty<Security>())
+                                .Where(x => string.Equals(Raiz(x.Code), grande, StringComparison.OrdinalIgnoreCase)
+                                         && x.Expiration > DateTime.Now.Date)
+                                .OrderBy(x => x.Expiration).FirstOrDefault();
+                            if (_futuro != null) L("el grande no estaba local, vino del servidor" + (intento > 1 ? " (intento " + intento + ")" : "") + ": " + _futuro.Code);
+                            else if (intento == 6) L("el servidor no devolvio " + grande + " en 6 intentos");
+                        }
+                        catch (Exception e)
+                        {
+                            L("no se pudo buscar " + grande + " (intento " + intento + " de 6): " + e.Message);
+                            if (intento < 6) await Task.Delay(15000).ConfigureAwait(false);
+                        }
                     }
-                    catch (Exception e) { L("no se pudo buscar " + grande + ": " + e.Message); }
                 }
 
                 if (_futuro == null)

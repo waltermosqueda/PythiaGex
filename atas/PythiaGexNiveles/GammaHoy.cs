@@ -474,7 +474,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.4 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.4b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -483,7 +483,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.4 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.4b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1238,7 +1238,8 @@ namespace PythiaGex
                     if (rotEsta)
                     {
                         // la convexidad de la barra: cuanto cambia su GEX si el precio sube 1 %
-                        string lc = BmR(s.Conv);
+                        // (con Δ adelante: no es el GEX de la barra ni lleva vencimiento)
+                        string lc = "Δ" + BmR(s.Conv);
                         var mc1 = g.MeasureString(lc, fRot);
                         int xc0 = xConv - w - 4 - mc1.Width;
                         g.FillRectangle(Color.FromArgb(150, ColFondo), new Rectangle(xc0 - 1, y - altoRot / 2, mc1.Width + 2, altoRot));
@@ -1267,7 +1268,7 @@ namespace PythiaGex
                     if (y < area.Top || y > piso) continue;
                     var colP = s.GexVol >= 0 ? ColPos : ColNeg;
                     g.DrawLine(new RenderPen(Color.FromArgb(80, colP), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xl0, y, xl1, y);
-                    string rotP = BmR(s.GexVol) + (s.Dte < 1.0 ? " 0DTE" : "");
+                    string rotP = BmR(s.GexVol) + (s.Dte < 1.0 ? " 0DTE" : (s.Dte < 1e6 ? " " + Math.Round(s.Dte).ToString(es) + "d" : ""));
                     var mrP = g.MeasureString(rotP, fRot);
                     g.DrawString(rotP, fRot, Color.FromArgb(150, colP), xl1 - mrP.Width - 2, y - mrP.Height - 1);
                 }

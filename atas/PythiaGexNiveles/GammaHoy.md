@@ -410,3 +410,50 @@ cercanas al precio, arriba y abajo, solo las significativas".
   dominante o major. Es una ayuda de lectura: no esta medida contra placebo.
 Verificado en pantalla (MNQ M1 y M5): "+1,3B 0DTE" arriba y "-541M 0DTE /
 -549M 0DTE" abajo del precio, y los triangulos "tren" en el M1.
+
+## Auditoria de los vencimientos (0DTE) y las barras pesadas (2026-09-08, 15:30 UTC)
+
+Pregunta: ¿los "0DTE" de pantalla estan bien calculados y son honestos en
+tiempo real? ¿Las barras grandes cercanas son 0DTE aunque no lo digan?
+Herramienta: laboratorio/auditar_vencimientos.py (cadena cruda, cuenta manual,
+CBOE directo). Resultados, con numeros:
+
+- DIAS AL VENCIMIENTO: la cadena trae 0,2045 d para el 08-09 a las 15:05:25
+  UTC; a mano (vence 16:00 Nueva York = 20:00 UTC) da 0,2046: 6 s de
+  diferencia en ES y 21 s en NQ (reloj de la nube). Los diez vencimientos
+  (08, 09, 10, 11, 14, 15, 16, 17, 18, 21) coinciden con la lista de CBOE
+  bajada aparte a las 15:28 (SPX 500 contratos el 08-09, NDX 764).
+- HORIZONTE = HOY: entra SOLO el vencimiento de hoy (dias <= max(1, el mas
+  cercano)). El perfil ENTERO es 0DTE por construccion: las cinco barras mas
+  pesadas de cada lado tienen 97-100 % de su GEX en el 0DTE y el resto de la
+  semana casi no suma. Una barra "sin 0DTE" no existe en este modo.
+- EL "-1,3B" SIN 0DTE de la captura del operador era el rotulo de la
+  CONVEXIDAD (violeta, a la izquierda de la escalera de convexidad), no una
+  barra de otra fecha. Arreglo 1.4b: la convexidad lleva "Δ" adelante, y el
+  rotulo de barra pesada dice siempre el vencimiento ("0DTE" o "Nd").
+- LA FORMULA, contra la gamma que publica CBOE (misma hora, misma IV, mismo
+  spot): mediana 0,974 en SPX (p10 0,87, p90 1,04) y 1,005 en NDX (p10 0,89,
+  p90 1,32: CBOE redondea la gamma de NDX a 4 decimales, 0,0033, y eso es
+  ruido de +-15 %). El OI coincide 100 % strike por strike.
+- NUCLEO CONTRA CUENTA MANUAL, misma cadena y mismo spot (7694,28): 7700
+  +36,09B en Rebobina; a mano da lo mismo (ver linea de abajo). La
+  diferencia que se ve contra CBOE directo (+53B a las 15:28) es volumen que
+  crecio en 23 minutos y el indice 10 puntos mas arriba (las calls de arriba
+  se acercan al dinero y su gamma sube; las puts de abajo se alejan y baja):
+  el signo de las diferencias es exactamente ese.
+- HONESTIDAD EN TIEMPO REAL, lo que faltaba: los dias de la cadena se
+  calculaban al generarla y quedaban congelados hasta la siguiente. Arreglo
+  1.4b en el nucleo: se envejecen con la hora de la cuenta (ahora menos la
+  hora de la cadena), asi la gamma del 0DTE usa el tiempo que de verdad
+  queda y a las 16:00 de Nueva York el vencimiento del dia sale solo del
+  perfil aunque la cadena no se renueve (la trampa de Opensera e
+  InsiderFinance que siguen contando el 0DTE vencido). Antes dependia de que
+  la nube generara una cadena nueva (cada 5 min fuera de la rueda).
+- RITHMIC: desde el 07-09 a las 23:10 la busqueda del contrato grande
+  (ES/NQ) en el servidor tira NullReference al arrancar ATAS y el mapa caia
+  al micro, que solo lista el trimestral (18-09, 10 dias): SIN 0DTE. Con el
+  libro de Rithmic elegido, "0DTE" era imposible. Arreglo 1.4b: se reintenta
+  6 veces cada 15 s antes de caer al micro.
+Lo que NO se pudo cotejar con una fuente independiente: el volumen y la IV
+intradia (CBOE es la unica fuente gratis; Databento sin credito). La gamma
+si, contra la de CBOE.
