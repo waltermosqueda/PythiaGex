@@ -48,6 +48,9 @@ namespace PythiaGex
             public double K, Fut;
             public double GexOi, GexVol, Conv;
             public double Oi, VolHoy;
+            public double IvSum, IvW;        // acumuladores (IV ponderada por OI + volumen)
+            public double Dte = double.MaxValue;   // dias al vencimiento mas cercano que aporta
+            public double IvMedia => IvW > 0 ? IvSum / IvW : double.NaN;
         }
 
         public sealed class Snap
@@ -78,6 +81,7 @@ namespace PythiaGex
             public (double Fut, double Delta)[] MaxChange = new (double, double)[Ventanas.Length];
             public double[] Estela = new double[0];
             public DateTime Hora;
+            public double MasCerca = double.NaN;   // dias al vencimiento mas cercano del mapa
         }
 
         public static readonly int[] Ventanas = { 1, 5, 10, 15, 30 };
@@ -201,6 +205,8 @@ namespace PythiaGex
                 if (!por.TryGetValue(f.K, out var s)) { s = new Strike { K = f.K, Fut = f.K + baseUsada }; por[f.K] = s; }
                 s.GexOi += gOi; s.GexVol += gVol;
                 s.Oi += f.OiC + f.OiP; s.VolHoy += f.VolC + f.VolP;
+                { double wc = f.OiC + f.VolC, wp = f.OiP + f.VolP; if (f.IvC > 0) { s.IvSum += f.IvC * wc; s.IvW += wc; } if (f.IvP > 0) { s.IvSum += f.IvP * wp; s.IvW += wp; } }
+                if (dias < s.Dte) s.Dte = dias;
                 // la convexidad de cada libro se guarda aparte y se elige despues
                 s.Conv += (gVolUp - gVol);          // por volumen (provisorio)
                 _convOiTmp[f.K] = (_convOiTmp.TryGetValue(f.K, out var q) ? q : 0) + (gOiUp - gOi);
@@ -349,7 +355,7 @@ namespace PythiaGex
             var est = new double[cuantas];
             for (int i = 0; i < est.Length; i++) est[i] = i < candDom.Count ? candDom[i].Item1 : double.NaN;
 
-            L.Perfil = perfil; L.S = S; L.Base = baseUsada; L.BaseOrigen = origen;
+            L.Perfil = perfil; L.S = S; L.Base = baseUsada; L.BaseOrigen = origen; L.MasCerca = masCerca;
             L.ZeroVol = zeroVol; L.ZeroOi = zeroOi; L.NetVol = netVol; L.NetOi = netOi;
             L.MpVol = mpVol; L.MnVol = mnVol; L.MpOi = mpOi; L.MnOi = mnOi;
             L.MaxAbsVol = maxAbsVol; L.MaxAbsOi = maxAbsOi; L.MaxAbsConv = maxAbsConv;

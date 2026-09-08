@@ -48,6 +48,14 @@ namespace PythiaGex
                 n.A.Horizonte = Enum.Parse<GammaHoyNucleo.HorizonteVenc>(Arg(args, "--horizonte", "Hoy"), true);
                 var L = n.Calcular(c, double.Parse(Arg(args, "--precio"), inv), DateTime.UtcNow);
                 Console.WriteLine(L == null ? "sin lectura" : GammaHoyNucleo.Audit(L, c, false));
+                if (L != null && Arg(args, "--tabla") != null)
+                {
+                    // la tabla por strike, para cotejar con los rotulos de las barras en pantalla
+                    Console.WriteLine("vencimiento mas cercano: " + L.MasCerca.ToString("0.000", inv) + " dias");
+                    Console.WriteLine("   fut      gexVol      gexOi      conv        OI     volHoy   iv%");
+                    foreach (var s in L.Perfil.OrderByDescending(z => Math.Abs(z.GexVol)).Take(int.Parse(Arg(args, "--tabla"), inv)))
+                        Console.WriteLine(string.Format(inv, "{0,8:F2} {1,10:F0}M {2,9:F0}M {3,9:F0}M {4,9:F0} {5,9:F0} {6,6:F1}", s.Fut, s.GexVol / 1e6, s.GexOi / 1e6, s.Conv / 1e6, s.Oi, s.VolHoy, s.IvMedia * 100));
+                }
                 return 0;
             }
             var rutasCadenas = (Arg(args, "--cadenas") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);

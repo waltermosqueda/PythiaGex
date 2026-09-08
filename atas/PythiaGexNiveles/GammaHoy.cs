@@ -95,6 +95,12 @@ namespace PythiaGex
         [Display(Name = "Zero gamma por vela (puntitos)", GroupName = "3. Pantalla", Order = 14)]
         public bool VerZeroPorVela { get; set; } = true;
 
+        public enum RotulosBarras { Auto, Siempre, Nunca }
+
+        [Display(Name = "Datos en las barras", GroupName = "3. Pantalla", Order = 15,
+                 Description = "A la derecha de cada barra de volumen: GEX del libro (M/B), OI, volumen del dia e IV media; a la izquierda de cada barra de convexidad: su ΔGEX por +1 %. Auto: solo si las filas tienen lugar; si no, solo dominantes y majors.")]
+        public RotulosBarras DatosEnBarras { get; set; } = RotulosBarras.Auto;
+
         [Display(Name = "Guardar la cadena viva de Rithmic por minuto", GroupName = "4. Auditoria", Order = 2,
                  Description = "viva-ES-<dia>.jsonl en %APPDATA%\\ATAS\\PythiaGex\\viva. Solo mientras ATAS esta abierto: es lo unico que la nube no puede grabar.")]
         public bool GuardarViva { get; set; } = true;
@@ -280,6 +286,7 @@ namespace PythiaGex
         private Centinela _centArchivo;
         private int _barraVivaUlt = -1;
         private DateTime _ultimaViva = DateTime.MinValue;
+        private double _masCercaUlt = double.NaN;    // dias al vencimiento mas cercano del mapa (para el titulo)
         private string _rebRotulo = "";
         private DateTime _rebCadenaHora = DateTime.MinValue, _rebUltimoLog = DateTime.MinValue;
         private DateTime _ultimoAudit = DateTime.MinValue;
@@ -393,7 +400,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 0.8b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 0.9 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -402,7 +409,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 0.8b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 0.9 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -694,7 +701,7 @@ namespace PythiaGex
 
             lock (_candado)
             {
-                _perfil = L.Perfil; _S = L.S; _futuro = L.Futuro; _base = L.Base; _baseOrigen = L.BaseOrigen;
+                _perfil = L.Perfil; _S = L.S; _futuro = L.Futuro; _base = L.Base; _baseOrigen = L.BaseOrigen; _masCercaUlt = L.MasCerca;
                 _zeroVol = L.ZeroVol; _zeroOi = L.ZeroOi; _netVol = L.NetVol; _netOi = L.NetOi;
                 _mpVol = L.MpVol; _mnVol = L.MnVol; _mpOi = L.MpOi; _mnOi = L.MnOi;
                 _maxAbsVol = L.MaxAbsVol; _maxAbsOi = L.MaxAbsOi; _maxAbsConv = L.MaxAbsConv;
@@ -857,10 +864,32 @@ namespace PythiaGex
             int alto = 5;
             try { int y1 = cont.GetYByPrice((decimal)perfil[0].Fut, false); if (perfil.Count > 1) { int y2 = cont.GetYByPrice((decimal)perfil[1].Fut, false); alto = Math.Max(2, Math.Min(9, Math.Abs(y2 - y1) - 2)); } } catch { }
             var fotos = _nucleo.FotosCopia();
+            // espacio entre filas (px): decide cuanto dato entra sin pisarse
+            int esp = 0;
+            try { if (perfil.Count > 1) esp = Math.Abs(cont.GetYByPrice((decimal)perfil[1].Fut, false) - cont.GetYByPrice((decimal)perfil[0].Fut, false)); } catch { }
+            var fRot = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(11m, TamLetra - 1m)));
+            int altoRot = g.MeasureString("0", fRot).Height;
+            bool rotAuto = DatosEnBarras == RotulosBarras.Auto, rotSiempre = DatosEnBarras == RotulosBarras.Siempre;
+            bool rotTodas = rotSiempre || (rotAuto && esp >= altoRot + 1);
+            bool rotDos = rotSiempre ? esp >= 2 * altoRot + 1 : (rotAuto && esp >= 2 * altoRot + 2);
+            var elegidos = new HashSet<double>();
+            foreach (var dm in doms) elegidos.Add(dm.Fut);
+            if (!double.IsNaN(mpVol)) elegidos.Add(mpVol); if (!double.IsNaN(mnVol)) elegidos.Add(mnVol);
+            string Km(double v) => Math.Abs(v) >= 1e6 ? (v / 1e6).ToString("0.0", es) + "M" : Math.Abs(v) >= 1e3 ? (v / 1e3).ToString("0.0", es) + "k" : v.ToString("0", es);
+            string BmR(double v) => Math.Abs(v) >= 1e9 ? (v / 1e9).ToString("+0.0;-0.0", es) + "B" : Math.Abs(v) >= 1e6 ? (v / 1e6).ToString("+0;-0", es) + "M" : (v / 1e3).ToString("+0;-0", es) + "k";
+            // titulo del perfil: que libro y que vencimiento
+            if (DatosEnBarras != RotulosBarras.Nunca)
+            {
+                double mc0 = double.NaN; lock (_candado) mc0 = _masCercaUlt;
+                string venc = double.IsNaN(mc0) ? "" : (mc0 < 1.0 ? "0DTE" : mc0 < 2 ? "1 dia" : mc0.ToString("0", es) + " dias");
+                string tit = "GEX " + (libroDom == "vol" ? "volumen hoy" : "OI") + (venc.Length > 0 ? " · " + venc : "") + (VerSombraOI ? " · sombra OI" : "");
+                g.DrawString(tit, fRot, Color.FromArgb(150, ColTexto), x0 + 2, area.Top + 8);
+            }
             foreach (var s in perfil)
             {
                 int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                 if (y < area.Top || y > piso) continue;
+                bool rotEsta = DatosEnBarras != RotulosBarras.Nunca && (rotTodas || elegidos.Contains(s.Fut));
                 if (VerSombraOI && maxO > 0 && Math.Abs(s.GexOi) > 0)
                 {
                     int w = Math.Max(1, (int)(Math.Sqrt(Math.Abs(s.GexOi) / maxO) * ancho));
@@ -872,6 +901,18 @@ namespace PythiaGex
                     int w = Math.Max(1, (int)(fr * ancho));
                     var col = s.GexVol >= 0 ? ColPos : ColNeg;
                     g.FillRectangle(Color.FromArgb((int)(120 + 120 * fr), col), new Rectangle(x0, y - alto / 2, w, alto));
+                    if (rotEsta)
+                    {
+                        // el dato de la barra, a la derecha de la punta: GEX del libro que dibuja
+                        // (y abajo, si hay lugar: OI, volumen del dia e IV media)
+                        string l1r = BmR(s.GexVol) + (VerSombraOI && Math.Abs(s.GexOi) > 0 ? " oi" + BmR(s.GexOi) : "");
+                        string l2r = "OI " + Km(s.Oi) + " v " + Km(s.VolHoy) + (double.IsNaN(s.IvMedia) ? "" : " iv" + (s.IvMedia * 100).ToString("0", es));
+                        int xr0 = x0 + w + 4;
+                        var m1r = g.MeasureString(l1r, fRot);
+                        g.FillRectangle(Color.FromArgb(150, ColFondo), new Rectangle(xr0 - 1, y - altoRot / 2, m1r.Width + 2, rotDos ? altoRot * 2 : altoRot));
+                        g.DrawString(l1r, fRot, Color.FromArgb(235, col), xr0, y - altoRot / 2);
+                        if (rotDos) g.DrawString(l2r, fRot, Color.FromArgb(175, ColTexto), xr0, y + altoRot / 2);
+                    }
                     if (VerPelotitas)
                     {
                         // donde estaba la punta hace 15, 5 y 1 minutos: adentro = crece, afuera = decrece
@@ -894,6 +935,15 @@ namespace PythiaGex
                     int w = Math.Max(1, (int)(fr * ancho * 0.7));
                     var col = s.Conv >= 0 ? ColConvPos : ColConvNeg;
                     g.FillRectangle(Color.FromArgb((int)(110 + 120 * fr), col), new Rectangle(xConv - w, y - alto / 2, w, alto));
+                    if (rotEsta)
+                    {
+                        // la convexidad de la barra: cuanto cambia su GEX si el precio sube 1 %
+                        string lc = BmR(s.Conv);
+                        var mc1 = g.MeasureString(lc, fRot);
+                        int xc0 = xConv - w - 4 - mc1.Width;
+                        g.FillRectangle(Color.FromArgb(150, ColFondo), new Rectangle(xc0 - 1, y - altoRot / 2, mc1.Width + 2, altoRot));
+                        g.DrawString(lc, fRot, Color.FromArgb(225, col), xc0, y - altoRot / 2);
+                    }
                 }
             }
             g.DrawString("volumen hoy · sombra OI ayer", fChica, Color.FromArgb(110, ColTexto), x0 + 4, area.Top + 8);

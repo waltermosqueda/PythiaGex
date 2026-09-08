@@ -261,3 +261,26 @@ centinela rebobinado-atas). Ademas cada foto guarda el perfil (las barras de
 ese minuto): con el mouse sobre una vela se ven sus niveles Y sus barras.
 Lo que no hay: el pasado anterior al 19 de agosto y las madrugadas de los 13
 dias de Databento (solo rueda americana); esas velas quedan sin dibujo.
+
+## 0.9: los datos adentro de las barras (2026-09-08, madrugada)
+
+Pedido: que las barras no queden "olvidadas": cada una con su dato, abreviado,
+sin desbordar, dinamico, y auditado. Hecho:
+- Barra de volumen (izquierda): a la derecha de la punta, "GEX del libro" en
+  M/B con signo y, si la sombra de OI esta, "oi±..."; segunda linea si la fila
+  tiene lugar: "OI 7,2k v 17,0k iv12" (interes abierto, volumen del dia, IV
+  media ponderada por OI+volumen, en %).
+- Barra de convexidad (derecha): a la izquierda de la punta, su ΔGEX por +1 %
+  ("+2,4B").
+- Titulo del perfil: "GEX volumen hoy · 0DTE · sombra OI" (el vencimiento sale
+  del mapa: 0DTE si el mas cercano esta a menos de un dia).
+- Ajuste "Datos en las barras": Auto (solo si las filas tienen lugar; si no,
+  solo dominantes y majors), Siempre, Nunca. Tamaño = letra - 1.
+- Con el mouse sobre una vela pasada, los rotulos son los de esa vela (la foto
+  guarda el perfil entero).
+Auditoria: `Rebobina --prueba <cadena> --precio 7722 --tabla 10` imprime la
+tabla por strike del nucleo; en pantalla, la fila 7706 mostraba "OI 7,2k v
+17,0k iv12" y conv "+2,4B" contra la tabla OI 7183, vol 16951, iv 12,2, conv
++2460M. Mismo nucleo, misma cadena: no hay otra fuente posible.
+Lo que NO esta: vanna y charm (no se calculan; ponerlos seria inventar) y la
+cinta de Rithmic por strike (otro libro, strikes del futuro; pendiente).
