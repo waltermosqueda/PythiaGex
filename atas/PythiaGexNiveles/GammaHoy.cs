@@ -162,6 +162,10 @@ namespace PythiaGex
         [Display(Name = "Dominantes: radio alrededor del precio (%)", GroupName = "2. Lectura", Order = 2)]
         public decimal RadioDominantesPct { get; set; } = 2.0m;
 
+        [Display(Name = "Canal: una dominante por lado (la mas fuerte arriba y la mas fuerte abajo)", GroupName = "2. Lectura", Order = 6,
+                 Description = "Apagado: las N barras mas fuertes sin mirar el lado (pueden caer las dos del mismo lado).")]
+        public bool UnaPorLado { get; set; } = true;
+
         [Display(Name = "Dominante como centroide (ondula, como GAMMAlito)", GroupName = "2. Lectura", Order = 7,
                  Description = "Promedio de precio ponderado por gamma alrededor del strike ganador. Medido en los videos: la dominante de GAMMAlito es una banda de ~5 puntos que ondula, no una raya plana en un strike.")]
         public bool DominanteCentroide { get; set; } = true;
@@ -421,7 +425,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.0c arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.1 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -430,7 +434,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.0c arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.1 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -576,7 +580,7 @@ namespace PythiaGex
             var a = nuc.A; var b0 = _nucleo.A;
             a.Tasa = (double)Tasa; a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte; a.CuantasDominantes = CuantasDominantes;
             a.RadioDominantesPct = (double)RadioDominantesPct; a.PicoRadioPct = (double)PicoRadioPct; a.MuchoPct = MuchoPct; a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
-            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts;
+            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado;
             double edadMax = (double)Math.Max(0.05m, ArchivoEdadMaxHoras);
             int fin = Math.Max(0, CurrentBar - 1);      // la ultima vela es del vivo (Hibrido) o se muestra con la ultima foto (Archivo)
             int i = 0, con = 0, sin = 0;
@@ -747,7 +751,7 @@ namespace PythiaGex
             a.PicoRadioPct = (double)PicoRadioPct;
             a.MuchoPct = MuchoPct;
             a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
-            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts;
+            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado;
 
             var L = _nucleo.Calcular(c, futuro, ahoraUtc);
             if (L == null) return;

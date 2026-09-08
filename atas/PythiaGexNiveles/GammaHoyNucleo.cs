@@ -41,6 +41,11 @@ namespace PythiaGex
             // del pico se mueve con cada cambio de peso y no salta de strike en strike.
             public bool Centroide = true;
             public double RadioCentroidePts = 12.0;    // ~2 strikes de SPX a cada lado
+            // EL CANAL: una dominante por lado. La primera es la barra mas fuerte POR
+            // ENCIMA del precio y la segunda la mas fuerte POR DEBAJO (2026-09-08, pedido
+            // del operador: "son dos bandas nomas, a cada extremo y para adentro"). Si se
+            // piden mas de dos, el resto se completa por fuerza.
+            public bool UnaPorLado = true;
         }
 
         public sealed class Strike
@@ -256,6 +261,24 @@ namespace PythiaGex
                 candDom = perfil.Where(x => Math.Abs(x.Fut - futuro) <= radio && Math.Abs(x.GexOi) > 0)
                                 .OrderByDescending(x => Math.Abs(x.GexOi)).Take(cuantas)
                                 .Select(x => (x.Fut, x.GexOi)).ToList();
+            }
+
+            if (A.UnaPorLado && perfil.Count > 0)
+            {
+                Func<Strike, double> peso = x => Math.Abs(libroDom == "vol" ? x.GexVol : x.GexOi);
+                var enRadio = perfil.Where(x => Math.Abs(x.Fut - futuro) <= radio && peso(x) > 0).ToList();
+                var arriba = enRadio.Where(x => x.Fut > futuro).OrderByDescending(peso).FirstOrDefault();
+                var abajo = enRadio.Where(x => x.Fut <= futuro).OrderByDescending(peso).FirstOrDefault();
+                var lados = new List<(double Fut, double Gex)>();
+                if (arriba != null) lados.Add((arriba.Fut, libroDom == "vol" ? arriba.GexVol : arriba.GexOi));
+                if (abajo != null) lados.Add((abajo.Fut, libroDom == "vol" ? abajo.GexVol : abajo.GexOi));
+                foreach (var x in enRadio.OrderByDescending(peso))
+                {
+                    if (lados.Count >= cuantas) break;
+                    if (lados.Any(l => l.Fut == x.Fut)) continue;
+                    lados.Add((x.Fut, libroDom == "vol" ? x.GexVol : x.GexOi));
+                }
+                if (lados.Count > 0) candDom = lados;
             }
 
             if (A.Centroide && candDom.Count > 0)
