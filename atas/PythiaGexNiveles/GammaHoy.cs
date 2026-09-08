@@ -106,7 +106,7 @@ namespace PythiaGex
         public bool VerZeroPorVela { get; set; } = true;
 
         [Display(Name = "Zona de dominancia: banda alrededor de cada dominante (% del precio)", GroupName = "3. Pantalla", Order = 16,
-                 Description = "GAMMAlito pinta una franja alrededor de la dominante. 0,08 % = ~24 puntos en NQ, ~6 en ES. 0 = sin banda. La banda es DIBUJO: si el precio la respeta o no lo mide laboratorio/canal.py contra placebo.")]
+                 Description = "Franja desde la dominante HACIA ADENTRO (hacia el lado del precio), con el borde interno marcado. 0,08 % = ~24 puntos en NQ, ~6 en ES. 0 = sin banda. La banda es DIBUJO: si el precio la respeta o no lo mide laboratorio/canal.py contra placebo.")]
         public decimal BandaDominantesPct { get; set; } = 0.08m;
 
         public enum RotulosBarras { Auto, Siempre, Nunca }
@@ -421,7 +421,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.0b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.0c arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -430,7 +430,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.0b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.0c arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1030,14 +1030,22 @@ namespace PythiaGex
             // la zona de dominancia: una franja tenue alrededor de cada dominante, del ancho elegido
             if (BandaDominantesPct > 0 && !double.IsNaN(futuro))
             {
+                // HACIA ADENTRO, NO HACIA AFUERA (pedido del operador, 2026-09-08): la franja
+                // va de la dominante hacia el lado donde esta el precio, que es donde el
+                // precio se da vuelta antes de tocar. Del otro lado del muro ya no hay canal.
+                // El borde interno lleva una linea fina: "la linea de los 25 puntos".
                 double semi = futuro * (double)BandaDominantesPct / 100.0;
                 int xa = xRaya != int.MinValue ? Math.Max(xl0, Math.Min(xl1 - 4, xRaya)) : xl0;
                 for (int i = 0; i < doms.Count; i++)
                 {
-                    int ya, yb; try { ya = cont.GetYByPrice((decimal)(doms[i].Fut + semi), false); yb = cont.GetYByPrice((decimal)(doms[i].Fut - semi), false); } catch { continue; }
+                    bool arriba = doms[i].Fut >= futuro;              // dominante por encima del precio
+                    double borde = arriba ? doms[i].Fut - semi : doms[i].Fut + semi;
+                    int ya, yb; try { ya = cont.GetYByPrice((decimal)doms[i].Fut, false); yb = cont.GetYByPrice((decimal)borde, false); } catch { continue; }
                     int yt = Math.Max(area.Top, Math.Min(ya, yb)), ybt = Math.Min(piso, Math.Max(ya, yb));
                     if (ybt <= yt) continue;
-                    g.FillRectangle(Color.FromArgb(i == 0 ? 26 : 16, ColDom), new Rectangle(xa, yt, Math.Max(1, xl1 - xa), ybt - yt));
+                    g.FillRectangle(Color.FromArgb(i == 0 ? 28 : 18, ColDom), new Rectangle(xa, yt, Math.Max(1, xl1 - xa), ybt - yt));
+                    if (yb >= area.Top && yb <= piso)
+                        g.DrawLine(new RenderPen(Color.FromArgb(i == 0 ? 120 : 80, ColDom), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xa, yb, xl1, yb);
                 }
             }
             Raya(zeroOi, Color.FromArgb(160, 160, 170), 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
