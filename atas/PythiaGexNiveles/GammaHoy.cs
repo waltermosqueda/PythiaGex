@@ -105,6 +105,12 @@ namespace PythiaGex
         [Display(Name = "Zero gamma por vela (puntitos)", GroupName = "3. Pantalla", Order = 14)]
         public bool VerZeroPorVela { get; set; } = true;
 
+        public enum MouseVela { Cabecera, Todo, Nunca }
+
+        [Display(Name = "Mouse sobre una vela del pasado", GroupName = "3. Pantalla", Order = 17,
+                 Description = "Cabecera: las bandas, las rayas y las barras quedan quietas con el vivo; al pasar el mouse por una vela solo aparece un renglon en la cabecera con lo que regia en esa vela (dominantes, zero, precio). Todo: la escalera, las rayas y las bandas saltan a esa vela (asi funciona el rebobinado). Nunca: el mouse no hace nada. Con Fuente = Archivo, Cabecera se comporta como Todo.")]
+        public MouseVela MouseSobreVela { get; set; } = MouseVela.Cabecera;
+
         [Display(Name = "Zona de dominancia: banda alrededor de cada dominante (% del precio)", GroupName = "3. Pantalla", Order = 16,
                  Description = "Franja desde la dominante HACIA ADENTRO (hacia el lado del precio), con el borde interno marcado. 0,08 % = ~24 puntos en NQ, ~6 en ES. 0 = sin banda. La banda es DIBUJO: si el precio la respeta o no lo mide laboratorio/canal.py contra placebo.")]
         public decimal BandaDominantesPct { get; set; } = 0.08m;
@@ -425,7 +431,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.2 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.2b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -434,7 +440,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.2 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.2b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -740,6 +746,8 @@ namespace PythiaGex
             {
                 var m = ChartInfo?.MouseLocationInfo;
                 if (m == null) return -1;
+                // fuera del grafico o arrastrandolo: nada (si no, quedaba pegada la ultima vela)
+                if (m.IsMouseLeave || m.IsMovingChartUsingMouse) return -1;
                 int b = m.BarBelowMouse;
                 return (b >= 0 && b < CurrentBar) ? b : -1;
             }
@@ -865,7 +873,12 @@ namespace PythiaGex
             List<Strike> perfil; double S, futuro, zeroVol, zeroOi, mpVol, mnVol, mpOi, mnOi, maxV, maxO, maxC, netVol, netOi;
             List<(double Fut, double Gex)> doms; string cuad, corto, origenBase, libroConv, libroDom, alerta; DateTime alertaHasta;
             (double Fut, double Delta)[] mc; bool mucho; double convPrecio, picoFut;
-            Foto foto = null; int barFoto = -1;
+            Foto foto = null, fotoTxt = null; int barFoto = -1;
+            // el mouse sobre una vela del pasado: con "Cabecera" (default) NO se toca nada de lo
+            // dibujado (bandas, rayas y barras siguen con el vivo) y solo se agrega un renglon;
+            // con "Todo" (o con Fuente = Archivo) la pantalla entera pasa a esa vela
+            bool mouseTodo = MouseSobreVela == MouseVela.Todo || (MouseSobreVela == MouseVela.Cabecera && Fuente == FuenteDatos.Archivo);
+            bool mouseAlgo = MouseSobreVela != MouseVela.Nunca && Fuente != FuenteDatos.Vivo;
             lock (_candado)
             {
                 perfil = _perfil; S = _S; futuro = _futuro; zeroVol = _zeroVol; zeroOi = _zeroOi;
@@ -873,11 +886,16 @@ namespace PythiaGex
                 netVol = _netVol; netOi = _netOi; doms = _doms; cuad = _cuadrante; corto = _cuadranteCorto; origenBase = _baseOrigen;
                 libroConv = _libroConvUsado; libroDom = _libroDomUsado; alerta = _alerta; alertaHasta = _alertaHasta;
                 mc = _maxChange; mucho = _mucho; convPrecio = _convEnPrecio; picoFut = _picoFut;
-                if (Fuente != FuenteDatos.Vivo)
+                if (mouseAlgo)
                 {
                     barFoto = BarraBajoMouse();
-                    if (barFoto >= 0 && _fotosBarra.TryGetValue(barFoto, out foto))
+                    // la foto de esa vela o, si no tiene (vela sin cadena), la mas cercana hacia atras:
+                    // asi el mouse no salta al vivo cada vez que pasa por una vela vacia
+                    if (barFoto >= 0)
+                        for (int bb = barFoto; bb >= Math.Max(0, barFoto - 30) && fotoTxt == null; bb--) _fotosBarra.TryGetValue(bb, out fotoTxt);
+                    if (fotoTxt != null && mouseTodo)
                     {
+                        foto = fotoTxt;
                         S = foto.S; futuro = foto.Futuro; zeroVol = foto.ZeroVol; zeroOi = foto.ZeroOi; mpVol = foto.MpVol; mnVol = foto.MnVol;
                         mpOi = foto.MpOi; mnOi = foto.MnOi; netVol = foto.NetVol; netOi = foto.NetOi; doms = foto.Doms; cuad = foto.Cuad; corto = foto.Corto;
                         libroConv = foto.LibroConv; libroDom = foto.LibroDom; mc = foto.Mc; mucho = foto.Mucho; convPrecio = foto.ConvEnPrecio; picoFut = foto.PicoFut;
@@ -917,16 +935,29 @@ namespace PythiaGex
                     ? "vela " + foto.Vela.ToString("yyyy-MM-dd HH:mm") + " UTC · cadena publicada " + foto.Cadena.ToString("HH:mm") + " UTC (" + ((foto.Vela - foto.Cadena).TotalMinutes).ToString("0", es) + " min antes) · fut " + foto.Futuro.ToString("N2", es) + " · dominantes por " + libroDom + " · MOUSE sobre la vela"
                     : "ultima vela · cadena " + (_rebCadenaHora == DateTime.MinValue ? "--" : _rebCadenaHora.ToString("yyyy-MM-dd HH:mm") + " UTC") + " · base " + origenBase + " · sin vivo · pasa el mouse por una vela para ver su escalera";
             }
+            // el renglon del mouse (modo Cabecera): que regia en esa vela, sin mover nada de lo dibujado
+            string l3 = "";
+            if (fotoTxt != null && foto == null)
+            {
+                var dtxt = fotoTxt.Doms ?? new List<(double Fut, double Gex)>();
+                string dm = dtxt.Count == 0 ? "--" : string.Join(" / ", dtxt.Take(2).Select(z => z.Fut.ToString("N0", es)));
+                l3 = "MOUSE vela " + fotoTxt.Vela.ToString("MM-dd HH:mm") + " UTC · fut " + fotoTxt.Futuro.ToString("N2", es)
+                   + " · dominantes " + dm + " · zero " + (double.IsNaN(fotoTxt.ZeroVol) ? "--" : fotoTxt.ZeroVol.ToString("N0", es))
+                   + " · " + fotoTxt.Corto + " · cadena " + fotoTxt.Cadena.ToString("HH:mm") + " UTC · (lo dibujado sigue siendo el vivo)";
+            }
             int yc = area.Top + 26;
             var m1 = g.MeasureString(l1, f); var m2 = g.MeasureString(l2, fChica);
-            int wc = Math.Max(m1.Width, m2.Width) + 12;
-            g.FillRectangle(Color.FromArgb(200, ColFondo), new Rectangle(area.Left + 6, yc - 3, wc, m1.Height + m2.Height + 8));
+            var m3 = g.MeasureString(l3.Length > 0 ? l3 : "0", fChica);
+            int h3 = l3.Length > 0 ? m3.Height + 2 : 0;
+            int wc = Math.Max(Math.Max(m1.Width, m2.Width), l3.Length > 0 ? m3.Width : 0) + 12;
+            g.FillRectangle(Color.FromArgb(200, ColFondo), new Rectangle(area.Left + 6, yc - 3, wc, m1.Height + m2.Height + h3 + 8));
             g.DrawString(l1, f, perfil.Count == 0 ? ColAviso : (convPrecio >= 0 ? ColConvPos : ColConvNeg), area.Left + 12, yc);
             g.DrawString(l2, fChica, Color.FromArgb(170, ColTexto), area.Left + 12, yc + m1.Height + 2);
+            if (l3.Length > 0) g.DrawString(l3, fChica, Color.FromArgb(215, ColDom), area.Left + 12, yc + m1.Height + m2.Height + 4);
             if (DateTime.UtcNow < alertaHasta && alerta.Length > 0)
             {
                 var ma = g.MeasureString("TRANSICION: " + alerta, f);
-                int ya = yc + m1.Height + m2.Height + 10;
+                int ya = yc + m1.Height + m2.Height + h3 + 10;
                 g.FillRectangle(Color.FromArgb(215, 60, 35, 10), new Rectangle(area.Left + 6, ya - 2, ma.Width + 12, ma.Height + 4));
                 g.DrawString("TRANSICION: " + alerta, f, ColAviso, area.Left + 12, ya);
             }

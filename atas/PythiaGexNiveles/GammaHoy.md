@@ -311,3 +311,30 @@ respira con cada operacion. Salvedades: es OTRO libro (ES, no SPX: niveles
 quieto porque no opera nadie. El archivo del pasado sigue siendo SPX. Si el
 libro de Rithmic no llega a 12 strikes con las dos puntas, sigue con CBOE y
 lo dice en la cabecera ("RITHMIC FLACO").
+
+## 1.2b: el mouse ya no mueve las bandas (2026-09-08, madrugada)
+
+Reporte del operador: "si pasas el mouse como que lo afecta, interfiere, se
+corre un poquito el grafico solo, se rompe o pasa para abajo". Causa, leida
+en OnRender: en Hibrido, con el mouse sobre CUALQUIER vela del pasado que
+tuviera foto, la escalera, las rayas y las bandas pasaban a esa vela (era la
+inspeccion pensada para el rebobinado), y sobre una vela sin foto volvian al
+vivo. Resultado: parpadeo, banda que cambia de lado (el "arriba/abajo" se
+decidia con el precio viejo de esa vela) y rayas que nacian en el mouse.
+
+Arreglo: ajuste "Mouse sobre una vela del pasado" (3. Pantalla):
+- Cabecera (default): NADA de lo dibujado se toca; al pasar el mouse aparece
+  un tercer renglon en la cabecera con lo que regia en esa vela (hora, futuro,
+  dominantes, zero, cuadrante, hora de la cadena) y dice "(lo dibujado sigue
+  siendo el vivo)". Se apaga al salir del grafico (IsMouseLeave) y mientras
+  se arrastra el grafico (IsMovingChartUsingMouse).
+- Todo: lo de antes (la pantalla entera pasa a esa vela). Con Fuente =
+  Archivo, Cabecera se comporta como Todo, porque ahi es la unica forma de
+  revisar el pasado.
+- Nunca.
+Ademas, si la vela del mouse no tiene foto (vela sin cadena) se toma la mas
+cercana hacia atras (hasta 30 velas) en vez de saltar al vivo.
+
+Verificado en pantalla (MNQ M5, CBOE): mouse sobre 07-09-2026 09:05 y 21:55
+UTC-3, las bandas y rayas quedaron en 29.780 / 29.523 en las dos capturas y
+solo cambio el renglon; con el mouse fuera del grafico el renglon desaparece.
