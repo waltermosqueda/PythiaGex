@@ -692,3 +692,69 @@ Conclusion: con 16 dias, el rebote en dominantes/zero medido de todas las formas
 pidio el operador NO le gana al mismo nivel corrido. Lo unico con ventaja fuera de
 muestra sigue siendo el gatillo MODELO (1.7b, ES, tarde). Todo queda anotandose para
 volver a correr con mas dias y con el libro vivo de Rithmic.
+
+## 1.8: el gatillo REBOTE en las rayas, pedido con ejemplos (2026-09-10, 15:00 local)
+
+Pedido: 8 capturas de MNQ de hoy (10:50, 11:18, 11:33, 11:52, 12:12, 12:42, 13:35 hora
+local) donde el precio choca o traspasa un poco una raya amarilla y rebota: "encontra el
+gatillo que coincida con todos esos ejemplos, sin excusas; de las salidas me encargo yo".
+
+Lo primero que salio de las capturas contra los datos: las rayas amarillas donde el entra
+NO son solo la dominante vigente. Son todas las dominantes que hubo en el dia (cada una
+queda como fila de guiones aunque la dominante ya se haya movido), mas el zero y los
+majors. Reconstruido minuto a minuto (laboratorio/rebote_dominantes_dia.py --dia y
+laboratorio/gatillo_rebote.py --dia):
+- 10:52-10:56 toca la dominante 29.094 viniendo de 29.185, cierra arriba, sube 40-70.
+- 11:16-11:17 toca el zero 29.115 y la fila vieja 29.118 (dominante de las 10:53): sube
+  60, y 130 en 20 min.
+- 11:27-11:29 traspasa la dominante nueva 29.219 hasta 29.195 y vuelve; 11:33-11:34 la
+  vuelve a tocar (cierra 29.219,25 contra 29.218) y sube 55.
+- 11:50, 12:09, 12:39-12:47: toca 29.218 (la dominante de abajo) y sube 50, 33 y 10-20.
+- 13:34-13:35: vela de -2.506 de delta hasta 29.133, sobre la fila vieja 29.129, la
+  dominante 29.122 y el major 29.118; sube 60.
+Todos largos, en un dia que abrio en 29.0xx y paso la tarde en 29.2xx: comprar el
+retroceso a cualquier raya funciono.
+
+La regla (atas/PythiaGexNiveles/GatilloRebote.cs = laboratorio/gatillo_rebote.py):
+nivel = fila de dominante de la rueda (identidad por strike, valor exacto), zero o major;
+toque = el minimo llega a +-10 pts (0,035 % del precio) o traspasa hasta 25 (0,085 %);
+venia de arriba (maximo de las 10 velas previas >= nivel + 15); cierra por encima del
+nivel; la vela anterior no cumplia; enfriamiento 5 velas por nivel y lado; si varios
+niveles cumplen, el mas cercano al extremo. Corto espejo. Entrada = cierre de la vela.
+
+Medido en 16 dias de MNQ por minuto contra las mismas rayas corridas +-85 y +-145 pts
+(acierto = +20 antes que -20 en 20 min desde el cierre; tambien +10/-10, +15/-15, +20/-10,
++10/-20 y la MFE mediana; niveles con el valor exacto e identidad por strike, igual que
+el indicador; la equivalencia con el archivo del indicador dio 28 de 30 disparos iguales
+al minuto, laboratorio/rebote_equivalencia.py):
+- Todos: 102 disparos por dia, 45,2 % (placebo 45,5). Con +10/-10: 47,0 (47,0). MFE
+  mediana 24 pts (24,5).
+- Ningun filtro solo lo separa del placebo: lado, a favor del zero (43,9 / 42,0), de la
+  apertura del dia, del momentum de 30 min, delta de la vela (rechazo o absorcion),
+  tamaño del delta, traspaso, franja, cuadrante, numero de toque, fila vieja o actual,
+  edad de la dominante, confluencia de niveles, llegada rapida.
+- El unico bolsillo: PRIMER toque de la dominante ACTUAL a favor del zero: 52 casos
+  (3,2 por dia), 50,0 % (placebo 41,9); +10/-10 59,6 (39,2); +20/-10 42,3 (25,7).
+  Validacion (laboratorio/gatillo_rebote_validar.py): primera mitad de los dias 50 (40),
+  segunda mitad 50 (44); largos 46 % con 41 casos, cortos 64 con 11; parametros
+  estrictos 48 (43), laxos 47 (35), sin traspaso 51 (33); MES 36 (40) con 36 casos;
+  MNQ 2 min 45 (34), 5 min 42 (29). Hoy 0 de 2 (11:25 y 14:10). Con 52 casos y 50 % a
+  1:1 no es una ventaja probada, y en ES no aparece: queda como hipotesis a seguir
+  midiendo, no como señal.
+- Temporalidad: 1 min da la entrada mas cerca del nivel; 2 y 5 min no mejoran el acierto
+  (43 y 40 %, igual al placebo).
+
+Lo que se instalo igual (1.8), porque lo pidio y porque hay que verlo en vivo:
+- Ajuste "Gatillo REBOTE en las rayas": SoloTendencia (default: largo con el precio sobre
+  el zero, corto debajo; 51 por dia), Todos (102 por dia; los 7 ejemplos disparan),
+  PrimerToqueActual (3,2 por dia), Ninguno. "Enfriamiento por nivel (velas)": 5.
+- Triangulo hueco verde bajo el minimo (largo) o rojo sobre el maximo (corto), con "R"
+  ("R1" = primer toque de ese nivel en el dia). Se dibuja sobre el archivo (recorrido) y
+  en vivo; el vivo arranca sembrado con los guiones de la rueda y los disparos previos.
+- Cada disparo va a pythiagex-gatillos-<inst>.jsonl como rebote·dom, rebote·zero o
+  rebote·major, con el nivel y el numero de toque, para juzgarlo con dias nuevos.
+
+Conclusion honesta: el gatillo reproduce sus entradas, y sus entradas ganaron porque el
+dia fue alcista, no porque la raya tenga algo que un nivel corrido 85 puntos no tenga.
+Lo unico que vale seguir midiendo con mas dias es el primer toque de la dominante actual
+con el zero a favor (3 a 4 por dia), y para eso queda grabando.
