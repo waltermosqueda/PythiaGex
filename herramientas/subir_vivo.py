@@ -38,8 +38,17 @@ def log(m):
     print(datetime.now().strftime("%H:%M:%S") + "  " + m, flush=True)
 
 
+# SIN VENTANA: corriendo bajo pythonw cada llamada a gh abria una consola negra un segundo (el
+# operador no podia usar la PC, 10-09 19:30). CREATE_NO_WINDOW la esconde.
+_SIN_VENTANA = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000) if os.name == "nt" else 0
+
+
 def gh(args, entrada=None):
-    r = subprocess.run(["gh", "api"] + args, input=entrada, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    si = None
+    if os.name == "nt":
+        si = subprocess.STARTUPINFO(); si.dwFlags |= subprocess.STARTF_USESHOWWINDOW; si.wShowWindow = 0
+    r = subprocess.run(["gh", "api"] + args, input=entrada, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       creationflags=_SIN_VENTANA, startupinfo=si)
     return r.returncode, r.stdout.strip(), r.stderr.strip()
 
 
