@@ -12,8 +12,9 @@ autenticada). Un archivo = un commit por vuelta; la rama se aplana sola a las 22
 La web (panel/) lo lee y, si es fresco, lo prefiere a la nube. Si la PC se apaga, deja de llegar y la
 web lo dice y sigue con la nube (CBOE + Yahoo, con retraso).
 
-La web lee vivo.json por jsDelivr (cdn.jsdelivr.net/gh/<repo>@cadenas/vivo.json) que se purga
-despues de cada subida; raw.githubusercontent.com cachea 5 minutos y no sirve para esto.
+La web lee cada archivo por COMMIT (raw.githubusercontent.com/<repo>/<sha>/vivo.json, inmutable, nunca
+cacheado viejo) preguntando el sha de la rama a la API cada 75 s. raw por rama cachea 5 min y jsDelivr se
+sirve de ese cache (el purge traia la copia vieja): no sirven para esto.
 
 Sin ventana: bajo pythonw cada llamada a gh abria una consola negra (10-09 19:30, el operador no
 podia usar la PC). CREATE_NO_WINDOW la esconde. Cada llamada tiene tope de 60 s: una que se cuelga
@@ -79,7 +80,6 @@ def subir(nombre, obj, mensaje):
         rc, out, err = gh(["-X", "PUT", "repos/%s/contents/%s" % (REPO, nombre), "--input", "-", "--jq", ".content.sha"], json.dumps(carga))
     if rc == 0 and out:
         _sha[nombre] = out
-        purgar(nombre)
         return len(cuerpo)
     log("fallo %s: %s" % (nombre, err[:200]))
     return 0
@@ -194,8 +194,9 @@ def una_vuelta(n_velas):
     paquete = dict(generado=ahora.isoformat(timespec="seconds"), claves_niv=CLAVES_NIV, claves_of=CLAVES_OF, latido=latido(),
                    graficos=graficos, viva=viva, resumen={k: dict(velas=len(v["velas"]["t"]), ultima=v["velas"]["t"][-1], gatillos=len(v["gatillos"])) for k, v in graficos.items()})
     tam = subir("vivo.json", paquete, "vivo %s" % ahora.strftime("%Y-%m-%d %H:%M:%S UTC"))
-    log(("subido vivo.json %d KB: " % (tam // 1024)) + (", ".join(graficos) if graficos else "sin graficos frescos (ATAS cerrado?)") + (" + viva " + ",".join(viva) if viva else ""))
-    return tam > 0 and bool(graficos)
+    log(("subido vivo.json %d KB: " % (tam // 1024) if tam else "NO subio: ") + (", ".join(graficos) if graficos else "sin graficos frescos (ATAS cerrado?)") + (" + viva " + ",".join(viva) if viva else ""))
+    # hay algo fresco si ATAS escribio en la ultima hora: entonces se insiste cada 'cada' segundos aunque una subida falle
+    return bool(graficos)
 
 
 def main():
@@ -211,7 +212,7 @@ def main():
             fresco = una_vuelta(n)
         except Exception as e:
             log("error: %s" % e); fresco = False
-        # sin nada fresco (ATAS cerrado) el latido va cada 5 minutos
+        # sin nada fresco (ATAS cerrado) el latido va cada 5 minutos; si hay velas frescas se insiste siempre
         espera = cada if fresco else 300
         time.sleep(max(3, espera - (time.time() - t0)))
 

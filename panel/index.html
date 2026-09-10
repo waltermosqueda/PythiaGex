@@ -30,7 +30,7 @@ select{background:var(--panel2);border:1px solid var(--linea);border-radius:4px;
 .derecha{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 main{padding:10px 12px 40px;display:flex;flex-direction:column;gap:10px}
 .mesa{display:grid;grid-template-columns:1fr 300px;gap:10px}
-.lienzo-caja{position:relative;background:var(--fondo);border:1px solid var(--linea);border-radius:4px;height:calc(100vh - 120px);min-height:460px}
+.lienzo-caja{position:relative;background:var(--fondo);border:1px solid var(--linea);border-radius:4px;height:calc(100vh - 120px);min-height:520px}
 #lienzo{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
 .lado{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 120px);overflow:auto}
 .tarjeta{background:var(--panel);border:1px solid var(--linea);border-radius:4px;padding:10px 12px}
@@ -83,9 +83,9 @@ details>summary{cursor:pointer;font:600 12px var(--sans);letter-spacing:.06em;te
 <div class="barra">
   <div class="marca">GAMMA HOY<span>PythiaGex · nube</span></div>
   <div class="grupo" id="instrumentos"><button data-inst="MNQ" class="on">MNQ / NQ</button><button data-inst="MES">MES / ES</button></div>
-  <div class="grupo" id="marcos"><button data-marco="M1" class="on">1m</button><button data-marco="M2">2m</button><button data-marco="M3">3m</button><button data-marco="M5">5m</button><button data-marco="M15">15m</button><button data-marco="M30">30m</button></div>
+  <div class="grupo" id="marcos"><button data-marco="M1" class="on">1m</button><button data-marco="M2">2m</button><button data-marco="M3">3m</button><button data-marco="M5">5m</button><button data-marco="M15">15m</button><button data-marco="M30">30m</button><button data-marco="M60">1h</button></div>
   <div class="grupo" id="vistas"><button data-vista="futuro" class="on">futuro</button><button data-vista="indice">índice</button></div>
-  <div class="grupo" id="zoom"><button id="zIn" title="acercar (rueda)">+</button><button id="zOut" title="alejar (rueda)">−</button><button id="zIzq" title="ir al pasado (shift+rueda)">◀</button><button id="zDer" title="ir al presente">▶</button><button id="zAuto" title="escala de precio automática (ctrl+rueda para estirar)">auto</button><button id="zReset" title="volver al vivo (doble clic)">⟲ vivo</button></div>
+  <div class="grupo" id="zoom"><button id="zIn" title="acercar tiempo (ctrl+rueda o arrastrar el eje de tiempo)">+</button><button id="zOut" title="alejar tiempo">−</button><button id="zIzq" title="al pasado (rueda)">◀</button><button id="zDer" title="al presente (rueda)">▶</button><button id="zPIn" title="estirar precio (rueda sobre el eje o arrastrarlo)">⇕+</button><button id="zPOut" title="achicar precio">⇕−</button><button id="zCentrar" title="poner la última vela y el precio en el medio">⊙ centrar</button><button id="zAuto" title="escala de precio automática">auto</button><button id="zReset" title="autocentrar todo: vivo, zoom inicial, escala automática (doble clic)">⟲ autocentrar</button></div>
   <div class="derecha">
     <span class="chip" id="chipPc">PC</span>
     <span class="chip" id="chipCadena">cadena</span>

@@ -34,6 +34,7 @@
   $("#zIn").onclick = () => grafico.zoomTiempo(0.8); $("#zOut").onclick = () => grafico.zoomTiempo(1.25);
   $("#zIzq").onclick = () => grafico.mover(-Math.round(grafico.vista.n / 3)); $("#zDer").onclick = () => grafico.mover(Math.round(grafico.vista.n / 3));
   $("#zAuto").onclick = () => grafico.autoEscala(); $("#zReset").onclick = () => grafico.reset();
+  $("#zPIn").onclick = () => grafico.zoomPrecio(0.8); $("#zPOut").onclick = () => grafico.zoomPrecio(1.25); $("#zCentrar").onclick = () => grafico.centrar();
   $("#btnAjustes").onclick = () => $("#ajustes").classList.add("on");
   $("#cerrarAjustes").onclick = () => $("#ajustes").classList.remove("on");
   $$("[data-aj]").forEach(el => {
@@ -46,7 +47,7 @@
   document.addEventListener("keydown", e => {
     if (e.target && /input|select|textarea/i.test(e.target.tagName)) return;
     if (e.key === "+" || e.key === "=") grafico.zoomTiempo(0.8); else if (e.key === "-") grafico.zoomTiempo(1.25);
-    else if (e.key === "ArrowLeft") grafico.mover(-10); else if (e.key === "ArrowRight") grafico.mover(10); else if (e.key === "Home" || e.key === "0") grafico.reset();
+    else if (e.key === "ArrowLeft") grafico.mover(-10); else if (e.key === "ArrowRight") grafico.mover(10); else if (e.key === "ArrowUp") grafico.moverPrecio(-20); else if (e.key === "ArrowDown") grafico.moverPrecio(20); else if (e.key === "Home" || e.key === "0") grafico.reset(); else if (e.key === "c") grafico.centrar();
   });
 
   // ---------------------------------------------------------------- carga
@@ -68,7 +69,8 @@
     chips(d); avisos(d);
     const niveles = L && !L.sinBase ? { zeroVol: L.zeroVol, zeroOi: L.zeroOi, mpVol: L.mpVol, mnVol: L.mnVol, doms: L.doms.map(x => ({ fut: x[0], gex: x[1] })), pesadas: L.pesadas || [], picoFut: L.picoFut } : {};
     Object.assign(grafico.op, { modoIndice: aj.vista === "indice", base: L && !L.sinBase ? L.base : 0, decimales: 2, bandaPct: aj.bandaPct, verPelotitas: aj.verPelotitas, verOi: aj.verOi, verGuiones: aj.verGuiones, tipoPerfil: aj.tipoPerfil, zona: aj.zona });
-    grafico.setDatos({ velas: d.velas, perfil: L && !L.sinBase ? L.perfil : [], niveles, marcas: d.marcas, cabecera: cabecera(d), futuro: d.futuro, vwap: d.vwap });
+    grafico.setDatos({ velas: d.velas, perfil: L && !L.sinBase ? L.perfil : [], niveles, marcas: d.marcas, cabecera: cabecera(d), futuro: d.futuro, vwap: d.vwap,
+                       info: L && !L.sinBase ? { netVol: L.netVol, netOi: L.netOi, mc: L.mc || [] } : null });
     lado(d); rapida(d); vencimientos(d); historia(d); gatillos(d); auditoria(d); strikes(d);
     if (!$("#ayuda").innerHTML) ayuda();
   }
@@ -283,7 +285,7 @@
       ["Base", "Futuro − índice. Medida (paridad de opciones) > medida por precio > cruda > carry teórico (tasa − dividendo × tiempo). Siempre acotada con el carry.", "Los strikes son del índice; para dibujarlos en el futuro hay que sumarles la base. Si la base está mal, todo se corre."],
       ["Gatillos R / M / tren", "R: rebote en una raya (1.8). M: modelo logístico de ES a 10 min (1.7). tren: tres deltas en contra en la banda (1.3). Todos se registran para juzgarlos con días nuevos.", "Marcas de lo que el indicador vio. Ninguna está probada como ventaja; el R rinde igual que el placebo."],
       ["VIVO / NUBE", "VIVO: tu ATAS manda cada 20 s velas con order flow, niveles y disparos. NUBE: GitHub baja la cadena de CBOE cada minuto y calcula lo mismo; velas de Yahoo con retraso.", "Si tu PC se apaga, la web sigue sola con la nube. Lo dice arriba, con la edad de cada dato."],
-      ["Mover el gráfico", "Arrastrar = mover tiempo y precio. Arrastrar el eje de precio = estirar. Rueda = zoom de tiempo sobre la vela del mouse. Ctrl+rueda = zoom de precio. Shift+rueda = desplazar. Doble clic o ⟲ = volver al vivo. Teclas: + − ← → Home.", "Como en ATAS: lo movés a gusto y con doble clic vuelve solo al presente."],
+      ["Mover el gráfico", "Como ATAS: rueda = desplazar en el tiempo; ctrl+rueda o arrastrar el eje de tiempo = zoom de tiempo; rueda sobre el eje de precio o arrastrarlo = estirar el precio; arrastrar el gráfico = mover tiempo y precio; ⊙ centrar = última vela y precio al medio; ⟲ autocentrar o doble clic = vivo con escala automática. Teclas: + − ← → ↑ ↓ c Home.", "Lo movés a gusto y con doble clic vuelve solo al presente. Hay margen a la derecha para que la última vela no quede pegada al borde."],
     ].map(x => '<h4>' + x[0] + '</h4><p>' + x[1] + '</p><p class="criollo">' + x[2] + '</p>').join("");
   }
 

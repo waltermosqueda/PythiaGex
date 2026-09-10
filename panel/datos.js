@@ -14,10 +14,27 @@
  */
 (function (global) {
   "use strict";
-  // jsDelivr sirve la rama y se purga al instante desde el subidor y desde Actions; raw.githubusercontent
-  // cachea 5 min aunque cambie la query (medido 10-09). raw queda de respaldo si jsDelivr falla.
-  const BASE_DEF = "https://cdn.jsdelivr.net/gh/waltermosqueda/PythiaGex@cadenas/";
-  const BASE_RESPALDO = "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/";
+  // raw.githubusercontent.com cachea 5 minutos aunque cambie la query, y jsDelivr se sirve de ese mismo
+  // cache (medido 10-09: el purge traia la copia vieja y quedaba pegada 12 h). Lo unico fresco de verdad
+  // es la URL por COMMIT: raw.githubusercontent.com/<repo>/<sha>/<archivo>, que es inmutable y por eso
+  // nunca esta vieja. El sha de la rama se pregunta a la API publica cada 75 s (48 pedidos por hora, el
+  // limite sin token es 60). Si la API falla o se agota, se cae a raw por rama (5 min de cache).
+  const REPO = "waltermosqueda/PythiaGex", RAMA = "cadenas";
+  const BASE_DEF = "auto";
+  const BASE_RESPALDO = "https://raw.githubusercontent.com/" + REPO + "/" + RAMA + "/";
+  const CADA_SHA_MS = 75000;
+  let shaCache = { sha: null, t: 0, fallos: 0 };
+  async function shaRama() {
+    const ahora = Date.now();
+    if (ahora - shaCache.t < CADA_SHA_MS) return shaCache.sha;
+    shaCache.t = ahora;
+    try {
+      const r = await fetch("https://api.github.com/repos/" + REPO + "/branches/" + RAMA, { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
+      if (r.ok) { const j = await r.json(); shaCache.sha = j.commit && j.commit.sha ? j.commit.sha : shaCache.sha; shaCache.fallos = 0; }
+      else shaCache.fallos++;
+    } catch (e) { shaCache.fallos++; }
+    return shaCache.sha;
+  }
   const RAIZ = { MNQ: "NQ", MES: "ES", NQ: "NQ", ES: "ES" };
   const cache = new Map();
 
@@ -26,8 +43,12 @@
     const c = cache.get(k);
     if (c && maxEdadMs && ahora - c.t < maxEdadMs) return c.v;
     try {
-      let r = await fetch(k + "?v=" + ahora, { cache: "no-store" }).catch(() => null);
-      if ((!r || !r.ok) && base === BASE_DEF) r = await fetch(BASE_RESPALDO + nombre + "?v=" + ahora, { cache: "no-store" });
+      let r = null;
+      if (base === BASE_DEF) {
+        const sha = await shaRama();
+        if (sha) r = await fetch("https://raw.githubusercontent.com/" + REPO + "/" + sha + "/" + nombre, { cache: "no-store" }).catch(() => null);
+        if (!r || !r.ok) r = await fetch(BASE_RESPALDO + nombre + "?v=" + ahora, { cache: "no-store" }).catch(() => null);
+      } else r = await fetch(k + "?v=" + ahora, { cache: "no-store" }).catch(() => null);
       if (!r || !r.ok) throw new Error(r ? r.status : "red");
       const txt = await r.text();
       const v = nombre.endsWith(".jsonl") ? txt.split("\n").filter(l => l.length > 2).map(l => { try { return JSON.parse(l); } catch (e) { return null; } }).filter(Boolean) : JSON.parse(txt);
@@ -97,7 +118,7 @@
     return out;
   }
 
-  const MINUTOS = { M1: 1, M2: 2, M3: 3, M5: 5, M10: 10, M15: 15, M30: 30 };
+  const MINUTOS = { M1: 1, M2: 2, M3: 3, M5: 5, M10: 10, M15: 15, M30: 30, M60: 60 };
 
   /* todo lo que la web necesita para un instrumento, en una pasada */
   async function cargar(inst, marco, ajustes, base) {
@@ -122,6 +143,12 @@
     if (g) { velas = velasDeVivo(g, cn, co); origenVelas = "VIVO desde tu ATAS (" + inst + " " + marco + ", hace " + Math.round(edadPc) + " min)"; vivoFresco = true; }
     else if (g1) { velas = agregar(velasDeVivo(g1, cn, co), minutos); origenVelas = "VIVO desde tu ATAS (" + inst + " 1 min agrupado a " + marco + ")"; vivoFresco = true; }
     else { velas = agregar(velasDeYahoo(yahoo, serie), minutos); origenVelas = yahoo && yahoo.futuro && yahoo.futuro.t && yahoo.futuro.t.length ? "NUBE: Yahoo " + yahoo.futuro.simbolo + " (con retraso, sin order flow), niveles de la serie de la nube" : "sin velas"; }
+    // historia larga: lo de Yahoo ANTES de la primera vela de ATAS (marcado v.yahoo = true, sin delta), para las
+    // temporalidades largas y para ver la rueda entera; el vivo de ATAS manda desde donde empieza
+    if (vivoFresco && velas.length && yahoo && yahoo.futuro && yahoo.futuro.t && yahoo.futuro.t.length) {
+      const t0 = velas[0].t; const prev = agregar(velasDeYahoo(yahoo, serie), minutos).filter(v => v.t < t0 - (minutos * 60) / 2);
+      if (prev.length) { prev.forEach(v => { v.yahoo = true; }); velas = prev.concat(velas); origenVelas += " · antes: Yahoo"; }
+    }
     const cadena = feed ? Nucleo.parsear(feed) : null;
     const ahora = new Date();
     let futuro = null, futOrigen = "";
@@ -151,5 +178,5 @@
     return { inst, raiz, marco, minutos, velas, origenVelas, vivoFresco, edadPc, pc, cadena: cad, feed, estado, yahoo, serie: serie || [], viva, usarViva, futuro, futOrigen, L, ex, A, marcas: marcasU, baseRueda, edadRueda, vwap: vwap(velas, ajustes.vwap || "rueda"), vivoTodo };
   }
 
-  global.Datos = { cargar, traer, agregar, velasDeVivo, velasDeYahoo, vwap, edadMin, BASE_DEF, RAIZ, MINUTOS };
+  global.Datos = { cargar, traer, agregar, velasDeVivo, velasDeYahoo, vwap, edadMin, BASE_DEF, RAIZ, MINUTOS, shaRama, shaCache: () => shaCache };
 })(typeof window !== "undefined" ? window : globalThis);
