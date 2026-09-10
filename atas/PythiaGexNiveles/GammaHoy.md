@@ -637,3 +637,32 @@ flow por minuto, no hay señal direccional a 30 min en estos datos. Lo que queda
 (1) acumular la cadena viva de Rithmic (volumen real por strike, desde el 08-09) y
 volver a correr el banco en 3-4 semanas; (2) la pelotita como contexto (x2, ver 1.6);
 (3) el laboratorio queda listo para juzgar cualquier idea nueva en minutos.
+
+## 1.7: el gatillo MODELO (2026-09-10, tarde). Lo unico que gano fuera de muestra
+
+Tras el resultado negativo del banco de hipotesis a mano, la prueba de techo con
+aprendizaje automatico (laboratorio/ml_check.py: logistica y bosque con todos los
+rasgos, validacion por bloques de DIAS) encontro señal en ES a horizontes cortos:
+- MES 1 min, objetivo +3 antes que -3 en 10 min: AUC 0,56-0,57 fuera de muestra (5 de 5
+  bloques por encima de 0,50); operando solo con p >= 0,70: 61 % de acierto, 14 por
+  dia. Avance hacia adelante (entrena con los dias anteriores, opera el siguiente): 370
+  disparos 63,8 %; en la TARDE de Nueva York (14-16 h) 83,1 % de 59 (7 por dia).
+- Atribucion: con los niveles permutados entre filas el modelo pierde la señal (AUC
+  0,53, casi nunca seguro); solo order flow + hora, AUC 0,54; solo niveles, 0,52. La
+  ventaja es la INTERACCION de momentum corto (ret15, delta acumulado) con la
+  geometria de los niveles (zero, majors, dominantes, Max Change). Placebo por
+  corrimiento constante NO sirve para modelos lineales (la escala lo absorbe).
+- La regla 2:1 no funciona (31,6 %): es una ventaja chica en objetivo chico, no un
+  movimiento grande. Costos de MES ~0,3-0,5 pts por vuelta: neto positivo pero fino;
+  en la tarde, +1,9 pts brutos por operacion.
+- NQ: nada (AUC 0,51-0,52 en todos los horizontes). No se usa.
+- MES 2 min (el grafico del operador), horizonte 5 velas: mas debil: AUC 0,54, p >= 0,70
+  62 % de 53; avance hacia adelante en la tarde 76,7 % de 30 (2,7 por dia). Dos dias
+  (03-09 y 08-09) concentran la mitad de los disparos: ojo.
+Implementacion: GatilloModelo.cs (10 rasgos, media/escala/coeficientes fijos por
+temporalidad M1 y M2; equivalencia C#-Python verificada vela a vela: diferencia
+mediana 0,0000, mismo veredicto 99,94 %, Rebobina --modelo + modelo_equivalencia.py).
+Ajustes: "Gatillo MODELO" (SoloTarde por defecto / TodoElDia / Ninguno) y umbral
+(0,70). Rombo verde/rojo con "M p"; registro en pythiagex-gatillos-*.jsonl (tipo
+modelo·es10, Dz = p); el laboratorio lo juzga con los dias nuevos, que nunca se usaron
+para ajustar. Solo raiz ES y graficos de 1 o 2 minutos.

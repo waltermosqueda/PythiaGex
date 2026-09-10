@@ -120,7 +120,7 @@ namespace PythiaGex
         public enum GatilloModeloModo { SoloTarde, TodoElDia, Ninguno }
 
         [Display(Name = "Gatillo MODELO (ES, 1 min): regresion del laboratorio", GroupName = "3. Pantalla", Order = 24,
-                 Description = "Regresion logistica ajustada el 10-09 sobre 13 dias de MES por minuto: 10 rasgos (momentum corto, delta, distancias al zero, majors, dominantes y Max Change) -> probabilidad de tocar +3 antes que -3 en 10 min. Fuera de muestra: 61 % con p >= 0,70; en la tarde de Nueva York (14-16 h) 83 % de 59 casos, 7 por dia. Rombo verde = largo, rojo = corto, con la p. SOLO raiz ES y grafico de 1 minuto. En NQ no hay señal. Objetivo 3 pts, no un movimiento grande. Cada disparo se registra y se juzga con dias nuevos.")]
+                 Description = "Regresion logistica ajustada el 10-09 sobre MES: 10 rasgos (momentum corto, delta, distancias al zero, majors, dominantes y Max Change) -> probabilidad de tocar +3 antes que -3 en 10 min. En velas de 1 min (13 dias): fuera de muestra 61 % con p >= 0,70, en la tarde de Nueva York (14-16 h) 83 % de 59 casos, 7 por dia. En velas de 2 min (16 dias): 62 % con p >= 0,70, tarde 77 % de 30, 3 por dia (mas debil). Rombo verde = largo, rojo = corto, con la p. SOLO raiz ES, graficos de 1 o 2 minutos. En NQ no hay señal. Objetivo 3 pts. Cada disparo se registra y se juzga con dias nuevos.")]
         public GatilloModeloModo ModoModelo { get; set; } = GatilloModeloModo.SoloTarde;
 
         [Display(Name = "Gatillo MODELO: umbral de probabilidad", GroupName = "3. Pantalla", Order = 25,
@@ -525,7 +525,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.7 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.7b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -534,7 +534,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.7 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.7b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1163,11 +1163,12 @@ namespace PythiaGex
             if (ModoModelo == GatilloModeloModo.Ninguno || c == null) return null;
             if (Raiz() != "ES") return null;
             string marco = ChartInfo != null ? (ChartInfo.TimeFrame ?? "") : "";
-            if (marco != "M1")
+            if (!GatilloModelo.Soporta(marco))
             {
-                if (!_modAvisado) { _modAvisado = true; Log("gatillo modelo: solo en velas de 1 minuto (este grafico es " + marco + "): no dispara"); }
+                if (!_modAvisado) { _modAvisado = true; Log("gatillo modelo: solo en velas de 1 o 2 minutos (este grafico es " + marco + "): no dispara"); }
                 return null;
             }
+            mod.Marco = marco;
             mod.Umbral = (double)UmbralModelo;
             double cl = (double)c.Close;
             double domArr = double.NaN, domAba = double.NaN;

@@ -34,13 +34,23 @@ namespace PythiaGex
     /// </summary>
     public sealed class GatilloModelo
     {
-        public const string Version = "MES_10min_2026-09-10";
+        public const string Version = "MES_2026-09-10";
         public const double G = 3.0, H = 10;
         static readonly string[] Rasgos = { "ret15/rt", "d_zero", "rango/rt", "d_mn", "d_dom_arr", "cum15", "d_mc30", "dz", "d_mp", "d_dom_aba" };
-        static readonly double[] Media = { -0.0114, -2.3426, 1.0194, -8.0738, 12.0941, -0.0733, 1.4828, -0.0341, 6.2616, -20.9202 };
-        static readonly double[] Escala = { 2.5417, 7.8334, 0.4459, 8.0235, 15.71, 0.6618, 5.5771, 1.023, 6.4654, 18.8736 };
-        static readonly double[] Coef = { 0.176, 0.1786, -0.0857, 0.1194, -0.1015, 0.1064, 0.0721, -0.0165, 0.004, 0.0826 };
-        const double Intercepto = -0.0178;
+        // M1: 13 dias de MES por minuto (laboratorio/modelo_MES_10min.json)
+        static readonly double[] MediaM1 = { -0.0114, -2.3426, 1.0194, -8.0738, 12.0941, -0.0733, 1.4828, -0.0341, 6.2616, -20.9202 };
+        static readonly double[] EscalaM1 = { 2.5417, 7.8334, 0.4459, 8.0235, 15.71, 0.6618, 5.5771, 1.023, 6.4654, 18.8736 };
+        static readonly double[] CoefM1 = { 0.176, 0.1786, -0.0857, 0.1194, -0.1015, 0.1064, 0.0721, -0.0165, 0.004, 0.0826 };
+        const double InterceptoM1 = -0.0178;
+        // M2: 16 dias de MES en velas de 2 min, horizonte 5 velas (laboratorio/modelo_MES_M2_5velas.json)
+        static readonly double[] MediaM2 = { -0.0908, -0.2594, 0.972, -4.684, 7.2473, -0.0952, 0.3413, -0.0242, 4.4898, -8.9822 };
+        static readonly double[] EscalaM2 = { 2.438, 7.0579, 0.4316, 5.3146, 12.0829, 0.7096, 4.7663, 0.8961, 4.4471, 13.7007 };
+        static readonly double[] CoefM2 = { 0.1002, 0.0456, -0.0894, 0.1681, -0.0527, -0.0701, -0.0954, 0.0065, -0.0008, -0.066 };
+        const double InterceptoM2 = -0.0482;
+
+        /// <summary>"M1" o "M2": elige el juego de parametros. Otra cosa: sin modelo (Procesar devuelve NaN).</summary>
+        public string Marco = "M1";
+        public static bool Soporta(string marco) => marco == "M1" || marco == "M2";
 
         public double Umbral = 0.70;
         public int Enfriamiento = 5;
@@ -56,8 +66,10 @@ namespace PythiaGex
                                double zero, double mp, double mn, double domArr, double domAba, double mc30)
         {
             var s = new Salida { P = double.NaN, Lado = 0 };
-            if (bar <= _ultimoBar || c <= 0) return s;
+            if (bar <= _ultimoBar || c <= 0 || !Soporta(Marco)) return s;
             _ultimoBar = bar;
+            double[] Media = Marco == "M2" ? MediaM2 : MediaM1, Escala = Marco == "M2" ? EscalaM2 : EscalaM1, Coef = Marco == "M2" ? CoefM2 : CoefM1;
+            double Intercepto = Marco == "M2" ? InterceptoM2 : InterceptoM1;
             try
             {
                 double rango = h - l;
