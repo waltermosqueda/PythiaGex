@@ -64,6 +64,22 @@ namespace PythiaGex
             return c;
         }
 
+        private static string _token; private static DateTime _tokenLeido = DateTime.MinValue;
+        /// <summary>El token de GitHub del operador, si existe en %APPDATA%\PythiaGex\github.token (se relee cada 10 min).</summary>
+        public static string TokenGitHub()
+        {
+            if ((DateTime.UtcNow - _tokenLeido).TotalMinutes < 10) return _token;
+            _tokenLeido = DateTime.UtcNow;
+            try
+            {
+                var p = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PythiaGex", "github.token");
+                _token = File.Exists(p) ? File.ReadAllText(p).Trim() : null;
+                if (string.IsNullOrEmpty(_token)) _token = null;
+            }
+            catch { _token = null; }
+            return _token;
+        }
+
         /// <summary>La ULTIMA cadena de la rama "cadenas" (ultima-<raiz>.json, la escribe
         /// cadenas.yml cada minuto en la rueda). Mismo formato que una linea del archivo.</summary>
         public static async Task<Cadena> BajarUltima(string urlArchivo, string raiz, Action<string> error)
@@ -73,9 +89,32 @@ namespace PythiaGex
                 var b = (urlArchivo ?? "").Trim();
                 if (b.Length == 0) return null;
                 if (!b.EndsWith("/")) b += "/";
-                var txt = await Http.GetStringAsync(b + "ultima-" + raiz + ".json?t=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ConfigureAwait(false);
+                // raw.githubusercontent.com por rama cachea 5 minutos aunque cambie ?t= (medido el 10-09:
+                // la rama devolvia un ultima-NQ.json 8 min mas viejo que el commit). Con un token local
+                // (%APPDATA%\PythiaGex\github.token, NUNCA en el repo; 'gh auth token' lo escribe) se pide
+                // por la API de contenidos, que no pasa por ese cache. Sin token, se sigue por raw.
+                string txt = null;
+                var token = TokenGitHub();
+                if (token != null && b.Contains("raw.githubusercontent.com"))
+                {
+                    try
+                    {
+                        var m = System.Text.RegularExpressions.Regex.Match(b, @"raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/");
+                        if (m.Success)
+                        {
+                            using var req = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/" + m.Groups[1].Value + "/" + m.Groups[2].Value + "/contents/ultima-" + raiz + ".json?ref=" + m.Groups[3].Value);
+                            req.Headers.TryAddWithoutValidation("Authorization", "Bearer " + token);
+                            req.Headers.TryAddWithoutValidation("Accept", "application/vnd.github.raw+json");
+                            using var resp = await Http.SendAsync(req).ConfigureAwait(false);
+                            if (resp.IsSuccessStatusCode) txt = await resp.Content.ReadAsStringAsync().ConfigureAwait(false);
+                        }
+                    }
+                    catch { txt = null; }
+                }
+                if (txt == null) txt = await Http.GetStringAsync(b + "ultima-" + raiz + ".json?t=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ConfigureAwait(false);
                 var c = Parsear(txt);
                 if (c == null || c.Filas.Count == 0) return null;
+                c.Fuente = token != null ? "ultima por API (fresca)" : "ultima por raw (cache 5 min)";
                 try { Archivo.GuardarLocal(raiz, txt, c); } catch { }
                 return c;
             }

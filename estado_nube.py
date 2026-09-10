@@ -547,12 +547,12 @@ def correr(raiz, destino, ahora=None, futuro_manual=None, escribir=True, log=pri
             futuro = vf["c"][-1]
         vi = velas["indice"]
         if vi["t"]:
-            # la base por precio: futuro e indice en el MISMO minuto (los dos con el mismo retraso)
+            # la base por precio: futuro e indice en el MISMO minuto (los dos con el mismo retraso), MEDIANA de
+            # los ultimos 40 minutos con indice (un minuto solo es ruido: medido 10-09, NQ 23-28 entre minutos)
             ti = {t: k for k, t in enumerate(vi["t"])}
-            for k in range(len(vf["t"]) - 1, max(-1, len(vf["t"]) - 30), -1):
-                if vf["t"][k] in ti:
-                    base_precio = vf["c"][k] - vi["c"][ti[vf["t"][k]]]; edad_precio = (ahora.timestamp() - vf["t"][k]) / 60.0
-                    break
+            pares = [(vf["t"][k], vf["c"][k] - vi["c"][ti[vf["t"][k]]]) for k in range(len(vf["t"])) if vf["t"][k] in ti][-40:]
+            if pares:
+                xs = sorted(b for t, b in pares); base_precio = xs[len(xs) // 2]; edad_precio = (ahora.timestamp() - pares[-1][0]) / 60.0
     if futuro is None:
         _, _, carry = elegir_base(A, c, c["spot_idx"], ahora)
         futuro = c["spot_idx"] + (carry or c["base"] or c["base_cruda"] or 0.0)

@@ -128,6 +128,11 @@ namespace PythiaGex
         [Range(0.55, 0.95)]
         public decimal UmbralModelo { get; set; } = 0.70m;
 
+        [Display(Name = "Base de la rueda: retraso del spot de CBOE (segundos)", GroupName = "2. Datos", Order = 29,
+                 Description = "Para medir la base (futuro - indice) se alinea la vela de Rithmic con el spot de la cadena de CBOE, que llega tarde. Medido el 10-09-2026: 960 s alinea mejor (dispersion 2,9 pts) que 902 (6,6). Una muestra por cada cadena nueva de CBOE, sin los primeros 20 min de la rueda, mediana robusta; cada muestra queda en el log ('base muestra').")]
+        [Range(0, 3600)]
+        public int RetrasoCboeSeg { get; set; } = 960;
+
         public enum GatilloReboteModo { SoloTendencia, Todos, PrimerToqueActual, Ninguno }
 
         [Display(Name = "Gatillo REBOTE en las rayas (dominantes del dia, zero, majors)", GroupName = "3. Pantalla", Order = 26,
@@ -554,7 +559,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.8c arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.8d arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -563,7 +568,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.8c arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.8d arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1126,28 +1131,45 @@ namespace PythiaGex
             _nucleo.A.ExpiracionFuturoUtc = ExpiracionFuturo(); _nucleo.A.ExpiracionFuturoAltUtc = _expAlt;
             _nucleo.A.Dividendo = DividendoUsado();
             var ahora = DateTime.UtcNow;
-            if (c != null && !c.EsFuturo && c.GeneradoUtc != default(DateTime) && c.GeneradoUtc != _baseObsUltimaCadena && c.SpotIdx > 0)
+            // UNA muestra por cada ts NUEVO de CBOE (no por cada "generado" del feed: el radar de 5 min
+            // repite el mismo spot viejo con generado nuevo y la vela de ahora contra ese spot sesga con
+            // la tendencia; medido el 10-09: 18 a 36 en el dia contra 24,7 real). La vela va en
+            // ts - RetrasoCboeSeg (960 s alinea mejor que 902: MAD 2,9 contra 6,6). Sin los primeros 20
+            // min de la rueda (el indice abre con acciones sin operar). Mediana robusta: se descartan
+            // las muestras a mas de 3 MAD de la mediana. Cada muestra queda en el log.
+            DateTime tsCboe = default(DateTime);
+            if (c != null && !string.IsNullOrEmpty(c.Ts))
+                DateTime.TryParseExact(c.Ts, "yyyy-MM-dd HH:mm:ss", iv, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out tsCboe);
+            if (c != null && !c.EsFuturo && tsCboe != default(DateTime) && tsCboe != _baseObsUltimaCadena && c.SpotIdx > 0)
             {
-                int mUtc = c.GeneradoUtc.Hour * 60 + c.GeneradoUtc.Minute;
-                // solo con el contado abierto (9:35-16:10 de Nueva York) y la cadena fresca
-                if (mUtc >= 13 * 60 + 35 && mUtc <= 20 * 60 + 10 && (ahora - c.GeneradoUtc).TotalMinutes <= 3)
+                int mUtc = tsCboe.Hour * 60 + tsCboe.Minute;
+                // solo con el contado abierto y ya estable (9:50-16:10 de Nueva York) y la cadena fresca
+                if (mUtc >= 13 * 60 + 50 && mUtc <= 20 * 60 + 10 && (ahora - tsCboe).TotalMinutes <= 30)
                 {
-                    _baseObsUltimaCadena = c.GeneradoUtc;
-                    int b = BarraDe(c.GeneradoUtc.AddSeconds(-902));
+                    _baseObsUltimaCadena = tsCboe;
+                    var horaVela = tsCboe.AddSeconds(-Math.Max(0, RetrasoCboeSeg));
+                    int b = BarraDe(horaVela);
                     if (b >= 0)
                     {
-                        double precio; try { precio = (double)GetCandle(b).Close; } catch { precio = 0; }
+                        double precio; DateTime tVela = default(DateTime);
+                        try { var cb = GetCandle(b); precio = (double)cb.Close; tVela = Utc(cb.Time); } catch { precio = 0; }
                         if (precio > 0)
                         {
-                            _baseObs.Add(precio - c.SpotIdx);
-                            if (_baseObs.Count > 30) _baseObs.RemoveAt(0);
+                            double muestra = precio - c.SpotIdx;
+                            _baseObs.Add(muestra);
+                            if (_baseObs.Count > 24) _baseObs.RemoveAt(0);
+                            // mediana robusta
                             var ord = _baseObs.OrderBy(x => x).ToList();
-                            _baseRueda = ord[ord.Count / 2]; _baseRuedaUtc = ahora;
-                            if (_baseObs.Count == 5 || _baseObs.Count % 30 == 0)
-                            {
-                                Log("base de la rueda: mediana " + _baseRueda.ToString("0.00", iv) + " de " + _baseObs.Count + " muestras (ultima " + (precio - c.SpotIdx).ToString("0.00", iv) + ")");
-                                try { File.WriteAllText(RutaBaseRueda(), "{\"base\":" + _baseRueda.ToString("0.####", iv) + ",\"utc\":\"" + ahora.ToString("yyyy-MM-ddTHH:mm:ss", iv) + "\"}"); } catch { }
-                            }
+                            double med = ord[ord.Count / 2];
+                            double mad = ord.Select(x => Math.Abs(x - med)).OrderBy(x => x).ToList()[ord.Count / 2];
+                            double tope = Math.Max(3 * mad, precio * 0.0002);
+                            var buenas = _baseObs.Where(x => Math.Abs(x - med) <= tope).OrderBy(x => x).ToList();
+                            if (buenas.Count >= 3) med = buenas[buenas.Count / 2];
+                            if (buenas.Count >= 5 || double.IsNaN(_baseRueda)) { _baseRueda = med; _baseRuedaUtc = ahora; }
+                            Log("base muestra: cboe " + tsCboe.ToString("HH:mm:ss", iv) + " spot " + c.SpotIdx.ToString("0.00", iv) + " vela " + tVela.ToString("HH:mm", iv) + " cierre " + precio.ToString("0.00", iv)
+                                + " => " + muestra.ToString("0.00", iv) + " | mediana robusta " + med.ToString("0.00", iv) + " de " + buenas.Count + "/" + _baseObs.Count + " (MAD " + mad.ToString("0.0", iv) + ")");
+                            if (buenas.Count >= 5)
+                                try { File.WriteAllText(RutaBaseRueda(), "{\"base\":" + _baseRueda.ToString("0.####", iv) + ",\"utc\":\"" + ahora.ToString("yyyy-MM-ddTHH:mm:ss", iv) + "\",\"muestras\":" + buenas.Count + "}"); } catch { }
                         }
                     }
                 }

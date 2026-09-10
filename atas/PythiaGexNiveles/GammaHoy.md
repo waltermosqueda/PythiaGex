@@ -807,3 +807,47 @@ conectores alcanzables y sus interfaces, y quien implementa IOptionsDataFeed en 
 se decide el camino nuevo. Mientras tanto la web y el indicador siguen con CBOE.
 La web ahora lee cada archivo por commit (raw@sha, sha de la rama por la API cada 75 s): el vivo
 llega con 10-20 s de edad; raw por rama cachea 5 min y jsDelivr se pega a ese cache.
+
+## Auditoria quirurgica de la base y de las dominantes (2026-09-10, 20:35-20:50 local)
+
+Pedido: "las dominantes las dibuja lejisimos, como que hay desfasaje; contrasta con fuentes de afuera".
+
+**1. Las dominantes lejos no son un error de calculo.** A las 20:35 local, con el futuro en 29.103, la
+regla (la barra mas grande de cada lado dentro del 2 %, una por lado) elige arriba K 29.500 (+154M,
+a +415 pts; la siguiente es 29.440 con +148M) y abajo K 28.800 (-52M, a -285; la siguiente 28.550).
+Recalculado a mano desde la cadena cruda del feed: mismos strikes. Las barras pesadas CERCA del precio
+(29.130 -59M, 29.000 -42M) son mas chicas y por eso no son dominantes; van como rayas punteadas
+(pesadas) y como pico del cuadrante. Es la regla que se midio en el laboratorio (radio 2 %). Si el
+operador quiere las rayas mas cerca de noche, el ajuste "Radio de dominantes" a 0,5 % daria 29.130
+arriba y 29.000 abajo; no se cambio solo.
+
+**2. La base SI tuvo un desfasaje real, y se ve en los niveles.** Registro por vela del indicador (centinela
+MNQ 1 min): la base usada fue 33,6 (12:55-13:17 local), 35,1-35,6 (14:00-14:41), 29,2 (14:42), 20,6
+(14:49), 22,3 (15:02), 18,1-18,7 (15:07-15:15), 31,3 (15:35) y 18,0-18,4 a la noche. Tres graficos al
+mismo minuto daban 31,6 / 31,8 / 33,6. Cada salto mueve TODOS los niveles (zero, majors, dominantes,
+guiones) esa cantidad de puntos, porque los strikes se dibujan en K + base.
+Medida independiente de la base de hoy (NQ Sep):
+- Rithmic (velas de ATAS) contra el spot de la cadena de CBOE, buscando el retraso que mejor alinea:
+  960 s, base 24,7, dispersion (MAD) 2,9 con 34 cadenas; con 902 s: 24,6, MAD 6,6. Primera mitad del
+  dia 24,0, segunda 27,7.
+- Yahoo NQ=F contra ^NDX en el mismo minuto: 22,7 / 23,5 / 22,6 / 23,7 / 24,7 / 25,4 / 27,8 por hora UTC.
+- ES, lo mismo: Rithmic contra SPX de CBOE a 960 s: 6,30 (MAD 0,75); Yahoo 5,7-6,5; el indicador usaba
+  5,54; carry teorico 4,2.
+- Carry teorico NQ con la tasa del Tesoro de hoy (3,76 %, bajada de treasury.gov) y dividendo 0,8 %:
+  18,8. El mercado cotiza la base ~6 pts mas rica que el carry simple: la base REAL es la que manda.
+Conclusion: hoy los niveles se dibujaron entre 6 pts abajo (base 18) y 9-11 pts arriba (base 34-36) de
+donde debian, segun el minuto. Las causas en el codigo de MedirBaseRueda: tomaba una muestra por cada
+"generado" nuevo del feed (dos feeds, radar de 5 min y ultima, con el mismo spot de CBOE repetido) y
+alineaba la vela a generado-902 s, una sola vela de 1 min contra un spot que en mercado rapido esta 15-25
+min atras: muestras entre 5 y 41 en la misma hora; mediana de 30 sin filtro; y el valor persistido
+(36,11 de las 17:29 UTC) se recargaba en cada reinicio y quedaba 24 h. Ademas la cota contra el carry
+(17,5 pts) aceptaba 33,6 y rechazaba 36,1: de ahi el salto 34 <-> 18.
+**1.8d:** una muestra por cada ts NUEVO de CBOE, vela en ts - 960 s (ajuste "retraso del spot de
+CBOE"), sin los primeros 20 min de la rueda, mediana robusta (se descartan las muestras a mas de 3 MAD),
+maximo 24 muestras, y CADA muestra al log ("base muestra: cboe hh:mm:ss spot ... vela hh:mm cierre ...
+=> x | mediana robusta ..."). Verificado offline con los datos de hoy: 24,7 (MAD 2,9). Se valida en
+vivo mañana 11-09 en la rueda: las lineas "base muestra" tienen que dar 22-28 en NQ y 5,5-7 en ES.
+**Ademas:** raw.githubusercontent.com por rama cachea 5 minutos aunque cambie ?t=: el ultima-NQ.json
+que bajaba el indicador estaba hasta 8 min mas viejo que el commit (medido 20:45). Con un token local
+(%APPDATA%\PythiaGex\github.token, escrito por 'gh auth token', nunca en el repo) 1.8d lo pide por la
+API de contenidos, que no pasa por ese cache. La nube tambien: base por precio = mediana de 40 min.
