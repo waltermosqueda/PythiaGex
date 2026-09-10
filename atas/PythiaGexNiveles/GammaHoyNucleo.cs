@@ -68,6 +68,7 @@ namespace PythiaGex
         {
             public long Minuto;
             public Dictionary<double, double> GexVol = new();   // POR STRIKE (K), nunca por precio del futuro: la base cambia y rompe las claves (1.5f)
+            public Dictionary<double, double> Conv = new();     // la convexidad por strike, para las pelotitas de la escalera derecha (1.6b)
         }
 
         /// <summary>Todo lo que sale de una cuenta. Los NaN son "no hay".</summary>
@@ -110,6 +111,21 @@ namespace PythiaGex
         private DateTime _alertaHasta = DateTime.MinValue;
 
         public List<Snap> FotosCopia() { lock (_llave) return _fotos.ToList(); }
+
+        /// <summary>Siembra fotos viejas (del archivo) por delante de las que ya hay, para que
+        /// el Max Change y las pelotitas existan desde el primer minuto tras un arranque.</summary>
+        public void SembrarFotos(IEnumerable<(long Minuto, Dictionary<double, double> GexVol, Dictionary<double, double> Conv)> semillas)
+        {
+            lock (_llave)
+            {
+                long primera = _fotos.Count > 0 ? _fotos[0].Minuto : long.MaxValue;
+                var nuevas = semillas.Where(f => f.Minuto < primera && f.GexVol != null && f.GexVol.Count > 0)
+                                     .OrderBy(f => f.Minuto)
+                                     .Select(f => new Snap { Minuto = f.Minuto, GexVol = new Dictionary<double, double>(f.GexVol), Conv = f.Conv != null ? new Dictionary<double, double>(f.Conv) : new Dictionary<double, double>() }).ToList();
+                _fotos.InsertRange(0, nuevas);
+                while (_fotos.Count > 40) _fotos.RemoveAt(0);
+            }
+        }
 
         /// <summary>Olvida las fotos y la alerta: para empezar otro dia en el simulador.</summary>
         public void Reiniciar()
@@ -397,8 +413,8 @@ namespace PythiaGex
             long minuto = ahoraUtc.Ticks / TimeSpan.TicksPerMinute;
             var foto = _fotos.LastOrDefault();
             if (foto == null || foto.Minuto != minuto) { foto = new Snap { Minuto = minuto }; _fotos.Add(foto); while (_fotos.Count > 40) _fotos.RemoveAt(0); }
-            foto.GexVol.Clear();
-            foreach (var x in perfil) foto.GexVol[x.K] = x.GexVol;
+            foto.GexVol.Clear(); foto.Conv.Clear();
+            foreach (var x in perfil) { foto.GexVol[x.K] = x.GexVol; foto.Conv[x.K] = x.Conv; }
             var mc = new (double Fut, double Delta)[Ventanas.Length];
             for (int i = 0; i < Ventanas.Length; i++)
             {

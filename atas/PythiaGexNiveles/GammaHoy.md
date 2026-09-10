@@ -526,3 +526,43 @@ cadena no cambia, el cambio viene solo de repreciar con el spot y las barras
 mas grandes son las que mas se mueven (igual que las puntas de GAMMAlito).
 Y la cadena de NDX en la nube cambia cada ~4 min (93 cadenas en el dia):
 entre cadena y cadena el Max Change es repreciado, no operaciones nuevas.
+
+## 1.6 / 1.6b: las pelotitas del Max Change, como las define el creador (2026-09-10, madrugada)
+
+Pedido: "las pelotitas y las barras laterales y sus movimientos: el verdadero significado,
+por que se mueven, hacia donde cuando sube o baja; el creador les da mucha importancia".
+
+QUE SON (audio de "Te explico en vivo el Max Change", 5:59, transcripto): tres circulos
+por barra, grande = donde estaba la punta hace 15 min, mediana = hace 5, chica = hace 1.
+Adentro de la barra = ese strike crece en exposicion; afuera = decrece; juntas en la
+punta = nada paso en 15 min; alineadas = crecimiento sostenido; desparramadas = mucho
+momento; desordenadas = indeciso. "Lo mas importante no es la dominante sino la
+pelotita: es adelantado". En los cuadros 1080p se ven en los DOS perfiles (GEX y
+convexidad). Las barras son el volumen de opciones del dia por strike (0DTE a la
+izquierda; el ladder derecho a 90 dias).
+
+POR QUE SE MUEVEN: la barra es gamma x volumen y la gamma es maxima en el strike donde
+esta el precio: al acercarse el precio la barra crece (pelotitas adentro), al alejarse se
+achica (afuera); ademas crece por operaciones nuevas. El sube-y-baja vertical de 1,5 pts
+medido en sus videos es la razon QQQ->NQ cambiando, igual que nuestra base: no informa.
+
+LAS NUESTRAS ESTABAN ROTAS: VerPelotitas existia, pero buscaba la foto vieja por precio
+del futuro; con la base cambiando (cada cadena) no encontraba nada, y desde 1.5f (fotos
+por strike) directamente no dibujaba. 1.6: (a) por strike; (b) al arrancar se siembran
+con los perfiles de las ultimas 35 velas del archivo, asi existen desde el primer minuto;
+(c) con el mouse sobre una vela del pasado (modo Todo) salen de los perfiles de las velas
+anteriores; (d) log "PELOTITAS" cada 5 min con ahora / hace 1 / 5 / 15 y el veredicto,
+para auditar contra la pantalla. 1.6b: grises con borde del color de la barra (15 > 5 > 1)
+y tambien en la escalera de convexidad (las fotos guardan la convexidad por strike).
+Verificado en pantalla (MNQ 5 min) y en el log: K7700 de ES "DECRECE (las 3 afuera)" con
+el precio alejandose; K29400 de NQ "CRECE"; el resto "quieto" en la noche.
+
+MEDIDO ("es adelantado"), laboratorio/pelotitas_predicen.py, cadenas por minuto de
+Databento, rueda americana: ver numeros en la seccion siguiente.
+
+VIDEOS NUEVOS (13, bajados con yt-dlp cliente android, transcriptos con Vosk):
+conocimiento/gammalito/nuevos-2026-09-10/. Ninguno agrega mecanica nueva sobre las
+pelotitas; confirman: perfil izquierdo 0DTE / derecho 90 dias, la convexidad como
+"combustible sea del color que sea", y "sigo con las pelotitas, confirmacion".
+La medicion cuadro a cuadro del video (herramientas/medir_pelotitas.py) no fue confiable:
+el presentador hace zoom, scroll y dibuja encima; la definicion sale del audio.

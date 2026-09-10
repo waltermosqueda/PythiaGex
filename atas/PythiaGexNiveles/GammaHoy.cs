@@ -337,6 +337,35 @@ namespace PythiaGex
         private readonly List<double> _baseObs = new();
         private double _baseRueda = double.NaN; private DateTime _baseRuedaUtc = DateTime.MinValue, _baseObsUltimaCadena = DateTime.MinValue;
         private bool _baseCargada; private string _baseOrigenUlt = "";
+        private DateTime _ultimoLogPelotitas = DateTime.MinValue;
+
+        /// <summary>Auditoria de las pelotitas: para cada dominante, el GEX de su strike ahora y
+        /// en las fotos de hace 1, 5 y 15 min, y el veredicto que se deberia ver en pantalla.</summary>
+        private void LogPelotitas(GammaHoyNucleo.Lectura L)
+        {
+            var fotos = _nucleo.FotosCopia();
+            if (fotos.Count == 0 || L.Perfil == null) return;
+            long ahora = L.Hora.Ticks / TimeSpan.TicksPerMinute;
+            var iv = CultureInfo.InvariantCulture;
+            var sb = new System.Text.StringBuilder("PELOTITAS (fotos " + fotos.Count + ", desde hace " + (ahora - fotos[0].Minuto) + " min):");
+            foreach (var dm in L.Doms.Take(2))
+            {
+                var s = L.Perfil.OrderBy(x => Math.Abs(x.Fut - dm.Fut)).FirstOrDefault();
+                if (s == null) continue;
+                sb.Append(" K" + s.K.ToString("0", iv) + " ahora " + (s.GexVol / 1e6).ToString("+0;-0", iv) + "M");
+                int adentro = 0, afuera = 0;
+                foreach (int n in new[] { 1, 5, 15 })
+                {
+                    var f = fotos.Where(z => z.Minuto <= ahora - n).LastOrDefault();
+                    if (f == null || !f.GexVol.TryGetValue(s.K, out var g)) { sb.Append(" hace" + n + " --"); continue; }
+                    sb.Append(" hace" + n + " " + (g / 1e6).ToString("+0;-0", iv) + "M");
+                    if (Math.Abs(g) < Math.Abs(s.GexVol)) adentro++; else if (Math.Abs(g) > Math.Abs(s.GexVol)) afuera++;
+                }
+                sb.Append(adentro == 3 ? " => CRECE (las 3 adentro)" : afuera == 3 ? " => DECRECE (las 3 afuera)" : adentro + afuera == 0 ? " => QUIETO (en la punta)" : " => MEZCLADO");
+                sb.Append(" |");
+            }
+            Log(sb.ToString());
+        }
         private readonly Dictionary<int, List<GatilloBanda.Marca>> _disparos = new();
         private int _barraGat = -1, _barraBig = -1, _bigVistos;
         private readonly object _bigLlave = new();
@@ -483,7 +512,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.5f arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.6b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -492,7 +521,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.5f arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.6b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -738,6 +767,26 @@ namespace PythiaGex
                 }
             }
             _rebConCadena = con; _rebSinCadena = sin; _rebCadenaHora = ultimaCad;
+            // las fotos del Max Change del vivo se siembran con los perfiles de las ultimas velas
+            // del archivo: las pelotitas y el Δ de la escalera existen desde el primer minuto
+            if (Fuente != FuenteDatos.Archivo)
+            {
+                try
+                {
+                    var semillas = new List<(long, Dictionary<double, double>, Dictionary<double, double>)>();
+                    lock (_candado)
+                        foreach (var kv in _fotosBarra.OrderByDescending(k => k.Key).Take(35))
+                        {
+                            if (kv.Value.Perfil == null) continue;
+                            var dct = new Dictionary<double, double>(); var dcv = new Dictionary<double, double>();
+                            foreach (var st in kv.Value.Perfil) { dct[st.K] = st.GexVol; dcv[st.K] = st.Conv; }
+                            semillas.Add((Utc(kv.Value.Vela).Ticks / TimeSpan.TicksPerMinute, dct, dcv));
+                        }
+                    _nucleo.SembrarFotos(semillas);
+                    Log("fotos del Max Change sembradas con " + semillas.Count + " velas del archivo");
+                }
+                catch (Exception e) { Registrar(e); }
+            }
             var es = CultureInfo.GetCultureInfo("es-AR");
             _rebRotulo = (Fuente != FuenteDatos.Archivo ? "archivo " : "REBOBINADO  ") + con.ToString("N0", es) + " velas con cadena, " + sin.ToString("N0", es) + " sin";
             Log("REBOBINADO termino: " + con + " velas con cadena, " + sin + " sin; ultima cadena " + (ultimaCad == DateTime.MinValue ? "--" : ultimaCad.ToString("yyyy-MM-dd HH:mm") + " UTC"));
@@ -859,6 +908,7 @@ namespace PythiaGex
             {
                 _perfil = L.Perfil; _S = L.S; _futuro = L.Futuro; _base = L.Base; _baseOrigen = L.BaseOrigen; _masCercaUlt = L.MasCerca;
                 if (L.BaseOrigen != _baseOrigenUlt) { _baseOrigenUlt = L.BaseOrigen; Log("base: " + L.Base.ToString("0.00", CultureInfo.InvariantCulture) + " (" + L.BaseOrigen + ")" + (double.IsNaN(L.Carry) ? "" : " carry teorico " + L.Carry.ToString("0.0", CultureInfo.InvariantCulture))); }
+                if ((ahoraUtc - _ultimoLogPelotitas).TotalMinutes >= 5) { _ultimoLogPelotitas = ahoraUtc; try { LogPelotitas(L); } catch { } }
                 _zeroVol = L.ZeroVol; _zeroOi = L.ZeroOi; _netVol = L.NetVol; _netOi = L.NetOi;
                 _mpVol = L.MpVol; _mnVol = L.MnVol; _mpOi = L.MpOi; _mnOi = L.MnOi;
                 _maxAbsVol = L.MaxAbsVol; _maxAbsOi = L.MaxAbsOi; _maxAbsConv = L.MaxAbsConv;
@@ -1294,6 +1344,35 @@ namespace PythiaGex
             int alto = 5;
             try { int y1 = cont.GetYByPrice((decimal)perfil[0].Fut, false); if (perfil.Count > 1) { int y2 = cont.GetYByPrice((decimal)perfil[1].Fut, false); alto = Math.Max(2, Math.Min(9, Math.Abs(y2 - y1) - 2)); } } catch { }
             var fotos = _nucleo.FotosCopia();
+            // las pelotitas del Max Change: la foto vieja de cada ventana, POR STRIKE. En vivo, las
+            // fotos por minuto del nucleo; con el mouse sobre una vela del pasado (modo Todo), los
+            // perfiles de las velas anteriores a esa (la mas cercana con al menos N minutos de edad)
+            int[] ventPel = { 15, 5, 1 };
+            var antesPel = new Dictionary<double, double>[3];
+            var antesConv = new Dictionary<double, double>[3];
+            if (VerPelotitas)
+            {
+                if (foto == null)
+                {
+                    long ahoraMin = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMinute;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        var fv = fotos.Where(z => z.Minuto <= ahoraMin - ventPel[i]).LastOrDefault();
+                        antesPel[i] = fv?.GexVol; antesConv[i] = fv?.Conv;
+                    }
+                }
+                else
+                {
+                    Dictionary<int, Foto> fb; lock (_candado) fb = new Dictionary<int, Foto>(_fotosBarra);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Foto fv = null;
+                        for (int b = barFoto - 1; b >= 0 && b >= barFoto - 400; b--)
+                            if (fb.TryGetValue(b, out var fx) && fx.Perfil != null && (foto.Vela - fx.Vela).TotalMinutes >= ventPel[i]) { fv = fx; break; }
+                        if (fv != null) { var dct = new Dictionary<double, double>(); var dcv = new Dictionary<double, double>(); foreach (var st in fv.Perfil) { dct[st.K] = st.GexVol; dcv[st.K] = st.Conv; } antesPel[i] = dct; antesConv[i] = dcv; }
+                    }
+                }
+            }
             // espacio entre filas (px): decide cuanto dato entra sin pisarse
             int esp = 0;
             try { if (perfil.Count > 1) esp = Math.Abs(cont.GetYByPrice((decimal)perfil[1].Fut, false) - cont.GetYByPrice((decimal)perfil[0].Fut, false)); } catch { }
@@ -1351,17 +1430,18 @@ namespace PythiaGex
                     }
                     if (VerPelotitas)
                     {
-                        // donde estaba la punta hace 15, 5 y 1 minutos: adentro = crece, afuera = decrece
-                        long ahora = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMinute;
-                        int[] vent = { 15, 5, 1 }; int[] rad = { 4, 3, 2 };
+                        // donde estaba la punta hace 15 (grande), 5 (mediana) y 1 min (chica): adentro
+                        // de la barra = el strike crece, afuera = decrece, juntas en la punta = quieto.
+                        // Se dibujan de la grande a la chica, asi la chica queda encima si se pisan.
+                        int[] rad = { Math.Max(2, alto / 2), Math.Max(2, alto / 2 - 1), Math.Max(1, alto / 2 - 2) };
                         for (int i = 0; i < 3; i++)
                         {
-                            var vieja = fotos.Where(z => z.Minuto <= ahora - vent[i]).LastOrDefault();
-                            if (vieja == null || !vieja.GexVol.TryGetValue(s.Fut, out var gAntes)) continue;
+                            if (antesPel[i] == null || !antesPel[i].TryGetValue(s.K, out var gAntes)) continue;
+                            if (Math.Sign(gAntes) != Math.Sign(s.GexVol) && gAntes != 0) gAntes = 0;   // cambio de signo: "estaba en cero"
                             int wa = Math.Max(0, (int)(Math.Sqrt(Math.Abs(gAntes) / maxV) * ancho));
                             int rr = rad[i];
-                            g.FillEllipse(Color.FromArgb(235, 250, 250, 250), new Rectangle(x0 + wa - rr, y - rr, 2 * rr, 2 * rr));
-                            g.DrawEllipse(new RenderPen(Color.FromArgb(200, col), 1f), new Rectangle(x0 + wa - rr, y - rr, 2 * rr, 2 * rr));
+                            g.FillEllipse(Color.FromArgb(225, 205, 205, 210), new Rectangle(x0 + wa - rr, y - rr, 2 * rr, 2 * rr));
+                            g.DrawEllipse(new RenderPen(Color.FromArgb(230, col), 1f), new Rectangle(x0 + wa - rr, y - rr, 2 * rr, 2 * rr));
                         }
                     }
                 }
@@ -1371,6 +1451,20 @@ namespace PythiaGex
                     int w = Math.Max(1, (int)(fr * ancho * 0.7));
                     var col = s.Conv >= 0 ? ColConvPos : ColConvNeg;
                     g.FillRectangle(Color.FromArgb((int)(110 + 120 * fr), col), new Rectangle(xConv - w, y - alto / 2, w, alto));
+                    if (VerPelotitas)
+                    {
+                        // las mismas tres pelotitas sobre la convexidad (el producto las lleva en los dos perfiles)
+                        int[] radC = { Math.Max(2, alto / 2), Math.Max(2, alto / 2 - 1), Math.Max(1, alto / 2 - 2) };
+                        for (int i = 0; i < 3; i++)
+                        {
+                            if (antesConv[i] == null || !antesConv[i].TryGetValue(s.K, out var cAntes)) continue;
+                            if (Math.Sign(cAntes) != Math.Sign(s.Conv) && cAntes != 0) cAntes = 0;
+                            int wa = Math.Max(0, (int)(Math.Sqrt(Math.Abs(cAntes) / maxC) * ancho * 0.7));
+                            int rr = radC[i];
+                            g.FillEllipse(Color.FromArgb(225, 205, 205, 210), new Rectangle(xConv - wa - rr, y - rr, 2 * rr, 2 * rr));
+                            g.DrawEllipse(new RenderPen(Color.FromArgb(230, col), 1f), new Rectangle(xConv - wa - rr, y - rr, 2 * rr, 2 * rr));
+                        }
+                    }
                     if (rotEsta)
                     {
                         // la convexidad de la barra: cuanto cambia su GEX si el precio sube 1 %
