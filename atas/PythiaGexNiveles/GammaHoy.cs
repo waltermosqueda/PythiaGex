@@ -415,6 +415,17 @@ namespace PythiaGex
             public List<Strike> Perfil;      // las barras de ese minuto, para el mouse
         }
         private readonly Dictionary<int, Foto> _fotosBarra = new();
+        /// <summary>Las fotos de las velas viejas se quedan con los niveles pero sueltan el perfil (150-211
+        /// strikes cada una): con 19.000 velas de 1 min por grafico y cuatro graficos eran ~1 GB retenidos
+        /// (medido el 10-09: ATAS en 7,6 GB privados con la PC en 16 GB y 2 MB libres). El mouse sobre una
+        /// vela y las pelotitas del pasado usan a lo sumo las ultimas FOTOS_CON_PERFIL velas.</summary>
+        private const int FOTOS_CON_PERFIL = 2500;
+        private void PodarFotos(int barraActual)
+        {
+            lock (_candado)
+                foreach (var kv in _fotosBarra)
+                    if (kv.Key < barraActual - FOTOS_CON_PERFIL && kv.Value.Perfil != null) kv.Value.Perfil = null;
+        }
         private List<Feed.Cadena> _archivo;
         private int _iArchivo, _barraReb = -1, _rebConCadena, _rebSinCadena;
         private volatile bool _archivoCargando, _archivoListo;
@@ -543,7 +554,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.8b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.8c arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -552,7 +563,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.8b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.8c arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -634,6 +645,7 @@ namespace PythiaGex
             IndicatorCandle c; try { c = GetCandle(bar); } catch { return; }
             if (c == null) return;
             var cad = _c;
+            if (bar % 300 == 0) PodarFotos(bar);
             lock (_candado)
             {
                 if (_perfil.Count == 0) return;
@@ -843,6 +855,7 @@ namespace PythiaGex
             Log("gatillos en el archivo: " + gat.Entradas + " entradas a banda quieta, " + gat.Disparos + " disparos (" + tirosArch.Count(t => t.Principal && t.Tipo == "rechazo·tren") + " rechazo·tren, " + tirosArch.Count(t => t.Tipo == "modelo·es10") + " modelo, " + tirosArch.Count(t => t.Tipo.StartsWith("rebote")) + " rebote de " + rebArch.Candidatos + " toques)");
             RegistrarGatillos(tirosArch, "archivo", true);
             _rebSembrado = false;      // el vivo se vuelve a sembrar con los guiones y los disparos de este recorrido
+            PodarFotos(fin);
             try { _centArchivo?.Volcar(true); } catch { }
             try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
         }

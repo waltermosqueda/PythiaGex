@@ -13,53 +13,57 @@
 html,body{height:100%}
 body{margin:0;background:var(--fondo);color:var(--texto);font:13px/1.45 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 button,select,input{font:inherit;color:inherit}
-.barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--linea);background:var(--panel)}
+.barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--linea);background:var(--panel);position:sticky;top:0;z-index:10}
 .marca{font:700 15px var(--mono);color:var(--dom);letter-spacing:.02em;margin-right:6px}
 .marca span{color:var(--t3);font-weight:400;font-size:11px;margin-left:6px}
 .grupo{display:inline-flex;border:1px solid var(--linea);border-radius:4px;overflow:hidden}
 .grupo button{background:transparent;border:0;padding:5px 10px;color:var(--t2);cursor:pointer;font:500 12px var(--mono)}
 .grupo button.on{background:var(--dom);color:#0b0f14}
 .grupo button:hover:not(.on){background:var(--panel2);color:var(--texto)}
+.grupo button[title]{min-width:30px}
 select{background:var(--panel2);border:1px solid var(--linea);border-radius:4px;padding:5px 8px;font:12px var(--mono)}
 .chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:3px;font:500 11px var(--mono);border:1px solid var(--linea);color:var(--t2)}
 .chip::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--t3)}
 .chip.vivo{border-color:var(--vivo);color:var(--vivo)}.chip.vivo::before{background:var(--vivo);box-shadow:0 0 6px var(--vivo)}
 .chip.nube{border-color:#4b6b8a;color:#8ab4dc}.chip.nube::before{background:#8ab4dc}
 .chip.mal{border-color:var(--neg);color:var(--neg)}.chip.mal::before{background:var(--neg)}
-.chip.ok{border-color:var(--pos);color:var(--pos)}.chip.ok::before{background:var(--pos)}
 .derecha{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.pestanas{display:flex;gap:2px;padding:6px 12px 0;border-bottom:1px solid var(--linea);overflow-x:auto;background:var(--panel)}
-.pestanas button{background:transparent;border:0;border-bottom:2px solid transparent;padding:7px 12px;color:var(--t2);cursor:pointer;white-space:nowrap;font:500 12.5px var(--sans)}
-.pestanas button.on{color:var(--dom);border-bottom-color:var(--dom)}
-main{padding:10px 12px 30px}
-.vista{display:none}.vista.on{display:block}
+main{padding:10px 12px 40px;display:flex;flex-direction:column;gap:10px}
 .mesa{display:grid;grid-template-columns:1fr 300px;gap:10px}
-.lienzo-caja{position:relative;background:var(--fondo);border:1px solid var(--linea);border-radius:4px;height:calc(100vh - 150px);min-height:420px}
-#lienzo{width:100%;height:100%;display:block;cursor:crosshair}
-.lado{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 150px);overflow:auto}
+.lienzo-caja{position:relative;background:var(--fondo);border:1px solid var(--linea);border-radius:4px;height:calc(100vh - 120px);min-height:460px}
+#lienzo{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
+.lado{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 120px);overflow:auto}
 .tarjeta{background:var(--panel);border:1px solid var(--linea);border-radius:4px;padding:10px 12px}
-.tarjeta h3{margin:0 0 8px;font:600 10.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.tarjeta h3{margin:0 0 8px;font:600 10.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--t3);display:flex;justify-content:space-between;gap:8px}
+.tarjeta h3 small{font-weight:400;letter-spacing:0;text-transform:none;color:var(--t3)}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font:12px var(--mono)}
 .kv b{color:var(--t2);font-weight:500}
 .kv .v{text-align:right;font-variant-numeric:tabular-nums}
 .regimen{font:700 20px var(--mono);letter-spacing:.02em}
 .regimen small{display:block;font:400 11px var(--sans);color:var(--t2);margin-top:2px}
 .q1{color:var(--pos)}.q2{color:var(--dom)}.q3{color:#8ab4dc}.q4{color:var(--neg)}
+.tend{display:grid;grid-template-columns:1fr auto;gap:3px 8px;font:12px var(--mono)}
+.tend .al{color:var(--pos)}.tend .ba{color:var(--neg)}.tend .ne{color:var(--t2)}
+.resumen{font:700 16px var(--mono);margin-top:6px}
 table{border-collapse:collapse;width:100%;font:12px var(--mono);font-variant-numeric:tabular-nums}
 th,td{padding:4px 8px;border-bottom:1px solid var(--linea);text-align:right;white-space:nowrap}
-th{color:var(--t3);font-weight:500;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;position:sticky;top:0;background:var(--panel)}
+th{color:var(--t3);font-weight:500;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;position:sticky;top:0;background:var(--panel);z-index:1}
 td:first-child,th:first-child{text-align:left}
-tr.aqui td{background:rgba(242,193,78,.08)}
+tr.aqui td{background:rgba(242,193,78,.10);border-top:1px solid var(--dom);border-bottom:1px solid var(--dom)}
 .pos{color:var(--pos)}.neg{color:var(--neg)}.dom{color:var(--dom)}.t2{color:var(--t2)}.t3{color:var(--t3)}
-.tabla-caja{overflow:auto;max-height:calc(100vh - 170px);border:1px solid var(--linea);border-radius:4px;background:var(--panel)}
+.tabla-caja{overflow:auto;max-height:60vh;border:1px solid var(--linea);border-radius:4px;background:var(--panel)}
 .mini{display:inline-block;height:9px;vertical-align:middle;border-radius:1px}
-.dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tres{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-canvas.chico{width:100%;height:220px;display:block;background:var(--fondo);border:1px solid var(--linea);border-radius:4px}
+.etq{display:inline-block;padding:0 5px;border-radius:2px;font:600 10px var(--mono);margin-left:4px;vertical-align:middle}
+.etq.d{background:var(--dom);color:#0b0f14}.etq.p{background:var(--pos);color:#0b0f14}.etq.n{background:var(--neg);color:#fff}.etq.z{background:#a9b4c0;color:#0b0f14}.etq.o{background:#3a4656;color:#dfe6ee}.etq.c{background:var(--conv);color:#0b0f14}
+.fila{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
+.fila2{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.cuatro{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+canvas.chico{width:100%;height:200px;display:block;background:var(--fondo);border:1px solid var(--linea);border-radius:4px}
 pre{font:11.5px var(--mono);white-space:pre-wrap;word-break:break-all;background:var(--fondo);border:1px solid var(--linea);border-radius:4px;padding:8px;margin:6px 0}
 .nota{color:var(--t2);font-size:12px;margin:6px 0}
+details>summary{cursor:pointer;font:600 12px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--t2);padding:6px 0}
 .ayuda h4{margin:14px 0 4px;color:var(--dom);font:600 13px var(--sans)}
-.ayuda p{margin:0 0 6px;max-width:70ch}
+.ayuda p{margin:0 0 6px;max-width:75ch}
 .ayuda .criollo{color:var(--t2);font-style:italic}
 .ajustes{position:fixed;top:0;right:0;width:340px;max-width:100vw;height:100%;background:var(--panel);border-left:1px solid var(--linea);padding:14px;overflow:auto;transform:translateX(100%);transition:transform .2s;z-index:20}
 .ajustes.on{transform:none}
@@ -67,19 +71,21 @@ pre{font:11.5px var(--mono);white-space:pre-wrap;word-break:break-all;background
 .ajustes label select,.ajustes label input{width:140px}
 .ajustes h3{margin:0 0 8px;font:600 12px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
 .ajustes .cerrar{float:right;background:transparent;border:1px solid var(--linea);border-radius:4px;padding:3px 8px;cursor:pointer}
-.aviso{padding:8px 12px;background:#2a1d10;border:1px solid #6b4a1c;color:#f2c14e;border-radius:4px;margin-bottom:10px;font-size:12.5px}
+.aviso{padding:8px 12px;background:#2a1d10;border:1px solid #6b4a1c;color:#f2c14e;border-radius:4px;font-size:12.5px}
 .aviso.rojo{background:#2a1214;border-color:#7a2b2f;color:#f0888c}
 .gat{display:grid;grid-template-columns:auto auto 1fr auto;gap:3px 8px;font:11.5px var(--mono);align-items:center}
 .gat .r{color:var(--pos)}.gat .rn{color:var(--neg)}
-@media (max-width:980px){.mesa{grid-template-columns:1fr}.lienzo-caja{height:62vh;min-height:360px}.lado{max-height:none}.dos,.tres{grid-template-columns:1fr}}
+@media (max-width:1100px){.fila{grid-template-columns:1fr}}
+@media (max-width:980px){.mesa{grid-template-columns:1fr}.lienzo-caja{height:62vh;min-height:380px}.lado{max-height:none}.fila2,.cuatro{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="barra">
   <div class="marca">GAMMA HOY<span>PythiaGex · nube</span></div>
   <div class="grupo" id="instrumentos"><button data-inst="MNQ" class="on">MNQ / NQ</button><button data-inst="MES">MES / ES</button></div>
-  <div class="grupo" id="marcos"><button data-marco="M1" class="on">1m</button><button data-marco="M2">2m</button><button data-marco="M5">5m</button><button data-marco="M15">15m</button></div>
+  <div class="grupo" id="marcos"><button data-marco="M1" class="on">1m</button><button data-marco="M2">2m</button><button data-marco="M3">3m</button><button data-marco="M5">5m</button><button data-marco="M15">15m</button><button data-marco="M30">30m</button></div>
   <div class="grupo" id="vistas"><button data-vista="futuro" class="on">futuro</button><button data-vista="indice">índice</button></div>
+  <div class="grupo" id="zoom"><button id="zIn" title="acercar (rueda)">+</button><button id="zOut" title="alejar (rueda)">−</button><button id="zIzq" title="ir al pasado (shift+rueda)">◀</button><button id="zDer" title="ir al presente">▶</button><button id="zAuto" title="escala de precio automática (ctrl+rueda para estirar)">auto</button><button id="zReset" title="volver al vivo (doble clic)">⟲ vivo</button></div>
   <div class="derecha">
     <span class="chip" id="chipPc">PC</span>
     <span class="chip" id="chipCadena">cadena</span>
@@ -87,23 +93,23 @@ pre{font:11.5px var(--mono);white-space:pre-wrap;word-break:break-all;background
     <button class="grupo" id="btnAjustes" style="padding:5px 10px;background:transparent;color:var(--t2);cursor:pointer">⚙ ajustes</button>
   </div>
 </div>
-<div class="pestanas" id="pestanas">
-  <button data-tab="mesa" class="on">Mesa</button><button data-tab="strikes">Strikes</button><button data-tab="vencimientos">Vencimientos y 0DTE</button><button data-tab="historia">Historia del día</button><button data-tab="gatillos">Gatillos</button><button data-tab="auditoria">Auditoría y fuentes</button><button data-tab="ayuda">Qué es cada cosa</button>
-</div>
 <main>
   <div id="avisos"></div>
-  <section class="vista on" data-vista-tab="mesa">
-    <div class="mesa">
-      <div class="lienzo-caja"><canvas id="lienzo"></canvas></div>
-      <div class="lado" id="lado"></div>
-    </div>
+  <section class="mesa">
+    <div class="lienzo-caja"><canvas id="lienzo"></canvas></div>
+    <div class="lado" id="lado"></div>
   </section>
-  <section class="vista" data-vista-tab="strikes"><div id="strikes"></div></section>
-  <section class="vista" data-vista-tab="vencimientos"><div id="vencimientos"></div></section>
-  <section class="vista" data-vista-tab="historia"><div id="historia"></div></section>
-  <section class="vista" data-vista-tab="gatillos"><div id="gatillos"></div></section>
-  <section class="vista" data-vista-tab="auditoria"><div id="auditoria"></div></section>
-  <section class="vista" data-vista-tab="ayuda"><div id="ayuda" class="ayuda"></div></section>
+  <section class="fila">
+    <div class="tarjeta"><h3>Mesa rápida: strikes alrededor del precio <small id="rapidaNota"></small></h3><div id="rapida"></div></div>
+    <div class="tarjeta"><h3>Referentes más grandes (±3 %)</h3><div id="referentes"></div><h3 style="margin-top:12px">Vencimientos y 0DTE</h3><div id="vencimientos"></div></div>
+    <div class="tarjeta"><h3>Historia del día</h3><div id="historia"></div></div>
+  </section>
+  <section class="fila2">
+    <div class="tarjeta"><h3>Gatillos de hoy</h3><div id="gatillos"></div></div>
+    <div class="tarjeta"><h3>Auditoría y fuentes</h3><div id="auditoria"></div></div>
+  </section>
+  <section class="tarjeta"><h3>Strikes completo (±3 %)</h3><div id="strikes"></div></section>
+  <section class="tarjeta"><details><summary>Qué es cada cosa (técnico y criollo)</summary><div id="ayuda" class="ayuda"></div></details></section>
 </main>
 <aside class="ajustes" id="ajustes">
   <button class="cerrar" id="cerrarAjustes">cerrar</button>
@@ -114,7 +120,7 @@ pre{font:11.5px var(--mono);white-space:pre-wrap;word-break:break-all;background
   <label>Radio de dominantes (% del precio) <input type="number" step="0.5" min="0.5" max="6" data-aj="nucleo.radioDomPct"></label>
   <label>Centroide gamma-ponderado <select data-aj="nucleo.centroide"><option value="true">sí</option><option value="false">no</option></select></label>
   <label>Radio del centroide (pts) <input type="number" step="1" min="0" max="60" data-aj="nucleo.radioCentro"></label>
-  <label>Libro (solo ES) <select data-aj="libro"><option value="cboe">CBOE (SPX, 15 min tarde)</option><option value="rithmic">Rithmic ES vivo (si tu ATAS está abierto)</option></select></label>
+  <label>Libro (solo ES) <select data-aj="libro"><option value="cboe">CBOE (SPX, 15 min tarde)</option><option value="rithmic">Rithmic ES vivo (si tu ATAS lo manda)</option></select></label>
   <h3 style="margin-top:14px">Pantalla</h3>
   <label>Banda de las dominantes (% del precio) <input type="number" step="0.02" min="0" max="0.5" data-aj="bandaPct"></label>
   <label>Rayas punteadas (barras pesadas) <select data-aj="pesadas"><option value="0">ninguna</option><option value="2">2</option><option value="4">4</option></select></label>
@@ -125,6 +131,7 @@ pre{font:11.5px var(--mono);white-space:pre-wrap;word-break:break-all;background
   <label>Perfil de la derecha <select data-aj="tipoPerfil"><option value="vol">GEX por volumen</option><option value="oi">GEX por OI</option></select></label>
   <label>Zona horaria <select data-aj="zona"><option value="America/Argentina/Buenos_Aires">Buenos Aires</option><option value="America/New_York">Nueva York</option><option value="UTC">UTC</option></select></label>
   <label>Velas visibles al abrir <input type="number" step="10" min="40" max="800" data-aj="velasVisibles"></label>
+  <label>Refresco (segundos) <input type="number" step="5" min="10" max="120" data-aj="refresco"></label>
   <p class="nota">Los ajustes quedan guardados en este navegador. El perfil se recalcula acá con la cadena cruda: no depende de la nube ni de tu PC.</p>
 </aside>
 <script src="nucleo.js"></script>

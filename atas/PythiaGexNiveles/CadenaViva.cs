@@ -191,10 +191,17 @@ namespace PythiaGex
 
                 // GetService no la entrega a los indicadores (NotSupportedException,
                 // verificado). Se rastrea el conector por los campos privados.
-                object feed = Rastrear(proveedor, tOpt, 0)
-                           ?? Rastrear(manager, tOpt, 0)
-                           ?? Rastrear(seguridad, tOpt, 0);
-                if (feed == null) { L("no se encontro el conector de opciones"); return; }
+                // ATAS 8.0.14.399 (instalado el 09-09 a las 11:08) movio el conector: la busqueda por
+                // campos privados a 3 niveles dejo de encontrarlo y la cadena viva se apago a las 11:57
+                // sin avisar. Ahora se busca mas hondo (5 niveles, sin ciclos, adentro de colecciones) y,
+                // si aun no aparece, en los campos ESTATICOS de los ensamblados de ATAS/OFT.
+                _camino = "";
+                object feed = Rastrear(proveedor, tOpt, 0, "DataProvider")
+                           ?? Rastrear(manager, tOpt, 0, "TradingManager")
+                           ?? Rastrear(seguridad, tOpt, 0, "Security")
+                           ?? RastrearEstaticos(tOpt);
+                if (feed == null) { L("no se encontro el conector de opciones (buscado a 5 niveles y en estaticos de ATAS/OFT)"); return; }
+                L("conector de opciones encontrado en " + _camino + " (" + feed.GetType().FullName + ")");
 
                 _conn = feed as IDataFeedConnector;
                 if (_conn == null) { L("el conector no expone IDataFeedConnector"); return; }
@@ -845,22 +852,86 @@ namespace PythiaGex
             return i >= 0 ? c.Substring(0, i + 1) : c;
         }
 
-        private static object Rastrear(object raiz, Type buscada, int nivel)
+        private static string _camino = "";
+        private static readonly HashSet<object> _vistos = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        private static int _presupuesto;
+
+        private static object Rastrear(object raiz, Type buscada, int nivel, string camino)
         {
-            if (raiz == null || nivel > 3) return null;
+            if (nivel == 0) { _vistos.Clear(); _presupuesto = 40000; }
+            if (raiz == null || nivel > 5 || _presupuesto-- <= 0) return null;
             try
             {
-                if (buscada.IsInstanceOfType(raiz)) return raiz;
-                foreach (var f in raiz.GetType().GetFields(
-                             BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                if (buscada.IsInstanceOfType(raiz)) { _camino = camino; return raiz; }
+                if (!_vistos.Add(raiz)) return null;
+                var t = raiz.GetType();
+                if (t.IsPrimitive || t.IsEnum || raiz is string || raiz is Delegate) return null;
+                // colecciones: mirar adentro (hasta 300 elementos)
+                if (raiz is System.Collections.IDictionary dic)
                 {
-                    if (f.FieldType.IsPrimitive || f.FieldType == typeof(string)) continue;
-                    object v;
-                    try { v = f.GetValue(raiz); } catch { continue; }
-                    if (v == null) continue;
-                    if (buscada.IsInstanceOfType(v)) return v;
-                    var r = Rastrear(v, buscada, nivel + 1);
-                    if (r != null) return r;
+                    foreach (var it in dic.Values)
+                    {
+                        if (it == null) continue;
+                        if (buscada.IsInstanceOfType(it)) { _camino = camino + "[valor]"; return it; }
+                        var r0 = Rastrear(it, buscada, nivel + 1, camino + "[valor]");
+                        if (r0 != null) return r0;
+                    }
+                }
+                else if (raiz is System.Collections.IEnumerable en)
+                {
+                    int i = 0;
+                    foreach (var it in en)
+                    {
+                        if (it == null || i++ > 300) continue;
+                        if (buscada.IsInstanceOfType(it)) { _camino = camino + "[" + (i - 1) + "]"; return it; }
+                        var r0 = Rastrear(it, buscada, nivel + 1, camino + "[" + (i - 1) + "]");
+                        if (r0 != null) return r0;
+                    }
+                }
+                for (var tt = t; tt != null && tt != typeof(object); tt = tt.BaseType)
+                    foreach (var f in tt.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly))
+                    {
+                        if (f.FieldType.IsPrimitive || f.FieldType.IsEnum || f.FieldType == typeof(string)) continue;
+                        object v;
+                        try { v = f.GetValue(raiz); } catch { continue; }
+                        if (v == null) continue;
+                        if (buscada.IsInstanceOfType(v)) { _camino = camino + "." + f.Name; return v; }
+                        var r = Rastrear(v, buscada, nivel + 1, camino + "." + f.Name);
+                        if (r != null) return r;
+                    }
+            }
+            catch { }
+            return null;
+        }
+
+        /// <summary>Los campos estaticos de los ensamblados de ATAS/OFT (administradores de
+        /// conectores, singletons): el ultimo recurso cuando el conector no cuelga de nada que el
+        /// indicador reciba.</summary>
+        private static object RastrearEstaticos(Type buscada)
+        {
+            try
+            {
+                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    var nombre = asm.GetName().Name ?? "";
+                    if (!(nombre.StartsWith("ATAS") || nombre.StartsWith("OFT"))) continue;
+                    Type[] tipos;
+                    try { tipos = asm.GetTypes(); } catch (ReflectionTypeLoadException e) { tipos = e.Types.Where(x => x != null).ToArray(); } catch { continue; }
+                    foreach (var t in tipos)
+                    {
+                        if (t.IsGenericTypeDefinition || t.IsEnum || t.IsInterface) continue;
+                        FieldInfo[] campos;
+                        try { campos = t.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly); } catch { continue; }
+                        foreach (var f in campos)
+                        {
+                            if (f.FieldType.IsPrimitive || f.FieldType.IsEnum || f.FieldType == typeof(string)) continue;
+                            object v;
+                            try { v = f.GetValue(null); } catch { continue; }
+                            if (v == null) continue;
+                            var r = Rastrear(v, buscada, 0, t.FullName + "." + f.Name);
+                            if (r != null) return r;
+                        }
+                    }
                 }
             }
             catch { }

@@ -768,3 +768,33 @@ toco, en la vela del disparo: verde largo, rojo corto. Hueco para que la mecha s
 traves. La letra (R, o R1 en el primer toque de esa raya en el dia) va pegada al circulo
 por fuera de la vela: debajo en los largos, encima en los cortos. Los triangulos grandes
 desplazados del 1.8 se fueron.
+
+## Auditoria de la noche del 2026-09-10 (19:15-19:40 local), tras el reinicio del operador
+
+ATAS estaba "tildado" y el operador lo reinicio a las 19:15. Lo que se revisó, con que y que dio:
+- **El indicador no tenia errores**: el log escribia cada minuto hasta las 19:12 y no hay excepciones.
+  La causa del tildado es la memoria de la PC: 16 GB con 2 MB libres en el momento de medir; ATAS
+  con 7,6 GB privados (llego a 8,7 al abrir el Options Board), Edge ~3 GB, la app del chat ~1,7 GB.
+  De ATAS, ~1 GB era del propio indicador: guardaba el perfil (150-211 strikes) de CADA vela con
+  cadena (19.000 velas de 1 min, mas 2 y 5 min, mas MES). 1.8c poda ese perfil a las ultimas 2.500
+  velas (lo que usa el mouse sobre el pasado). Carga en el proximo reinicio.
+- **Cadena viva de Rithmic apagada desde el 09-09 a las 11:57**: ATAS se actualizo a 8.0.14.399 ese dia
+  a las 11:08 y la busqueda del conector por campos privados (3 niveles) dejo de encontrarlo; el log
+  repite "no se encontro el conector de opciones" cada pocos segundos y vivaActiva=False. 1.8c busca
+  a 5 niveles sin ciclos, adentro de colecciones y en los estaticos de ATAS/OFT, y anota el camino
+  donde lo encuentra. Se verifica en el proximo reinicio; si tampoco, hay que correr la Sonda.
+- **Valores**: la linea AUDIT del indicador (NQ 19:22: fut 29150, base 17,98 TEORICA, zero 29041,35,
+  majors 29517,98/29147,98, doms 29517,89/29145,90, q3) reproducida por el laboratorio con codigo
+  independiente (auditar_vivo.py): net vol +455M vs +454M, zero a 0,6 puntos de strike, majors,
+  dominantes, pico y barras pesadas iguales. ES idem (zero 7596,94 vs 7596,97, doms 7598,04/7549,34).
+- **Calculo a mano desde la cadena CRUDA de CBOE** (NDX y NDXP del 11-09, sin codigo del proyecto):
+  los 10 strikes mas pesados dan lo MISMO que la nube (0,00 %); con la gamma que publica CBOE, 5-15 %
+  de diferencia (otro T y otra tasa: esperado). Net GEX: el feed corta los strikes a +-5 % del spot
+  (ANCHO = 0,05 en cadena_atas.py): con todos los strikes crudos el neto da 0,344B en vez de 0,435B,
+  porque puts muy lejanos con IV absurdas suman -90M. Los niveles cerca del precio no cambian; el
+  "net" del titular es el de +-5 %. Anotado, no corregido: es decision de diseño.
+- **Web contra indicador**: JS = nube = ATAS (Auditoria y fuentes, en strike); el gatillo rebote del
+  archivo rehecho coincide con el laboratorio en 38 de 41 disparos (3 a una vela de distancia).
+- **El subidor abria una consola por cada llamada a gh** (bajo pythonw): el operador no podia usar la
+  PC. Corregido con CREATE_NO_WINDOW; relanzado. Ademas la web decia "PC sin señal" 5 min: el bucle
+  quedo trabado en una llamada; con la vuelta manual subio los 4 archivos en 10 s.

@@ -1,157 +1,101 @@
 # -*- coding: utf-8 -*-
-"""SUBIR EL VIVO DE ATAS A LA NUBE, CADA MINUTO.
+"""SUBIR EL VIVO DE ATAS A LA NUBE, CADA 20 SEGUNDOS, EN UN SOLO ARCHIVO.
 
 Mientras ATAS esta abierto con Gamma Hoy, el indicador escribe en %APPDATA%\\ATAS:
   pythiagex-centinela-hoy-<INST>-TimeFrame-<M>.jsonl   una linea por vela: o/h/l/c/vol/delta/spot + niveles (niv) + order flow (of)
   pythiagex-gatillos-<INST>-TimeFrame-<M>.jsonl        cada disparo (rebote, modelo, tren)
   pythiagex-gammahoy.log                               AUDIT, PELOTITAS, base de la rueda, version
   PythiaGex\\viva\\viva-ES-<dia>.jsonl                   la cadena viva de Rithmic (ES, 0DTE con puntas reales)
-Este script empaqueta lo ultimo en JSON chico y lo sube a la rama "cadenas" del repo por la API
-de GitHub (gh api, con la sesion ya autenticada de gh):
-  vivo-<INST>-<M>.json   las ultimas N velas con sus niveles y disparos del dia
-  vivo-viva-ES.json      la ultima cadena viva de Rithmic (compacta)
-  pc.json                latido: version del indicador, ultimo AUDIT por raiz, que archivos se subieron
-La web (panel/) los lee y, si son frescos, los prefiere a la nube. Si la PC se apaga, dejan de
-llegar y la web lo dice y sigue con la nube (CBOE + Yahoo, con retraso).
+Este script empaqueta lo ultimo en UN JSON (vivo.json: latido + todos los graficos + la cadena viva)
+y lo sube a la rama "cadenas" del repo por la API de GitHub (gh api, con la sesion de gh ya
+autenticada). Un archivo = un commit por vuelta; la rama se aplana sola a las 22 UTC.
+La web (panel/) lo lee y, si es fresco, lo prefiere a la nube. Si la PC se apaga, deja de llegar y la
+web lo dice y sigue con la nube (CBOE + Yahoo, con retraso).
 
-Uso: python herramientas/subir_vivo.py [--bucle] [--cada 60] [--velas 300]
+Sin ventana: bajo pythonw cada llamada a gh abria una consola negra (10-09 19:30, el operador no
+podia usar la PC). CREATE_NO_WINDOW la esconde. Cada llamada tiene tope de 60 s: una que se cuelga
+no frena el bucle.
+
+Uso: python herramientas/subir_vivo.py [--bucle] [--cada 20] [--velas 300]
 """
 import base64
 import glob
-import io
 import json
 import os
 import re
 import subprocess
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 REPO = "waltermosqueda/PythiaGex"
 RAMA = "cadenas"
 ATAS = os.path.join(os.environ.get("APPDATA", ""), "ATAS")
 GRAFICOS = [("MNQ", "M1"), ("MNQ", "M2"), ("MNQ", "M5"), ("MES", "M1"), ("MES", "M2"), ("MES", "M5")]
-_shas = {}
+CLAVES_NIV = ["zero_vol", "zero_oi", "mp_vol", "mn_vol", "mp_oi", "mn_oi", "dom0", "dom1", "mc1", "mc5", "mc10", "mc15", "mc30", "pico", "q_cuadrante"]
+CLAVES_OF = ["dmax", "dmin", "big_n", "big_max", "big_buy", "big_sell"]
+_SIN_VENTANA = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000) if os.name == "nt" else 0
+_sha = {}
 
 
 def log(m):
     print(datetime.now().strftime("%H:%M:%S") + "  " + m, flush=True)
 
 
-# SIN VENTANA: corriendo bajo pythonw cada llamada a gh abria una consola negra un segundo (el
-# operador no podia usar la PC, 10-09 19:30). CREATE_NO_WINDOW la esconde.
-_SIN_VENTANA = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000) if os.name == "nt" else 0
-
-
-def gh(args, entrada=None):
+def gh(args, entrada=None, tope=60):
     si = None
     if os.name == "nt":
         si = subprocess.STARTUPINFO(); si.dwFlags |= subprocess.STARTF_USESHOWWINDOW; si.wShowWindow = 0
-    r = subprocess.run(["gh", "api"] + args, input=entrada, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                       creationflags=_SIN_VENTANA, startupinfo=si)
+    try:
+        r = subprocess.run(["gh", "api"] + args, input=entrada, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           creationflags=_SIN_VENTANA, startupinfo=si, timeout=tope)
+    except subprocess.TimeoutExpired:
+        return 124, "", "tope de %d s" % tope
+    except Exception as e:
+        return 1, "", str(e)
     return r.returncode, r.stdout.strip(), r.stderr.strip()
 
 
 def subir(nombre, obj, mensaje):
-    """PUT del archivo en la rama (crea o pisa). Guarda el sha para no pedirlo cada vez."""
+    """PUT del archivo en la rama (crea o pisa). Guarda el sha para no pedirlo cada vez; si cambio
+    afuera (otro commit, o la rama se aplano a las 22 UTC), lo pide de nuevo y reintenta una vez."""
     cuerpo = json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
-    sha = _shas.get(nombre)
+    sha = _sha.get(nombre)
     if sha is None:
-        rc, out, err = gh(["repos/%s/contents/%s?ref=%s" % (REPO, nombre, RAMA), "--jq", ".sha"])
+        rc, out, err = gh(["repos/%s/contents/%s?ref=%s" % (REPO, nombre, RAMA), "--jq", ".sha"], tope=40)
         sha = out if rc == 0 and out else None
     carga = {"message": mensaje, "branch": RAMA, "content": base64.b64encode(cuerpo.encode("utf-8")).decode("ascii")}
     if sha: carga["sha"] = sha
     rc, out, err = gh(["-X", "PUT", "repos/%s/contents/%s" % (REPO, nombre), "--input", "-", "--jq", ".content.sha"], json.dumps(carga))
     if rc != 0 and ("409" in err or "422" in err or "404" in err):
-        # el sha cambio (otro commit, o la rama se aplano a las 22 UTC): pedirlo de nuevo y reintentar
-        _shas.pop(nombre, None)
-        rc2, out2, _ = gh(["repos/%s/contents/%s?ref=%s" % (REPO, nombre, RAMA), "--jq", ".sha"])
+        _sha.pop(nombre, None)
+        rc2, out2, _ = gh(["repos/%s/contents/%s?ref=%s" % (REPO, nombre, RAMA), "--jq", ".sha"], tope=40)
         if rc2 == 0 and out2: carga["sha"] = out2
         else: carga.pop("sha", None)
         rc, out, err = gh(["-X", "PUT", "repos/%s/contents/%s" % (REPO, nombre), "--input", "-", "--jq", ".content.sha"], json.dumps(carga))
     if rc == 0 and out:
-        _shas[nombre] = out
+        _sha[nombre] = out
         return len(cuerpo)
     log("fallo %s: %s" % (nombre, err[:200]))
     return 0
 
 
-def leer_cola(ruta, n):
+def leer_cola(ruta, n, ancho=900):
     """Las ultimas n lineas JSON de un archivo (lee solo la cola)."""
     try:
         with open(ruta, "rb") as f:
             f.seek(0, 2); tam = f.tell()
-            f.seek(max(0, tam - n * 900))
+            f.seek(max(0, tam - n * ancho))
             datos = f.read().decode("utf-8", errors="replace")
     except Exception:
         return []
+    lineas = datos.splitlines()
+    if tam > n * ancho: lineas = lineas[1:]
     out = []
-    for l in datos.splitlines()[1:] if tam > n * 900 else datos.splitlines():
+    for l in lineas:
         try: out.append(json.loads(l))
         except Exception: pass
     return out[-n:]
-
-
-def paquete_velas(inst, marco, n):
-    p = os.path.join(ATAS, "pythiagex-centinela-hoy-%s-TimeFrame-%s.jsonl" % (inst, marco))
-    if not os.path.exists(p) or time.time() - os.path.getmtime(p) > 3 * 3600:
-        return None
-    velas = leer_cola(p, n)
-    if not velas:
-        return None
-    claves_niv = ["zero_vol", "zero_oi", "mp_vol", "mn_vol", "mp_oi", "mn_oi", "dom0", "dom1", "mc1", "mc5", "mc10", "mc15", "mc30", "pico", "q_cuadrante"]
-    cols = dict(t=[], o=[], h=[], l=[], c=[], vol=[], delta=[], spot=[], niv=[], of=[])
-    for v in velas:
-        try:
-            cols["t"].append(int(datetime.strptime(v["t"][:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).timestamp()))
-        except Exception:
-            continue
-        for k in ("o", "h", "l", "c", "vol", "delta", "spot"):
-            cols[k].append(v.get(k))
-        n_ = v.get("niv") or {}
-        cols["niv"].append([n_.get(k) for k in claves_niv])
-        o_ = v.get("of") or {}
-        cols["of"].append([o_.get("dmax"), o_.get("dmin"), o_.get("big_n"), o_.get("big_max"), o_.get("big_buy"), o_.get("big_sell")])
-    # los disparos del dia (rebote, modelo, tren) de ese grafico
-    gat = []
-    pg = os.path.join(ATAS, "pythiagex-gatillos-%s-TimeFrame-%s.jsonl" % (inst, marco))
-    hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    for g in leer_cola(pg, 400):
-        if str(g.get("t", "")).startswith(hoy):
-            gat.append(g)
-    return dict(inst=inst, marco=marco, generado=datetime.now(timezone.utc).isoformat(timespec="seconds"), archivo_mtime=datetime.fromtimestamp(os.path.getmtime(p), timezone.utc).isoformat(timespec="seconds"),
-                claves_niv=claves_niv, claves_of=["dmax", "dmin", "big_n", "big_max", "big_buy", "big_sell"], velas=cols, gatillos=gat)
-
-
-def paquete_viva(raiz="ES"):
-    fs = sorted(glob.glob(os.path.join(ATAS, "PythiaGex", "viva", "viva-%s-*.jsonl" % raiz)))
-    if not fs or time.time() - os.path.getmtime(fs[-1]) > 20 * 60:
-        return None
-    ls = leer_cola(fs[-1], 1)
-    if not ls:
-        return None
-    l = ls[0]
-    return dict(raiz=raiz, generado=datetime.now(timezone.utc).isoformat(timespec="seconds"), ts=l.get("ts"), futuro=l.get("futuro"), grandes=l.get("grandes"),
-                campos=l.get("campos"), filas=l.get("filas"))
-
-
-def latido(subidos):
-    lg = os.path.join(ATAS, "pythiagex-gammahoy.log")
-    audits = {}; version = None; pelotitas = None; base_rueda = None
-    for l in leer_cola_texto(lg, 3000):
-        if "AUDIT fut=" in l:
-            # el log lo comparten todos los graficos: la raiz se deduce del tamaño del futuro (NQ ~29000, ES ~7600)
-            m = re.search(r"fut=([0-9.]+)", l)
-            fut = float(m.group(1)) if m else 0.0
-            audits["NQ" if fut > 15000 else "ES"] = l.strip()
-            audits["ultimo"] = l.strip()
-        if "arranca" in l and "Gamma Hoy" in l:
-            m = re.search(r"Gamma Hoy ([0-9.a-z]+) arranca", l)
-            if m: version = m.group(1)
-        if "PELOTITAS" in l: pelotitas = l.strip()
-        if "base de la rueda" in l.lower(): base_rueda = l.strip()
-    return dict(generado=datetime.now(timezone.utc).isoformat(timespec="seconds"), pc=os.environ.get("COMPUTERNAME", "?"), version=version, audit=audits.get("ultimo"),
-                audit_NQ=audits.get("NQ"), audit_ES=audits.get("ES"), pelotitas=pelotitas, base_rueda=base_rueda, subidos=subidos)
 
 
 def leer_cola_texto(ruta, n):
@@ -163,31 +107,85 @@ def leer_cola_texto(ruta, n):
         return []
 
 
+def paquete_velas(inst, marco, n):
+    p = os.path.join(ATAS, "pythiagex-centinela-hoy-%s-TimeFrame-%s.jsonl" % (inst, marco))
+    if not os.path.exists(p) or time.time() - os.path.getmtime(p) > 3 * 3600:
+        return None
+    velas = leer_cola(p, n)
+    if not velas:
+        return None
+    cols = dict(t=[], o=[], h=[], l=[], c=[], vol=[], delta=[], spot=[], niv=[], of=[])
+    for v in velas:
+        try:
+            cols["t"].append(int(datetime.strptime(v["t"][:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).timestamp()))
+        except Exception:
+            continue
+        for k in ("o", "h", "l", "c", "vol", "delta", "spot"):
+            cols[k].append(v.get(k))
+        n_ = v.get("niv") or {}
+        cols["niv"].append([n_.get(k) for k in CLAVES_NIV])
+        o_ = v.get("of") or {}
+        cols["of"].append([o_.get(k) for k in CLAVES_OF])
+    gat = []
+    pg = os.path.join(ATAS, "pythiagex-gatillos-%s-TimeFrame-%s.jsonl" % (inst, marco))
+    hoy = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    for g in leer_cola(pg, 400, 300):
+        if str(g.get("t", "")).startswith(hoy):
+            gat.append(g)
+    return dict(inst=inst, marco=marco, archivo_mtime=datetime.fromtimestamp(os.path.getmtime(p), timezone.utc).isoformat(timespec="seconds"), velas=cols, gatillos=gat)
+
+
+def paquete_viva(raiz="ES"):
+    fs = sorted(glob.glob(os.path.join(ATAS, "PythiaGex", "viva", "viva-%s-*.jsonl" % raiz)))
+    if not fs or time.time() - os.path.getmtime(fs[-1]) > 20 * 60:
+        return None
+    ls = leer_cola(fs[-1], 1, 120000)
+    if not ls:
+        return None
+    l = ls[0]
+    return dict(raiz=raiz, ts=l.get("ts"), futuro=l.get("futuro"), grandes=l.get("grandes"), campos=l.get("campos"), filas=l.get("filas"))
+
+
+def latido():
+    lg = os.path.join(ATAS, "pythiagex-gammahoy.log")
+    audits = {}; version = None; pelotitas = None; base_rueda = None; viva_estado = None
+    for l in leer_cola_texto(lg, 3000):
+        if "AUDIT fut=" in l:
+            m = re.search(r"fut=([0-9.]+)", l)
+            fut = float(m.group(1)) if m else 0.0
+            audits["NQ" if fut > 15000 else "ES"] = l.strip()   # el log lo comparten los graficos: la raiz sale del tamaño del futuro
+        if "arranca" in l and "Gamma Hoy" in l:
+            m = re.search(r"Gamma Hoy ([0-9.a-z]+) arranca", l)
+            if m: version = m.group(1)
+        if "PELOTITAS" in l: pelotitas = l.strip()
+        if "base de la rueda" in l.lower(): base_rueda = l.strip()
+        if "[cadena viva]" in l: viva_estado = l.strip()
+    return dict(pc=os.environ.get("COMPUTERNAME", "?"), version=version, audit_NQ=audits.get("NQ"), audit_ES=audits.get("ES"),
+                pelotitas=pelotitas, base_rueda=base_rueda, viva_estado=viva_estado)
+
+
 def una_vuelta(n_velas):
-    subidos = {}
-    ahora = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    ahora = datetime.now(timezone.utc)
+    graficos = {}
     for inst, marco in GRAFICOS:
         paq = paquete_velas(inst, marco, n_velas)
-        if paq is None:
-            continue
-        nombre = "vivo-%s-%s.json" % (inst, marco)
-        tam = subir(nombre, paq, "vivo %s %s %s" % (inst, marco, ahora))
-        if tam: subidos[nombre] = dict(bytes=tam, velas=len(paq["velas"]["t"]), ultima=paq["velas"]["t"][-1], gatillos=len(paq["gatillos"]))
+        if paq is not None:
+            graficos[inst + "-" + marco] = paq
+    viva = {}
     for raiz in ("ES", "NQ"):
         pv = paquete_viva(raiz)
         if pv is not None:
-            nombre = "vivo-viva-%s.json" % raiz
-            tam = subir(nombre, pv, "viva %s %s" % (raiz, ahora))
-            if tam: subidos[nombre] = dict(bytes=tam, filas=len(pv.get("filas") or []), ts=pv.get("ts"))
-    # sin nada fresco (ATAS cerrado), el latido va cada 5 minutos para no llenar la rama de commits de 1 KB
-    if subidos or datetime.now().minute % 5 == 0:
-        subir("pc.json", latido(subidos), "latido %s" % ahora)
-    log("subidos: " + ", ".join("%s (%d KB)" % (k, v["bytes"] // 1024) for k, v in subidos.items()) if subidos else "nada fresco para subir (ATAS cerrado?); latido enviado")
+            viva[raiz] = pv
+    paquete = dict(generado=ahora.isoformat(timespec="seconds"), claves_niv=CLAVES_NIV, claves_of=CLAVES_OF, latido=latido(),
+                   graficos=graficos, viva=viva, resumen={k: dict(velas=len(v["velas"]["t"]), ultima=v["velas"]["t"][-1], gatillos=len(v["gatillos"])) for k, v in graficos.items()})
+    tam = subir("vivo.json", paquete, "vivo %s" % ahora.strftime("%Y-%m-%d %H:%M:%S UTC"))
+    log(("subido vivo.json %d KB: " % (tam // 1024)) + (", ".join(graficos) if graficos else "sin graficos frescos (ATAS cerrado?)") + (" + viva " + ",".join(viva) if viva else ""))
+    return tam > 0 and bool(graficos)
 
 
 def main():
     a = sys.argv[1:]
-    cada = int(a[a.index("--cada") + 1]) if "--cada" in a else 60
+    cada = int(a[a.index("--cada") + 1]) if "--cada" in a else 20
     n = int(a[a.index("--velas") + 1]) if "--velas" in a else 300
     if "--bucle" not in a:
         una_vuelta(n); return
@@ -195,10 +193,12 @@ def main():
     while True:
         t0 = time.time()
         try:
-            una_vuelta(n)
+            fresco = una_vuelta(n)
         except Exception as e:
-            log("error: %s" % e)
-        time.sleep(max(5, cada - (time.time() - t0)))
+            log("error: %s" % e); fresco = False
+        # sin nada fresco (ATAS cerrado) el latido va cada 5 minutos
+        espera = cada if fresco else 300
+        time.sleep(max(3, espera - (time.time() - t0)))
 
 
 if __name__ == "__main__":

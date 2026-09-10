@@ -2,8 +2,9 @@
  *
  * Tres caminos, del mas fresco al mas lento, y cada uno dice su edad:
  *   VIVO   lo que el indicador Gamma Hoy escribe en la PC del operador y herramientas/subir_vivo.py
- *          sube cada minuto (vivo-<INST>-<M>.json, vivo-viva-ES.json, pc.json). Velas con order flow
- *          (delta, big trades), los niveles de cada vela tal como se dibujaron, los disparos.
+ *          sube cada 20 s en vivo.json (latido + todos los graficos + la cadena viva de Rithmic).
+ *          Velas con order flow (delta, big trades), los niveles de cada vela tal como se dibujaron,
+ *          los disparos.
  *   NUBE   la cadena de CBOE que cadenas.yml baja cada minuto (ultima-<RAIZ>.json), el estado que
  *          estado_nube.py calcula con ella (estado-<RAIZ>.json), la historia del dia
  *          (serie-<RAIZ>-<dia>.jsonl) y las velas de Yahoo (velas-<RAIZ>.json, con retraso, sin delta).
@@ -37,11 +38,10 @@
   function edadMin(iso) { if (!iso) return null; const t = new Date(iso).getTime(); return isFinite(t) ? (Date.now() - t) / 60000 : null; }
   function diaUtc(d) { return (d || new Date()).toISOString().slice(0, 10); }
 
-  /* vivo-<INST>-<M>.json -> velas [{t,o,h,l,c,vol,delta,spot,niv:{...},of:{...}}] */
-  function velasDeVivo(v) {
-    if (!v || !v.velas || !v.velas.t) return [];
-    const cn = v.claves_niv || [], co = v.claves_of || [], out = [];
-    const V = v.velas;
+  /* un grafico de vivo.json -> velas [{t,o,h,l,c,vol,delta,spot,niv:{...},of:{...}}] */
+  function velasDeVivo(g, cn, co) {
+    if (!g || !g.velas || !g.velas.t) return [];
+    const V = g.velas, out = [];
     for (let i = 0; i < V.t.length; i++) {
       const niv = {}; (V.niv[i] || []).forEach((x, k) => { if (x != null) niv[cn[k]] = x; });
       const of = {}; (V.of[i] || []).forEach((x, k) => { if (x != null) of[co[k]] = x; });
@@ -93,57 +93,59 @@
     return out;
   }
 
+  const MINUTOS = { M1: 1, M2: 2, M3: 3, M5: 5, M10: 10, M15: 15, M30: 30 };
+
   /* todo lo que la web necesita para un instrumento, en una pasada */
   async function cargar(inst, marco, ajustes, base) {
     base = base || BASE_DEF;
     const raiz = RAIZ[inst] || "NQ";
     const dia = diaUtc();
-    const [pc, vivo, vivoM1, feed, estado, yahoo, serie, viva] = await Promise.all([
-      traer(base, "pc.json", 20000), traer(base, "vivo-" + inst + "-" + marco + ".json", 20000), marco === "M1" ? null : traer(base, "vivo-" + inst + "-M1.json", 20000),
+    const [vivoTodo, feed, estado, yahoo, serie] = await Promise.all([
+      traer(base, "vivo.json", 8000),
       traer(base, "ultima-" + raiz + ".json", 45000), traer(base, "estado-" + raiz + ".json", 45000), traer(base, "velas-" + raiz + ".json", 45000),
-      traer(base, "serie-" + raiz + "-" + dia + ".jsonl", 45000), raiz === "ES" ? traer(base, "vivo-viva-ES.json", 30000) : null,
+      traer(base, "serie-" + raiz + "-" + dia + ".jsonl", 45000),
     ]);
-    const edadPc = pc ? edadMin(pc.generado) : null;
-    const vivoFresco = vivo && edadMin(vivo.generado) != null && edadMin(vivo.generado) <= 4;
-    const vivoM1Fresco = vivoM1 && edadMin(vivoM1.generado) != null && edadMin(vivoM1.generado) <= 4;
-    let velas, origenVelas, minutos = { M1: 1, M2: 2, M5: 5, M15: 15 }[marco] || 1;
-    if (vivoFresco) { velas = velasDeVivo(vivo); origenVelas = "VIVO desde tu ATAS (" + inst + " " + marco + ", hace " + edadMin(vivo.generado).toFixed(0) + " min)"; }
-    else if (vivoM1Fresco) { velas = agregar(velasDeVivo(vivoM1), minutos); origenVelas = "VIVO desde tu ATAS (" + inst + " 1 min agrupado a " + marco + ")"; }
+    const pc = vivoTodo ? Object.assign({ generado: vivoTodo.generado, subidos: vivoTodo.resumen }, vivoTodo.latido || {}) : null;
+    const edadPc = vivoTodo ? edadMin(vivoTodo.generado) : null;
+    const vivoFrescoTodo = edadPc != null && edadPc <= 3;
+    const cn = vivoTodo ? vivoTodo.claves_niv : [], co = vivoTodo ? vivoTodo.claves_of : [];
+    const g = vivoFrescoTodo && vivoTodo.graficos ? vivoTodo.graficos[inst + "-" + marco] : null;
+    const g1 = vivoFrescoTodo && vivoTodo.graficos ? vivoTodo.graficos[inst + "-M1"] : null;
+    const viva = vivoFrescoTodo && vivoTodo.viva ? (vivoTodo.viva[raiz] || null) : null;
+    if (viva) viva.generado = vivoTodo.generado;
+    const minutos = MINUTOS[marco] || 1;
+    let velas, origenVelas, vivoFresco = false;
+    if (g) { velas = velasDeVivo(g, cn, co); origenVelas = "VIVO desde tu ATAS (" + inst + " " + marco + ", hace " + Math.round(edadPc) + " min)"; vivoFresco = true; }
+    else if (g1) { velas = agregar(velasDeVivo(g1, cn, co), minutos); origenVelas = "VIVO desde tu ATAS (" + inst + " 1 min agrupado a " + marco + ")"; vivoFresco = true; }
     else { velas = agregar(velasDeYahoo(yahoo, serie), minutos); origenVelas = yahoo && yahoo.futuro && yahoo.futuro.t && yahoo.futuro.t.length ? "NUBE: Yahoo " + yahoo.futuro.simbolo + " (con retraso, sin order flow), niveles de la serie de la nube" : "sin velas"; }
     const cadena = feed ? Nucleo.parsear(feed) : null;
     const ahora = new Date();
-    // el futuro: la ultima vela viva; si no, Yahoo fresco; si no, el estado de la nube
     let futuro = null, futOrigen = "";
-    if (vivoFresco || vivoM1Fresco) { const v = velas[velas.length - 1]; futuro = v.c; futOrigen = "cierre de la ultima vela de ATAS"; }
+    if (vivoFresco && velas.length) { const v = velas[velas.length - 1]; futuro = v.c; futOrigen = "cierre de la última vela de ATAS (" + Math.round((Date.now() / 1000 - v.t) / 60) + " min)"; }
     else if (yahoo && yahoo.futuro && yahoo.futuro.t && yahoo.futuro.t.length) { const t = yahoo.futuro.t[yahoo.futuro.t.length - 1]; const ed = (Date.now() / 1000 - t) / 60; if (ed <= 30) { futuro = yahoo.futuro.c[yahoo.futuro.c.length - 1]; futOrigen = "Yahoo hace " + ed.toFixed(0) + " min"; } }
     if (futuro == null && estado) { futuro = estado.futuro; futOrigen = "nube: " + estado.fut_origen; }
-    // la base "de la rueda": del indicador (c - spot de la ultima vela viva) o por precio (Yahoo, en la nube)
     let baseRueda = null, edadRueda = null;
-    if ((vivoFresco || vivoM1Fresco) && velas.length) { const v = velas[velas.length - 1]; if (v.spot) { baseRueda = v.c - v.spot; edadRueda = (Date.now() / 1000 - v.t) / 60; } }
+    if (vivoFresco && velas.length) { const v = velas[velas.length - 1]; if (v.spot) { baseRueda = v.c - v.spot; edadRueda = (Date.now() / 1000 - v.t) / 60; } }
     else if (estado && estado.base_por_precio != null) { baseRueda = estado.base_por_precio; edadRueda = 5; }
-    // la cuenta en el navegador con los ajustes del operador
     let L = null, ex = null, A = null;
-    const usarViva = ajustes.libro === "rithmic" && viva && edadMin(viva.generado) != null && edadMin(viva.generado) <= 5;
+    const usarViva = ajustes.libro === "rithmic" && viva && viva.filas && viva.filas.length;
     const cad = usarViva ? Nucleo.parsearViva(viva) : cadena;
     if (cad && futuro) {
       A = Object.assign(Nucleo.ajustesDefault(raiz), ajustes.nucleo || {});
       const [e1, e2] = Nucleo.trimestralDesde(ahora); A.expFuturo = e1; A.expFuturoAlt = e2;
-      const fotos = estado && estado.perfil ? null : null;
       L = Nucleo.calcular(A, cad, usarViva ? cad.spotIdx : futuro, ahora, null, baseRueda, edadRueda);
       if (L && !L.sinBase) {
         ex = Nucleo.extras(A, cad, L.S, L.base, ahora);
-        // las pelotitas (punta de cada barra hace 1/5/15 min) vienen de la nube, por strike
         if (estado && estado.perfil) { const m = new Map(estado.perfil.map(s => [s.K, s.antes])); for (const s of L.perfil) { const a = m.get(s.K); if (a) s.antes = a; } }
         L.pesadas = L.perfil.filter(s => Math.abs(s.fut - L.futuro) <= L.futuro * 0.006).sort((a, b) => Math.abs(b.gexVol) - Math.abs(a.gexVol)).slice(0, ajustes.pesadas || 2);
         if (estado && estado.mc) L.mc = estado.mc;
       }
     }
-    // los disparos del dia (de los archivos vivos de ese instrumento)
     const marcas = [];
-    for (const src of [vivo, vivoM1]) if (src && src.gatillos) for (const g of src.gatillos) marcas.push({ t: Math.floor(new Date(g.t + "Z").getTime() / 1000), tipo: g.tipo, lado: g.lado, precio: g.precio, dom: g.dom, dz: g.dz, fuente: g.fuente, marco: src.marco });
+    for (const src of [g, g1]) if (src && src.gatillos) for (const x of src.gatillos) marcas.push({ t: Math.floor(new Date(x.t + "Z").getTime() / 1000), tipo: x.tipo, lado: x.lado, precio: x.precio, dom: x.dom, dz: x.dz, fuente: x.fuente, marco: src.marco });
     const vistos = new Set(); const marcasU = marcas.filter(m => { const k = m.t + "|" + m.tipo + "|" + m.lado; if (vistos.has(k)) return false; vistos.add(k); return true; });
-    return { inst, raiz, marco, velas, origenVelas, vivoFresco: vivoFresco || vivoM1Fresco, edadPc, pc, cadena: cad, feed, estado, yahoo, serie: serie || [], viva, usarViva, futuro, futOrigen, L, ex, A, marcas: marcasU, baseRueda, edadRueda, vwap: vwap(velas, ajustes.vwap || "rueda") };
+    return { inst, raiz, marco, minutos, velas, origenVelas, vivoFresco, edadPc, pc, cadena: cad, feed, estado, yahoo, serie: serie || [], viva, usarViva, futuro, futOrigen, L, ex, A, marcas: marcasU, baseRueda, edadRueda, vwap: vwap(velas, ajustes.vwap || "rueda"), vivoTodo };
   }
 
-  global.Datos = { cargar, traer, agregar, velasDeVivo, velasDeYahoo, vwap, edadMin, BASE_DEF, RAIZ };
+  global.Datos = { cargar, traer, agregar, velasDeVivo, velasDeYahoo, vwap, edadMin, BASE_DEF, RAIZ, MINUTOS };
 })(typeof window !== "undefined" ? window : globalThis);
