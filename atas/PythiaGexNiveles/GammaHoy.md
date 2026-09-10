@@ -506,3 +506,23 @@ Verificado en el log y en pantalla: NQ base 20,07, zero 29.374 (a mano
 29.352 + 20), precio 29.414 entre D2 29.021 y D1 29.532.
 Pendiente: entender por que la medicion de la nube da eso de noche
 (pythiagex/base.py) y por que NDX nunca sale "confiable".
+
+## 1.5f: el Max Change estaba roto por la base (2026-09-10, madrugada)
+
+Verificado tres veces antes de tocar: (1) mi recomputo del Max Change con las
+cadenas archivadas coincidia con el del indicador solo en 9 de 30 casos a 30
+min; (2) en el centinela vivo de MNQ M1 de la rueda del 09-09, mc30 era
+EXACTAMENTE un major o una dominante en 237 de 237 minutos, mc5 en el 80 %,
+mc1 en el 53 %, y la base cambio en 148 de 310 minutos; (3) en el nucleo, las
+fotos por minuto del GEX estaban indexadas por precio del FUTURO (strike +
+base): cuando la base cambia (en NQ con cada cadena, en ES en centesimos)
+ninguna clave coincide, "antes" vale 0 y el cambio es la barra entera: el
+Max Change se vuelve "la barra mas grande". Las semillas y el Δ1' de la
+escalera mostraban eso. Arreglo: fotos indexadas por strike.
+Medido en la pasada del archivo, misma rueda, antes y despues: MNQ 2 min
+mc30 = barra grande 99 % -> 70 %, mc5 86 % -> 56 %, mc1 61 % -> 50 %; MNQ
+5 min mc1 71 % -> 46 %. Lo que queda de coincidencia es legitimo: cuando la
+cadena no cambia, el cambio viene solo de repreciar con el spot y las barras
+mas grandes son las que mas se mueven (igual que las puntas de GAMMAlito).
+Y la cadena de NDX en la nube cambia cada ~4 min (93 cadenas en el dia):
+entre cadena y cadena el Max Change es repreciado, no operaciones nuevas.

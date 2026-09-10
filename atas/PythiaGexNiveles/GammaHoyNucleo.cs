@@ -67,7 +67,7 @@ namespace PythiaGex
         public sealed class Snap
         {
             public long Minuto;
-            public Dictionary<double, double> GexVol = new();
+            public Dictionary<double, double> GexVol = new();   // POR STRIKE (K), nunca por precio del futuro: la base cambia y rompe las claves (1.5f)
         }
 
         /// <summary>Todo lo que sale de una cuenta. Los NaN son "no hay".</summary>
@@ -398,7 +398,7 @@ namespace PythiaGex
             var foto = _fotos.LastOrDefault();
             if (foto == null || foto.Minuto != minuto) { foto = new Snap { Minuto = minuto }; _fotos.Add(foto); while (_fotos.Count > 40) _fotos.RemoveAt(0); }
             foto.GexVol.Clear();
-            foreach (var x in perfil) foto.GexVol[x.Fut] = x.GexVol;
+            foreach (var x in perfil) foto.GexVol[x.K] = x.GexVol;
             var mc = new (double Fut, double Delta)[Ventanas.Length];
             for (int i = 0; i < Ventanas.Length; i++)
             {
@@ -407,7 +407,7 @@ namespace PythiaGex
                 if (vieja != null)
                     foreach (var x in perfil)
                     {
-                        double antes = vieja.GexVol.TryGetValue(x.Fut, out var a0) ? a0 : 0;
+                        double antes = vieja.GexVol.TryGetValue(x.K, out var a0) ? a0 : 0;
                         double d = x.GexVol - antes;
                         if (Math.Abs(d) > Math.Abs(mejor)) { mejor = d; futM = x.Fut; }
                     }
