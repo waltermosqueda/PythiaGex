@@ -758,3 +758,13 @@ Conclusion honesta: el gatillo reproduce sus entradas, y sus entradas ganaron po
 dia fue alcista, no porque la raya tenga algo que un nivel corrido 85 puntos no tenga.
 Lo unico que vale seguir midiendo con mas dias es el primer toque de la dominante actual
 con el zero a favor (3 a 4 por dia), y para eso queda grabando.
+
+## 1.8b: el marcador del REBOTE en el punto exacto (2026-09-10, 15:20 local)
+
+Pedido: "que aparezca en el punto exacto de la vela donde se activo, no arriba o abajo;
+mas chiquito; que no tape las velas; que se note a simple vista". Ahora el disparo es un
+circulo hueco chico (4 px, ajustable en "tamaño del circulo") centrado en la raya que
+toco, en la vela del disparo: verde largo, rojo corto. Hueco para que la mecha se vea a
+traves. La letra (R, o R1 en el primer toque de esa raya en el dia) va pegada al circulo
+por fuera de la vela: debajo en los largos, encima en los cortos. Los triangulos grandes
+desplazados del 1.8 se fueron.

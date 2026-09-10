@@ -139,6 +139,11 @@ namespace PythiaGex
         [Range(1, 60)]
         public int ReboteEnfriamiento { get; set; } = 5;
 
+        [Display(Name = "Gatillo REBOTE: tamaño del circulo (px)", GroupName = "3. Pantalla", Order = 28,
+                 Description = "Circulo hueco en el punto exacto (la raya que toco, en la vela del disparo); la letra R va por fuera de la vela. 4 = chico; mas grande si no se ve.")]
+        [Range(2, 12)]
+        public int TamanoRebote { get; set; } = 4;
+
         [Display(Name = "Gatillos: dominante quieta (% del precio en 5 velas)", GroupName = "3. Pantalla", Order = 19,
                  Description = "El toque cuenta solo si la dominante se movio menos que esto en las 5 velas previas (0,026 % = 2 pts en ES, ~8 en NQ): el precio fue a la banda, no la banda al precio.")]
         public decimal GatilloQuietaPct { get; set; } = 0.026m;
@@ -538,7 +543,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.8 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.8b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -547,7 +552,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.8 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.8b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1721,21 +1726,19 @@ namespace PythiaGex
                             }
                             if (t.Tipo.StartsWith("rebote"))
                             {
-                                // el gatillo REBOTE: triangulo hueco verde (largo, bajo el minimo) / rojo (corto,
-                                // sobre el maximo) con "R" (R1 = primer toque del nivel en el dia)
+                                // el gatillo REBOTE: circulo hueco chico en el PUNTO EXACTO donde se cumplio la
+                                // condicion (la raya que toco, en la vela del disparo), verde largo / rojo corto;
+                                // hueco para no tapar la mecha; la letra R (R1 = primer toque del nivel en el
+                                // dia) va debajo del circulo en los largos y encima en los cortos: por fuera de la vela
                                 if (ModoRebote == GatilloReboteModo.Ninguno) continue;
-                                IndicatorCandle cr; try { cr = GetCandle(b); } catch { continue; }
-                                int yr; try { yr = cont.GetYByPrice(t.Lado > 0 ? cr.Low : cr.High, false); } catch { continue; }
-                                int rr = 6; int yy3 = t.Lado > 0 ? yr + rr + 4 : yr - rr - 4;
-                                if (yy3 - rr < area.Top || yy3 + rr > piso) continue;
+                                int yr; try { yr = cont.GetYByPrice((decimal)t.Dom, false); } catch { continue; }
+                                int rr = Math.Max(2, TamanoRebote);
+                                if (yr - rr < area.Top || yr + rr > piso) continue;
                                 var colR = t.Lado > 0 ? ColPos : ColNeg;
-                                var ptsR = t.Lado > 0
-                                    ? new[] { new Point(x - rr, yy3 + rr), new Point(x + rr, yy3 + rr), new Point(x, yy3 - rr) }
-                                    : new[] { new Point(x - rr, yy3 - rr), new Point(x + rr, yy3 - rr), new Point(x, yy3 + rr) };
-                                g.FillPolygon(Color.FromArgb(70, colR), ptsR);
-                                g.DrawPolygon(new RenderPen(Color.FromArgb(240, colR), 1.6f), ptsR);
+                                g.DrawEllipse(new RenderPen(Color.FromArgb(245, colR), 1.6f), new Rectangle(x - rr, yr - rr, 2 * rr, 2 * rr));
                                 var rotR = t.Dz <= 1 ? "R1" : "R"; var mrr = g.MeasureString(rotR, fChica);
-                                g.DrawString(rotR, fChica, Color.FromArgb(235, colR), x + rr + 3, yy3 - mrr.Height / 2);
+                                int yl = t.Lado > 0 ? yr + rr + 1 : yr - rr - 1 - mrr.Height;
+                                if (yl >= area.Top && yl + mrr.Height <= piso) g.DrawString(rotR, fChica, Color.FromArgb(225, colR), x - mrr.Width / 2, yl);
                                 continue;
                             }
                             if (!t.Principal && VerGatillos != GatillosEnPantalla.Todos) continue;
