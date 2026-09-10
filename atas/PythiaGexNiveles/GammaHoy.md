@@ -566,3 +566,18 @@ pelotitas; confirman: perfil izquierdo 0DTE / derecho 90 dias, la convexidad com
 "combustible sea del color que sea", y "sigo con las pelotitas, confirmacion".
 La medicion cuadro a cuadro del video (herramientas/medir_pelotitas.py) no fue confiable:
 el presentador hace zoom, scroll y dibuja encima; la definicion sale del audio.
+
+### Medido: "la pelotita es adelantada" (13 dias por minuto, rueda americana, 45 min)
+Un strike a menos de 2 % del precio, sin ser dominante, pasa a ser la dominante de su lado
+en los 45 minutos siguientes:
+- ES: CRECE (las tres adentro, +20 % en 15 min) 10,6 % de 52.498 casos | QUIETO 4,9 % de
+  178.716 | DECRECE 7,6 % de 31.919. El strike de al lado con la misma etiqueta: 8,0 / 4,0
+  / 6,1 %.
+- NQ: CRECE 6,0 % de 109.086 | QUIETO 2,7 % de 413.210 | DECRECE 4,2 % de 69.350. Vecino:
+  3,0 / 1,4 / 2,1 %.
+Lectura honesta: las pelotitas adentro duplican la chance de que ESE strike sea la proxima
+dominante (y le ganan al vecino, sobre todo en NQ: el dato es del strike, no solo de la
+zona), pero nueve de cada diez no llegan, y "decrece" tambien sube la chance (lo que
+adelanta es que la exposicion de ese strike esta cambiando). Son contexto ("donde se esta
+moviendo la cobertura"), no un gatillo. Igual que dice el creador: "sigo con las pelotitas,
+confirmacion", nunca "entro por la pelotita".
