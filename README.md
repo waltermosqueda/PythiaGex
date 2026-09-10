@@ -95,6 +95,15 @@ delta de volumen las suma y el último precio solo describe el último cruce.
 Por eso cada evento lleva su `confianza`, y cuando la ventana es larga o el
 contrato operó mucho, baja y lo dice.
 
+## La web de la mesa (contingencia en la nube)
+
+https://waltermosqueda.github.io/PythiaGex/ muestra lo mismo que el indicador **Gamma Hoy** de ATAS
+y sigue andando con la PC apagada: `estado_nube.py` corre en GitHub cada minuto sobre la cadena de
+CBOE (la misma cuenta del indicador, verificada linea AUDIT contra linea AUDIT) y
+`herramientas/subir_vivo.py` sube desde la PC, mientras ATAS esta abierto, las velas con order flow,
+los niveles de cada vela y los disparos. Cada dato dice su fuente y su edad. Detalle en
+[panel/README.md](panel/README.md).
+
 ## Respaldo
 
 Buena parte del trabajo vivía solo en el disco de una máquina: las memorias,

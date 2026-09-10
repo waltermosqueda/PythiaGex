@@ -170,7 +170,9 @@ def una_vuelta(n_velas):
             nombre = "vivo-viva-%s.json" % raiz
             tam = subir(nombre, pv, "viva %s %s" % (raiz, ahora))
             if tam: subidos[nombre] = dict(bytes=tam, filas=len(pv.get("filas") or []), ts=pv.get("ts"))
-    subir("pc.json", latido(subidos), "latido %s" % ahora)
+    # sin nada fresco (ATAS cerrado), el latido va cada 5 minutos para no llenar la rama de commits de 1 KB
+    if subidos or datetime.now().minute % 5 == 0:
+        subir("pc.json", latido(subidos), "latido %s" % ahora)
     log("subidos: " + ", ".join("%s (%d KB)" % (k, v["bytes"] // 1024) for k, v in subidos.items()) if subidos else "nada fresco para subir (ATAS cerrado?); latido enviado")
 
 
