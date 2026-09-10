@@ -200,7 +200,12 @@ namespace PythiaGex
                            ?? Rastrear(manager, tOpt, 0, "TradingManager")
                            ?? Rastrear(seguridad, tOpt, 0, "Security")
                            ?? RastrearEstaticos(tOpt);
-                if (feed == null) { L("no se encontro el conector de opciones (buscado a 5 niveles y en estaticos de ATAS/OFT)"); return; }
+                if (feed == null)
+                {
+                    L("no se encontro el conector de opciones (buscado a 5 niveles y en estaticos de ATAS/OFT)");
+                    if (!_diagnosticado) { _diagnosticado = true; try { Diagnostico(proveedor, manager, seguridad, log); } catch (Exception e) { log?.Invoke("[cadena viva] diagnostico fallo: " + e.Message); } }
+                    return;
+                }
                 L("conector de opciones encontrado en " + _camino + " (" + feed.GetType().FullName + ")");
 
                 _conn = feed as IDataFeedConnector;
@@ -853,6 +858,70 @@ namespace PythiaGex
         }
 
         private static string _camino = "";
+        private static bool _diagnosticado;
+
+        /// <summary>Que conectores hay a la vista y que interfaces implementan: para ubicar el de opciones
+        /// cuando la busqueda falla (ATAS 8.0.14.399 lo movio de lugar).</summary>
+        private static void Diagnostico(object proveedor, object manager, Security seguridad, Action<string> log)
+        {
+            var tConn = typeof(IDataFeedConnector);
+            var vistos = new Dictionary<string, string>();
+            void Recorrer(object raiz, int nivel, HashSet<object> ya, ref int presupuesto)
+            {
+                if (raiz == null || nivel > 5 || presupuesto-- <= 0) return;
+                try
+                {
+                    var t = raiz.GetType();
+                    if (t.IsPrimitive || t.IsEnum || raiz is string || raiz is Delegate) return;
+                    if (!ya.Add(raiz)) return;
+                    if (tConn.IsInstanceOfType(raiz) && !vistos.ContainsKey(t.FullName))
+                        vistos[t.FullName] = string.Join(",", t.GetInterfaces().Select(i => i.Name).Where(n => n.Contains("Feed") || n.Contains("Option") || n.Contains("Connector")).Distinct());
+                    if (raiz is System.Collections.IDictionary dic) { foreach (var it in dic.Values) Recorrer(it, nivel + 1, ya, ref presupuesto); }
+                    else if (raiz is System.Collections.IEnumerable en) { int i = 0; foreach (var it in en) { if (i++ > 300) break; Recorrer(it, nivel + 1, ya, ref presupuesto); } }
+                    for (var tt = t; tt != null && tt != typeof(object); tt = tt.BaseType)
+                        foreach (var f in tt.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly))
+                        {
+                            if (f.FieldType.IsPrimitive || f.FieldType.IsEnum || f.FieldType == typeof(string)) continue;
+                            object v; try { v = f.GetValue(raiz); } catch { continue; }
+                            Recorrer(v, nivel + 1, ya, ref presupuesto);
+                        }
+                }
+                catch { }
+            }
+            var sb = new System.Text.StringBuilder("DIAGNOSTICO conector: proveedor=" + (proveedor?.GetType().FullName ?? "null") + " manager=" + (manager?.GetType().FullName ?? "null") + " security=" + (seguridad?.GetType().FullName ?? "null") + " | conectores a la vista: ");
+            foreach (var raiz in new[] { proveedor, manager, (object)seguridad }) { var ya = new HashSet<object>(ReferenceEqualityComparer.Instance); int pres = 60000; Recorrer(raiz, 0, ya, ref pres); }
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var nombre = asm.GetName().Name ?? "";
+                if (!(nombre.StartsWith("ATAS") || nombre.StartsWith("OFT"))) continue;
+                Type[] tipos; try { tipos = asm.GetTypes(); } catch (ReflectionTypeLoadException e) { tipos = e.Types.Where(x => x != null).ToArray(); } catch { continue; }
+                foreach (var t in tipos)
+                {
+                    if (t.IsGenericTypeDefinition || t.IsEnum || t.IsInterface) continue;
+                    FieldInfo[] campos; try { campos = t.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly); } catch { continue; }
+                    foreach (var f in campos)
+                    {
+                        if (f.FieldType.IsPrimitive || f.FieldType.IsEnum || f.FieldType == typeof(string)) continue;
+                        object v; try { v = f.GetValue(null); } catch { continue; }
+                        var ya = new HashSet<object>(ReferenceEqualityComparer.Instance); int pres = 20000; Recorrer(v, 0, ya, ref pres);
+                    }
+                }
+            }
+            if (vistos.Count == 0) sb.Append("NINGUNO (ningun IDataFeedConnector alcanzable)");
+            foreach (var kv in vistos) sb.Append(kv.Key).Append(" [").Append(kv.Value).Append("] ");
+            var tOpt = Type.GetType("ATAS.DataFeedsCore.IOptionsDataFeed, ATAS.DataFeedsCore");
+            if (tOpt != null)
+            {
+                var imp = new List<string>();
+                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    Type[] tipos; try { tipos = asm.GetTypes(); } catch (ReflectionTypeLoadException e) { tipos = e.Types.Where(x => x != null).ToArray(); } catch { continue; }
+                    foreach (var t in tipos) { try { if (!t.IsInterface && tOpt.IsAssignableFrom(t)) imp.Add(t.FullName); } catch { } }
+                }
+                sb.Append("| implementan IOptionsDataFeed: ").Append(imp.Count == 0 ? "ninguno" : string.Join(", ", imp));
+            }
+            log?.Invoke("[cadena viva] " + sb);
+        }
         private static readonly HashSet<object> _vistos = new HashSet<object>(ReferenceEqualityComparer.Instance);
         private static int _presupuesto;
 

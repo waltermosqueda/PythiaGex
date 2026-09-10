@@ -798,3 +798,12 @@ ATAS estaba "tildado" y el operador lo reinicio a las 19:15. Lo que se revisó, 
 - **El subidor abria una consola por cada llamada a gh** (bajo pythonw): el operador no podia usar la
   PC. Corregido con CREATE_NO_WINDOW; relanzado. Ademas la web decia "PC sin señal" 5 min: el bucle
   quedo trabado en una llamada; con la vuelta manual subio los 4 archivos en 10 s.
+
+**Seguimiento 20:30:** el operador reinicio ATAS con 1.8c a las 20:01. Memoria de ATAS: 8,7 GB
+privados -> 6,4 GB (5,2 GB libres en la PC): la poda de fotos funciono. La cadena viva de Rithmic
+sigue sin conector aun buscando a 5 niveles y en los estaticos de ATAS/OFT: la 1.8c (segunda
+compilacion, instalada, carga en el proximo reinicio) deja un DIAGNOSTICO en el log con todos los
+conectores alcanzables y sus interfaces, y quien implementa IOptionsDataFeed en 8.0.14.399. Con eso
+se decide el camino nuevo. Mientras tanto la web y el indicador siguen con CBOE.
+La web ahora lee cada archivo por commit (raw@sha, sha de la rama por la API cada 75 s): el vivo
+llega con 10-20 s de edad; raw por rama cachea 5 min y jsDelivr se pega a ese cache.
