@@ -609,3 +609,31 @@ confirmacion", nunca "entro por la pelotita".
 - Archivo local del dia: se baja al arrancar y no se refresca durante la sesion (la
   pantalla no lo necesita: el pasado del dia lo lleva el vivo); al reiniciar se completa.
   Para auditar hay que usar el archivo de la nube (rama cadenas, raiz del repo).
+
+## El banco de pruebas de gatillos (2026-09-10, tarde): resultado negativo, con numeros
+
+Pedido: "un gatillo long/short que acierte, sin ruido". Se armo laboratorio/
+gatillo_cientifico.py: 11 hipotesis definidas antes de mirar (zero cross con
+convexidad negativa/positiva, ruptura y rechazo del major con delta, Max Change
+alineado, tren + delta + convexidad, divergencia CVD en la banda, rechazo en
+dominante quieta/con delta), objetivo a escala (NQ 25 pts, ES 6), regla simetrica
+y 2:1, entrenamiento/prueba por dias, permutacion del lado y placebo con niveles
+corridos. 16 dias de MNQ y 14 de MES por minuto con delta real.
+- NINGUNO supera claramente al azar y al placebo en prueba con 15+ casos. Lo mas
+  cercano: "zero cross + convexidad positiva -> fade" (MES 52 %/60 % con 25 casos,
+  MNQ 54 %/54 % con 26; placebo 52 %). Pista debil, se sigue anotando, no se dibuja.
+- laboratorio/ml_check.py (techo): logistica y bosque con TODOS los rasgos, validacion
+  por bloques de dias, AUC fuera de muestra 0,51-0,52 (MNQ) y 0,48-0,51 (MES) para
+  "+G antes que -G en 30 min". Es una moneda: no hay regla a mano que pueda mas.
+- laboratorio/momentum_intradia.py (Baltussen, Da, Lammers y Martens, JFE 2021: el
+  resto del dia predice los ultimos 30 min por la cobertura de gamma): en nuestros 60
+  dias de NQ y 62 de ES (jun-sep 2026) NO replica (46,7 % y 41,9 % de acierto de
+  signo); con convexidad negativa en NQ 63,6 % de 11 dias (t 1,5): sin evidencia.
+- Regimen -> volatilidad (lo que si esta publicado): tampoco: con convexidad negativa
+  el rango de 30 min es MENOR en NQ (62,8 contra 71,5 pts, p 0,98 con permutacion por
+  dias) e igual en ES.
+Conclusion honesta: con cadena de CBOE a 15 min de retraso y cada 15 min, y order
+flow por minuto, no hay señal direccional a 30 min en estos datos. Lo que queda:
+(1) acumular la cadena viva de Rithmic (volumen real por strike, desde el 08-09) y
+volver a correr el banco en 3-4 semanas; (2) la pelotita como contexto (x2, ver 1.6);
+(3) el laboratorio queda listo para juzgar cualquier idea nueva en minutos.
