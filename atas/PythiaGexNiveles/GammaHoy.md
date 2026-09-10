@@ -666,3 +666,29 @@ Ajustes: "Gatillo MODELO" (SoloTarde por defecto / TodoElDia / Ninguno) y umbral
 (0,70). Rombo verde/rojo con "M p"; registro en pythiagex-gatillos-*.jsonl (tipo
 modelo·es10, Dz = p); el laboratorio lo juzga con los dias nuevos, que nunca se usaron
 para ajustar. Solo raiz ES y graficos de 1 o 2 minutos.
+
+## Toques y rebotes en dominantes / zero / majors, a fondo (2026-09-10, 14:30 local)
+
+Pedido: "cuantas veces por sesion se acerca, toca o traspasa un poco y rebota; que
+temporalidad; que franja horaria; un par de señales por sesion". laboratorio/
+rebote_niveles.py: toque = entra a +-8 pts (NQ) / +-2 (ES) viniendo de >= 30 / 7 pts;
+traspaso chico / medio / ruptura; rebote = 20 / 5 pts hacia donde venia antes que lo
+mismo en contra, en 20 min; por nivel, franja, traspaso, delta, cuadrante; placebo con
+el nivel corrido; y variante "reclamo" (falsa ruptura: entrar cuando vuelve a cerrar del
+lado de la llegada). En 1, 2 y 5 minutos, MNQ y MES, 14-16 dias.
+- Toques por dia: 15 (M1), 10 (M2), 5,5 (M5) en MNQ; 7 / 6 / 4,6 en MES.
+- Rebote real contra placebo (todo junto): MNQ 53,6 / 59,7 % (M1), 64,4 / 64,0 (M2),
+  67,0 / 65,0 (M5); MES 50,0 / 53,8 (M1), 52,2 / 62,5 (M2), 59,4 / 57,1 (M5). Con
+  reclamo: 46-49 %, tambien igual al placebo.
+- Los subgrupos que "ganan" (zero en M2 +15 pp con 25 toques; traspaso medio en MNQ M1
+  +15 con 70; IMAN con reclamo +14; 14-15 h +21 con 26) no se repiten entre
+  temporalidades ni instrumentos: son lo que se espera de 5 niveles x 5 franjas x 4
+  traspasos x 2 deltas x 2 regimenes x 3 temporalidades con muestras de 15-70.
+- Lo que si se ve, y no es el nivel: en la primera hora (9:30-10:30 NY) el precio que
+  llega rapido a CUALQUIER punto retrocede 20 pts antes de seguir en el 68-83 % (real y
+  placebo por igual). Es reversion a la media de la primera hora; pista para medir
+  aparte, no un gatillo de nivel.
+Conclusion: con 16 dias, el rebote en dominantes/zero medido de todas las formas que
+pidio el operador NO le gana al mismo nivel corrido. Lo unico con ventaja fuera de
+muestra sigue siendo el gatillo MODELO (1.7b, ES, tarde). Todo queda anotandose para
+volver a correr con mas dias y con el libro vivo de Rithmic.
