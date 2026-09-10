@@ -1,1149 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gamma Desk</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<title>Gamma Hoy · PythiaGex</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0f14'/%3E%3Crect x='6' y='14' width='20' height='4' fill='%23f2c14e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
-:root{--gr:#F4F6F8;--sf:#FFF;--sf2:#EDF1F5;--ln:#D4DBE3;--ln2:#BCC6D1;
---tx:#0E1620;--t2:#5A6878;--t3:#8996A6;--ac:#B07D14;--ac2:#C99B3A;
---po:#1B8A56;--ne:#C33338;--pob:#E4F3EC;--neb:#FBE9EA;--gh:#A9B4C0;
---mo:'JetBrains Mono',ui-monospace,monospace;--sa:'Archivo',system-ui,sans-serif}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
---gr:#080B10;--sf:#111820;--sf2:#18212B;--ln:#26313D;--ln2:#36434F;
---tx:#E8EDF2;--t2:#8A97A6;--t3:#5D6B7A;--ac:#E8B33C;--ac2:#A8822C;
---po:#3FBF7F;--ne:#E5484D;--pob:#0F2419;--neb:#261215;--gh:#4A5765}}
-:root[data-theme="dark"]{--gr:#080B10;--sf:#111820;--sf2:#18212B;--ln:#26313D;--ln2:#36434F;
---tx:#E8EDF2;--t2:#8A97A6;--t3:#5D6B7A;--ac:#E8B33C;--ac2:#A8822C;
---po:#3FBF7F;--ne:#E5484D;--pob:#0F2419;--neb:#261215;--gh:#4A5765}
+:root{--fondo:#0b0f14;--panel:#0e141b;--panel2:#131b24;--linea:#1f2a36;--texto:#dfe6ee;--t2:#8a97a6;--t3:#5f6d7b;--dom:#f2c14e;--pos:#3fbf7f;--neg:#e5484d;--conv:#9b7bff;--vivo:#2fb6d6;--mono:'JetBrains Mono',Consolas,monospace;--sans:'IBM Plex Sans',system-ui,sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:var(--gr);color:var(--tx);font-family:var(--sa);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1560px;margin:0 auto;padding:14px 14px 40px}
-.lbl{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-weight:600}
-.sy{display:flex;gap:1px;margin-bottom:9px;background:var(--ln);border:1px solid var(--ln);border-radius:3px;overflow:hidden;width:max-content}
-.sy a{background:var(--sf);color:var(--t2);font:600 11px/1 var(--mo);letter-spacing:.05em;padding:6px 13px;text-decoration:none}
-.sy a.on{background:var(--ac);color:#080B10}.sy a:hover:not(.on){background:var(--sf2);color:var(--tx)}
-.top{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;padding-bottom:11px;border-bottom:1px solid var(--ln);margin-bottom:12px}
-.br{display:flex;align-items:baseline;gap:10px}.br h1{margin:0;font-size:19px;font-weight:700;letter-spacing:-.02em}
-.tk{font:700 12px var(--mo);color:var(--ac);border:1px solid var(--ac2);padding:2px 7px;border-radius:3px}
-.sp{font:700 27px var(--mo);letter-spacing:-.02em;line-height:1}
-.st{font:10.5px var(--mo);color:var(--t3)}
-.rg{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:3px;font-size:10.5px;font-weight:700;letter-spacing:.06em}
-.rg.p{background:var(--pob);color:var(--po)}.rg.n{background:var(--neb);color:var(--ne)}
-.rg::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
-.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(106px,1fr));gap:1px;background:var(--ln);border:1px solid var(--ln);border-radius:4px;overflow:hidden;margin-bottom:12px}
-.kp>div{background:var(--sf);padding:8px 10px}
-.kp .v{font:700 16px var(--mo);letter-spacing:-.02em;margin-top:2px}
-.kp .s{font-size:9px;color:var(--t3);margin-top:1px}
-.po{color:var(--po)}.ne{color:var(--ne)}
-.cd{background:var(--sf);border:1px solid var(--ln);border-radius:4px;overflow:hidden;margin-bottom:12px}
-.cd>header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 11px;border-bottom:1px solid var(--ln);background:var(--sf2)}
-.cd>header h2{margin:0;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
-.bd{padding:11px}
-.ct{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.tb{display:flex;gap:1px;background:var(--ln);border:1px solid var(--ln);border-radius:3px;overflow:hidden}
-.tb button{background:var(--sf);border:0;color:var(--t2);font:600 10px var(--sa);letter-spacing:.04em;padding:4px 8px;cursor:pointer}
-.tb button[aria-selected="true"]{background:var(--ac);color:#080B10}
-.tb button:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
-.ck{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--t2);cursor:pointer;user-select:none}
-.ck input{accent-color:var(--ac);cursor:pointer}
-canvas{display:block;width:100%}
-.sx{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
-@media(max-width:860px){.sx{grid-template-columns:1fr}}
-.sc{overflow:auto}
-table{width:100%;border-collapse:collapse;font:11px var(--mo);font-variant-numeric:tabular-nums;white-space:nowrap}
-th{position:sticky;top:0;z-index:2;background:var(--sf2);color:var(--t3);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;padding:5px 7px;text-align:right;border-bottom:1px solid var(--ln)}
-th:first-child,td:first-child{text-align:left}
-td{padding:3.5px 7px;text-align:right;border-bottom:1px solid var(--ln);color:var(--t2)}
-tr:hover td{background:var(--sf2)}td.k{color:var(--tx);font-weight:700}
-tr.hr td{background:var(--neb)}tr.hr td.k{color:var(--ne)}
-.mz th:first-child,.mz td:first-child{position:sticky;left:0;z-index:1;background:var(--sf)}
-.mz tr:hover td:first-child{background:var(--sf2)}
-.mz .tt{background:var(--sf2);font-weight:700;color:var(--tx)}
-.rw{display:grid;grid-template-columns:1fr auto;gap:2px 9px;padding:7px 11px;border-bottom:1px solid var(--ln)}
-.rw:last-child{border-bottom:0}
-.rw .f{font:700 11.5px var(--mo);color:var(--tx)}
-.rw .d{font-size:9.5px;color:var(--t3)}
-.rw .g{font:700 12.5px var(--mo);text-align:right}
-.rw .o{font:9.5px var(--mo);color:var(--t3);text-align:right}
-.rw .tr{grid-column:1/-1;height:3px;background:var(--sf2);border-radius:2px;overflow:hidden;margin-top:3px}
-.rw .fl{height:100%;border-radius:2px}
-.nt{font-size:10px;color:var(--t3);line-height:1.55;padding:9px 11px;border-top:1px solid var(--ln)}
-.tn{width:100%;border-collapse:collapse;font:11px var(--mo)}
-.tn th{position:sticky;top:0;background:var(--sf2);color:var(--t3);font:600 9px var(--sa);
- letter-spacing:.06em;text-transform:uppercase;padding:6px 7px;text-align:left;border-bottom:1px solid var(--ln);white-space:nowrap}
-.tn td{padding:6px 7px;border-bottom:1px solid var(--ln);white-space:nowrap;vertical-align:top}
-.tn tr:last-child td{border-bottom:0}
-.tn td.n{text-align:right;font-variant-numeric:tabular-nums}
-.tn th.n{text-align:right}
-.tn td.k{font:700 11px var(--mo)}
-.tn .tr2{font:9.5px var(--sa);color:var(--t3);font-weight:400;margin-top:2px;white-space:normal;max-width:210px}
-.tn .al{font:9px var(--mo);color:var(--t3)}
-.tn tr.aq td{background:var(--sf2)}
-.wf{color:var(--ne);font-weight:700}
-.al{border-radius:4px;padding:9px 12px;margin-bottom:8px;font:12px var(--sa);line-height:1.45;
- border:1px solid var(--ln2)}
-.al.ne{background:var(--neb);border-color:var(--ne);color:var(--tx)}
-.al.ac{background:var(--sf2);border-color:var(--ac2);color:var(--tx)}
-.tag{font:600 8px var(--sa);letter-spacing:.05em;text-transform:uppercase;color:var(--t3);
- border:1px solid var(--ln2);border-radius:2px;padding:1px 4px;vertical-align:1px}
-.id{font:700 9px var(--mo);color:var(--ac);border:1px solid var(--ac2);border-radius:3px;padding:1px 5px}
-.ts{font:9px var(--mo);color:var(--t3)}
-#cinta{position:sticky;bottom:0;z-index:20;display:flex;gap:0;overflow-x:auto;
- background:var(--sf);border-top:1px solid var(--ln2);box-shadow:0 -3px 12px rgba(0,0,0,.25)}
-.ci{padding:7px 13px;border-right:1px solid var(--ln);min-width:112px;flex:0 0 auto}
-.ce{font:600 8.5px var(--sa);letter-spacing:.06em;text-transform:uppercase;color:var(--t3)}
-.cv{font:700 14px var(--mo);margin-top:2px;letter-spacing:-.02em}
-.cs{font:8.5px var(--mo);color:var(--t3);margin-top:1px}
-.lg{display:flex;gap:11px;flex-wrap:wrap;font-size:9.5px;color:var(--t3)}
-.lg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:-1px}
-.lg i.dt{border-radius:50%}
-.c2{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:12px}
-@media(max-width:1040px){.c2{grid-template-columns:1fr}}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:760px){.g2{grid-template-columns:1fr}}
-.pill{display:inline-block;padding:1px 6px;border-radius:8px;font:700 9px var(--mo);letter-spacing:.03em}
-.pill.p{background:var(--pob);color:var(--po)}.pill.n{background:var(--neb);color:var(--ne)}
-.pill.w{background:var(--ac);color:#080B10}
+html,body{height:100%}
+body{margin:0;background:var(--fondo);color:var(--texto);font:13px/1.45 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,select,input{font:inherit;color:inherit}
+.barra{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--linea);background:var(--panel)}
+.marca{font:700 15px var(--mono);color:var(--dom);letter-spacing:.02em;margin-right:6px}
+.marca span{color:var(--t3);font-weight:400;font-size:11px;margin-left:6px}
+.grupo{display:inline-flex;border:1px solid var(--linea);border-radius:4px;overflow:hidden}
+.grupo button{background:transparent;border:0;padding:5px 10px;color:var(--t2);cursor:pointer;font:500 12px var(--mono)}
+.grupo button.on{background:var(--dom);color:#0b0f14}
+.grupo button:hover:not(.on){background:var(--panel2);color:var(--texto)}
+select{background:var(--panel2);border:1px solid var(--linea);border-radius:4px;padding:5px 8px;font:12px var(--mono)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:3px;font:500 11px var(--mono);border:1px solid var(--linea);color:var(--t2)}
+.chip::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--t3)}
+.chip.vivo{border-color:var(--vivo);color:var(--vivo)}.chip.vivo::before{background:var(--vivo);box-shadow:0 0 6px var(--vivo)}
+.chip.nube{border-color:#4b6b8a;color:#8ab4dc}.chip.nube::before{background:#8ab4dc}
+.chip.mal{border-color:var(--neg);color:var(--neg)}.chip.mal::before{background:var(--neg)}
+.chip.ok{border-color:var(--pos);color:var(--pos)}.chip.ok::before{background:var(--pos)}
+.derecha{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pestanas{display:flex;gap:2px;padding:6px 12px 0;border-bottom:1px solid var(--linea);overflow-x:auto;background:var(--panel)}
+.pestanas button{background:transparent;border:0;border-bottom:2px solid transparent;padding:7px 12px;color:var(--t2);cursor:pointer;white-space:nowrap;font:500 12.5px var(--sans)}
+.pestanas button.on{color:var(--dom);border-bottom-color:var(--dom)}
+main{padding:10px 12px 30px}
+.vista{display:none}.vista.on{display:block}
+.mesa{display:grid;grid-template-columns:1fr 300px;gap:10px}
+.lienzo-caja{position:relative;background:var(--fondo);border:1px solid var(--linea);border-radius:4px;height:calc(100vh - 150px);min-height:420px}
+#lienzo{width:100%;height:100%;display:block;cursor:crosshair}
+.lado{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 150px);overflow:auto}
+.tarjeta{background:var(--panel);border:1px solid var(--linea);border-radius:4px;padding:10px 12px}
+.tarjeta h3{margin:0 0 8px;font:600 10.5px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font:12px var(--mono)}
+.kv b{color:var(--t2);font-weight:500}
+.kv .v{text-align:right;font-variant-numeric:tabular-nums}
+.regimen{font:700 20px var(--mono);letter-spacing:.02em}
+.regimen small{display:block;font:400 11px var(--sans);color:var(--t2);margin-top:2px}
+.q1{color:var(--pos)}.q2{color:var(--dom)}.q3{color:#8ab4dc}.q4{color:var(--neg)}
+table{border-collapse:collapse;width:100%;font:12px var(--mono);font-variant-numeric:tabular-nums}
+th,td{padding:4px 8px;border-bottom:1px solid var(--linea);text-align:right;white-space:nowrap}
+th{color:var(--t3);font-weight:500;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;position:sticky;top:0;background:var(--panel)}
+td:first-child,th:first-child{text-align:left}
+tr.aqui td{background:rgba(242,193,78,.08)}
+.pos{color:var(--pos)}.neg{color:var(--neg)}.dom{color:var(--dom)}.t2{color:var(--t2)}.t3{color:var(--t3)}
+.tabla-caja{overflow:auto;max-height:calc(100vh - 170px);border:1px solid var(--linea);border-radius:4px;background:var(--panel)}
+.mini{display:inline-block;height:9px;vertical-align:middle;border-radius:1px}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tres{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+canvas.chico{width:100%;height:220px;display:block;background:var(--fondo);border:1px solid var(--linea);border-radius:4px}
+pre{font:11.5px var(--mono);white-space:pre-wrap;word-break:break-all;background:var(--fondo);border:1px solid var(--linea);border-radius:4px;padding:8px;margin:6px 0}
+.nota{color:var(--t2);font-size:12px;margin:6px 0}
+.ayuda h4{margin:14px 0 4px;color:var(--dom);font:600 13px var(--sans)}
+.ayuda p{margin:0 0 6px;max-width:70ch}
+.ayuda .criollo{color:var(--t2);font-style:italic}
+.ajustes{position:fixed;top:0;right:0;width:340px;max-width:100vw;height:100%;background:var(--panel);border-left:1px solid var(--linea);padding:14px;overflow:auto;transform:translateX(100%);transition:transform .2s;z-index:20}
+.ajustes.on{transform:none}
+.ajustes label{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--linea);font-size:12px}
+.ajustes label select,.ajustes label input{width:140px}
+.ajustes h3{margin:0 0 8px;font:600 12px var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
+.ajustes .cerrar{float:right;background:transparent;border:1px solid var(--linea);border-radius:4px;padding:3px 8px;cursor:pointer}
+.aviso{padding:8px 12px;background:#2a1d10;border:1px solid #6b4a1c;color:#f2c14e;border-radius:4px;margin-bottom:10px;font-size:12.5px}
+.aviso.rojo{background:#2a1214;border-color:#7a2b2f;color:#f0888c}
+.gat{display:grid;grid-template-columns:auto auto 1fr auto;gap:3px 8px;font:11.5px var(--mono);align-items:center}
+.gat .r{color:var(--pos)}.gat .rn{color:var(--neg)}
+@media (max-width:980px){.mesa{grid-template-columns:1fr}.lienzo-caja{height:62vh;min-height:360px}.lado{max-height:none}.dos,.tres{grid-template-columns:1fr}}
 </style>
-<div class="wrap">
-<div class="sy" id="sy"></div>
-<div class="top">
-  <div><div class="br"><h1>Gamma Desk</h1><span class="tk" id="sym">&#8212;</span></div><div class="st" id="stamp"></div><div class="st" id="basis" style="margin-top:3px"></div></div>
-  <div style="text-align:right"><div class="lbl" id="lblU">Underlying</div><div class="sp" id="spot">&#8212;</div></div>
-  <div style="text-align:right"><div class="lbl" style="margin-bottom:5px">Gamma Regime</div><span class="rg" id="reg">&#8212;</span></div>
+</head>
+<body>
+<div class="barra">
+  <div class="marca">GAMMA HOY<span>PythiaGex · nube</span></div>
+  <div class="grupo" id="instrumentos"><button data-inst="MNQ" class="on">MNQ / NQ</button><button data-inst="MES">MES / ES</button></div>
+  <div class="grupo" id="marcos"><button data-marco="M1" class="on">1m</button><button data-marco="M2">2m</button><button data-marco="M5">5m</button><button data-marco="M15">15m</button></div>
+  <div class="grupo" id="vistas"><button data-vista="futuro" class="on">futuro</button><button data-vista="indice">índice</button></div>
+  <div class="derecha">
+    <span class="chip" id="chipPc">PC</span>
+    <span class="chip" id="chipCadena">cadena</span>
+    <span class="chip" id="chipVelas">velas</span>
+    <button class="grupo" id="btnAjustes" style="padding:5px 10px;background:transparent;color:var(--t2);cursor:pointer">⚙ ajustes</button>
+  </div>
 </div>
-
-<div id="alarma"></div>
-<div class="kp" id="kp"></div>
-
-<div class="cd">
-  <header>
-    <h2>Precio y exposici&#243;n por strike</h2>
-    <div class="ct">
-      <div class="tb" id="tabs" role="tablist">
-        <button role="tab" data-m="g" aria-selected="true">GEX</button>
-        <button role="tab" data-m="gv" aria-selected="false">GEX vol</button>
-        <button role="tab" data-m="dx" aria-selected="false">DEX</button>
-        <button role="tab" data-m="vx" aria-selected="false">VEX</button>
-        <button role="tab" data-m="cx" aria-selected="false">CHEX</button>
-        <button role="tab" data-m="tx" aria-selected="false">TEX</button>
-        <button role="tab" data-m="g0" aria-selected="false">0DTE</button>
-        <button role="tab" data-m="oi" aria-selected="false">OI</button>
-      </div>
-      <div class="tb" id="modo" role="tablist">
-        <button role="tab" data-o="abs" aria-selected="true">Absoluto</button>
-        <button role="tab" data-o="cp" aria-selected="false">Calls / Puts</button>
-        <button role="tab" data-o="chg" aria-selected="false">Cambio</button>
-      </div>
-      <div class="tb" id="zy" role="tablist"><button role="tab" data-z="op" aria-selected="true" title="ventana entre paredes y rango del dia">Operativo</button><button role="tab" data-z="em" aria-selected="false" title="spot mas menos dos movimientos esperados">&#177;2&#963;</button><button role="tab" data-z="todo" aria-selected="false" title="toda la cadena">Todo</button></div><div class="tb" id="vp" role="tablist"><button role="tab" data-v="idx" aria-selected="true">&#205;ndice</button><button role="tab" data-v="fut" aria-selected="false" id="btnFut">Futuro</button></div><label class="ck"><input type="checkbox" id="c0d" checked> 0DTE</label><label class="ck"><input type="checkbox" id="clb" checked> lookbacks</label>
-    </div>
-  </header>
-  <div class="sx">
-    <div style="border-right:1px solid var(--ln)"><canvas id="px" height="530"></canvas></div>
-    <div><canvas id="hist" height="530"></canvas></div>
-  </div>
-  <div class="bd" style="padding-top:0"><div class="lg" id="lgHist"></div></div>
+<div class="pestanas" id="pestanas">
+  <button data-tab="mesa" class="on">Mesa</button><button data-tab="strikes">Strikes</button><button data-tab="vencimientos">Vencimientos y 0DTE</button><button data-tab="historia">Historia del día</button><button data-tab="gatillos">Gatillos</button><button data-tab="auditoria">Auditoría y fuentes</button><button data-tab="ayuda">Qué es cada cosa</button>
 </div>
-
-<div class="c2">
- <div>
-  <div class="cd">
-    <header><h2>Curva de gamma</h2><span class="lg" id="curvaInfo"></span></header>
-    <div class="bd"><canvas id="curva" height="180"></canvas></div>
-    <div class="nt" id="notaCurva"></div>
-  </div>
-
-  <div class="g2">
-    <div class="cd">
-      <header><h2>Skew</h2><span class="lg" id="skInfo"></span></header>
-      <div class="bd"><canvas id="skew" height="170"></canvas></div>
-      <div class="nt" id="skNota"></div>
+<main>
+  <div id="avisos"></div>
+  <section class="vista on" data-vista-tab="mesa">
+    <div class="mesa">
+      <div class="lienzo-caja"><canvas id="lienzo"></canvas></div>
+      <div class="lado" id="lado"></div>
     </div>
-    <div class="cd">
-      <header><h2>Term structure</h2><span class="lg" id="tmInfo"></span></header>
-      <div class="bd"><canvas id="term" height="170"></canvas></div>
-      <div class="nt" id="tmNota"></div>
-    </div>
-  </div>
-
-  <div class="cd">
-    <header><h2>Matriz strike &#215; vencimiento</h2><span class="lg" id="mzInfo"></span></header>
-    <div class="sc" style="max-height:330px"><table class="mz"><thead id="mzh"></thead><tbody id="mzb"></tbody></table></div>
-    <div class="nt">Un strike con mucha gamma en un vencimiento lejano no mueve el precio hoy. La columna <strong>&#931;</strong> es el total; el resto muestra de d&#243;nde viene.</div>
-  </div>
-
-  <div class="cd">
-    <header><h2>Cadena completa</h2><span class="lg" id="cnt"></span></header>
-    <div class="sc" style="max-height:380px">
-      <table><thead><tr>
-        <th>Strike</th><th>Dist</th><th>GEX</th><th>0DTE</th><th>Δ</th><th>DEX</th><th>VEX</th><th>CHEX</th>
-        <th>OI C</th><th>OI P</th><th>P/C</th><th>Vol</th><th>V/OI</th><th>IV</th>
-      </tr></thead><tbody id="tb"></tbody></table>
-    </div>
-  </div>
- </div>
-
- <div>
-  <div class="cd"><header><h2>Niveles clave</h2><span class="lg">cadena completa</span></header><div class="sc" id="niv"></div></div>
-  <div class="cd"><header><h2>Niveles del vencimiento de hoy</h2><span class="lg" id="v0info"></span></header><div class="sc" id="niv0"></div><div class="nt">Estas paredes mueren al cierre de hoy. Para scalping mandan mas que las de la cadena completa, porque toda su gamma se descarga en las proximas horas.</div></div>
-  <div class="cd">
-    <header><h2>Convexity Ladder</h2><span class="lg">cobertura obligada</span></header>
-    <div class="sc" style="max-height:340px"><div id="esc"></div></div>
-    <div class="nt" id="escNota"></div>
-  </div>
-  <div class="cd">
-    <header><h2>Gamma Voids</h2><span class="lg">tramos sin freno</span></header><div id="hue"></div>
-    <div class="nt">Franjas entre dos strikes cargados donde no hay gamma que sostenga.
-      El precio las cruza r&#225;pido: no conviene poner un objetivo corto adentro, ni un stop ajustado.</div>
-  </div>
-  <div class="cd">
-    <header><h2>Referencias de sesi&#243;n</h2></header><div id="ses"></div>
-  </div>
-  <div class="cd">
-    <header><h2>Deriva de niveles</h2><span class="lg">entre corridas</span></header><div id="der"></div>
-  </div>
-  <div class="cd">
-    <header><h2>Concentraci&#243;n</h2></header><div id="conc"></div>
-    <div class="nt">Qu&#233; porcentaje de la gamma de cada nivel vence en qu&#233; fecha.</div>
-  </div>
-  <div class="cd">
-    <header><h2>Posici&#243;n nueva hoy</h2></header><div id="pn"></div>
-    <div class="nt">Strikes donde hoy se oper&#243; m&#225;s de lo que hab&#237;a vivo. Volumen sobre inter&#233;s abierto mayor a 1.</div>
-  </div>
-  <div class="cd">
-    <header><h2>Hottest chains</h2></header>
-    <div class="sc" style="max-height:230px"><table><thead><tr><th>Contrato</th><th>DTE</th><th>Vol</th><th>V/OI</th></tr></thead><tbody id="hot"></tbody></table></div>
-  </div>
-  <div class="cd"><header><h2>Vencimientos</h2></header><div id="vc"></div></div>
-  <div class="cd">
-    <header><h2>Intrad&#237;a</h2></header><div class="bd"><canvas id="intra" height="120"></canvas></div>
-    <div class="nt" id="intraNota"></div>
-  </div>
-  <div class="cd"><header><h2>Fuente</h2></header><div class="nt" style="border-top:0" id="fu"></div></div>
- </div>
-</div>
-</div>
-<div id="cinta"></div>
-<script>
-(function(){
-  var q=new URLSearchParams(location.search).get('s');
-  var sym=(q||'SPX').toUpperCase().replace(/^[_^]/,'');
-  window.__SYM__=sym;
-  window.__SRC__=['datos/_'+sym+'.json','datos/'+sym+'.json','datos.json','ejemplo.json'];
-})();
-</script>
-<script>
-var D=null, modo='g', op='abs', verLb=true;
-var PT='·';
-var vistaPrecio='idx';
-function esFut(){ return vistaPrecio==='fut' && D.base!=null; }
-function OFF(){ return esFut()?D.base:0; }
-function px(v){ return (v==null)?null:v+OFF(); }
-function simVista(){ return esFut()?((D.futuro&&D.futuro.contrato)||'ES'):D.sym; }
-function microVista(){ return (D.futuro&&D.futuro.micro)||''; }
-var zoomY='op';
-var ver0='si';
-// Un valor en futuro vale lo que valga la base con que se convirtio. Si la
-// medicion no paso el control contra el carry teorico, cada lugar donde
-// aparece un precio de futuro lo tiene que decir: si no, se termina
-// dibujando en ATAS una linea que no es auditable.
-function baseFloja(){ return D.base!=null && !((D.base_detalle||{}).confiable); }
-function marcaFut(){ return baseFloja()?'<span class="wf" title="la base no coincide con el carry teorico: no dibujes este nivel">*</span>':''; }
-function colFut(){ return baseFloja()?'var(--ne)':'var(--ac)'; }
-function spotVista(){ return esFut()?(((D.futuro&&D.futuro.spot)!=null)?D.futuro.spot:D.S+D.base):D.S; }
-var $=function(s){return document.querySelector(s);};
-var cs=function(k){return getComputedStyle(document.documentElement).getPropertyValue(k).trim();};
-function nf(v,d){d=(d===undefined?1:d);return (v>=0?'+':'\u2212')+Math.abs(v).toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d});}
-function ni(v){return Math.round(v).toLocaleString('es-AR');}
-function dpr(){return window.devicePixelRatio||1;}
-function setup(c,H){var W=c.clientWidth,r=dpr();c.width=W*r;c.height=H*r;c.style.height=H+'px';
-  var g=c.getContext('2d');g.setTransform(r,0,0,r,0,0);g.clearRect(0,0,W,H);return {g:g,W:W,H:H};}
-
-function prep(d){
-  d.sym=(d.simbolo||'SPX').replace('^','');
-  d.T=d.totales; d.S=d.spot;
-  d.st=(d.strikes||[]).map(function(s){return {k:s.strike,d:s.dist,g:s.gex,gv:s.gex_vol,
-    g0:s.gex_0dte,dx:s.dex,vx:s.vex,cx:s.chex,tx:s.tex,oc:s.oi_call,op:s.oi_put,
-    vc:s.vol_call,vp:s.vol_put,ic:s.iv_call,ip:s.iv_put};});
-  d.chg={}; (d.cambio||[]).forEach(function(c){d.chg[c.strike]=c.delta;});
-  d.act={}; (d.actividad||[]).forEach(function(a){d.act[a.strike]=a;});
-  return d;
-}
-function val(s){
-  if(op==='chg') return D.chg[s.k]||0;
-  if(modo==='oi') return (s.oc||0)-(s.op||0);
-  return s[modo]||0;
-}
-function partesCP(s){
-  var t=(s.oc||0)+(s.op||0); if(!t) return [0,0];
-  var v=Math.abs(val(s));
-  return [v*((s.oc||0)/t), v*((s.op||0)/t)];
-}
-function escala(H,pT,pB){
-  var off=OFF(), S=spotVista(), lo, hi;
-  var ks=D.st.map(function(s){return s.k+off;});
-  var kLo=Math.min.apply(null,ks), kHi=Math.max.apply(null,ks);
-  var V=((D.precio_intradia||{}).velas)||[];
-  var sLo=null,sHi=null;
-  if(V.length){
-    var his=V.map(function(p){return p.h;}).filter(function(x){return x!=null;});
-    var los=V.map(function(p){return p.l;}).filter(function(x){return x!=null;});
-    if(his.length) sHi=Math.max.apply(null,his)+off;
-    if(los.length) sLo=Math.min.apply(null,los)+off;
-  }
-  if(zoomY==='todo'){ lo=kLo; hi=kHi; }
-  else if(zoomY==='em'){ var em=(D.expected_move||S*0.005)*2; lo=S-em; hi=S+em; }
-  else{
-    var N=D.niveles_indice||{};
-    var N0=D.niveles_0dte_indice||{};
-    var cand=[S, px(D.gamma_flip), px(N.call_wall), px(N.put_wall), px(N.gamma_pin),
-              px(N0.call_wall), px(N0.put_wall), sLo, sHi]
-      .filter(function(x){return x!=null;});
-    lo=Math.min.apply(null,cand); hi=Math.max.apply(null,cand);
-    var min=(D.expected_move||S*0.004)*2.2;
-    if(hi-lo<min){ var c=(hi+lo)/2; lo=c-min/2; hi=c+min/2; }
-  }
-  if(sLo!=null){ lo=Math.min(lo,sLo); hi=Math.max(hi,sHi); }
-  lo=Math.min(lo,S); hi=Math.max(hi,S);
-  lo=Math.max(lo,kLo-2); hi=Math.min(hi,kHi+2);
-  var m=(hi-lo)*0.04; lo-=m; hi+=m;
-  return {lo:lo,hi:hi,y:function(v){return pT+(H-pT-pB)*(1-(v-lo)/(hi-lo));}};
-}
-
-/* ---------- precio real: velas de 1 minuto, eje doble y niveles rotulados ---------- */
-function kM(v){ if(v==null) return ''; var a=Math.abs(v);
-  return (a>=1000? (v/1000).toFixed(2)+'B' : Math.round(v)+'M'); }
-function kOI(v){ if(v==null) return ''; var a=Math.abs(v);
-  return (a>=1000? (v/1000).toFixed(1)+'k' : String(Math.round(v))); }
-
-function dibPrecio(){
-  var c=$('#px'); if(!c) return;
-  var o=setup(c,530), g=o.g, W=o.W, H=o.H;
-  var pT=16,pB=48,pL=54,pR=60;
-  var E=escala(H,pT,pB);
-  var PX=(D.precio_intradia&&D.precio_intradia.velas)||[];
-  var enFut=esFut(), b=(D.base!=null?D.base:0);
-  var x0=pL, x1=W-pR;
-
-  // ---- bandas de expected move: hasta donde llega un movimiento normal
-  var Sv=spotVista(), em=D.expected_move;
-  if(em){
-    [[1,.10],[2,.05]].forEach(function(z){
-      var a=E.y(Sv+em*z[0]), d=E.y(Sv-em*z[0]);
-      g.fillStyle=cs('--ac'); g.globalAlpha=z[1];
-      g.fillRect(x0,a,x1-x0,d-a); g.globalAlpha=1;
-    });
-  }
-
-  // ---- grilla + eje izquierdo (indice) y derecho (futuro)
-  var paso=Math.max(5,Math.round((E.hi-E.lo)/12/5)*5);
-  g.font='9px '+cs('--mo');
-  for(var v=Math.ceil(E.lo/paso)*paso; v<=E.hi; v+=paso){
-    var yy=E.y(v);
-    g.strokeStyle=cs('--ln'); g.lineWidth=1; g.globalAlpha=.4;
-    g.beginPath(); g.moveTo(x0,yy); g.lineTo(x1,yy); g.stroke(); g.globalAlpha=1;
-    g.fillStyle=cs('--t3'); g.textAlign='right';
-    g.fillText(Math.round(enFut? v-b : v), x0-5, yy+3);
-    if(D.base!=null){ g.textAlign='left';
-      g.fillText(Math.round(enFut? v : v+b), x1+5, yy+3); }
-  }
-  // que eje es cual, para que no haya confusion posible
-  g.font='700 8px '+cs('--mo'); g.fillStyle=cs('--t2');
-  g.textAlign='right'; g.fillText(D.sym, x0-5, pT-5);
-  if(D.base!=null){ g.textAlign='left'; g.fillStyle=baseFloja()?cs('--ne'):cs('--t2');
-    g.fillText(((D.futuro&&D.futuro.contrato)||'FUT')+(baseFloja()?' *':''), x1+5, pT-5); }
-
-  // ---- referencias de la sesion
-  var SE=D.sesion||{};
-  [[SE.apertura,'OPEN','apertura'],[SE.maximo,'HOD','maximo del dia'],
-   [SE.minimo,'LOD','minimo del dia'],[SE.ib_alto,'IBH','techo primera hora'],
-   [SE.ib_bajo,'IBL','piso primera hora']].forEach(function(z){
-    var val=z[0]; if(val==null) return;
-    var y=E.y(enFut? val+b : val); if(y<pT||y>H-pB) return;
-    g.strokeStyle=cs('--gh'); g.globalAlpha=.45; g.lineWidth=1; g.setLineDash([1,4]);
-    g.beginPath(); g.moveTo(x0,y); g.lineTo(x1,y); g.stroke();
-    g.setLineDash([]); g.globalAlpha=.75;
-    g.fillStyle=cs('--gh'); g.font='7.5px '+cs('--mo'); g.textAlign='right';
-    g.fillText(z[1], x1-3, y-2); g.globalAlpha=1;
-  });
-
-  // ---- velas
-  if(PX.length>1){
-    var X=function(i){return x0+(x1-x0)*i/(PX.length-1);};
-    var vv=function(p,cual){var x=p[cual]; return (x!=null&&enFut)?x+b:x;};
-    var an=Math.max(1,(x1-x0)/PX.length*0.7);
-    PX.forEach(function(p,i){
-      var op=vv(p,'o'),hi=vv(p,'h'),lo=vv(p,'l'),cl=vv(p,'c');
-      if(cl==null) return;
-      var col=(cl>=op)?cs('--po'):cs('--ne'), x=X(i);
-      g.strokeStyle=col; g.lineWidth=1; g.globalAlpha=.9;
-      if(hi!=null&&lo!=null){g.beginPath();g.moveTo(x,E.y(hi));g.lineTo(x,E.y(lo));g.stroke();}
-      var a=E.y(Math.max(op,cl)), d=E.y(Math.min(op,cl));
-      g.fillStyle=col; g.fillRect(x-an/2,a,an,Math.max(1,d-a)); g.globalAlpha=1;
-    });
-
-    // volumen de opciones por minuto: calls a la izquierda, puts a la derecha
-    var mx=Math.max.apply(null,PX.map(function(p){return Math.max(p.vc||0,p.vp||0);}))||1;
-    var hv=26, yv=H-pB+8;
-    PX.forEach(function(p,i){
-      var x=X(i);
-      g.fillStyle=cs('--po'); g.globalAlpha=.45;
-      g.fillRect(x-an/2,yv+hv-(p.vc||0)/mx*hv,an/2,(p.vc||0)/mx*hv);
-      g.fillStyle=cs('--ne');
-      g.fillRect(x,yv+hv-(p.vp||0)/mx*hv,an/2,(p.vp||0)/mx*hv); g.globalAlpha=1;
-    });
-    g.fillStyle=cs('--t3'); g.font='7.5px '+cs('--mo'); g.textAlign='left';
-    g.fillText('vol opciones C/P', x0+2, yv+7);
-
-    g.fillStyle=cs('--t3'); g.font='9px '+cs('--mo'); g.textAlign='center';
-    [0,(PX.length>>2),(PX.length>>1),(PX.length*3>>2),PX.length-1].forEach(function(i){
-      if(PX[i]) g.fillText(PX[i].t, X(i), H-4); });
-  }else{
-    g.fillStyle=cs('--t3'); g.font='11px '+cs('--sa'); g.textAlign='center';
-    g.fillText('sin serie de precio', W/2, H/2);
-  }
-
-  // ---- huecos de gamma: donde no hay nada que frene
-  (D.huecos||[]).forEach(function(h){
-    var a=E.y(enFut?h.hasta+b:h.hasta), d=E.y(enFut?h.desde+b:h.desde);
-    if(d<pT||a>H-pB) return;
-    g.fillStyle=cs('--ac2'); g.globalAlpha=.07; g.fillRect(x0,a,x1-x0,d-a);
-    g.globalAlpha=1;
-    g.strokeStyle=cs('--ac2'); g.globalAlpha=.3; g.setLineDash([1,3]); g.lineWidth=1;
-    [a,d].forEach(function(y){g.beginPath();g.moveTo(x0,y);g.lineTo(x1,y);g.stroke();});
-    g.setLineDash([]); g.globalAlpha=1;
-  });
-
-  // ---- niveles, con TODOS sus numeros
-  var filas=(D.niveles_ricos||[]).slice();
-  if(ver0==='si'){
-    // solo se dibuja el 0DTE cuando cae en otro precio que el de la cadena
-    // completa: si coinciden seria la misma raya dos veces
-    var ya={};
-    filas.forEach(function(f){ ya[Math.round(f.indice)]=1; });
-    (D.niveles_ricos_0dte||[]).forEach(function(f){
-      if(f.clave!=='call_wall'&&f.clave!=='put_wall'&&f.clave!=='gamma_pin') return;
-      if(ya[Math.round(f.indice)]) return;
-      var g2=Object.assign({},f); g2.es0=1; filas.push(g2);
-    });
-  }
-  var usados=[];
-  filas.sort(function(a,b){return b.indice-a.indice;})
-    .forEach(function(f){
-      var val=enFut?(f.futuro!=null?f.futuro:f.indice+b):f.indice;
-      if(val<E.lo||val>E.hi) return;
-      var y=E.y(val);
-      var col=(f.clave==='call_wall'||f.clave==='major_positive')?cs('--po')
-             :(f.clave==='put_wall'||f.clave==='major_negative')?cs('--ne')
-             :(f.clave==='gamma_pin')?cs('--ac2'):cs('--t2');
-      g.strokeStyle=col; g.globalAlpha=f.es0?.5:.85; g.lineWidth=f.es0?1:1.4;
-      g.setLineDash(f.es0?[2,3]:[7,4]);
-      g.beginPath(); g.moveTo(x0,y); g.lineTo(x1,y); g.stroke();
-      g.setLineDash([]); g.globalAlpha=1;
-
-      // dos renglones: que es, y cuanto pesa
-      var t1=f.nombre.toUpperCase()+'  '+f.indice
-            +(f.futuro!=null?'  → '+f.futuro:'');
-      var pes=[];
-      var gm=f.es0?f.gex_0dte_M:f.gex_M;
-      if(gm!=null) pes.push(kM(gm)+' gamma');
-      if(f.oi_call!=null) pes.push('OI '+kOI(f.oi_call)+'C/'+kOI(f.oi_put)+'P');
-      if(f.prob_toque!=null) pes.push('toque '+f.prob_toque+'%');
-      pes.push((f.dist_pts>0?'+':'')+Math.round(f.dist_pts)+'pt / '
-               +(f.dist_ticks>0?'+':'')+f.dist_ticks+'tk');
-      var t2=pes.join('  ·  ');
-
-      // no encimar etiquetas
-      var yl=y-4, n=0;
-      while(usados.some(function(u){return Math.abs(u-yl)<19;})&&n<9){ yl+=19; n++; }
-      usados.push(yl);
-      g.textAlign='left';
-      g.font='700 8.5px '+cs('--mo'); g.fillStyle=col;
-      g.globalAlpha=f.es0?.85:1;
-      g.fillText(t1, x0+4, yl-8);
-      g.font='8px '+cs('--mo'); g.fillStyle=cs('--t2');
-      g.fillText(t2, x0+4, yl+1); g.globalAlpha=1;
-    });
-
-  // ---- precio actual, marcado en los dos ejes
-  if(Sv!=null){
-    var y=E.y(Sv);
-    g.strokeStyle=cs('--ac'); g.lineWidth=1.5;
-    g.beginPath(); g.moveTo(x0,y); g.lineTo(x1,y); g.stroke();
-    g.fillStyle=cs('--ac'); g.fillRect(x0-pL,y-7,pL-2,14);
-    g.fillStyle=cs('--gr'); g.font='700 9.5px '+cs('--mo'); g.textAlign='center';
-    g.fillText((enFut?Sv-b:Sv).toFixed(0), x0-pL/2, y+3);
-    if(D.base!=null){
-      g.fillStyle=cs('--ac'); g.fillRect(x1+2,y-7,pR-4,14);
-      g.fillStyle=cs('--gr'); g.fillText((enFut?Sv:Sv+b).toFixed(0), x1+2+(pR-4)/2, y+3);
-    }
-  }
-}
-
-/* ---------- histograma (derecha), mismo eje Y ---------- */
-function dibHist(){
-  var c=$('#hist'); if(!c) return;
-  var o=setup(c,530), g=o.g, W=o.W, H=o.H;
-  var pT=10,pB=22,pL=6,pR=46;
-  var E=escala(H,pT,pB);
-  var S=D.st;
-  var vals=S.map(function(s){return op==='cp'?Math.max.apply(null,partesCP(s)):Math.abs(val(s));});
-  var max=Math.max.apply(null,vals)||1;
-  var zero=pL+(W-pL-pR)*0.46;
-  var alto=Math.max(2.5,(H-pT-pB)/S.length-1.2);
-
-  g.strokeStyle=cs('--ln'); g.lineWidth=1;
-  g.beginPath(); g.moveTo(zero,pT); g.lineTo(zero,H-pB); g.stroke();
-
-  S.forEach(function(s){
-    var y=E.y(s.k+((vistaPrecio==='fut'&&D.base!=null)?D.base:0))-alto/2;
-    if(op==='cp'){
-      var p=partesCP(s);
-      var wc=(p[0]/max)*(W-pR-zero)*0.95, wp=(p[1]/max)*(zero-pL)*0.95;
-      g.fillStyle=cs('--po'); g.globalAlpha=.85; g.fillRect(zero+1,y,wc,alto);
-      g.fillStyle=cs('--ne'); g.fillRect(zero-1-wp,y,wp,alto); g.globalAlpha=1;
-    }else{
-      var v=val(s);
-      var w=(Math.abs(v)/max)*(v>=0?(W-pR-zero):(zero-pL))*0.95;
-      g.fillStyle=v>=0?cs('--po'):cs('--ne'); g.globalAlpha=.88;
-      if(v>=0) g.fillRect(zero+1,y,w,alto); else g.fillRect(zero-1-w,y,w,alto);
-      g.globalAlpha=1;
-    }
-  });
-
-  // lookbacks como puntos
-  if(verLb && D.lookbacks){
-    var lbs=Object.keys(D.lookbacks);
-    lbs.forEach(function(etq,idx){
-      var snap=D.lookbacks[etq];
-      if(!snap||!snap.k) return;
-      g.fillStyle=cs('--gh'); g.globalAlpha=.55+idx*0.12;
-      S.forEach(function(s){
-        var pv=snap.k[String(s.k)]; if(pv==null||modo!=='g'||op!=='abs') return;
-        var w=(Math.abs(pv)/max)*(pv>=0?(W-pR-zero):(zero-pL))*0.95;
-        var px=pv>=0?zero+1+w:zero-1-w;
-        g.beginPath(); g.arc(px,E.y(s.k+((vistaPrecio==='fut'&&D.base!=null)?D.base:0)),2,0,7); g.fill();
-      });
-      g.globalAlpha=1;
-    });
-  }
-
-  // etiquetas de strike
-  g.font='9px '+cs('--mo'); g.textAlign='left'; g.fillStyle=cs('--t3');
-  var pasoK=S.length>60?50:25;
-  var of2=(vistaPrecio==='fut'&&D.base!=null)?D.base:0;
-  S.forEach(function(s){ if(s.k%pasoK===0) g.fillText(Math.round(s.k+of2), W-pR+4, E.y(s.k+of2)+3); });
-
-  // spot y flip
-  var of3=(vistaPrecio==='fut'&&D.base!=null)?D.base:0;
-  [[D.S+of3,cs('--ac')],[D.gamma_flip!=null?D.gamma_flip+of3:null,cs('--t3')]].forEach(function(a){
-    if(a[0]==null) return;
-    var y=E.y(a[0]);
-    g.strokeStyle=a[1]; g.lineWidth=1.2; g.setLineDash(a[1]===cs('--ac')?[]:[3,3]);
-    g.beginPath(); g.moveTo(pL,y); g.lineTo(W-pR,y); g.stroke(); g.setLineDash([]);
-  });
-}
-
-/* ---------- curva de gamma ---------- */
-function dibCurva(){
-  var c=$('#curva'); if(!c||!D.curva||!D.curva.length) return;
-  var o=setup(c,180), g=o.g, W=o.W, H=o.H, pl=48,pr=12,pt=12,pb=22;
-  var P=D.curva, xs=P.map(function(p){return p[0];}), ys=P.map(function(p){return p[1];});
-  var x0=Math.min.apply(null,xs),x1=Math.max.apply(null,xs);
-  var y0=Math.min.apply(null,ys.concat([0])),y1=Math.max.apply(null,ys.concat([0]));
-  var X=function(v){return pl+(W-pl-pr)*(v-x0)/(x1-x0);};
-  var Y=function(v){return pt+(H-pt-pb)*(1-(v-y0)/(y1-y0));};
-  g.strokeStyle=cs('--ln'); g.lineWidth=1;
-  g.beginPath(); g.moveTo(pl,Y(0)); g.lineTo(W-pr,Y(0)); g.stroke();
-  g.beginPath(); g.moveTo(X(P[0][0]),Y(0));
-  P.forEach(function(p){g.lineTo(X(p[0]),Y(p[1]));});
-  g.lineTo(X(P[P.length-1][0]),Y(0)); g.closePath();
-  var gr=g.createLinearGradient(0,pt,0,H-pb);
-  gr.addColorStop(0,cs('--po')+'3A'); gr.addColorStop(1,cs('--ne')+'3A');
-  g.fillStyle=gr; g.fill();
-  g.beginPath(); P.forEach(function(p,i){i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]));});
-  g.strokeStyle=cs('--tx'); g.lineWidth=1.5; g.stroke();
-  [[D.S,cs('--ac'),'SPOT'],[D.gamma_flip,cs('--t3'),'FLIP']].forEach(function(a){
-    if(a[0]==null||a[0]<x0||a[0]>x1) return;
-    g.strokeStyle=a[1]; g.setLineDash([4,3]); g.lineWidth=1.2;
-    g.beginPath(); g.moveTo(X(a[0]),pt); g.lineTo(X(a[0]),H-pb); g.stroke(); g.setLineDash([]);
-    g.fillStyle=a[1]; g.font='700 9px '+cs('--mo'); g.textAlign='center'; g.fillText(a[2],X(a[0]),pt-2);
-  });
-  g.fillStyle=cs('--t3'); g.font='9px '+cs('--mo'); g.textAlign='right';
-  g.fillText(y1.toFixed(1)+'B',pl-5,Y(y1)+3); g.fillText('0',pl-5,Y(0)+3);
-  g.fillText(y0.toFixed(1)+'B',pl-5,Y(y0)+3);
-  g.textAlign='center';
-  [x0,(x0+x1)/2,x1].forEach(function(v){g.fillText((v+OFF()).toFixed(0),X(v),H-7);});
-}
-
-/* ---------- skew ---------- */
-function dibSkew(){
-  var c=$('#skew'); if(!c) return;
-  var o=setup(c,170), g=o.g, W=o.W, H=o.H, pl=42,pr=10,pt=12,pb=22;
-  var sk=D.skew||{}, P=(sk.puntos||[]).filter(function(p){return p.iv_call||p.iv_put;});
-  if(!P.length){ g.fillStyle=cs('--t3'); g.font='10px '+cs('--sa'); g.textAlign='center';
-    g.fillText('sin datos de skew',W/2,H/2); return; }
-  var ivs=[]; P.forEach(function(p){if(p.iv_call)ivs.push(p.iv_call); if(p.iv_put)ivs.push(p.iv_put);});
-  var y0=Math.min.apply(null,ivs), y1=Math.max.apply(null,ivs);
-  var m=(y1-y0)*0.12||0.01; y0-=m; y1+=m;
-  var ks=P.map(function(p){return p.strike;});
-  var x0=Math.min.apply(null,ks), x1=Math.max.apply(null,ks);
-  var X=function(v){return pl+(W-pl-pr)*(v-x0)/(x1-x0);};
-  var Y=function(v){return pt+(H-pt-pb)*(1-(v-y0)/(y1-y0));};
-  g.strokeStyle=cs('--ln'); g.globalAlpha=.5; g.lineWidth=1;
-  [y0,(y0+y1)/2,y1].forEach(function(v){g.beginPath();g.moveTo(pl,Y(v));g.lineTo(W-pr,Y(v));g.stroke();});
-  g.globalAlpha=1;
-  [['iv_put',cs('--ne')],['iv_call',cs('--po')]].forEach(function(a){
-    var pts=P.filter(function(p){return p[a[0]];});
-    if(pts.length<2) return;
-    g.beginPath(); pts.forEach(function(p,i){i?g.lineTo(X(p.strike),Y(p[a[0]])):g.moveTo(X(p.strike),Y(p[a[0]]));});
-    g.strokeStyle=a[1]; g.lineWidth=1.6; g.stroke();
-    g.fillStyle=a[1]; pts.forEach(function(p){g.beginPath();g.arc(X(p.strike),Y(p[a[0]]),1.8,0,7);g.fill();});
-  });
-  if(D.S>=x0&&D.S<=x1){
-    g.strokeStyle=cs('--ac'); g.setLineDash([3,3]); g.lineWidth=1.2;
-    g.beginPath(); g.moveTo(X(D.S),pt); g.lineTo(X(D.S),H-pb); g.stroke(); g.setLineDash([]);
-  }
-  g.fillStyle=cs('--t3'); g.font='9px '+cs('--mo'); g.textAlign='right';
-  g.fillText((y1*100).toFixed(1)+'%',pl-4,Y(y1)+3);
-  g.fillText((y0*100).toFixed(1)+'%',pl-4,Y(y0)+3);
-  g.textAlign='center';
-  [x0,x1].forEach(function(v){g.fillText(v.toFixed(0),X(v),H-7);});
-}
-
-/* ---------- term structure ---------- */
-function dibTerm(){
-  var c=$('#term'); if(!c) return;
-  var o=setup(c,170), g=o.g, W=o.W, H=o.H, pl=42,pr=10,pt=12,pb=22;
-  var P=((D.term||{}).puntos||[]).slice(0,20);
-  if(P.length<2){ g.fillStyle=cs('--t3'); g.font='10px '+cs('--sa'); g.textAlign='center';
-    g.fillText('sin datos de term',W/2,H/2); return; }
-  var ivs=P.map(function(p){return p.iv;});
-  var y0=Math.min.apply(null,ivs),y1=Math.max.apply(null,ivs);
-  var m=(y1-y0)*0.12||0.01; y0-=m; y1+=m;
-  var d0=P[0].dias, d1=P[P.length-1].dias;
-  var X=function(v){return pl+(W-pl-pr)*(v-d0)/((d1-d0)||1);};
-  var Y=function(v){return pt+(H-pt-pb)*(1-(v-y0)/(y1-y0));};
-  g.strokeStyle=cs('--ln'); g.globalAlpha=.5;
-  [y0,(y0+y1)/2,y1].forEach(function(v){g.beginPath();g.moveTo(pl,Y(v));g.lineTo(W-pr,Y(v));g.stroke();});
-  g.globalAlpha=1;
-  g.beginPath(); g.moveTo(X(P[0].dias),H-pb);
-  P.forEach(function(p){g.lineTo(X(p.dias),Y(p.iv));});
-  g.lineTo(X(P[P.length-1].dias),H-pb); g.closePath();
-  g.fillStyle=cs('--ac')+'22'; g.fill();
-  g.beginPath(); P.forEach(function(p,i){i?g.lineTo(X(p.dias),Y(p.iv)):g.moveTo(X(p.dias),Y(p.iv));});
-  g.strokeStyle=cs('--ac'); g.lineWidth=1.7; g.stroke();
-  g.fillStyle=cs('--ac'); P.forEach(function(p){g.beginPath();g.arc(X(p.dias),Y(p.iv),2,0,7);g.fill();});
-  g.fillStyle=cs('--t3'); g.font='9px '+cs('--mo'); g.textAlign='right';
-  g.fillText((y1*100).toFixed(1)+'%',pl-4,Y(y1)+3);
-  g.fillText((y0*100).toFixed(1)+'%',pl-4,Y(y0)+3);
-  g.textAlign='center';
-  P.forEach(function(p,i){ if(i===0||i===P.length-1||i===Math.floor(P.length/2))
-    g.fillText(Math.round(p.dias)+'d',X(p.dias),H-7); });
-}
-
-/* ---------- intradia ---------- */
-function dibIntra(){
-  var c=$('#intra'); if(!c) return;
-  var o=setup(c,120), g=o.g, W=o.W, H=o.H, pl=40,pr=10,pt=10,pb=18;
-  var P=(D.intradia||[]).filter(function(p){return p.gex!=null;});
-  if(P.length<2){ g.fillStyle=cs('--t3'); g.font='10px '+cs('--sa'); g.textAlign='center';
-    g.fillText('se arma con las corridas del día',W/2,H/2); return; }
-  var ys=P.map(function(p){return p.gex;});
-  var y0=Math.min.apply(null,ys.concat([0])),y1=Math.max.apply(null,ys.concat([0]));
-  var X=function(i){return pl+(W-pl-pr)*i/(P.length-1);};
-  var Y=function(v){return pt+(H-pt-pb)*(1-(v-y0)/((y1-y0)||1));};
-  g.strokeStyle=cs('--ln'); g.beginPath(); g.moveTo(pl,Y(0)); g.lineTo(W-pr,Y(0)); g.stroke();
-  g.beginPath(); P.forEach(function(p,i){i?g.lineTo(X(i),Y(p.gex)):g.moveTo(X(i),Y(p.gex));});
-  g.strokeStyle=cs('--tx'); g.lineWidth=1.5; g.stroke();
-  g.fillStyle=cs('--t3'); g.font='9px '+cs('--mo'); g.textAlign='right';
-  g.fillText(y1.toFixed(1)+'B',pl-4,Y(y1)+3); g.fillText(y0.toFixed(1)+'B',pl-4,Y(y0)+3);
-  g.textAlign='center';
-  [0,P.length-1].forEach(function(i){g.fillText(P[i].t,X(i),H-5);});
-}
-
-/* ---------- cabecera y kpis ---------- */
-function pintarCabecera(){
-  var el=$('#sy'), act=window.__SYM__||'SPX';
-  el.innerHTML=['SPX','NDX','RUT'].map(function(x){
-    return '<a href="?s='+x+'" class="'+(x===act?'on':'')+'">'+x+'</a>';}).join('');
-  $('#sym').textContent=simVista();
-  var S=spotVista();
-  $('#spot').textContent=S.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  $('#lblU').textContent=esFut()?('Futuro'+(microVista()?' / micro '+microVista():'')):'Underlying';
-  pintarBasis();
-  var edad='';
-  if(D.generado){var gd=D.generado.indexOf('+')>0||D.generado.slice(-1)==='Z'?D.generado:D.generado+'Z';
-    var m=Math.round((Date.now()-new Date(gd))/60000);
-    edad=' \u00b7 calculado hace '+(m<1?'menos de 1 min':m+' min');}
-  $('#stamp').textContent='CBOE \u00b7 dato '+D.timestamp+edad;
-  var p=D.T.net_gex_B>0, r=$('#reg');
-  r.className='rg '+(p?'p':'n');
-  r.textContent=(p?'LONG GAMMA':'SHORT GAMMA')+' \u00b7 '+(p?'amortigua':'amplifica');
-
-  var T=D.T, Ni=D.niveles_indice||{}, N={};
-  Object.keys(Ni).forEach(function(k){ N[k]=px(Ni[k]); });
-  var GF=px(D.gamma_flip);
-  var kk=[
-   ['Net GEX',nf(T.net_gex_B,2)+' B',T.net_gex_B>0?'po':'ne','por 1% de movimiento'],
-   ['Gamma Flip',GF?GF.toLocaleString('es-AR'):'\u2014',
-     S>GF?'po':'ne',(S>GF?'arriba +':'abajo ')+Math.abs(S-GF).toFixed(1)],
-   ['Expected Move','\u00b1'+D.expected_move,'',(S-D.expected_move).toFixed(0)+' \u2013 '+(S+D.expected_move).toFixed(0)],
-   ['Call Wall',N.call_wall||'\u2014','po','+'+((N.call_wall||S)-S).toFixed(0)+' pts'],
-   ['Put Wall',N.put_wall||'\u2014','ne',((N.put_wall||S)-S).toFixed(0)+' pts'],
-   ['Net DEX',nf(T.net_dex_B,1)+' B',T.net_dex_B>0?'po':'ne','direccional'],
-   ['Net VEX',nf(T.net_vex_B,2)+' B',T.net_vex_B>0?'po':'ne','vanna \u00b7 por 1% IV'],
-   ['Net CHEX',nf(T.net_chex_B,2)+' B',T.net_chex_B>0?'po':'ne','charm \u00b7 por d\u00eda'],
-   ['Net TEX',nf(T.net_tex_M,0)+' M',T.net_tex_M>0?'po':'ne','theta'],
-   ['Net GEX 0DTE',D.gex_0dte_B!=null?nf(D.gex_0dte_B,2)+' B':'—',
-     D.gex_0dte_B>0?'po':'ne','vence hoy'],
-   ['Open Interest',ni(T.oi_total),'',ni(T.oi_call)+' C / '+ni(T.oi_put)+' P'],
-   ['Put / Call',T.put_call_oi!=null?T.put_call_oi.toFixed(2):'\u2014',
-     T.put_call_oi>1?'ne':'po','ratio de OI'],
-   ['Skew',(D.skew&&D.skew.pendiente_pp!=null)?nf(D.skew.pendiente_pp,2)+' pp':'\u2014',
-     (D.skew&&D.skew.pendiente_pp>0)?'ne':'po','puts vs calls']
-  ];
-  $('#kp').innerHTML=kk.map(function(a){
-    return '<div><div class="lbl">'+a[0]+'</div><div class="v '+a[2]+'">'+a[1]+'</div><div class="s">'+a[3]+'</div></div>';
-  }).join('');
-
-  var lbk=Object.keys(D.lookbacks||{});
-  $('#lgHist').innerHTML=
-   '<span><i style="background:var(--po)"></i>positivo \u00b7 amortigua</span>'+
-   '<span><i style="background:var(--ne)"></i>negativo \u00b7 amplifica</span>'+
-   '<span><i style="background:var(--ac)"></i>spot y precio intrad\u00eda</span>'+
-   '<span><i style="background:var(--t3)"></i>gamma flip</span>'+
-   '<span><i class="dt" style="background:var(--po)"></i>punteado fino = pared del vencimiento de hoy (0DTE)</span>'+
-   (lbk.length?'<span><i class="dt" style="background:var(--gh)"></i>lookback '+lbk.join(' / ')+'</span>':'');
-
-  var v0=(D.vencimientos||[])[0];
-  if($('#v0info')) $('#v0info').textContent=(v0&&v0.dias<1)?(v0.fecha+' · '+ni(v0.oi)+' OI'):'';
-  $('#curvaInfo').textContent=D.horizonte?(D.horizonte.vencimientos+' vencimientos \u00b7 '+D.horizonte.dias+' d\u00edas'):'';
-  $('#notaCurva').innerHTML='La curva cruza cero en <strong>'+GF+'</strong> ('+simVista()+'). Arriba de ese precio la mesa frena los movimientos; abajo los agranda. El spot est\u00e1 '+
-    (S>GF?'<span style="color:var(--po)">del lado que amortigua</span>':'<span style="color:var(--ne)">del lado que amplifica</span>')+'.';
-
-  var sk=D.skew||{}, tm=D.term||{};
-  $('#skInfo').textContent=sk.vencimiento||'';
-  $('#skNota').textContent=sk.lectura||'';
-  $('#tmInfo').textContent=tm.forma||'';
-  $('#tmNota').textContent=tm.lectura||'';
-  $('#intraNota').textContent=((D.intradia||[]).length)+' corridas hoy';
-  $('#fu').innerHTML='Cadena completa de <strong>'+D.sym+'</strong> desde el CDN p\u00fablico de <strong>CBOE</strong>, sin API key. La gamma viene calculada por la bolsa; vanna y charm se derivan ac\u00e1 desde la IV de cada contrato, normalizadas por 1% de volatilidad y por d\u00eda.<br><br>Actualiza solo cada 15 minutos v\u00eda GitHub Actions.';
-}
-
-/* ---------- cadena completa ---------- */
-function pintarTabla(){
-  var mx=Math.max.apply(null,D.st.map(function(s){return Math.abs(s.g);}))||1;
-  $('#cnt').textContent=D.st.length+' strikes';
-  $('#tb').innerHTML=D.st.slice().reverse().map(function(s){
-    var aqui=Math.abs(s.k-D.S)<2.5;
-    var w=Math.round(Math.abs(s.g)/mx*38);
-    var bar='<span style="display:inline-block;height:8px;width:'+w+'px;border-radius:1px;vertical-align:middle;background:'+(s.g>=0?'var(--po)':'var(--ne)')+'"></span>';
-    var pc=s.oc?(s.op/s.oc):null, iv=(s.ic!=null?s.ic:s.ip);
-    var a=D.act[s.k]||{}, vol=(s.vc||0)+(s.vp||0), ch=D.chg[s.k];
-    var voi=a.vol_oi!=null?('<span class="pill '+(a.vol_oi>1?'w':'')+'">'+a.vol_oi+'</span>'):PT;
-    return '<tr class="'+(aqui?'hr':'')+'">'+
-      '<td class="k">'+s.k+'</td><td>'+(s.d>0?'+':'')+s.d+'</td>'+
-      '<td class="'+(s.g>=0?'po':'ne')+'">'+bar+' '+nf(s.g,0)+'</td>'+
-      '<td class="'+(s.g0>=0?'po':'ne')+'">'+(s.g0?nf(s.g0,0):PT)+'</td>'+
-      '<td class="'+(ch>=0?'po':'ne')+'">'+(ch?nf(ch,0):PT)+'</td>'+
-      '<td class="'+(s.dx>=0?'po':'ne')+'">'+nf(s.dx,0)+'</td>'+
-      '<td class="'+(s.vx>=0?'po':'ne')+'">'+nf(s.vx,0)+'</td>'+
-      '<td class="'+(s.cx>=0?'po':'ne')+'">'+nf(s.cx,0)+'</td>'+
-      '<td>'+ni(s.oc)+'</td><td>'+ni(s.op)+'</td>'+
-      '<td>'+(pc!=null?pc.toFixed(2):PT)+'</td>'+
-      '<td>'+(vol?ni(vol):PT)+'</td><td>'+voi+'</td>'+
-      '<td>'+(iv?(iv*100).toFixed(1)+'%':PT)+'</td></tr>';
-  }).join('');
-}
-
-/* ---------- matriz strike x vencimiento ---------- */
-function pintarMatriz(){
-  var mz=D.matriz;
-  if(!mz||!mz.filas||!mz.filas.length){ $('#mzInfo').textContent='sin matriz'; return; }
-  $('#mzInfo').textContent=mz.filas.length+' strikes x '+mz.columnas.length+' vencimientos, en millones';
-  $('#mzh').innerHTML='<tr><th>Strike</th><th class="tt">SUMA</th>'+
-    mz.columnas.map(function(c){return '<th>'+c.dte+'d</th>';}).join('')+'</tr>';
-  var mm=Math.max.apply(null,mz.filas.map(function(f){return Math.abs(f.total);}))||1;
-  $('#mzb').innerHTML=mz.filas.map(function(f){
-    var aqui=Math.abs(f.strike-D.S)<2.5;
-    var cel=f.celdas.map(function(v){
-      if(v==null||v===0){ return '<td style="color:var(--t3)">'+PT+'</td>'; }
-      var al=Math.min(1,Math.abs(v)/mm*3.2);
-      var hex=Math.round(al*140).toString(16);
-      if(hex.length<2){ hex='0'+hex; }
-      var bg=(v>0?cs('--po'):cs('--ne'));
-      return '<td style="background:'+bg+hex+';color:var(--tx)">'+nf(v,0)+'</td>';
-    }).join('');
-    return '<tr class="'+(aqui?'hr':'')+'"><td class="k">'+f.strike+'</td>'+
-      '<td class="tt '+(f.total>=0?'po':'ne')+'">'+nf(f.total,0)+'</td>'+cel+'</tr>';
-  }).join('');
-}
-
-/* ---------- paneles laterales ---------- */
-function pintarBasis(){
-  var bd=D.base_detalle||{}, bel=$('#basis'), bf=$('#btnFut');
-  if(bf){
-    bf.textContent=(D.futuro&&D.futuro.contrato)||'Futuro';
-    bf.disabled=(D.base==null);
-    bf.title=(D.base==null)?'sin base medida para este simbolo':'convierte todo a precio de futuro';
-  }
-  var bi=$('#vp').children[0]; if(bi) bi.textContent=D.sym;
-  if(!bel) return;
-  if(D.base==null){ bel.textContent=''; return; }
-
-  var ok=bd.confiable, col='var(--'+(ok?'po':'ne')+')';
-  var fu=(D.futuro&&D.futuro.contrato)||'FUT';
-  var t='<span title="diferencia entre el futuro y el indice, por recta sobre los forwards de la cadena">'
-    +'Basis '+fu+' &minus; '+D.sym+' <strong>'+(D.base>0?'+':'')+D.base.toFixed(2)+'</strong></span>'
-    +' &middot; <span style="color:'+col+'">'+(ok?'medicion firme':'medicion floja')+'</span>'
-    +' <span style="color:var(--t3)">('+bd.vencimientos_usados+' vencimientos, error '
-    +bd.residuo_ticks+' ticks, '+bd.muestras+' strikes)</span>';
-
-  // lo que antes estaba escrito a mano y ahora se mide
-  if(bd.tasa_corta!=null){
-    t+='<br><span style="color:var(--t3)">Tasa corta <strong>'+(bd.tasa_corta*100).toFixed(3)
-      +'%</strong> ('+(bd.tasa_fecha||'')+', Tesoro EEUU) &middot; dividendo implicito por la cadena <strong>'
-      +((bd.dividendo_implicito||0)*100).toFixed(2)+'%</strong>'
-      +((D.tasas&&D.tasas.medida===false)?' <span class="wf">tasa de respaldo, el Tesoro no contesto</span>':'')
-      +'</span>';
-  }
-  if(D.indice_atrasado){
-    t+='<br><span style="color:var(--ac)">&#9888; el '+D.sym+' publicado ('
-      +D.indice_publicado.toLocaleString('es-AR')+') es el cierre anterior. La cadena cotiza el contado en <strong>'
-      +D.contado_implicito.toLocaleString('es-AR')+'</strong>, '
-      +(D.desfase_indice>0?'+':'')+D.desfase_indice+' puntos. Todo el panel usa el contado.</span>';
-  }
-  bel.innerHTML=t;
-}
-
-/* ---------- deriva: cuanto se movieron los niveles desde la corrida anterior ---------- */
-function pintarDeriva(){
-  var el=$('#der'); if(!el) return;
-  var L=D.lookbacks||{}, claves=Object.keys(L);
-  var filas=[];
-  var mp={call_wall:'Call Wall',put_wall:'Put Wall',gamma_pin:'Gamma Pin'};
-  claves.forEach(function(k){
-    var s=L[k]; if(!s||!s.niv) return;
-    Object.keys(mp).forEach(function(n){
-      var ant=s.niv[n], act=(D.niveles_indice||{})[n];
-      if(ant==null||act==null) return;
-      filas.push([k, s.edad_min, mp[n], ant, act, act-ant]);
-    });
-  });
-  if(!filas.length){
-    el.innerHTML='<div class="nt" style="border:0">Todavia no hay dos corridas de la misma sesion'
-      +' para comparar. Con el mercado abierto se llena solo, cada 15 minutos.</div>';
-    return;
-  }
-  el.innerHTML='<table class="tn"><thead><tr><th>Hace</th><th>Nivel</th>'
-    +'<th class="n">era</th><th class="n">es</th><th class="n">movio</th></tr></thead><tbody>'
-    +filas.map(function(f){
-      return '<tr><td>'+f[1]+' min</td><td class="k">'+f[2]+'</td>'
-        +'<td class="n">'+f[3]+'</td><td class="n">'+f[4]+'</td>'
-        +'<td class="n '+(f[5]===0?'':(f[5]>0?'po':'ne'))+'">'
-        +(f[5]===0?'quieto':(f[5]>0?'+':'')+f[5])+'</td></tr>';
-    }).join('')+'</tbody></table>'
-    +'<div class="nt">Esto responde con numeros si el retraso de 15 minutos cuesta plata.'
-    +' Si las paredes quedan quietas entre corridas, el retraso no importa para ubicarlas.'
-    +' Si se mueven, aca se va a ver.</div>';
-}
-
-/* ---------- alarma de dato vencido ---------- */
-function pintarAlarma(){
-  var el=$('#alarma'); if(!el) return;
-  var m=D.edad_cadena_min, av=[];
-  if(D.timestamp_incoherente){
-    av.push(['ne','El timestamp de la cadena no cierra con el reloj. La zona horaria del feed'
-      +' pudo cambiar: no uses estos niveles hasta revisarlo.']);
-  }else if(D.cadena_muy_vencida){
-    av.push(['ne','CBOE no refresca esta cadena hace '+Math.round(m/60)+' horas ('
-      +D.timestamp+'). Los niveles son de otra sesion. <strong>No operes con esto.</strong>']);
-  }else if(D.cadena_vencida){
-    av.push(['ac','La cadena tiene '+m+' minutos. No es el ultimo precio: '
-      +'sirve para ubicar niveles, no para cronometrar una entrada.']);
-  }
-  if(D.base!=null && !((D.base_detalle||{}).confiable)){
-    av.push(['ne','La base '+((D.futuro&&D.futuro.contrato)||'FUT')+' no paso el control: '
-      +(D.base_detalle||{}).residuo_ticks+' ticks de error entre vencimientos. '
-      +'Los niveles del indice sirven; los del futuro no los dibujes.']);
-  }
-  el.innerHTML=av.map(function(a){
-    return '<div class="al '+a[0]+'">'+a[1]+'</div>';
-  }).join('');
-}
-
-function pintarLaterales(){
-  $('#conc').innerHTML=(D.concentracion||[]).map(function(x){
-    return '<div class="rw"><div><div class="f">'+x.strike+'</div>'+
-      '<div class="d">'+x.concentracion_pct+'% vence el '+x.vencimiento_dominante+'</div></div>'+
-      '<div><div class="g '+(x.total>=0?'po':'ne')+'">'+nf(x.total,0)+'</div>'+
-      '<div class="o">M, '+x.dte+'d</div></div>'+
-      '<div class="tr"><div class="fl" style="width:'+x.concentracion_pct+'%;background:'+
-      (x.total>=0?'var(--po)':'var(--ne)')+'"></div></div></div>';
-  }).join('')||'<div class="nt" style="border:0">sin datos</div>';
-
-  $('#pn').innerHTML=(D.posicion_nueva||[]).map(function(x){
-    return '<div class="rw"><div><div class="f">'+x.strike+'</div>'+
-      '<div class="d">'+ni(x.volumen)+' operados, '+ni(x.oi)+' vivos</div></div>'+
-      '<div><div class="g" style="color:var(--ac)">'+x.vol_oi+'x</div>'+
-      '<div class="o">'+(x.dist>0?'+':'')+x.dist+' pts</div></div></div>';
-  }).join('')||'<div class="nt" style="border:0">sin actividad inusual hoy</div>';
-
-  $('#hot').innerHTML=(D.hottest||[]).slice(0,14).map(function(x){
-    var r=x.vol_oi!=null?('<span class="pill '+(x.vol_oi>1?'w':'')+'">'+x.vol_oi+'</span>')
-                        :'<span class="pill w">nuevo</span>';
-    return '<tr><td class="k">'+x.strike+x.tipo+'</td><td>'+x.dte+'d</td><td>'+ni(x.volumen)+'</td><td>'+r+'</td></tr>';
-  }).join('');
-
-  var mo=Math.max.apply(null,(D.vencimientos||[]).map(function(v){return v.oi;}))||1;
-  $('#vc').innerHTML=(D.vencimientos||[]).map(function(v){
-    var dd=v.dias<1?'vence hoy':(v.dias<2?'manana':Math.round(v.dias)+' dias');
-    return '<div class="rw"><div><div class="f">'+v.fecha+'</div>'+
-      '<div class="d">'+dd+', '+ni(v.oi)+' OI</div></div>'+
-      '<div><div class="g '+(v.gex>=0?'po':'ne')+'">'+nf(v.gex,0)+'</div><div class="o">M</div></div>'+
-      '<div class="tr"><div class="fl" style="width:'+(v.oi/mo*100)+'%;background:'+
-      (v.gex>=0?'var(--po)':'var(--ne)')+'"></div></div></div>';
-  }).join('');
-}
-
-/* ---------- tabla de niveles, con todos los numeros ---------- */
-function filaNivel(f, es0){
-  var gm = es0 ? f.gex_0dte_M : f.gex_M;
-  var col = (f.clave==='call_wall'||f.clave==='major_positive') ? 'po'
-          : (f.clave==='put_wall'||f.clave==='major_negative') ? 'ne'
-          : (f.clave==='gamma_pin') ? 'ac2' : 't2';
-  var fut = f.futuro!=null ? f.futuro : null;
-  var pt = f.prob_toque;
-  return '<tr>'
-   + '<td class="k"><span style="color:var(--'+col+')">'+f.nombre+'</span>'
-     + (f.alias?'<span class="al"> + '+f.alias+'</span>':'')
-     + '<div class="tr2">'+f.criollo+'</div></td>'
-   + '<td class="n">'+f.indice+'</td>'
-   + '<td class="n" style="color:'+colFut()+'">'+(fut!=null?fut+marcaFut():'&#8212;')+'</td>'
-   + '<td class="n">'+(f.dist_pts>0?'+':'')+Math.round(f.dist_pts)+'</td>'
-   + '<td class="n">'+(f.dist_ticks>0?'+':'')+f.dist_ticks+'</td>'
-   + '<td class="n '+(gm>=0?'po':'ne')+'">'+(gm!=null?kM(gm):'&#8212;')+'</td>'
-   + '<td class="n">'+(f.oi_call!=null?kOI(f.oi_call):'&#8212;')+'</td>'
-   + '<td class="n">'+(f.oi_put!=null?kOI(f.oi_put):'&#8212;')+'</td>'
-   + '<td class="n">'+(pt!=null
-       ? '<span class="pill'+(pt>=50?' w':'')+'">'+pt+'%</span>' : '&#8212;')+'</td>'
-   + '</tr>';
-}
-
-function pintarNiveles(){
-  var enc = '<tr><th>Nivel</th><th class="n">'+D.sym+'</th>'
-          + '<th class="n">'+((D.futuro&&D.futuro.contrato)||'FUT')+marcaFut()+'</th>'
-          + '<th class="n" title="distancia en puntos del indice">pts</th>'
-          + '<th class="n" title="distancia en ticks del futuro">ticks</th>'
-          + '<th class="n" title="gamma parada en ese strike">gamma</th>'
-          + '<th class="n" title="interes abierto de calls">OI C</th>'
-          + '<th class="n" title="interes abierto de puts">OI P</th>'
-          + '<th class="n" title="probabilidad de tocarlo antes del cierre">toque</th></tr>';
-  var r = (D.niveles_ricos||[]).map(function(f){ return filaNivel(f,false); }).join('');
-  $('#niv').innerHTML = '<table class="tn"><thead>'+enc+'</thead><tbody>'+r+'</tbody></table>'
-    + (baseFloja()
-       ? '<div class="nt"><span class="wf">*</span> La base '
-         +((D.futuro&&D.futuro.contrato)||'FUT')+' no pas&oacute; el control contra el carry te&oacute;rico'
-         +' ('+(D.base_detalle||{}).muestras+' strikes, dispersi&oacute;n '
-         +(D.base_detalle||{}).dispersion+' pts). Los valores del &iacute;ndice son buenos; '
-         +'los del futuro <strong>no los dibujes</strong> hasta que la medici&oacute;n coincida.</div>'
-       : '');
-
-  var r0 = (D.niveles_ricos_0dte||[]).filter(function(f){
-      return f.clave==='call_wall'||f.clave==='put_wall'||f.clave==='gamma_pin'; })
-    .map(function(f){ return filaNivel(f,true); }).join('');
-  $('#niv0').innerHTML = r0
-    ? '<table class="tn"><thead>'+enc+'</thead><tbody>'+r0+'</tbody></table>'
-    : '<div class="nt" style="border:0">sin vencimiento de hoy</div>';
-}
-
-/* ---------- convexity ladder ---------- */
-function pintarEscalera(){
-  var E = D.escalera||[];
-  if(!E.length){ $('#esc').innerHTML=''; return; }
-  var mx = Math.max.apply(null, E.map(function(e){ return Math.abs(e.contratos||0); }))||1;
-  var raiz = (D.contrato_detalle&&D.contrato_detalle.raiz)||'ES';
-  var micro = (D.futuro&&D.futuro.micro)||'';
-  var f = E.map(function(e){
-    var w = Math.abs(e.contratos||0)/mx*100;
-    var pos = e.contratos>=0;
-    return '<tr'+(e.es_spot?' class="aq"':'')+'>'
-     + '<td class="n">'+e.indice+(e.es_spot?' <span class="tag">precio</span>':'')+'</td>'
-     + '<td class="n" style="color:'+colFut()+'">'+(e.futuro!=null?e.futuro:'&#8212;')+'</td>'
-     + '<td class="n '+(e.gex_B>=0?'po':'ne')+'">'+nf(e.gex_B,1)+'</td>'
-     + '<td class="n '+(pos?'po':'ne')+'">'+(e.contratos!=null?ni(e.contratos):'&#8212;')+'</td>'
-     + '<td class="n" style="color:var(--t3)">'+(e.micro!=null?ni(e.micro):'&#8212;')+'</td>'
-     + '<td><div class="tr"><div class="fl" style="width:'+w+'%;background:var(--'
-       +(pos?'po':'ne')+')"></div></div></td>'
-     + '</tr>';
-  }).join('');
-  $('#esc').innerHTML='<table class="tn"><thead><tr>'
-    + '<th class="n">'+D.sym+'</th><th class="n">'+((D.futuro&&D.futuro.contrato)||'FUT')+marcaFut()+'</th>'
-    + '<th class="n">GEX</th><th class="n">'+raiz+'</th><th class="n">'+(micro||'micro')+'</th>'
-    + '<th style="width:70px">cobertura</th></tr></thead><tbody>'+f+'</tbody></table>';
-
-  var c=D.cobertura;
-  $('#escNota').innerHTML = c
-    ? ('Ahora mismo, por cada <strong>1% de movimiento</strong> la mesa tiene que operar '
-       + '<strong>'+ni(Math.abs(c.contratos))+' '+raiz+'</strong> ('+ni(Math.abs(c.micro))+' '+micro+'). '
-       + (D.T.net_gex_B<0
-          ? 'Con gamma negativa <strong style="color:var(--ne)">vende cuando baja y compra cuando sube</strong>: empuja el movimiento.'
-          : 'Con gamma positiva <strong style="color:var(--po)">compra cuando baja y vende cuando sube</strong>: frena el movimiento.')
-       + ' Un contrato '+raiz+' vale '+ni(c.nocional_contrato)+' dolares de nocional.')
-    : '';
-}
-
-/* ---------- huecos de gamma ---------- */
-function pintarHuecos(){
-  var H=D.huecos||[], el=$('#hue'); if(!el) return;
-  el.innerHTML = H.length ? H.map(function(h){
-    return '<div class="rw"><div><div class="f">'+h.desde+' &ndash; '+h.hasta+'</div>'
-     + '<div class="d">'+(h.sobre_spot?'arriba del precio':'abajo del precio')
-     + (h.desde_fut!=null?' &middot; '+((D.futuro&&D.futuro.contrato)||'FUT')+' '
-        +h.desde_fut+' &ndash; '+h.hasta_fut:'')+'</div></div>'
-     + '<div><div class="g" style="color:var(--ac2)">'+h.ancho+'</div>'
-     + '<div class="o">pts sin freno</div></div></div>';
-  }).join('') : '<div class="nt" style="border:0">no hay tramos vacios cerca del precio</div>';
-}
-
-/* ---------- referencias de la sesion ---------- */
-function pintarSesion(){
-  var S=D.sesion, el=$('#ses'); if(!el) return;
-  if(!S){ el.innerHTML='<div class="nt" style="border:0">sin serie de precio</div>'; return; }
-  var fu=(D.futuro&&D.futuro.contrato)||'FUT';
-  var mp=[['apertura','Open','apertura de la sesion','apertura_fut'],
-          ['maximo','High of Day','maximo del dia','maximo_fut'],
-          ['minimo','Low of Day','minimo del dia','minimo_fut'],
-          ['ib_alto','Initial Balance High','techo de la primera hora','ib_alto_fut'],
-          ['ib_bajo','Initial Balance Low','piso de la primera hora','ib_bajo_fut']];
-  el.innerHTML=mp.map(function(m){
-    if(S[m[0]]==null) return '';
-    return '<div class="rw"><div><div class="f">'+m[1]+'</div><div class="d">'+m[2]+'</div></div>'
-     + '<div><div class="g">'+S[m[0]].toFixed(2)+'</div>'
-     + '<div class="o">'+fu+' '+(S[m[3]]!=null?S[m[3]]:'&#8212;')+'</div></div></div>';
-  }).join('')
-   + '<div class="nt">Rango del d&iacute;a '+S.rango+' pts &middot; primera hora '+S.ib_rango+' pts.'
-   + ' El Initial Balance es el rango de los primeros 60 minutos: mientras el precio queda adentro'
-   + ' la sesi&oacute;n es de rango, y romperlo suele arrancar la tendencia del d&iacute;a.</div>';
-}
-
-/* ---------- cinta de abajo ---------- */
-function pintarCinta(){
-  var el=$('#cinta'); if(!el) return;
-  var fu=(D.futuro&&D.futuro.contrato)||null, mi=(D.futuro&&D.futuro.micro)||null;
-  var S=D.S, Sf=(D.futuro&&D.futuro.spot);
-  var it=[];
-  function add(et,val,sub,cl){
-    it.push('<div class="ci"><div class="ce">'+et+'</div><div class="cv '+(cl||'')+'">'
-      +val+'</div><div class="cs">'+(sub||'')+'</div></div>');
-  }
-  add(D.sym+' <span class="tag">&iacute;ndice contado</span>',
-      S.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}),
-      D.spot_corregido ? ('implicito por la cadena &middot; publicado '
-        +D.indice_publicado.toLocaleString('es-AR')) : 'CBOE');
-  if(fu&&Sf!=null){
-    add(fu+' <span class="tag">futuro</span>'+marcaFut(),
-        Sf.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}),
-        'base '+(D.base>0?'+':'')+D.base+' &middot; micro '+mi
-        +(baseFloja()?' <span class="wf">base floja</span>':''));
-  }
-  add('Gamma Flip', (D.gamma_flip!=null?D.gamma_flip:'&#8212;'),
-      fu?(fu+' '+(D.gamma_flip_futuro!=null?D.gamma_flip_futuro:'&#8212;')):'',
-      S>D.gamma_flip?'po':'ne');
-  var N=(D.niveles_ricos||[]);
-  ['call_wall','gamma_pin','put_wall'].forEach(function(k){
-    var f=N.filter(function(z){return z.clave===k;})[0]; if(!f) return;
-    add(GLO[k]||k, f.indice, (fu&&f.futuro!=null?fu+' '+f.futuro+' &middot; ':'')
-        +(f.dist_ticks>0?'+':'')+f.dist_ticks+' tk',
-        k==='call_wall'?'po':k==='put_wall'?'ne':'');
-  });
-  add('Expected Move', '&plusmn;'+D.expected_move,
-      (S-D.expected_move).toFixed(0)+' &ndash; '+(S+D.expected_move).toFixed(0));
-  var c=D.cobertura;
-  if(c) add('Dealer Hedge / 1%', ni(Math.abs(c.contratos))+' '+((D.contrato_detalle&&D.contrato_detalle.raiz)||'ES'),
-            (D.T.net_gex_B<0?'vende en la baja':'compra en la baja'),
-            D.T.net_gex_B<0?'ne':'po');
-  el.innerHTML=it.join('');
-}
-var GLO={call_wall:'Call Wall',put_wall:'Put Wall',gamma_pin:'Gamma Pin'};
-
-/* ---------- identidad en cada tarjeta ---------- */
-function pintarIdentidad(){
-  var fu=(D.futuro&&D.futuro.contrato)||null;
-  var txt=D.sym+(fu?' &middot; '+fu:'');
-  // cada tarjeta dice a que indice y a que futuro se refiere, sin excepcion
-  Array.prototype.forEach.call(document.querySelectorAll('.cd > header'),function(h){
-    if(!h.querySelector('.id')){
-      var w=document.createElement('span');
-      w.style.cssText='display:flex;gap:7px;align-items:center;margin-left:auto';
-      var a=document.createElement('span'); a.className='id';
-      var b=document.createElement('span'); b.className='ts';
-      w.appendChild(a); w.appendChild(b); h.appendChild(w);
-    }
-  });
-  Array.prototype.forEach.call(document.querySelectorAll('.id'),function(e){
-    e.innerHTML=txt;
-  });
-  var ed='';
-  if(D.generado){
-    var gd=(D.generado.indexOf('+')>0||D.generado.slice(-1)==='Z')?D.generado:D.generado+'Z';
-    var m=Math.round((Date.now()-new Date(gd))/60000);
-    ed=(m<1?'reci&eacute;n':'hace '+m+' min');
-  }
-  Array.prototype.forEach.call(document.querySelectorAll('.ts'),function(e){
-    e.innerHTML='dato '+D.timestamp+(ed?' &middot; '+ed:'');
-  });
-}
-
-/* ---------- arranque ---------- */
-function redibujar(){ dibPrecio(); dibHist(); dibCurva(); dibSkew(); dibTerm(); dibIntra(); }
-function pintarTodo(){ pintarCabecera(); pintarAlarma(); pintarDeriva(); pintarNiveles(); pintarEscalera(); pintarHuecos();
-  pintarSesion(); pintarCinta(); pintarTabla(); pintarMatriz(); pintarLaterales();
-  pintarIdentidad(); redibujar(); }
-
-$('#tabs').addEventListener('click',function(e){
-  var b=e.target.closest('button'); if(!b){ return; }
-  modo=b.dataset.m;
-  Array.prototype.forEach.call(this.children,function(x){x.setAttribute('aria-selected',x===b);});
-  dibHist();
-});
-$('#modo').addEventListener('click',function(e){
-  var b=e.target.closest('button'); if(!b){ return; }
-  op=b.dataset.o;
-  Array.prototype.forEach.call(this.children,function(x){x.setAttribute('aria-selected',x===b);});
-  dibHist();
-});
-$('#clb').addEventListener('change',function(){ verLb=this.checked; dibHist(); });
-$('#c0d').addEventListener('change',function(){ ver0=this.checked?'si':'no'; dibPrecio(); });
-$('#zy').addEventListener('click',function(e){
-  var b=e.target.closest('button'); if(!b){ return; }
-  zoomY=b.dataset.z;
-  Array.prototype.forEach.call(this.children,function(x){x.setAttribute('aria-selected',x===b);});
-  dibPrecio(); dibHist();
-});
-$('#vp').addEventListener('click',function(e){
-  var b=e.target.closest('button'); if(!b||b.disabled){ return; }
-  vistaPrecio=b.dataset.v;
-  Array.prototype.forEach.call(this.children,function(x){x.setAttribute('aria-selected',x===b);});
-  pintarCabecera(); pintarAlarma(); pintarNiveles(); pintarEscalera(); pintarCinta();
-  pintarLaterales(); dibPrecio(); dibHist(); dibCurva();
-});
-
-(function(){
-  var i=0;
-  function probar(){
-    if(i>=window.__SRC__.length){
-      document.body.innerHTML='<div style="padding:40px;font-family:system-ui"><h1>Sin datos</h1>'+
-        '<p>Corre <code>python cli.py SPX --matriz --panel</code> y servi esta carpeta.</p></div>';
-      return;
-    }
-    fetch(window.__SRC__[i++],{cache:'no-store'})
-      .then(function(r){ if(!r.ok){ throw 0; } return r.json(); })
-      .then(function(j){ D=prep(j); pintarTodo();
-        addEventListener('resize',redibujar);
-        matchMedia('(prefers-color-scheme:dark)').addEventListener('change',pintarTodo); })
-      .catch(probar);
-  }
-  probar();
-})();
-</script>
+  </section>
+  <section class="vista" data-vista-tab="strikes"><div id="strikes"></div></section>
+  <section class="vista" data-vista-tab="vencimientos"><div id="vencimientos"></div></section>
+  <section class="vista" data-vista-tab="historia"><div id="historia"></div></section>
+  <section class="vista" data-vista-tab="gatillos"><div id="gatillos"></div></section>
+  <section class="vista" data-vista-tab="auditoria"><div id="auditoria"></div></section>
+  <section class="vista" data-vista-tab="ayuda"><div id="ayuda" class="ayuda"></div></section>
+</main>
+<aside class="ajustes" id="ajustes">
+  <button class="cerrar" id="cerrarAjustes">cerrar</button>
+  <h3>La cuenta (como en ATAS)</h3>
+  <label>Horizonte de vencimientos <select data-aj="nucleo.horizonte"><option value="Hoy">Hoy (0DTE)</option><option value="Semana">Semana</option><option value="Todo">Todo</option></select></label>
+  <label>Libro de la convexidad <select data-aj="nucleo.convexidad"><option value="Auto">Auto</option><option value="Volumen">Volumen</option><option value="OI">OI</option></select></label>
+  <label>Cuántas dominantes <select data-aj="nucleo.cuantas"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+  <label>Radio de dominantes (% del precio) <input type="number" step="0.5" min="0.5" max="6" data-aj="nucleo.radioDomPct"></label>
+  <label>Centroide gamma-ponderado <select data-aj="nucleo.centroide"><option value="true">sí</option><option value="false">no</option></select></label>
+  <label>Radio del centroide (pts) <input type="number" step="1" min="0" max="60" data-aj="nucleo.radioCentro"></label>
+  <label>Libro (solo ES) <select data-aj="libro"><option value="cboe">CBOE (SPX, 15 min tarde)</option><option value="rithmic">Rithmic ES vivo (si tu ATAS está abierto)</option></select></label>
+  <h3 style="margin-top:14px">Pantalla</h3>
+  <label>Banda de las dominantes (% del precio) <input type="number" step="0.02" min="0" max="0.5" data-aj="bandaPct"></label>
+  <label>Rayas punteadas (barras pesadas) <select data-aj="pesadas"><option value="0">ninguna</option><option value="2">2</option><option value="4">4</option></select></label>
+  <label>VWAP <select data-aj="vwap"><option value="rueda">de la rueda (13:30 UTC)</option><option value="globex">desde Globex (22:00 UTC)</option><option value="off">no</option></select></label>
+  <label>Pelotitas del Max Change <select data-aj="verPelotitas"><option value="true">sí</option><option value="false">no</option></select></label>
+  <label>OI detrás del volumen <select data-aj="verOi"><option value="true">sí</option><option value="false">no</option></select></label>
+  <label>Guiones y zero por vela <select data-aj="verGuiones"><option value="true">sí</option><option value="false">no</option></select></label>
+  <label>Perfil de la derecha <select data-aj="tipoPerfil"><option value="vol">GEX por volumen</option><option value="oi">GEX por OI</option></select></label>
+  <label>Zona horaria <select data-aj="zona"><option value="America/Argentina/Buenos_Aires">Buenos Aires</option><option value="America/New_York">Nueva York</option><option value="UTC">UTC</option></select></label>
+  <label>Velas visibles al abrir <input type="number" step="10" min="40" max="800" data-aj="velasVisibles"></label>
+  <p class="nota">Los ajustes quedan guardados en este navegador. El perfil se recalcula acá con la cadena cruda: no depende de la nube ni de tu PC.</p>
+</aside>
+<script src="nucleo.js"></script>
+<script src="grafico.js"></script>
+<script src="datos.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "panel", "runtimeExecutable": "python", "runtimeArgs": ["-m", "http.server", "8899", "--directory", "panel"], "port": 8899 }
+  ]
+}

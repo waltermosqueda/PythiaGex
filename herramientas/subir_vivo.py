@@ -131,7 +131,10 @@ def latido(subidos):
     audits = {}; version = None; pelotitas = None; base_rueda = None
     for l in leer_cola_texto(lg, 3000):
         if "AUDIT fut=" in l:
-            m = re.search(r"raiz=(\w+)", l)
+            # el log lo comparten todos los graficos: la raiz se deduce del tamaño del futuro (NQ ~29000, ES ~7600)
+            m = re.search(r"fut=([0-9.]+)", l)
+            fut = float(m.group(1)) if m else 0.0
+            audits["NQ" if fut > 15000 else "ES"] = l.strip()
             audits["ultimo"] = l.strip()
         if "arranca" in l and "Gamma Hoy" in l:
             m = re.search(r"Gamma Hoy ([0-9.a-z]+) arranca", l)
@@ -139,7 +142,7 @@ def latido(subidos):
         if "PELOTITAS" in l: pelotitas = l.strip()
         if "base de la rueda" in l.lower(): base_rueda = l.strip()
     return dict(generado=datetime.now(timezone.utc).isoformat(timespec="seconds"), pc=os.environ.get("COMPUTERNAME", "?"), version=version, audit=audits.get("ultimo"),
-                pelotitas=pelotitas, base_rueda=base_rueda, subidos=subidos)
+                audit_NQ=audits.get("NQ"), audit_ES=audits.get("ES"), pelotitas=pelotitas, base_rueda=base_rueda, subidos=subidos)
 
 
 def leer_cola_texto(ruta, n):

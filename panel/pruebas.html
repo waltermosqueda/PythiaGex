@@ -1,0 +1,46 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Pruebas del nucleo JS</title>
+<style>body{font:13px/1.5 Consolas,monospace;background:#0b0f14;color:#dfe6ee;padding:16px} .ok{color:#3fbf7f} .mal{color:#e5484d} pre{white-space:pre-wrap;word-break:break-all;background:#111820;padding:10px;border:1px solid #26313d}</style>
+<h2>Equivalencia del nucleo JS contra la nube (Python) y el indicador</h2>
+<p>Parametros: <code>?base=&lt;url o carpeta&gt;&amp;raiz=NQ&amp;futuro=29135.5&amp;ahora=2026-09-10T21:43:20Z</code>. Sin futuro/ahora usa los del estado de la nube.</p>
+<div id="out">cargando...</div>
+<script src="nucleo.js"></script>
+<script>
+(async function () {
+  const q = new URLSearchParams(location.search);
+  const base = q.get("base") || "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/";
+  const raiz = q.get("raiz") || "NQ";
+  const out = document.getElementById("out");
+  const lineas = [];
+  const fetchJson = async (n) => { const r = await fetch(base + n + "?v=" + Date.now()); if (!r.ok) throw new Error(n + " " + r.status); return r.json(); };
+  try {
+    const feed = await fetchJson("ultima-" + raiz + ".json");
+    let estado = null; try { estado = await fetchJson("estado-" + raiz + ".json"); } catch (e) { lineas.push("sin estado de la nube: " + e.message); }
+    const c = Nucleo.parsear(feed);
+    const ahora = q.get("ahora") ? new Date(q.get("ahora")) : (estado ? new Date(estado.generado) : new Date());
+    const futuro = q.get("futuro") ? +q.get("futuro") : (estado ? estado.futuro : c.spotIdx);
+    const A = Nucleo.ajustesDefault(raiz);
+    const [e1, e2] = Nucleo.trimestralDesde(ahora); A.expFuturo = e1; A.expFuturoAlt = e2;
+    const t0 = performance.now();
+    const L = Nucleo.calcular(A, c, futuro, ahora, null, null, null);
+    const ms = performance.now() - t0;
+    lineas.push("cadena " + c.ts + " generada " + (c.generado && c.generado.toISOString()) + " | filas " + c.filas.length + " | ahora " + ahora.toISOString() + " | futuro " + futuro + " | calculo " + ms.toFixed(0) + " ms");
+    lineas.push("JS      " + Nucleo.audit(L, c));
+    if (estado) lineas.push("NUBE    " + estado.audit);
+    if (q.get("audit")) lineas.push("ATAS    " + q.get("audit"));
+    const ex = Nucleo.extras(A, c, L.S, L.base, ahora);
+    lineas.push("extras JS: vencimientos " + ex.vencimientos.length + " | 0DTE dias " + (ex.vencimientos[0] && ex.vencimientos[0].dias.toFixed(3)) + " em1s " + (ex.vencimientos[0] && ex.vencimientos[0].em_1sigma && ex.vencimientos[0].em_1sigma.toFixed(1)) + " | maxpain " + JSON.stringify(ex.maxpain_0dte) + " | muros " + JSON.stringify(ex.muros_0dte) + " | pc_oi " + (ex.pc_oi && ex.pc_oi.toFixed(2)));
+    if (estado) {
+      const exn = estado.extras;
+      lineas.push("extras NUBE: vencimientos " + exn.vencimientos.length + " | 0DTE dias " + exn.vencimientos[0].dias + " em1s " + exn.vencimientos[0].em_1sigma + " | maxpain " + JSON.stringify(exn.maxpain_0dte) + " | muros " + JSON.stringify(exn.muros_0dte) + " | pc_oi " + exn.pc_oi);
+      // perfil strike a strike contra la nube
+      const mapa = new Map(estado.perfil.map(s => [s.K, s]));
+      let n = 0, peor = 0, peorK = null;
+      for (const s of L.perfil) { const p = mapa.get(s.K); if (!p) continue; n++; const d = Math.abs(s.gexVol - p.gexVol) / Math.max(1e6, Math.abs(p.gexVol)); if (d > peor) { peor = d; peorK = s.K; } }
+      lineas.push("perfil JS vs NUBE: " + n + " strikes comparados, peor diferencia relativa " + (peor * 100).toFixed(3) + " % en K " + peorK + (peor < 0.001 ? "  <span class=ok>IGUALES</span>" : "  <span class=mal>DIFIEREN</span>"));
+    }
+    out.innerHTML = "<pre>" + lineas.join("\n") + "</pre>";
+  } catch (e) { out.innerHTML = "<pre class=mal>" + e.stack + "</pre>"; }
+})();
+</script>
