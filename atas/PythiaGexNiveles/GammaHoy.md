@@ -464,3 +464,45 @@ funciona: buscar POR CODIGO DE CONTRATO derivado del micro local (MESU6 ->
 ESU6, y ESZ6 como siguiente). Resultado en el log: "6 vencimientos, 4318
 contratos (ESU6)" y, por primera vez, "6 vencimientos, 3720 contratos (NQU6)":
 el libro de Rithmic vuelve a tener 0DTE en ES y lo tiene tambien en NQ.
+
+## Auditoria en vivo del 2026-09-09 (noche): la base rota y todo lo demas bien
+
+Pedido: auditar en vivo, con varias fuentes y cuenta manual, dominantes, gammas,
+0DTE, convexidad, OI, Max Change; no corregir nada sin verificarlo varias veces.
+Herramienta nueva: laboratorio/auditar_vivo.py (rehace todo en strike y lo
+compara con la linea AUDIT del indicador).
+
+LO QUE ESTABA BIEN (MNQ, cadena de las 01:58 UTC, comparado en strike para no
+depender de la base): net vol -870M contra -875M del indicador; net OI -257M
+contra -259M; zero gamma vol K 29.352 contra 29.353; zero OI 29.364 contra
+29.366; +Γ K 29.510 y -Γ K 29.000 iguales; dominante de abajo con centroide
+K 29.000,54 identico; OI strike por strike igual a CBOE directo; dias al
+vencimiento con 6-21 s de error; la gamma contra la que publica CBOE, mediana
+0,97-1,00 (auditoria del 08-09).
+
+LO QUE ESTABA MAL, verificado cinco veces: la BASE. A las 21:08 UTC del 09-09
+la base "CRUDA" de la nube salto de 28,7 a 322,2 en NQ y de 7,1 a 72,7 en ES
+(lineas AUDIT de cada hora; los dos archivos de cadenas; los dos instrumentos;
+el carry teorico da 21 pts para NQ y 5,6 para ES; y 322-29 = 294 es el carry
+de 91 dias, o sea la cotizacion de la nube rolo al contrato de diciembre
+mientras los graficos siguen en septiembre; la medicion de la nube viene de
+pythiagex.base.medir con confiable=False). Consecuencia: todos los niveles de
+MNQ dibujados desde las 17:08 (hora de Nueva York) quedaron ~294 pts arriba;
+la "dominante de arriba" (K 29.200) estaba en realidad 156 pts DEBAJO del
+precio. ES se salvo hasta las 03:13 UTC por la "medida hace <= 360 min" y
+despues iba a caer en lo mismo (+67 pts).
+
+ARREGLO (Gamma Hoy 1.5 a 1.5d), en el nucleo: la base se acota con el carry
+teorico del contrato del grafico, precio x (tasa - dividendo) x dias / 365,
+con el vencimiento real: Security.Expiration de ATAS, o el codigo, o (ATAS da
+la raiz sola en pestañas ocultas) el trimestral mas cercano SUPUESTO aceptando
+tambien el siguiente. Orden: medida > medida reciente > de la rueda (nueva:
+el indicador mide en la rueda el cierre del grafico a la hora real del spot,
+902 s antes del ts de la cadena, menos ese spot; mediana de 30; guardada en
+%APPDATA%\ATAS\PythiaGex\base-rueda-<raiz>.json) > cruda > TEORICA. Lo que
+no cabe en la cota (60 % del carry o 0,06 % del precio) se descarta y la
+cabecera lo dice: "base TEORICA carry 20,1 (cruda 322,2 descartada)".
+Verificado en el log y en pantalla: NQ base 20,07, zero 29.374 (a mano
+29.352 + 20), precio 29.414 entre D2 29.021 y D1 29.532.
+Pendiente: entender por que la medicion de la nube da eso de noche
+(pythiagex/base.py) y por que NDX nunca sale "confiable".

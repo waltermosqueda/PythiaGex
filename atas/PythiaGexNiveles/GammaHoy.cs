@@ -162,6 +162,10 @@ namespace PythiaGex
                  Description = "De noche la cadena de CBOE se congela y el indicador en vivo sigue mostrando la ultima: 20 horas reproduce eso. Con 0,3 (20 min) solo hay niveles en la rueda americana.")]
         public decimal ArchivoEdadMaxHoras { get; set; } = 20m;
 
+        [Display(Name = "Dividendo del indice (para acotar la base; 0 = 1,2 % SPX / 0,8 % NDX)", GroupName = "1. Datos", Order = 15,
+                 Description = "La base (futuro menos indice) se compara con el carry teorico del contrato del grafico: precio x (tasa - dividendo) x dias al vencimiento / 365. Una base que se aleja mas del 60 % del carry (o de 0,06 % del precio) se descarta y se usa la siguiente: medida, medida reciente, de la rueda, cruda, teorica. Medido el 09-09: la cruda de la nube salto a 322 pts al rolar su cotizacion a diciembre.")]
+        public decimal Dividendo { get; set; } = 0m;
+
         [Display(Name = "Feed (url base)", GroupName = "1. Datos", Order = 1)]
         public string Url { get; set; } = "https://waltermosqueda.github.io/PythiaGex/datos/atas/";
 
@@ -328,6 +332,11 @@ namespace PythiaGex
         private readonly Dictionary<int, (double Zero, double[] Mc)> _marcas = new();
         // gatillos de order flow en la banda (GatilloBanda): por vela, para dibujar y registrar
         private readonly GatilloBanda _gatVivo = new();
+        // la base de la rueda, medida por el indicador (1.5): futuro del grafico a la hora real
+        // del spot de la cadena (902 s de retraso de CBOE) menos ese spot; mediana de 30
+        private readonly List<double> _baseObs = new();
+        private double _baseRueda = double.NaN; private DateTime _baseRuedaUtc = DateTime.MinValue, _baseObsUltimaCadena = DateTime.MinValue;
+        private bool _baseCargada; private string _baseOrigenUlt = "";
         private readonly Dictionary<int, List<GatilloBanda.Marca>> _disparos = new();
         private int _barraGat = -1, _barraBig = -1, _bigVistos;
         private readonly object _bigLlave = new();
@@ -474,7 +483,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.4b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.5e arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -483,7 +492,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.4b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.5e arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -649,6 +658,7 @@ namespace PythiaGex
             a.Tasa = (double)Tasa; a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte; a.CuantasDominantes = CuantasDominantes;
             a.RadioDominantesPct = (double)RadioDominantesPct; a.PicoRadioPct = (double)PicoRadioPct; a.MuchoPct = MuchoPct; a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
             a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado;
+            a.ExpiracionFuturoUtc = ExpiracionFuturo(); a.ExpiracionFuturoAltUtc = _expAlt; a.Dividendo = DividendoUsado();
             double edadMax = (double)Math.Max(0.05m, ArchivoEdadMaxHoras);
             int fin = Math.Max(0, CurrentBar - 1);      // la ultima vela es del vivo (Hibrido) o se muestra con la ultima foto (Archivo)
             int i = 0, con = 0, sin = 0;
@@ -823,6 +833,7 @@ namespace PythiaGex
             decimal cierre;
             try { cierre = GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { return; }
             if (cierre <= 0) return;
+            try { MedirBaseRueda(_c); } catch (Exception e) { Registrar(e); }
             RepreciarCon(_c, (double)cierre, DateTime.UtcNow, Math.Max(0, CurrentBar - 1));
         }
 
@@ -847,6 +858,7 @@ namespace PythiaGex
             lock (_candado)
             {
                 _perfil = L.Perfil; _S = L.S; _futuro = L.Futuro; _base = L.Base; _baseOrigen = L.BaseOrigen; _masCercaUlt = L.MasCerca;
+                if (L.BaseOrigen != _baseOrigenUlt) { _baseOrigenUlt = L.BaseOrigen; Log("base: " + L.Base.ToString("0.00", CultureInfo.InvariantCulture) + " (" + L.BaseOrigen + ")" + (double.IsNaN(L.Carry) ? "" : " carry teorico " + L.Carry.ToString("0.0", CultureInfo.InvariantCulture))); }
                 _zeroVol = L.ZeroVol; _zeroOi = L.ZeroOi; _netVol = L.NetVol; _netOi = L.NetOi;
                 _mpVol = L.MpVol; _mnVol = L.MnVol; _mpOi = L.MpOi; _mnOi = L.MnOi;
                 _maxAbsVol = L.MaxAbsVol; _maxAbsOi = L.MaxAbsOi; _maxAbsConv = L.MaxAbsConv;
@@ -904,6 +916,130 @@ namespace PythiaGex
             centUsar.Anotar(cerrada, c.LastTime != default(DateTime) ? c.LastTime : c.Time,
                 (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close,
                 (double)c.Volume, (double)c.Ticks, (double)c.Delta, sp, niv, ExtraOf(c, big));
+        }
+
+        // ==================================================================
+        // La base acotada (1.5): vencimiento del contrato, dividendo y la base de la rueda
+        // ==================================================================
+        private DateTime ExpiracionFuturo()
+        {
+            DateTime exp = default(DateTime); string de = "";
+            try
+            {
+                var s = TradingManager?.Security;
+                if (s != null && s.Expiration != default(DateTime) && s.Expiration.Year >= 2000)
+                {
+                    // el contrato vence a la apertura de Nueva York de ese dia (13:30 UTC): alcanza para el carry
+                    exp = DateTime.SpecifyKind(s.Expiration.Date, DateTimeKind.Utc).AddHours(13.5); de = "Security " + s.Code;
+                }
+            }
+            catch { }
+            // sin Security (pestaña oculta al arrancar, medido el 09-09): del codigo del instrumento,
+            // #MESU6 -> tercer viernes de septiembre de 2026 (regla de los futuros de indices del CME)
+            if (exp == default(DateTime))
+            {
+                try { exp = ExpiracionDeCodigo(InstrumentInfo?.Instrument); de = "codigo " + InstrumentInfo?.Instrument; } catch { }
+            }
+            _expAlt = default(DateTime);
+            if (exp == default(DateTime))
+            {
+                // ni Security ni mes en el codigo (ATAS da la raiz sola, "MES"): se supone el
+                // trimestral mas cercano y se acepta tambien el siguiente, por si el grafico ya rolo
+                exp = TrimestralDesde(DateTime.UtcNow.AddDays(1)); _expAlt = TrimestralDesde(exp.AddDays(1)); de = "SUPUESTO: trimestral mas cercano";
+            }
+            if (!_expLogueada) { _expLogueada = true; Log("vencimiento del contrato: " + exp.ToString("yyyy-MM-dd") + " (" + de + ")" + (_expAlt != default(DateTime) ? ", alternativo " + _expAlt.ToString("yyyy-MM-dd") : "")); }
+            return exp;
+        }
+        private bool _expLogueada;
+        private DateTime _expAlt;
+
+        /// <summary>El tercer viernes de marzo/junio/septiembre/diciembre que sigue a la fecha dada.</summary>
+        private static DateTime TrimestralDesde(DateTime desdeUtc)
+        {
+            for (int k = 0; k < 8; k++)
+            {
+                int mes = ((desdeUtc.Month - 1) / 3 + 1 + k) * 3;       // 3, 6, 9, 12, 15...
+                int anio = desdeUtc.Year + (mes - 1) / 12; mes = (mes - 1) % 12 + 1;
+                var d1 = new DateTime(anio, mes, 1, 0, 0, 0, DateTimeKind.Utc);
+                int haciaViernes = ((int)DayOfWeek.Friday - (int)d1.DayOfWeek + 7) % 7;
+                var venc = d1.AddDays(haciaViernes + 14).AddHours(13.5);
+                if (venc > desdeUtc) return venc;
+            }
+            return default(DateTime);
+        }
+
+        private static DateTime ExpiracionDeCodigo(string codigo)
+        {
+            if (string.IsNullOrEmpty(codigo)) return default(DateTime);
+            var limpio = System.Text.RegularExpressions.Regex.Replace(codigo.ToUpperInvariant(), "[^A-Z0-9]", "");
+            var m = System.Text.RegularExpressions.Regex.Match(limpio, @"^[A-Z0-9]*?([FGHJKMNQUVXZ])(\d{1,2})$");
+            if (!m.Success) return default(DateTime);
+            int mes = "FGHJKMNQUVXZ".IndexOf(m.Groups[1].Value[0]) + 1;
+            int y = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+            int anio = m.Groups[2].Value.Length == 2 ? 2000 + y : (DateTime.UtcNow.Year / 10) * 10 + y;
+            if (m.Groups[2].Value.Length == 1 && anio < DateTime.UtcNow.Year - 1) anio += 10;
+            var d1 = new DateTime(anio, mes, 1, 0, 0, 0, DateTimeKind.Utc);
+            int haciaViernes = ((int)DayOfWeek.Friday - (int)d1.DayOfWeek + 7) % 7;
+            return d1.AddDays(haciaViernes + 14).AddHours(13.5);      // tercer viernes, 9:30 de Nueva York
+        }
+
+        private double DividendoUsado() => Dividendo > 0 ? (double)Dividendo : (Raiz() == "NQ" ? 0.008 : 0.012);
+
+        private string RutaBaseRueda() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex", "base-rueda-" + Raiz() + ".json");
+
+        /// <summary>Mide la base en la rueda: el cierre de la vela del grafico a la hora real del
+        /// spot de la cadena (su ts menos los 902 s de retraso de CBOE) menos ese spot. Mediana de
+        /// las ultimas 30 cadenas distintas; se guarda en disco para las noches y los reinicios.</summary>
+        private void MedirBaseRueda(Feed.Cadena c)
+        {
+            var iv = CultureInfo.InvariantCulture;
+            if (!_baseCargada)
+            {
+                _baseCargada = true;
+                try
+                {
+                    var p = RutaBaseRueda();
+                    if (File.Exists(p))
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(p));
+                        _baseRueda = doc.RootElement.GetProperty("base").GetDouble();
+                        _baseRuedaUtc = DateTime.ParseExact(doc.RootElement.GetProperty("utc").GetString(), "yyyy-MM-ddTHH:mm:ss", iv, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal);
+                        Log("base de la rueda cargada: " + _baseRueda.ToString("0.00", iv) + " medida " + _baseRuedaUtc.ToString("yyyy-MM-dd HH:mm") + " UTC");
+                    }
+                }
+                catch (Exception e) { Registrar(e); }
+            }
+            _nucleo.A.ExpiracionFuturoUtc = ExpiracionFuturo(); _nucleo.A.ExpiracionFuturoAltUtc = _expAlt;
+            _nucleo.A.Dividendo = DividendoUsado();
+            var ahora = DateTime.UtcNow;
+            if (c != null && !c.EsFuturo && c.GeneradoUtc != default(DateTime) && c.GeneradoUtc != _baseObsUltimaCadena && c.SpotIdx > 0)
+            {
+                int mUtc = c.GeneradoUtc.Hour * 60 + c.GeneradoUtc.Minute;
+                // solo con el contado abierto (9:35-16:10 de Nueva York) y la cadena fresca
+                if (mUtc >= 13 * 60 + 35 && mUtc <= 20 * 60 + 10 && (ahora - c.GeneradoUtc).TotalMinutes <= 3)
+                {
+                    _baseObsUltimaCadena = c.GeneradoUtc;
+                    int b = BarraDe(c.GeneradoUtc.AddSeconds(-902));
+                    if (b >= 0)
+                    {
+                        double precio; try { precio = (double)GetCandle(b).Close; } catch { precio = 0; }
+                        if (precio > 0)
+                        {
+                            _baseObs.Add(precio - c.SpotIdx);
+                            if (_baseObs.Count > 30) _baseObs.RemoveAt(0);
+                            var ord = _baseObs.OrderBy(x => x).ToList();
+                            _baseRueda = ord[ord.Count / 2]; _baseRuedaUtc = ahora;
+                            if (_baseObs.Count == 5 || _baseObs.Count % 30 == 0)
+                            {
+                                Log("base de la rueda: mediana " + _baseRueda.ToString("0.00", iv) + " de " + _baseObs.Count + " muestras (ultima " + (precio - c.SpotIdx).ToString("0.00", iv) + ")");
+                                try { File.WriteAllText(RutaBaseRueda(), "{\"base\":" + _baseRueda.ToString("0.####", iv) + ",\"utc\":\"" + ahora.ToString("yyyy-MM-ddTHH:mm:ss", iv) + "\"}"); } catch { }
+                            }
+                        }
+                    }
+                }
+            }
+            _nucleo.A.BaseRueda = _baseRueda;
+            _nucleo.A.BaseRuedaEdadMin = double.IsNaN(_baseRueda) ? double.NaN : (ahora - _baseRuedaUtc).TotalMinutes;
         }
 
         // ==================================================================

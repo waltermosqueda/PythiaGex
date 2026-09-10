@@ -29,6 +29,12 @@ namespace PythiaGex
         {
             public double Tasa = 0.0375;
             public HorizonteVenc Horizonte = HorizonteVenc.Hoy;
+            // la base acotada (1.5): vencimiento del contrato del grafico y dividendo del indice
+            // para el carry teorico; y la base medida en la rueda por el indicador
+            public DateTime ExpiracionFuturoUtc = default(DateTime);
+            public DateTime ExpiracionFuturoAltUtc = default(DateTime);   // el trimestre siguiente, cuando el vencimiento es supuesto
+            public double Dividendo = 0.012;
+            public double BaseRueda = double.NaN, BaseRuedaEdadMin = double.NaN;
             public int CuantasDominantes = 2;
             public double RadioDominantesPct = 2.0;
             public double PicoRadioPct = 0.35;
@@ -87,6 +93,7 @@ namespace PythiaGex
             public double[] Estela = new double[0];
             public DateTime Hora;
             public double MasCerca = double.NaN;   // dias al vencimiento mas cercano del mapa
+            public double Carry = double.NaN;      // carry teorico de la base (NaN si no se conoce el vencimiento del futuro)
         }
 
         public static readonly int[] Ventanas = { 1, 5, 10, 15, 30 };
@@ -191,12 +198,32 @@ namespace PythiaGex
         {
             var L = new Lectura { Futuro = futuro, Hora = ahoraUtc };
 
-            // la base: medida > ultima buena reciente > cruda; nunca inventada
+            // la base: medida > medida reciente > de la rueda > cruda > TEORICA, y TODAS acotadas
+            // con el carry teorico del contrato del grafico (1.5). Medido el 2026-09-09: la cruda de
+            // la nube salto de 28,7 a 322,2 (NQ) cuando su cotizacion rolo a diciembre, y todos
+            // los niveles quedaron ~294 pts arriba. Una base que no se parece al carry no se usa.
+            var iv0 = CultureInfo.InvariantCulture;
+            double carry = double.NaN;
+            if (A.ExpiracionFuturoUtc != default(DateTime) && A.ExpiracionFuturoUtc > ahoraUtc)
+                carry = futuro * (A.Tasa - A.Dividendo) * (A.ExpiracionFuturoUtc - ahoraUtc).TotalDays / 365.0;
+            L.Carry = carry;
+            double carryAlt = double.NaN;
+            if (A.ExpiracionFuturoAltUtc != default(DateTime) && A.ExpiracionFuturoAltUtc > ahoraUtc)
+                carryAlt = futuro * (A.Tasa - A.Dividendo) * (A.ExpiracionFuturoAltUtc - ahoraUtc).TotalDays / 365.0;
+            bool Cerca(double b, double k) => Math.Abs(b - k) <= Math.Max(Math.Abs(k) * 0.6, futuro * 0.0006);
+            // la medida (parity de opciones) puede parecerse al trimestre siguiente si el grafico
+            // ya rolo; la CRUDA no tiene ese permiso: la rota de esta noche era justo "de diciembre"
+            bool RazonableMedida(double b) => double.IsNaN(carry) || Cerca(b, carry) || (!double.IsNaN(carryAlt) && Cerca(b, carryAlt));
+            bool Razonable(double b) => double.IsNaN(carry) || Cerca(b, carry);
+            string Cota(string o, double b) => double.IsNaN(carry) ? o : o + (Razonable(b) ? "" : " FUERA DE COTA");
             double baseUsada; string origen;
             if (c.EsFuturo) { baseUsada = 0; origen = "libro ES (Rithmic), sin base"; }
-            else if (c.BaseConfiable && c.Base != 0) { baseUsada = c.Base; origen = "medida"; }
-            else if (c.BaseUltimaBuena != 0 && c.BaseUltimaBuenaEdad <= 360) { baseUsada = c.BaseUltimaBuena; origen = "medida hace " + c.BaseUltimaBuenaEdad.ToString("0", CultureInfo.InvariantCulture) + " min"; }
-            else if (c.BaseCruda != 0) { baseUsada = c.BaseCruda; origen = "CRUDA " + c.BaseErrorTicks.ToString("0", CultureInfo.InvariantCulture) + " ticks"; }
+            else if (c.BaseConfiable && c.Base != 0 && RazonableMedida(c.Base)) { baseUsada = c.Base; origen = "medida"; }
+            else if (c.BaseUltimaBuena != 0 && c.BaseUltimaBuenaEdad <= 360 && RazonableMedida(c.BaseUltimaBuena)) { baseUsada = c.BaseUltimaBuena; origen = "medida hace " + c.BaseUltimaBuenaEdad.ToString("0", iv0) + " min"; }
+            else if (!double.IsNaN(A.BaseRueda) && A.BaseRuedaEdadMin <= 24 * 60 && Razonable(A.BaseRueda)) { baseUsada = A.BaseRueda; origen = "de la rueda hace " + A.BaseRuedaEdadMin.ToString("0", iv0) + " min"; }
+            else if (c.BaseCruda != 0 && Razonable(c.BaseCruda)) { baseUsada = c.BaseCruda; origen = "CRUDA " + c.BaseErrorTicks.ToString("0", iv0) + " ticks"; }
+            else if (!double.IsNaN(carry)) { baseUsada = carry; origen = "TEORICA carry " + carry.ToString("0.0", iv0) + (c.BaseCruda != 0 ? " (cruda " + c.BaseCruda.ToString("0.0", iv0) + " descartada)" : ""); }
+            else if (c.BaseCruda != 0) { baseUsada = c.BaseCruda; origen = "CRUDA " + c.BaseErrorTicks.ToString("0", iv0) + " ticks (sin cota)"; }
             else { L.SinBase = true; L.BaseOrigen = "sin base"; return L; }
 
             double S = futuro - baseUsada;

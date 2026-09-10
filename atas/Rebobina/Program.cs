@@ -46,6 +46,8 @@ namespace PythiaGex
                 if (c == null) { Console.Error.WriteLine("no pude parsear la cadena"); return 2; }
                 var n = new GammaHoyNucleo();
                 n.A.Horizonte = Enum.Parse<GammaHoyNucleo.HorizonteVenc>(Arg(args, "--horizonte", "Hoy"), true);
+                if (Arg(args, "--futuro-vence") != null) n.A.ExpiracionFuturoUtc = DateTime.SpecifyKind(DateTime.Parse(Arg(args, "--futuro-vence"), inv), DateTimeKind.Utc).AddHours(13.5);
+                if (Arg(args, "--dividendo") != null) n.A.Dividendo = double.Parse(Arg(args, "--dividendo"), inv);
                 // la hora de la cuenta: la de la cadena (asi una cadena vieja se juzga a su hora) salvo --ahora
                 var ahoraPrueba = Arg(args, "--ahora") != null ? DateTime.Parse(Arg(args, "--ahora"), inv, System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal)
                                 : (c.GeneradoUtc != default(DateTime) ? c.GeneradoUtc : DateTime.UtcNow);
