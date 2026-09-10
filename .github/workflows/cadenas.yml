@@ -75,3 +75,7 @@ jobs:
             git pull -q --rebase origin cadenas || true
             git push -q origin cadenas
           fi
+          # la web lee por jsDelivr (cache de 12 h por rama): se purga lo que se acaba de escribir
+          for f in ultima-ES.json ultima-NQ.json estado-ES.json estado-NQ.json velas-ES.json velas-NQ.json serie-ES-$(date -u +%F).jsonl serie-NQ-$(date -u +%F).jsonl; do
+            curl -s -m 15 "https://purge.jsdelivr.net/gh/waltermosqueda/PythiaGex@cadenas/$f" > /dev/null || true
+          done

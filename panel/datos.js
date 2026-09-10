@@ -14,7 +14,10 @@
  */
 (function (global) {
   "use strict";
-  const BASE_DEF = "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/";
+  // jsDelivr sirve la rama y se purga al instante desde el subidor y desde Actions; raw.githubusercontent
+  // cachea 5 min aunque cambie la query (medido 10-09). raw queda de respaldo si jsDelivr falla.
+  const BASE_DEF = "https://cdn.jsdelivr.net/gh/waltermosqueda/PythiaGex@cadenas/";
+  const BASE_RESPALDO = "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/";
   const RAIZ = { MNQ: "NQ", MES: "ES", NQ: "NQ", ES: "ES" };
   const cache = new Map();
 
@@ -23,8 +26,9 @@
     const c = cache.get(k);
     if (c && maxEdadMs && ahora - c.t < maxEdadMs) return c.v;
     try {
-      const r = await fetch(k + "?v=" + ahora, { cache: "no-store" });
-      if (!r.ok) throw new Error(r.status);
+      let r = await fetch(k + "?v=" + ahora, { cache: "no-store" }).catch(() => null);
+      if ((!r || !r.ok) && base === BASE_DEF) r = await fetch(BASE_RESPALDO + nombre + "?v=" + ahora, { cache: "no-store" });
+      if (!r || !r.ok) throw new Error(r ? r.status : "red");
       const txt = await r.text();
       const v = nombre.endsWith(".jsonl") ? txt.split("\n").filter(l => l.length > 2).map(l => { try { return JSON.parse(l); } catch (e) { return null; } }).filter(Boolean) : JSON.parse(txt);
       cache.set(k, { t: ahora, v });

@@ -12,6 +12,9 @@ autenticada). Un archivo = un commit por vuelta; la rama se aplana sola a las 22
 La web (panel/) lo lee y, si es fresco, lo prefiere a la nube. Si la PC se apaga, deja de llegar y la
 web lo dice y sigue con la nube (CBOE + Yahoo, con retraso).
 
+La web lee vivo.json por jsDelivr (cdn.jsdelivr.net/gh/<repo>@cadenas/vivo.json) que se purga
+despues de cada subida; raw.githubusercontent.com cachea 5 minutos y no sirve para esto.
+
 Sin ventana: bajo pythonw cada llamada a gh abria una consola negra (10-09 19:30, el operador no
 podia usar la PC). CREATE_NO_WINDOW la esconde. Cada llamada tiene tope de 60 s: una que se cuelga
 no frena el bucle.
@@ -26,6 +29,7 @@ import re
 import subprocess
 import sys
 import time
+import urllib.request
 from datetime import datetime, timezone
 
 REPO = "waltermosqueda/PythiaGex"
@@ -75,9 +79,20 @@ def subir(nombre, obj, mensaje):
         rc, out, err = gh(["-X", "PUT", "repos/%s/contents/%s" % (REPO, nombre), "--input", "-", "--jq", ".content.sha"], json.dumps(carga))
     if rc == 0 and out:
         _sha[nombre] = out
+        purgar(nombre)
         return len(cuerpo)
     log("fallo %s: %s" % (nombre, err[:200]))
     return 0
+
+
+def purgar(nombre):
+    """raw.githubusercontent.com cachea 5 min aunque se cambie la query (medido 10-09: devolvia el
+    vivo de 5 min antes). jsDelivr sirve la rama y se puede purgar al instante: la web lee de ahi."""
+    try:
+        with urllib.request.urlopen("https://purge.jsdelivr.net/gh/%s@%s/%s" % (REPO, RAMA, nombre), timeout=10) as r:
+            r.read(200)
+    except Exception as e:
+        log("purge jsDelivr fallo: %s" % e)
 
 
 def leer_cola(ruta, n, ancho=900):
