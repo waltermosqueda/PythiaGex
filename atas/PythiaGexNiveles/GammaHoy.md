@@ -581,3 +581,31 @@ zona), pero nueve de cada diez no llegan, y "decrece" tambien sube la chance (lo
 adelanta es que la exposicion de ese strike esta cambiando). Son contexto ("donde se esta
 moviendo la cobertura"), no un gatillo. Igual que dice el creador: "sigo con las pelotitas,
 confirmacion", nunca "entro por la pelotita".
+
+## Auditoria en la rueda del 2026-09-10 (11:27-11:45 local, MNQ)
+
+- NUCLEO CONTRA CUENTA MANUAL, MISMA CADENA (la del feed de las 14:09 UTC que usaba el
+  indicador a las 14:25): neto vol +2,25B contra +2,29B; zero vol K 29.095,9 contra
+  29.096,6; zero OI 29.340,5 contra 29.343,4; +Γ K 29.430 y -Γ K 28.890 iguales;
+  dominantes con centroide 29.429,43 / 29.200,26 IDENTICAS; pico K 29.200. Coincide.
+  (Comparar con la cadena de la nube de las 14:25 daba diferencias: eran DOS cadenas
+  distintas, no un error: el feed por minuto y el archivo llegan cada ~15 min porque el
+  cron de GitHub Actions corre cada ~15 min aunque diga "cada minuto".)
+- BASE: cruda de la nube 317-331 (rolo a diciembre, ver auditoria del 09-09), descartada;
+  TEORICA 18,8. Yahoo por minuto: NQU26 - ^NDX = 12 a 28 pts en la manana (25 a las
+  14:09-14:20 UTC), NQZ26 - ^NDX = 290: la cota hace lo correcto.
+- "BASE DE LA RUEDA" (la medicion propia del indicador) SALIO 271 en NQ y 55 en ES:
+  BarraDe(horaUtc) convertia la hora de la vela con ToUniversalTime(), que trata la hora
+  "Unspecified" de ATAS como local y suma 3 h: devolvia la vela de tres horas antes. La
+  cota la rechazo (por eso no hizo daño) y quedo arreglado en 1.6c (usa Utc()). El mismo
+  error corria 3 h las burbujas de Big Trades de la cadena viva. Como el feed cambia cada
+  ~15 min, las 5 muestras de la mediana tardan ~75 min en juntarse.
+- MAX CHANGE (arreglo 1.5f) en vivo: mc30 = barra grande 38 % de los minutos (ayer 100 %).
+- PELOTITAS en vivo: K 29.200 "CRECE" (294 -> 293 -> 344 -> 349 M), K 29.300 "mezclado"
+  (422 -> 485 -> 570 -> 557 M: crecio 15 min y afloja el ultimo minuto); en pantalla se
+  ven separadas de la punta (zoom_rueda2).
+- GATILLO en vivo: 11:22 local "rechazo·tren LARGO en 7603" (MES, dominante 7592,6):
+  despues maximo 7620 (+17), minimo 7601,25 (-1,75): gano con la regla 6/6. Un caso.
+- Archivo local del dia: se baja al arrancar y no se refresca durante la sesion (la
+  pantalla no lo necesita: el pasado del dia lo lleva el vivo); al reiniciar se completa.
+  Para auditar hay que usar el archivo de la nube (rama cadenas, raiz del repo).

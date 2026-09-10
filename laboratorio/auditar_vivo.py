@@ -114,6 +114,10 @@ def main():
     base_mano = arg("--base", 0.0)
     fut = arg("--fut", 0.0)
     cs = cadenas(raiz)
+    # --cadena <radar.json>: usar ESA cadena (p. ej. el feed por minuto recien bajado) como la ultima
+    if "--cadena" in sys.argv:
+        import io as _io
+        cs.append(json.load(_io.open(sys.argv[sys.argv.index("--cadena") + 1], encoding="utf-8")))
     d = cs[-1]; c = d["cadena"]
     S_idx = float(c["spot_idx"])
     base_cad = d["base"] if d.get("base_confiable") and d.get("base") else (d.get("base_cruda") or 0.0)

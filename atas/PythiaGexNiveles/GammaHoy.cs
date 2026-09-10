@@ -512,7 +512,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.6b arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.6c arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -521,7 +521,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.6b arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.6c arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1667,7 +1667,9 @@ namespace PythiaGex
                 for (int b = CurrentBar - 1; b >= Math.Max(0, CurrentBar - 600); b--)
                 {
                     var c = GetCandle(b);
-                    var t0 = c.Time.Kind == DateTimeKind.Utc ? c.Time : c.Time.ToUniversalTime();
+                    // la hora de la vela viene "Unspecified" y ES UTC: ToUniversalTime() le sumaba 3 h
+                    // y devolvia la vela de 3 horas antes (medido: base de la rueda 271 en vez de 22)
+                    var t0 = Utc(c.Time);
                     if (t0 <= horaUtc) return b;
                 }
             }
