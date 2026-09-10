@@ -24,6 +24,7 @@
     <Compile Include="..\PythiaGexNiveles\GammaVivoNucleo.cs" />
     <Compile Include="..\PythiaGexNiveles\Centinela.cs" />
     <Compile Include="..\PythiaGexNiveles\Black76.cs" />
+    <Compile Include="..\PythiaGexNiveles\GatilloModelo.cs" />
   </ItemGroup>
 
 </Project>

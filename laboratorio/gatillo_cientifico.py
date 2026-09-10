@@ -36,8 +36,8 @@ BANDA_PCT, QUIETA_PCT = 0.08, 0.026
 ENFRIAMIENTO = 15          # minutos entre disparos del mismo gatillo
 
 
-def cargar(inst):
-    p = os.path.join(ATAS, "pythiagex-centinela-rebobinado-atas-%s-TimeFrame-M1.jsonl" % inst)
+def cargar(inst, marco="M1"):
+    p = os.path.join(ATAS, "pythiagex-centinela-rebobinado-atas-%s-TimeFrame-%s.jsonl" % (inst, marco))
     ult = {}
     for l in io.open(p, encoding="utf-8", errors="replace"):
         try:

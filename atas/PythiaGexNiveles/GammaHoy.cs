@@ -117,6 +117,17 @@ namespace PythiaGex
                  Description = "Triangulo en la vela donde, recien entrado el precio en la banda de una dominante QUIETA, el order flow dio un gatillo. RechazoTren: solo 'tres deltas seguidos en contra de la llegada' (la unica pista del laboratorio del 08-09: 27 casos, 70 % contra 37 % del placebo en ES; POCOS casos, no es una prueba). Todos: tambien rechazo por delta fuerte, divergencia y ruptura con delta (esta salio al reves: se dibuja gris). Cada disparo se registra en pythiagex-gatillos-<inst>.jsonl para que laboratorio/gatillos.py lo juzgue contra placebo.")]
         public GatillosEnPantalla VerGatillos { get; set; } = GatillosEnPantalla.RechazoTren;
 
+        public enum GatilloModeloModo { SoloTarde, TodoElDia, Ninguno }
+
+        [Display(Name = "Gatillo MODELO (ES, 1 min): regresion del laboratorio", GroupName = "3. Pantalla", Order = 24,
+                 Description = "Regresion logistica ajustada el 10-09 sobre 13 dias de MES por minuto: 10 rasgos (momentum corto, delta, distancias al zero, majors, dominantes y Max Change) -> probabilidad de tocar +3 antes que -3 en 10 min. Fuera de muestra: 61 % con p >= 0,70; en la tarde de Nueva York (14-16 h) 83 % de 59 casos, 7 por dia. Rombo verde = largo, rojo = corto, con la p. SOLO raiz ES y grafico de 1 minuto. En NQ no hay señal. Objetivo 3 pts, no un movimiento grande. Cada disparo se registra y se juzga con dias nuevos.")]
+        public GatilloModeloModo ModoModelo { get; set; } = GatilloModeloModo.SoloTarde;
+
+        [Display(Name = "Gatillo MODELO: umbral de probabilidad", GroupName = "3. Pantalla", Order = 25,
+                 Description = "0,70 = 7 disparos por dia en la tarde (83 % medido); 0,65 = el doble de disparos con ~80 %; mas bajo es ruido.")]
+        [Range(0.55, 0.95)]
+        public decimal UmbralModelo { get; set; } = 0.70m;
+
         [Display(Name = "Gatillos: dominante quieta (% del precio en 5 velas)", GroupName = "3. Pantalla", Order = 19,
                  Description = "El toque cuenta solo si la dominante se movio menos que esto en las 5 velas previas (0,026 % = 2 pts en ES, ~8 en NQ): el precio fue a la banda, no la banda al precio.")]
         public decimal GatilloQuietaPct { get; set; } = 0.026m;
@@ -332,6 +343,8 @@ namespace PythiaGex
         private readonly Dictionary<int, (double Zero, double[] Mc)> _marcas = new();
         // gatillos de order flow en la banda (GatilloBanda): por vela, para dibujar y registrar
         private readonly GatilloBanda _gatVivo = new();
+        private readonly GatilloModelo _modVivo = new();
+        private bool _modAvisado; private double _modUltimaP = double.NaN;
         // la base de la rueda, medida por el indicador (1.5): futuro del grafico a la hora real
         // del spot de la cadena (902 s de retraso de CBOE) menos ese spot; mediana de 30
         private readonly List<double> _baseObs = new();
@@ -512,7 +525,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.6c arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.7 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -521,7 +534,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.6c arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.7 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -695,6 +708,7 @@ namespace PythiaGex
             // los gatillos de order flow sobre el pasado: la misma logica que en vivo, vela a
             // vela y en orden, con las dominantes que regian en cada una (sin cadena: sin banda)
             var gat = new GatilloBanda(); ConfigurarGatillo(gat);
+            var modArch = new GatilloModelo();
             var tirosArch = new List<GatilloBanda.Marca>();
             lock (_candado) _disparos.Clear();
             void Gat(int barG, IndicatorCandle cg, DateTime horaG, List<(double Fut, double Gex)> domsG)
@@ -747,6 +761,12 @@ namespace PythiaGex
                 lock (_candado) { _fotosBarra[bar] = foto; _estela[bar] = L.Estela; _marcas[bar] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut }); }
                 try { AnotarArchivo(bar, c, L); } catch (Exception e) { Registrar(e); }
                 try { Gat(bar, c, cierra, L.Doms); } catch (Exception e) { Registrar(e); }
+                try
+                {
+                    var tm = GatilloModeloVela(modArch, bar, c, cierra, L.Doms, L.ZeroVol, L.MpVol, L.MnVol, L.MaxChange);
+                    if (tm != null) { lock (_candado) { if (!_disparos.TryGetValue(bar, out var lt0)) _disparos[bar] = lt0 = new List<GatilloBanda.Marca>(); lt0.Add(tm); } tirosArch.Add(tm); }
+                }
+                catch (Exception e) { Registrar(e); }
                 if ((DateTime.UtcNow - ultLog).TotalSeconds >= 10)
                 {
                     ultLog = DateTime.UtcNow;
@@ -790,7 +810,7 @@ namespace PythiaGex
             var es = CultureInfo.GetCultureInfo("es-AR");
             _rebRotulo = (Fuente != FuenteDatos.Archivo ? "archivo " : "REBOBINADO  ") + con.ToString("N0", es) + " velas con cadena, " + sin.ToString("N0", es) + " sin";
             Log("REBOBINADO termino: " + con + " velas con cadena, " + sin + " sin; ultima cadena " + (ultimaCad == DateTime.MinValue ? "--" : ultimaCad.ToString("yyyy-MM-dd HH:mm") + " UTC"));
-            Log("gatillos en el archivo: " + gat.Entradas + " entradas a banda quieta, " + gat.Disparos + " disparos (" + tirosArch.Count(t => t.Principal) + " rechazo·tren)");
+            Log("gatillos en el archivo: " + gat.Entradas + " entradas a banda quieta, " + gat.Disparos + " disparos (" + tirosArch.Count(t => t.Principal && t.Tipo == "rechazo·tren") + " rechazo·tren, " + tirosArch.Count(t => t.Tipo == "modelo·es10") + " modelo)");
             RegistrarGatillos(tirosArch, "archivo", true);
             try { _centArchivo?.Volcar(true); } catch { }
             try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
@@ -1119,13 +1139,51 @@ namespace PythiaGex
             if (c == null) return;
             List<(double Fut, double Gex)> domsG; lock (_candado) domsG = _doms != null ? _doms.ToList() : new List<(double Fut, double Gex)>();
             var tiros = _gatVivo.Procesar(cerrada, Utc(c.LastTime != default(DateTime) ? c.LastTime : c.Time), (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close, (double)c.Delta, domsG);
+            try
+            {
+                var tm = GatilloModeloVela(_modVivo, cerrada, c, Utc(c.LastTime != default(DateTime) ? c.LastTime : c.Time), domsG, _zeroVol, _mpVol, _mnVol, _maxChange);
+                if (tm != null) tiros.Add(tm);
+            }
+            catch (Exception e) { Registrar(e); }
             if (tiros.Count == 0) return;
             lock (_candado) _disparos[cerrada] = tiros;
             RegistrarGatillos(tiros, "vivo", false);
             var iv = CultureInfo.InvariantCulture;
             foreach (var t in tiros)
-                Log("GATILLO " + t.Tipo + " " + (t.Lado > 0 ? "LARGO" : "CORTO") + " en " + t.Precio.ToString("0.00", iv) + " dominante " + t.Dom.ToString("0.00", iv) + (t.Arriba ? " (arriba)" : " (abajo)") + " dz " + t.Dz.ToString("0.0", iv));
+                Log("GATILLO " + t.Tipo + " " + (t.Lado > 0 ? "LARGO" : "CORTO") + " en " + t.Precio.ToString("0.00", iv)
+                    + (t.Tipo == "modelo·es10" ? " p=" + t.Dz.ToString("0.00", iv) + " objetivo +-" + GatilloModelo_G() : " dominante " + t.Dom.ToString("0.00", iv) + (t.Arriba ? " (arriba)" : " (abajo)") + " dz " + t.Dz.ToString("0.0", iv)));
             try { RedrawChart(new RedrawArg(ChartArea)); } catch { }
+        }
+
+        /// <summary>El gatillo MODELO sobre una vela cerrada: solo raiz ES y grafico de 1 minuto
+        /// (asi se ajusto); niveles en precio del futuro; hora de Nueva York para el modo tarde.</summary>
+        private GatilloBanda.Marca GatilloModeloVela(GatilloModelo mod, int bar, IndicatorCandle c, DateTime horaUtc,
+                                                     List<(double Fut, double Gex)> doms, double zero, double mp, double mn, (double Fut, double Delta)[] mc)
+        {
+            if (ModoModelo == GatilloModeloModo.Ninguno || c == null) return null;
+            if (Raiz() != "ES") return null;
+            string marco = ChartInfo != null ? (ChartInfo.TimeFrame ?? "") : "";
+            if (marco != "M1")
+            {
+                if (!_modAvisado) { _modAvisado = true; Log("gatillo modelo: solo en velas de 1 minuto (este grafico es " + marco + "): no dispara"); }
+                return null;
+            }
+            mod.Umbral = (double)UmbralModelo;
+            double cl = (double)c.Close;
+            double domArr = double.NaN, domAba = double.NaN;
+            if (doms != null)
+                foreach (var dm in doms)
+                {
+                    if (dm.Fut > cl) { if (double.IsNaN(domArr) || dm.Fut < domArr) domArr = dm.Fut; }
+                    else if (double.IsNaN(domAba) || dm.Fut > domAba) domAba = dm.Fut;
+                }
+            double mc30 = mc != null && mc.Length > 4 ? mc[4].Fut : double.NaN;
+            var s = mod.Procesar(bar, (double)c.Open, (double)c.High, (double)c.Low, cl, (double)c.Delta, zero, mp, mn, domArr, domAba, mc30);
+            if (ReferenceEquals(mod, _modVivo)) _modUltimaP = s.P;
+            if (s.Lado == 0) return null;
+            int horaNY = (horaUtc.Hour + 20) % 24;      // UTC-4 (horario de verano de Nueva York)
+            if (ModoModelo == GatilloModeloModo.SoloTarde && (horaNY < 14 || horaNY >= 16)) return null;
+            return new GatilloBanda.Marca { Bar = bar, Hora = horaUtc, Tipo = "modelo·es10", Lado = s.Lado, Precio = cl, Dom = double.IsNaN(zero) ? 0 : zero, Dz = s.P, Arriba = s.Lado < 0, Principal = true };
         }
 
         /// <summary>Cada disparo a un JSONL propio (vivo: se agrega; archivo: se pisa en cada
@@ -1150,6 +1208,8 @@ namespace PythiaGex
             }
             catch (Exception e) { Registrar(e); }
         }
+
+        private static string GatilloModelo_G() => GatilloModelo.G.ToString("0", CultureInfo.InvariantCulture) + " en " + GatilloModelo.H.ToString("0", CultureInfo.InvariantCulture) + " min";
 
         private static string Lim(string s)
         {
@@ -1548,7 +1608,7 @@ namespace PythiaGex
             for (int i = 0; i < doms.Count; i++) Raya(doms[i].Fut, ColDom, i == 0 ? 1.6f : 1.1f, System.Drawing.Drawing2D.DashStyle.Solid, i == 0 ? 220 : 160);
 
             // ---- estela: la dominante que regia en cada vela
-            if (VerEstela || VerSemillas || VerZeroPorVela || VerGatillos != GatillosEnPantalla.Ninguno)
+            if (VerEstela || VerSemillas || VerZeroPorVela || VerGatillos != GatillosEnPantalla.Ninguno || ModoModelo != GatilloModeloModo.Ninguno)
             {
                 Dictionary<int, double[]> est; Dictionary<int, (double Zero, double[] Mc)> mar; Dictionary<int, List<(double Fut, int Rango, DateTime Hora)>> gui;
                 var ahoraUtc = DateTime.UtcNow;
@@ -1569,9 +1629,24 @@ namespace PythiaGex
                     int x; try { x = cont.GetXByBar(b, false); } catch { continue; }
                     // los gatillos de order flow: un triangulo apuntando hacia adentro del canal,
                     // pegado a la vela (arriba del maximo para cortos, abajo del minimo para largos)
-                    if (VerGatillos != GatillosEnPantalla.Ninguno && dis.TryGetValue(b, out var lt))
+                    if ((VerGatillos != GatillosEnPantalla.Ninguno || ModoModelo != GatilloModeloModo.Ninguno) && dis.TryGetValue(b, out var lt))
                         foreach (var t in lt)
                         {
+                            if (t.Tipo == "modelo·es10")
+                            {
+                                // el gatillo MODELO: rombo verde (largo) / rojo (corto) con su probabilidad
+                                IndicatorCandle cm; try { cm = GetCandle(b); } catch { continue; }
+                                int ym; try { ym = cont.GetYByPrice(t.Lado > 0 ? cm.Low : cm.High, false); } catch { continue; }
+                                int rm = 6; int yy2 = t.Lado > 0 ? ym + rm + 5 : ym - rm - 5;
+                                if (yy2 - rm < area.Top || yy2 + rm > piso) continue;
+                                var colM = t.Lado > 0 ? ColPos : ColNeg;
+                                var ptsM = new[] { new Point(x, yy2 - rm), new Point(x + rm, yy2), new Point(x, yy2 + rm), new Point(x - rm, yy2) };
+                                g.FillPolygon(Color.FromArgb(240, colM), ptsM);
+                                g.DrawPolygon(new RenderPen(Color.FromArgb(220, ColFondo), 1f), ptsM);
+                                var rotM = "M " + t.Dz.ToString("0.00", es); var mrm = g.MeasureString(rotM, fChica);
+                                g.DrawString(rotM, fChica, Color.FromArgb(235, colM), x + rm + 3, yy2 - mrm.Height / 2);
+                                continue;
+                            }
                             if (!t.Principal && VerGatillos != GatillosEnPantalla.Todos) continue;
                             IndicatorCandle cb; try { cb = GetCandle(b); } catch { continue; }
                             int yv; try { yv = cont.GetYByPrice(t.Lado < 0 ? cb.High : cb.Low, false); } catch { continue; }

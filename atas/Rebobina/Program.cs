@@ -40,6 +40,42 @@ namespace PythiaGex
             // --prueba <radar.json> --precio 7709: una sola cuenta sobre una cadena
             // del feed, para comparar con la linea AUDIT que dejo el indicador en
             // ATAS con la misma cadena y el mismo precio (equivalencia del nucleo).
+            if (Arg(args, "--modelo") != null)
+            {
+                // equivalencia de la portacion: velas del centinela (una por minuto de la rueda) -> p del modelo
+                var mod = new GatilloModelo { Umbral = 0.70 };
+                var sal = new System.Text.StringBuilder("t,p,lado\n");
+                int barM = 0; string diaAnt = "";
+                foreach (var l in File.ReadLines(Arg(args, "--modelo")))
+                {
+                    if (l.Length < 50) continue;
+                    System.Text.Json.JsonDocument doc; try { doc = System.Text.Json.JsonDocument.Parse(l); } catch { continue; }
+                    var r = doc.RootElement;
+                    string t = r.GetProperty("t").GetString(); string hm = t.Substring(11, 5);
+                    if (string.CompareOrdinal(hm, "13:30") < 0 || string.CompareOrdinal(hm, "20:00") >= 0) continue;
+                    if (!r.TryGetProperty("niv", out var niv) || niv.ValueKind != System.Text.Json.JsonValueKind.Object) continue;
+                    double N(string k) => niv.TryGetProperty(k, out var e) && e.ValueKind == System.Text.Json.JsonValueKind.Number ? e.GetDouble() : double.NaN;
+                    double V(string k) => r.TryGetProperty(k, out var e) && e.ValueKind == System.Text.Json.JsonValueKind.Number ? e.GetDouble() : 0;
+                    if (V("vol") <= 0) continue;
+                    string dia = t.Substring(0, 10);
+                    if (dia != diaAnt) { mod = new GatilloModelo { Umbral = 0.70 }; diaAnt = dia; }   // ventanas por dia, como el laboratorio
+                    double c = V("c"), d0 = N("dom0"), d1 = N("dom1");
+                    double domArr = double.NaN, domAba = double.NaN;
+                    foreach (var dm in new[] { d0, d1 })
+                    {
+                        if (double.IsNaN(dm)) continue;
+                        if (dm > c) { if (double.IsNaN(domArr) || dm < domArr) domArr = dm; } else if (double.IsNaN(domAba) || dm > domAba) domAba = dm;
+                    }
+                    double zero = N("zero_vol"); if (double.IsNaN(zero)) zero = N("zero_oi");
+                    double mp = N("mp_vol"); if (double.IsNaN(mp)) mp = N("mp_oi");
+                    double mn = N("mn_vol"); if (double.IsNaN(mn)) mn = N("mn_oi");
+                    var s = mod.Procesar(barM++, V("o"), V("h"), V("l"), c, V("delta"), zero, mp, mn, domArr, domAba, N("mc30"));
+                    sal.Append(t).Append(',').Append(double.IsNaN(s.P) ? "" : s.P.ToString("0.0000", inv)).Append(',').Append(s.Lado).Append('\n');
+                }
+                File.WriteAllText(Arg(args, "--salida", "modelo_p.csv"), sal.ToString());
+                Console.WriteLine("escrito " + Arg(args, "--salida", "modelo_p.csv"));
+                return 0;
+            }
             if (Arg(args, "--prueba") != null)
             {
                 var c = Feed.Parsear(File.ReadAllText(Arg(args, "--prueba")));

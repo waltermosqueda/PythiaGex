@@ -37,6 +37,7 @@
     <Compile Include="GammaHoyNucleo.cs" />
     <Compile Include="GammaVivoNucleo.cs" />
     <Compile Include="GatilloBanda.cs" />
+    <Compile Include="GatilloModelo.cs" />
     <Compile Include="GammaHoy.cs" />
   </ItemGroup>
 
