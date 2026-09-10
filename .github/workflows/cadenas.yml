@@ -47,6 +47,14 @@ jobs:
           python archivar_cadena.py --bajar ES NQ --destino cadenas || echo "no se pudo archivar"
           ls -la cadenas | tail -5
 
+      # EL ESTADO DE GAMMA HOY, CALCULADO ACA (estado_nube.py): la misma cuenta del indicador,
+      # sobre la cadena recien bajada, mas las velas de Yahoo del futuro y del indice. Es lo
+      # que la web (panel/) muestra cuando la PC del operador esta apagada. Escribe
+      # estado-<RAIZ>.json, velas-<RAIZ>.json y serie-<RAIZ>-<dia>.jsonl en la misma rama.
+      - name: Estado de Gamma Hoy en la nube
+        run: |
+          python estado_nube.py --destino cadenas ES NQ || echo "el estado fallo"
+
       - name: Guardar en la rama cadenas
         run: |
           cd cadenas

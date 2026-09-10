@@ -27,3 +27,4 @@ panel/datos/atas/cadenas/
 # descargas de Databento: pesan decenas de MB, viven fuera de git
 datos/databento/
 datos/historico/cadena-*
+panel/_prueba/
