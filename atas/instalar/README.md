@@ -16,10 +16,12 @@ tener los indicadores andando en unos minutos:
 
 1. Instalar ATAS y conectarlo a Rithmic como siempre (eso no se puede automatizar:
    son tus credenciales).
-2. Bajar el zip de la ultima **Release** del repositorio publico
-   (`Releases` -> `indicadores-AAAA-MM-DD.zip`) y descomprimirlo.
-3. Doble clic en `instalar_indicadores.bat`. Copia `PythiaGexNiveles.dll` y
-   `PythiaVwap.dll` a `%APPDATA%\ATAS\Indicators\`.
+2. Bajar el repositorio entero como zip: en `github.com/waltermosqueda/PythiaGex`,
+   boton verde `Code` -> `Download ZIP`, y descomprimirlo. (Si hay una **Release**
+   `indicadores-AAAA-MM-DD.zip`, sirve igual y es mas chica.)
+3. Doble clic en `atas\instalar\instalar_indicadores.bat`. Busca los DLL al lado del
+   script o en `atas\PythiaGexNivelesin\Release` y `atas\PythiaVwapin\Release`
+   y los copia a `%APPDATA%\ATAS\Indicators\`.
 4. Abrir ATAS, en cada grafico: `Indicators` -> buscar `Gamma Hoy` -> un clic en la
    fila -> `Add to chart` -> `Apply`. Lo mismo con `PythiaVwap`. Despues
    `Workspaces` -> `Save`.
