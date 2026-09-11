@@ -126,6 +126,8 @@ namespace PythiaGex
         // a la rueda americana.
         private int _conUltimoVol;
         private double _maxUltimoVol;
+        /// <summary>true cuando las series vinieron por PuenteRithmic (ATAS .399): las llamadas publicas ya no se intentan.</summary>
+        private static bool _puenteActivo;
         private IDataFeedConnector _conn;
         private Security _futuro;
 
@@ -295,8 +297,23 @@ namespace PythiaGex
                     L("futuro " + _futuro.Code + " en " + Futuro.ToString("0.##", CultureInfo.InvariantCulture));
                     try
                     {
-                        var ss = await ((dynamic)feed).GetOptionSeriesAsync(_futuro);
-                        todasSeries = ((IEnumerable<OptionSeries>)ss)
+                        // ATAS .399 dejo GetOptionSeriesAsync/GetOptionsAsync del conector de Rithmic como un
+                        // aviso y una lista vacia (medido el 11-09, ver PuenteRithmic.cs). Si vienen vacias se
+                        // rehace el pedido por la maquinaria privada del conector, que sigue entera.
+                        List<OptionSeries> listaSeries;
+                        if (_puenteActivo) listaSeries = await PuenteRithmic.SeriesAsync(feed, _futuro, log).ConfigureAwait(false);
+                        else
+                        {
+                            var ss = await ((dynamic)feed).GetOptionSeriesAsync(_futuro);
+                            listaSeries = ((IEnumerable<OptionSeries>)ss).ToList();
+                            if (listaSeries.Count == 0)
+                            {
+                                L("el conector devolvio 0 series (ATAS .399): pruebo el PUENTE por la maquinaria privada de Rithmic");
+                                listaSeries = await PuenteRithmic.SeriesAsync(feed, _futuro, log).ConfigureAwait(false);
+                                if (listaSeries.Count > 0) { _puenteActivo = true; L("PUENTE activo: " + listaSeries.Count + " series por la via privada"); }
+                            }
+                        }
+                        todasSeries = listaSeries
                                       .Where(z => (z.Expiration.Date - hoy).Days >= 0)
                                       .OrderBy(z => z.Expiration).ToList();
                         series = todasSeries.Where(z => (z.Expiration.Date - hoy).Days <= diasMax).ToList();
@@ -312,10 +329,17 @@ namespace PythiaGex
                             DiasReales = (series[0].Expiration.Date - hoy).Days;
                         foreach (var serie in series)
                         {
-                            var cc = await ((dynamic)feed).GetOptionsAsync(serie);
-                            ops.AddRange(((IEnumerable<Security>)cc).Where(o => o.StrikePrice.HasValue));
+                            List<Security> listaOps;
+                            if (_puenteActivo) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log).ConfigureAwait(false);
+                            else
+                            {
+                                var cc = await ((dynamic)feed).GetOptionsAsync(serie);
+                                listaOps = ((IEnumerable<Security>)cc).ToList();
+                                if (listaOps.Count == 0) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log).ConfigureAwait(false);
+                            }
+                            ops.AddRange(listaOps.Where(o => o.StrikePrice.HasValue));
                         }
-                        L(series.Count + " vencimientos, " + ops.Count + " contratos (" + _futuro.Code + ")");
+                        L(series.Count + " vencimientos, " + ops.Count + " contratos (" + _futuro.Code + (_puenteActivo ? ", por PUENTE" : "") + ")");
                     }
                     catch (Exception e) { L("no se pudieron listar las series de " + _futuro.Code + ": " + e.Message); continue; }
                     bool ultimo = ReferenceEquals(cand, candidatos[candidatos.Count - 1]);

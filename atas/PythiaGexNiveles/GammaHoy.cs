@@ -158,9 +158,9 @@ namespace PythiaGex
         public bool GatillosSoloRueda { get; set; } = true;
 
         [Display(Name = "Dominantes nuevas: resaltar los guiones de los ultimos (min)", GroupName = "3. Pantalla", Order = 21,
-                 Description = "Los guiones de dominante que se dibujaron en vivo hace menos de estos minutos salen mas grandes, claros y con borde: ahi esta el tren de dominantes de este instante. Pasado el tiempo vuelven solos al amarillo normal. 0 = sin resaltar.")]
+                 Description = "Los guiones de dominante que se dibujaron en vivo hace menos de estos minutos salen en LILA fluo, mas grandes y con borde: ahi esta el tren de dominantes de este instante. Con los minutos se van fundiendo solos al amarillo normal. 0 = sin resaltar.")]
         [Range(0, 120)]
-        public int EnfasisNuevasMin { get; set; } = 3;
+        public int EnfasisNuevasMin { get; set; } = 10;
 
         [Display(Name = "Barras pesadas cercanas: cuantas por lado (raya punteada)", GroupName = "3. Pantalla", Order = 22,
                  Description = "Las N barras del perfil con mas GEX (del libro que dibuja) arriba y abajo del precio, dentro del radio, con una raya punteada tenue y su GEX; 0DTE pesa 1,5x. No repite las que ya son dominante o major. 0 = sin rayas.")]
@@ -240,6 +240,11 @@ namespace PythiaGex
         [Display(Name = "Canal: una dominante por lado (la mas fuerte arriba y la mas fuerte abajo)", GroupName = "2. Lectura", Order = 6,
                  Description = "Apagado: las N barras mas fuertes sin mirar el lado (pueden caer las dos del mismo lado).")]
         public bool UnaPorLado { get; set; } = true;
+
+        [Display(Name = "Dominantes: empate tecnico, gana la mas cercana al precio (%)", GroupName = "2. Lectura", Order = 8,
+                 Description = "Si dos barras del mismo lado del precio estan dentro de este porcentaje de la mas grande, la dominante es la MAS CERCANA al precio, no la mas grande. Medido de noche con Rithmic: 29.049 (-84 M) contra 28.800 (-91 M) saltaban por 7 M. 0 = siempre la mas grande.")]
+        [Range(0, 90)]
+        public int EmpateDominantesPct { get; set; } = 20;
 
         [Display(Name = "Dominante como centroide (ondula, como GAMMAlito)", GroupName = "2. Lectura", Order = 7,
                  Description = "Promedio de precio ponderado por gamma alrededor del strike ganador. Medido en los videos: la dominante de GAMMAlito es una banda de ~5 puntos que ondula, no una raya plana en un strike.")]
@@ -451,8 +456,14 @@ namespace PythiaGex
         private static readonly Color ColConvPos = Color.FromArgb(93, 217, 208);
         private static readonly Color ColConvNeg = Color.FromArgb(168, 107, 255);
         private static readonly Color ColDom = Color.FromArgb(232, 200, 60);    // primaria: amarillo (hue 29 medido en GAMMAlito)
+        /// <summary>Mezcla lineal de dos colores: t = 0 da a, t = 1 da b.</summary>
+        private static Color Mezclar(Color a, Color b, double t)
+        {
+            t = Math.Max(0.0, Math.Min(1.0, t));
+            return Color.FromArgb(255, (int)Math.Round(a.R + (b.R - a.R) * t), (int)Math.Round(a.G + (b.G - a.G) * t), (int)Math.Round(a.B + (b.B - a.B) * t));
+        }
         private static readonly Color ColDom2 = Color.FromArgb(232, 168, 56);   // secundaria: naranja (hue 19 medido)
-        private static readonly Color ColNuevo = Color.FromArgb(255, 255, 255, 200);  // guion recien nacido en vivo: amarillo claro casi blanco
+        private static readonly Color ColNuevo = Color.FromArgb(255, 205, 120, 255);  // guion recien nacido en vivo: LILA fluo (pedido 2026-09-11), se funde al amarillo con los minutos
         private static readonly Color ColZero = Color.FromArgb(235, 235, 235);
         private static readonly Color ColTexto = Color.FromArgb(225, 230, 236);
         private static readonly Color ColFondo = Color.FromArgb(11, 16, 23);
@@ -560,7 +571,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.8g arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.8i arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -569,7 +580,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.8g arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.8i arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -742,7 +753,7 @@ namespace PythiaGex
             var a = nuc.A; var b0 = _nucleo.A;
             a.Tasa = (double)Tasa; a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte; a.CuantasDominantes = CuantasDominantes;
             a.RadioDominantesPct = (double)RadioDominantesPct; a.PicoRadioPct = (double)PicoRadioPct; a.MuchoPct = MuchoPct; a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
-            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado;
+            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct;
             a.ExpiracionFuturoUtc = ExpiracionFuturo(); a.ExpiracionFuturoAltUtc = _expAlt; a.Dividendo = DividendoUsado();
             double edadMax = (double)Math.Max(0.05m, ArchivoEdadMaxHoras);
             int fin = Math.Max(0, CurrentBar - 1);      // la ultima vela es del vivo (Hibrido) o se muestra con la ultima foto (Archivo)
@@ -974,7 +985,7 @@ namespace PythiaGex
             a.PicoRadioPct = (double)PicoRadioPct;
             a.MuchoPct = MuchoPct;
             a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
-            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado;
+            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct;
 
             var L = _nucleo.Calcular(c, futuro, ahoraUtc);
             if (L == null) return;
@@ -1822,9 +1833,15 @@ namespace PythiaGex
                                     g.FillRectangle(Color.FromArgb(rango == 0 ? 230 : 170, rango == 0 ? ColDom : ColDom2), new Rectangle(x - bw / 2, y - h / 2, bw, h));
                                     continue;
                                 }
-                                int hn = h + 2, wn = bw + 2;
-                                g.FillRectangle(Color.FromArgb(230, ColFondo), new Rectangle(x - wn / 2 - 1, y - hn / 2 - 1, wn + 2, hn + 2));
-                                g.FillRectangle(rango == 0 ? ColNuevo : Color.FromArgb(255, 255, 225, 150), new Rectangle(x - wn / 2, y - hn / 2, wn, hn));
+                                // NUEVA: nace lila fluo y se funde al amarillo normal a medida que envejece
+                                // (t = 0 recien nacida, t = 1 cumplio EnfasisNuevasMin); el borde y el tamano
+                                // extra se apagan con ella. Pedido del operador, 2026-09-11.
+                                double tEdad = Math.Max(0.0, Math.Min(1.0, (ahoraUtc - hora).TotalMinutes / Math.Max(1, EnfasisNuevasMin)));
+                                var colNueva = Mezclar(ColNuevo, rango == 0 ? ColDom : ColDom2, tEdad);
+                                int extra = (int)Math.Round(2 * (1 - tEdad));
+                                int hn = h + extra, wn = bw + extra;
+                                if (tEdad < 0.75) g.FillRectangle(Color.FromArgb((int)(230 * (1 - tEdad)), ColFondo), new Rectangle(x - wn / 2 - 1, y - hn / 2 - 1, wn + 2, hn + 2));
+                                g.FillRectangle(Color.FromArgb(rango == 0 ? 255 : 225, colNueva), new Rectangle(x - wn / 2, y - hn / 2, wn, hn));
                             }
                     }
                     if (mar.TryGetValue(b, out var m))

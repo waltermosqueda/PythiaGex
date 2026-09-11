@@ -870,3 +870,36 @@ mirar la pantalla de ATAS despues de cada cambio):**
   7610.38"), pero GetOptionSeriesAsync devuelve 0 vencimientos para ESU6, ESZ6 y MESU6: "las series
   vinieron vacias". Queda para mañana sondar que pide el Options Board de .399. El libro de ES sigue por
   CBOE mientras tanto; NQ nunca dependio de esto.
+
+## 1.8h (2026-09-11 01:10): la cadena viva de Rithmic vuelve por PUENTE
+
+- Diagnostico definitivo, con tres fuentes: (1) el log propio de ATAS (`Logs/app_20260910.log`) dice
+  textual "Options are not available in the current version, the option series request for E-Mini S&P
+  500 is ignored" en cada llamada desde la .399, y el 09-09 a las 00:00 (antes de la actualizacion)
+  decia "Received 8 option series ... Received 726 options"; (2) el Options Board del propio ATAS abre
+  con "Account Required" y la lista de cuentas vacia; (3) descompilando OFT.Rithmic.dll de la .399 con
+  ilspycmd, `GetOptionSeriesAsync` y `GetOptionsAsync` son un LogWarn y `Enumerable.Empty`. No fue nada
+  nuestro: el mismo DLL de Gamma Hoy funcionaba a las 10:59 del 09-09 y fallo a las 12:00, con la
+  instalacion de la .399 a las 11:08 en el medio y sin ningun commit de CadenaViva entre ambos.
+- Lo que sigue entero adentro del conector: el comando que llama a `REngine.getInstrumentByUnderlying`,
+  los dos contextos (struct) con su TaskCompletionSource y el manejador de la respuesta (arma las
+  OptionSeries; para los contratos, ProcessSecurity y SetResult).
+- `PuenteRithmic.cs` rehace lo que hacian los metodos publicos: arma el contexto, encola el pedido por
+  el envoltorio del motor y espera la respuesta (25 s). Todo se reconoce POR FORMA (firma del
+  constructor, y el IL del comando que llama a getInstrumentByUnderlying), nunca por nombre ofuscado.
+  CadenaViva lo usa cuando las llamadas publicas devuelven 0 y, si funciona, ya no las vuelve a llamar.
+
+## 1.8i (2026-09-11 02:00): dominantes nuevas en lila que se funden, y empate tecnico
+
+- Pedido del operador mirando la pantalla: los guiones de dominante NUEVOS con otro color, solo los
+  nuevos, y que se vayan apagando hasta quedar como el resto. Ahora nacen LILA fluo (205,120,255), mas
+  grandes y con borde, y se funden linealmente al amarillo normal en `EnfasisNuevasMin` (default 10 min,
+  antes 3 y un blanco casi igual al amarillo).
+- La banda SI seguia a la dominante actual (misma lista `doms` para rayas, bandas y cuadro): lo que
+  parecia "banda desfasada" era que la dominante de abajo, con el libro vivo de Rithmic de noche,
+  saltaba entre 29.049 (-84 M) y 28.800 (-91 M) por 7 M de diferencia, y la banda se iba con ella a
+  320 puntos del precio. Empate tecnico (`EmpateDominantesPct`, default 20 %): si dos barras del mismo
+  lado estan dentro de ese porcentaje de la mas grande, gana la mas cercana al precio (el "alcance" de
+  dominantes.py). 0 = comportamiento anterior.
+- Los guiones viejos lejanos NO se borran: son la historia del dia (donde estuvo la dominante), en
+  amarillo normal. Las bandas y las rayas D1/D2 solo existen para las dominantes actuales.

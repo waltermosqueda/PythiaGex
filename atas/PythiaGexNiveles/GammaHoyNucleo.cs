@@ -52,6 +52,13 @@ namespace PythiaGex
             // del operador: "son dos bandas nomas, a cada extremo y para adentro"). Si se
             // piden mas de dos, el resto se completa por fuerza.
             public bool UnaPorLado = true;
+            // EMPATE TECNICO (2026-09-11, pedido del operador tras ver la banda pegada a una
+            // dominante lejana): medido de noche con el libro vivo de Rithmic, la dominante de
+            // abajo saltaba entre 29.049 (-84 M) y 28.800 (-91 M) por 7 M de diferencia, es
+            // decir, por un punado de contratos. Si dos barras del mismo lado estan dentro de
+            // este porcentaje de la mas grande, gana la MAS CERCANA al precio: es la que el
+            // precio puede tocar (el "alcance" de dominantes.py). 0 = siempre la mas grande.
+            public double EmpatePct = 20.0;
         }
 
         public sealed class Strike
@@ -321,8 +328,17 @@ namespace PythiaGex
             {
                 Func<Strike, double> peso = x => Math.Abs(libroDom == "vol" ? x.GexVol : x.GexOi);
                 var enRadio = perfil.Where(x => Math.Abs(x.Fut - futuro) <= radio && peso(x) > 0).ToList();
-                var arriba = enRadio.Where(x => x.Fut > futuro).OrderByDescending(peso).FirstOrDefault();
-                var abajo = enRadio.Where(x => x.Fut <= futuro).OrderByDescending(peso).FirstOrDefault();
+                // la mas fuerte de cada lado; con empate tecnico, la mas cercana entre las comparables
+                Strike Elegir(IEnumerable<Strike> lado)
+                {
+                    var lista = lado.ToList();
+                    if (lista.Count == 0) return null;
+                    double pmax = lista.Max(peso);
+                    double pisoEmpate = pmax * (1.0 - Math.Max(0.0, Math.Min(90.0, A.EmpatePct)) / 100.0);
+                    return lista.Where(x => peso(x) >= pisoEmpate).OrderBy(x => Math.Abs(x.Fut - futuro)).ThenByDescending(peso).First();
+                }
+                var arriba = Elegir(enRadio.Where(x => x.Fut > futuro));
+                var abajo = Elegir(enRadio.Where(x => x.Fut <= futuro));
                 var lados = new List<(double Fut, double Gex)>();
                 if (arriba != null) lados.Add((arriba.Fut, libroDom == "vol" ? arriba.GexVol : arriba.GexOi));
                 if (abajo != null) lados.Add((abajo.Fut, libroDom == "vol" ? abajo.GexVol : abajo.GexOi));

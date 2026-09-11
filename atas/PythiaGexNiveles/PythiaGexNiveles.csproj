@@ -30,6 +30,7 @@
     <Compile Include="Libro.cs" />
     <Compile Include="Black76.cs" />
     <Compile Include="CadenaViva.cs" />
+    <Compile Include="PuenteRithmic.cs" />
     <Compile Include="Historia.cs" />
     <Compile Include="Centinela.cs" />
     <Compile Include="Reloj.cs" />
