@@ -55,7 +55,7 @@
 - [Fuentes de datos historicos](fuentes-datos-historicos.md) — el futuro ya lo tenemos por Rithmic; lo escaso es la cadena intradia: 1 dia completo grabado (09-03), Databento con USD 125 gratis, ThetaData USD 40/mes; ATAS no importa archivos.
 - [Databento: cuenta y costos](databento-cuenta-y-costos.md) — USD 125 de credito pero tarjeta sin limite: techo de 60 en el script; una rueda entera (ES+SPX opciones+futuro) cuesta ~4,3.
 - [Rebobina: el simulador](rebobina-simulador.md) — Gamma Hoy afuera de ATAS con los mismos .cs; equivalencia AUDIT probada; el DLL nuevo no esta instalado en ATAS.
-- [Archivo de cadenas y respaldo](archivo-cadenas-y-respaldo.md) — rama cadenas cada minuto, viva de Rithmic solo con su ATAS abierto, espejo a Inversiones (OneDrive no corria).
+- [Archivo de cadenas y respaldo](archivo-cadenas-y-respaldo.md) — rama cadenas cada minuto (ES, NQ y desde el 11-09 QQQ), viva de Rithmic solo con su ATAS abierto, espejo a Inversiones (OneDrive no corria).
 - [Medir videos con OpenCV](medir-videos-con-opencv.md) — analizar_guiones.py: guiones y barras de la referencia medidos cuadro a cuadro; las trampas (velas naranjas, rotulos, scroll).
 - [Reiniciar ATAS sin pedir permiso](no-reiniciar-atas-con-posicion.md) — regla del 10-09: siempre reiniciar cuando haga falta, nunca esperar su OK; la regla vieja de las posiciones quedo anulada.
 - [Gatillos de order flow en la banda](gatillos-order-flow-banda.md) — medido antes de dibujar: el order flow solo es una moneda; la unica pista es 'tres deltas en contra' con dominante quieta (27 casos, puede ser azar).
@@ -68,3 +68,5 @@
 - [Dominantes de noche = resto de ayer](dominantes-de-noche-resto-de-ayer.md) — a las 16:00 NY vence el 0DTE con el 82 % del volumen; el libro por volumen queda con el 1DTE de ayer y la caida a OI prometida nunca se dispara; la cuenta esta bien.
 - [Resguardo en la nube](resguardo-en-la-nube.md) — OneDrive NO esta instalado; GitHub publico = codigo+DLL+instalador; privado = workspace/plantillas/viva via respaldar_privado.ps1; push y gh los corre el operador.
 - [La referencia no se nombra](referencia-sin-nombre.md) — el tablero externo de los videos se llama 'la referencia' en todo el proyecto; sus transcripciones viven fuera de los repos.
+- [Las formulas del NQ de la referencia, medidas](referencia-formulas-nq-medidas.md) — barras = gamma x volumen NETO de QQQ 0DTE (R2 0,99), strike x razon NQ/QQQ, zero por cambio de signo, dos dominantes por tamaño; NDX no suma; el perfil derecho sigue abierto; los rotulos grises eran su herramienta de posicion.
+- [La viva de NQ perdio el 0DTE](nq-rithmic-pierde-0dte.md) — Rithmic no contesto la serie del dia a las 10:16 ET y nadie reintento; 1.8j reintenta, desuscribe y rearma cada 5 min si falta el mas cercano; y el cerrojo de arranque era static (NQ arrancaba 3 min tarde).

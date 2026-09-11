@@ -49,3 +49,28 @@ con regla y sin señal, vencimientos, historia, gatillos, auditoria), grafico mo
 como ATAS (arrastre = tiempo y precio, eje = estirar, rueda, ctrl+rueda, teclas, doble clic = vivo),
 1/2/3/5/15/30 min, refresco 15 s. Pendiente al escribir esto: reiniciar ATAS para cargar 1.8c (poda
 de memoria + busqueda del conector de Rithmic) y ver si la cadena viva vuelve.
+
+**2026-09-11 03:30, "la web quedo rota":** no estaba rota por los renombres (Actions verdes); lo que
+fallaba era (1) el subidor `subir_vivo.py` no corria (ultimo latido 3,4 h; hay que relanzarlo con
+`herramientas/subir_vivo.bat` o `Start-Process pythonw herramientas\subir_vivo.py --bucle`), y (2) la
+pagina solo aceptaba el vivo si estaba abierto el marco pedido o el de 1 min: con MNQ-M2/M5 abiertos y
+1m por defecto decia "PC sin señal hace 0 min". Ahora usa el mas fino abierto (agrupa si es mas fino,
+lo dice si es mas grueso). Ademas nucleo.js y estado_nube.py llevan el empate tecnico de la 1.8i, y el
+subidor busca la version del indicador mas atras en el log (antes salia null). Verificado en el
+navegador de fondo: "TU ATAS · vivo hace 36 s · Gamma Hoy 1.8i", sin errores de consola.
+
+**2026-09-11 04:00, "los niveles no sincronizan con ATAS" y "las barras laterales son invasivas":**
+la desincronizacion era real: el subidor solo mandaba el centinela `hoy-` (grafico con libro CBOE) y la
+web ademas RECALCULABA los niveles con CBOE, mientras el operador miraba el grafico de MNQ 2m con el
+libro vivo de Rithmic (`hoyrithmic-`): dos mapas distintos (29.465/29.152 contra 29.400/29.000).
+Arreglo: (1) el subidor manda por grafico el centinela mas fresco y prefiere Rithmic si los dos estan
+al dia, con etiqueta `libro`; (2) con el vivo fresco, la web toma los NIVELES de la ultima vela de
+ATAS (zero, majors, dominantes, pico) y lo dice en la cabecera ("NIVELES DE TU ATAS (libro Rithmic
+vivo, M2)"); el recalculo propio queda para el perfil, la auditoria y la contingencia; (3) rotulos del
+perfil solo en las 3 barras mas grandes por lado + dominantes + majors; (4) columna lateral plegable
+con el boton "info" (oculta por defecto) y tarjetas de abajo en <details> con memoria; (5) Pages
+cachea 10 min: los scripts van con `?v=<sha>` (pages.yml los versiona en Python al publicar) porque
+la pagina nueva cargaba app.js viejo. Verificado en el navegador de fondo (1600x900): tarjeta
+"Niveles de tu ATAS, libro Rithmic" = 29.400 / 28.999,57 / zero 29.195,93 / majors 29.400 y 29.000,
+identico al cuadro de ATAS; sin errores de consola. OJO: pages.yml solo se dispara con cambios en
+panel/** (o en el propio yml); un cambio solo en el yml no siempre corre: tocar panel/.

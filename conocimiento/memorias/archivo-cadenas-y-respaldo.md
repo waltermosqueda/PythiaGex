@@ -41,5 +41,12 @@ Escritorio\Inversiones\PythiaGex-respaldo (1,8 GB la primera vez). OJO: el
 2026-09-07 el proceso OneDrive NO estaba corriendo: la carpeta no sincroniza
 hasta que arranque. Tarea programada diaria: propuesta, sin su OK todavia.
 
+**QQQ desde el 2026-09-11:** `archivar_cadena.py --bajar ES NQ QQQ` (INDICE admite QQQ y SPY) y
+`cadenas.yml` lo baja por minuto; ese dia ademas corrio un bucle local hasta las 21:06 UTC que
+escribio `%APPDATA%\ATAS\PythiaGex\cadenas\cadena-QQQ-2026-09-11.jsonl.gz` (mismo formato,
+campos strike,venc,oi_call,oi_put,iv_call,iv_put,vol_call,vol_put; la "base" ahi no significa
+nada). Sirve para probar en el laboratorio el libro que usa la referencia para NQ (ver
+[[referencia-formulas-nq-medidas]]) y su perfil derecho, que parece un cambio en el tiempo.
+
 **How to apply:** los datos nuevos son propios desde hoy; Databento solo para
 antes del 2026-08-19. Ver [[rebobina-simulador]], [[databento-cuenta-y-costos]].
