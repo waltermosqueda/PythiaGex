@@ -40,7 +40,15 @@ jobs:
       # los scripts salen con el sha del commit en la url: el navegador no puede quedarse con un app.js
       # viejo (Pages cachea 10 min y una pagina nueva con scripts viejos dibuja cualquier cosa)
       - name: Versionar los scripts con el sha
-        run: sed -i "s/src=\"\([a-z]*\.js\)\"/src=\"?v=${GITHUB_SHA::8}\"/g" panel/index.html && grep -n "\.js?v=" panel/index.html
+        run: |
+          python3 - <<'PY'
+          import os, re
+          p = "panel/index.html"; s = open(p, encoding="utf-8").read()
+          sha = os.environ["GITHUB_SHA"][:8]
+          s2 = re.sub(r'src="([a-z]+\.js)"', lambda m: 'src="%s?v=%s"' % (m.group(1), sha), s)
+          assert s2.count("?v=" + sha) >= 4, "no se versionaron los scripts"
+          open(p, "w", encoding="utf-8").write(s2); print(s2.count("?v=" + sha), "scripts versionados con", sha)
+          PY
       - uses: actions/upload-pages-artifact@v3
         with:
           path: panel
