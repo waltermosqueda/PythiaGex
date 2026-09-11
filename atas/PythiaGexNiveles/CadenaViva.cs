@@ -447,14 +447,21 @@ namespace PythiaGex
                 // de NQ, las puntas de NQ llegaron en 1 s (116 de 200); con 12 segundos entre una y otra, 0 de
                 // 200 en un minuto; dos instancias a 2 s, 8 de 200. Las suscripciones de todas las instancias
                 // (ES, NQ 2m, NQ 5m) se espacian al menos ESPACIO_SUSCRIPCION_S segundos, globalmente.
-                double faltan;
-                lock (_llaveGlobal) faltan = ESPACIO_SUSCRIPCION_S - (DateTime.UtcNow - _ultimaSuscripcionGlobal).TotalSeconds;
+                // Cada instancia RESERVA su turno al llegar (el siguiente turno libre), asi dos que esperan a la
+                // vez no salen juntas: el 11-09 12:59 las dos de NQ esperaron los mismos 75 s y suscribieron en
+                // el mismo segundo (salio bien, 71 de 200, pero por compartir contratos; no hay que contar con eso).
+                DateTime turno;
+                lock (_llaveGlobal)
+                {
+                    var desde = _proximoTurnoGlobal > DateTime.UtcNow ? _proximoTurnoGlobal : DateTime.UtcNow;
+                    turno = desde; _proximoTurnoGlobal = desde.AddSeconds(ESPACIO_SUSCRIPCION_S);
+                }
+                double faltan = (turno - DateTime.UtcNow).TotalSeconds;
                 if (faltan > 0)
                 {
                     L("espero " + faltan.ToString("0") + " s: otra instancia acaba de suscribir y Rithmic se ahoga con rafagas");
                     await Task.Delay(TimeSpan.FromSeconds(faltan)).ConfigureAwait(false);
                 }
-                lock (_llaveGlobal) _ultimaSuscripcionGlobal = DateTime.UtcNow;
                 try
                 {
                     _conn.SubscribeToMarketData(elegidos,
@@ -544,7 +551,7 @@ namespace PythiaGex
         private readonly HashSet<Security> _yaEnganchados = new();
         // espaciado GLOBAL entre suscripciones de cualquier instancia (ver el comentario en Arrancar)
         private static readonly object _llaveGlobal = new object();
-        private static DateTime _ultimaSuscripcionGlobal = DateTime.MinValue;
+        private static DateTime _proximoTurnoGlobal = DateTime.MinValue;   // proximo turno libre para suscribir
         private const double ESPACIO_SUSCRIPCION_S = 75;
         private void EngancharVolumen(Security sec)
         {
