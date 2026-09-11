@@ -196,10 +196,13 @@ namespace PythiaGex
                 // sin avisar. Ahora se busca mas hondo (5 niveles, sin ciclos, adentro de colecciones) y,
                 // si aun no aparece, en los campos ESTATICOS de los ensamblados de ATAS/OFT.
                 _camino = "";
+                _reloj = System.Diagnostics.Stopwatch.StartNew(); _presupuestoGlobal = 150000;
+                bool honda = (DateTime.UtcNow - _ultimaHonda).TotalMinutes >= 5;
                 object feed = Rastrear(proveedor, tOpt, 0, "DataProvider")
                            ?? Rastrear(manager, tOpt, 0, "TradingManager")
                            ?? Rastrear(seguridad, tOpt, 0, "Security")
-                           ?? RastrearEstaticos(tOpt);
+                           ?? (honda ? RastrearEstaticos(tOpt) : null);
+                if (honda) _ultimaHonda = DateTime.UtcNow;
                 if (feed == null)
                 {
                     L("no se encontro el conector de opciones (buscado a 5 niveles y en estaticos de ATAS/OFT)");
@@ -866,9 +869,10 @@ namespace PythiaGex
         {
             var tConn = typeof(IDataFeedConnector);
             var vistos = new Dictionary<string, string>();
+            var relojD = System.Diagnostics.Stopwatch.StartNew(); int nodosD = 200000;
             void Recorrer(object raiz, int nivel, HashSet<object> ya, ref int presupuesto)
             {
-                if (raiz == null || nivel > 5 || presupuesto-- <= 0) return;
+                if (raiz == null || nivel > 5 || presupuesto-- <= 0 || nodosD-- <= 0 || relojD.ElapsedMilliseconds > 10000) return;
                 try
                 {
                     var t = raiz.GetType();
@@ -898,15 +902,19 @@ namespace PythiaGex
                 foreach (var t in tipos)
                 {
                     if (t.IsGenericTypeDefinition || t.IsEnum || t.IsInterface) continue;
+                    var nt = t.FullName ?? "";
+                    if (!(nt.Contains("Connector") || nt.Contains("DataFeed") || nt.Contains("Manager") || nt.Contains("Service") || nt.Contains("Provider") || nt.Contains("Container"))) continue;
+                    if (relojD.ElapsedMilliseconds > 10000 || nodosD <= 0) break;
                     FieldInfo[] campos; try { campos = t.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly); } catch { continue; }
                     foreach (var f in campos)
                     {
                         if (f.FieldType.IsPrimitive || f.FieldType.IsEnum || f.FieldType == typeof(string)) continue;
                         object v; try { v = f.GetValue(null); } catch { continue; }
-                        var ya = new HashSet<object>(ReferenceEqualityComparer.Instance); int pres = 20000; Recorrer(v, 0, ya, ref pres);
+                        var ya = new HashSet<object>(ReferenceEqualityComparer.Instance); int pres = 5000; Recorrer(v, 0, ya, ref pres);
                     }
                 }
             }
+            sb.Append("(").Append(relojD.ElapsedMilliseconds).Append(" ms) ");
             if (vistos.Count == 0) sb.Append("NINGUNO (ningun IDataFeedConnector alcanzable)");
             foreach (var kv in vistos) sb.Append(kv.Key).Append(" [").Append(kv.Value).Append("] ");
             var tOpt = Type.GetType("ATAS.DataFeedsCore.IOptionsDataFeed, ATAS.DataFeedsCore");
@@ -925,10 +933,14 @@ namespace PythiaGex
         private static readonly HashSet<object> _vistos = new HashSet<object>(ReferenceEqualityComparer.Instance);
         private static int _presupuesto;
 
+        private static System.Diagnostics.Stopwatch _reloj = System.Diagnostics.Stopwatch.StartNew();
+        private static int _presupuestoGlobal = 150000;
+        private static DateTime _ultimaHonda = DateTime.MinValue;
+
         private static object Rastrear(object raiz, Type buscada, int nivel, string camino)
         {
-            if (nivel == 0) { _vistos.Clear(); _presupuesto = 40000; }
-            if (raiz == null || nivel > 5 || _presupuesto-- <= 0) return null;
+            if (nivel == 0) { _vistos.Clear(); _presupuesto = 20000; }
+            if (raiz == null || nivel > 5 || _presupuesto-- <= 0 || _presupuestoGlobal-- <= 0 || _reloj.ElapsedMilliseconds > 8000) return null;
             try
             {
                 if (buscada.IsInstanceOfType(raiz)) { _camino = camino; return raiz; }
@@ -989,6 +1001,9 @@ namespace PythiaGex
                     foreach (var t in tipos)
                     {
                         if (t.IsGenericTypeDefinition || t.IsEnum || t.IsInterface) continue;
+                        var nt = t.FullName ?? "";
+                        if (!(nt.Contains("Connector") || nt.Contains("DataFeed") || nt.Contains("Manager") || nt.Contains("Service") || nt.Contains("Provider") || nt.Contains("Container"))) continue;
+                        if (_reloj.ElapsedMilliseconds > 8000 || _presupuestoGlobal <= 0) return null;
                         FieldInfo[] campos;
                         try { campos = t.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly); } catch { continue; }
                         foreach (var f in campos)
