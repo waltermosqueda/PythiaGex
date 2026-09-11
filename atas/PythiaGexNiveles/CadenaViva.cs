@@ -151,6 +151,7 @@ namespace PythiaGex
         private long _evResumenes, _evTrades, _evTradesPropios;
         private bool _enganchadoConector;
         private volatile bool _armando;
+        private static DateTime _ultimoIntento = DateTime.MinValue;
 
         /// <summary>Ultimo estado legible, para mostrar en pantalla sin mentir.</summary>
         public string Estado { get; private set; } = "sin arrancar";
@@ -181,13 +182,18 @@ namespace PythiaGex
                                    int topeContratos, Action<string> log)
         {
             if (_armando) return;
+            if ((DateTime.UtcNow - _ultimoIntento).TotalSeconds < 60) return;
+            _ultimoIntento = DateTime.UtcNow;
             _armando = true;
             try
             {
                 void L(string m) { Estado = m; log?.Invoke("[cadena viva] " + m); }
 
                 var tOpt = Type.GetType("ATAS.DataFeedsCore.IOptionsDataFeed, ATAS.DataFeedsCore");
-                if (tOpt == null) { L("el tipo IOptionsDataFeed no existe en esta version"); return; }
+                // ATAS 8.0.14.399: el conector de Rithmic dejo de declarar IOptionsDataFeed pero sigue teniendo
+                // GetOptionSeriesAsync/GetOptionsAsync (medido con atas/_api el 10-09). Se busca por FORMA:
+                // cualquier IDataFeedConnector con esos dos metodos; la interfaz, si existe, tambien vale.
+                Func<object, bool> es = o => (tOpt != null && tOpt.IsInstanceOfType(o)) || EsFeedOpciones(o);
 
                 // GetService no la entrega a los indicadores (NotSupportedException,
                 // verificado). Se rastrea el conector por los campos privados.
@@ -198,10 +204,10 @@ namespace PythiaGex
                 _camino = "";
                 _reloj = System.Diagnostics.Stopwatch.StartNew(); _presupuestoGlobal = 150000;
                 bool honda = (DateTime.UtcNow - _ultimaHonda).TotalMinutes >= 5;
-                object feed = Rastrear(proveedor, tOpt, 0, "DataProvider")
-                           ?? Rastrear(manager, tOpt, 0, "TradingManager")
-                           ?? Rastrear(seguridad, tOpt, 0, "Security")
-                           ?? (honda ? RastrearEstaticos(tOpt) : null);
+                object feed = Rastrear(proveedor, es, 0, "DataProvider")
+                           ?? Rastrear(manager, es, 0, "TradingManager")
+                           ?? Rastrear(seguridad, es, 0, "Security")
+                           ?? (honda ? RastrearEstaticos(es) : null);
                 if (honda) _ultimaHonda = DateTime.UtcNow;
                 if (feed == null)
                 {
@@ -937,13 +943,21 @@ namespace PythiaGex
         private static int _presupuestoGlobal = 150000;
         private static DateTime _ultimaHonda = DateTime.MinValue;
 
-        private static object Rastrear(object raiz, Type buscada, int nivel, string camino)
+        /// <summary>Un conector de datos que sabe de opciones: tiene GetOptionSeriesAsync y GetOptionsAsync
+        /// (por forma, no por interfaz: en .399 Rithmic dejo de declararla).</summary>
+        private static bool EsFeedOpciones(object o)
+        {
+            if (!(o is IDataFeedConnector)) return false;
+            try { var t = o.GetType(); return t.GetMethod("GetOptionSeriesAsync") != null && t.GetMethod("GetOptionsAsync") != null; } catch { return false; }
+        }
+
+        private static object Rastrear(object raiz, Func<object, bool> es, int nivel, string camino)
         {
             if (nivel == 0) { _vistos.Clear(); _presupuesto = 20000; }
             if (raiz == null || nivel > 5 || _presupuesto-- <= 0 || _presupuestoGlobal-- <= 0 || _reloj.ElapsedMilliseconds > 8000) return null;
             try
             {
-                if (buscada.IsInstanceOfType(raiz)) { _camino = camino; return raiz; }
+                if (es(raiz)) { _camino = camino; return raiz; }
                 if (!_vistos.Add(raiz)) return null;
                 var t = raiz.GetType();
                 if (t.IsPrimitive || t.IsEnum || raiz is string || raiz is Delegate) return null;
@@ -953,8 +967,8 @@ namespace PythiaGex
                     foreach (var it in dic.Values)
                     {
                         if (it == null) continue;
-                        if (buscada.IsInstanceOfType(it)) { _camino = camino + "[valor]"; return it; }
-                        var r0 = Rastrear(it, buscada, nivel + 1, camino + "[valor]");
+                        if (es(it)) { _camino = camino + "[valor]"; return it; }
+                        var r0 = Rastrear(it, es, nivel + 1, camino + "[valor]");
                         if (r0 != null) return r0;
                     }
                 }
@@ -964,8 +978,8 @@ namespace PythiaGex
                     foreach (var it in en)
                     {
                         if (it == null || i++ > 300) continue;
-                        if (buscada.IsInstanceOfType(it)) { _camino = camino + "[" + (i - 1) + "]"; return it; }
-                        var r0 = Rastrear(it, buscada, nivel + 1, camino + "[" + (i - 1) + "]");
+                        if (es(it)) { _camino = camino + "[" + (i - 1) + "]"; return it; }
+                        var r0 = Rastrear(it, es, nivel + 1, camino + "[" + (i - 1) + "]");
                         if (r0 != null) return r0;
                     }
                 }
@@ -976,8 +990,8 @@ namespace PythiaGex
                         object v;
                         try { v = f.GetValue(raiz); } catch { continue; }
                         if (v == null) continue;
-                        if (buscada.IsInstanceOfType(v)) { _camino = camino + "." + f.Name; return v; }
-                        var r = Rastrear(v, buscada, nivel + 1, camino + "." + f.Name);
+                        if (es(v)) { _camino = camino + "." + f.Name; return v; }
+                        var r = Rastrear(v, es, nivel + 1, camino + "." + f.Name);
                         if (r != null) return r;
                     }
             }
@@ -988,7 +1002,7 @@ namespace PythiaGex
         /// <summary>Los campos estaticos de los ensamblados de ATAS/OFT (administradores de
         /// conectores, singletons): el ultimo recurso cuando el conector no cuelga de nada que el
         /// indicador reciba.</summary>
-        private static object RastrearEstaticos(Type buscada)
+        private static object RastrearEstaticos(Func<object, bool> es)
         {
             try
             {
@@ -1012,7 +1026,7 @@ namespace PythiaGex
                             object v;
                             try { v = f.GetValue(null); } catch { continue; }
                             if (v == null) continue;
-                            var r = Rastrear(v, buscada, 0, t.FullName + "." + f.Name);
+                            var r = Rastrear(v, es, 0, t.FullName + "." + f.Name);
                             if (r != null) return r;
                         }
                     }
