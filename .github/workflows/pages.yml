@@ -37,6 +37,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # los scripts salen con el sha del commit en la url: el navegador no puede quedarse con un app.js
+      # viejo (Pages cachea 10 min y una pagina nueva con scripts viejos dibuja cualquier cosa)
+      - name: Versionar los scripts con el sha
+        run: sed -i "s/src=\"\([a-z]*\.js\)\"/src=\"?v=${GITHUB_SHA::8}\"/g" panel/index.html && grep -n "\.js?v=" panel/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: panel
