@@ -514,11 +514,7 @@ namespace PythiaGex
                     _ultimaBajada = ahora;
                     _ = BajarFeed();
                 }
-                if (UsarCadenaViva && !_viva.Activa && !_vivaCorriendo && (ahora - _ultimoIntentoViva).TotalSeconds >= 180)
-                {
-                    _ultimoIntentoViva = ahora;
-                    ArrancarViva();
-                }
+                RearmarVivaSiHaceFalta(ahora);
                 _viva.UmbralGrande = UmbralBigTrade;
                 // la cadena viva, un renglon por minuto, al archivo local
                 if (GuardarViva && _viva.Activa && (ahora - _ultimaViva).TotalSeconds >= 60)
@@ -559,7 +555,7 @@ namespace PythiaGex
                     // LA CADENA VIVA SE GRABA EN TODOS LOS MODOS: es lo unico que la nube no puede
                     // hacer por nosotros y el operador la quiere siempre ("no es excusa valida")
                     var ahora = DateTime.UtcNow;
-                    if (UsarCadenaViva && !_viva.Activa && !_vivaCorriendo && (ahora - _ultimoIntentoViva).TotalSeconds >= 180) { _ultimoIntentoViva = ahora; ArrancarViva(); }
+                    RearmarVivaSiHaceFalta(ahora);
                     _viva.UmbralGrande = UmbralBigTrade;
                     if (GuardarViva && _viva.Activa && (ahora - _ultimaViva).TotalSeconds >= 60)
                     {
@@ -571,7 +567,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.8i arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.8j arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -580,7 +576,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.8i arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.8j arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -590,6 +586,16 @@ namespace PythiaGex
             try { _centES?.Volcar(true); } catch { }
             try { _centArchivo?.Volcar(true); } catch { }
             try { _viva.Dispose(); } catch { }
+        }
+
+        /// <summary>Apagada: se reintenta cada 3 min. Activa pero sin el vencimiento mas cercano (el 11-09
+        /// Rithmic no contesto el 0DTE de NQ y el libro quedo con lunes/martes todo el dia): cada 5 min,
+        /// para recuperarlo sin martillar el feed.</summary>
+        private void RearmarVivaSiHaceFalta(DateTime ahora)
+        {
+            if (!UsarCadenaViva || _vivaCorriendo) return;
+            double seg = (ahora - _ultimoIntentoViva).TotalSeconds;
+            if ((!_viva.Activa && seg >= 180) || (_viva.Activa && _viva.FaltaCercano && seg >= 300)) { _ultimoIntentoViva = ahora; ArrancarViva(); }
         }
 
         private void ArrancarViva()
@@ -914,7 +920,7 @@ namespace PythiaGex
                 Ts = ahora.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), SpotIdx = _viva.Futuro,
                 Dias = dias.ToArray(), Filas = porClave.Values.OrderBy(x => x.K).ThenBy(x => x.V).ToList(),
                 Base = 0, BaseConfiable = true, EdadMin = 0, UltimoTrade = "", HorizonteCadena = dias.Count > 0 ? dias[dias.Count - 1] : double.NaN,
-                RecibidoUtc = ahora, GeneradoUtc = ahora, EsFuturo = true, Fuente = "Rithmic ES",
+                RecibidoUtc = ahora, GeneradoUtc = ahora, EsFuturo = true, Fuente = "Rithmic " + Raiz(),
             };
         }
 
@@ -1477,7 +1483,7 @@ namespace PythiaGex
             string l1 = perfil.Count == 0
                 ? "GAMMA HOY  esperando cadena" + (string.IsNullOrEmpty(_error) ? "" : " (" + _error + ")")
                 : "GAMMA HOY  " + corto + "  " + cuad + "   conv " + (convPrecio >= 0 ? "+" : "-") + " (" + libroConv + ")  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)) + (mucho ? " mucho" : " poco");
-            string l2 = (c != null && c.EsFuturo ? "libro ES Rithmic " + edad + " · " + c.Filas.Count + " filas" : "vol CBOE " + edad) + " · OI de ayer · base " + origenBase + " · dominantes por " + libroDom
+            string l2 = (c != null && c.EsFuturo ? "libro " + Raiz() + " Rithmic " + edad + " · " + c.Filas.Count + " filas" : "vol CBOE " + edad) + " · OI de ayer · base " + origenBase + " · dominantes por " + libroDom
                       + (Libro == LibroEnVivo.Rithmic_ES && _vivaFlaca >= 0 ? " · RITHMIC FLACO: " + _vivaFlaca + " strikes con puntas, sigo con CBOE" : "")
                       + (_viva.Activa ? " · vivo Rithmic " + ((int)_viva.VolumenTotalHoy()).ToString("N0", es) + " contr" : " · vivo: " + _viva.Estado);
             if (Fuente != FuenteDatos.Archivo)

@@ -162,8 +162,15 @@ namespace PythiaGex
             var m = Mapear(conn, log);
             if (m == null || !m.Sirve) return new List<Security>();
             string sub = serie.UnderlyingCode ?? "", bolsa = serie.Exchange ?? "CME";
-            foreach (var venc in new[] { serie.Expiration.ToString("yyyyMMdd", CultureInfo.InvariantCulture), serie.Expiration.ToString("yyyyMM", CultureInfo.InvariantCulture) })
+            // 2026-09-11: la serie del 0DTE de NQ se perdio a las 10:16 ET porque el primer pedido
+            // (fecha exacta) no contesto en 25 s y el segundo (solo mes) vino "no data"; la cadena
+            // siguio sin el vencimiento mas importante del dia. Se pide la fecha exacta DOS veces
+            // antes de caer al mes.
+            string vencDia = serie.Expiration.ToString("yyyyMMdd", CultureInfo.InvariantCulture), vencMes = serie.Expiration.ToString("yyyyMM", CultureInfo.InvariantCulture);
+            int intento = 0;
+            foreach (var venc in new[] { vencDia, vencDia, vencMes })
             {
+                intento++;
                 var tcs = new TaskCompletionSource<IEnumerable<Security>>(TaskCreationOptions.RunContinuationsAsynchronously);
                 object ctx;
                 try { ctx = m.CtxOpciones.Invoke(new object[] { serie, Interlocked.Increment(ref _id), tcs }); }
@@ -172,7 +179,7 @@ namespace PythiaGex
                 try
                 {
                     var listo = await Task.WhenAny(tcs.Task, Task.Delay(EsperaMs)).ConfigureAwait(false);
-                    if (listo != tcs.Task) { log?.Invoke("[puente] Rithmic no contesto en " + (EsperaMs / 1000) + " s los contratos de " + serie.Code + " (" + venc + ")"); continue; }
+                    if (listo != tcs.Task) { log?.Invoke("[puente] Rithmic no contesto en " + (EsperaMs / 1000) + " s los contratos de " + serie.Code + " (" + venc + ", intento " + intento + ")"); continue; }
                     var lista = (await tcs.Task.ConfigureAwait(false) ?? Enumerable.Empty<Security>()).ToList();
                     if (lista.Count > 0) return lista;
                     log?.Invoke("[puente] 0 contratos para " + serie.Code + " con vencimiento " + venc);

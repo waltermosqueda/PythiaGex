@@ -240,7 +240,7 @@ namespace PythiaGex
             bool Razonable(double b) => double.IsNaN(carry) || Cerca(b, carry);
             string Cota(string o, double b) => double.IsNaN(carry) ? o : o + (Razonable(b) ? "" : " FUERA DE COTA");
             double baseUsada; string origen;
-            if (c.EsFuturo) { baseUsada = 0; origen = "libro ES (Rithmic), sin base"; }
+            if (c.EsFuturo) { baseUsada = 0; origen = "libro " + (string.IsNullOrEmpty(c.Fuente) ? "del futuro" : c.Fuente) + ", sin base"; }
             else if (c.BaseConfiable && c.Base != 0 && RazonableMedida(c.Base)) { baseUsada = c.Base; origen = "medida"; }
             else if (c.BaseUltimaBuena != 0 && c.BaseUltimaBuenaEdad <= 360 && RazonableMedida(c.BaseUltimaBuena)) { baseUsada = c.BaseUltimaBuena; origen = "medida hace " + c.BaseUltimaBuenaEdad.ToString("0", iv0) + " min"; }
             else if (!double.IsNaN(A.BaseRueda) && A.BaseRuedaEdadMin <= 24 * 60 && Razonable(A.BaseRueda)) { baseUsada = A.BaseRueda; origen = "de la rueda hace " + A.BaseRuedaEdadMin.ToString("0", iv0) + " min"; }

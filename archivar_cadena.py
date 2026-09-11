@@ -17,6 +17,7 @@ miembros concatenados). Cada linea trae "generado" = cuando la nube lo
 publico, que es lo que el indicador hubiera tenido a esa hora.
 
 Uso:  python archivar_cadena.py [ES NQ RTY]
+      python archivar_cadena.py --bajar ES NQ QQQ [--destino carpeta]
 """
 import datetime as dt
 import gzip
@@ -119,7 +120,10 @@ def leer(ruta):
     return out
 
 
-INDICE = {"ES": "_SPX", "NQ": "_NDX", "RTY": "_RUT"}
+# Los ETF se archivan tal cual: la referencia dibuja NQ con el libro de QQQ (medido el 2026-09-11,
+# ver conocimiento/referencia-tecnica.md) y ES con SPY o SPX; sin el archivo por minuto de QQQ no se
+# puede probar en el laboratorio si ese libro le gana al placebo en MNQ.
+INDICE = {"ES": "_SPX", "NQ": "_NDX", "RTY": "_RUT", "QQQ": "QQQ", "SPY": "SPY"}
 
 
 def bajar_y_archivar(raiz, destino):

@@ -160,6 +160,10 @@ namespace PythiaGex
 
         /// <summary>true solo si hay contratos suscritos Y estan llegando puntas.</summary>
         public bool Activa { get; private set; }
+        /// <summary>Activa pero SIN el vencimiento mas cercano: Rithmic no devolvio sus contratos. El
+        /// 11-09 el 0DTE de NQ se perdio a las 10:16 ET (timeout + "no data") y el libro siguio con lunes
+        /// y martes hasta el cierre sin que nadie reintentara. Gamma Hoy lo lee para rearmar cada 5 min.</summary>
+        public bool FaltaCercano { get; private set; }
 
         /// <summary>Precio del futuro de la cadena, en vivo.</summary>
         public double Futuro { get; private set; }
@@ -327,8 +331,10 @@ namespace PythiaGex
                         }
                         else if (series.Count > 0)
                             DiasReales = (series[0].Expiration.Date - hoy).Days;
+                        int delCercano = -1;
                         foreach (var serie in series)
                         {
+                            int antesDeEsta = ops.Count;
                             List<Security> listaOps;
                             if (_puenteActivo) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log).ConfigureAwait(false);
                             else
@@ -338,8 +344,11 @@ namespace PythiaGex
                                 if (listaOps.Count == 0) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log).ConfigureAwait(false);
                             }
                             ops.AddRange(listaOps.Where(o => o.StrikePrice.HasValue));
+                            if (ReferenceEquals(serie, series[0])) delCercano = ops.Count - antesDeEsta;
                         }
                         L(series.Count + " vencimientos, " + ops.Count + " contratos (" + _futuro.Code + (_puenteActivo ? ", por PUENTE" : "") + ")");
+                        FaltaCercano = ops.Count > 0 && delCercano == 0;
+                        if (FaltaCercano) L("FALTA EL VENCIMIENTO MAS CERCANO (" + series[0].Expiration.ToString("yyyy-MM-dd") + "): Rithmic no devolvio sus contratos; Gamma Hoy rearma en 5 min");
                     }
                     catch (Exception e) { L("no se pudieron listar las series de " + _futuro.Code + ": " + e.Message); continue; }
                     bool ultimo = ReferenceEquals(cand, candidatos[candidatos.Count - 1]);
@@ -414,6 +423,18 @@ namespace PythiaGex
                         .Take(topeContratos).ToList();
                 }
 
+                // REARME: soltar los contratos del armado anterior antes de pedir los nuevos; si no,
+                // cada rearme suma otras 200 suscripciones al feed de futuros (latencia).
+                try
+                {
+                    List<Security> viejos; lock (_llave) { viejos = new List<Security>(_suscritos); }
+                    if (viejos.Count > 0)
+                    {
+                        _conn.UnsubscribeFromMarketData(viejos, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+                        L("desuscritos " + viejos.Count + " contratos del armado anterior");
+                    }
+                }
+                catch (Exception e) { L("no pude desuscribir el armado anterior: " + e.Message); }
                 try
                 {
                     _conn.SubscribeToMarketData(elegidos,
@@ -500,9 +521,12 @@ namespace PythiaGex
         /// -- por ejemplo si cambian precio y volumen en dos avisos separados --
         /// y sin ese control el volumen del dia saldria inflado.
         /// </summary>
+        private readonly HashSet<Security> _yaEnganchados = new();
         private void EngancharVolumen(Security sec)
         {
             if (sec == null || string.IsNullOrEmpty(sec.Code)) return;
+            // un rearme vuelve a pasar por los mismos contratos: un segundo manejador contaria el volumen dos veces
+            lock (_llave) { if (!_yaEnganchados.Add(sec)) return; }
             try
             {
                 sec.PropertyChanged += (o, e) =>

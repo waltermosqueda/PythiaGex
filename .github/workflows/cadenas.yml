@@ -44,7 +44,7 @@ jobs:
 
       - name: Bajar la cadena de CBOE y anotar el minuto
         run: |
-          python archivar_cadena.py --bajar ES NQ --destino cadenas || echo "no se pudo archivar"
+          python archivar_cadena.py --bajar ES NQ QQQ --destino cadenas || echo "no se pudo archivar"
           ls -la cadenas | tail -5
 
       # EL ESTADO DE GAMMA HOY, CALCULADO ACA (estado_nube.py): la misma cuenta del indicador,
