@@ -26,9 +26,9 @@ live, VPS con ATAS) descartadas por la regla de no pagar.
 autorizacion "sos autonomo"):** Gamma Hoy 0.6 arranca la cadena viva y la graba
 en TODOS los modos (tambien Archivo), y Gamma Vivo la archiva tambien (una
 sola linea por minuto y raiz: Feed.Archivo.GuardarViva deduplica). Archivo:
-%APPDATA%\ATAS\PythiaGexivaiva-ES-<dia>.jsonl (ts, futuro, grandes,
+%APPDATA%\ATAS\PythiaGex\viva\viva-ES-<dia>.jsonl (ts, futuro, grandes,
 filas strike/dias/es_call/oi/iv/bid/ask/vol_hoy/vol_cinta/compra/venta).
-Para que ATAS este arriba sin el operador: `%APPDATA%\PythiaGextas_vigilante.ps1`
+Para que ATAS este arriba sin el operador: `%APPDATA%\PythiaGex\atas_vigilante.ps1`
 (bucle cada 15 min llama atas_autoarranque.ps1: lanza ATAS, aprieta Connect
 con la clave recordada por UIA, restaura la ventana), arrancado desde la
 carpeta Inicio de Windows ("PythiaGex ATAS vigilante.bat"). schtasks dio

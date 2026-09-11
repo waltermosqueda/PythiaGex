@@ -74,3 +74,16 @@ la pagina nueva cargaba app.js viejo. Verificado en el navegador de fondo (1600x
 "Niveles de tu ATAS, libro Rithmic" = 29.400 / 28.999,57 / zero 29.195,93 / majors 29.400 y 29.000,
 identico al cuadro de ATAS; sin errores de consola. OJO: pages.yml solo se dispara con cambios en
 panel/** (o en el propio yml); un cambio solo en el yml no siempre corre: tocar panel/.
+
+**2026-09-11 16:45-17:00, auditoria de la nube pedida por el operador:** la web tenia los scripts del
+repo (app.js, nucleo.js, datos.js identicos por sha) y las Actions verdes, pero el vivo estaba muerto:
+`vivo.json` generado 10:49 local, y el `pythonw subir_vivo.py --bucle` de las 10:51 nunca subio (6 h)
+sin dejar rastro porque `log()` solo imprimia a stdout. Corrido a mano subio al instante. Arreglo:
+el log tambien va a `%APPDATA%\ATAS\pythiagex-subir-vivo.log`; se mato el proceso viejo y se relanzo
+con `Start-Process pythonw` (desde Bash, `cmd /c start` no lo lanza). Ademas ATAS estaba cerrado desde
+las 16:17 y el vigilante no corria: el `.bat` de Inicio tenia un BEL en vez de `\a` (la ruta decia
+`PythiaGex<BEL>tas_vigilante.ps1`, invisible al leerlo) y nunca habia arrancado al iniciar sesion;
+reescrito byte a byte y verificado sin caracteres de control. OJO al escribir rutas con `\a`, `\v`,
+`
+` desde printf o heredocs: el harness des-escapa una vez y el segundo escape se vuelve un
+caracter de control. Verificado: subidor subiendo cada 20 s con viva ES y NQ, version 1.8j.
