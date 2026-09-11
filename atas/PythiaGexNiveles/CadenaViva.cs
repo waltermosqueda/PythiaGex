@@ -426,18 +426,35 @@ namespace PythiaGex
                         .Take(topeContratos).ToList();
                 }
 
-                // REARME: soltar los contratos del armado anterior antes de pedir los nuevos; si no,
-                // cada rearme suma otras 200 suscripciones al feed de futuros (latencia).
+                // REARME: soltar SOLO los contratos del armado anterior que ya no se piden (la ventana
+                // se corrio). Los que se vuelven a pedir no se tocan: desuscribir y resuscribir el mismo
+                // contrato en dos segundos dejo a NQ en 8 de 200 puntas (11-09 12:53), y como las
+                // instancias del mismo grafico comparten los mismos objetos Security, soltar uno es
+                // soltarselo tambien a la otra.
                 try
                 {
                     List<Security> viejos; lock (_llave) { viejos = new List<Security>(_suscritos); }
-                    if (viejos.Count > 0)
+                    var nuevos = new HashSet<string>(elegidos.Select(x => x.Code ?? ""));
+                    var soltar = viejos.Where(v => !nuevos.Contains(v.Code ?? "")).ToList();
+                    if (soltar.Count > 0)
                     {
-                        _conn.UnsubscribeFromMarketData(viejos, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
-                        L("desuscritos " + viejos.Count + " contratos del armado anterior");
+                        _conn.UnsubscribeFromMarketData(soltar, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+                        L("desuscritos " + soltar.Count + " contratos que salieron de la ventana");
                     }
                 }
                 catch (Exception e) { L("no pude desuscribir el armado anterior: " + e.Message); }
+                // RITHMIC SE AHOGA CON RAFAGAS. Medido el 11-09: con 3 minutos entre la suscripcion de ES y la
+                // de NQ, las puntas de NQ llegaron en 1 s (116 de 200); con 12 segundos entre una y otra, 0 de
+                // 200 en un minuto; dos instancias a 2 s, 8 de 200. Las suscripciones de todas las instancias
+                // (ES, NQ 2m, NQ 5m) se espacian al menos ESPACIO_SUSCRIPCION_S segundos, globalmente.
+                double faltan;
+                lock (_llaveGlobal) faltan = ESPACIO_SUSCRIPCION_S - (DateTime.UtcNow - _ultimaSuscripcionGlobal).TotalSeconds;
+                if (faltan > 0)
+                {
+                    L("espero " + faltan.ToString("0") + " s: otra instancia acaba de suscribir y Rithmic se ahoga con rafagas");
+                    await Task.Delay(TimeSpan.FromSeconds(faltan)).ConfigureAwait(false);
+                }
+                lock (_llaveGlobal) _ultimaSuscripcionGlobal = DateTime.UtcNow;
                 try
                 {
                     _conn.SubscribeToMarketData(elegidos,
@@ -525,6 +542,10 @@ namespace PythiaGex
         /// y sin ese control el volumen del dia saldria inflado.
         /// </summary>
         private readonly HashSet<Security> _yaEnganchados = new();
+        // espaciado GLOBAL entre suscripciones de cualquier instancia (ver el comentario en Arrancar)
+        private static readonly object _llaveGlobal = new object();
+        private static DateTime _ultimaSuscripcionGlobal = DateTime.MinValue;
+        private const double ESPACIO_SUSCRIPCION_S = 75;
         private void EngancharVolumen(Security sec)
         {
             if (sec == null || string.IsNullOrEmpty(sec.Code)) return;
