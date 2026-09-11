@@ -43,8 +43,22 @@ _SIN_VENTANA = getattr(subprocess, "CREATE_NO_WINDOW", 0x08000000) if os.name ==
 _sha = {}
 
 
+LOG_ARCHIVO = os.path.join(os.environ.get("APPDATA", "."), "ATAS", "pythiagex-subir-vivo.log")
+
+
 def log(m):
-    print(datetime.now().strftime("%H:%M:%S") + "  " + m, flush=True)
+    # bajo pythonw la salida estandar no va a ningun lado: el 11-09 un subidor estuvo 6 horas sin subir
+    # y no habia forma de saber por que. Queda tambien en un archivo (se poda a 2000 lineas).
+    linea = datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "  " + m
+    print(linea, flush=True)
+    try:
+        with open(LOG_ARCHIVO, "a", encoding="utf-8") as f:
+            f.write(linea + "\n")
+        if os.path.getsize(LOG_ARCHIVO) > 400000:
+            with open(LOG_ARCHIVO, encoding="utf-8", errors="replace") as f: lineas = f.readlines()[-2000:]
+            with open(LOG_ARCHIVO, "w", encoding="utf-8") as f: f.writelines(lineas)
+    except Exception:
+        pass
 
 
 def gh(args, entrada=None, tope=60):
