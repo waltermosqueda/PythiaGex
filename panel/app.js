@@ -5,7 +5,7 @@
   const $ = s => document.querySelector(s), $$ = s => Array.from(document.querySelectorAll(s));
   const q = new URLSearchParams(location.search);
   const CLAVE = "pythiagex.web.v2";
-  const def = { inst: "MNQ", marco: "M1", vista: "futuro", nucleo: { horizonte: "Hoy", convexidad: "Auto", cuantas: 2, radioDomPct: 2.0, centroide: true, radioCentro: 12 },
+  const def = { inst: "MNQ", marco: "M1", vista: "futuro", lado: false, bloques: {}, nucleo: { horizonte: "Hoy", convexidad: "Auto", cuantas: 2, radioDomPct: 2.0, centroide: true, radioCentro: 12 },
                 libro: "cboe", bandaPct: 0.08, pesadas: 2, vwap: "rueda", verPelotitas: true, verOi: true, verGuiones: true, tipoPerfil: "vol", zona: "America/Argentina/Buenos_Aires", velasVisibles: 180, refresco: 15 };
   let aj = cargarAjustes();
   const base = q.get("base") || Datos.BASE_DEF;
@@ -35,6 +35,11 @@
   $("#zIzq").onclick = () => grafico.mover(-Math.round(grafico.vista.n / 3)); $("#zDer").onclick = () => grafico.mover(Math.round(grafico.vista.n / 3));
   $("#zAuto").onclick = () => grafico.autoEscala(); $("#zReset").onclick = () => grafico.reset();
   $("#zPIn").onclick = () => grafico.zoomPrecio(0.8); $("#zPOut").onclick = () => grafico.zoomPrecio(1.25); $("#zCentrar").onclick = () => grafico.centrar();
+  // la columna lateral y las tarjetas de abajo: plegadas por defecto (el grafico es el protagonista), con memoria
+  function aplicarLado() { const m = $(".mesa"); if (m) m.classList.toggle("sinLado", !aj.lado); const b = $("#btnLado"); if (b) b.classList.toggle("on", !!aj.lado); window.dispatchEvent(new Event("resize")); }
+  const bl = $("#btnLado"); if (bl) bl.onclick = () => { aj.lado = !aj.lado; guardar(); aplicarLado(); };
+  aplicarLado();
+  $$("details.bloque").forEach(dt => { const k = dt.dataset.k; if (k && aj.bloques && aj.bloques[k]) dt.open = true; dt.addEventListener("toggle", () => { aj.bloques = aj.bloques || {}; aj.bloques[k] = dt.open; guardar(); if (dt.open && datos) { pintar(); } }); });
   $("#btnAjustes").onclick = () => $("#ajustes").classList.add("on");
   $("#cerrarAjustes").onclick = () => $("#ajustes").classList.remove("on");
   $$("[data-aj]").forEach(el => {
@@ -67,7 +72,9 @@
     if (!datos) return;
     const d = datos, L = d.L;
     chips(d); avisos(d);
-    const niveles = L && !L.sinBase ? { zeroVol: L.zeroVol, zeroOi: L.zeroOi, mpVol: L.mpVol, mnVol: L.mnVol, doms: L.doms.map(x => ({ fut: x[0], gex: x[1] })), pesadas: L.pesadas || [], picoFut: L.picoFut } : {};
+    // con tu ATAS vivo, los niveles del grafico son los de ATAS (misma pantalla); si no, los calculados aca
+    const niveles = d.nivAtas ? Object.assign({}, d.nivAtas, { pesadas: L && !L.sinBase ? L.pesadas || [] : [] })
+                  : (L && !L.sinBase ? { zeroVol: L.zeroVol, zeroOi: L.zeroOi, mpVol: L.mpVol, mnVol: L.mnVol, doms: L.doms.map(x => ({ fut: x[0], gex: x[1] })), pesadas: L.pesadas || [], picoFut: L.picoFut } : {});
     Object.assign(grafico.op, { modoIndice: aj.vista === "indice", base: L && !L.sinBase ? L.base : 0, decimales: 2, bandaPct: aj.bandaPct, verPelotitas: aj.verPelotitas, verOi: aj.verOi, verGuiones: aj.verGuiones, tipoPerfil: aj.tipoPerfil, zona: aj.zona });
     grafico.setDatos({ velas: d.velas, perfil: L && !L.sinBase ? L.perfil : [], niveles, marcas: d.marcas, cabecera: cabecera(d), futuro: d.futuro, vwap: d.vwap,
                        info: L && !L.sinBase ? { netVol: L.netVol, netOi: L.netOi, mc: L.mc || [] } : null });
@@ -102,7 +109,7 @@
     const c = d.cadena; const ed = c && c.generado ? Math.round((Date.now() - c.generado.getTime()) / 60000) : null;
     return [
       "GAMMA HOY  " + L.corto + "  " + L.cuadrante + "   conv " + (L.convPrecio >= 0 ? "+" : "-") + " (" + L.libroConv + ")  pico " + fP(precio(L.picoFut), 0) + (L.mucho ? " mucho" : ""),
-      (d.usarViva ? "libro Rithmic ES vivo" : "CBOE " + (ed != null ? ed + " min tarde" : "")) + " · OI de ayer · base " + L.baseOrigen + " · dominantes por " + L.libroDom + " · " + d.origenVelas,
+      (d.nivAtas ? "NIVELES DE TU ATAS (libro " + (d.nivAtas.libro === "rithmic" ? "Rithmic vivo" : "CBOE") + (d.nivAtas.marco ? ", " + d.nivAtas.marco : "") + ")" : "niveles calculados acá: " + (d.usarViva ? "libro Rithmic ES vivo" : "CBOE " + (ed != null ? ed + " min tarde" : ""))) + " · perfil CBOE, OI de ayer · base " + L.baseOrigen + " · " + d.origenVelas,
     ];
   }
 
@@ -135,10 +142,11 @@
       const v0 = ex && ex.vencimientos.length ? ex.vencimientos[0] : null;
       h += '<div class="tarjeta"><h3>Régimen (cuadrante)</h3><div class="regimen ' + cl[L.q] + '">' + L.corto + '<small>' + L.cuadrante + '</small></div>' +
         '<div class="kv" style="margin-top:8px"><b>pico cerca del precio</b><span class="v">' + fP(precio(L.picoFut), 0) + ' · ' + fB(L.picoGex) + (L.mucho ? ' · mucho' : '') + '</span><b>convexidad en el precio</b><span class="v ' + (L.convPrecio >= 0 ? "pos" : "neg") + '">' + fB(L.convPrecio) + ' (' + L.libroConv + ')</span></div></div>';
-      h += '<div class="tarjeta"><h3>Niveles (en ' + (aj.vista === "indice" ? "índice" : "futuro") + ')</h3><div class="kv">' +
-        L.doms.map((x, i) => '<b class="dom">dominante ' + (i + 1) + (x[0] > L.futuro ? " (arriba)" : " (abajo)") + '</b><span class="v dom">' + fP(precio(x[0]), 2) + ' · ' + fB(x[1]) + '</span>').join("") +
-        '<b>zero gamma (vol)</b><span class="v">' + fP(precio(L.zeroVol), 2) + '</span><b>zero gamma (OI)</b><span class="v t2">' + fP(precio(L.zeroOi), 2) + '</span>' +
-        '<b class="pos">+Γ major (vol)</b><span class="v pos">' + fP(precio(L.mpVol), 2) + '</span><b class="neg">−Γ major (vol)</b><span class="v neg">' + fP(precio(L.mnVol), 2) + '</span>' +
+      const N = d.nivAtas || { zeroVol: L.zeroVol, zeroOi: L.zeroOi, mpVol: L.mpVol, mnVol: L.mnVol, doms: L.doms.map(x => ({ fut: x[0], gex: x[1] })) };
+      h += '<div class="tarjeta"><h3>Niveles (en ' + (aj.vista === "indice" ? "índice" : "futuro") + ')' + (d.nivAtas ? ' <small>de tu ATAS, libro ' + (d.nivAtas.libro === "rithmic" ? "Rithmic" : "CBOE") + '</small>' : ' <small>calculados acá</small>') + '</h3><div class="kv">' +
+        N.doms.map((x, i) => '<b class="dom">dominante ' + (i + 1) + (x.fut > d.futuro ? " (arriba)" : " (abajo)") + '</b><span class="v dom">' + fP(precio(x.fut), 2) + (x.gex != null ? ' · ' + fB(x.gex) : '') + '</span>').join("") +
+        '<b>zero gamma (vol)</b><span class="v">' + fP(precio(N.zeroVol), 2) + '</span><b>zero gamma (OI)</b><span class="v t2">' + fP(precio(N.zeroOi), 2) + '</span>' +
+        '<b class="pos">+Γ major (vol)</b><span class="v pos">' + fP(precio(N.mpVol), 2) + '</span><b class="neg">−Γ major (vol)</b><span class="v neg">' + fP(precio(N.mnVol), 2) + '</span>' +
         '<b>net GEX vol / OI</b><span class="v">' + fB(L.netVol) + ' / ' + fB(L.netOi) + '</span>' +
         (L.pesadas || []).map(p => '<b class="t2">barra pesada</b><span class="v t2">' + fP(precio(p.fut), 0) + ' · ' + fB(p.gexVol) + (p.dte < 1 ? " 0DTE" : "") + '</span>').join("") + '</div></div>';
       h += '<div class="tarjeta"><h3>Precio y base</h3><div class="kv"><b>futuro</b><span class="v">' + fP(d.futuro, 2) + '</span><b class="t2">origen</b><span class="v t2">' + d.futOrigen + '</span><b>índice (S)</b><span class="v">' + fP(L.S, 2) + '</span><b>base usada</b><span class="v">' + fP(L.base, 2) + '</span><b class="t2">origen</b><span class="v t2">' + L.baseOrigen + '</span>' +

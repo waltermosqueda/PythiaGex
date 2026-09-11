@@ -123,8 +123,21 @@ def leer_cola_texto(ruta, n):
 
 
 def paquete_velas(inst, marco, n):
-    p = os.path.join(ATAS, "pythiagex-centinela-hoy-%s-TimeFrame-%s.jsonl" % (inst, marco))
-    if not os.path.exists(p) or time.time() - os.path.getmtime(p) > 3 * 3600:
+    # El grafico con libro de Rithmic escribe "hoyrithmic-"; el de CBOE, "hoy-". Va el mas fresco y,
+    # si los dos estan al dia (3 min), el de Rithmic: es el que mira el operador en ATAS (2026-09-11).
+    cands = []
+    for libro, pref in (("rithmic", "hoyrithmic"), ("cboe", "hoy")):
+        q = os.path.join(ATAS, "pythiagex-centinela-%s-%s-TimeFrame-%s.jsonl" % (pref, inst, marco))
+        if os.path.exists(q):
+            cands.append((os.path.getmtime(q), libro, q))
+    if not cands:
+        return None
+    cands.sort(reverse=True)
+    mt, libro, p = cands[0]
+    for mt2, libro2, q2 in cands[1:]:
+        if libro2 == "rithmic" and mt - mt2 <= 180:
+            mt, libro, p = mt2, libro2, q2
+    if time.time() - mt > 3 * 3600:
         return None
     velas = leer_cola(p, n)
     if not velas:
@@ -147,7 +160,7 @@ def paquete_velas(inst, marco, n):
     for g in leer_cola(pg, 400, 300):
         if str(g.get("t", "")).startswith(hoy):
             gat.append(g)
-    return dict(inst=inst, marco=marco, archivo_mtime=datetime.fromtimestamp(os.path.getmtime(p), timezone.utc).isoformat(timespec="seconds"), velas=cols, gatillos=gat)
+    return dict(inst=inst, marco=marco, libro=libro, archivo_mtime=datetime.fromtimestamp(os.path.getmtime(p), timezone.utc).isoformat(timespec="seconds"), velas=cols, gatillos=gat)
 
 
 def paquete_viva(raiz="ES"):

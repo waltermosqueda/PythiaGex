@@ -255,13 +255,21 @@
       const vis = P.filter(s => this.precio(s.fut) >= this.pmin - 1 && this.precio(s.fut) <= this.pmax + 1);
       let maxG = 0, maxO = 0; for (const s of vis) { maxG = Math.max(maxG, Math.abs(s[clave])); maxO = Math.max(maxO, Math.abs(s.gexOi)); } if (!maxG) maxG = 1; if (!maxO) maxO = 1;
       const alto = this._altoBarra(vis, yDe);
+      // ROTULOS SOLO EN LAS BARRAS QUE IMPORTAN (como en ATAS): las 3 mas grandes de cada lado del
+      // precio, mas las dominantes y los majors. Antes cualquier barra > 8 % del maximo llevaba texto
+      // y el perfil se volvia una nube de numeros (pedido del operador, 2026-09-11).
+      const fRef = this.datos.futuro || 0, nivR = this.datos.niveles || {};
+      const fijos = [].concat((nivR.doms || []).map(d => d.fut), [nivR.mpVol, nivR.mnVol]).filter(x => x != null);
+      const porTam = (a, b) => Math.abs(b[clave]) - Math.abs(a[clave]);
+      const marcados = new Set(vis.filter(s => s.fut > fRef).sort(porTam).slice(0, 3).concat(vis.filter(s => s.fut <= fRef).sort(porTam).slice(0, 3)).map(s => s.fut));
+      const conRotulo = s => marcados.has(s.fut) || fijos.some(v => Math.abs(v - s.fut) < 0.6);
       ctx.font = "10.5px Consolas, monospace"; ctx.textBaseline = "middle"; ctx.textAlign = "left";
       for (const s of vis) {
         const y = yDe(s.fut), g = s[clave]; const largo = Math.abs(g) / maxG * W;
         if (this.op.verOi && clave === "gexVol") { const lo = Math.abs(s.gexOi) / maxO * W; ctx.fillStyle = s.gexOi >= 0 ? "rgba(63,191,127,0.16)" : "rgba(229,72,77,0.16)"; ctx.fillRect(0, y - alto / 2 - 1, lo, alto + 2); }
         ctx.fillStyle = g >= 0 ? "rgba(63,191,127,0.62)" : "rgba(229,72,77,0.62)"; ctx.fillRect(0, y - alto / 2, largo, alto);
         if (this.op.verPelotitas && s.antes) s.antes.forEach((a, k) => { if (a == null) return; const xa = Math.abs(a) / maxG * W; const r = [1.7, 2.5, 3.3][2 - k]; ctx.fillStyle = "rgba(223,230,238,0.9)"; ctx.beginPath(); ctx.arc(xa, y, r, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = g >= 0 ? COL.pos : COL.neg; ctx.lineWidth = 0.8; ctx.stroke(); });
-        if (alto >= 4 && Math.abs(g) >= maxG * 0.08) { ctx.fillStyle = g >= 0 ? COL.pos : COL.neg; ctx.fillText(fmtS(g) + (clave === "gexVol" ? " oi" + fmtS(s.gexOi) : "") + (s.dte != null && s.dte < 1 ? " 0DTE" : ""), largo + 4, y); }
+        if (alto >= 4 && conRotulo(s)) { ctx.fillStyle = g >= 0 ? COL.pos : COL.neg; ctx.fillText(fmtS(g) + (clave === "gexVol" ? " oi" + fmtS(s.gexOi) : "") + (s.dte != null && s.dte < 1 ? " 0DTE" : ""), largo + 4, y); }
       }
       ctx.fillStyle = COL.tenue; ctx.textBaseline = "top"; ctx.fillText(clave === "gexVol" ? "GEX por volumen (OI detrás)" : "GEX por OI", 4, L.cab + 2);
     }

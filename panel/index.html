@@ -29,7 +29,7 @@ select{background:var(--panel2);border:1px solid var(--linea);border-radius:4px;
 .chip.mal{border-color:var(--neg);color:var(--neg)}.chip.mal::before{background:var(--neg)}
 .derecha{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 main{padding:10px 12px 40px;display:flex;flex-direction:column;gap:10px}
-.mesa{display:grid;grid-template-columns:1fr 300px;gap:10px}
+.mesa{display:grid;grid-template-columns:1fr 300px;gap:10px}.mesa.sinLado{grid-template-columns:1fr}.mesa.sinLado .lado{display:none}#btnLado.on{color:var(--t1);border-color:var(--t2)}details.bloque{margin:0 0 10px}details.bloque>summary{cursor:pointer;font:600 12px var(--mono);color:var(--t2);padding:6px 2px;list-style:none}details.bloque>summary::before{content:"▸ ";color:var(--t2)}details.bloque[open]>summary::before{content:"▾ "}
 .lienzo-caja{position:relative;background:var(--fondo);border:1px solid var(--linea);border-radius:4px;height:calc(100vh - 120px);min-height:520px}
 #lienzo{width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
 .lado{display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 120px);overflow:auto}
@@ -90,6 +90,7 @@ details>summary{cursor:pointer;font:600 12px var(--sans);letter-spacing:.06em;te
     <span class="chip" id="chipPc">PC</span>
     <span class="chip" id="chipCadena">cadena</span>
     <span class="chip" id="chipVelas">velas</span>
+    <button class="grupo" id="btnLado" title="mostrar u ocultar la columna de información" style="padding:5px 10px;background:transparent;color:var(--t2);cursor:pointer">▤ info</button>
     <button class="grupo" id="btnAjustes" style="padding:5px 10px;background:transparent;color:var(--t2);cursor:pointer">⚙ ajustes</button>
   </div>
 </div>
@@ -99,16 +100,22 @@ details>summary{cursor:pointer;font:600 12px var(--sans);letter-spacing:.06em;te
     <div class="lienzo-caja"><canvas id="lienzo"></canvas></div>
     <div class="lado" id="lado"></div>
   </section>
+  <details class="bloque" data-k="mesa"><summary>Mesa rápida, referentes, vencimientos e historia del día</summary>
   <section class="fila">
     <div class="tarjeta"><h3>Mesa rápida: strikes alrededor del precio <small id="rapidaNota"></small></h3><div id="rapida"></div></div>
     <div class="tarjeta"><h3>Referentes más grandes (±3 %)</h3><div id="referentes"></div><h3 style="margin-top:12px">Vencimientos y 0DTE</h3><div id="vencimientos"></div></div>
     <div class="tarjeta"><h3>Historia del día</h3><div id="historia"></div></div>
   </section>
+  </details>
+  <details class="bloque" data-k="gatillos"><summary>Gatillos de hoy · auditoría y fuentes</summary>
   <section class="fila2">
     <div class="tarjeta"><h3>Gatillos de hoy</h3><div id="gatillos"></div></div>
     <div class="tarjeta"><h3>Auditoría y fuentes</h3><div id="auditoria"></div></div>
   </section>
-  <section class="tarjeta"><h3>Strikes completo (±3 %)</h3><div id="strikes"></div></section>
+  </details>
+  <details class="bloque" data-k="strikes"><summary>Strikes completo (±3 %)</summary>
+  <section class="tarjeta"><div id="strikes"></div></section>
+  </details>
   <section class="tarjeta"><details><summary>Qué es cada cosa (técnico y criollo)</summary><div id="ayuda" class="ayuda"></div></details></section>
 </main>
 <aside class="ajustes" id="ajustes">

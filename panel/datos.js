@@ -182,10 +182,26 @@
         if (estado && estado.mc) L.mc = estado.mc;
       }
     }
+    // NIVELES DE TU ATAS: con el vivo fresco, lo que se dibuja es lo que calculo el indicador en la
+    // ultima vela (zero, majors, dominantes, pico), no el recalculo de aca con CBOE. Antes la web
+    // recalculaba con el libro de CBOE mientras ATAS mostraba el de Rithmic: dos mapas distintos.
+    let nivAtas = null;
+    if (vivoFresco) {
+      const fuente = g || g1;
+      for (let i = velas.length - 1; i >= 0 && i >= velas.length - 3; i--) {
+        const n = velas[i].niv;
+        if (n && (n.zero_vol != null || n.dom0 != null)) {
+          nivAtas = { zeroVol: n.zero_vol, zeroOi: n.zero_oi, mpVol: n.mp_vol, mnVol: n.mn_vol,
+                      doms: [n.dom0, n.dom1].filter(x => x != null).map(x => ({ fut: x, gex: null })),
+                      picoFut: n.pico, libro: fuente && fuente.libro ? fuente.libro : null, marco: fuente ? fuente.marco : null, t: velas[i].t };
+          break;
+        }
+      }
+    }
     const marcas = [];
     for (const src of [g, g1]) if (src && src.gatillos) for (const x of src.gatillos) marcas.push({ t: Math.floor(new Date(x.t + "Z").getTime() / 1000), tipo: x.tipo, lado: x.lado, precio: x.precio, dom: x.dom, dz: x.dz, fuente: x.fuente, marco: src.marco });
     const vistos = new Set(); const marcasU = marcas.filter(m => { const k = m.t + "|" + m.tipo + "|" + m.lado; if (vistos.has(k)) return false; vistos.add(k); return true; });
-    return { inst, raiz, marco, minutos, velas, origenVelas, vivoFresco, edadPc, pc, cadena: cad, feed, estado, yahoo, serie: serie || [], viva, usarViva, futuro, futOrigen, L, ex, A, marcas: marcasU, baseRueda, edadRueda, vwap: vwap(velas, ajustes.vwap || "rueda"), vivoTodo };
+    return { inst, raiz, marco, minutos, velas, origenVelas, vivoFresco, edadPc, pc, nivAtas, cadena: cad, feed, estado, yahoo, serie: serie || [], viva, usarViva, futuro, futOrigen, L, ex, A, marcas: marcasU, baseRueda, edadRueda, vwap: vwap(velas, ajustes.vwap || "rueda"), vivoTodo };
   }
 
   global.Datos = { cargar, traer, agregar, velasDeVivo, velasDeYahoo, vwap, edadMin, BASE_DEF, RAIZ, MINUTOS, shaRama, shaCache: () => shaCache };
