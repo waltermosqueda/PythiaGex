@@ -420,6 +420,7 @@ namespace PythiaGex
             public List<Strike> Perfil;      // las barras de ese minuto, para el mouse
         }
         private readonly Dictionary<int, Foto> _fotosBarra = new();
+        private DateTime _ultimoReprecio = DateTime.MinValue; private int _barraRepreciada = -1;
         /// <summary>Las fotos de las velas viejas se quedan con los niveles pero sueltan el perfil (150-211
         /// strikes cada una): con 19.000 velas de 1 min por grafico y cuatro graficos eran ~1 GB retenidos
         /// (medido el 10-09: ATAS en 7,6 GB privados con la PC en 16 GB y 2 MB libres). El mouse sobre una
@@ -559,7 +560,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.8f arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.8g arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -568,7 +569,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.8f arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.8g arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -631,6 +632,13 @@ namespace PythiaGex
             // el archivo se recorre en su propio hilo (RecorrerArchivo): aca solo el vivo
             if (Fuente == FuenteDatos.Archivo) return;
             if (bar != CurrentBar - 1) return;
+            // OnCalculate llega en CADA tick de la ultima vela y Repreciar rehace todo el perfil (211 strikes,
+            // cruce de 61 pasos por libro): con cuatro graficos era un nucleo entero de CPU de corrido (medido
+            // 10-09 21:55: 19-21 s de CPU por cada 20 s). Alcanza con repreciar una vez por segundo, y siempre
+            // en el primer tick de una vela nueva.
+            var ahoraRep = DateTime.UtcNow;
+            if (bar == _barraRepreciada && (ahoraRep - _ultimoReprecio).TotalMilliseconds < 1000) return;
+            _barraRepreciada = bar; _ultimoReprecio = ahoraRep;
             try { Repreciar(); } catch (Exception e) { Registrar(e); }
             if (bar != _barraBig) { CerrarBig(); _barraBig = bar; }
             try { Anotar(bar); } catch (Exception e) { Registrar(e); }
