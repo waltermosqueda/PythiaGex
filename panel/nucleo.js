@@ -18,7 +18,7 @@
   function ajustesDefault(raiz) {
     return {
       horizonte: "Hoy", cuantas: 2, radioDomPct: 2.0, radioCentro: 12.0, picoPct: 0.35, muchoPct: 50,
-      convexidad: "Auto", unaPorLado: true, centroide: true, tasa: 0.0375, dividendo: DIVIDENDO[raiz] || 0.012,
+      convexidad: "Auto", unaPorLado: true, centroide: true, empatePct: 20, tasa: 0.0375, dividendo: DIVIDENDO[raiz] || 0.012,
       expFuturo: null, expFuturoAlt: null,
     };
   }
@@ -206,8 +206,15 @@
     const gk = libroDom === "vol" ? "gexVol" : "gexOi", peso = s => Math.abs(s[gk]);
     if (A.unaPorLado && perfil.length) {
       const enRadio = perfil.filter(s => Math.abs(s.fut - futuro) <= radio && peso(s) > 0);
-      let arriba = null, abajo = null;
-      for (const s of enRadio) { if (s.fut > futuro) { if (!arriba || peso(s) > peso(arriba)) arriba = s; } else if (!abajo || peso(s) > peso(abajo)) abajo = s; }
+      // la mas fuerte de cada lado; con EMPATE TECNICO (Gamma Hoy 1.8i): si dos barras del
+      // mismo lado estan dentro de empatePct de la mas grande, gana la MAS CERCANA al precio
+      const elegir = lado => {
+        if (!lado.length) return null;
+        const pmax = Math.max(...lado.map(peso));
+        const piso = pmax * (1 - Math.max(0, Math.min(90, A.empatePct == null ? 20 : A.empatePct)) / 100);
+        return lado.filter(s => peso(s) >= piso).sort((a, b) => Math.abs(a.fut - futuro) - Math.abs(b.fut - futuro) || peso(b) - peso(a))[0];
+      };
+      const arriba = elegir(enRadio.filter(s => s.fut > futuro)), abajo = elegir(enRadio.filter(s => s.fut <= futuro));
       const lados = [];
       if (arriba) lados.push([arriba.fut, arriba[gk]]);
       if (abajo) lados.push([abajo.fut, abajo[gk]]);

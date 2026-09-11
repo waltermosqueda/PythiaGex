@@ -30,7 +30,7 @@ Escritorio/ATAS nada/_referencia/.
 - Las cajas verdes/rojas del corto "en vivo" son SupportResistanceZenith,
   otro indicador. Las cajas de entrada/stop/objetivo, dibujos del trader.
 - Matrix = otro panel (Early Bull/Bear), calculo no visible.
-- Producto: NinjaTrader 8 + Web (TradingView), powered by Gexbot, Chalito
+- Producto: NinjaTrader 8 + Web (TradingView), del proveedor, el creador
   Trader; 90 USD/mes, pack 120; señales "Quant" por Discord.
 
 ## Plantilla que enseñan

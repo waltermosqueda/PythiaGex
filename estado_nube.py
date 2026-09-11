@@ -50,6 +50,7 @@ class Ajustes:
     convexidad = "Auto"         # Auto | Volumen | OI
     una_por_lado = True
     centroide = True
+    empate_pct = 20.0           # empate tecnico (Gamma Hoy 1.8i): entre barras comparables gana la mas cercana
     tasa = TASA
     dividendo = 0.008
     exp_futuro = None           # datetime UTC
@@ -286,8 +287,14 @@ def calcular(A, c, futuro, ahora, fotos=None, base_medida_precio=None, edad_medi
     gclave = "gexVol" if libroDom == "vol" else "gexOi"
     if A.una_por_lado and perfil:
         enRadio = [s for s in perfil if abs(s["fut"] - futuro) <= radio and peso(s) > 0]
-        arriba = max((s for s in enRadio if s["fut"] > futuro), key=peso, default=None)
-        abajo = max((s for s in enRadio if s["fut"] <= futuro), key=peso, default=None)
+        def elegir(lado):
+            lado = list(lado)
+            if not lado: return None
+            pmax = max(peso(s) for s in lado)
+            piso = pmax * (1.0 - max(0.0, min(90.0, float(getattr(A, "empate_pct", 20.0)))) / 100.0)
+            return sorted((s for s in lado if peso(s) >= piso), key=lambda s: (abs(s["fut"] - futuro), -peso(s)))[0]
+        arriba = elegir(s for s in enRadio if s["fut"] > futuro)
+        abajo = elegir(s for s in enRadio if s["fut"] <= futuro)
         lados = []
         if arriba: lados.append((arriba["fut"], arriba[gclave]))
         if abajo: lados.append((abajo["fut"], abajo[gclave]))

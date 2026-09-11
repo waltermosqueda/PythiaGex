@@ -218,7 +218,7 @@ abajo, como una nube; y las barras se mueven en vertical". Se midio con
 bajas = guiones; barras verdes/rojas del perfil izquierdo; seguimiento cuadro
 a cuadro) sobre cuatro videos: "Miren esto en vivo" (NinjaTrader MNQ 1 min,
 145 cuadros), "Las dominantes actuan de iman" (NinjaTrader NQ, 109), "Big
-Trades" (web ES_SPY 2 min, 160) y "Que es la referencia powered by Gexbot" (web,
+Trades" (web ES_SPY 2 min, 160) y "Que es la referencia del proveedor" (web,
 900 cuadros). Cuadros anotados en datos/simulador/guiones/.
 
 1. GUIONES POR VELA: mediana 1, pero en las velas recientes hasta 4 (Miren),
