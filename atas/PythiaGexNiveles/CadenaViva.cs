@@ -153,7 +153,10 @@ namespace PythiaGex
         private long _evResumenes, _evTrades, _evTradesPropios;
         private bool _enganchadoConector;
         private volatile bool _armando;
-        private static DateTime _ultimoIntento = DateTime.MinValue;
+        // ERA static: el cerrojo de 60 s se compartia entre las instancias (MES, MNQ 2m, MNQ 5m) y las de
+        // NQ volvian en silencio cuando la de ES acababa de armar; NQ arrancaba siempre 3 min despues
+        // (medido en el log del 11-09: ES 10:39:10, NQ 10:42:15; ES 12:42:24, NQ 12:45). Por instancia.
+        private DateTime _ultimoIntento = DateTime.MinValue;
 
         /// <summary>Ultimo estado legible, para mostrar en pantalla sin mentir.</summary>
         public string Estado { get; private set; } = "sin arrancar";
