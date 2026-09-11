@@ -866,3 +866,7 @@ mirar la pantalla de ATAS despues de cada cambio):**
   uno) se repetia cada 3-5 s en cuatro graficos: 2,6 nucleos y 9,4 GB. 1.8e acota (8 s, 150.000 nodos,
   tipos con Connector/DataFeed/Manager/Service/Provider/Container, honda cada 5 min) y 1.8f limita los
   intentos de enganche a uno por minuto.
+- Resultado 1.8f (21:51): el conector se encuentra y responde ("del servidor: ESU6 ... futuro ESU6 en
+  7610.38"), pero GetOptionSeriesAsync devuelve 0 vencimientos para ESU6, ESZ6 y MESU6: "las series
+  vinieron vacias". Queda para mañana sondar que pide el Options Board de .399. El libro de ES sigue por
+  CBOE mientras tanto; NQ nunca dependio de esto.
