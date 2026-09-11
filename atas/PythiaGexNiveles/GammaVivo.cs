@@ -23,7 +23,7 @@ namespace PythiaGex
     ///
     /// EL PERFIL DE GAMMA, RECALCULADO CON EL PRECIO DE CADA TICK.
     ///
-    /// Mirando los videos de GAMMAlito cuadro por cuadro medi que sus barras
+    /// Mirando los videos de la referencia cuadro por cuadro medi que sus barras
     /// laterales se recalculan varias veces por segundo: en 4,2 s reales la
     /// barra de un strike pasa de 152 px a 110 px, bajando parejo. Parecia
     /// imposible de igualar sin comprar un feed de opciones en tiempo real.
@@ -730,7 +730,7 @@ namespace PythiaGex
                                "'niveles de mayor exposicion gamma'. Probablemente sea la version web " +
                                "contra la de NinjaTrader.")]
         // RENOMBRADA (era VerPuntosDominantesPorVela = true): los "puntitos" por vela
-        // de las dominantes eran una copia de GAMMAlito que no viene del
+        // de las dominantes eran una copia de la referencia que no viene del
         // original (ver memoria dominantes-no-son-linea) y confundian al
         // operador con los niveles G (2026-09-07). Apagados por defecto.
         // RENOMBRADA otra vez (era VerPuntosDominantesPorVela = false): el operador los pidio
@@ -839,7 +839,7 @@ namespace PythiaGex
 
         [Display(Name = "HIPOTESIS 3: donde el gamma CAMBIA mas rapido (verde)", GroupName = "Hipotesis", Order = 204,
                  Description = "El precio donde la suma de gamma cambia mas rapido si el precio se " +
-                               "mueve. Uno de los videos de GAMMAlito se llama justamente 'Max " +
+                               "mueve. Uno de los videos de la referencia se llama justamente 'Max " +
                                "Change'. Es continuo: no cae sobre un strike.")]
         public bool VerMaxChange { get; set; } = false;
 
@@ -931,7 +931,7 @@ namespace PythiaGex
                  Description = "ESTO SI es lo que dibuja el original: circulos sobre la barra de cada " +
                                "strike marcando donde estuvo su valor antes. Adentro de la barra = " +
                                "encogio, afuera = crecio. Verificado en cuadros de 1920x1080 del " +
-                               "producto real (MES 30s, titulo 'GAMMAlito - Gexbot').")]
+                               "producto real (MES 30s, titulo del video de la referencia).")]
         // RENOMBRADA (era VerEstelaEnBarras = true): el rastro de cada strike sobre su
         // barra agregaba puntitos que se confundian con los niveles G. Con las
         // barras en raiz cuadrada ya se ve el peso; la estela queda opcional.

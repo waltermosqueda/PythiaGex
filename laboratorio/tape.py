@@ -2,7 +2,7 @@
 """SE ACELERA LA CINTA CUANDO EL PRECIO LLEGA AL NIVEL?
 
 QUE PREGUNTA CONTESTA, Y POR QUE ESTA
-GAMMAlito no dice que el precio rebote en sus lineas. Dice que ahi el market
+La referencia no dice que el precio rebote en sus lineas. Dice que ahi el market
 maker "va a cubrir su cartera" y que por eso "va a aumentar la velocidad del
 tape". Las 19 formulas del laboratorio se juzgaron con "se da vuelta el
 precio?", que es OTRA afirmacion. Todas perdieron contra el placebo. Puede que

@@ -2,11 +2,11 @@
 
 Pedido del operador: no seguir atado a Gamma Vivo; construir uno nuevo con
 libertad de arquitectura, ponerlos uno al lado del otro y ver si se acerca a
-GAMMAlito y si se lo puede superar en exactitud, con miles de pruebas.
+la referencia y si se lo puede superar en exactitud, con miles de pruebas.
 
 ## Que manda (lo aprendido de 30 videos y del laboratorio)
 
-1. El mapa del dia es el de VOLUMEN (GAMMAlito: bloques "Volume" y "Open
+1. El mapa del dia es el de VOLUMEN (La referencia: bloques "Volume" y "Open
    Interest" en su panel; sus barras respiran por volumen). Laboratorio:
    volumen puro +42 pp y gamma x volumen +22 pp contra placebo; gamma x OI
    (lo que dibuja Gamma Vivo) -4 pp.
@@ -171,9 +171,9 @@ spot igual; +Γ vol, dom0, pico, max change 30' coinciden (mediana 0,1 pts,
 (5,4), -Γ vol (10) y -Γ OI (45): la IV de los puts lejanos sin operar esta
 interpolada. Mejora pendiente: quotes cbbo-1m en ventanas de 1 minuto cada 15.
 
-## Re-auditoria visual contra los videos de GAMMAlito (2026-09-07, noche)
+## Re-auditoria visual contra los videos de la referencia (2026-09-07, noche)
 
-Preguntas del operador: por que en GAMMAlito los puntos dominantes parecen
+Preguntas del operador: por que en la referencia los puntos dominantes parecen
 una "nube" y aca salen en filas horizontales; si las barras laterales se
 mueven igual; que falta. Cuadros revisados: maxchange (NinjaTrader),
 Big Trades (web ES_SPY 2m), Las Dominantes.
@@ -210,7 +210,7 @@ Big Trades (web ES_SPY 2m), Las Dominantes.
    se hizo; (d) las zonas de dominancia como banda (la web pinta una franja
    amarilla alrededor de la dominante), hoy solo la raya.
 
-## Medido en los videos, no mirado: como dibuja GAMMAlito (2026-09-07, noche)
+## Medido en los videos, no mirado: como dibuja la referencia (2026-09-07, noche)
 
 El operador desconfio con razon: "varias dominantes por instante, arriba y
 abajo, como una nube; y las barras se mueven en vertical". Se midio con
@@ -218,7 +218,7 @@ abajo, como una nube; y las barras se mueven en vertical". Se midio con
 bajas = guiones; barras verdes/rojas del perfil izquierdo; seguimiento cuadro
 a cuadro) sobre cuatro videos: "Miren esto en vivo" (NinjaTrader MNQ 1 min,
 145 cuadros), "Las dominantes actuan de iman" (NinjaTrader NQ, 109), "Big
-Trades" (web ES_SPY 2 min, 160) y "Que es GAMMAlito powered by Gexbot" (web,
+Trades" (web ES_SPY 2 min, 160) y "Que es la referencia powered by Gexbot" (web,
 900 cuadros). Cuadros anotados en datos/simulador/guiones/.
 
 1. GUIONES POR VELA: mediana 1, pero en las velas recientes hasta 4 (Miren),
@@ -523,7 +523,7 @@ Medido en la pasada del archivo, misma rueda, antes y despues: MNQ 2 min
 mc30 = barra grande 99 % -> 70 %, mc5 86 % -> 56 %, mc1 61 % -> 50 %; MNQ
 5 min mc1 71 % -> 46 %. Lo que queda de coincidencia es legitimo: cuando la
 cadena no cambia, el cambio viene solo de repreciar con el spot y las barras
-mas grandes son las que mas se mueven (igual que las puntas de GAMMAlito).
+mas grandes son las que mas se mueven (igual que las puntas de la referencia).
 Y la cadena de NDX en la nube cambia cada ~4 min (93 cadenas en el dia):
 entre cadena y cadena el Max Change es repreciado, no operaciones nuevas.
 
@@ -561,7 +561,7 @@ MEDIDO ("es adelantado"), laboratorio/pelotitas_predicen.py, cadenas por minuto 
 Databento, rueda americana: ver numeros en la seccion siguiente.
 
 VIDEOS NUEVOS (13, bajados con yt-dlp cliente android, transcriptos con Vosk):
-conocimiento/gammalito/nuevos-2026-09-10/. Ninguno agrega mecanica nueva sobre las
+../_referencia/nuevos-2026-09-10/. Ninguno agrega mecanica nueva sobre las
 pelotitas; confirman: perfil izquierdo 0DTE / derecho 90 dias, la convexidad como
 "combustible sea del color que sea", y "sigo con las pelotitas, confirmacion".
 La medicion cuadro a cuadro del video (herramientas/medir_pelotitas.py) no fue confiable:

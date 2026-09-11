@@ -1,15 +1,15 @@
 ---
-name: anatomia-gammalito
-description: "Los 17 videos de GAMMAlito transcriptos y vistos cuadro por cuadro (2026-09-07): que es cada pieza, que afirman, que se midio. Max Change = las 3 pelotitas de cada barra son la punta hace 15/5/1 min; las zonas verdes/rojas del video en vivo son de otro indicador (Zenith); 'se acelera el tape' no le gana al placebo en nuestro tape."
+name: anatomia-referencia
+description: "Los 17 videos de la referencia transcriptos y vistos cuadro por cuadro (2026-09-07): que es cada pieza, que afirman, que se midio. Max Change = las 3 pelotitas de cada barra son la punta hace 15/5/1 min; las zonas verdes/rojas del video en vivo son de otro indicador (Zenith); 'se acelera el tape' no le gana al placebo en nuestro tape."
 metadata:
   type: project
 ---
 
-Pedido del operador el 2026-09-07 (05:20): analizar 9 videos de GAMMAlito
+Pedido del operador el 2026-09-07 (05:20): analizar 9 videos de la referencia
 "con todo tu poder" para extrapolar a ATAS sin apuro. Se transcribieron 17
 (los 9 mas 8 relacionados) con Vosk y se miraron 39 pliegos de cuadros.
-Pagina: "Anatomia de GAMMAlito" (artifact). Transcripciones en
-PythiaGex/conocimiento/gammalito/.
+Pagina: "Anatomia de la referencia" (artifact). Transcripciones en
+Escritorio/ATAS nada/_referencia/.
 
 ## Piezas y que son
 - Perfil izquierdo = GEX por strike (verde +, rojo -); "manda la mas larga".
@@ -62,7 +62,7 @@ en 3 dias nuevos; (2) Max Change 15/5/1 en nuestras barras, despues del 1;
 (3) leer la aceleracion como combustible y medir rango tras entrar en
 aceleracion negativa; (4) regimen del zero medido; (5) su plantilla como
 hipotesis del centinela, no como sistema. No copiar: zonas de Zenith,
-"siempre lo supo", señales con relacion <1. Ver [[que-afirma-gammalito]],
+"siempre lo supo", señales con relacion <1. Ver [[que-afirma-referencia]],
 [[laboratorio-formulas]], [[es-vs-nq-respeto]], [[pelotitas-son-eventos]].
 
 ## Segunda pasada (los 8 relacionados completos, 2026-09-07 06:10)
@@ -82,7 +82,7 @@ hipotesis del centinela, no como sistema. No copiar: zonas de Zenith,
   dominante", "Big Trade".
 
 ## El canal (2026-09-07 06:40)
-Mapa en PythiaGex/conocimiento/gammalito/canal.md: 332 videos; Programa
+Mapa en Escritorio/ATAS nada/_referencia/canal.md: 332 videos; Programa
 Educativo (0 gamma, 1 contexto tendencia/rango, 2 dominantes, proximo zero
 gamma); largo de Convexidad ("5 escenarios GEX + convexidad, resorte vs
 tobogan") y webinar de 1 h; 55 cortos de operativa con titulos que anticipan
@@ -132,7 +132,7 @@ de YouTube (panel girando, get_transcript 400): hay que transcribir el audio.
 - "Como leer el Max Change": "estas barras marcan EL VOLUMEN que tiene este
   strike en opciones... cuando logra ser la mas larga de todas empieza a
   ser la dominante; lo mas importante no es la dominante sino la pelotita,
-  es adelantado". CONFIRMADO: el perfil de GAMMAlito respira por VOLUMEN
+  es adelantado". CONFIRMADO: el perfil de la referencia respira por VOLUMEN
   del dia; la dominante es la barra mas larga; el Max Change (15/5/1 min)
   la anticipa. Es justo la formula D (volumen puro) que gano +42 pp.
 - "Max Change predice dominante": una dominante nace como "semillita" en
@@ -157,9 +157,9 @@ de YouTube (panel girando, get_transcript 400): hay que transcribir el audio.
   entre max gamma negativo y positivo con dominantes de soporte y
   resistencia; "no todas las sesiones son para perseguir movimiento".
 - Cortos "Gamma en tiempo real" (trade en vivo: "la gamma apoyo el contexto alcista, la usamos de piso") y "Asi se arma una dominante" (mismo audio que "Miren esto en vivo"): sin mecanica nueva.
-- "Que es GAMMAlito" (27 min, 08:00): Gexbot es el proveedor ("options
+- "Que es la referencia" (27 min, 08:00): Gexbot es el proveedor ("options
   analytics, informacion en vivo de las opciones"; muestra OI y GEX por
-  volumen); la suscripcion de GAMMAlito incluye el paquete de datos por
+  volumen); la suscripcion de la referencia incluye el paquete de datos por
   licencia comercial. "Las lineas rojas y verdes son donde los market
   makers tienen que cubrir: hacen de resistencia y soporte, atrae el precio
   y lo repele"; Backtesting Market las llama "sopladores". Big Trades:
@@ -184,7 +184,7 @@ puntos):** la nube = hasta 5 dominantes por vela como guiones + libro SPY
 No es un nivel distinto. Nuestras filas horizontales venian de 2 dominantes,
 feed cada 5 min y strikes de SPX. Gamma Hoy 0.6 dibuja guiones por vela,
 semillas del Max Change (30/5/1) y feed por minuto; los Big Trades de
-SPY/SPX no tienen fuente gratis. El ladder derecho de GAMMAlito es a 90 DTE,
+SPY/SPX no tienen fuente gratis. El ladder derecho de la referencia es a 90 DTE,
 el nuestro al horizonte del mapa: pendiente. Ver GammaHoy.md.
 
 **Medido con OpenCV el 2026-09-07 (analizar_guiones.py, 4 videos, 1.300

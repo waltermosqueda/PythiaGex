@@ -82,3 +82,46 @@ la salida estaba adentro de la plataforma que ya tiene, sin pagar nada. Ver
 el ajuste "Usar la cadena EN VIVO de Rithmic"; si no esta disponible cae solo a
 CBOE y **lo avisa en la cinta**. La sonda que descubrio todo esto es
 `SondaOpciones.cs` y escribe su informe en `%APPDATA%\ATAS\pythiagex-sonda.txt`.
+
+**2026-09-08, el 0DTE se habia perdido y volvio:** desde el 07-09 a las 23:10
+la cadena viva caia al micro (MESU6, solo el trimestral a 10 dias, sin 0DTE)
+porque el grande no estaba en el catalogo local y SearchSecuritiesAsync con
+Type+Exchange tira NullReference SIEMPRE (6 de 6 intentos, no es una carrera
+de arranque); Code="ES" devuelve la raiz sin series ("no data"). Lo que
+funciona: buscar por CODIGO DE CONTRATO derivado del micro local (MESU6 ->
+ESU6; ESZ6 de siguiente). Resultado: ESU6 6 vencimientos 4318 contratos y,
+por primera vez, NQU6 6 vencimientos 3720 contratos (antes MNQ solo tenia el
+trimestral). Si el libro de Rithmic vuelve a quedar en "10 dias", mirar
+"[cadena viva]" en el log: tiene que decir "(ESU6)".
+
+**ROTO desde ATAS 8.0.14.399 (instalado 09-09 11:08; medido 10-09 noche con el diagnostico de 1.8d):**
+en .399 `OFT.Rithmic.RithmicConnector` implementa SOLO IDataFeedConnector; el unico tipo que implementa
+`ATAS.DataFeedsCore.IOptionsDataFeed` es `OFT.InteractiveBrokers2.IBConnector`. Por eso la cadena viva
+no encuentra "el conector de opciones" desde el 09-09 11:57 y vivaActiva=False. La busqueda por
+reflexion no lo va a encontrar nunca: hay que ver si RithmicConnector conserva metodos de opciones
+(GetOptionSeriesAsync, etc.) sin la interfaz (invocarlos por reflexion) o si el tablero de opciones de
+ATAS usa otra via. OJO: la busqueda honda + diagnostico de 1.8d se comian 2,6 nucleos y 9 GB; 1.8e la
+acota (8 s, 150k nodos, cada 5 min).
+
+**1.8f (10-09 21:51):** buscando POR FORMA (IDataFeedConnector con GetOptionSeriesAsync/GetOptionsAsync)
+el conector de Rithmic SI se encuentra y responde, pero `GetOptionSeriesAsync(ESU6)`, `(ESZ6)` y
+`(MESU6)` devuelven **0 vencimientos, 0 contratos** en .399 (antes del 09-09: ESU6 6 vencimientos, 4318
+contratos). El metodo existe pero no trae series. Proximo paso (no hecho): sondar que pide el Options
+Board de ATAS en .399 (raiz "ES", otro Security, otra llamada) con la Sonda, con el tablero abierto.
+Mientras, el libro de ES sigue por CBOE (SPX) con 15 min de retraso.
+
+**RESUELTO 2026-09-11 01:06 (Gamma Hoy 1.8h, PuenteRithmic.cs):** la .399 no "perdio" las opciones: ATAS las
+APAGO a proposito en el conector de Rithmic. Prueba triple: (1) su propio log `Logs/app_*.log` dice textual
+"Options are not available in the current version, the option series request for E-Mini S&P 500 is ignored"
+en cada llamada desde la .399, y el 09-09 00:00 (antes de instalarla, 11:08) decia "Received 8 option series /
+Received 726 options"; (2) el Options Board de ATAS abre con "Account Required" y la lista de cuentas vacia;
+(3) descompilando OFT.Rithmic.dll (ilspycmd) `GetOptionSeriesAsync`/`GetOptionsAsync` son un LogWarn +
+`Enumerable.Empty`. NO fue nada nuestro: el mismo DLL funcionaba a las 10:59 y fallo a las 12:00 del 09-09 sin
+commits de CadenaViva en el medio. La maquinaria privada sigue entera (comando que llama a
+`REngine.getInstrumentByUnderlying(subyacente, bolsa, vencimiento, contexto)`, dos structs de contexto con
+TaskCompletionSource, manejador de respuesta con ProcessSecurity). PuenteRithmic.cs la reconoce POR FORMA
+(firma de constructores + IL que llama a getInstrumentByUnderlying) y rehace el pedido. Medido tras reiniciar:
+"6 series para ESU6@CME", "6 vencimientos, 4486 contratos (ESU6, por PUENTE)", y ATAS mismo anota "Received 6
+option series ... Received 752 options for 11 Sep 26 ESU6". Subyacente que acepta Rithmic: el codigo del
+contrato ("ESU6"), bolsa "CME", vencimiento "yyyyMMdd". Si una futura version renombra o quita esas piezas, el
+puente lo dice en el log ("FALTAN PIEZAS") y cae a CBOE.

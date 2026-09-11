@@ -1,15 +1,21 @@
 ---
 name: mirar-pantalla-antes-de-responder-atas
-description: "Ante cualquier pregunta sobre ATAS/la plataforma, mirar primero la pantalla real del usuario en vez de responder de memoria."
-metadata: 
-  node_type: memory
+description: La pantalla de ATAS es LA fuente y se audita siempre; traer ATAS al frente (correr la ventana del chat) esta permitido y es obligatorio para verificar; un arreglo que no se ve en el grafico no esta resuelto
+metadata:
   type: feedback
-  originSessionId: f7fe1dc5-0e48-4858-9c91-ef2b18c0f331
-  modified: 2026-08-06T14:48:37.573Z
 ---
 
-Siempre que el usuario pregunte algo sobre ATAS o su setup de trading, primero tomar screenshot de su pantalla y mirar la configuración real antes de responder. Nada de suponer ni contestar de memoria genérica.
+Regla del operador, repetida y endurecida el 2026-09-10: "no podes suponer que esta arreglado algo
+y no mirar la pantalla de ATAS, el grafico real. Si vos arreglas el backend pero en la pantalla no se
+ve resuelto, no esta resuelto, fin." Y: "como no vas a revisar la pantalla si es la fuente de todo".
+Esa noche respondi una auditoria entera sin mirar ATAS porque quedo detras de la ventana del chat
+y no la quise traer al frente sin su OK: eso fue un error, el lo dijo con todas las letras.
 
-**Why:** él quiere aprender estudiando sobre su propia máquina y su propia configuración, no sobre un ejemplo teórico. Una respuesta de memoria puede no coincidir con su versión/layout y le enseña algo falso.
+**Why:** el toma decisiones con lo que ve en el grafico, no con los logs; los logs son mi
+herramienta, la pantalla es la de el.
 
-**How to apply:** ante la pregunta → `screenshot` (y `zoom` sobre el detalle) → recién ahí explicar, señalando lo que se ve en su pantalla. Vale también abrir el menú/ventana concreta para verificar antes de afirmar. Ver [[no-terminar-sesion-sin-orden]].
+**How to apply:** antes de responder sobre cualquier cosa de ATAS: traer la ventana de ATAS al
+frente (activarla por PowerShell / UIA, o correr la del chat), captura de pantalla, mirar el
+grafico real (rayas, guiones, pelotitas, rotulos, base en la cabecera), y recien ahi responder con
+lo que se ve. Despues de cada instalacion/reinicio: captura obligatoria. Nunca escribir "no pude
+mirar la pantalla". Ver [[no-reiniciar-atas-con-posicion]], [[verificar-yo-no-el-usuario]].

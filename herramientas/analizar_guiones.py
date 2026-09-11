@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""MEDIR EN LOS VIDEOS DE GAMMALITO COMO SE DIBUJAN LAS DOMINANTES Y LAS BARRAS.
+"""MEDIR EN LOS VIDEOS DE LA REFERENCIA COMO SE DIBUJAN LAS DOMINANTES Y LAS BARRAS.
 
-Pregunta del operador (2026-09-07): en GAMMAlito aparecen VARIOS guiones de
+Pregunta del operador (2026-09-07): en la referencia aparecen VARIOS guiones de
 dominante por instante, arriba y abajo, como una nube que delimita una zona; y
 las barras laterales se mueven tambien en vertical. Nosotros dibujamos un
 guion por vela en fila. Esto no discute: mide.

@@ -1,5 +1,5 @@
 - [No terminar la sesión sin orden](no-terminar-sesion-sin-orden.md) — el control de pantalla sigue activo hasta que el usuario diga "apagate pantalla".
-- [Mirar la pantalla antes de responder sobre ATAS](mirar-pantalla-antes-de-responder-atas.md) — nada de suponer: screenshot primero, después explicar.
+- [Mirar la pantalla de ATAS, siempre](mirar-pantalla-antes-de-responder-atas.md) — es LA fuente: traer ATAS al frente, captura, mirar el grafico real antes de responder; lo no visto en pantalla no esta resuelto.
 - [Freeze del portapapeles = TextInputHost en bucle](freeze-portapapeles-textinputhost.md) — no es corrupción, SFC ya salió limpio; es un hilo al 98% de CPU.
 - [Cómo enseñarle trading](como-ensenarle-trading.md) — analogía concreta primero, una idea por vez, cero tablas y cero jerga.
 - [Setup de ATAS verificado](setup-atas-verificado.md) — Ultra vitalicia, 8.0.14.398, Rithmic; el tablero de opciones funciona pero sin agregación GEX.
@@ -31,7 +31,7 @@
 - [El radar: dominantes y BigTrades](radar-dominantes-bigtrades.md) — una zona cuenta solo si es grande, vence pronto Y el precio puede llegar; el indicador todavia no se vio dibujar.
 - [CBOE llega 902 segundos tarde](retraso-cboe-902s.md) — medido en 14 de 14, sin dispersion: sirve para estructura, nunca de gatillo en vivo.
 - [Lo que cuesta el retraso de verdad](costo-real-del-retraso.md) — 0,29 pts en el zero gamma, cero en los muros; el libro llega en 157 ms.
-- [Cadena de ES en vivo por Rithmic](cadena-es-en-vivo-rithmic.md) — 0DTE con puntas reales desde adentro de ATAS; adios al retraso de CBOE.
+- [Cadena de ES en vivo por Rithmic](cadena-es-en-vivo-rithmic.md) — 0DTE con puntas reales desde adentro de ATAS; ATAS .399 la apago a proposito y PuenteRithmic.cs la recupero por la maquinaria privada (11-09).
 - [Los puntitos van sobre las barras](dominantes-no-son-linea.md) — no cruzan el grafico; y ojo: las velas naranjas contaminan la deteccion de ambar.
 - [El ChartArea de ATAS es mas alto que el visible](atas-chartarea-mas-alto.md) — lo anclado al fondo cae detras del eje de tiempo, sin error.
 - [El Settlements de CME va un dia atras](cme-settlements-un-dia-atras.md) — hay que sumarle el change; ATAS tenia el dato correcto y yo compare contra uno viejo.
@@ -41,7 +41,7 @@
 - [La formula del GEX, auditada](gex-formula-auditada.md) — multiplicador y muros corregidos; y el gamma no depende del tiempo si la IV se despeja con el mismo T.
 - [Son dos libros distintos](dos-libros-distintos.md) — SPX y ES no coinciden en nada; al alternar entre ellos todos los niveles saltan 23 a 33 puntos.
 - [El laboratorio de formulas](laboratorio-formulas.md) — juzga contra placebo; la formula que usamos pierde y solo ganan las del volumen de hoy.
-- [Que afirma GAMMAlito](que-afirma-gammalito.md) — no dicen que el precio rebote, dicen que se acelera el tape; mediamos la pregunta equivocada.
+- [Que afirma la referencia](que-afirma-referencia.md) — no dicen que el precio rebote, dicen que se acelera el tape; mediamos la pregunta equivocada.
 - [Mover la ventana de ATAS](mover-ventana-atas-oft-platform.md) — el proceso es OFT.Platform y esta maximizada: restaurar antes de mover o el clic no llega.
 - [Que reproduce el Market Replay](market-replay-que-reproduce.md) — la cinta si, la cadena de opciones no; y el modo por defecto inventa las operaciones.
 - [La muestra son niveles, no minutos](la-muestra-son-niveles-no-minutos.md) — 105 minutos dieron 4 strikes; y el placebo de 11/19/31 caia siempre entre strikes.
@@ -51,9 +51,20 @@
 - [Como dibujan los pros](como-dibujan-los-pros.md) — GEXBot 3 lineas, SpotGamma 5, MenthorQ 3 + rango + 0DTE; nombres estandar, etiqueta corta a la derecha, vencimiento cercano para intradia; con fuentes.
 - [Pestañas por UIA y el eje](atas-tabs-por-uia-y-eje.md) — si el clic no cambia la pestaña, SelectionItemPattern; y el lienzo del indicador no llega al eje de precio (clip medido).
 - [ES contra NQ: el respeto medido](es-vs-nq-respeto.md) — NQ parece respetar mas por grilla doble de densa y 1,7x de movimiento; contra placebo no gana (62 vs 65 %); en ES ni muestra.
-- [Anatomia de GAMMAlito](anatomia-gammalito.md) — 17 videos transcriptos: Max Change = punta de la barra hace 15/5/1 min; el perfil respira por volumen; "se acelera el tape" no le gana al placebo; las zonas del video en vivo son de Zenith.
+- [Anatomia de la referencia](anatomia-referencia.md) — 17 videos transcriptos: Max Change = punta de la barra hace 15/5/1 min; el perfil respira por volumen; "se acelera el tape" no le gana al placebo; las zonas del video en vivo son de Zenith.
 - [Fuentes de datos historicos](fuentes-datos-historicos.md) — el futuro ya lo tenemos por Rithmic; lo escaso es la cadena intradia: 1 dia completo grabado (09-03), Databento con USD 125 gratis, ThetaData USD 40/mes; ATAS no importa archivos.
 - [Databento: cuenta y costos](databento-cuenta-y-costos.md) — USD 125 de credito pero tarjeta sin limite: techo de 60 en el script; una rueda entera (ES+SPX opciones+futuro) cuesta ~4,3.
 - [Rebobina: el simulador](rebobina-simulador.md) — Gamma Hoy afuera de ATAS con los mismos .cs; equivalencia AUDIT probada; el DLL nuevo no esta instalado en ATAS.
 - [Archivo de cadenas y respaldo](archivo-cadenas-y-respaldo.md) — rama cadenas cada minuto, viva de Rithmic solo con su ATAS abierto, espejo a Inversiones (OneDrive no corria).
-- [Medir videos con OpenCV](medir-videos-con-opencv.md) — analizar_guiones.py: guiones y barras de GAMMAlito medidos cuadro a cuadro; las trampas (velas naranjas, rotulos, scroll).
+- [Medir videos con OpenCV](medir-videos-con-opencv.md) — analizar_guiones.py: guiones y barras de la referencia medidos cuadro a cuadro; las trampas (velas naranjas, rotulos, scroll).
+- [Reiniciar ATAS sin pedir permiso](no-reiniciar-atas-con-posicion.md) — regla del 10-09: siempre reiniciar cuando haga falta, nunca esperar su OK; la regla vieja de las posiciones quedo anulada.
+- [Gatillos de order flow en la banda](gatillos-order-flow-banda.md) — medido antes de dibujar: el order flow solo es una moneda; la unica pista es 'tres deltas en contra' con dominante quieta (27 casos, puede ser azar).
+- [Vencimientos 0DTE auditados](vencimientos-0dte-auditados.md) — dias bien (6 s de error), gamma igual a la de CBOE; con Horizonte=Hoy todo es 0DTE; el nucleo no envejecia los dias y Rithmic perdia el 0DTE al arrancar: arreglados.
+- [Traspaso 2026-09-08](traspaso-2026-09-08.md) — estado al cortarse la cuota: NDX de Databento en curso; que puede hacer Opus y que no.
+- [Auditoria en vivo 09-09](auditoria-en-vivo-2026-09-09.md) — la logica reproduce en strike; dos fallas reales arregladas: base rota por el roll a diciembre (+294 pts en MNQ) y Max Change indexado por precio del futuro.
+- [Las pelotitas del Max Change, medidas](pelotitas-max-change-medidas.md) — punta de cada barra hace 15/5/1 min, en los dos perfiles; las nuestras estaban rotas por la base; 'adelantado' x2 pero 9 de 10 no llegan; las del modo BIGTRADE de la web son otra cosa.
+- [Banco de gatillos y techo con ML](gatillo-cientifico-2026-09-10.md) — a mano nada gana; con ML en ES a 10 min si: 61 % con p>=0,70 y 83 % en la tarde (gatillo MODELO 1.7b); NQ nada; el REBOTE en las rayas amarillas (1.8, sus 7 ejemplos) iguala al placebo y se instalo igual, grabando.
+- [Web Gamma Hoy en la nube](web-gamma-hoy-nube.md) — waltermosqueda.github.io/PythiaGex: la misma cuenta del indicador en GitHub cada minuto + vivo desde ATAS por subir_vivo.py; contingencia con la PC apagada, con la edad de cada dato.
+- [Dominantes de noche = resto de ayer](dominantes-de-noche-resto-de-ayer.md) — a las 16:00 NY vence el 0DTE con el 82 % del volumen; el libro por volumen queda con el 1DTE de ayer y la caida a OI prometida nunca se dispara; la cuenta esta bien.
+- [Resguardo en la nube](resguardo-en-la-nube.md) — OneDrive NO esta instalado; GitHub publico = codigo+DLL+instalador; privado = workspace/plantillas/viva via respaldar_privado.ps1; push y gh los corre el operador.
+- [La referencia no se nombra](referencia-sin-nombre.md) — el tablero externo de los videos se llama 'la referencia' en todo el proyecto; sus transcripciones viven fuera de los repos.

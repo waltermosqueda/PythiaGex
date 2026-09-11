@@ -86,7 +86,7 @@ namespace PythiaGex
         }
 
         /// <summary>Un bloque grande de opciones visto en el tape (para Gamma
-        /// Hoy, 2026-09-07). GAMMAlito los llama Big Trades y los define como
+        /// Hoy, 2026-09-07). La referencia los llama Big Trades y los define como
         /// "operaciones institucionales en el mercado de opciones".</summary>
         public sealed class Grande
         {

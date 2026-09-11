@@ -40,7 +40,7 @@ namespace PythiaGex
             public double PicoRadioPct = 0.35;
             public int MuchoPct = 50;
             public LibroConv Convexidad = LibroConv.Auto;
-            // LA DOMINANTE COMO CENTROIDE. Medido en los videos de GAMMAlito
+            // LA DOMINANTE COMO CENTROIDE. Medido en los videos de la referencia
             // (2026-09-07, analizar_guiones.py): la dominante no es una raya plana en
             // un strike; sus guiones forman una banda de ~5 puntos de NQ que ondula
             // minuto a minuto. Un promedio de precio ponderado por gamma alrededor

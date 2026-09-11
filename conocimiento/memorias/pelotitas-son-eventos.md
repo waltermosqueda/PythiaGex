@@ -1,6 +1,6 @@
 ---
 name: pelotitas-son-eventos
-description: "Las pelotitas de GAMMAlito no son niveles: son operaciones grandes. Y las barras sí se mueven verticalmente, poco pero de verdad. Medido sobre 2443 cuadros."
+description: "Las pelotitas de la referencia no son niveles: son operaciones grandes. Y las barras sí se mueven verticalmente, poco pero de verdad. Medido sobre 2443 cuadros."
 metadata:
   type: project
 ---
@@ -45,7 +45,7 @@ puntos**. O sea: no se mueven.
 La causa es estructural: **elegir**. Mientras gana el mismo strike, el nivel
 elegido no se mueve nada.
 
-GAMMAlito **no elige**: se midieron **284 lineas de nivel** del producto real,
+La referencia **no elige**: se midieron **284 lineas de nivel** del producto real,
 cada una por separado y sobre el amarillo (ninguna vela de ese grafico es
 amarilla, asi que no se contamina) y **ninguna es plana -- cero de 284**. Toman
 unas 13 alturas distintas por pantalla, con escalones de 2,4 px.
@@ -87,3 +87,7 @@ mal ubicadas, es que estamos dibujando otra cosa.
 **How to apply:** el cambio concreto es dejar de elegir seis picos y dibujar el
 perfil entero sobre la rejilla de strikes. Ver [[radar-dominantes-bigtrades]],
 [[dominantes-no-son-linea]] y [[calcular-gex-propio]].
+
+**Aclaracion 2026-09-10:** esta medicion es del modo BIGTRADE de la WEB (circulos azules
+= operaciones grandes de opciones). Las TRES pelotitas grises de cada barra en NinjaTrader
+son otra cosa: el Max Change (la punta hace 15/5/1 min). Ver [[pelotitas-max-change-medidas]].

@@ -80,7 +80,7 @@ ticks processing 6 s"; y ATAS llama OnCalculate para las DOS ultimas velas
 en cada tick, asi que el rebobinado se reiniciaba y logueaba "termino" a
 cada tick: 1.650 lineas en 6 min). Auditoria tras el reinicio del operador
 (22:32 UTC): heatmap recuperado, sin Unobserved exception, cadenas.yml
-corriendo (cada 5 min fuera de rueda). Mockups a la GAMMAlito (guiones por
+corriendo (cada 5 min fuera de rueda). Mockups a la la referencia (guiones por
 vela, rayas tenues o sin rayas, semillas del Max Change):
 https://claude.ai/code/artifact/46f9cf4c-021f-4bf7-abbd-1d2a0bf91487 (elige el).
 
@@ -95,6 +95,38 @@ ocultas SI siguen calculando una vez inicializadas (la viva de NQ se grabo
 desde la pestaña MNQ oculta). Rebobinado 13 dias con centroide: dominantes
 (2, vol) 24 toques, +8,2 pp vs placebo, 22 strikes (muestra chica: el
 centroide no cae en strikes y toca menos).
+
+**0.8 (2026-09-07 23:37 hora maquina, cargado):** el operador saco y volvio a
+poner el indicador y no aparecio el pasado: el defecto era Fuente = Vivo, que no
+rellenaba. Ahora Fuente por defecto = Hibrido y Vivo TAMBIEN recorre el
+archivo al arrancar; la foto de cada vela guarda su perfil (barras) para el
+mouse. Tras el reinicio arrancaron 3 instancias: Hibrido ES (derecha), Vivo
+ES y Vivo NQ (MNQ 5m): las de ES rellenaron 3.086 velas; la de NQ solo 50
+(el archivo de NQ empieza el 09-07 en la nube; no hay dias de Databento de
+NDX todavia).
+
+**0.9 (2026-09-08 ~04:00 UTC, cargado):** rotulos en las barras: GEX M/B +
+oi, y OI/volumen/IV media en segunda linea si hay lugar; convexidad rotulada a
+la izquierda; titulo con 0DTE; ajuste DatosEnBarras Auto/Siempre/Nunca.
+Auditado contra `Rebobina --prueba --tabla` (misma cadena, mismo nucleo).
+Vanna/charm no se calculan; cinta por strike pendiente. 0.8b: un dia pasado
+bajado a medias se vuelve a bajar entero.
+
+**1.0 (2026-09-08 ~05:30 UTC):** "Libro en vivo" CBOE_SPX o Rithmic_ES (cadena
+de ES armada desde ATAS cada 10 s, volumen por strike en tiempo real, Black-76,
+base 0; DesdeViva copiado de Gamma Vivo). Explicado con datos por que las
+dominantes salen rectas de noche: CBOE congela la cadena (09-03 Databento: 59
+de 60 cadenas por hora cambian; 07/08 noche: 9-10 cadenas casi iguales). Ver
+GammaHoy.md. 0.9b: rotulos solo en las 3 barras mayores por lado + dominantes
++ majors; semillas chicas y solo ultimas 90 velas (el MNQ estaba ilegible).
+
+**1.1 / 1.2 (2026-09-08 ~07:00 UTC):** el canal = una dominante por lado (la mas
+fuerte arriba y la mas fuerte abajo; UnaPorLado), franja hacia adentro con
+borde punteado. Con Libro = Rithmic_ES: el centinela del vivo va a
+"hoyrithmic-<inst>" (no se mezcla con "hoy-"), y el pasado se arma con
+viva-<raiz>-<dia>.jsonl (Feed.Archivo.CargarViva) en los dias grabados y CBOE
+en los demas. Nada de la grabacion cambia con el libro elegido. El operador
+quiere dejar MNQ en Rithmic porque "dibuja mas puntos de dominancia".
 
 **Pendiente:** el DLL recompilado NO se instalo en ATAS (el operador teme
 romperlo; instalar con mercado cerrado y reinicio avisado). El convertidor
@@ -111,3 +143,21 @@ minuto desde la rama cadenas (FeedMinuto, ultima-<raiz>.json), viva grabada
 en todos los modos. El recorrido del archivo: 5.856 cadenas, 3.042 velas en
 6 s en hilo propio, un solo "termino" en el log. Mockups elegidos por mi
 (operador ausente y autorizando): la 1 con rayas tenues y las semillas de la 3.
+
+**1.2b (2026-09-08 ~07:30 UTC, cargado y verificado con capturas):** el
+mouse sobre una vela del pasado en Hibrido cambiaba escalera, rayas y bandas
+a esa vela (y volvia al vivo sobre velas sin foto): el operador lo vio como
+"se corre el grafico solo, se rompe, pasa para abajo". Ahora el ajuste "Mouse
+sobre una vela del pasado" = Cabecera (default) deja todo quieto y solo agrega
+un renglon; se apaga con IsMouseLeave / IsMovingChartUsingMouse
+(IMouseLocationInfo tambien tiene PriceBelowMouse y LastPosition). En Fuente
+= Archivo sigue siendo la inspeccion completa. Regla aprendida: en un grafico
+que se opera en vivo, el mouse NUNCA debe mover lo dibujado.
+
+**1.3/1.4 (2026-09-08):** gatillos de order flow (GatilloBanda, solo "tres
+deltas en contra" con dominante quieta y en la rueda; ver
+[[gatillos-order-flow-banda]]), guiones nuevos resaltados por hora de
+nacimiento (EnfasisNuevasMin 3) y rayas punteadas en las barras pesadas
+cercanas (RayasPesadas 2 por lado, radio 0,6 %). Verificado en pantalla en
+MNQ M1: triangulos "tren" y rotulos "+1,3B 0DTE". El operador usa 1 minuto
+ademas de 5: el detector vive en 1 minuto.

@@ -39,4 +39,4 @@ Dos trampas que salieron en la misma auditoria y hay que controlar siempre:
 el efecto dio -0,121 en la primera mitad y +0,392 en la segunda. Cambiar de
 signo dentro del mismo dia es firma de ruido.
 
-Ver [[laboratorio-formulas]] y [[que-afirma-gammalito]].
+Ver [[laboratorio-formulas]] y [[que-afirma-referencia]].

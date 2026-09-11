@@ -10,7 +10,7 @@ namespace PythiaGex
     /// EL CENTINELA DE ACTIVIDAD.
     ///
     /// POR QUE EXISTE
-    /// GAMMAlito explica sus lineas en video y lo que dice, textualmente, es que
+    /// La referencia explica sus lineas en video y lo que dice, textualmente, es que
     /// las barras marcan "los nodos donde esta mayormente expuesto el market
     /// maker", que ahi "va a cubrir su cartera" y que lo que va a pasar es que
     /// "va a aumentar la velocidad del tape".

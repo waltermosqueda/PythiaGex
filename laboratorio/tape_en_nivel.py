@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """SE ACELERA EL TAPE DE FUTUROS CUANDO EL PRECIO ESTA EN UN NIVEL?
 
-Es la afirmacion textual de GAMMAlito ("va a aumentar la velocidad del tape").
+Es la afirmacion textual de la referencia ("va a aumentar la velocidad del tape").
 Antes solo se pudo medir con volumen de OPCIONES (laboratorio/actividad.py).
 Ahora el centinela graba por vela de 1 min el volumen, las operaciones y el
 delta del FUTURO (MES) junto con los niveles vigentes: se mide lo que ellos

@@ -20,11 +20,11 @@ namespace PythiaGex
 
     /// <summary>
     /// GAMMA HOY. Construido de cero el 2026-09-07 a pedido del operador, para
-    /// contrastarlo al lado de Gamma Vivo y de GAMMAlito.
+    /// contrastarlo al lado de Gamma Vivo y de la referencia.
     ///
     /// LO QUE APRENDIMOS DE LOS 30 VIDEOS Y DEL LABORATORIO, Y QUE ACA MANDA:
     ///
-    ///   1. El mapa del dia es el de VOLUMEN. GAMMAlito tiene dos libros en su
+    ///   1. El mapa del dia es el de VOLUMEN. La referencia tiene dos libros en su
     ///      panel, "Volume" y "Open Interest", y sus barras "respiran" porque
     ///      salen del volumen de hoy. En nuestro laboratorio las formulas de
     ///      volumen del dia le ganan al placebo por 22 y 42 puntos; la de gamma
@@ -77,7 +77,7 @@ namespace PythiaGex
         public enum LibroEnVivo { CBOE_SPX, Rithmic_ES }
 
         [Display(Name = "Libro en vivo", GroupName = "1. Datos", Order = 0,
-                 Description = "CBOE_SPX: la cadena de SPX de la nube (llega 902 s tarde, cada minuto en la rueda). Rithmic_ES: las opciones de ES desde tu ATAS, volumen del dia por strike EN TIEMPO REAL e IV de las puntas, sin retraso y sin nube; strikes del futuro, sin base. Con Rithmic el mapa respira con cada operacion, como GAMMAlito. El pasado (archivo) sigue siendo SPX.")]
+                 Description = "CBOE_SPX: la cadena de SPX de la nube (llega 902 s tarde, cada minuto en la rueda). Rithmic_ES: las opciones de ES desde tu ATAS, volumen del dia por strike EN TIEMPO REAL e IV de las puntas, sin retraso y sin nube; strikes del futuro, sin base. Con Rithmic el mapa respira con cada operacion, como la referencia. El pasado (archivo) sigue siendo SPX.")]
         public LibroEnVivo Libro { get; set; } = LibroEnVivo.CBOE_SPX;
 
         [Display(Name = "Rithmic: rearmar el libro cada (s)", GroupName = "1. Datos", Order = 14)]
@@ -91,7 +91,7 @@ namespace PythiaGex
         public enum EstiloRayas { Ninguna, Tenues, Normales }
 
         [Display(Name = "Rayas de los niveles", GroupName = "3. Pantalla", Order = 11,
-                 Description = "GAMMAlito no cruza el grafico con rayas: los niveles viven en los guiones por vela y en el eje. Tenues = al 30 %.")]
+                 Description = "La referencia no cruza el grafico con rayas: los niveles viven en los guiones por vela y en el eje. Tenues = al 30 %.")]
         public EstiloRayas Rayas { get; set; } = EstiloRayas.Tenues;
 
         [Display(Name = "Guion de dominante por vela: grosor (px)", GroupName = "3. Pantalla", Order = 12)]
@@ -99,7 +99,7 @@ namespace PythiaGex
         public int GrosorGuion { get; set; } = 3;
 
         [Display(Name = "Semillas del Max Change por vela (30, 5 y 1 min)", GroupName = "3. Pantalla", Order = 13,
-                 Description = "Tres puntos naranjas por vela con el strike de mayor cambio de GEX a 30, 5 y 1 min. Alineados varios minutos = ahi suele nacer la proxima dominante (GAMMAlito: 'la semillita').")]
+                 Description = "Tres puntos naranjas por vela con el strike de mayor cambio de GEX a 30, 5 y 1 min. Alineados varios minutos = ahi suele nacer la proxima dominante (La referencia: 'la semillita').")]
         public bool VerSemillas { get; set; } = true;
 
         [Display(Name = "Zero gamma por vela (puntitos)", GroupName = "3. Pantalla", Order = 14)]
@@ -212,7 +212,7 @@ namespace PythiaGex
         public decimal Tasa { get; set; } = 0.0375m;
 
         [Display(Name = "Vencimientos del mapa", GroupName = "1. Datos", Order = 5,
-                 Description = "Hoy: solo el 0DTE (si no hay, el mas cercano). Semana: hasta 7 dias. Todo: la cadena entera. GAMMAlito: 'nosotros trabajamos en 0DTE'.")]
+                 Description = "Hoy: solo el 0DTE (si no hay, el mas cercano). Semana: hasta 7 dias. Todo: la cadena entera. La referencia: 'nosotros trabajamos en 0DTE'.")]
         public HorizonteVenc Horizonte { get; set; } = HorizonteVenc.Hoy;
 
         [Display(Name = "Cadena viva de Rithmic (volumen y bloques de opciones de ES)", GroupName = "1. Datos", Order = 6)]
@@ -246,8 +246,8 @@ namespace PythiaGex
         [Range(0, 90)]
         public int EmpateDominantesPct { get; set; } = 20;
 
-        [Display(Name = "Dominante como centroide (ondula, como GAMMAlito)", GroupName = "2. Lectura", Order = 7,
-                 Description = "Promedio de precio ponderado por gamma alrededor del strike ganador. Medido en los videos: la dominante de GAMMAlito es una banda de ~5 puntos que ondula, no una raya plana en un strike.")]
+        [Display(Name = "Dominante como centroide (ondula, como la referencia)", GroupName = "2. Lectura", Order = 7,
+                 Description = "Promedio de precio ponderado por gamma alrededor del strike ganador. Medido en los videos: la dominante de la referencia es una banda de ~5 puntos que ondula, no una raya plana en un strike.")]
         public bool DominanteCentroide { get; set; } = true;
 
         [Display(Name = "Centroide: radio (puntos)", GroupName = "2. Lectura", Order = 8)]
@@ -267,7 +267,7 @@ namespace PythiaGex
         public LibroConv Convexidad { get; set; } = LibroConv.Auto;
 
         [Display(Name = "Big Trade: contratos minimos (opciones de ES)", GroupName = "2. Lectura", Order = 6,
-                 Description = "GAMMAlito usa ~180 en QQQ. Las opciones de ES son menos liquidas: 50 de arranque, se calibra midiendo.")]
+                 Description = "La referencia usa ~180 en QQQ. Las opciones de ES son menos liquidas: 50 de arranque, se calibra midiendo.")]
         [Range(5, 5000)]
         public int UmbralBigTrade { get; set; } = 50;
 
@@ -348,7 +348,7 @@ namespace PythiaGex
         private (double Fut, double Delta)[] _maxChange = new (double, double)[GammaHoyNucleo.Ventanas.Length];
         // estela de dominantes por vela
         private readonly Dictionary<int, double[]> _estela = new();
-        // UN GUION POR CADA ACTUALIZACION, no uno por vela: medido en GAMMAlito hasta
+        // UN GUION POR CADA ACTUALIZACION, no uno por vela: medido en la referencia hasta
         // 4-6 guiones por columna en las velas recientes. Cada vez que se reprecia y
         // la dominante se movio mas de un cuarto de punto, se agrega un guion a la vela.
         // Cada guion lleva la hora en que nacio: los del vivo recientes se resaltan (1.4).
@@ -455,7 +455,7 @@ namespace PythiaGex
         private static readonly Color ColNeg = Color.FromArgb(235, 60, 60);
         private static readonly Color ColConvPos = Color.FromArgb(93, 217, 208);
         private static readonly Color ColConvNeg = Color.FromArgb(168, 107, 255);
-        private static readonly Color ColDom = Color.FromArgb(232, 200, 60);    // primaria: amarillo (hue 29 medido en GAMMAlito)
+        private static readonly Color ColDom = Color.FromArgb(232, 200, 60);    // primaria: amarillo (hue 29 medido en la referencia)
         /// <summary>Mezcla lineal de dos colores: t = 0 da a, t = 1 da b.</summary>
         private static Color Mezclar(Color a, Color b, double t)
         {
@@ -803,7 +803,7 @@ namespace PythiaGex
                     continue;
                 }
                 // un guion por cada cadena que llego DURANTE la vela (varias por vela, como
-                // GAMMAlito); la ultima es la que queda como foto y centinela de la vela
+                // la referencia); la ultima es la que queda como foto y centinela de la vela
                 GammaHoyNucleo.Lectura L = null;
                 for (int j = Math.Max(i0, i - 12); j <= i; j++)
                 {
@@ -1813,7 +1813,7 @@ namespace PythiaGex
                                 g.DrawString("tren", fChica, Color.FromArgb(230, col), x + r + 3, yy - mr.Height / 2);
                             }
                         }
-                    // GAMMAlito: la dominante es un GUION amarillo por vela, primaria gruesa y secundaria fina.
+                    // La referencia: la dominante es un GUION amarillo por vela, primaria gruesa y secundaria fina.
                     // Puesto uno al lado del otro forman la linea sola: se ve donde nacio y cuando salto.
                     if (VerEstela && gui.TryGetValue(b, out var lg))
                     {

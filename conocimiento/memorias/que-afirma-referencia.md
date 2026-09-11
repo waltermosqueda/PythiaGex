@@ -1,11 +1,11 @@
 ---
-name: que-afirma-gammalito
-description: "GAMMAlito explica sus lineas en video: NO dicen que el precio rebote. Dicen que ahi se acelera el tape. Estabamos midiendo la afirmacion equivocada."
+name: que-afirma-referencia
+description: "La referencia explica sus lineas en video: NO dicen que el precio rebote. Dicen que ahi se acelera el tape. Estabamos midiendo la afirmacion equivocada."
 metadata:
   type: reference
 ---
 
-Del video **"¿Que significan las lineas de GAMMAlito?"** (1:08, NinjaTrader,
+Del video **"¿Que significan las lineas de la referencia?"** (1:08, NinjaTrader,
 2026-09-04). Reconstruido de los subtitulos quemados, cuadro por cuadro.
 
 ## Lo que declaran, textualmente
@@ -63,7 +63,7 @@ grandes tocan mas rayas. Script: laboratorio/tape_en_nivel.py.
 - Cada barra lleva **tres puntos redondos de tamano decreciente** adentro.
   RESUELTO el 2026-09-07 con el video 'Te explico en vivo el Max Change':
   son donde estuvo la punta de la barra hace 15 (grande), 5 (mediana) y
-  1 minuto (chica). Ver [[anatomia-gammalito]].
+  1 minuto (chica). Ver [[anatomia-referencia]].
 - El panel tiene selectores de temporalidad **H1** y **M15**.
 
 **Why:** doce horas de laboratorio midiendo rebote pueden haber respondido bien

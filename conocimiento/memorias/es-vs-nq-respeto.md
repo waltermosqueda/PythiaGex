@@ -37,3 +37,17 @@ haya dias de RTH; la vara es 15 strikes distintos por instrumento. Mientras
 tanto, tratar los niveles de MNQ como mas flojos (base cruda +-6 pts y libro
 NDX solo, ver [[nq-libro-propio-pesa]]) y no como mas respetados. Ver
 [[laboratorio-formulas]], [[la-muestra-son-niveles-no-minutos]].
+
+**2026-09-08 (madrugada), "el canal de MNQ":** el operador ve dos dias seguidos
+a MNQ respetando el canal entre dos dominantes sin tocarlas por 20-25 puntos y
+pide dominantes "mas permisivas" (banda). Respuesta: no discutir, medir.
+`laboratorio/canal.py` prueba bandas de ±0..35 pts contra placebo. Con lo
+que habia (Gamma Vivo MNQ M5, 251 velas, 8 dominantes de OI): banda ±25 y
+±35 dan freno 100 % PERO el placebo tambien 100 %: una banda ancha en un
+mercado que se mueve 15 pts por vela hace que TODO "respete". Gamma Hoy 1.0b
+dibuja la "zona de dominancia" (BandaDominantesPct 0,08 % = ~24 pts NQ / 6
+ES), como la referencia; es dibujo, la prueba es canal.py cada dia. Hacen falta
+15 ruedas de MNQ con Gamma Hoy (empezo el 07 de noche).
+Ajuste 1.0c: la franja va HACIA ADENTRO (del lado del precio) con el borde
+interno punteado, como pidio el operador ("del otro lado del muro no hay
+canal"); se da vuelta sola si el precio cruza la dominante.

@@ -3,7 +3,7 @@
 
 POR QUE ESTO EXISTE, Y POR QUE CAMBIA TODO EL PROYECTO
 
-Mirando los videos de GAMMAlito medi que las barras de gamma se recalculan
+Mirando los videos de la referencia medi que las barras de gamma se recalculan
 varias veces por segundo: en 4,2 segundos reales la barra del strike 713 pasa
 de 152 px a 110 px, bajando parejo. Parecia imposible de igualar sin comprar
 un feed de opciones en tiempo real.

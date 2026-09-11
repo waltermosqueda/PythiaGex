@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""TRES MANERAS DE DIBUJAR GAMMA HOY MAS PARECIDAS A GAMMALITO, CON DATOS REALES.
+"""TRES MANERAS DE DIBUJAR GAMMA HOY MAS PARECIDAS A LA REFERENCIA, CON DATOS REALES.
 
 Genera una pagina con tres lienzos, uno por opcion, sobre el mismo tramo real
 (el 3 de septiembre rebobinado, velas de 1 minuto), para que el operador elija
 antes de tocar el indicador. No usa Write/Edit sobre .html (abre el panel del
 navegador): se escribe desde aca.
 
-Uso: python herramientas/mockups_gammalito.py [dia] [salida.html]
+Uso: python herramientas/mockups_referencia.py [dia] [salida.html]
 """
 import io
 import json
@@ -15,7 +15,7 @@ import sys
 
 ATAS = os.path.join(os.environ.get("APPDATA", ""), "ATAS")
 dia = sys.argv[1] if len(sys.argv) > 1 else "2026-09-03"
-salida = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos", "simulador", "mockups-gammalito.html")
+salida = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "datos", "simulador", "mockups-la referencia.html")
 
 velas = []
 for l in io.open(os.path.join(ATAS, "pythiagex-centinela-rebobinado-MES-TimeFrame-M1.jsonl"), encoding="utf-8", errors="replace"):
@@ -28,7 +28,7 @@ for l in io.open(os.path.join(ATAS, "pythiagex-centinela-rebobinado-MES-TimeFram
         velas.append([d["t"][11:16], d["o"], d["h"], d["l"], d["c"], n.get("dom0"), n.get("dom1"), n.get("zero_vol"), n.get("mp_vol"), n.get("mn_vol"), n.get("pico"), n.get("mc30"), n.get("mc5"), n.get("mc1")])
 datos = json.dumps(velas, separators=(",", ":"))
 
-HTML = r'''<title>Gamma Hoy a la GAMMAlito</title>
+HTML = r'''<title>Gamma Hoy al estilo de la referencia</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   :root { --fondo:#0d1218; --panel:#141b24; --linea:#263141; --texto:#dde4ec; --apagado:#8794a4; --sube:#2ddc82; --baja:#eb3c3c; --dom:#e8c83c; --dom2:#b89a2e; --cero:#ebebeb; --aviso:#f0a058; --agua:#5dd9d0; --purpura:#a86bff; --foco:#ffd166; color-scheme: dark; }
@@ -52,10 +52,10 @@ HTML = r'''<title>Gamma Hoy a la GAMMAlito</title>
 </style>
 <div class="marco">
   <span class="ojal">PythiaGex · Gamma Hoy · mockups</span>
-  <h1>Gamma Hoy a la GAMMAlito</h1>
+  <h1>Gamma Hoy al estilo de la referencia</h1>
   <p class="sub">El mismo tramo real, jueves 3 de septiembre de 11:30 a 15:30 de Nueva York, velas de 1 minuto rebobinadas con la misma cuenta que corre en ATAS. Lo que cambia es solo el dibujo. Elegí una, o mezclá: "la dos con las pelotitas de la tres".</p>
 
-  <div class="op"><h2><span>1</span>GAMMAlito puro: guiones, sin rayas</h2>
+  <div class="op"><h2><span>1</span>La referencia tal cual: guiones, sin rayas</h2>
     <p>Como en los videos: la dominante primaria es un guion amarillo grueso por vela, la secundaria un guion más fino y apagado; forman la línea sola, minuto a minuto, y se ve dónde nació y cuándo saltó. Ninguna raya cruza el gráfico. El zero gamma queda como puntitos blancos chicos. Los valores del último minuto van en el eje, como etiquetas, no como líneas.</p>
     <ul><li>Se ve la historia de las dominantes de un vistazo, sin tapar las velas.</li><li>Se pierde la "raya a la derecha" que hoy te muestra el nivel hacia adelante: lo reemplaza la etiqueta en el eje.</li></ul>
     <canvas id="c1"></canvas>
@@ -70,7 +70,7 @@ HTML = r'''<title>Gamma Hoy a la GAMMAlito</title>
   </div>
 
   <div class="op"><h2><span>3</span>Guiones con fuerza y semillas del Max Change</h2>
-    <p>Los guiones son más gruesos cuanto más pesa la dominante, y se agrega lo que GAMMAlito llama "semillita": tres puntos naranjas por vela con el strike de mayor cambio a 30, 5 y 1 minuto. Cuando los tres se alinean varios minutos, ahí suele nacer la próxima dominante. Sin rayas; el pico cercano al precio va como cruz naranja.</p>
+    <p>Los guiones son más gruesos cuanto más pesa la dominante, y se agrega lo que la referencia llama "semillita": tres puntos naranjas por vela con el strike de mayor cambio a 30, 5 y 1 minuto. Cuando los tres se alinean varios minutos, ahí suele nacer la próxima dominante. Sin rayas; el pico cercano al precio va como cruz naranja.</p>
     <ul><li>Es la lectura completa de los videos: dominante, semilla, pico.</li><li>Más elementos en pantalla: conviene tamaño de letra chico y un gráfico ancho.</li></ul>
     <canvas id="c3"></canvas>
     <div class="leyenda"><span><i style="background:var(--dom)"></i>dominantes (grosor = fuerza)</span><span><i style="background:var(--aviso)"></i>Max Change 30 · 5 · 1 min</span><span><i style="background:var(--agua)"></i>pico cerca del precio</span></div>

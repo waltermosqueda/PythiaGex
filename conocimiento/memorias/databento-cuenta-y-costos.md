@@ -28,6 +28,14 @@ Precios medidos con get_cost (2026-09-03, una rueda):
 
 Gastado al 2026-09-07 21:00 UTC: USD 32,20 = 13 ruedas de SPX/SPXW (08-19 a 09-04, sin 09-03 que ya estaba) + opciones de ES del 09-03 + ESU6 trades + ES.FUT 1m de 3 meses. Quedan ~93 de credito; el techo del script sigue en 60.
 
+**2026-09-08 ~03:00 UTC:** al intentar bajar NDX/NDXP (USD 0,71 por rueda, 13
+ruedas ~9) y NQ.FUT (0,55), la API devolvio `402 account_insufficient_funds`
+con USD 32,20 gastados de 125: el operador puso un limite de gasto en la
+cuenta (lo que yo le sugeri) o el credito no es usable mas alla de eso. No
+tocar Billing: pedirle que suba el limite si quiere el libro de NDX para el
+grafico de MNQ. Los 13 dias de NDX quedan pendientes; el convertidor ya sabe
+`--libro NDX` y rebobinar_todo `--libro NDX --solo-convertir`.
+
 **How to apply:** una rueda completa de todo cuesta ~USD 4,3; validar contra
 las 706 fotos propias del 09-03 antes de comprar mas dias. Ver
 [[fuentes-datos-historicos]].

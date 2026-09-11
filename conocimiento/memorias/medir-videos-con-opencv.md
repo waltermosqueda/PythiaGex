@@ -1,6 +1,6 @@
 ---
 name: medir-videos-con-opencv
-description: Como medir en los videos de GAMMAlito lo que dibuja (guiones, barras) en vez de mirarlos; la herramienta, sus trampas y los resultados del 2026-09-07
+description: Como medir en los videos de la referencia lo que dibuja (guiones, barras) en vez de mirarlos; la herramienta, sus trampas y los resultados del 2026-09-07
 metadata:
   type: reference
 ---
@@ -20,7 +20,7 @@ el grafico hace scroll: "alturas distintas por columna a lo largo del video"
 esta contaminado por el scroll; (4) muestrear colores sobre el cuadro ANOTADO
 da magenta (hue 153): muestrear siempre sobre el cuadro crudo.
 
-Resultados (ver [[anatomia-gammalito]]): guion por actualizacion (hasta 4-6
+Resultados (ver [[anatomia-referencia]]): guion por actualizacion (hasta 4-6
 por vela), dominante = banda ~5 pts NQ (centroide), amarillo 29 / naranja 19,
 barras fijas en vertical (|dy| propio p90 <= 1,9 px), pelotitas 15/5/1.
 Videos en %USERPROFILE%\Downloads (nombres largos con espacios y tildes).

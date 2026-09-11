@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""MEDIR LAS PELOTITAS DE GAMMAlito CUADRO A CUADRO (video "Te explico en vivo el Max Change",
+"""MEDIR LAS PELOTITAS DE LA REFERENCIA CUADRO A CUADRO (video "Te explico en vivo el Max Change",
 NinjaTrader, MES 30 s, 1920x1080, 60 fps).
 
 Que mide, sin creerle a nadie:

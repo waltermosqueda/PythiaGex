@@ -51,4 +51,4 @@ productos que se usan para esto no pasan de tres a siete lineas.
 
 **How to apply:** las ocho maquetas calcadas de estas fuentes estan en la
 pagina "Como lo Dibujan los Pros" (artifact, 2026-09-07). El operador elige y
-se pule. Ver [[produccion-en-vivo-2026-09-06]] y [[que-afirma-gammalito]].
+se pule. Ver [[produccion-en-vivo-2026-09-06]] y [[que-afirma-referencia]].

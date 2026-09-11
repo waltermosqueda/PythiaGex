@@ -2,7 +2,7 @@
 """SE ACELERA LA ACTIVIDAD CUANDO EL PRECIO LLEGA AL NIVEL?
 
 DE DONDE SALE LA PREGUNTA
-De un video donde GAMMAlito explica sus propias lineas. Lo que dicen,
+De un video donde la referencia explica sus propias lineas. Lo que dicen,
 textualmente, es que las barras marcan "los nodos donde esta mayormente
 expuesto el market maker", que ahi "va a cubrir su cartera", y que lo que va a
 pasar es que "va a aumentar la velocidad del tape".

@@ -8,7 +8,7 @@ metadata:
   modified: 2026-09-02T21:26:24.135Z
 ---
 
-Construido el 2026-09-02 a partir de siete videos de GAMMAlito (chalitotrader),
+Construido el 2026-09-02 a partir de siete videos de la referencia (chalitotrader),
 que compra datos a GEXbot y dibuja sobre TradingView y NinjaTrader. Acá el
 dato se recalcula desde la cadena cruda y sale gratis.
 

@@ -1,6 +1,6 @@
 ---
 name: dominantes-no-son-linea
-description: "GAMMAlito NO dibuja puntos cruzando el gráfico: los puntitos son círculos SOBRE las barras del perfil, el rastro de cada strike. Verificado en 1920x1080 sin comprimir."
+description: "La referencia NO dibuja puntos cruzando el gráfico: los puntitos son círculos SOBRE las barras del perfil, el rastro de cada strike. Verificado en 1920x1080 sin comprimir."
 metadata: 
   node_type: memory
   type: reference
@@ -16,7 +16,7 @@ error porque explica cómo no volver a cometerlo.
 
 Cuadros de **1920x1080 en PNG sin comprimir** del video horizontal *"Te explico
 en Vivo el Max Change"*, donde la barra de título dice
-`GAMMAlito - Gexbot, OrderLineDecorator` sobre **MES de 30 segundos**.
+`la referencia - Gexbot, OrderLineDecorator` sobre **MES de 30 segundos**.
 
 **El cuerpo del gráfico tiene sólo velas y tres líneas de nivel. Cero puntos.**
 

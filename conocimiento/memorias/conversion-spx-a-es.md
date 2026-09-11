@@ -41,3 +41,24 @@ SPY × 10 está mal. El ratio real SPX/SPY era 10,0223 — sobre un strike de 77
 **Why:** en scalping de ES un desvío de 20–40 puntos convierte un nivel válido en una pérdida sistemática, y es un error silencioso: los niveles "casi funcionan", que es peor que no funcionar. El método viejo (`forward − spot`) daba −21,6 cuando la respuesta era +10,8: 32 puntos, 128 ticks.
 
 **How to apply:** ya está implementado en `PythiaGex/pythiagex/base.py` y el panel lo muestra con su bandera de confianza. Cada nivel que salga de [[paginas-gex-auditadas]] pasa por esta conversión antes de dibujarse en ATAS. Ver [[calcular-gex-propio]] y [[setup-atas-verificado]].
+
+**2026-09-09, la base rota de noche (verificado 5 veces):** a las 21:08 UTC
+la base "cruda" de la nube salto de 28,7 a 322,2 en NQ y de 7,1 a 72,7 en ES:
+la cotizacion que usa la nube rolo al contrato de diciembre (322-29 = carry de
+91 dias) mientras los graficos siguen en septiembre; todos los niveles de MNQ
+quedaron ~294 pts arriba. Desde Gamma Hoy 1.5 el nucleo ACOTA la base con el
+carry teorico del contrato del grafico (precio x (tasa - dividendo) x dias/365;
+NQ ~21, ES ~5,6 a 9 dias) y descarta lo que no cabe; orden: medida > medida
+reciente > de la rueda (medida por el indicador) > cruda > TEORICA. La
+cabecera dice cual uso. Ojo: ATAS da la raiz sola ("MES") en pestañas
+ocultas: el vencimiento se supone trimestral y se acepta tambien el siguiente.
+
+**Medido el 2026-09-10 (auditoria de la base):** NQ Sep cotizo una base de 24,7 (Rithmic contra spot de
+CBOE alineado a 960 s, MAD 2,9; Yahoo NQ=F - ^NDX 23-28 por hora) contra un carry teorico de 18,8 (tasa
+del Tesoro 3,76 %, dividendo 0,8 %): el mercado paga ~6 pts mas que el carry simple, y esa es la base
+que hay que usar para dibujar strikes en el futuro. ES: 6,3 (MAD 0,75) contra carry 4,2. El indicador
+media mal (una muestra por 'generado' del feed, vela a generado-902 s, sin filtro, valor persistido
+recargado 24 h): osciló 18 <-> 36 en el dia y corrió todos los niveles 6-11 pts. Desde 1.8d: una
+muestra por ts de CBOE, alineada a 960 s, mediana robusta, cada muestra en el log ('base muestra').
+Verificar el 11-09: NQ 22-28, ES 5,5-7. Ojo: raw.githubusercontent por rama cachea 5 min; el
+indicador pide ultima-<raiz>.json por la API con token local (%APPDATA%\PythiaGex\github.token).
