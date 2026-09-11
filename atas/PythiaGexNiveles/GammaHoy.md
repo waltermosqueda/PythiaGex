@@ -851,3 +851,18 @@ vivo mañana 11-09 en la rueda: las lineas "base muestra" tienen que dar 22-28 e
 que bajaba el indicador estaba hasta 8 min mas viejo que el commit (medido 20:45). Con un token local
 (%APPDATA%\PythiaGex\github.token, escrito por 'gh auth token', nunca en el repo) 1.8d lo pide por la
 API de contenidos, que no pasa por ese cache. La nube tambien: base por precio = mediana de 40 min.
+
+**21:36-21:55, tres reinicios seguidos (regla nueva del operador: reiniciar siempre, sin pedir permiso, y
+mirar la pantalla de ATAS despues de cada cambio):**
+- 1.8d cargada; base persistida 24,70 (NQ) y 6,30 (ES), medidas offline con el metodo nuevo sobre los
+  datos de hoy. En pantalla (MNQ 1 min y 5 min, traida al frente): cabecera "base de la rueda hace 277
+  min", +Γ/D1 29.525, −Γ 29.155, D2 29.153 (=K 29.130 + 24,7), 0Γ 29.056. La web muestra lo mismo.
+- DIAGNOSTICO del conector (1.8d): en ATAS 8.0.14.399 `OFT.Rithmic.RithmicConnector` implementa solo
+  IDataFeedConnector/IMarketDataPublisher/ISupportChangePosition; el UNICO tipo con IOptionsDataFeed es
+  `OFT.InteractiveBrokers2.IBConnector`. Volcado con atas/_api: RithmicConnector CONSERVA los metodos
+  publicos `GetOptionSeriesAsync(Security)` y `GetOptionsAsync(OptionSeries)`. Como CadenaViva ya los
+  llamaba por `dynamic`, 1.8f busca el conector POR FORMA (un IDataFeedConnector con esos dos metodos).
+- 1.8d/1.8e comian la PC: la busqueda honda en estaticos (todos los tipos de ATAS/OFT, 40.000 nodos cada
+  uno) se repetia cada 3-5 s en cuatro graficos: 2,6 nucleos y 9,4 GB. 1.8e acota (8 s, 150.000 nodos,
+  tipos con Connector/DataFeed/Manager/Service/Provider/Container, honda cada 5 min) y 1.8f limita los
+  intentos de enganche a uno por minuto.
