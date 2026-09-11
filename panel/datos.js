@@ -135,13 +135,21 @@
     const vivoFrescoTodo = edadPc != null && edadPc <= 3;
     const cn = vivoTodo ? vivoTodo.claves_niv : [], co = vivoTodo ? vivoTodo.claves_of : [];
     const g = vivoFrescoTodo && vivoTodo.graficos ? vivoTodo.graficos[inst + "-" + marco] : null;
-    const g1 = vivoFrescoTodo && vivoTodo.graficos ? vivoTodo.graficos[inst + "-M1"] : null;
+    // si el marco pedido no esta abierto en ATAS, se toma el mas fino que si este del mismo
+    // instrumento y se agrupa (antes solo se miraba el de 1 min: con MNQ-M2/M5 abiertos y M1
+    // cerrado la web decia "PC sin señal" con el latido a 0 min; 2026-09-11)
+    let g1 = null, marcoFino = null;
+    if (!g && vivoFrescoTodo && vivoTodo.graficos) {
+      const cands = Object.keys(vivoTodo.graficos).filter(k => k.startsWith(inst + "-") && MINUTOS[k.slice(inst.length + 1)] && MINUTOS[k.slice(inst.length + 1)] <= (MINUTOS[marco] || 1))
+        .sort((a, b) => MINUTOS[a.slice(inst.length + 1)] - MINUTOS[b.slice(inst.length + 1)]);
+      if (cands.length) { marcoFino = cands[0].slice(inst.length + 1); g1 = vivoTodo.graficos[cands[0]]; }
+    }
     const viva = vivoFrescoTodo && vivoTodo.viva ? (vivoTodo.viva[raiz] || null) : null;
     if (viva) viva.generado = vivoTodo.generado;
     const minutos = MINUTOS[marco] || 1;
     let velas, origenVelas, vivoFresco = false;
     if (g) { velas = velasDeVivo(g, cn, co); origenVelas = "VIVO desde tu ATAS (" + inst + " " + marco + ", hace " + Math.round(edadPc) + " min)"; vivoFresco = true; }
-    else if (g1) { velas = agregar(velasDeVivo(g1, cn, co), minutos); origenVelas = "VIVO desde tu ATAS (" + inst + " 1 min agrupado a " + marco + ")"; vivoFresco = true; }
+    else if (g1) { velas = agregar(velasDeVivo(g1, cn, co), minutos); origenVelas = "VIVO desde tu ATAS (" + inst + " " + marcoFino + " agrupado a " + marco + ")"; vivoFresco = true; }
     else { velas = agregar(velasDeYahoo(yahoo, serie), minutos); origenVelas = yahoo && yahoo.futuro && yahoo.futuro.t && yahoo.futuro.t.length ? "NUBE: Yahoo " + yahoo.futuro.simbolo + " (con retraso, sin order flow), niveles de la serie de la nube" : "sin velas"; }
     // historia larga: lo de Yahoo ANTES de la primera vela de ATAS (marcado v.yahoo = true, sin delta), para las
     // temporalidades largas y para ver la rueda entera; el vivo de ATAS manda desde donde empieza

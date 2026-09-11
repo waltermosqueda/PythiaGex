@@ -175,6 +175,11 @@ def latido():
         if "PELOTITAS" in l: pelotitas = l.strip()
         if "base de la rueda" in l.lower(): base_rueda = l.strip()
         if "[cadena viva]" in l: viva_estado = l.strip()
+    if version is None:   # la linea "arranca" queda atras en el log despues de un rato: buscar mas lejos
+        for l in leer_cola_texto(lg, 120000):
+            if "arranca" in l and "Gamma Hoy" in l:
+                m = re.search(r"Gamma Hoy ([0-9.a-z]+) arranca", l)
+                if m: version = m.group(1)
     return dict(pc=os.environ.get("COMPUTERNAME", "?"), version=version, audit_NQ=audits.get("NQ"), audit_ES=audits.get("ES"),
                 pelotitas=pelotitas, base_rueda=base_rueda, viva_estado=viva_estado)
 
