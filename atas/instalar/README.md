@@ -20,7 +20,7 @@ tener los indicadores andando en unos minutos:
    boton verde `Code` -> `Download ZIP`, y descomprimirlo. (Si hay una **Release**
    `indicadores-AAAA-MM-DD.zip`, sirve igual y es mas chica.)
 3. Doble clic en `atas\instalar\instalar_indicadores.bat`. Busca los DLL al lado del
-   script o en `atas\PythiaGexNivelesin\Release` y `atas\PythiaVwapin\Release`
+   script o en `atas\PythiaGexNiveles\bin\Release` y `atas\PythiaVwap\bin\Release`
    y los copia a `%APPDATA%\ATAS\Indicators\`.
 4. Abrir ATAS, en cada grafico: `Indicators` -> buscar `Gamma Hoy` -> un clic en la
    fila -> `Add to chart` -> `Apply`. Lo mismo con `PythiaVwap`. Despues
