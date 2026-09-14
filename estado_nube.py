@@ -566,6 +566,23 @@ def correr(raiz, destino, ahora=None, futuro_manual=None, escribir=True, log=pri
         fut_origen = "indice de CBOE + base (sin precio del futuro fresco)"
     else:
         fut_origen = "manual" if futuro_manual is not None else "Yahoo %s hace %.0f min" % (YAHOO[raiz][0], fut_edad)
+    # QUE CONTRATO ES el futuro de Yahoo: ES=F / NQ=F ruedan solos (el 14-09 a las 15:50 UTC pasaron de
+    # septiembre a diciembre con el grafico del operador todavia en septiembre). Se infiere de la base por
+    # precio contra el carry de cada trimestral, y se cierra el escape al siguiente vencimiento: con eso la
+    # base "medida" de diciembre (+71 en ES) no puede colarse con un precio de septiembre (medido: S quedo
+    # 65-70 pts abajo del indice toda la rueda del 14-09).
+    fut_contrato = None
+    if futuro_manual is None and base_precio is not None and edad_precio is not None and edad_precio <= 60:
+        cands = []
+        for exp in (A.exp_futuro, A.exp_futuro_alt):
+            if exp and exp > ahora:
+                k = futuro * (A.tasa - A.dividendo) * (exp - ahora).total_seconds() / 86400.0 / 365.0
+                cands.append((abs(base_precio - k), exp, k))
+        if cands:
+            _, exp, k = min(cands)
+            fut_contrato = "%s (carry %.1f, base por precio %.1f)" % (exp.strftime("%Y-%m-%d"), k, base_precio)
+            A.exp_futuro, A.exp_futuro_alt = exp, None
+            fut_origen += " contrato " + exp.strftime("%b%y")
     base_tmp, _, _ = elegir_base(A, c, futuro, ahora, base_precio, edad_precio)
     fotos = fotos_del_dia(A, destino, raiz, ahora, base_tmp or 0.0, velas_fut=velas["futuro"] if velas else None)
     L = calcular(A, c, futuro, ahora, fotos, base_precio, edad_precio)
@@ -585,7 +602,7 @@ def correr(raiz, destino, ahora=None, futuro_manual=None, escribir=True, log=pri
         fuente="CBOE (cadena con ~15 min de retraso) via cadenas.yml; cuenta = GammaHoyNucleo portado (estado_nube.py)",
         ajustes=dict(horizonte=A.horizonte, cuantas=A.cuantas, radio_dom_pct=A.radio_dom_pct, radio_centro=A.radio_centro, pico_pct=A.pico_pct, mucho_pct=A.mucho_pct,
                      convexidad=A.convexidad, tasa=A.tasa, dividendo=A.dividendo, exp_futuro=A.exp_futuro.isoformat(), exp_futuro_alt=A.exp_futuro_alt.isoformat()),
-        spot_idx=c["spot_idx"], futuro=futuro, fut_origen=fut_origen, S=S, base=base, base_origen=L["base_origen"], carry=L["carry"],
+        spot_idx=c["spot_idx"], futuro=futuro, fut_origen=fut_origen, fut_contrato=fut_contrato, S=S, base=base, base_origen=L["base_origen"], carry=L["carry"],
         base_feed=dict(medida=c["base"] if c["base_confiable"] else None, cruda=c["base_cruda"], error_ticks=c["base_error_ticks"]), base_por_precio=base_precio,
         masCerca=L["masCerca"], strikes=L["strikes"], netVol=L["netVol"], netOi=L["netOi"], zeroVol=L["zeroVol"], zeroOi=L["zeroOi"],
         mpVol=L["mpVol"], mnVol=L["mnVol"], mpOi=L["mpOi"], mnOi=L["mnOi"], maxAbsVol=L["maxAbsVol"], maxAbsOi=L["maxAbsOi"], maxAbsConv=L["maxAbsConv"],
