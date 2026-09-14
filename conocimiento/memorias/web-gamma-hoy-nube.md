@@ -87,3 +87,19 @@ reescrito byte a byte y verificado sin caracteres de control. OJO al escribir ru
 `
 ` desde printf o heredocs: el harness des-escapa una vez y el segundo escape se vuelve un
 caracter de control. Verificado: subidor subiendo cada 20 s con viva ES y NQ, version 1.8j.
+
+**2026-09-14 15:20-15:45 local, "sincronizar lo mas cercano posible a segundo a segundo" (medido, no
+supuesto):** el subidor pasa de 20 a 10 s (360 commits/h, la rama se aplana a las 22 UTC) y la pagina
+refresca cada 5 s (el 15 guardado en localStorage se toma como "sin elegir"). Lo que NO se pudo: con
+GitHub como transporte el piso es la API publica (60 pedidos por hora sin token; CADA_SHA_MS = 62 s)
+mas la URL inmutable por commit, o sea 10-70 s de edad. Medido en la rueda: raw.githubusercontent por
+rama sirve 104-129 s viejo aunque se cambie la query; raw.githack.com copia ese mismo cache (228 s con
+X-Cache MISS); statically.io es immutable (1 año); jsDelivr con purge dio 4-29 s durante ~10 minutos y
+despues `"throttled": true` con reset en 3353 s y la copia vieja pegada (por eso el 10-09 quedo 12 h
+vieja). El subidor ahora tambien sube `latido.json` (generado + sha del commit del vivo, 2 KB) sin
+purge; la pagina lo usa solo de respaldo por githack. La pagina NO refresca con la pestaña oculta
+(`visibilityState`): para medir hay que pedir el archivo a mano, no leer la cabecera de una pestaña de
+fondo. Para bajar de 10 s hace falta un canal propio: Tailscale + servidor local (real, gratis, solo con
+la PC prendida) o Firebase RTDB gratis para el latido (fresco, 2 KB; el vivo sigue por raw inmutable).
+El operador dijo "el dos mas adelante".
+
