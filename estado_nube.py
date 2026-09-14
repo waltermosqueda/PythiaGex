@@ -601,7 +601,7 @@ def correr(raiz, destino, ahora=None, futuro_manual=None, escribir=True, log=pri
         edad_min=round((ahora - c["generado"]).total_seconds() / 60.0, 1) if c["generado"] else None, ultimo_trade=c["ultimo_trade"],
         fuente="CBOE (cadena con ~15 min de retraso) via cadenas.yml; cuenta = GammaHoyNucleo portado (estado_nube.py)",
         ajustes=dict(horizonte=A.horizonte, cuantas=A.cuantas, radio_dom_pct=A.radio_dom_pct, radio_centro=A.radio_centro, pico_pct=A.pico_pct, mucho_pct=A.mucho_pct,
-                     convexidad=A.convexidad, tasa=A.tasa, dividendo=A.dividendo, exp_futuro=A.exp_futuro.isoformat(), exp_futuro_alt=A.exp_futuro_alt.isoformat()),
+                     convexidad=A.convexidad, tasa=A.tasa, dividendo=A.dividendo, exp_futuro=A.exp_futuro.isoformat(), exp_futuro_alt=A.exp_futuro_alt.isoformat() if A.exp_futuro_alt else None),
         spot_idx=c["spot_idx"], futuro=futuro, fut_origen=fut_origen, fut_contrato=fut_contrato, S=S, base=base, base_origen=L["base_origen"], carry=L["carry"],
         base_feed=dict(medida=c["base"] if c["base_confiable"] else None, cruda=c["base_cruda"], error_ticks=c["base_error_ticks"]), base_por_precio=base_precio,
         masCerca=L["masCerca"], strikes=L["strikes"], netVol=L["netVol"], netOi=L["netOi"], zeroVol=L["zeroVol"], zeroOi=L["zeroOi"],
