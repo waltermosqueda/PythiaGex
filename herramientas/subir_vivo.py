@@ -233,14 +233,14 @@ def una_vuelta(n_velas):
     paquete = dict(generado=ahora.isoformat(timespec="seconds"), claves_niv=CLAVES_NIV, claves_of=CLAVES_OF, latido=latido(),
                    graficos=graficos, viva=viva, resumen={k: dict(velas=len(v["velas"]["t"]), ultima=v["velas"]["t"][-1], gatillos=len(v["gatillos"])) for k, v in graficos.items()})
     tam = subir("vivo.json", paquete, "vivo %s" % ahora.strftime("%Y-%m-%d %H:%M:%S UTC"))
-    # LATIDO (14-09): un archivo chico con el sha del commit del vivo. La web lo lee de jsDelivr (se
-    # purga aca mismo; medido hoy: 4-29 s de edad contra 104-129 s de raw por rama) y con ese sha pide
-    # vivo.json por la URL inmutable por commit. Asi la frescura ya no depende de preguntarle el sha a
-    # la API cada 75 s (limite de 60 pedidos por hora sin token).
+    # LATIDO (14-09): un archivo chico con el sha del commit del vivo. La web lo lee por raw.githack.com
+    # (cache de 60 s; raw por rama cachea 5 min y la API publica da 60 pedidos por hora) y con ese sha
+    # pide vivo.json por la URL inmutable por commit: lo que llega es exactamente esa subida.
     if tam and _commit.get("vivo.json"):
         try:
             subir("latido.json", {"generado": ahora.isoformat(timespec="seconds"), "vivo_commit": _commit["vivo.json"], "vivo_kb": tam // 1024}, "latido")
-            purgar("latido.json")
+            # sin purge de jsDelivr: medido 14-09 15:34 UTC-3, "throttled": true tras ~10 min purgando cada
+            # 10 s (reset en 56 min) y la copia vieja queda pegada 12 h. La web lee el latido por githack (60 s).
         except Exception as e:
             log("latido: %s" % e)
     log(("subido vivo.json %d KB: " % (tam // 1024) if tam else "NO subio: ") + (", ".join(graficos) if graficos else "sin graficos frescos (ATAS cerrado?)") + (" + viva " + ",".join(viva) if viva else ""))

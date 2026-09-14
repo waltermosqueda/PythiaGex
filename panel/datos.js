@@ -45,12 +45,15 @@
     try {
       let r = null;
       if (base === BASE_DEF) {
-        // 14-09: para el vivo, primero el LATIDO chico de jsDelivr (el subidor lo purga en cada subida;
-        // medido: 4-29 s de edad) que trae el sha del commit del vivo -> vivo.json por URL inmutable.
-        // Si el latido no esta o es mas viejo que lo que ya tenemos, sigue el camino de la API (75 s).
+        // 14-09: para el vivo, primero el LATIDO chico (2 KB) por raw.githack.com, que cachea 60 s
+        // (medido: 8 s recien pedido, hasta ~70 s en el peor caso) y trae el sha del commit del vivo ->
+        // vivo.json por URL inmutable por commit. jsDelivr NO sirve: su purge se limita (throttled tras
+        // ~10 min purgando cada 10 s, reset en 56 min) y despues sirve 12 h la copia vieja; raw por rama
+        // cachea 5 min; la API publica da 60 pedidos por hora. Si el latido es mas viejo que lo que ya
+        // tenemos, sigue el camino de la API (75 s) y se queda con lo mas fresco.
         if (nombre === "vivo.json") {
           try {
-            const rl = await fetch("https://cdn.jsdelivr.net/gh/" + REPO + "@" + RAMA + "/latido.json?v=" + ahora, { cache: "no-store" });
+            const rl = await fetch("https://raw.githack.com/" + REPO + "/" + RAMA + "/latido.json?v=" + ahora, { cache: "no-store" });
             if (rl.ok) {
               const lat = await rl.json();
               if (lat && lat.vivo_commit && (!c || !c.v || !c.v.generado || !lat.generado || Date.parse(lat.generado) >= Date.parse(c.v.generado)))
