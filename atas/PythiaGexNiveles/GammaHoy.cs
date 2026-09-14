@@ -180,7 +180,7 @@ namespace PythiaGex
                  Description = "Franja desde la dominante HACIA ADENTRO (hacia el lado del precio), con el borde interno marcado. 0,08 % = ~24 puntos en NQ, ~6 en ES. 0 = sin banda. La banda es DIBUJO: si el precio la respeta o no lo mide laboratorio/canal.py contra placebo.")]
         public decimal BandaDominantesPct { get; set; } = 0.08m;
 
-        public enum RotulosBarras { Auto, Siempre, Nunca }
+        public enum RotulosBarras { Auto, Siempre, Nunca, SoloNiveles }
 
         [Display(Name = "Datos en las barras", GroupName = "3. Pantalla", Order = 15,
                  Description = "A la derecha de cada barra de volumen: GEX del libro (M/B), OI, volumen del dia e IV media; a la izquierda de cada barra de convexidad: su ΔGEX por +1 %. Auto: solo si las filas tienen lugar; si no, solo dominantes y majors.")]
@@ -274,6 +274,11 @@ namespace PythiaGex
         [Display(Name = "Ancho de las barras (px)", GroupName = "3. Pantalla", Order = 1)]
         [Range(30, 300)]
         public int AnchoBarras { get; set; } = 90;
+
+        [Display(Name = "Barras: ocultar las menores al % de la mas grande (solo pantalla)", GroupName = "3. Pantalla", Order = 1,
+                 Description = "1.9a: no dibuja las barras (ni su rotulo, pelotitas, sombra ni perfil derecho) cuyo |GEX| sea menor que este porcentaje de la barra mas grande del libro. NO toca ningun calculo: zero, majors, dominantes, centinela y AUDIT salen del libro entero igual que siempre. Las dominantes y los majors se dibujan siempre aunque sean chicos. 0 = todas (como antes); 20 = saca el ruido y deja los racimos alrededor de las dominantes. Pensado para el libro de Rithmic (strikes cada 5 pts en ES, 50 renglones).")]
+        [Range(0, 90)]
+        public int UmbralBarraPct { get; set; } = 0;
 
         [Display(Name = "Sombra del libro de OI (ayer) detras de las barras", GroupName = "3. Pantalla", Order = 2)]
         public bool VerSombraOI { get; set; } = true;
@@ -573,7 +578,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.9 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.9a arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -582,7 +587,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.9 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.9a arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1642,8 +1647,12 @@ namespace PythiaGex
             var elegidos = new HashSet<double>();
             foreach (var dm in doms) elegidos.Add(dm.Fut);
             if (!double.IsNaN(mpVol)) elegidos.Add(mpVol); if (!double.IsNaN(mnVol)) elegidos.Add(mnVol);
-            foreach (var z in perfil.Where(z => z.GexVol > 0).OrderByDescending(z => z.GexVol).Take(3)) elegidos.Add(z.Fut);
-            foreach (var z in perfil.Where(z => z.GexVol < 0).OrderBy(z => z.GexVol).Take(3)) elegidos.Add(z.Fut);
+            var fijos = new HashSet<double>(elegidos);   // dominantes y majors: se dibujan siempre, aunque sean chicos
+            if (DatosEnBarras != RotulosBarras.SoloNiveles)
+            {
+                foreach (var z in perfil.Where(z => z.GexVol > 0).OrderByDescending(z => z.GexVol).Take(3)) elegidos.Add(z.Fut);
+                foreach (var z in perfil.Where(z => z.GexVol < 0).OrderBy(z => z.GexVol).Take(3)) elegidos.Add(z.Fut);
+            }
             bool rotHayLugar = esp >= altoRot + 1;
             string Km(double v) => Math.Abs(v) >= 1e6 ? (v / 1e6).ToString("0.0", es) + "M" : Math.Abs(v) >= 1e3 ? (v / 1e3).ToString("0.0", es) + "k" : v.ToString("0", es);
             string BmR(double v) => Math.Abs(v) >= 1e9 ? (v / 1e9).ToString("+0.0;-0.0", es) + "B" : Math.Abs(v) >= 1e6 ? (v / 1e6).ToString("+0;-0", es) + "M" : (v / 1e3).ToString("+0;-0", es) + "k";
@@ -1662,6 +1671,8 @@ namespace PythiaGex
             {
                 int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                 if (y < area.Top || y > piso) continue;
+                // umbral de pantalla (1.9a): las barras chicas no se dibujan, salvo dominantes y majors
+                if (UmbralBarraPct > 0 && maxV > 0 && Math.Abs(s.GexVol) < maxV * UmbralBarraPct / 100.0 && !fijos.Contains(s.Fut)) continue;
                 bool rotEsta = DatosEnBarras != RotulosBarras.Nunca && rotHayLugar && (rotTodas || elegidos.Contains(s.Fut));
                 if (VerSombraOI && maxO > 0 && Math.Abs(s.GexOi) > 0)
                 {
