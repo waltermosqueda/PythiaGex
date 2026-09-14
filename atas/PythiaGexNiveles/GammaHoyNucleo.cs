@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -65,6 +65,7 @@ namespace PythiaGex
         {
             public double K, Fut;
             public double GexOi, GexVol, Conv;
+            public double GexFlujo;   // gamma del DEALER por flujo firmado (solo Rithmic, 1.9): + largo (colchon), - corto (tobogan)
             public double Oi, VolHoy;
             public double IvSum, IvW;        // acumuladores (IV ponderada por OI + volumen)
             public double Dte = double.MaxValue;   // dias al vencimiento mas cercano que aporta
@@ -88,6 +89,7 @@ namespace PythiaGex
             public double ZeroVol = double.NaN, ZeroOi = double.NaN, NetVol, NetOi;
             public double MpVol = double.NaN, MnVol = double.NaN, MpOi = double.NaN, MnOi = double.NaN;
             public double MaxAbsVol, MaxAbsOi, MaxAbsConv;
+            public double MaxAbsFlujo; public bool TieneFlujo;
             public List<(double Fut, double Gex)> Doms = new();
             public string LibroConv = "", LibroDom = "vol";
             public string Cuadrante = "", CuadranteCorto = "";
@@ -162,6 +164,18 @@ namespace PythiaGex
             var gP = esFut ? Black76.Gamma(S, f.K, T, f.IvP) : GammaBs(S, f.K, T, f.IvP, r);
             double wC = porVolumen ? f.VolC : f.OiC, wP = porVolumen ? f.VolP : f.OiP;
             return (gC * wC - gP * wP) * MULT_INDICE * S * S * 0.01;
+        }
+
+        /// <summary>Gamma del DEALER por flujo firmado (solo Rithmic: compras - ventas por lado agresor, 1.9).
+        /// El cliente que compra deja al dealer corto de esa opcion (gamma negativa); el que vende lo deja largo.
+        /// Positivo = dealers largos gamma (colchon, aguamarina); negativo = cortos (tobogan, purpura).
+        /// Hipotesis del perfil derecho de la referencia (14-09: su signo no es ninguna griega estatica).</summary>
+        public static double GexFlujo(Feed.Fila f, double S, double T, double r, bool esFut)
+        {
+            if (f.FluC == 0 && f.FluP == 0) return 0;
+            var gC = esFut ? Black76.Gamma(S, f.K, T, f.IvC) : GammaBs(S, f.K, T, f.IvC, r);
+            var gP = esFut ? Black76.Gamma(S, f.K, T, f.IvP) : GammaBs(S, f.K, T, f.IvP, r);
+            return -(gC * f.FluC + gP * f.FluP) * MULT_INDICE * S * S * 0.01;
         }
 
         private bool PasaHorizonte(double dias, double masCerca)
@@ -240,7 +254,8 @@ namespace PythiaGex
             bool Razonable(double b) => double.IsNaN(carry) || Cerca(b, carry);
             string Cota(string o, double b) => double.IsNaN(carry) ? o : o + (Razonable(b) ? "" : " FUERA DE COTA");
             double baseUsada; string origen;
-            if (c.EsFuturo) { baseUsada = 0; origen = "libro " + (string.IsNullOrEmpty(c.Fuente) ? "del futuro" : c.Fuente) + ", sin base"; }
+            if (c.PorRazon) { baseUsada = 0; origen = "libro " + c.Fuente + " x razon " + c.Escala.ToString("0.0000", iv0) + (string.IsNullOrEmpty(c.EscalaOrigen) ? "" : " (" + c.EscalaOrigen + ")"); }
+            else if (c.EsFuturo) { baseUsada = 0; origen = "libro " + (string.IsNullOrEmpty(c.Fuente) ? "del futuro" : c.Fuente) + ", sin base"; }
             else if (c.BaseConfiable && c.Base != 0 && RazonableMedida(c.Base)) { baseUsada = c.Base; origen = "medida"; }
             else if (c.BaseUltimaBuena != 0 && c.BaseUltimaBuenaEdad <= 360 && RazonableMedida(c.BaseUltimaBuena)) { baseUsada = c.BaseUltimaBuena; origen = "medida hace " + c.BaseUltimaBuenaEdad.ToString("0", iv0) + " min"; }
             else if (!double.IsNaN(A.BaseRueda) && A.BaseRuedaEdadMin <= 24 * 60 && Razonable(A.BaseRueda)) { baseUsada = A.BaseRueda; origen = "de la rueda hace " + A.BaseRuedaEdadMin.ToString("0", iv0) + " min"; }
@@ -249,7 +264,7 @@ namespace PythiaGex
             else if (c.BaseCruda != 0) { baseUsada = c.BaseCruda; origen = "CRUDA " + c.BaseErrorTicks.ToString("0", iv0) + " ticks (sin cota)"; }
             else { L.SinBase = true; L.BaseOrigen = "sin base"; return L; }
 
-            double S = futuro - baseUsada;
+            double S = c.PorRazon && c.Escala > 0 ? futuro / c.Escala : futuro - baseUsada;
             if (S <= 0) return null;
             double r = A.Tasa, Sup = S * 1.01;
 
@@ -270,8 +285,9 @@ namespace PythiaGex
                 double gOi = Gex(f, S, T, r, false, c.EsFuturo), gVol = Gex(f, S, T, r, true, c.EsFuturo);
                 double gOiUp = Gex(f, Sup, T, r, false, c.EsFuturo), gVolUp = Gex(f, Sup, T, r, true, c.EsFuturo);
                 if (gOi == 0 && gVol == 0) continue;
-                if (!por.TryGetValue(f.K, out var s)) { s = new Strike { K = f.K, Fut = f.K + baseUsada }; por[f.K] = s; }
+                if (!por.TryGetValue(f.K, out var s)) { s = new Strike { K = f.K, Fut = c.PorRazon ? f.K * c.Escala : f.K + baseUsada }; por[f.K] = s; }
                 s.GexOi += gOi; s.GexVol += gVol;
+                s.GexFlujo += GexFlujo(f, S, T, r, c.EsFuturo);
                 s.Oi += f.OiC + f.OiP; s.VolHoy += f.VolC + f.VolP;
                 { double wc = f.OiC + f.VolC, wp = f.OiP + f.VolP; if (f.IvC > 0) { s.IvSum += f.IvC * wc; s.IvW += wc; } if (f.IvP > 0) { s.IvSum += f.IvP * wp; s.IvW += wp; } }
                 if (dias < s.Dte) s.Dte = dias;
@@ -290,11 +306,12 @@ namespace PythiaGex
             double maxAbsVol = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.GexVol)) : 0;
             double maxAbsOi = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.GexOi)) : 0;
             double maxAbsConv = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.Conv)) : 0;
+            double maxAbsFlujo = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.GexFlujo)) : 0;
 
             // zero gamma de cada libro: donde la suma repreciada cruza cero
             double zeroVol = Cruce(c, S, r, masCerca, envejecer, true), zeroOi = Cruce(c, S, r, masCerca, envejecer, false);
-            if (!double.IsNaN(zeroVol)) zeroVol += baseUsada;
-            if (!double.IsNaN(zeroOi)) zeroOi += baseUsada;
+            if (!double.IsNaN(zeroVol)) zeroVol = c.PorRazon ? zeroVol * c.Escala : zeroVol + baseUsada;
+            if (!double.IsNaN(zeroOi)) zeroOi = c.PorRazon ? zeroOi * c.Escala : zeroOi + baseUsada;
 
             // majors de cada libro
             double mpVol = double.NaN, mnVol = double.NaN, mpOi = double.NaN, mnOi = double.NaN;
@@ -454,6 +471,7 @@ namespace PythiaGex
             L.ZeroVol = zeroVol; L.ZeroOi = zeroOi; L.NetVol = netVol; L.NetOi = netOi;
             L.MpVol = mpVol; L.MnVol = mnVol; L.MpOi = mpOi; L.MnOi = mnOi;
             L.MaxAbsVol = maxAbsVol; L.MaxAbsOi = maxAbsOi; L.MaxAbsConv = maxAbsConv;
+            L.MaxAbsFlujo = maxAbsFlujo; L.TieneFlujo = maxAbsFlujo > 0;
             L.Doms = candDom; L.LibroConv = convPorVol ? "vol" : "OI"; L.LibroDom = libroDom;
             L.Cuadrante = nombre; L.CuadranteCorto = corto; L.CuadranteN = cuadN;
             L.PicoFut = picoFut; L.PicoGex = picoGex; L.ConvEnPrecio = convPrecio; L.Mucho = mucho;
@@ -466,10 +484,11 @@ namespace PythiaGex
         public static string Audit(Lectura L, Feed.Cadena c, bool vivaActiva)
         {
             var inv = CultureInfo.InvariantCulture;
-            return string.Format(inv, "AUDIT fut={0:F2} S={1:F2} base={2:F2} origen={3} strikes={4} netVol={5:F3}B netOi={6:F3}B zeroVol={7:F2} zeroOi={8:F2} mpVol={9:F2} mnVol={10:F2} doms={11} libroDom={12} conv={13} q={14} pico={15:F2} picoGex={16:F0}M mucho={17} convPrecio={18:F0}M mc30={19:F2}:{20:F0}M edadFeed={21:F1}min vivaActiva={22}",
+            return string.Format(inv, "AUDIT fut={0:F2} S={1:F2} base={2:F2} origen={3} strikes={4} netVol={5:F3}B netOi={6:F3}B zeroVol={7:F2} zeroOi={8:F2} mpVol={9:F2} mnVol={10:F2} doms={11} libroDom={12} conv={13} q={14} pico={15:F2} picoGex={16:F0}M mucho={17} convPrecio={18:F0}M mc30={19:F2}:{20:F0}M edadFeed={21:F1}min vivaActiva={22} flujo={23}",
                 L.Futuro, L.S, L.Base, L.BaseOrigen.Replace(' ', '_'), L.Perfil.Count, L.NetVol / 1e9, L.NetOi / 1e9, L.ZeroVol, L.ZeroOi, L.MpVol, L.MnVol,
                 string.Join("/", L.Doms.Select(d => d.Fut.ToString("F2", inv) + "=" + (d.Gex / 1e6).ToString("F0", inv) + "M")),
-                L.LibroDom, L.LibroConv, L.CuadranteN, L.PicoFut, L.PicoGex / 1e6, L.Mucho, L.ConvEnPrecio / 1e6, L.MaxChange[4].Fut, L.MaxChange[4].Delta / 1e6, c.EdadMin, vivaActiva);
+                L.LibroDom, L.LibroConv, L.CuadranteN, L.PicoFut, L.PicoGex / 1e6, L.Mucho, L.ConvEnPrecio / 1e6, L.MaxChange[4].Fut, L.MaxChange[4].Delta / 1e6, c.EdadMin, vivaActiva,
+                L.TieneFlujo ? string.Join("/", L.Perfil.OrderByDescending(x => Math.Abs(x.GexFlujo)).Take(2).Select(x => x.Fut.ToString("F2", inv) + "=" + (x.GexFlujo / 1e6).ToString("F0", inv) + "M")) : "no");
         }
 
         /// <summary>Los niveles que se anotan por vela para el laboratorio, con los
@@ -482,6 +501,13 @@ namespace PythiaGex
             Add("mp_vol", L.MpVol); Add("mn_vol", L.MnVol); Add("mp_oi", L.MpOi); Add("mn_oi", L.MnOi);
             for (int i = 0; i < L.Doms.Count; i++) Add("dom" + i, L.Doms[i].Fut);
             for (int i = 0; i < Ventanas.Length; i++) Add("mc" + Ventanas[i], L.MaxChange[i].Fut);
+            if (L.TieneFlujo)
+            {
+                // el perfil derecho por flujo firmado, para que el laboratorio lo juzgue contra placebo (1.9)
+                var fp = L.Perfil.Where(x => x.GexFlujo > 0).OrderByDescending(x => x.GexFlujo).FirstOrDefault();
+                var fn = L.Perfil.Where(x => x.GexFlujo < 0).OrderBy(x => x.GexFlujo).FirstOrDefault();
+                if (fp != null) Add("flu_pos", fp.Fut); if (fn != null) Add("flu_neg", fn.Fut);
+            }
             Add("pico", L.PicoFut);
             Add("q_cuadrante", L.CuadranteN);
             return niv;

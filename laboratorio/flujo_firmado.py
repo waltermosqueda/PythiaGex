@@ -1,191 +1,152 @@
 # -*- coding: utf-8 -*-
-"""NIVELES A PARTIR DEL FLUJO FIRMADO.
+"""EL PERFIL DERECHO POR FLUJO FIRMADO, JUZGADO CONTRA PLACEBO (1.9, 2026-09-14).
 
-LA IDEA
-Todo el modelo de GEX -- el nuestro y el de cualquiera -- se apoya en una
-SUPOSICION: que las calls suman y las puts restan. Es una convencion sobre de
-que lado quedaron las mesas, no un dato.
+Hipotesis (la lectura que la referencia hace de su 'convexity ladder'): donde los dealers quedan
+LARGOS gamma por el flujo del dia (los clientes les vendieron opciones) el precio rebota
+('colchon'); donde quedan CORTOS (los clientes les compraron) el precio se acelera ('tobogan').
+Con la cadena viva de Rithmic tenemos compras y ventas por contrato (lado agresor), asi que el
+perfil se puede calcular minuto a minuto para el libro de ES/NQ y ponerlo a prueba.
 
-Pero si una operacion se hizo pegada al ASK la inicio un comprador, y si se
-hizo pegada al BID la inicio un vendedor. Y si el cliente COMPRO una opcion, la
-mesa quedo CORTA de esa opcion, o sea corta de gamma ahi. Se puede MEDIR el
-signo en vez de asumirlo.
+Como se juzga (misma vara para todos, sin mirar el resultado antes):
+  - Cada minuto se toma el perfil 0DTE del libro de Rithmic: gamma Black-76 x (compras - ventas)
+    por lado, con el signo del dealer (compra del cliente = dealer corto gamma = negativo).
+  - Niveles del minuto: COLCHON = strike mas positivo a +-1 % del precio; TOBOGAN = el mas
+    negativo; DOMINANTE = la barra mas larga de |gamma x volumen| (lo que ya dibujamos);
+    PLACEBO = el colchon corrido 2 strikes (arriba y abajo) y un strike al azar en el radio.
+  - Evento: el precio (cierre por minuto de la viva) llega al nivel del minuto anterior desde
+    afuera de la banda (medio paso) y entra en ella. Se mira que toca primero en los 20 minutos
+    siguientes: REBOTE (R puntos en contra de la llegada) o CRUCE (R puntos a favor).
+  - Se reporta el % de rebote por tipo de nivel, con su n. Si colchon no le gana al placebo y
+    tobogan no pierde contra el placebo, la lectura no sirve para operar.
 
-Se probo antes de escribir esto: el 87 % del volumen nuevo entre dos fotos
-consecutivas se puede clasificar.
-
-LO QUE ESTE ARCHIVO NO HACE
-No promete direccion de precio. El gamma describe COMO se va a comportar el
-movimiento -- rango o expansion -- nunca hacia donde. El flujo firmado dice de
-que lado quedo la mesa, que es presion de cobertura en horizonte de horas.
+Uso: python laboratorio/flujo_firmado.py [ES|NQ] [--r 4] [--radio 1.0] [--min 20]
 """
-import sys, os, gzip, json, glob, math, statistics as st
-from datetime import datetime
+import glob, io, json, math, os, random, sys, collections
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import cargar
-import puntuar
-
-RE_OK = True
+APP = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "PythiaGex", "viva")
+R_DEF = {"ES": 4.0, "NQ": 15.0}
+PASO = {"ES": 5.0, "NQ": 10.0}
+TOL = {"ES": 2.5, "NQ": 5.0}
 
 
-def leer_crudo(ruta, radio=120.0, dias_max=7.0):
-    """Solo lo necesario para firmar: volumen, puntas, ultimo precio, gamma."""
-    try:
-        with gzip.open(ruta, "rt", encoding="utf-8") as f:
-            d = json.load(f)
-    except Exception:
-        return None
-    dd = d.get("data") or {}
-    sp = dd.get("current_price") or dd.get("close")
-    if not sp:
-        return None
-    try:
-        t = datetime.strptime(d.get("timestamp"), "%Y-%m-%d %H:%M:%S")
-    except Exception:
-        return None
-    sp = float(sp)
+def fi(x):
+    return math.exp(-0.5 * x * x) / math.sqrt(2.0 * math.pi)
+
+
+def gamma76(F, K, T, iv):
+    if F <= 0 or K <= 0 or T <= 0 or iv <= 0:
+        return 0.0
+    v = iv * math.sqrt(T)
+    d1 = (math.log(F / K) + 0.5 * v * v) / v
+    return fi(d1) / (F * v)
+
+
+def perfil(linea):
+    """por strike del 0DTE: gexFlujo (dealer), gexVol (|gamma x vol neto|) y el precio"""
+    F = float(linea["futuro"])
+    filas = linea["filas"]
+    if not filas or F <= 0:
+        return F, {}
+    # los campos cambiaron entre versiones (Gamma Vivo grababa 13, Gamma Hoy 11): se leen por nombre
+    campos = (linea.get("campos") or "strike,dias,es_call,oi,iv,bid,ask,vol_hoy,vol_cinta,vol_compra,vol_venta").split(",")
+    ix = {n: i for i, n in enumerate(campos)}
+    iK, iD, iC, iIv, iVh, iComp, iVent = ix["strike"], ix["dias"], ix["es_call"], ix["iv"], ix["vol_hoy"], ix["vol_compra"], ix["vol_venta"]
+    dias0 = min(f[iD] for f in filas)
+    flujo = collections.defaultdict(float)
+    vol = collections.defaultdict(float)
+    for f in filas:
+        K, dias, esc, iv, vh, comp, vent = f[iK], f[iD], f[iC], f[iIv], f[iVh], f[iComp], f[iVent]
+        if dias > max(1.0, dias0 + 0.01) or iv <= 0:
+            continue
+        T = max(dias, 1 / 1440.0) / 365.0
+        g = gamma76(F, K, T, iv) * 100.0 * F * F * 0.01
+        flujo[K] += -(g * (comp - vent))
+        vol[K] += g * vh * (1 if esc else -1)
+    return F, {K: (flujo[K], vol[K]) for K in flujo}
+
+
+def cargar(raiz):
+    series = []
+    for p in sorted(glob.glob(os.path.join(APP, "viva-%s-*.jsonl" % raiz))):
+        dia = []
+        with io.open(p, encoding="utf-8") as f:
+            for l in f:
+                try:
+                    d = json.loads(l)
+                except Exception:
+                    continue
+                if d.get("filas"):
+                    dia.append(d)
+        if len(dia) >= 60:
+            series.append((os.path.basename(p), dia))
+    return series
+
+
+def niveles(F, per, radio_pct, paso, rnd):
+    cerca = {K: v for K, v in per.items() if abs(K - F) <= F * radio_pct / 100.0}
+    if len(cerca) < 3:
+        return {}
     out = {}
-    for o in dd.get("options", []):
-        p = cargar.parsear_simbolo(o.get("option"))
-        if not p or abs(p["K"] - sp) > radio:
-            continue
-        dias = (p["venc"] - t).total_seconds() / 86400.0
-        if dias < 0 or dias > dias_max:
-            continue
-        out[o["option"]] = dict(
-            K=p["K"], call=p["call"], dias=dias,
-            vol=float(o.get("volume") or 0),
-            bid=float(o.get("bid") or 0), ask=float(o.get("ask") or 0),
-            ltp=float(o.get("last_trade_price") or 0),
-            gamma=float(o.get("gamma") or 0),
-            oi=float(o.get("open_interest") or 0))
-    return dict(t=t, spot=sp, c=out)
+    pos = [(v[0], K) for K, v in cerca.items() if v[0] > 0]
+    neg = [(v[0], K) for K, v in cerca.items() if v[0] < 0]
+    if pos:
+        out["colchon"] = max(pos)[1]
+    if neg:
+        out["tobogan"] = min(neg)[1]
+    out["dominante"] = max(cerca.items(), key=lambda kv: abs(kv[1][1]))[0]
+    if "colchon" in out:
+        out["placebo+2"] = out["colchon"] + 2 * paso
+        out["placebo-2"] = out["colchon"] - 2 * paso
+    out["placebo_azar"] = rnd.choice(sorted(cerca))
+    return out
 
 
-def signo(f):
-    """+1 si la operacion la inicio un COMPRADOR, -1 si un vendedor, 0 si no se sabe."""
-    b, a, p = f["bid"], f["ask"], f["ltp"]
-    if b <= 0 or a <= 0 or a <= b or p <= 0:
-        return 0
-    if p >= a - 1e-9:
-        return 1
-    if p <= b + 1e-9:
-        return -1
-    m = (a + b) / 2.0
-    return 1 if p > m else (-1 if p < m else 0)
-
-
-def acumular(dia, cada=2, radio=120.0):
-    """Recorre la rueda acumulando el flujo firmado por strike.
-
-    Devuelve, para cada foto, el mapa strike -> gamma de la MESA segun el
-    flujo medido. Si el cliente compro, la mesa quedo corta: signo invertido.
-    """
-    rutas = cargar.fotos(dia)[::cada]
-    ant = None
-    acum = {}          # strike -> gamma de la mesa, acumulada desde la apertura
-    salida = []
-    for r in rutas:
-        f = leer_crudo(r, radio=radio)
-        if not f:
-            continue
-        if ant is not None:
-            S = f["spot"]
-            for cod, x in f["c"].items():
-                y = ant["c"].get(cod)
-                if not y:
+def juzgar(raiz, R, radio_pct, minutos, semilla=7):
+    rnd = random.Random(semilla)
+    paso, tol = PASO[raiz], TOL[raiz]
+    res = collections.defaultdict(lambda: [0, 0])   # tipo -> [rebotes, eventos]
+    dias_usados = 0
+    for nombre, dia in cargar(raiz):
+        precios = [float(d["futuro"]) for d in dia]
+        nivs = []
+        for d in dia:
+            F, per = perfil(d)
+            nivs.append(niveles(F, per, radio_pct, paso, rnd))
+        n_ev = 0
+        for t in range(2, len(dia) - minutos):
+            F0, F1 = precios[t - 1], precios[t]
+            for tipo, nivel in nivs[t - 1].items():
+                # entra en la banda del nivel (medio paso) desde afuera; con cierres por minuto no hay mas fino
+                if abs(F0 - nivel) <= tol or abs(F1 - nivel) > tol:
                     continue
-                dv = x["vol"] - y["vol"]
-                if dv <= 0:
-                    continue
-                s = signo(x)
-                if s == 0:
-                    continue
-                # el cliente compro (s=+1) -> la mesa quedo CORTA -> gamma negativa
-                g = -s * dv * x["gamma"] * 100.0 * S * S * 0.01
-                acum[x["K"]] = acum.get(x["K"], 0.0) + g
-        salida.append(dict(t=f["t"], spot=f["spot"], acum=dict(acum)))
-        ant = f
-    return salida
-
-
-def topn(d, n, piso=0.15):
-    if not d:
-        return []
-    mx = max(abs(v) for v in d.values()) or 1.0
-    xs = [(k, v) for k, v in d.items() if abs(v) >= piso * mx]
-    xs.sort(key=lambda kv: -abs(kv[1]))
-    return [k for k, _ in xs[:n]]
-
-
-def main(dia="20260903", dia_iso="2026-09-03"):
-    velas = cargar.velas(dia_iso)
-    ph = {v["hora"]: v for v in velas}
-    hmin, hmax = min(ph), max(ph)
-    print("acumulando flujo firmado de la rueda...")
-    serie = acumular(dia)
-    print("fotos procesadas: %d" % len(serie))
-
-    usables = []
-    for s in serie:
-        h = s["t"].hour * 60 + s["t"].minute + puntuar.OFF_MIN
-        if hmin <= h <= hmax - puntuar.VENTANA and s["acum"]:
-            s["h"] = h
-            usables.append(s)
-    print("dentro de la rueda y con flujo acumulado: %d" % len(usables))
-    if len(usables) < 20:
-        print("muestra insuficiente"); return
-
-    formulas = {
-        "N flujo firmado (mesa)": lambda s: topn(s["acum"], 6),
-        "O flujo firmado, solo negativo": lambda s: topn(
-            {k: v for k, v in s["acum"].items() if v < 0}, 6),
-        "P flujo firmado, solo positivo": lambda s: topn(
-            {k: v for k, v in s["acum"].items() if v > 0}, 6),
-    }
-
-    print()
-    print("formula                          niv  beta   toques  freno  placebo  ventaja")
-    px = [ph[s["h"]]["c"] for s in usables]
-    for nom, fn in formulas.items():
-        niveles = [fn(s) for s in usables]
-        cerc = [min(ns, key=lambda k: abs(k - s["spot"])) if ns else None
-                for s, ns in zip(usables, niveles)]
-        pares = [(p, c) for p, c in zip(px, cerc) if c]
-        beta = float("nan")
-        if len(pares) > 20:
-            A = [a for a, _ in pares]; B = [b for _, b in pares]
-            ma, mb = st.fmean(A), st.fmean(B)
-            den = sum((x - ma) ** 2 for x in A)
-            if den:
-                beta = sum((x - ma) * (y - mb) for x, y in zip(A, B)) / den
-
-        def evaluar(corr):
-            t = ok = 0
-            for s, ns in zip(usables, niveles):
-                for L in ns:
-                    r = puntuar.tocar(velas, ph, L + corr, s["h"], s["h"] + puntuar.VENTANA)
-                    if r:
-                        t += 1; ok += r[0]
-            return t, ok
-        t0, ok0 = evaluar(0.0)
-        tp = okp = 0
-        for c in puntuar.PLACEBOS:
-            a, b = evaluar(c)
-            tp += a; okp += b
-        if t0 < 10:
-            print("  %-30s %3.0f  %5.2f    %4d   muestra chica"
-                  % (nom, st.fmean(len(x) for x in niveles), beta, t0)); continue
-        tasa = 100.0 * ok0 / t0
-        tpp = 100.0 * okp / tp if tp else float("nan")
-        print("  %-30s %3.0f  %5.2f    %4d  %4.1f%%   %4.1f%%   %+5.1f pp"
-              % (nom, st.fmean(len(x) for x in niveles), beta, t0, tasa, tpp, tasa - tpp))
-    print()
-    print("  comparar contra la mejor de la tanda anterior:")
-    print("    D volumen puro sin gamma  ->  61,5 % contra 19,1 %  = +42,4 pp")
-    print("    A base gamma x OI (actual) ->  68,6 % contra 72,6 %  =  -4,0 pp")
+                d = 1 if F0 < nivel else -1          # llega subiendo (+1) o bajando (-1)
+                rebote = cruce = False
+                for k in range(t + 1, min(len(precios), t + 1 + minutos)):
+                    p = precios[k]
+                    if (p - nivel) * d <= -R:
+                        rebote = True; break
+                    if (p - nivel) * d >= R:
+                        cruce = True; break
+                if rebote or cruce:
+                    res[tipo][1] += 1; n_ev += 1
+                    if rebote:
+                        res[tipo][0] += 1
+        dias_usados += 1
+        print("  %s: %d minutos, %d eventos" % (nombre, len(dia), n_ev))
+    print("\n%s: %d dias, R=%.0f pts, radio %.1f %%, ventana %d min, paso %.0f" % (raiz, dias_usados, R, radio_pct, minutos, paso))
+    print("  %-14s %8s %8s   %s" % ("nivel", "rebotes", "eventos", "% rebote (intervalo 95 %)"))
+    for tipo in ["colchon", "tobogan", "dominante", "placebo+2", "placebo-2", "placebo_azar"]:
+        r, n = res[tipo]
+        if n == 0:
+            print("  %-14s %8s %8s   sin eventos" % (tipo, "-", "-")); continue
+        p = r / n; se = math.sqrt(p * (1 - p) / n)
+        print("  %-14s %8d %8d   %5.1f %%  (%4.1f - %4.1f)" % (tipo, r, n, 100 * p, 100 * max(0, p - 1.96 * se), 100 * min(1, p + 1.96 * se)))
+    return res
 
 
 if __name__ == "__main__":
-    main()
+    a = sys.argv[1:]
+    raiz = next((x for x in a if x in ("ES", "NQ")), "ES")
+    def arg(k, d):
+        return float(a[a.index(k) + 1]) if k in a else d
+    juzgar(raiz, arg("--r", R_DEF[raiz]), arg("--radio", 1.0), int(arg("--min", 20)))

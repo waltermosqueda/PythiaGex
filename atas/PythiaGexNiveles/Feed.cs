@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,6 +32,7 @@ namespace PythiaGex
             public double OiC, OiP; // interes abierto (de AYER, para todos)
             public double IvC, IvP; // volatilidad implicita
             public double VolC, VolP; // contratos operados HOY (CBOE, 902 s tarde)
+            public double FluC, FluP; // Rithmic (1.9): compras - ventas de hoy por lado agresor, desde la suscripcion; 0 en CBOE
         }
 
         public sealed class Cadena
@@ -54,6 +55,11 @@ namespace PythiaGex
             /// ya estan en precio del futuro, no hay base que sumar, y la gamma es Black-76.</summary>
             public bool EsFuturo;
             public string Fuente = "";
+            // libro de un ETF (SPY/QQQ) dibujado sobre el futuro por RAZON, como la referencia (1.9):
+            // Fut = K x Escala, S = futuro / Escala; la base aditiva no aplica
+            public bool PorRazon;
+            public double Escala = 1.0;
+            public string EscalaOrigen = "";
         }
 
         private static readonly HttpClient Http = Crear();

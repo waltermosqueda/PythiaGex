@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -74,10 +74,10 @@ namespace PythiaGex
                  Description = "La rama 'cadenas' del repo: un archivo por dia y raiz, escrito cada minuto por GitHub Actions.")]
         public string UrlArchivo { get; set; } = "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/";
 
-        public enum LibroEnVivo { CBOE_SPX, Rithmic_ES }
+        public enum LibroEnVivo { CBOE_SPX, Rithmic_ES, CBOE_ETF }
 
         [Display(Name = "Libro en vivo", GroupName = "1. Datos", Order = 0,
-                 Description = "CBOE_SPX: la cadena de SPX de la nube (llega 902 s tarde, cada minuto en la rueda). Rithmic_ES: las opciones de ES desde tu ATAS, volumen del dia por strike EN TIEMPO REAL e IV de las puntas, sin retraso y sin nube; strikes del futuro, sin base. Con Rithmic el mapa respira con cada operacion, como la referencia. El pasado (archivo) sigue siendo SPX.")]
+                 Description = "CBOE_SPX: la cadena de SPX de la nube (llega 902 s tarde, cada minuto en la rueda). Rithmic_ES: las opciones de ES desde tu ATAS, volumen del dia por strike EN TIEMPO REAL e IV de las puntas, sin retraso y sin nube; strikes del futuro, sin base. Con Rithmic el mapa respira con cada operacion, como la referencia. El pasado (archivo) sigue siendo SPX. CBOE_ETF (1.9): el libro que dibuja la referencia: SPY para ES y QQQ para NQ, 0DTE por volumen, cada strike llevado al futuro por RAZON (futuro/ETF, con la vela alineada al retraso de CBOE, como su NQ/QQQ medido el 11-09); llega 902 s tarde y el pasado tambien es del ETF.")]
         public LibroEnVivo Libro { get; set; } = LibroEnVivo.CBOE_SPX;
 
         [Display(Name = "Rithmic: rearmar el libro cada (s)", GroupName = "1. Datos", Order = 14)]
@@ -280,6 +280,12 @@ namespace PythiaGex
 
         [Display(Name = "Convexity Ladder (derecha)", GroupName = "3. Pantalla", Order = 3)]
         public bool VerConvexidad { get; set; } = true;
+
+        public enum PerfilDer { FlujoFirmado, Convexidad }
+
+        [Display(Name = "Perfil derecho: que dibuja", GroupName = "3. Pantalla", Order = 3,
+                 Description = "FlujoFirmado (1.9): con el libro de Rithmic, la gamma del DEALER por flujo firmado de hoy (compras - ventas por lado agresor, desde que ATAS se suscribio): aguamarina = dealers largos gamma (colchon), purpura = cortos (tobogan). Es la hipotesis del perfil derecho de la referencia (14-09: su signo no es ninguna griega estatica y sus largos siguen al volumen); se anota por vela (flu_pos/flu_neg) para juzgarla contra placebo antes de creerle. Con el libro de CBOE no hay flujo firmado y se dibuja la convexidad. Convexidad: siempre la convexidad (cuanto cambia el GEX de la barra si el precio sube 1 %).")]
+        public PerfilDer PerfilDerecho { get; set; } = PerfilDer.FlujoFirmado;
 
         [Display(Name = "Escalera pegada al eje", GroupName = "3. Pantalla", Order = 4)]
         public bool VerEscalera { get; set; } = true;
@@ -567,7 +573,7 @@ namespace PythiaGex
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.8j arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 1.9 arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -576,7 +582,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.8j arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.9 arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -620,11 +626,21 @@ namespace PythiaGex
             if (Interlocked.Exchange(ref _bajando, 1) == 1) return;
             try
             {
-                var c = await Feed.Bajar(Url, Raiz(), m => _error = m).ConfigureAwait(false);
-                if (FeedMinuto)
+                Feed.Cadena c = null;
+                if (Libro == LibroEnVivo.CBOE_ETF)
                 {
-                    var u = await Feed.BajarUltima(UrlArchivo, Raiz(), null).ConfigureAwait(false);
-                    if (u != null && (c == null || u.GeneradoUtc > c.GeneradoUtc)) c = u;
+                    // el ETF solo esta en la rama cadenas (ultima-QQQ.json / ultima-SPY.json, cada minuto en la rueda)
+                    c = await Feed.BajarUltima(UrlArchivo, RaizLibro(), m => _error = m).ConfigureAwait(false);
+                    if (c != null) Escalar(c);
+                }
+                else
+                {
+                    c = await Feed.Bajar(Url, Raiz(), m => _error = m).ConfigureAwait(false);
+                    if (FeedMinuto)
+                    {
+                        var u = await Feed.BajarUltima(UrlArchivo, Raiz(), null).ConfigureAwait(false);
+                        if (u != null && (c == null || u.GeneradoUtc > c.GeneradoUtc)) c = u;
+                    }
                 }
                 if (c != null && !(Libro == LibroEnVivo.Rithmic_ES && _c != null && _c.EsFuturo)) { _c = c; _error = ""; }
             }
@@ -642,6 +658,47 @@ namespace PythiaGex
             if (s.StartsWith("MNQ") || s.StartsWith("NQ")) return "NQ";
             if (s.StartsWith("M2K") || s.StartsWith("RTY")) return "RTY";
             return "ES";
+        }
+
+        /// <summary>La raiz del LIBRO que se baja (1.9): con CBOE_ETF, SPY para ES y QQQ para NQ (la referencia
+        /// dibuja ES con SPY/SPX y NQ con QQQ; medido el 11-09 y el 14-09). Si no, la del grafico.</summary>
+        private string RaizLibro()
+        {
+            var r = Raiz();
+            if (Libro != LibroEnVivo.CBOE_ETF) return r;
+            return r == "NQ" ? "QQQ" : r == "ES" ? "SPY" : r;
+        }
+
+        // ---- libro ETF por razon (1.9): Fut = K x (futuro / ETF), con el futuro ALINEADO al retraso de CBOE
+        // (la vela de hace RetrasoCboeSeg contra el spot de la cadena; un ETF de hoy contra un futuro de ahora
+        // corre todos los strikes lo que se movio el mercado en 15 min). Si no hay vela alineada, la mediana
+        // robusta de la rueda; y si tampoco, la razon cruda, dicha como tal.
+        private readonly List<double> _razonObs = new();
+        private double _razonRueda = double.NaN;
+        private void Escalar(Feed.Cadena c)
+        {
+            if (c == null || c.SpotIdx <= 0) return;
+            c.PorRazon = true; c.EsFuturo = false; c.Base = 0; c.BaseConfiable = false;
+            c.Fuente = "CBOE " + RaizLibro();
+            var iv = CultureInfo.InvariantCulture;
+            double razon = double.NaN; string origen = "";
+            if (!string.IsNullOrEmpty(c.Ts) && DateTime.TryParseExact(c.Ts, "yyyy-MM-dd HH:mm:ss", iv, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var ts))
+            {
+                int b = BarraDe(ts.AddSeconds(-Math.Max(0, RetrasoCboeSeg)));
+                if (b >= 0) { try { double p = (double)GetCandle(b).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "vela alineada"; } } catch { } }
+            }
+            if (double.IsNaN(razon) && !double.IsNaN(_razonRueda)) { razon = _razonRueda; origen = "mediana de la rueda"; }
+            if (double.IsNaN(razon)) { try { double p = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "CRUDA sin alinear"; } } catch { } }
+            if (double.IsNaN(razon) || razon <= 0) { c.Escala = 1; c.EscalaOrigen = "sin razon"; return; }
+            c.Escala = razon; c.EscalaOrigen = origen;
+            if (origen == "vela alineada")
+            {
+                lock (_razonObs)
+                {
+                    _razonObs.Add(razon); if (_razonObs.Count > 24) _razonObs.RemoveAt(0);
+                    var ord = _razonObs.OrderBy(x => x).ToList(); _razonRueda = ord[ord.Count / 2];
+                }
+            }
         }
 
         protected override void OnCalculate(int bar, decimal value)
@@ -710,7 +767,7 @@ namespace PythiaGex
         {
             if (_archivoCargando || _archivoListo) return;
             _archivoCargando = true;
-            var raiz = Raiz();
+            var raiz = RaizLibro();
             var hasta = DateTime.UtcNow;
             _ = Task.Run(async () =>
             {
@@ -720,6 +777,7 @@ namespace PythiaGex
                         for (var d = desde.Date; d <= hasta.Date; d = d.AddDays(1))
                             await Feed.Archivo.BajarDia(string.IsNullOrWhiteSpace(UrlArchivo) ? Url : UrlArchivo, raiz, d, Log).ConfigureAwait(false);
                     var ls = Feed.Archivo.Cargar(raiz, desde, hasta, Log);
+                    if (Libro == LibroEnVivo.CBOE_ETF) { foreach (var x in ls) Escalar(x); Log("archivo del ETF " + raiz + ": " + ls.Count + " cadenas llevadas al futuro por razon"); }
                     if (Libro == LibroEnVivo.Rithmic_ES)
                     {
                         // el mismo libro que el vivo: la grabacion de Rithmic de las horas en que
@@ -908,8 +966,8 @@ namespace PythiaGex
                 if (f.IV <= 0 || (f.OI <= 0 && f.VolumenHoy <= 0)) continue;
                 int v = idx[Math.Round(f.Dias, 4)];
                 if (!porClave.TryGetValue((f.K, v), out var fila)) { fila = new Feed.Fila { K = f.K, V = v }; porClave[(f.K, v)] = fila; }
-                if (f.EsCall) { fila.OiC = f.OI; fila.IvC = f.IV; fila.VolC = f.VolumenHoy; }
-                else { fila.OiP = f.OI; fila.IvP = f.IV; fila.VolP = f.VolumenHoy; }
+                if (f.EsCall) { fila.OiC = f.OI; fila.IvC = f.IV; fila.VolC = f.VolumenHoy; fila.FluC = f.VolCompra - f.VolVenta; }
+                else { fila.OiP = f.OI; fila.IvP = f.IV; fila.VolP = f.VolumenHoy; fila.FluP = f.VolCompra - f.VolVenta; }
             }
             int utiles = porClave.Values.Where(x => x.IvC > 0 && x.IvP > 0).Select(x => x.K).Distinct().Count();
             if (utiles < 12) { _vivaFlaca = utiles; return null; }
@@ -1165,7 +1223,7 @@ namespace PythiaGex
             DateTime tsCboe = default(DateTime);
             if (c != null && !string.IsNullOrEmpty(c.Ts))
                 DateTime.TryParseExact(c.Ts, "yyyy-MM-dd HH:mm:ss", iv, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out tsCboe);
-            if (c != null && !c.EsFuturo && tsCboe != default(DateTime) && tsCboe != _baseObsUltimaCadena && c.SpotIdx > 0)
+            if (c != null && !c.EsFuturo && !c.PorRazon && tsCboe != default(DateTime) && tsCboe != _baseObsUltimaCadena && c.SpotIdx > 0)
             {
                 int mUtc = tsCboe.Hour * 60 + tsCboe.Minute;
                 // solo con el contado abierto y ya estable (9:50-16:10 de Nueva York) y la cadena fresca
@@ -1597,6 +1655,9 @@ namespace PythiaGex
                 string tit = "GEX " + (libroDom == "vol" ? "volumen hoy" : "OI") + (venc.Length > 0 ? " · " + venc : "") + (VerSombraOI ? " · sombra OI" : "");
                 g.DrawString(tit, fRot, Color.FromArgb(150, ColTexto), x0 + 2, area.Top + 8);
             }
+            // perfil derecho (1.9): flujo firmado del dealer si el libro lo trae (Rithmic), si no la convexidad
+            bool usarFlujo = PerfilDerecho == PerfilDer.FlujoFirmado && perfil.Any(z => z.GexFlujo != 0);
+            double maxF = usarFlujo ? perfil.Max(z => Math.Abs(z.GexFlujo)) : 0;
             foreach (var s in perfil)
             {
                 int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
@@ -1642,13 +1703,14 @@ namespace PythiaGex
                         }
                     }
                 }
-                if (VerConvexidad && maxC > 0 && Math.Abs(s.Conv) > 0)
+                double vDer = usarFlujo ? s.GexFlujo : s.Conv, maxDer = usarFlujo ? maxF : maxC;
+                if (VerConvexidad && maxDer > 0 && Math.Abs(vDer) > 0)
                 {
-                    double fr = Math.Sqrt(Math.Abs(s.Conv) / maxC);
+                    double fr = Math.Sqrt(Math.Abs(vDer) / maxDer);
                     int w = Math.Max(1, (int)(fr * ancho * 0.7));
-                    var col = s.Conv >= 0 ? ColConvPos : ColConvNeg;
+                    var col = vDer >= 0 ? ColConvPos : ColConvNeg;
                     g.FillRectangle(Color.FromArgb((int)(110 + 120 * fr), col), new Rectangle(xConv - w, y - alto / 2, w, alto));
-                    if (VerPelotitas)
+                    if (VerPelotitas && !usarFlujo)
                     {
                         // las mismas tres pelotitas sobre la convexidad (el producto las lleva en los dos perfiles)
                         int[] radC = { Math.Max(2, alto / 2), Math.Max(2, alto / 2 - 1), Math.Max(1, alto / 2 - 2) };
@@ -1666,7 +1728,7 @@ namespace PythiaGex
                     {
                         // la convexidad de la barra: cuanto cambia su GEX si el precio sube 1 %
                         // (con Δ adelante: no es el GEX de la barra ni lleva vencimiento)
-                        string lc = "Δ" + BmR(s.Conv);
+                        string lc = (usarFlujo ? "" : "Δ") + BmR(vDer);
                         var mc1 = g.MeasureString(lc, fRot);
                         int xc0 = xConv - w - 4 - mc1.Width;
                         g.FillRectangle(Color.FromArgb(150, ColFondo), new Rectangle(xc0 - 1, y - altoRot / 2, mc1.Width + 2, altoRot));
@@ -1675,7 +1737,7 @@ namespace PythiaGex
                 }
             }
             g.DrawString("volumen hoy · sombra OI ayer", fChica, Color.FromArgb(110, ColTexto), x0 + 4, area.Top + 8);
-            if (VerConvexidad) { var mcx = g.MeasureString("convexity ladder (" + libroConv + ")", fChica); g.DrawString("convexity ladder (" + libroConv + ")", fChica, Color.FromArgb(110, ColTexto), xConv - mcx.Width, area.Top + 8); }
+            if (VerConvexidad) { string titDer = usarFlujo ? "flujo firmado Rithmic: dealer largo (aguamarina) / corto (purpura) gamma" : "convexity ladder (" + libroConv + ")"; var mcx = g.MeasureString(titDer, fChica); g.DrawString(titDer, fChica, Color.FromArgb(110, ColTexto), xConv - mcx.Width, area.Top + 8); }
 
             // ---- barras pesadas cercanas: raya punteada tenue en las N barras con mas GEX de
             // cada lado del precio, dentro del radio; 0DTE pesa 1,5x; sin repetir dominantes/majors
