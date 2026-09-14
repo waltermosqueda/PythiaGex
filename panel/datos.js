@@ -22,7 +22,7 @@
   const REPO = "waltermosqueda/PythiaGex", RAMA = "cadenas";
   const BASE_DEF = "auto";
   const BASE_RESPALDO = "https://raw.githubusercontent.com/" + REPO + "/" + RAMA + "/";
-  const CADA_SHA_MS = 75000;
+  const CADA_SHA_MS = 62000;   // 14-09: 58 pedidos por hora, justo debajo del limite de 60 sin token
   let shaCache = { sha: null, t: 0, fallos: 0 };
   async function shaRama() {
     const ahora = Date.now();
@@ -45,24 +45,19 @@
     try {
       let r = null;
       if (base === BASE_DEF) {
-        // 14-09: para el vivo, primero el LATIDO chico (2 KB) por raw.githack.com, que cachea 60 s
-        // (medido: 8 s recien pedido, hasta ~70 s en el peor caso) y trae el sha del commit del vivo ->
-        // vivo.json por URL inmutable por commit. jsDelivr NO sirve: su purge se limita (throttled tras
-        // ~10 min purgando cada 10 s, reset en 56 min) y despues sirve 12 h la copia vieja; raw por rama
-        // cachea 5 min; la API publica da 60 pedidos por hora. Si el latido es mas viejo que lo que ya
-        // tenemos, sigue el camino de la API (75 s) y se queda con lo mas fresco.
-        if (nombre === "vivo.json") {
+        // 14-09, medido: lo unico fresco de verdad es la API publica (60 pedidos por hora sin token, aca
+        // 58) + la URL inmutable por commit. jsDelivr limita el purge (throttled tras 10 min cada 10 s y
+        // sirve 12 h la copia vieja) y raw.githack.com copia el cache de 5 min de raw por rama: los dos
+        // quedan solo como respaldo si la API se agota. Con el vivo subiendo cada 10 s, lo que se ve
+        // tiene entre 10 y ~70 s. Para bajar de ahi hace falta un canal propio (Tailscale o Firebase).
+        const sha = await shaRama();
+        if (sha) r = await fetch("https://raw.githubusercontent.com/" + REPO + "/" + sha + "/" + nombre, { cache: "no-store" }).catch(() => null);
+        if ((!r || !r.ok) && nombre === "vivo.json") {
           try {
             const rl = await fetch("https://raw.githack.com/" + REPO + "/" + RAMA + "/latido.json?v=" + ahora, { cache: "no-store" });
-            if (rl.ok) {
-              const lat = await rl.json();
-              if (lat && lat.vivo_commit && (!c || !c.v || !c.v.generado || !lat.generado || Date.parse(lat.generado) >= Date.parse(c.v.generado)))
-                r = await fetch("https://raw.githubusercontent.com/" + REPO + "/" + lat.vivo_commit + "/" + nombre, { cache: "no-store" }).catch(() => null);
-            }
+            if (rl.ok) { const lat = await rl.json(); if (lat && lat.vivo_commit) r = await fetch("https://raw.githubusercontent.com/" + REPO + "/" + lat.vivo_commit + "/" + nombre, { cache: "no-store" }).catch(() => null); }
           } catch (e) { r = null; }
         }
-        const sha = await shaRama();
-        if ((!r || !r.ok) && sha) r = await fetch("https://raw.githubusercontent.com/" + REPO + "/" + sha + "/" + nombre, { cache: "no-store" }).catch(() => null);
         if (!r || !r.ok) r = await fetch(BASE_RESPALDO + nombre + "?v=" + ahora, { cache: "no-store" }).catch(() => null);
       } else r = await fetch(k + "?v=" + ahora, { cache: "no-store" }).catch(() => null);
       if (!r || !r.ok) throw new Error(r ? r.status : "red");
