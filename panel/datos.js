@@ -45,8 +45,21 @@
     try {
       let r = null;
       if (base === BASE_DEF) {
+        // 14-09: para el vivo, primero el LATIDO chico de jsDelivr (el subidor lo purga en cada subida;
+        // medido: 4-29 s de edad) que trae el sha del commit del vivo -> vivo.json por URL inmutable.
+        // Si el latido no esta o es mas viejo que lo que ya tenemos, sigue el camino de la API (75 s).
+        if (nombre === "vivo.json") {
+          try {
+            const rl = await fetch("https://cdn.jsdelivr.net/gh/" + REPO + "@" + RAMA + "/latido.json?v=" + ahora, { cache: "no-store" });
+            if (rl.ok) {
+              const lat = await rl.json();
+              if (lat && lat.vivo_commit && (!c || !c.v || !c.v.generado || !lat.generado || Date.parse(lat.generado) >= Date.parse(c.v.generado)))
+                r = await fetch("https://raw.githubusercontent.com/" + REPO + "/" + lat.vivo_commit + "/" + nombre, { cache: "no-store" }).catch(() => null);
+            }
+          } catch (e) { r = null; }
+        }
         const sha = await shaRama();
-        if (sha) r = await fetch("https://raw.githubusercontent.com/" + REPO + "/" + sha + "/" + nombre, { cache: "no-store" }).catch(() => null);
+        if ((!r || !r.ok) && sha) r = await fetch("https://raw.githubusercontent.com/" + REPO + "/" + sha + "/" + nombre, { cache: "no-store" }).catch(() => null);
         if (!r || !r.ok) r = await fetch(BASE_RESPALDO + nombre + "?v=" + ahora, { cache: "no-store" }).catch(() => null);
       } else r = await fetch(k + "?v=" + ahora, { cache: "no-store" }).catch(() => null);
       if (!r || !r.ok) throw new Error(r ? r.status : "red");

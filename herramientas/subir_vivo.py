@@ -76,6 +76,9 @@ def gh(args, entrada=None, tope=60):
     return r.returncode, r.stdout.strip(), r.stderr.strip()
 
 
+_commit = {}   # sha del COMMIT de la ultima subida de cada archivo (para la URL inmutable por commit)
+
+
 def subir(nombre, obj, mensaje):
     """PUT del archivo en la rama (crea o pisa). Guarda el sha para no pedirlo cada vez; si cambio
     afuera (otro commit, o la rama se aplano a las 22 UTC), lo pide de nuevo y reintenta una vez."""
@@ -86,15 +89,18 @@ def subir(nombre, obj, mensaje):
         sha = out if rc == 0 and out else None
     carga = {"message": mensaje, "branch": RAMA, "content": base64.b64encode(cuerpo.encode("utf-8")).decode("ascii")}
     if sha: carga["sha"] = sha
-    rc, out, err = gh(["-X", "PUT", "repos/%s/contents/%s" % (REPO, nombre), "--input", "-", "--jq", ".content.sha"], json.dumps(carga))
+    JQ = '.content.sha + " " + .commit.sha'
+    rc, out, err = gh(["-X", "PUT", "repos/%s/contents/%s" % (REPO, nombre), "--input", "-", "--jq", JQ], json.dumps(carga))
     if rc != 0 and ("409" in err or "422" in err or "404" in err):
         _sha.pop(nombre, None)
         rc2, out2, _ = gh(["repos/%s/contents/%s?ref=%s" % (REPO, nombre, RAMA), "--jq", ".sha"], tope=40)
         if rc2 == 0 and out2: carga["sha"] = out2
         else: carga.pop("sha", None)
-        rc, out, err = gh(["-X", "PUT", "repos/%s/contents/%s" % (REPO, nombre), "--input", "-", "--jq", ".content.sha"], json.dumps(carga))
+        rc, out, err = gh(["-X", "PUT", "repos/%s/contents/%s" % (REPO, nombre), "--input", "-", "--jq", JQ], json.dumps(carga))
     if rc == 0 and out:
-        _sha[nombre] = out
+        partes = out.split()
+        _sha[nombre] = partes[0]
+        if len(partes) > 1: _commit[nombre] = partes[1]
         return len(cuerpo)
     log("fallo %s: %s" % (nombre, err[:200]))
     return 0
@@ -227,6 +233,16 @@ def una_vuelta(n_velas):
     paquete = dict(generado=ahora.isoformat(timespec="seconds"), claves_niv=CLAVES_NIV, claves_of=CLAVES_OF, latido=latido(),
                    graficos=graficos, viva=viva, resumen={k: dict(velas=len(v["velas"]["t"]), ultima=v["velas"]["t"][-1], gatillos=len(v["gatillos"])) for k, v in graficos.items()})
     tam = subir("vivo.json", paquete, "vivo %s" % ahora.strftime("%Y-%m-%d %H:%M:%S UTC"))
+    # LATIDO (14-09): un archivo chico con el sha del commit del vivo. La web lo lee de jsDelivr (se
+    # purga aca mismo; medido hoy: 4-29 s de edad contra 104-129 s de raw por rama) y con ese sha pide
+    # vivo.json por la URL inmutable por commit. Asi la frescura ya no depende de preguntarle el sha a
+    # la API cada 75 s (limite de 60 pedidos por hora sin token).
+    if tam and _commit.get("vivo.json"):
+        try:
+            subir("latido.json", {"generado": ahora.isoformat(timespec="seconds"), "vivo_commit": _commit["vivo.json"], "vivo_kb": tam // 1024}, "latido")
+            purgar("latido.json")
+        except Exception as e:
+            log("latido: %s" % e)
     log(("subido vivo.json %d KB: " % (tam // 1024) if tam else "NO subio: ") + (", ".join(graficos) if graficos else "sin graficos frescos (ATAS cerrado?)") + (" + viva " + ",".join(viva) if viva else ""))
     # hay algo fresco si ATAS escribio en la ultima hora: entonces se insiste cada 'cada' segundos aunque una subida falle
     return bool(graficos)
