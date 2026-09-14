@@ -6,7 +6,7 @@
   const q = new URLSearchParams(location.search);
   const CLAVE = "pythiagex.web.v2";
   const def = { inst: "MNQ", marco: "M1", vista: "futuro", lado: false, bloques: {}, nucleo: { horizonte: "Hoy", convexidad: "Auto", cuantas: 2, radioDomPct: 2.0, centroide: true, radioCentro: 12 },
-                libro: "cboe", bandaPct: 0.08, pesadas: 2, vwap: "rueda", verPelotitas: true, verOi: true, verGuiones: true, tipoPerfil: "vol", zona: "America/Argentina/Buenos_Aires", velasVisibles: 180, refresco: 15 };
+                libro: "cboe", bandaPct: 0.08, pesadas: 2, vwap: "rueda", verPelotitas: true, verOi: true, verGuiones: true, tipoPerfil: "vol", zona: "America/Argentina/Buenos_Aires", velasVisibles: 180, refresco: 5 };
   let aj = cargarAjustes();
   const base = q.get("base") || Datos.BASE_DEF;
   let datos = null, ocupado = false, temporizador = null;
@@ -62,7 +62,7 @@
     catch (e) { console.error(e); $("#avisos").innerHTML = '<div class="aviso rojo">No pude cargar los datos: ' + (e.message || e) + '</div>'; }
     finally { ocupado = false; }
   }
-  function programar() { clearInterval(temporizador); temporizador = setInterval(() => { if (document.visibilityState === "visible") refrescar(); }, Math.max(10, aj.refresco || 15) * 1000); }
+  function programar() { clearInterval(temporizador); temporizador = setInterval(() => { if (document.visibilityState === "visible") refrescar(); }, Math.max(5, (aj.refresco && aj.refresco !== 15) ? aj.refresco : 5) * 1000); }   // 14-09: 5 s (el 15 guardado de antes se toma como "sin elegir")
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refrescar(); });
   window.addEventListener("resize", () => { grafico.render(); if (datos) historia(datos); });
   setInterval(() => { if (datos) chips(datos); }, 5000);   // las edades avanzan aunque no llegue nada nuevo

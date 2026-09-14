@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""SUBIR EL VIVO DE ATAS A LA NUBE, CADA 20 SEGUNDOS, EN UN SOLO ARCHIVO.
+"""SUBIR EL VIVO DE ATAS A LA NUBE, CADA 10 SEGUNDOS, EN UN SOLO ARCHIVO.
 
 Mientras ATAS esta abierto con Gamma Hoy, el indicador escribe en %APPDATA%\\ATAS:
   pythiagex-centinela-hoy-<INST>-TimeFrame-<M>.jsonl   una linea por vela: o/h/l/c/vol/delta/spot + niveles (niv) + order flow (of)
@@ -20,7 +20,8 @@ Sin ventana: bajo pythonw cada llamada a gh abria una consola negra (10-09 19:30
 podia usar la PC). CREATE_NO_WINDOW la esconde. Cada llamada tiene tope de 60 s: una que se cuelga
 no frena el bucle.
 
-Uso: python herramientas/subir_vivo.py [--bucle] [--cada 20] [--velas 300]
+Uso: python herramientas/subir_vivo.py [--bucle] [--cada 10] [--velas 300]
+(14-09: de 20 a 10 s a pedido del operador; 360 commits por hora en la rama cadenas, que se aplana a las 22 UTC. Menos de 10 s ya maltrata la API de GitHub y no acelera lo que el CDN retiene.)
 """
 import base64
 import glob
@@ -233,7 +234,7 @@ def una_vuelta(n_velas):
 
 def main():
     a = sys.argv[1:]
-    cada = int(a[a.index("--cada") + 1]) if "--cada" in a else 20
+    cada = int(a[a.index("--cada") + 1]) if "--cada" in a else 10
     n = int(a[a.index("--velas") + 1]) if "--velas" in a else 300
     if "--bucle" not in a:
         una_vuelta(n); return
