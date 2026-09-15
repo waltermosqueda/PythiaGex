@@ -1,6 +1,6 @@
 ---
 name: traspaso-2026-09-15-capas-nq
-description: "Pedido del 15-09: en un grafico de NQ/MNQ ver a la vez barras y dominantes de QQQ, TQQQ, NDX y Rithmic, cada una de un color y con llave. HECHO por Fable (bloques 1-3, commits 1c09a4d3/a4a191b5/67d023ab): GammaHoyCapas.cs, DLL 1.10 instalado 13:55 con todas las capas apagadas, AUDIT de QQQ identico antes/despues. Falta: push (TQQQ no se archiva hasta entonces), prender capas en MNQ#1 por UI, mirar pantalla, capas_nq.py. Trampa central: TQQQ es 3x."
+description: "Pedido del 15-09: en un grafico de NQ/MNQ ver a la vez barras y dominantes de QQQ, TQQQ, NDX y Rithmic, cada una de un color y con llave. HECHO por Fable (bloques 1-3, commits 1c09a4d3/a4a191b5/67d023ab): GammaHoyCapas.cs, DLL 1.10 instalado 13:55 con todas las capas apagadas, AUDIT de QQQ identico antes/despues. Despues, con \"hacelo vos todo\": push hecho, las 4 capas prendidas en el MNQ de QQQ y VISTAS en pantalla, capas_nq.py coincide (K 704/705); TQQQ se archiva desde las 17:05 UTC pero flaco (7 strikes, sin 0DTE los martes): ensanchar linea_flaca. Trampa central: TQQQ es 3x."
 metadata: 
   node_type: memory
   type: project
@@ -15,7 +15,10 @@ exacto y lo que falta al principio de `PythiaGex/conocimiento/traspasos/2026-09-
 Toda la logica de capas vive en `atas/PythiaGexNiveles/GammaHoyCapas.cs` (clase parcial de GammaHoy);
 en GammaHoy.cs solo hay ganchos de una linea. DLL 1.10 instalado y ATAS reiniciado 13:55 local del 15-09:
 "Gamma Hoy 1.10 (capas NQ) arranca", sin excepciones, AUDIT de MNQ#1 (QQQ) con los mismos strikes
-(706/704) que antes del reinicio. Ninguna capa prendida todavia: eso se hace por el dialogo Indicators.
+(706/704) que antes del reinicio. Luego, con "hacelo vos todo" (14:03-14:10): push hecho, las 4 capas prendidas en el MNQ de QQQ por el dialogo
+Indicators (buscador "Capa" filtra el grupo) y vistas en pantalla con leyenda, rayas y columnas; capas_nq.py
+coincide con el AUDIT capa=QQQ (K 704/705, zero < 1 pt). Bug del AUDIT por capa arreglado (reloj por capa).
+TQQQ: archivo flaco (7 strikes, +-1,5 % de NQ, sin 0DTE un martes): ensanchar linea_flaca para TQQQ.
 
 Lo decidido ahi, para no relitigar:
 - Capas ADITIVAS con una clase nueva `CapaLibro` (cadena + nucleo + lectura + razon por capa); la
