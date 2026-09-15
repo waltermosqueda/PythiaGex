@@ -79,6 +79,11 @@ namespace PythiaGex
         public int BetaN;
         public string BetaOrigen = "SUPUESTA (sin velas)";
 
+        // la estela: un guion por cada dominante y por cada actualizacion en la que se movio mas de un cuarto de punto,
+        // por vela (misma regla que la primaria); el pasado se rebobina desde el archivo por minuto de la nube
+        public readonly Dictionary<int, List<(double Fut, int Rango, DateTime Hora)>> Guiones = new();
+        public bool EstelaCargada, EstelaCargando;
+
         // toques de hoy en las dominantes de esta capa (contados en el indicador, SIN placebo: el laboratorio juzga)
         public int Toques, Rebotes;
         public readonly List<Toque> Pendientes = new();
@@ -181,6 +186,15 @@ namespace PythiaGex
         [Range(15, 100)]
         public int CapasAnchoPct { get; set; } = 35;
 
+        [Display(Name = "Capas: estela de las dominantes por vela (guiones)", GroupName = "5. Capas extra (NQ)", Order = 17,
+                 Description = "Un guion por vela, en el color de la fuente, donde estaba cada dominante en ese momento (D1 grueso, D2 fino). El pasado se rebobina desde el archivo por minuto de la nube al arrancar; el presente se va agregando en vivo. Asi se ve como se comporto cada nivel contra el precio.")]
+        public bool CapasEstela { get; set; } = true;
+
+        [Display(Name = "Capas: estela, cuantas horas hacia atras", GroupName = "5. Capas extra (NQ)", Order = 17,
+                 Description = "Cuanto archivo se rebobina por capa al arrancar (cada cadena por minuto es una cuenta entera: 30 h son unas 1.500 por capa, en un hilo aparte).")]
+        [Range(1, 120)]
+        public int CapasEstelaHoras { get; set; } = 30;
+
         [Display(Name = "Capas: contar toques y rebotes de hoy (sin placebo)", GroupName = "5. Capas extra (NQ)", Order = 18,
                  Description = "Por capa: cuantas veces el precio llego a una dominante desde lejos y cuantas reboto (misma regla que el laboratorio: banda, llegada de lejos, R a favor antes que R en contra en 20 min). Es un CONTEO del dia, sin placebo: el laboratorio (capas_respeto.py) es el que juzga.")]
         public bool CapasToques { get; set; } = true;
@@ -269,6 +283,88 @@ namespace PythiaGex
                 else { _betaSp = 1.0; _betaOrigen = "SUPUESTA (r2 " + r2.ToString("0.00", CultureInfo.InvariantCulture) + " bajo)"; }
             }
             else { _betaSp = 1.0; _betaR2 = double.NaN; _betaOrigen = es.Count == 0 ? "SUPUESTA (sin velas de MES: abrir su grafico)" : "SUPUESTA (n " + n + " < 20)"; }
+        }
+
+        /// <summary>Un guion por dominante cuando se movio mas de un cuarto de punto (misma regla que AgregarGuiones).</summary>
+        private static void AgregarGuionesCapa(CapaLibro k, int bar, List<(double Fut, double Gex)> doms, DateTime hora)
+        {
+            if (doms == null || bar < 0) return;
+            if (!k.Guiones.TryGetValue(bar, out var lg)) { lg = new List<(double, int, DateTime)>(); k.Guiones[bar] = lg; }
+            for (int i = 0; i < doms.Count; i++)
+            {
+                double p = doms[i].Fut;
+                if (double.IsNaN(p) || p <= 0) continue;
+                bool hay = false;
+                for (int j = lg.Count - 1; j >= 0; j--) if (lg[j].Rango == i) { hay = Math.Abs(lg[j].Fut - p) < 0.25; break; }
+                if (!hay && lg.Count < 24) lg.Add((p, i, hora));
+            }
+        }
+
+        /// <summary>La vela que contenia esa hora UTC, buscando hasta 4.000 velas atras (el archivo de 30 h en M2 son 900).</summary>
+        private int BarraDeCapa(DateTime horaUtc)
+        {
+            try
+            {
+                for (int b = CurrentBar - 1; b >= Math.Max(0, CurrentBar - 4000); b--)
+                {
+                    var c = GetCandle(b);
+                    if (c == null) continue;
+                    if (Utc(c.Time) <= horaUtc) return b;
+                }
+            }
+            catch { }
+            return -1;
+        }
+
+        /// <summary>Rebobina la estela de una capa desde el archivo por minuto de la nube (cadena-<ticker>-<dia>.jsonl.gz),
+        /// en un hilo aparte y con un nucleo propio: para cada cadena, la vela que la contenia, el cierre de esa vela como
+        /// futuro, la misma preparacion que en vivo (razon por vela alineada, apalancamiento, beta de ahora) y las
+        /// dominantes que salen van como guiones a esa vela. Solo capas de la nube (QQQ, TQQQ, SPY, SPX, NDX).</summary>
+        private void CargarEstelaCapa(CapaLibro k)
+        {
+            if (k.EstelaCargada || k.EstelaCargando) return;
+            if (k.Tipo == CapaLibro.TipoCapa.RithmicViva || k.Tipo == CapaLibro.TipoCapa.VivaLocal) { k.EstelaCargada = true; return; }
+            k.EstelaCargando = true;
+            string raiz = k.Ticker;                       // QQQ, TQQQ, SPY, ES (=SPX), NQ (=NDX)
+            var hasta = DateTime.UtcNow; var desde = hasta.AddHours(-Math.Max(1, CapasEstelaHoras));
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    if (BajarArchivo)
+                        for (var d = desde.Date; d <= hasta.Date; d = d.AddDays(1))
+                            Feed.Archivo.BajarDia(string.IsNullOrWhiteSpace(UrlArchivo) ? Url : UrlArchivo, raiz, d, Log).GetAwaiter().GetResult();
+                    var ls = Feed.Archivo.Cargar(raiz, desde, hasta, null);
+                    var nuc = new GammaHoyNucleo();
+                    var t = typeof(GammaHoyNucleo.Ajustes);
+                    foreach (var fi in t.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)) fi.SetValue(nuc.A, fi.GetValue(_nucleo.A));
+                    var razon = new RazonEtf();
+                    int con = 0, sinVela = 0, sinBase = 0;
+                    foreach (var c in ls)
+                    {
+                        if (c == null || c.GeneradoUtc == default(DateTime)) continue;
+                        int bar = BarraDeCapa(c.GeneradoUtc);
+                        if (bar < 0) { sinVela++; continue; }
+                        double futuro; try { futuro = (double)GetCandle(bar).Close; } catch { continue; }
+                        if (futuro <= 0) continue;
+                        if (k.Tipo == CapaLibro.TipoCapa.EtfPorRazon)
+                        {
+                            EscalarCon(c, k.Nombre, razon, Math.Max(0, RetrasoCboeSeg));
+                            c.Fuente = "CBOE " + k.Nombre;
+                            c.Apalancamiento = k.PorBeta ? 1.0 / Math.Max(0.1, _betaSp) : k.Apalancamiento;
+                        }
+                        GammaHoyNucleo.Lectura L;
+                        try { L = nuc.Calcular(c, futuro, c.GeneradoUtc); } catch { continue; }
+                        if (L == null || L.SinBase) { sinBase++; continue; }
+                        lock (_candado) AgregarGuionesCapa(k, bar, L.Doms, c.GeneradoUtc);
+                        con++;
+                    }
+                    Log("estela " + k.Nombre + ": " + ls.Count + " cadenas del archivo, " + con + " con guion, " + sinVela + " sin vela, " + sinBase + " sin base");
+                    k.EstelaCargada = true;
+                }
+                catch (Exception e) { Registrar(e); }
+                finally { k.EstelaCargando = false; }
+            });
         }
 
         /// <summary>La capa Rithmic se refresca desde el temporizador (cada SegundosLibroRithmic), reusando la viva.
@@ -378,7 +474,13 @@ namespace PythiaGex
                 GammaHoyNucleo.Lectura L = null;
                 try { L = k.Nucleo.Calcular(c, futuro, ahoraUtc); }
                 catch (Exception e) { k.Error = e.Message; Registrar(e); }
-                lock (_candado) { k.L = L; }
+                lock (_candado)
+                {
+                    k.L = L;
+                    if (CapasEstela && L != null && !L.SinBase) AgregarGuionesCapa(k, Math.Max(0, CurrentBar - 1), L.Doms, ahoraUtc);
+                    if (k.Guiones.Count > 6000) foreach (var kb in k.Guiones.Keys.Where(b => b < CurrentBar - 5000).ToList()) k.Guiones.Remove(kb);
+                }
+                if (CapasEstela && Fuente != FuenteDatos.Archivo && CurrentBar > 10) CargarEstelaCapa(k);
                 k.UltimoCalculo = ahoraUtc; k.CCalculada = c;
                 if (L != null && !L.SinBase && (ahoraUtc - k.UltimoAudit).TotalSeconds >= 60)
                 {
@@ -575,6 +677,31 @@ namespace PythiaGex
                     }
                     int xt = x0 + 2;
                     foreach (var k in activas) { g.DrawString(k.Nombre, fRot, Color.FromArgb(220, k.Color), xt, area.Top + 8 + altoRot + 2); xt += g.MeasureString(k.Nombre + " ", fRot).Width; }
+                }
+
+                // 2b) la estela: un guion por vela y por dominante, en el color de la capa (D1 grueso, D2 fino)
+                if (CapasEstela)
+                {
+                    int desdeB = Math.Max(0, FirstVisibleBarNumber), hastaB = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
+                    int bw = 5;
+                    try { if (hastaB > desdeB) bw = Math.Max(3, (cont.GetXByBar(hastaB, false) - cont.GetXByBar(desdeB, false)) / Math.Max(1, hastaB - desdeB)); } catch { }
+                    int grueso = Math.Max(1, GrosorGuion), fino = Math.Max(1, GrosorGuion - 1);
+                    foreach (var k in activas)
+                    {
+                        Dictionary<int, List<(double Fut, int Rango, DateTime Hora)>> gui;
+                        lock (_candado) gui = k.Guiones.Where(kv => kv.Key >= desdeB && kv.Key <= hastaB).ToDictionary(kv => kv.Key, kv => kv.Value.ToList());
+                        foreach (var kv in gui)
+                        {
+                            int x; try { x = cont.GetXByBar(kv.Key, false); } catch { continue; }
+                            foreach (var gu in kv.Value)
+                            {
+                                int y; try { y = cont.GetYByPrice((decimal)gu.Fut, false); } catch { continue; }
+                                if (y < area.Top || y > piso) continue;
+                                int h = gu.Rango == 0 ? grueso : fino;
+                                g.FillRectangle(Color.FromArgb(gu.Rango == 0 ? 225 : 150, k.Color), new Rectangle(x - bw / 2, y - h / 2, bw, h));
+                            }
+                        }
+                    }
                 }
 
                 // 3) perfil derecho solo si se pide (en 0DTE es un espejo)
