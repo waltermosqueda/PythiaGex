@@ -37,7 +37,7 @@ namespace PythiaGex
         public GammaHoyNucleo.Lectura L;                        // la ultima lectura (bajo el candado del indicador)
         public readonly RazonEtf Razon = new();
         public string Error = "";
-        public DateTime UltimaBajada = DateTime.MinValue, UltimoCalculo = DateTime.MinValue;
+        public DateTime UltimaBajada = DateTime.MinValue, UltimoCalculo = DateTime.MinValue, UltimoAudit = DateTime.MinValue;
         public Feed.Cadena CCalculada;                          // con que cadena se calculo L (referencia)
 
         public CapaLibro(string nombre, string ticker, TipoCapa tipo, double apalancamiento, Color color)
@@ -90,7 +90,6 @@ namespace PythiaGex
             new CapaLibro("NDX", "NQ", CapaLibro.TipoCapa.IndiceConBase, 1, Color.FromArgb(200, 200, 210)),
             new CapaLibro("RITHMIC", "", CapaLibro.TipoCapa.RithmicViva, 1, Color.FromArgb(170, 255, 90)),
         };
-        private DateTime _ultimoAuditCapas = DateTime.MinValue;
 
         /// <summary>Solo en NQ/MNQ (no inventar capas de ES) y solo si su llave esta prendida.</summary>
         private bool CapaActiva(CapaLibro k)
@@ -134,7 +133,7 @@ namespace PythiaGex
                     Feed.Cadena c = null;
                     if (k.Tipo == CapaLibro.TipoCapa.EtfPorRazon)
                     {
-                        c = await Feed.BajarUltima(UrlArchivo, k.Ticker, m => k.Error = m).ConfigureAwait(false);
+                        c = await Feed.BajarUltima(UrlArchivo, k.Ticker, m => k.Error = (m ?? "").Contains("404") ? "sin archivo en la nube todavia (404)" : m).ConfigureAwait(false);
                         if (c != null)
                         {
                             EscalarCon(c, k.Ticker, k.Razon);
@@ -168,8 +167,6 @@ namespace PythiaGex
         /// Se llama al final de RepreciarCon.</summary>
         private void RepreciarCapas(double futuro, DateTime ahoraUtc)
         {
-            bool audit = (ahoraUtc - _ultimoAuditCapas).TotalSeconds >= 60;
-            if (audit) _ultimoAuditCapas = ahoraUtc;
             foreach (var k in _capas)
             {
                 if (!CapaActiva(k)) { if (k.L != null) lock (_candado) k.L = null; continue; }
@@ -185,8 +182,11 @@ namespace PythiaGex
                 catch (Exception e) { k.Error = e.Message; Registrar(e); }
                 lock (_candado) { k.L = L; }
                 k.UltimoCalculo = ahoraUtc; k.CCalculada = c;
-                if (audit && L != null && !L.SinBase)
+                if (L != null && !L.SinBase && (ahoraUtc - k.UltimoAudit).TotalSeconds >= 60)
+                {
+                    k.UltimoAudit = ahoraUtc;
                     Log("AUDIT capa=" + k.Nombre + " " + GammaHoyNucleo.Audit(L, c, k.Tipo == CapaLibro.TipoCapa.RithmicViva).Substring(6));
+                }
             }
         }
 

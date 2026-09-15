@@ -88,6 +88,20 @@ def ultimo_audit(ticker):
     }
 
 
+def ultimo_fut():
+    """El fut= del ultimo AUDIT del log, de cualquier libro (todos son del mismo grafico de NQ)."""
+    if not os.path.exists(LOG):
+        return None
+    fut = None
+    with open(LOG, encoding="utf-8", errors="replace") as f:
+        for linea in f:
+            if "AUDIT" in linea:
+                m = re.search(r"fut=(-?[0-9.]+)", linea)
+                if m:
+                    fut = float(m.group(1))
+    return fut
+
+
 def recalcular(d, fut, razon, apal, ahora):
     c = d["cadena"]
     spot = float(c.get("spot_idx") or 0)
@@ -196,13 +210,20 @@ def main():
             fut = fut or au["fut"]
         else:
             print("  log: sin AUDIT de este libro (capa apagada o log sin acceso)")
-        if razon is None or fut is None:
-            print("  falta --razon y --fut (no hay AUDIT en el log para sacarlos)")
-            continue
         try:
             d = bajar(t.upper())
         except Exception as e:
             print(f"  no se pudo bajar ultima-{t}.json: {e}  (si es TQQQ: el archivador recien lo suma tras el push)")
+            continue
+        if fut is None:
+            fut = ultimo_fut()
+            if fut is not None:
+                print(f"  fut: del ultimo AUDIT del log (cualquier libro): {fut:.2f}")
+        if razon is None and fut is not None and float(d["cadena"].get("spot_idx") or 0) > 0:
+            razon = fut / float(d["cadena"]["spot_idx"])
+            print(f"  razon CRUDA sin alinear (fut/spot) = {razon:.4f}: no hay AUDIT de este libro; sirve para ver la zona, no para comparar al punto")
+        if razon is None or fut is None:
+            print("  falta --razon y --fut (no hay AUDIT en el log para sacarlos)")
             continue
         r = recalcular(d, fut, razon, apal, ahora)
         edad = (ahora - datetime.fromisoformat(r["generado"].replace("Z", "+00:00"))).total_seconds() / 60 if r["generado"] else float("nan")
