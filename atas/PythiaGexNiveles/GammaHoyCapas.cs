@@ -325,6 +325,7 @@ namespace PythiaGex
                 if (c == null) continue;
                 bool betaCambio = k.PorBeta && k.Beta != _betaSp;
                 if (betaCambio) { AplicarBeta(k); c.Apalancamiento = k.Apalancamiento; }
+                else if (k.PorBeta) { k.BetaN = _betaN; k.BetaR2 = _betaR2; k.BetaOrigen = _betaOrigen; }   // la leyenda dice por que sigue SUPUESTA (n, r2, sin velas)
                 if (!betaCambio && ReferenceEquals(c, k.CCalculada) && (ahoraUtc - k.UltimoCalculo).TotalSeconds < 5) continue;
                 var a = k.Nucleo.A; var de = _nucleo.A;
                 var t = typeof(GammaHoyNucleo.Ajustes);
