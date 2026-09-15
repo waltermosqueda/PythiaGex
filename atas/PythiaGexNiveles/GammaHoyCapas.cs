@@ -764,29 +764,35 @@ namespace PythiaGex
                         g.DrawLine(new RenderPen(Color.FromArgb(235, gr[j % n].Col), 2.6f), x, y, Math.Min(xRaya1, x + tramo - 2), y);
                 }
 
-                // 5) los rotulos: en la punta de la barra (o del borde) de ese nivel, ordenados y sin pisarse;
-                //    fusionados: un cuadrado por fuente y un solo texto ("SPX·SPY D1")
-                int ultimoFondo = area.Top;
-                foreach (var gr in grupos)
+                // 5) las etiquetas, en SU CARRIL: entre el final de las rayas y las barras de la derecha (convexidad) o la
+                //    escalera si la convexidad esta apagada. Alineadas a la derecha, ordenadas por precio, sin pisarse; si
+                //    dos niveles coinciden comparten la etiqueta (un cuadrado por fuente). Con ▲/▼ si la dominante esta
+                //    arriba/abajo del precio y ↕ para el zero. Nunca tocan las barras ni la escalera aunque el grafico avance.
                 {
-                    double pm = gr.Count == 1 ? gr[0].Precio : gr.Average(z => z.Precio);
-                    int y; try { y = cont.GetYByPrice((decimal)pm, false); } catch { continue; }
-                    if (y < area.Top - altoRot || y > piso + altoRot) continue;
-                    int top = y - altoRot / 2;
-                    if (top < ultimoFondo + 1) top = ultimoFondo + 1;
-                    if (top + altoRot > piso) break;
-                    int w = gr.Max(z => anchoBarra.TryGetValue((z.K, z.Precio), out var wb) ? wb : 0);
-                    string nombres = string.Join("·", gr.Select(z => z.K.Nombre));
-                    string tipo = gr[0].Texto.Substring(gr[0].Texto.IndexOf(' ') + 1);
-                    string texto = nombres + " " + tipo;
-                    var m = g.MeasureString(texto, fRot);
-                    int cuad = altoRot - 4, xq = x0 + w + 4;
-                    g.FillRectangle(Color.FromArgb(190, ColFondo), new Rectangle(xq - 1, top, gr.Count * (cuad + 2) + m.Width + 6, altoRot));
-                    foreach (var z in gr) { g.FillRectangle(Color.FromArgb(240, z.Col), new Rectangle(xq, top + 2, cuad, cuad)); xq += cuad + 2; }
-                    g.DrawString(texto, fRot, Color.FromArgb(245, gr.Count == 1 ? gr[0].Col : ColTexto), xq + 2, top);
-                    if (Math.Abs(top + altoRot / 2 - y) > 2 && y >= area.Top && y <= piso)
-                        g.DrawLine(new RenderPen(Color.FromArgb(180, gr[0].Col), 1f), x0 + w, y, x0 + w + 4, y);
-                    ultimoFondo = top + altoRot;
+                    int xGut1 = xl1 + 2;                                   // borde derecho del carril (las rayas terminan en xl1)
+                    string Sentido(string tipo, double precio) => tipo.StartsWith("D") ? (precio > futuro ? " ▲" : " ▼") : tipo == "0Γ" ? " ↕" : "";
+                    int ultimoFondo = area.Top + altoRot * 2;            // debajo del titulo de las columnas
+                    foreach (var gr in grupos)
+                    {
+                        double pm = gr.Count == 1 ? gr[0].Precio : gr.Average(z => z.Precio);
+                        int y; try { y = cont.GetYByPrice((decimal)pm, false); } catch { continue; }
+                        if (y < area.Top - altoRot || y > piso + altoRot) continue;
+                        int top = y - altoRot / 2;
+                        if (top < ultimoFondo + 1) top = ultimoFondo + 1;
+                        if (top + altoRot > piso - altoRot * (activas.Count + 1)) break;   // no pisar la leyenda de abajo
+                        string tipo = gr[0].Texto.Substring(gr[0].Texto.IndexOf(' ') + 1);
+                        string texto = string.Join("·", gr.Select(z => z.K.Nombre)) + " " + tipo + Sentido(tipo, pm);
+                        var m = g.MeasureString(texto, fRot);
+                        int cuad = altoRot - 5, wCaja = gr.Count * (cuad + 3) + m.Width + 8;
+                        int xc = xGut1 - wCaja;
+                        g.FillRectangle(Color.FromArgb(225, ColFondo), new Rectangle(xc, top, wCaja, altoRot));
+                        int xq = xc + 3;
+                        foreach (var z in gr) { g.FillRectangle(Color.FromArgb(240, z.Col), new Rectangle(xq, top + 3, cuad, cuad)); xq += cuad + 3; }
+                        g.DrawString(texto, fRot, Color.FromArgb(245, gr.Count == 1 ? gr[0].Col : ColTexto), xq + 1, top);
+                        if (Math.Abs(top + altoRot / 2 - y) > 2 && y >= area.Top && y <= piso)
+                            g.DrawLine(new RenderPen(Color.FromArgb(200, gr[0].Col), 1f), xc - 10, y, xc, y);   // marquita al precio exacto
+                        ultimoFondo = top + altoRot;
+                    }
                 }
             }
             finally { _pintandoCapas = false; }
