@@ -434,13 +434,13 @@ namespace PythiaGex
             }
         }
 
-        /// <summary>Dibujo de las capas (rediseño 15-09 tras "esta todo muy caotico"): todo en el color de la capa.
-        /// Izquierda: una columna finita por capa (gamma x volumen) a la derecha de la primaria. Derecha: una columna
-        /// finita por capa (convexidad) a la izquierda de la convexidad primaria. Rayas: D1 (discontinua, gruesa), D2
-        /// (discontinua, fina), majors punteados y tenues solo cerca del precio, zero opcional. Los rotulos NO van por el
-        /// medio: van todos en UNA escalera a la derecha, "SPX D1 28.989" con el cuadrado de su color adelante, ordenados
-        /// por precio y sin pisarse (si dos niveles estan pegados, el rotulo se corre y una marquita señala el precio
-        /// exacto). Leyenda abajo a la izquierda, una linea por capa. La primaria se dibuja despues, atenuada.</summary>
+        /// <summary>Dibujo de las capas, disposicion C "superpuestas" (elegida por el operador el 15-09 entre tres previews):
+        /// todas las barras nacen en los bordes como las primarias (izquierda: gamma x volumen desde el borde izquierdo;
+        /// derecha: convexidad desde el borde de la escalera), transparentes y la mas larga atras, asi donde dos fuentes
+        /// coinciden la barra se ve mas llena; la primaria queda de fantasma (atenuada). El rotulo corto ("SPX D1") va
+        /// adentro de la barra si entra, si no al lado. El precio va en una columna pegada al eje, en el color de su
+        /// fuente ("28.951 SPX D1"), ordenada y sin solapes, con una marquita al precio exacto si tuvo que correrse.
+        /// Rayas: D1/D2 discontinuas, majors punteados solo cerca del precio, zero opcional. Leyenda abajo a la izquierda.</summary>
         private void PintarCapas(RenderContext g, IChartContainer cont, Rectangle area, int piso, int x0, int ancho, int alto,
                                  int xl0, int xl1, int xConv, int altoRot, RenderFont fRot, CultureInfo es,
                                  Action<double, Color, float, System.Drawing.Drawing2D.DashStyle, int> raya)
@@ -450,24 +450,18 @@ namespace PythiaGex
             _pintandoCapas = true;
             try
             {
-                int anchoCapa = Math.Max(10, ancho * Math.Max(15, Math.Min(100, CapasAnchoPct)) / 100);
-                int xLey = Math.Max(x0 + ancho + 8, x0 + 235);   // a la derecha del cuadro Account de ATAS (visto el 15-09: lo pisaba)
-                int xConvPrim = xConv - (int)(ancho * 0.7);        // borde izquierdo de la convexidad primaria
+                int xLey = Math.Max(x0 + ancho + 8, x0 + 235);   // a la derecha del cuadro Account de ATAS
                 bool verConv = VerConvexidad && CapasConvexidad;
-                int xRotDer = (verConv ? xConvPrim - 4 - activas.Count * (anchoCapa + 4) : xl1) - 4;   // borde derecho de la escalera de rotulos
+                int anchoDer = Math.Max(20, (int)(ancho * 0.7));
                 double futuro; lock (_candado) futuro = _futuro;
                 double radioMajors = double.IsNaN(futuro) ? double.MaxValue : futuro * (double)CapasMajorsRadioPct / 100.0;
-                var rotulos = new List<(double Precio, string Texto, Color Col, int Peso)>();
+                var lecturas = new Dictionary<CapaLibro, GammaHoyNucleo.Lectura>();
+                foreach (var k in activas) { GammaHoyNucleo.Lectura L; lock (_candado) L = k.L; lecturas[k] = L; }
 
+                // 1) la leyenda, una linea por capa (el numero en su propia linea)
                 for (int i = 0; i < activas.Count; i++)
                 {
-                    var k = activas[i];
-                    GammaHoyNucleo.Lectura L; lock (_candado) L = k.L;
-                    int xk = x0 + ancho + 4 + i * (anchoCapa + 4);                    // columna izquierda (barras)
-                    int xkDer = xConvPrim - 4 - i * (anchoCapa + 4);                  // borde derecho de la columna derecha (convexidad)
-                    var col = k.Color;
-
-                    // leyenda, una linea por capa (el numero en su propia linea, nunca al lado de un control)
+                    var k = activas[i]; var L = lecturas[k]; var col = k.Color;
                     string doms = L == null || L.Doms.Count == 0 ? "" : " · " + string.Join(" ", L.Doms.Select((d, j) => "D" + (j + 1) + " " + d.Fut.ToString("N0", es)));
                     string estado = L == null ? (k.C == null ? "sin dato" : "calculando") : "dato de hace " + k.Edad(es).Replace("hace ", "") + (L.SinBase ? " SIN BASE" : "");
                     if (L != null && k.C != null && k.C.EsFuturo && k.Tipo != CapaLibro.TipoCapa.VivaLocal) estado = "en vivo";
@@ -478,78 +472,122 @@ namespace PythiaGex
                     var ml = g.MeasureString(ley, fRot);
                     g.FillRectangle(Color.FromArgb(170, ColFondo), new Rectangle(xLey - 2, yl, ml.Width + 4, altoRot));
                     g.DrawString(ley, fRot, Color.FromArgb(235, col), xLey, yl);
-                    if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
+                }
 
-                    bool porOi = L.MaxAbsVol <= 0;                 // de noche no hay volumen: OI, y la columna lo dice
-                    double maxK = porOi ? L.MaxAbsOi : L.MaxAbsVol;
-                    if (CapasBarras && maxK > 0)
+                // 2) barras superpuestas desde el borde izquierdo: todas las capas juntas, de la mas larga a la mas corta
+                var anchoBarra = new Dictionary<(CapaLibro, double), int>();
+                if (CapasBarras)
+                {
+                    var barras = new List<(int W, int Y, Color Col, bool Neg)>();
+                    foreach (var k in activas)
                     {
+                        var L = lecturas[k]; if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
+                        bool porOi = L.MaxAbsVol <= 0; double maxK = porOi ? L.MaxAbsOi : L.MaxAbsVol; if (maxK <= 0) continue;
                         foreach (var s in L.Perfil)
                         {
-                            double v = porOi ? s.GexOi : s.GexVol;
-                            if (v == 0) continue;
+                            double v = porOi ? s.GexOi : s.GexVol; if (v == 0) continue;
                             bool fijo = L.Doms.Any(d => d.Fut == s.Fut);
                             if (UmbralBarraPct > 0 && Math.Abs(v) < maxK * UmbralBarraPct / 100.0 && !fijo) continue;
                             int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                             if (y < area.Top || y > piso) continue;
-                            double fr = Math.Sqrt(Math.Abs(v) / maxK);
-                            int w = Math.Max(1, (int)(fr * anchoCapa));
-                            g.FillRectangle(Color.FromArgb((int)(70 + 130 * fr), col), new Rectangle(xk, y - alto / 2, w, alto));
-                            if (v < 0) g.DrawLine(new RenderPen(Color.FromArgb(200, ColNeg), 1f), xk, y + alto / 2, xk + w, y + alto / 2);
+                            int w = Math.Max(2, (int)(Math.Sqrt(Math.Abs(v) / maxK) * ancho));
+                            anchoBarra[(k, s.Fut)] = w;
+                            barras.Add((w, y, k.Color, v < 0));
                         }
-                        g.DrawString(k.Nombre, fRot, Color.FromArgb(220, col), xk, area.Top + 8 + altoRot + 2);
                     }
-
-                    // perfil derecho: la convexidad de cada strike (cuanto cambia su GEX si el precio sube 1 %), normalizada a la capa
-                    if (verConv && L.MaxAbsConv > 0)
+                    foreach (var b in barras.OrderByDescending(b => b.W))
                     {
+                        g.FillRectangle(Color.FromArgb(105, b.Col), new Rectangle(x0, b.Y - alto / 2, b.W, alto));
+                        g.DrawLine(new RenderPen(Color.FromArgb(b.Neg ? 210 : 150, b.Neg ? ColNeg : b.Col), 1f), x0, b.Y + alto / 2, x0 + b.W, b.Y + alto / 2);
+                    }
+                    int xt = x0 + 2;
+                    foreach (var k in activas) { g.DrawString(k.Nombre, fRot, Color.FromArgb(220, k.Color), xt, area.Top + 8 + altoRot + 2); xt += g.MeasureString(k.Nombre + " ", fRot).Width; }
+                }
+
+                // 3) convexidad superpuesta desde el borde de la escalera (el mismo borde que la primaria)
+                if (verConv)
+                {
+                    var barras = new List<(int W, int Y, Color Col, bool Neg)>();
+                    foreach (var k in activas)
+                    {
+                        var L = lecturas[k]; if (L == null || L.SinBase || L.Perfil.Count == 0 || L.MaxAbsConv <= 0) continue;
                         foreach (var s in L.Perfil)
                         {
                             if (s.Conv == 0) continue;
+                            double fr2 = Math.Abs(s.Conv) / L.MaxAbsConv;
+                            if (UmbralBarraPct > 0 && fr2 < UmbralBarraPct / 100.0) continue;
                             int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                             if (y < area.Top || y > piso) continue;
-                            double fr = Math.Sqrt(Math.Abs(s.Conv) / L.MaxAbsConv);
-                            if (UmbralBarraPct > 0 && fr * fr < UmbralBarraPct / 100.0) continue;
-                            int w = Math.Max(1, (int)(fr * anchoCapa));
-                            g.FillRectangle(Color.FromArgb((int)(70 + 130 * fr), col), new Rectangle(xkDer - w, y - alto / 2, w, alto));
-                            if (s.Conv < 0) g.DrawLine(new RenderPen(Color.FromArgb(200, ColNeg), 1f), xkDer - w, y + alto / 2, xkDer, y + alto / 2);
+                            barras.Add((Math.Max(2, (int)(Math.Sqrt(fr2) * anchoDer)), y, k.Color, s.Conv < 0));
                         }
-                        var mt = g.MeasureString("Δ" + k.Nombre, fRot);
-                        g.DrawString("Δ" + k.Nombre, fRot, Color.FromArgb(220, col), xkDer - mt.Width, area.Top + 8 + altoRot + 2);
                     }
+                    foreach (var b in barras.OrderByDescending(b => b.W))
+                    {
+                        g.FillRectangle(Color.FromArgb(105, b.Col), new Rectangle(xConv - b.W, b.Y - alto / 2, b.W, alto));
+                        g.DrawLine(new RenderPen(Color.FromArgb(b.Neg ? 210 : 150, b.Neg ? ColNeg : b.Col), 1f), xConv - b.W, b.Y + alto / 2, xConv, b.Y + alto / 2);
+                    }
+                    int xt = xConv - 2;
+                    foreach (var k in activas) { var mt = g.MeasureString("Δ" + k.Nombre, fRot); xt -= mt.Width; g.DrawString("Δ" + k.Nombre, fRot, Color.FromArgb(220, k.Color), xt, area.Top + 8 + altoRot + 2); xt -= 6; }
+                }
 
+                // 4) rayas y etiquetas (precio, texto corto, color, peso)
+                var etiquetas = new List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)>();
+                foreach (var k in activas)
+                {
+                    var L = lecturas[k]; if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
+                    var col = k.Color;
                     if (CapasDominantes)
                     {
                         for (int d = 0; d < L.Doms.Count; d++)
                         {
                             double p = L.Doms[d].Fut;
                             raya(p, col, d == 0 ? 1.6f : 1.1f, System.Drawing.Drawing2D.DashStyle.Dash, d == 0 ? 210 : 150);
-                            rotulos.Add((p, k.Nombre + " D" + (d + 1) + " " + p.ToString("N0", es), col, d == 0 ? 3 : 2));
+                            etiquetas.Add((p, k.Nombre + " D" + (d + 1), col, d == 0 ? 3 : 2, k));
                         }
                         if (CapasZero && !double.IsNaN(L.ZeroVol))
                         {
                             raya(L.ZeroVol, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
-                            rotulos.Add((L.ZeroVol, k.Nombre + " 0Γ " + L.ZeroVol.ToString("N0", es), col, 1));
+                            etiquetas.Add((L.ZeroVol, k.Nombre + " 0Γ", col, 1, k));
                         }
                     }
                     if (CapasMajors)
                     {
+                        bool porOi = L.MaxAbsVol <= 0;
                         double mp = porOi ? L.MpOi : L.MpVol, mn = porOi ? L.MnOi : L.MnVol;
                         bool mpEsDom = L.Doms.Any(d => d.Fut == mp), mnEsDom = L.Doms.Any(d => d.Fut == mn);
                         if (!double.IsNaN(mp) && !mpEsDom && Math.Abs(mp - futuro) <= radioMajors)
-                        { raya(mp, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); rotulos.Add((mp, k.Nombre + " +Γ " + mp.ToString("N0", es), col, 1)); }
+                        { raya(mp, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); etiquetas.Add((mp, k.Nombre + " +Γ", col, 1, k)); }
                         if (!double.IsNaN(mn) && !mnEsDom && Math.Abs(mn - futuro) <= radioMajors)
-                        { raya(mn, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); rotulos.Add((mn, k.Nombre + " −Γ " + mn.ToString("N0", es), col, 1)); }
+                        { raya(mn, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); etiquetas.Add((mn, k.Nombre + " −Γ", col, 1, k)); }
+                    }
+                }
+                if (Rayas == EstiloRayas.Ninguna) return;
+
+                // 5) el rotulo corto, adentro de la barra de esa fuente en ese precio si entra; si no, pegado a la punta
+                foreach (var e in etiquetas)
+                {
+                    int y; try { y = cont.GetYByPrice((decimal)e.Precio, false); } catch { continue; }
+                    if (y - altoRot / 2 < area.Top || y + altoRot / 2 > piso) continue;
+                    var m = g.MeasureString(e.Texto, fRot);
+                    int w = anchoBarra.TryGetValue((e.K, e.Precio), out var wb) ? wb : 0;
+                    if (w >= m.Width + 8)
+                    {
+                        g.FillRectangle(Color.FromArgb(150, e.Col), new Rectangle(x0 + 1, y - altoRot / 2, m.Width + 4, altoRot));
+                        g.DrawString(e.Texto, fRot, Color.FromArgb(245, ColFondo), x0 + 3, y - altoRot / 2);
+                    }
+                    else
+                    {
+                        g.FillRectangle(Color.FromArgb(170, ColFondo), new Rectangle(x0 + w + 3, y - altoRot / 2, m.Width + 4, altoRot));
+                        g.DrawString(e.Texto, fRot, Color.FromArgb(240, e.Col), x0 + w + 5, y - altoRot / 2);
                     }
                 }
 
-                // la escalera de rotulos: uno debajo del otro, por precio, sin pisarse; el cuadradito dice de quien es
-                if (rotulos.Count > 0 && Rayas != EstiloRayas.Ninguna)
+                // 6) el precio, en una columna pegada al eje, en el color de su fuente, ordenado y sin solapes
                 {
-                    var orden = rotulos.OrderByDescending(r => r.Precio).ThenByDescending(r => r.Peso).ToList();
+                    var orden = etiquetas.OrderByDescending(r => r.Precio).ThenByDescending(r => r.Peso).ToList();
+                    int anchoMax = orden.Count == 0 ? 0 : orden.Max(r => g.MeasureString(r.Precio.ToString("N0", es) + " " + r.Texto, fRot).Width) + 6;
+                    int xDer = xConv + 4, xIzq = xDer - anchoMax;
                     int ultimoFondo = area.Top;
-                    int anchoMax = orden.Max(r => g.MeasureString(r.Texto, fRot).Width);
-                    int xTexto = xRotDer - anchoMax;
                     foreach (var r in orden)
                     {
                         int y; try { y = cont.GetYByPrice((decimal)r.Precio, false); } catch { continue; }
@@ -557,14 +595,10 @@ namespace PythiaGex
                         int top = y - altoRot / 2;
                         if (top < ultimoFondo + 1) top = ultimoFondo + 1;
                         if (top + altoRot > piso) break;
-                        var m = g.MeasureString(r.Texto, fRot);
-                        int xCaja = xTexto - altoRot - 4;
-                        g.FillRectangle(Color.FromArgb(200, ColFondo), new Rectangle(xCaja - 2, top, altoRot + 6 + anchoMax + 2, altoRot));
-                        g.FillRectangle(Color.FromArgb(235, r.Col), new Rectangle(xCaja, top + 2, altoRot - 4, altoRot - 4));
-                        g.DrawString(r.Texto, fRot, Color.FromArgb(r.Peso >= 2 ? 240 : 180, r.Col), xTexto, top);
-                        // si el rotulo tuvo que correrse, una marquita señala el precio exacto
+                        g.FillRectangle(Color.FromArgb(r.Peso >= 2 ? 235 : 190, r.Col), new Rectangle(xIzq, top, anchoMax, altoRot));
+                        g.DrawString(r.Precio.ToString("N0", es) + " " + r.Texto, fRot, Color.FromArgb(250, ColFondo), xIzq + 3, top);
                         if (Math.Abs(top + altoRot / 2 - y) > 2 && y >= area.Top && y <= piso)
-                            g.DrawLine(new RenderPen(Color.FromArgb(160, r.Col), 1f), xRotDer + 2, y, xRotDer + 10, y);
+                            g.DrawLine(new RenderPen(Color.FromArgb(200, r.Col), 1f), xIzq - 8, y, xIzq, y);
                         ultimoFondo = top + altoRot;
                     }
                 }

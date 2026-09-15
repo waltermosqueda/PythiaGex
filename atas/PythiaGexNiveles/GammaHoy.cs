@@ -1688,14 +1688,14 @@ namespace PythiaGex
                 if (VerSombraOI && maxO > 0 && Math.Abs(s.GexOi) > 0)
                 {
                     int w = Math.Max(1, (int)(Math.Sqrt(Math.Abs(s.GexOi) / maxO) * ancho));
-                    g.FillRectangle(Color.FromArgb(55, s.GexOi >= 0 ? ColPos : ColNeg), new Rectangle(x0, y - alto / 2 - 1, w, alto + 2));
+                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria(55), s.GexOi >= 0 ? ColPos : ColNeg), new Rectangle(x0, y - alto / 2 - 1, w, alto + 2));
                 }
                 if (maxV > 0 && Math.Abs(s.GexVol) > 0)
                 {
                     double fr = Math.Sqrt(Math.Abs(s.GexVol) / maxV);
                     int w = Math.Max(1, (int)(fr * ancho));
                     var col = s.GexVol >= 0 ? ColPos : ColNeg;
-                    g.FillRectangle(Color.FromArgb((int)(120 + 120 * fr), col), new Rectangle(x0, y - alto / 2, w, alto));
+                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria((int)(120 + 120 * fr)), col), new Rectangle(x0, y - alto / 2, w, alto));
                     if (rotEsta)
                     {
                         // el dato de la barra, a la derecha de la punta: GEX del libro que dibuja
@@ -1731,7 +1731,7 @@ namespace PythiaGex
                     double fr = Math.Sqrt(Math.Abs(vDer) / maxDer);
                     int w = Math.Max(1, (int)(fr * ancho * 0.7));
                     var col = vDer >= 0 ? ColConvPos : ColConvNeg;
-                    g.FillRectangle(Color.FromArgb((int)(110 + 120 * fr), col), new Rectangle(xConv - w, y - alto / 2, w, alto));
+                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria((int)(110 + 120 * fr)), col), new Rectangle(xConv - w, y - alto / 2, w, alto));
                     if (VerPelotitas && !usarFlujo)
                     {
                         // las mismas tres pelotitas sobre la convexidad (el producto las lleva en los dos perfiles)
