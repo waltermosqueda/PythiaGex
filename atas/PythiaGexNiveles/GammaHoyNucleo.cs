@@ -264,7 +264,7 @@ namespace PythiaGex
             else if (c.BaseCruda != 0) { baseUsada = c.BaseCruda; origen = "CRUDA " + c.BaseErrorTicks.ToString("0", iv0) + " ticks (sin cota)"; }
             else { L.SinBase = true; L.BaseOrigen = "sin base"; return L; }
 
-            double S = c.PorRazon && c.Escala > 0 ? futuro / c.Escala : futuro - baseUsada;
+            double S = c.PorRazon && c.Escala > 0 ? c.AlLibro(futuro) : futuro - baseUsada;
             if (S <= 0) return null;
             double r = A.Tasa, Sup = S * 1.01;
 
@@ -285,7 +285,7 @@ namespace PythiaGex
                 double gOi = Gex(f, S, T, r, false, c.EsFuturo), gVol = Gex(f, S, T, r, true, c.EsFuturo);
                 double gOiUp = Gex(f, Sup, T, r, false, c.EsFuturo), gVolUp = Gex(f, Sup, T, r, true, c.EsFuturo);
                 if (gOi == 0 && gVol == 0) continue;
-                if (!por.TryGetValue(f.K, out var s)) { s = new Strike { K = f.K, Fut = c.PorRazon ? f.K * c.Escala : f.K + baseUsada }; por[f.K] = s; }
+                if (!por.TryGetValue(f.K, out var s)) { s = new Strike { K = f.K, Fut = c.PorRazon ? c.AlFuturo(f.K) : f.K + baseUsada }; por[f.K] = s; }
                 s.GexOi += gOi; s.GexVol += gVol;
                 s.GexFlujo += GexFlujo(f, S, T, r, c.EsFuturo);
                 s.Oi += f.OiC + f.OiP; s.VolHoy += f.VolC + f.VolP;
@@ -310,8 +310,8 @@ namespace PythiaGex
 
             // zero gamma de cada libro: donde la suma repreciada cruza cero
             double zeroVol = Cruce(c, S, r, masCerca, envejecer, true), zeroOi = Cruce(c, S, r, masCerca, envejecer, false);
-            if (!double.IsNaN(zeroVol)) zeroVol = c.PorRazon ? zeroVol * c.Escala : zeroVol + baseUsada;
-            if (!double.IsNaN(zeroOi)) zeroOi = c.PorRazon ? zeroOi * c.Escala : zeroOi + baseUsada;
+            if (!double.IsNaN(zeroVol)) zeroVol = c.PorRazon ? c.AlFuturo(zeroVol) : zeroVol + baseUsada;
+            if (!double.IsNaN(zeroOi)) zeroOi = c.PorRazon ? c.AlFuturo(zeroOi) : zeroOi + baseUsada;
 
             // majors de cada libro
             double mpVol = double.NaN, mnVol = double.NaN, mpOi = double.NaN, mnOi = double.NaN;

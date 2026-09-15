@@ -60,6 +60,25 @@ namespace PythiaGex
             public bool PorRazon;
             public double Escala = 1.0;
             public string EscalaOrigen = "";
+            /// <summary>Capas (15-09): 1 para un ETF lineal (SPY/QQQ), 3 para TQQQ. Un strike de TQQQ a +3 %
+            /// de su spot es NQ a +1 %: el mapeo por razon simple corre los strikes lejanos. Solo cambia a que
+            /// precio del futuro se dibuja cada strike; la gamma se calcula con el S y el K del ETF, sin tocar.</summary>
+            public double Apalancamiento = 1.0;
+            /// <summary>Strike (o zero) del libro -> precio del futuro. Con Apalancamiento 1 es K x Escala.
+            /// Con apalancamiento: Fut = F_alineado x (1 + (K/Spot - 1)/lambda), y F_alineado = Spot x Escala.</summary>
+            public double AlFuturo(double k)
+            {
+                if (!PorRazon) return k;
+                if (Apalancamiento == 1.0 || SpotIdx <= 0 || Apalancamiento <= 0) return k * Escala;
+                return Escala * (SpotIdx + (k - SpotIdx) / Apalancamiento);
+            }
+            /// <summary>Precio del futuro -> precio del libro (la S con la que se calcula gamma). Inversa exacta de AlFuturo.</summary>
+            public double AlLibro(double fut)
+            {
+                if (!PorRazon || Escala <= 0) return fut;
+                if (Apalancamiento == 1.0 || SpotIdx <= 0 || Apalancamiento <= 0) return fut / Escala;
+                return SpotIdx + Apalancamiento * (fut / Escala - SpotIdx);
+            }
         }
 
         private static readonly HttpClient Http = Crear();

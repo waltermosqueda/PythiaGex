@@ -123,7 +123,7 @@ def leer(ruta):
 # Los ETF se archivan tal cual: la referencia dibuja NQ con el libro de QQQ (medido el 2026-09-11,
 # ver conocimiento/referencia-tecnica.md) y ES con SPY o SPX; sin el archivo por minuto de QQQ no se
 # puede probar en el laboratorio si ese libro le gana al placebo en MNQ.
-INDICE = {"ES": "_SPX", "NQ": "_NDX", "RTY": "_RUT", "QQQ": "QQQ", "SPY": "SPY"}
+INDICE = {"ES": "_SPX", "NQ": "_NDX", "RTY": "_RUT", "QQQ": "QQQ", "SPY": "SPY", "TQQQ": "TQQQ"}
 
 
 def bajar_y_archivar(raiz, destino):
