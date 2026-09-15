@@ -80,6 +80,12 @@ desde el archivo por minuto de la nube al arrancar (hilo aparte, nucleo propio).
 por ticker, todas con guion, sin errores. Pendiente: el archivo de hoy no cubre la rueda entera (revisar dedupe del
 archivador). Eleccion de estilo de rotulos (A/B/C) todavia abierta.
 
+Bloque 12 (18:00): "tene en cuenta las barras de la derecha, se profesional": CARRILES fijos (barras | velas+estelas |
+etiquetas | convexidad | escalera | eje). Las etiquetas viven en su carril (termina donde terminan las rayas),
+alineadas a la derecha, con ▲/▼/↕ y agrupadas si coinciden; nunca tocan las barras de la derecha. Regla: antes de
+ubicar un elemento, listar TODO lo que ocupa esa zona (incluidos los paneles de la primaria) y reservarle un carril.
+Tras un reinicio el grafico tarda ~3 min en dibujar (rebobinado): no es un error.
+
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
