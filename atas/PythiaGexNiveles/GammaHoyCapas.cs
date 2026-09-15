@@ -207,7 +207,7 @@ namespace PythiaGex
         {
             new CapaLibro("QQQ", "QQQ", CapaLibro.TipoCapa.EtfPorRazon, 1, Color.FromArgb(80, 180, 255)),
             new CapaLibro("TQQQ", "TQQQ", CapaLibro.TipoCapa.EtfPorRazon, 3, Color.FromArgb(255, 90, 200)),
-            new CapaLibro("NDX", "NQ", CapaLibro.TipoCapa.IndiceConBase, 1, Color.FromArgb(200, 200, 210)),
+            new CapaLibro("NDX", "NQ", CapaLibro.TipoCapa.IndiceConBase, 1, Color.FromArgb(232, 232, 245)),
             new CapaLibro("RITHMIC", "", CapaLibro.TipoCapa.RithmicViva, 1, Color.FromArgb(170, 255, 90)),
             new CapaLibro("SPX", "ES", CapaLibro.TipoCapa.EtfPorRazon, 1, Color.FromArgb(180, 120, 255), porBeta: true),
             new CapaLibro("SPY", "SPY", CapaLibro.TipoCapa.EtfPorRazon, 1, Color.FromArgb(0, 210, 190), porBeta: true),
@@ -608,7 +608,7 @@ namespace PythiaGex
                     }
                     if (CapasZero && !double.IsNaN(L.ZeroVol))
                     {
-                        raya?.Invoke(L.ZeroVol, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
+                        raya?.Invoke(L.ZeroVol, col, 1.8f, System.Drawing.Drawing2D.DashStyle.DashDot, 210);
                         etiquetas.Add((L.ZeroVol, k.Nombre + " 0Γ", col, 1, k));
                     }
                 }
@@ -832,14 +832,17 @@ namespace PythiaGex
                     else grupos.Add(new List<(double, string, Color, int, CapaLibro)> { e });
                 }
                 int xRaya0 = xl0, xRaya1 = xl1;
+                var siglasZero = new List<(int Y, int X, Color Col, string Texto, bool Der)>();
                 if (Rayas == EstiloRayas.Tenues) { /* las capas no se atenuan: son lo que se quiere ver */ }
                 foreach (var gr in grupos)
                 {
                     if (gr.Count == 1)
                     {
                         var e = gr[0];
-                        bool dom = e.Texto.Contains(" D");
-                        raya(e.Precio, e.Col, dom ? (e.Peso >= 3 ? 1.7f : 1.2f) : 1f, dom ? System.Drawing.Drawing2D.DashStyle.Dash : System.Drawing.Drawing2D.DashStyle.Dot, dom ? (e.Peso >= 3 ? 220 : 160) : 120);
+                        bool dom = e.Texto.Contains(" D"), zero = e.Texto.EndsWith("0Γ");
+                        if (zero) raya(e.Precio, e.Col, 1.8f, System.Drawing.Drawing2D.DashStyle.DashDot, 210);          // el zero, bien visible
+                        else raya(e.Precio, e.Col, dom ? (e.Peso >= 3 ? 1.7f : 1.2f) : 1f, dom ? System.Drawing.Drawing2D.DashStyle.Dash : System.Drawing.Drawing2D.DashStyle.Dot, dom ? (e.Peso >= 3 ? 220 : 160) : 120);
+                        if (zero) { int yz; try { yz = cont.GetYByPrice((decimal)e.Precio, false); } catch { yz = int.MinValue; } if (yz != int.MinValue) siglasZero.Add((yz, xl0 + 2, e.Col, "0Γ " + e.K.Nombre, false)); }
                         continue;
                     }
                     // fusion: una raya gruesa, colores alternados por tramo, al precio medio del grupo
@@ -851,6 +854,7 @@ namespace PythiaGex
                         g.DrawLine(new RenderPen(Color.FromArgb(235, gr[j % n].Col), 2.6f), x, y, Math.Min(xRaya1, x + tramo - 2), y);
                 }
 
+                if (CapasSiglas && siglasZero.Count > 0) Siglas(g, siglasZero, area, piso, fMin, altoMin);
                 if (CapasEtiquetasEnEscalera && VerEscalera) return;   // las etiquetas viven en la escalera del eje
                 // 5) las etiquetas, en SU CARRIL: entre el final de las rayas y las barras de la derecha (convexidad) o la
                 //    escalera si la convexidad esta apagada. Alineadas a la derecha, ordenadas por precio, sin pisarse; si
