@@ -173,9 +173,9 @@ namespace PythiaGex
         [Display(Name = "Capas: dibujar el zero gamma de cada una", GroupName = "5. Capas extra (NQ)", Order = 15)]
         public bool CapasZero { get; set; } = false;
 
-        [Display(Name = "Capas: precios de las capas tambien en la escalera del eje", GroupName = "5. Capas extra (NQ)", Order = 15,
-                 Description = "Apagado: la guia es el color, la barra y la abreviatura, y el precio se lee del eje. Prendido: ademas cada nivel va como caja de color en la escalera pegada al eje.")]
-        public bool CapasPreciosEnEscalera { get; set; } = false;
+        [Display(Name = "Capas: etiquetas EN LA ESCALERA del eje (pedido 15-09)", GroupName = "5. Capas extra (NQ)", Order = 15,
+                 Description = "Prendido: cada nivel de cada capa va como caja de color en la escalera pegada al eje ('SPX D1 ▲ 28.981 +36'), ordenadas por precio y sin pisarse; niveles que coinciden comparten la fila. En el medio del grafico quedan solo las rayas. Apagado: las etiquetas van en su carril, al final de las rayas.")]
+        public bool CapasEtiquetasEnEscalera { get; set; } = true;
 
         [Display(Name = "Capas: rayas y bandas de la primaria al (%)", GroupName = "5. Capas extra (NQ)", Order = 16,
                  Description = "Con alguna capa prendida, las rayas y la banda de dominancia del libro primario (amarillo) se dibujan a este porcentaje de su intensidad, para que las capas se lean. 100 = como siempre.")]
@@ -598,17 +598,40 @@ namespace PythiaGex
             return etiquetas;
         }
 
+        /// <summary>Agrupa niveles del mismo tipo (dominante con dominante, zero con zero...) de fuentes distintas que estan a
+        /// menos de CapasFusionPct del precio: comparten raya y etiqueta.</summary>
+        private List<List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)>> AgruparEtiquetas(
+            List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)> etiquetas, double futuro)
+        {
+            var grupos = new List<List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)>>();
+            double tolFusion = double.IsNaN(futuro) ? 0 : futuro * (double)CapasFusionPct / 100.0;
+            string TipoDe(string texto) { var t = texto.Substring(texto.IndexOf(' ') + 1); return t.StartsWith("D") ? "D" : t; }
+            foreach (var e in etiquetas.OrderByDescending(r => r.Precio))
+            {
+                var ult = grupos.Count > 0 ? grupos[grupos.Count - 1] : null;
+                if (ult != null && tolFusion > 0 && ult[0].Precio - e.Precio <= tolFusion && !ult.Any(z => z.K == e.K) && TipoDe(ult[0].Texto) == TipoDe(e.Texto)) ult.Add(e);
+                else grupos.Add(new List<(double, string, Color, int, CapaLibro)> { e });
+            }
+            return grupos;
+        }
+
         /// <summary>Los renglones de las capas para la escalera primaria (nombre corto, precio, color). Vacio sin capas.</summary>
         private List<(string N, double P, Color C)> FilasCapas()
         {
             var salida = new List<(string N, double P, Color C)>();
-            if (!CapasPreciosEnEscalera) return salida;
+            if (!CapasEtiquetasEnEscalera || !VerEscalera || Rayas == EstiloRayas.Ninguna) return salida;
             var activas = _capas.Where(CapaActiva).ToList();
             if (activas.Count == 0) return salida;
             var lecturas = new Dictionary<CapaLibro, GammaHoyNucleo.Lectura>();
             double futuro;
             lock (_candado) { futuro = _futuro; foreach (var k in activas) lecturas[k] = k.L; }
-            foreach (var e in EtiquetasCapas(activas, lecturas, futuro, null)) salida.Add((e.Texto, e.Precio, e.Col));
+            foreach (var gr in AgruparEtiquetas(EtiquetasCapas(activas, lecturas, futuro, null), futuro))
+            {
+                double pm = gr.Count == 1 ? gr[0].Precio : gr.Average(z => z.Precio);
+                string tipo = gr[0].Texto.Substring(gr[0].Texto.IndexOf(' ') + 1);
+                string sentido = tipo.StartsWith("D") ? (pm > futuro ? " ▲" : " ▼") : tipo == "0Γ" ? " ↕" : "";
+                salida.Add((string.Join("·", gr.Select(z => z.K.Nombre)) + " " + tipo + sentido, pm, gr.Count == 1 ? gr[0].Col : ColTexto));
+            }
             return salida;
         }
 
@@ -764,6 +787,7 @@ namespace PythiaGex
                         g.DrawLine(new RenderPen(Color.FromArgb(235, gr[j % n].Col), 2.6f), x, y, Math.Min(xRaya1, x + tramo - 2), y);
                 }
 
+                if (CapasEtiquetasEnEscalera && VerEscalera) return;   // las etiquetas viven en la escalera del eje
                 // 5) las etiquetas, en SU CARRIL: entre el final de las rayas y las barras de la derecha (convexidad) o la
                 //    escalera si la convexidad esta apagada. Alineadas a la derecha, ordenadas por precio, sin pisarse; si
                 //    dos niveles coinciden comparten la etiqueta (un cuadrado por fuente). Con ▲/▼ si la dominante esta
