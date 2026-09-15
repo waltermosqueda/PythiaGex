@@ -616,9 +616,9 @@ namespace PythiaGex
         }
 
         /// <summary>Los renglones de las capas para la escalera primaria (nombre corto, precio, color). Vacio sin capas.</summary>
-        private List<(string N, double P, Color C)> FilasCapas()
+        private List<(string N, double P, Color C, int Peso)> FilasCapas()
         {
-            var salida = new List<(string N, double P, Color C)>();
+            var salida = new List<(string N, double P, Color C, int Peso)>();
             if (!CapasEtiquetasEnEscalera || !VerEscalera || Rayas == EstiloRayas.Ninguna) return salida;
             var activas = _capas.Where(CapaActiva).ToList();
             if (activas.Count == 0) return salida;
@@ -630,7 +630,7 @@ namespace PythiaGex
                 double pm = gr.Count == 1 ? gr[0].Precio : gr.Average(z => z.Precio);
                 string tipo = gr[0].Texto.Substring(gr[0].Texto.IndexOf(' ') + 1);
                 string sentido = tipo.StartsWith("D") ? (pm > futuro ? " ▲" : " ▼") : tipo == "0Γ" ? " ↕" : "";
-                salida.Add((string.Join("·", gr.Select(z => z.K.Nombre)) + " " + tipo + sentido, pm, gr.Count == 1 ? gr[0].Col : ColTexto));
+                salida.Add((string.Join("·", gr.Select(z => z.K.Nombre)) + " " + tipo + sentido, pm, gr.Count == 1 ? gr[0].Col : ColTexto, gr.Max(z => z.Peso)));
             }
             return salida;
         }

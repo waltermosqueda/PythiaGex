@@ -2035,16 +2035,22 @@ namespace PythiaGex
             // etiquetas"): los de afuera aparecen cuando el zoom o el scroll los trae; los de la primaria siguen
             // pegandose al borde como siempre
             bool EnPantalla(double p) { try { int yp = cont.GetYByPrice((decimal)p, false); return yp >= area.Top && yp <= area.Bottom; } catch { return false; } }
-            foreach (var fc in FilasCapas()) if (EnPantalla(fc.P)) filas.Add(("▮" + fc.N, fc.P, fc.C, false));
+            // jerarquia por tamaño (pedido 15-09): D1 con la letra normal (▮), D2 mas chica (▯), zero y majors mas chicos (▫);
+            // filas compactas para que se corran lo menos posible, y si una se corre, una rayita la une a su precio exacto
+            foreach (var fc in FilasCapas()) if (EnPantalla(fc.P)) filas.Add(((fc.Peso >= 3 ? "▮" : fc.Peso == 2 ? "▯" : "▫") + fc.N, fc.P, fc.C, false));
             filas.Add(("", futuro, Color.FromArgb(31, 143, 124), true));
             filas.Sort((a, b) => b.P.CompareTo(a.P));
-            int n = filas.Count; var y = new int[n]; var alt = new int[n]; var enPant = new bool[n];
+            var fMin = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamLetra - 3m)));
+            int hfChica = g.MeasureString("0", fChica).Height, hfMin = g.MeasureString("0", fMin).Height;
+            RenderFont FuenteDe(string nombre) => nombre.StartsWith("▯") ? fChica : nombre.StartsWith("▫") ? fMin : f;
+            int n = filas.Count; var y = new int[n]; var alt = new int[n]; var enPant = new bool[n]; var yExacto = new int[n];
             int yTop = yc, yBot = rect.Bottom - 4;
             for (int i = 0; i < n; i++)
             {
-                alt[i] = hf + 4;
+                alt[i] = filas[i].N.StartsWith("▯") ? hfChica + 2 : filas[i].N.StartsWith("▫") ? hfMin + 2 : hf + 4;
                 int yp = int.MinValue; try { yp = cont.GetYByPrice((decimal)filas[i].P, false); } catch { }
                 enPant[i] = yp != int.MinValue && yp >= area.Top && yp <= area.Bottom;
+                yExacto[i] = yp;
                 y[i] = enPant[i] ? yp - alt[i] / 2 : (yp != int.MinValue && yp < area.Top ? yTop : yBot - alt[i]);
             }
             int minY = yTop; for (int i = 0; i < n; i++) { if (y[i] < minY) y[i] = minY; minY = y[i] + alt[i] + 1; }
@@ -2060,11 +2066,17 @@ namespace PythiaGex
                     continue;
                 }
                 double dist = q.P - futuro;
-                if (q.N.StartsWith("▮"))
+                if (q.N.StartsWith("▮") || q.N.StartsWith("▯") || q.N.StartsWith("▫"))
                 {
-                    g.FillRectangle(Color.FromArgb(235, q.C), new Rectangle(rect.Left + 2, y[i], rect.Width - 4, alt[i] - 1));
-                    g.DrawString(q.N.Substring(1) + " " + q.P.ToString("N0", es) + " " + (dist >= 0 ? "+" : "") + dist.ToString("0", es), f, Color.FromArgb(250, ColFondo), rect.Left + 6, y[i] + 1);
-                    if (enPant[i]) g.FillRectangle(Color.FromArgb(230, q.C), new Rectangle(rect.Right - 5, y[i] + hf / 2, 5, 2));
+                    var fq = FuenteDe(q.N);
+                    int alfa = q.N.StartsWith("▮") ? 235 : q.N.StartsWith("▯") ? 205 : 170;
+                    g.FillRectangle(Color.FromArgb(alfa, q.C), new Rectangle(rect.Left + 2, y[i], rect.Width - 4, alt[i] - 1));
+                    g.DrawString(q.N.Substring(1) + " " + q.P.ToString("N0", es) + " " + (dist >= 0 ? "+" : "") + dist.ToString("0", es), fq, Color.FromArgb(250, ColFondo), rect.Left + 5, y[i]);
+                    // si la fila tuvo que correrse, una rayita fina la une a su precio exacto (a la izquierda de la escalera)
+                    int ymed = y[i] + alt[i] / 2;
+                    if (enPant[i] && Math.Abs(ymed - yExacto[i]) > 2)
+                        g.DrawLine(new RenderPen(Color.FromArgb(200, q.C), 1f), rect.Left - 10, yExacto[i], rect.Left + 2, ymed);
+                    else if (enPant[i]) g.FillRectangle(Color.FromArgb(230, q.C), new Rectangle(rect.Left - 6, yExacto[i] - 1, 8, 2));
                     continue;
                 }
                 string izq = q.N + " " + q.P.ToString("N0", es) + " " + (dist >= 0 ? "+" : "") + dist.ToString("0", es);
