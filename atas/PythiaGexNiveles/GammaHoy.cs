@@ -1684,7 +1684,7 @@ namespace PythiaGex
                 if (y < area.Top || y > piso) continue;
                 // umbral de pantalla (1.9a): las barras chicas no se dibujan, salvo dominantes y majors
                 if (UmbralBarraPct > 0 && maxV > 0 && Math.Abs(s.GexVol) < maxV * UmbralBarraPct / 100.0 && !fijos.Contains(s.Fut)) continue;
-                bool rotEsta = DatosEnBarras != RotulosBarras.Nunca && rotHayLugar && (rotTodas || elegidos.Contains(s.Fut));
+                bool rotEsta = DatosEnBarras != RotulosBarras.Nunca && rotHayLugar && (rotTodas || elegidos.Contains(s.Fut)) && !PrimariaSilenciada();   // capas (15-09): la primaria de fantasma no rotula sus barras
                 if (VerSombraOI && maxO > 0 && Math.Abs(s.GexOi) > 0)
                 {
                     int w = Math.Max(1, (int)(Math.Sqrt(Math.Abs(s.GexOi) / maxO) * ancho));

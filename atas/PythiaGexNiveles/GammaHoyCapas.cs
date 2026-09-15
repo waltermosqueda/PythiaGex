@@ -209,6 +209,14 @@ namespace PythiaGex
             return false;
         }
 
+        /// <summary>Con capas activas y atenuacion < 100, la primaria es un fantasma: sus barras no llevan rotulo.</summary>
+        private bool PrimariaSilenciada()
+        {
+            if (CapasAtenuarPrimariaPct >= 100) return false;
+            foreach (var k in _capas) if (CapaActiva(k)) return true;
+            return false;
+        }
+
         /// <summary>Con capas activas, las rayas y bandas de la primaria bajan al porcentaje elegido; las de las capas no.</summary>
         private int AtenuarPrimaria(int alfa)
         {
@@ -563,22 +571,31 @@ namespace PythiaGex
                 }
                 if (Rayas == EstiloRayas.Ninguna) return;
 
-                // 5) el rotulo corto, adentro de la barra de esa fuente en ese precio si entra; si no, pegado a la punta
-                foreach (var e in etiquetas)
+                // 5) el rotulo corto, adentro de la barra de esa fuente en ese precio si entra; si no, pegado a la punta.
+                //    Ordenados por precio y sin pisarse: si dos niveles estan pegados, el segundo baja un renglon.
                 {
-                    int y; try { y = cont.GetYByPrice((decimal)e.Precio, false); } catch { continue; }
-                    if (y - altoRot / 2 < area.Top || y + altoRot / 2 > piso) continue;
-                    var m = g.MeasureString(e.Texto, fRot);
-                    int w = anchoBarra.TryGetValue((e.K, e.Precio), out var wb) ? wb : 0;
-                    if (w >= m.Width + 8)
+                    int ultimoFondo = area.Top;
+                    foreach (var e in etiquetas.OrderByDescending(r => r.Precio).ThenByDescending(r => r.Peso))
                     {
-                        g.FillRectangle(Color.FromArgb(150, e.Col), new Rectangle(x0 + 1, y - altoRot / 2, m.Width + 4, altoRot));
-                        g.DrawString(e.Texto, fRot, Color.FromArgb(245, ColFondo), x0 + 3, y - altoRot / 2);
-                    }
-                    else
-                    {
-                        g.FillRectangle(Color.FromArgb(170, ColFondo), new Rectangle(x0 + w + 3, y - altoRot / 2, m.Width + 4, altoRot));
-                        g.DrawString(e.Texto, fRot, Color.FromArgb(240, e.Col), x0 + w + 5, y - altoRot / 2);
+                        int y; try { y = cont.GetYByPrice((decimal)e.Precio, false); } catch { continue; }
+                        if (y < area.Top - altoRot || y > piso + altoRot) continue;
+                        int top = y - altoRot / 2;
+                        if (top < ultimoFondo + 1) top = ultimoFondo + 1;
+                        if (top + altoRot > piso) break;
+                        var m = g.MeasureString(e.Texto, fRot);
+                        int w = anchoBarra.TryGetValue((e.K, e.Precio), out var wb) ? wb : 0;
+                        bool adentro = w >= m.Width + 8 && top == y - altoRot / 2;
+                        if (adentro)
+                        {
+                            g.FillRectangle(Color.FromArgb(150, e.Col), new Rectangle(x0 + 1, top, m.Width + 4, altoRot));
+                            g.DrawString(e.Texto, fRot, Color.FromArgb(245, ColFondo), x0 + 3, top);
+                        }
+                        else
+                        {
+                            g.FillRectangle(Color.FromArgb(170, ColFondo), new Rectangle(x0 + w + 3, top, m.Width + 4, altoRot));
+                            g.DrawString(e.Texto, fRot, Color.FromArgb(240, e.Col), x0 + w + 5, top);
+                        }
+                        ultimoFondo = top + altoRot;
                     }
                 }
 
