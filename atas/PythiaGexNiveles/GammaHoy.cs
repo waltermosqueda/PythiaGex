@@ -588,7 +588,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10 (capas NQ) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10b (capas NQ, edad real) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1553,7 +1553,7 @@ namespace PythiaGex
 
             var c = _c;
             // ---- cabecera: siempre, aunque no haya datos, para que se sepa por que
-            string edad = c == null ? "sin feed" : (c.EsFuturo ? "en tiempo real" : (c.EdadMin + 902.0 / 60.0).ToString("0", es) + " min tarde");
+            string edad = c == null ? "sin feed" : (c.EsFuturo ? "en tiempo real" : (c.EdadMin + (c.GeneradoUtc != default(DateTime) ? Math.Max(0, (DateTime.UtcNow - c.GeneradoUtc).TotalMinutes) : 0) + 902.0 / 60.0).ToString("0", es) + " min tarde");
             string l1 = perfil.Count == 0
                 ? "GAMMA HOY  esperando cadena" + (string.IsNullOrEmpty(_error) ? "" : " (" + _error + ")")
                 : "GAMMA HOY  " + corto + "  " + cuad + "   conv " + (convPrecio >= 0 ? "+" : "-") + " (" + libroConv + ")  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)) + (mucho ? " mucho" : " poco");

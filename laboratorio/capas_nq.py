@@ -37,7 +37,9 @@ PICO_RADIO_PCT = 0.35   # "Pico de GEX cerca del precio: radio (%)" por defecto;
 CUANTAS = 2
 UNA_POR_LADO = True     # "Canal: una dominante por lado" (por defecto en el indicador)
 EMPATE_PCT = 20.0     # "Dominantes: empate tecnico, gana la mas cercana al precio (%)": leido de GammaHoy.cs
-TASA = 0.045
+HORIZONTE = "Hoy"     # el del grafico: Hoy (<= 1 dia o el mas cercano), Semana (<= 7), Todo. Las capas COPIAN el del grafico
+                      # (auditoria 15-09: el grafico con capas estuvo en Todo hasta las 19:22 y el auditor asumia Hoy)
+TASA = 0.0375     # la "Tasa libre de riesgo" por defecto del indicador, leida de GammaHoy.cs
 
 
 def fi(x):
@@ -177,7 +179,7 @@ def recalcular(d, fut, razon, apal, ahora, base=0.0):
         envejecer = max(0.0, min(2.0, (ahora - g).total_seconds() / 86400.0))
     dias_env = [x - envejecer for x in dias_v]
     mas_cerca = min([x for x in dias_env if x >= 0], default=0.0)
-    tope = max(1.0, mas_cerca + 0.01)          # Horizonte = Hoy
+    tope = {"Hoy": max(1.0, mas_cerca + 0.01), "Semana": max(7.0, mas_cerca + 0.01)}.get(HORIZONTE, float("inf"))   # GammaHoyNucleo.PasaHorizonte
 
     # el mapeo, identico a Feed.Cadena.AlFuturo / AlLibro; con base aditiva (NDX): Fut = K + base
     def al_futuro(k):

@@ -238,7 +238,7 @@ namespace PythiaGex
             private static readonly Dictionary<string, string> _ultimoSello = new();
 
             private static string Sello(Cadena c)
-                => c.Ts + "|" + c.Base.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+                => c.Ts + "|" + c.Base.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "|" + c.GeneradoUtc.ToString("O");
 
             /// <summary>Agrega la cadena recien bajada al archivo local del dia,
             /// solo si el sello de CBOE cambio (de noche se congela).</summary>

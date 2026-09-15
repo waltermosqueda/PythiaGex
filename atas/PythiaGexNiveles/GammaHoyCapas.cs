@@ -100,7 +100,11 @@ namespace PythiaGex
             if (c == null) return "sin dato";
             if (Tipo == TipoCapa.VivaLocal) return "hace " + Math.Max(0, (DateTime.UtcNow - c.GeneradoUtc).TotalMinutes).ToString("0", es) + " min";
             if (c.EsFuturo) return "vivo";
-            return (c.EdadMin + 902.0 / 60.0).ToString("0", es) + " min";
+            // la edad REAL del dato: de la foto de CBOE (902 s tarde) al momento en que la nube la genero (EdadMin)
+            // y de ahi hasta ahora. Antes solo se decia EdadMin + 15, y de noche (nube cada 5 min, CBOE congelada)
+            // la leyenda decia "25 min" con una cadena de 74 min (auditoria 15-09).
+            double desdeGen = c.GeneradoUtc != default(DateTime) ? Math.Max(0, (DateTime.UtcNow - c.GeneradoUtc).TotalMinutes) : 0;
+            return (c.EdadMin + desdeGen + 902.0 / 60.0).ToString("0", es) + " min";
         }
     }
 
@@ -516,7 +520,9 @@ namespace PythiaGex
                     var inv = CultureInfo.InvariantCulture;
                     Log("AUDIT capa=" + k.Nombre + " " + GammaHoyNucleo.Audit(L, c, k.Tipo == CapaLibro.TipoCapa.RithmicViva).Substring(6)
                         + (k.PorBeta ? " beta=" + k.Beta.ToString("0.###", inv) + " betaN=" + k.BetaN + " betaR2=" + (double.IsNaN(k.BetaR2) ? "NaN" : k.BetaR2.ToString("0.00", inv)) + " betaOrigen=" + k.BetaOrigen.Replace(' ', '_') + " velasNQ=" + VelasCompartidas.Serie(Raiz()).Count + " velasES=" + VelasCompartidas.Serie("ES").Count : "")
-                        + " toques=" + k.Toques + " rebotes=" + k.Rebotes);
+                        + " toques=" + k.Toques + " rebotes=" + k.Rebotes
+                        + " cadenaTs=" + (c.Ts ?? "").Replace(' ', '_') + " gen=" + (c.GeneradoUtc == default(DateTime) ? "?" : c.GeneradoUtc.ToString("HH:mm:ss", inv))
+                        + " horizonte=" + k.Nucleo.A.Horizonte + " fuente=" + (c.Fuente ?? "").Replace(' ', '_'));
                 }
             }
         }
