@@ -76,6 +76,11 @@ guardada da eso: todas dan −3.000…−4.100M y 260-264 strikes). Causas encon
   aparea por `cadenaTs`/`gen` cuando existen y toma el horizonte que anota la capa. Falta correrlo en una rueda
   completa con 1.10b para el cierre exacto minuto a minuto.
 
+### Visto en pantalla (20:58 local, 1.10b)
+
+Leyenda: NDX "dato de hace 32 min", QQQ 17, SPX 36, SPY 36, ES 2 (viva local); cabecera "vol CBOE 32 min tarde".
+Contra el log: NDX: cadena de CBOE 23:41:22Z generada 23:47:58Z -> edad real ahora 32 min (log 2026-09-15T20:58:14); QQQ: cadena de CBOE 23:55:57Z generada 23:56:21Z -> edad real ahora 18 min (log 2026-09-15T20:58:14); SPX: cadena de CBOE 23:37:32Z generada 23:39:28Z -> edad real ahora 36 min (log 2026-09-15T20:58:14); SPY: cadena de CBOE 23:55:48Z generada 23:56:24Z -> edad real ahora 18 min (log 2026-09-15T20:58:14). Antes de 1.10b la misma leyenda habria dicho ~25 min.
+
 ## 6. Propuesta (no implementada: espera la palabra del operador)
 
 De noche (16:00 → 9:30 ET) las dominantes de las capas son reales pero flacas (cientos de M contra miles de M de
