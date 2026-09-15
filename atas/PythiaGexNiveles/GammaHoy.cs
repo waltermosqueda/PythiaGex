@@ -54,7 +54,7 @@ namespace PythiaGex
     /// </summary>
     [DisplayName("PythiaGex - Gamma Hoy")]
     [Category("PythiaGex")]
-    public class GammaHoy : Indicator
+    public partial class GammaHoy : Indicator
     {
         // ==================================================================
         // Ajustes (pocos, y cada uno con su porque)
@@ -518,6 +518,7 @@ namespace PythiaGex
                     _ultimoLibroViva = ahora;
                     try { var cv = DesdeViva(); if (cv != null) { _c = cv; _error = ""; } } catch (Exception e) { Registrar(e); }
                 }
+                try { RefrescarCapaRithmic(ahora); } catch (Exception e) { Registrar(e); }
                 if (Reloj.UltimaMedicion == DateTime.MinValue || (ahora - Reloj.UltimaMedicion).TotalMinutes >= 30)
                     _ = Reloj.Medir(Log);
                 if ((ahora - _ultimaBajada).TotalSeconds >= Math.Max(60, SegundosRefresco))
@@ -648,6 +649,7 @@ namespace PythiaGex
                     }
                 }
                 if (c != null && !(Libro == LibroEnVivo.Rithmic_ES && _c != null && _c.EsFuturo)) { _c = c; _error = ""; }
+                await BajarCapas().ConfigureAwait(false);
             }
             finally
             {
@@ -678,13 +680,14 @@ namespace PythiaGex
         // (la vela de hace RetrasoCboeSeg contra el spot de la cadena; un ETF de hoy contra un futuro de ahora
         // corre todos los strikes lo que se movio el mercado en 15 min). Si no hay vela alineada, la mediana
         // robusta de la rueda; y si tampoco, la razon cruda, dicha como tal.
-        private readonly List<double> _razonObs = new();
-        private double _razonRueda = double.NaN;
-        private void Escalar(Feed.Cadena c)
+        private readonly RazonEtf _razon = new();
+        private void Escalar(Feed.Cadena c) => EscalarCon(c, RaizLibro(), _razon);
+        /// <summary>Parametrizada (15-09) para las capas extra: cada libro por razon lleva su propia razon y su mediana.</summary>
+        private void EscalarCon(Feed.Cadena c, string ticker, RazonEtf r)
         {
             if (c == null || c.SpotIdx <= 0) return;
             c.PorRazon = true; c.EsFuturo = false; c.Base = 0; c.BaseConfiable = false;
-            c.Fuente = "CBOE " + RaizLibro();
+            c.Fuente = "CBOE " + ticker;
             var iv = CultureInfo.InvariantCulture;
             double razon = double.NaN; string origen = "";
             if (!string.IsNullOrEmpty(c.Ts) && DateTime.TryParseExact(c.Ts, "yyyy-MM-dd HH:mm:ss", iv, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var ts))
@@ -692,16 +695,16 @@ namespace PythiaGex
                 int b = BarraDe(ts.AddSeconds(-Math.Max(0, RetrasoCboeSeg)));
                 if (b >= 0) { try { double p = (double)GetCandle(b).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "vela alineada"; } } catch { } }
             }
-            if (double.IsNaN(razon) && !double.IsNaN(_razonRueda)) { razon = _razonRueda; origen = "mediana de la rueda"; }
+            if (double.IsNaN(razon) && !double.IsNaN(r.Rueda)) { razon = r.Rueda; origen = "mediana de la rueda"; }
             if (double.IsNaN(razon)) { try { double p = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "CRUDA sin alinear"; } } catch { } }
             if (double.IsNaN(razon) || razon <= 0) { c.Escala = 1; c.EscalaOrigen = "sin razon"; return; }
             c.Escala = razon; c.EscalaOrigen = origen;
             if (origen == "vela alineada")
             {
-                lock (_razonObs)
+                lock (r.Obs)
                 {
-                    _razonObs.Add(razon); if (_razonObs.Count > 24) _razonObs.RemoveAt(0);
-                    var ord = _razonObs.OrderBy(x => x).ToList(); _razonRueda = ord[ord.Count / 2];
+                    r.Obs.Add(razon); if (r.Obs.Count > 24) r.Obs.RemoveAt(0);
+                    var ord = r.Obs.OrderBy(x => x).ToList(); r.Rueda = ord[ord.Count / 2];
                 }
             }
         }
@@ -1085,6 +1088,7 @@ namespace PythiaGex
                 _ultimoAudit = DateTime.UtcNow;
                 Log(GammaHoyNucleo.Audit(L, c, _viva.Activa));
             }
+            try { RepreciarCapas(futuro, ahoraUtc); } catch (Exception e) { Registrar(e); }
         }
 
         // ==================================================================
@@ -1811,6 +1815,7 @@ namespace PythiaGex
                         g.DrawLine(new RenderPen(Color.FromArgb(i == 0 ? 120 : 80, ColDom), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xa, yb, xl1, yb);
                 }
             }
+            try { PintarCapas(g, cont, area, piso, x0, ancho, alto, xl0, xl1, altoRot, fRot, es, Raya); } catch (Exception e) { Registrar(e); }
             Raya(zeroOi, Color.FromArgb(160, 160, 170), 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
             Raya(zeroVol, ColZero, 1.4f, System.Drawing.Drawing2D.DashStyle.Dash, 200);
             Raya(mpVol, ColPos, 1.6f, System.Drawing.Drawing2D.DashStyle.Solid, 190);
