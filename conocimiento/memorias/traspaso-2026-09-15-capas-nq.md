@@ -69,6 +69,12 @@ barra, y FUSION de niveles que coinciden (raya gruesa de colores alternados + "S
 mercado cerrado: verificar en la rueda del 16-09. Regla: cuando algo "confunde", primero SACAR (barras chicas,
 perfil espejo, columnas repetidas), despues embellecer.
 
+Bloque 10 (17:30): control triple pantalla = log = recalculo independiente para NDX, SPX y SPY (strikes iguales,
+zero < 1 pt, convexidad 0 %). Para que el script coincida hizo falta replicar dos reglas del indicador: NDX con
+base ADITIVA (no razon) y el EMPATE TECNICO de las dominantes (20 %: la mas cercana entre las comparables). Bug
+arreglado: la fusion juntaba "SPX D2" con "SPY 0Γ" (tipos distintos); ahora solo el mismo tipo. capas_respeto.py
+ya lista las tres capas (14 velas, 0 toques): el veredicto de "cual acierta mas" es de la semana que viene.
+
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
