@@ -611,7 +611,10 @@ namespace PythiaGex
                 foreach (var e in etiquetas.OrderByDescending(r => r.Precio))
                 {
                     var ult = grupos.Count > 0 ? grupos[grupos.Count - 1] : null;
-                    if (ult != null && tolFusion > 0 && ult[0].Precio - e.Precio <= tolFusion && !ult.Any(z => z.K == e.K)) ult.Add(e);
+                    // se fusionan solo niveles del MISMO tipo (dominante con dominante, zero con zero...): el 15-09 a las
+                    // 17:20 un "SPX D2" se fusiono con un "SPY 0Γ" y el rotulo mentia
+                    string TipoDe(string texto) { var t = texto.Substring(texto.IndexOf(' ') + 1); return t.StartsWith("D") ? "D" : t; }
+                    if (ult != null && tolFusion > 0 && ult[0].Precio - e.Precio <= tolFusion && !ult.Any(z => z.K == e.K) && TipoDe(ult[0].Texto) == TipoDe(e.Texto)) ult.Add(e);
                     else grupos.Add(new List<(double, string, Color, int, CapaLibro)> { e });
                 }
                 int xRaya0 = xl0, xRaya1 = xl1;

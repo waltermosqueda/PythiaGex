@@ -27,7 +27,7 @@ import urllib.request
 from datetime import datetime, timezone
 
 RAW = "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/ultima-{}.json"
-ARCHIVO = {"SPX": "ES"}          # la cadena de SPX se archiva como ultima-ES.json
+ARCHIVO = {"SPX": "ES", "NDX": "NQ"}   # SPX se archiva como ultima-ES.json y NDX como ultima-NQ.json
 VIVA = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "PythiaGex", "viva")
 LOG = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "pythiagex-gammahoy.log")
 MULT = 100.0
@@ -36,6 +36,7 @@ RADIO_DOM_PCT = 2.0     # "Dominantes: radio alrededor del precio (%)" por defec
 PICO_RADIO_PCT = 0.35   # "Pico de GEX cerca del precio: radio (%)" por defecto; la convexidad en el precio suma ese radio
 CUANTAS = 2
 UNA_POR_LADO = True     # "Canal: una dominante por lado" (por defecto en el indicador)
+EMPATE_PCT = 20.0     # "Dominantes: empate tecnico, gana la mas cercana al precio (%)": leido de GammaHoy.cs
 TASA = 0.045
 
 
@@ -109,16 +110,21 @@ def ultimo_audit(ticker):
     # CBOE_QQQ, CBOE_TQQQ_x3, CBOE_SPX, CBOE_SPY, Rithmic_ES_(grabado): todos "libro ... x razon R"
     pat_origen = re.compile(r"origen=libro_(?:CBOE_|Rithmic_)" + re.escape(ticker) + r"(?:_x\d+|_\(grabado\))?_x_razon_([0-9.]+)")
     ultimo = None
+    aditivo = ticker == "NDX"          # NDX va con base aditiva (Fut = K + base), no por razon
     with open(LOG, encoding="utf-8", errors="replace") as f:
         for linea in f:
             if "AUDIT" not in linea:
                 continue
-            m = pat_origen.search(linea)
-            if not m:
-                continue
-            cap = re.search(r"capa=(\w+)", linea)
-            if cap and cap.group(1) != ticker:
-                continue
+            if aditivo:
+                if "capa=NDX " not in linea:
+                    continue
+            else:
+                m = pat_origen.search(linea)
+                if not m:
+                    continue
+                cap = re.search(r"capa=(\w+)", linea)
+                if cap and cap.group(1) != ticker:
+                    continue
             ultimo = linea.rstrip("\n")
     if not ultimo:
         return None
@@ -131,7 +137,8 @@ def ultimo_audit(ticker):
     doms = [float(x.split("=")[0]) for x in doms.group(1).split("/")] if doms and doms.group(1) else []
     return {
         "linea": ultimo, "hora": ultimo[:19], "fut": num("fut"), "S": num("S"),
-        "razon": float(pat_origen.search(ultimo).group(1)),
+        "razon": float(pat_origen.search(ultimo).group(1)) if not aditivo else None,
+        "base": num("base") if aditivo else 0.0,
         "zeroVol": num("zeroVol"), "mpVol": num("mpVol"), "mnVol": num("mnVol"), "doms": doms,
         "capa": "capa=" in ultimo, "apal": (lambda m: float(m.group(1)) if m else None)(re.search(r"apal_([0-9.]+)x", ultimo)),
         "beta": num("beta"), "betaOrigen": (lambda m: m.group(1) if m else "")(re.search(r"betaOrigen=(\S+)", ultimo)),
@@ -155,7 +162,7 @@ def ultimo_fut():
     return fut
 
 
-def recalcular(d, fut, razon, apal, ahora):
+def recalcular(d, fut, razon, apal, ahora, base=0.0):
     c = d["cadena"]
     es_fut = bool(d.get("es_futuro"))          # Black-76 (viva de ES) o Black-Scholes (CBOE)
     gam = (lambda x, K, T, iv: gamma76(x, K, T, iv)) if es_fut else (lambda x, K, T, iv: gamma_bs(x, K, T, iv, TASA))
@@ -172,13 +179,17 @@ def recalcular(d, fut, razon, apal, ahora):
     mas_cerca = min([x for x in dias_env if x >= 0], default=0.0)
     tope = max(1.0, mas_cerca + 0.01)          # Horizonte = Hoy
 
-    # el mapeo, identico a Feed.Cadena.AlFuturo / AlLibro
+    # el mapeo, identico a Feed.Cadena.AlFuturo / AlLibro; con base aditiva (NDX): Fut = K + base
     def al_futuro(k):
+        if razon is None:
+            return k + base
         if apal == 1 or spot <= 0:
             return k * razon
         return razon * (spot + (k - spot) / apal)
 
     def al_libro(f):
+        if razon is None:
+            return f - base
         if apal == 1 or spot <= 0:
             return f / razon
         return spot + apal * (f / razon - spot)
@@ -235,9 +246,16 @@ def recalcular(d, fut, razon, apal, ahora):
     # "Canal: una dominante por lado" (ajuste por defecto del indicador): la mas fuerte ARRIBA del precio y la mas
     # fuerte ABAJO; sin ese ajuste, las CUANTAS mas fuertes sin mirar el lado
     if UNA_POR_LADO:
-        arriba = [p for p in cerca if p[1] >= fut]
-        abajo = [p for p in cerca if p[1] < fut]
-        doms = [x for x in (max(arriba, key=lambda p: abs(p[2]), default=None), max(abajo, key=lambda p: abs(p[2]), default=None)) if x]
+        # la mas fuerte de cada lado; con empate tecnico (a menos de EMPATE_PCT de la mas fuerte), la mas cercana al precio
+        def elegir(lado):
+            if not lado:
+                return None
+            pmax = max(abs(p[2]) for p in lado)
+            piso = pmax * (1.0 - max(0.0, min(90.0, EMPATE_PCT)) / 100.0)
+            return sorted([p for p in lado if abs(p[2]) >= piso], key=lambda p: (abs(p[1] - fut), -abs(p[2])))[0]
+        arriba = [p for p in cerca if p[1] > fut]
+        abajo = [p for p in cerca if p[1] <= fut]
+        doms = [x for x in (elegir(arriba), elegir(abajo)) if x]
         doms = sorted(doms, key=lambda p: -abs(p[2]))
     else:
         doms = sorted(cerca, key=lambda p: -abs(p[2]))[:CUANTAS]
@@ -267,10 +285,12 @@ def main():
         au = ultimo_audit(t.upper())
         razon, fut = a.razon, a.fut
         if au:
-            print(f"  log: AUDIT {'capa' if au['capa'] else 'primaria'} {au['hora']}  fut={au['fut']:.2f} razon={au['razon']:.4f} "
-                  f"zeroVol={au['zeroVol']:.2f} mp={au['mpVol']:.2f} mn={au['mnVol']:.2f} doms={au['doms']}")
+            print(f"  log: AUDIT {'capa' if au['capa'] else 'primaria'} {au['hora']}  fut={au['fut']:.2f} "
+                  + (f"razon={au['razon']:.4f} " if au['razon'] is not None else f"base={au['base']:.2f} (aditiva) ")
+                  + f"zeroVol={au['zeroVol']:.2f} mp={au['mpVol']:.2f} mn={au['mnVol']:.2f} doms={au['doms']}")
             razon = razon or au["razon"]
             fut = fut or au["fut"]
+            base = au.get("base", 0.0) or 0.0
             if apal is None:
                 apal = au["apal"] or 1.0
                 if au["beta"] == au["beta"]:
@@ -288,13 +308,13 @@ def main():
             fut = ultimo_fut()
             if fut is not None:
                 print(f"  fut: del ultimo AUDIT del log (cualquier libro): {fut:.2f}")
-        if razon is None and fut is not None and float(d["cadena"].get("spot_idx") or 0) > 0:
+        if razon is None and t.upper() != "NDX" and fut is not None and float(d["cadena"].get("spot_idx") or 0) > 0:
             razon = fut / float(d["cadena"]["spot_idx"])
             print(f"  razon CRUDA sin alinear (fut/spot) = {razon:.4f}: no hay AUDIT de este libro; sirve para ver la zona, no para comparar al punto")
-        if razon is None or fut is None:
+        if fut is None or (razon is None and t.upper() != "NDX"):
             print("  falta --razon y --fut (no hay AUDIT en el log para sacarlos)")
             continue
-        r = recalcular(d, fut, razon, apal, ahora)
+        r = recalcular(d, fut, razon, apal, ahora, base=locals().get("base", 0.0))
         edad = (ahora - datetime.fromisoformat(r["generado"].replace("Z", "+00:00"))).total_seconds() / 60 if r["generado"] else float("nan")
         print(f"  cadena: generada {r['generado']} (hace {edad:.0f} min, +15 de CBOE)  ts CBOE {r['ts']}  spot {r['spot']:.2f}  "
               f"strikes 0DTE {r['strikes']}  mas cercano {r['mas_cerca']:.3f} d  S implicita {r['S']:.2f}")
@@ -307,7 +327,7 @@ def main():
             print(f"          perfil derecho (convexidad por volumen): mayor |conv| K={r['conv_max'][0]:.0f} -> {r['conv_max'][1]:.2f} ({r['conv_max'][4]/1e6:+.0f}M); "
                   f"conv en el precio (+-{PICO_RADIO_PCT} %) {r['conv_precio']/1e6:+.0f}M; pico |GEX| K={r['pico'][0]:.0f} -> {r['pico'][1]:.2f}")
         if au:
-            ks_log = sorted(round(x / razon if apal == 1 else r["spot"] + apal * (x / razon - r["spot"])) for x in au["doms"])
+            ks_log = sorted(round((x - base) if razon is None else (x / razon if apal == 1 else r["spot"] + apal * (x / razon - r["spot"]))) for x in au["doms"])
             ks_prop = sorted(round(p[0]) for p in r["doms"])
             dz = abs(r["zero"] - au["zeroVol"]) if not math.isnan(r["zero"]) and not math.isnan(au["zeroVol"]) else float("nan")
             print(f"  veredicto: dominantes por K log {ks_log} vs propio {ks_prop} -> {'COINCIDEN' if ks_log == ks_prop else 'DISTINTAS'}; "
