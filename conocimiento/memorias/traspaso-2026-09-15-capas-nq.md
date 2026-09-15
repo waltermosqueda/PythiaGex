@@ -75,6 +75,11 @@ base ADITIVA (no razon) y el EMPATE TECNICO de las dominantes (20 %: la mas cerc
 arreglado: la fusion juntaba "SPX D2" con "SPY 0Γ" (tipos distintos); ahora solo el mismo tipo. capas_respeto.py
 ya lista las tres capas (14 velas, 0 toques): el veredicto de "cual acierta mas" es de la semana que viene.
 
+Bloque 11 (17:40): estela (guiones por vela) de las dominantes de cada capa en su color, en vivo y rebobinada
+desde el archivo por minuto de la nube al arrancar (hilo aparte, nucleo propio). Primer arranque: 96-233 cadenas
+por ticker, todas con guion, sin errores. Pendiente: el archivo de hoy no cubre la rueda entera (revisar dedupe del
+archivador). Eleccion de estilo de rotulos (A/B/C) todavia abierta.
+
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
