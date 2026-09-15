@@ -442,6 +442,59 @@ namespace PythiaGex
             }
         }
 
+        /// <summary>Los niveles de las capas con su texto corto y su color: D1/D2 (y zero si se pide) de cada capa, y los
+        /// majors si estan cerca del precio y no son ya una dominante. Con `raya` dibuja las rayas; con null solo lista.</summary>
+        private List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)> EtiquetasCapas(
+            List<CapaLibro> activas, Dictionary<CapaLibro, GammaHoyNucleo.Lectura> lecturas, double futuro,
+            Action<double, Color, float, System.Drawing.Drawing2D.DashStyle, int> raya)
+        {
+            var etiquetas = new List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)>();
+            double radioMajors = double.IsNaN(futuro) ? double.MaxValue : futuro * (double)CapasMajorsRadioPct / 100.0;
+            foreach (var k in activas)
+            {
+                var L = lecturas[k]; if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
+                var col = k.Color;
+                if (CapasDominantes)
+                {
+                    for (int d = 0; d < L.Doms.Count; d++)
+                    {
+                        double p = L.Doms[d].Fut;
+                        raya?.Invoke(p, col, d == 0 ? 1.6f : 1.1f, System.Drawing.Drawing2D.DashStyle.Dash, d == 0 ? 210 : 150);
+                        etiquetas.Add((p, k.Nombre + " D" + (d + 1), col, d == 0 ? 3 : 2, k));
+                    }
+                    if (CapasZero && !double.IsNaN(L.ZeroVol))
+                    {
+                        raya?.Invoke(L.ZeroVol, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
+                        etiquetas.Add((L.ZeroVol, k.Nombre + " 0Γ", col, 1, k));
+                    }
+                }
+                if (CapasMajors)
+                {
+                    bool porOi = L.MaxAbsVol <= 0;
+                    double mp = porOi ? L.MpOi : L.MpVol, mn = porOi ? L.MnOi : L.MnVol;
+                    bool mpEsDom = L.Doms.Any(d => d.Fut == mp), mnEsDom = L.Doms.Any(d => d.Fut == mn);
+                    if (!double.IsNaN(mp) && !mpEsDom && Math.Abs(mp - futuro) <= radioMajors)
+                    { raya?.Invoke(mp, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); etiquetas.Add((mp, k.Nombre + " +Γ", col, 1, k)); }
+                    if (!double.IsNaN(mn) && !mnEsDom && Math.Abs(mn - futuro) <= radioMajors)
+                    { raya?.Invoke(mn, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); etiquetas.Add((mn, k.Nombre + " −Γ", col, 1, k)); }
+                }
+            }
+            return etiquetas;
+        }
+
+        /// <summary>Los renglones de las capas para la escalera primaria (nombre corto, precio, color). Vacio sin capas.</summary>
+        private List<(string N, double P, Color C)> FilasCapas()
+        {
+            var salida = new List<(string N, double P, Color C)>();
+            var activas = _capas.Where(CapaActiva).ToList();
+            if (activas.Count == 0) return salida;
+            var lecturas = new Dictionary<CapaLibro, GammaHoyNucleo.Lectura>();
+            double futuro;
+            lock (_candado) { futuro = _futuro; foreach (var k in activas) lecturas[k] = k.L; }
+            foreach (var e in EtiquetasCapas(activas, lecturas, futuro, null)) salida.Add((e.Texto, e.Precio, e.Col));
+            return salida;
+        }
+
         /// <summary>Dibujo de las capas, disposicion C "superpuestas" (elegida por el operador el 15-09 entre tres previews):
         /// todas las barras nacen en los bordes como las primarias (izquierda: gamma x volumen desde el borde izquierdo;
         /// derecha: convexidad desde el borde de la escalera), transparentes y la mas larga atras, asi donde dos fuentes
@@ -462,7 +515,6 @@ namespace PythiaGex
                 bool verConv = VerConvexidad && CapasConvexidad;
                 int anchoDer = Math.Max(20, (int)(ancho * 0.7));
                 double futuro; lock (_candado) futuro = _futuro;
-                double radioMajors = double.IsNaN(futuro) ? double.MaxValue : futuro * (double)CapasMajorsRadioPct / 100.0;
                 var lecturas = new Dictionary<CapaLibro, GammaHoyNucleo.Lectura>();
                 foreach (var k in activas) { GammaHoyNucleo.Lectura L; lock (_candado) L = k.L; lecturas[k] = L; }
 
@@ -539,36 +591,7 @@ namespace PythiaGex
                 }
 
                 // 4) rayas y etiquetas (precio, texto corto, color, peso)
-                var etiquetas = new List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)>();
-                foreach (var k in activas)
-                {
-                    var L = lecturas[k]; if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
-                    var col = k.Color;
-                    if (CapasDominantes)
-                    {
-                        for (int d = 0; d < L.Doms.Count; d++)
-                        {
-                            double p = L.Doms[d].Fut;
-                            raya(p, col, d == 0 ? 1.6f : 1.1f, System.Drawing.Drawing2D.DashStyle.Dash, d == 0 ? 210 : 150);
-                            etiquetas.Add((p, k.Nombre + " D" + (d + 1), col, d == 0 ? 3 : 2, k));
-                        }
-                        if (CapasZero && !double.IsNaN(L.ZeroVol))
-                        {
-                            raya(L.ZeroVol, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
-                            etiquetas.Add((L.ZeroVol, k.Nombre + " 0Γ", col, 1, k));
-                        }
-                    }
-                    if (CapasMajors)
-                    {
-                        bool porOi = L.MaxAbsVol <= 0;
-                        double mp = porOi ? L.MpOi : L.MpVol, mn = porOi ? L.MnOi : L.MnVol;
-                        bool mpEsDom = L.Doms.Any(d => d.Fut == mp), mnEsDom = L.Doms.Any(d => d.Fut == mn);
-                        if (!double.IsNaN(mp) && !mpEsDom && Math.Abs(mp - futuro) <= radioMajors)
-                        { raya(mp, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); etiquetas.Add((mp, k.Nombre + " +Γ", col, 1, k)); }
-                        if (!double.IsNaN(mn) && !mnEsDom && Math.Abs(mn - futuro) <= radioMajors)
-                        { raya(mn, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); etiquetas.Add((mn, k.Nombre + " −Γ", col, 1, k)); }
-                    }
-                }
+                var etiquetas = EtiquetasCapas(activas, lecturas, futuro, raya);
                 if (Rayas == EstiloRayas.Ninguna) return;
 
                 // 5) el rotulo corto, adentro de la barra de esa fuente en ese precio si entra; si no, pegado a la punta.
@@ -600,6 +623,8 @@ namespace PythiaGex
                 }
 
                 // 6) el precio, en una columna pegada al eje, en el color de su fuente, ordenado y sin solapes
+                //    (solo si la escalera primaria esta apagada: si esta prendida, los precios van ADENTRO de ella)
+                if (!VerEscalera)
                 {
                     var orden = etiquetas.OrderByDescending(r => r.Precio).ThenByDescending(r => r.Peso).ToList();
                     int anchoMax = orden.Count == 0 ? 0 : orden.Max(r => g.MeasureString(r.Precio.ToString("N0", es) + " " + r.Texto, fRot).Width) + 6;

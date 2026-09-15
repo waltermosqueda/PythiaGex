@@ -2028,6 +2028,10 @@ namespace PythiaGex
             Add("0Γ vol", zeroVol, ColZero); Add("0Γ ayer", zeroOi, Color.FromArgb(160, 160, 170));
             Add("+Γ", mpVol, ColPos); Add("−Γ", mnVol, ColNeg);
             for (int i = 0; i < doms.Count; i++) Add("D" + (i + 1), doms[i].Fut, ColDom);
+            // capas (15-09): con capas activas la primaria es fantasma y no lista sus niveles; los de las capas van aca,
+            // en la misma escalera, con la misma regla de no pisarse (marcados con ▮ para dibujarlos como caja de color)
+            if (PrimariaSilenciada()) filas.Clear();
+            foreach (var fc in FilasCapas()) filas.Add(("▮" + fc.N, fc.P, fc.C, false));
             filas.Add(("", futuro, Color.FromArgb(31, 143, 124), true));
             filas.Sort((a, b) => b.P.CompareTo(a.P));
             int n = filas.Count; var y = new int[n]; var alt = new int[n]; var enPant = new bool[n];
@@ -2052,6 +2056,13 @@ namespace PythiaGex
                     continue;
                 }
                 double dist = q.P - futuro;
+                if (q.N.StartsWith("▮"))
+                {
+                    g.FillRectangle(Color.FromArgb(235, q.C), new Rectangle(rect.Left + 2, y[i], rect.Width - 4, alt[i] - 1));
+                    g.DrawString(q.N.Substring(1) + " " + q.P.ToString("N0", es) + " " + (dist >= 0 ? "+" : "") + dist.ToString("0", es), f, Color.FromArgb(250, ColFondo), rect.Left + 6, y[i] + 1);
+                    if (enPant[i]) g.FillRectangle(Color.FromArgb(230, q.C), new Rectangle(rect.Right - 5, y[i] + hf / 2, 5, 2));
+                    continue;
+                }
                 string izq = q.N + " " + q.P.ToString("N0", es) + " " + (dist >= 0 ? "+" : "") + dist.ToString("0", es);
                 g.FillRectangle(Color.FromArgb(230, q.C), new Rectangle(rect.Left + 3, y[i] + 2, 3, hf - 2));
                 g.DrawString(izq, f, Color.FromArgb(240, ColTexto), rect.Left + 9, y[i] + 1);
