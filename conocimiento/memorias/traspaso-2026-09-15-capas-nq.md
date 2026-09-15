@@ -1,6 +1,6 @@
 ---
 name: traspaso-2026-09-15-capas-nq
-description: "Pedido del 15-09: en un grafico de NQ/MNQ ver a la vez barras y dominantes de QQQ, TQQQ, NDX y Rithmic, cada una de un color y con llave. HECHO por Fable (bloques 1-3, commits 1c09a4d3/a4a191b5/67d023ab): GammaHoyCapas.cs, DLL 1.10 instalado 13:55 con todas las capas apagadas, AUDIT de QQQ identico antes/despues. Despues, con \"hacelo vos todo\": push hecho, las 4 capas prendidas en el MNQ de QQQ y VISTAS en pantalla, capas_nq.py coincide (K 704/705); TQQQ se archiva desde las 17:05 UTC pero flaco (7 strikes, sin 0DTE los martes): ensanchar linea_flaca. Bloque 5 (14:50): SPX, SPY y ES (viva local del MES) llevados a NQ por BETA medida en la rueda (apal = 1/beta, SUPUESTA=1 hasta 13 pares), centinela por capa + capas_respeto.py (cada fuente contra placebo) + conteo de toques en pantalla; las 7 capas auditadas: strikes coinciden. Trampa central: TQQQ es 3x; un muro de SPX no es un precio de NQ."
+description: "Pedido del 15-09: en un grafico de NQ/MNQ ver a la vez barras y dominantes de QQQ, TQQQ, NDX y Rithmic, cada una de un color y con llave. HECHO por Fable (bloques 1-3, commits 1c09a4d3/a4a191b5/67d023ab): GammaHoyCapas.cs, DLL 1.10 instalado 13:55 con todas las capas apagadas, AUDIT de QQQ identico antes/despues. Despues, con \"hacelo vos todo\": push hecho, las 4 capas prendidas en el MNQ de QQQ y VISTAS en pantalla, capas_nq.py coincide (K 704/705); TQQQ se archiva desde las 17:05 UTC pero flaco (7 strikes, sin 0DTE los martes): ensanchar linea_flaca. Bloque 5 (14:50): SPX, SPY y ES (viva local del MES) llevados a NQ por BETA medida en la rueda (apal = 1/beta, SUPUESTA=1 hasta 13 pares), centinela por capa + capas_respeto.py (cada fuente contra placebo) + conteo de toques en pantalla; las 7 capas auditadas: strikes coinciden. Bloque 6 (16:00): el operador dejo solo NDX/SPX/SPY y dijo OLVIDATE DE OPUS, sigue Fable; perfil derecho y majors por capa en su color; beta NQ/ES con velas compartidas de los dos graficos (VelasCompartidas). Trampa central: TQQQ es 3x; un muro de SPX no es un precio de NQ."
 metadata: 
   node_type: memory
   type: project
@@ -43,6 +43,13 @@ Lo decidido ahi, para no relitigar:
 
 **Why:** el operador pidio explicitamente que Opus pueda seguir "sin romper ni hacer cosas ilogicas";
 el riesgo real es tocar la primaria o mapear TQQQ como si fuera lineal.
+
+Bloque 6 (15-09 16:00): el operador APAGO QQQ, TQQQ, Rithmic y ES a proposito para enfocarse en NDX, SPX y SPY,
+que a simple vista le coinciden con los rechazos (con la advertencia medida: grilla mas fina = mas rayas cerca
+de cualquier precio, y el contador estricto dio 0 toques ese dia). Dijo "olvidate de Opus, seguis vos": el
+archivo de traspaso queda como registro de trabajo. Agregado: perfil derecho (convexidad) y majors por capa en
+su color, y la beta medida con las velas de NQ y de MES por una pizarra estatica del DLL (la beta por spot del
+libro fallo: r2 0). En 0DTE la convexidad de un strike es casi menos su gamma: el perfil derecho es un espejo.
 
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
