@@ -381,7 +381,7 @@ namespace PythiaGex
             var activas = _capas.Where(CapaActiva).ToList();
             if (activas.Count == 0) return;
             int anchoCapa = Math.Max(12, (int)(ancho * 0.45));
-            int xLey = x0 + ancho + 8;
+            int xLey = Math.Max(x0 + ancho + 8, x0 + 235);   // a la derecha del cuadro Account de ATAS (visto el 15-09: lo pisaba)
             for (int i = 0; i < activas.Count; i++)
             {
                 var k = activas[i];
