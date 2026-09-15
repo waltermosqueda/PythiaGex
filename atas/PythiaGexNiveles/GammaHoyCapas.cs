@@ -186,10 +186,6 @@ namespace PythiaGex
         [Range(15, 100)]
         public int CapasAnchoPct { get; set; } = 35;
 
-        [Display(Name = "Capas: niveles como lineas nativas con rotulo EN EL EJE", GroupName = "5. Capas extra (NQ)", Order = 16,
-                 Description = "Prendido: cada nivel de cada capa es una linea de ATAS (LineSeries) en el color de su fuente, y ATAS le pone el precio adentro del eje y el texto ('SPX D1 ▲') sobre la linea. Apagado: las rayas y etiquetas las dibuja el indicador en su carril.")]
-        public bool CapasEnEje { get; set; } = true;
-
         [Display(Name = "Capas: estela de las dominantes por vela (guiones)", GroupName = "5. Capas extra (NQ)", Order = 17,
                  Description = "Un guion por vela, en el color de la fuente, donde estaba cada dominante en ese momento (D1 grueso, D2 fino). El pasado se rebobina desde el archivo por minuto de la nube al arrancar; el presente se va agregando en vivo. Asi se ve como se comporto cada nivel contra el precio.")]
         public bool CapasEstela { get; set; } = true;
@@ -215,68 +211,6 @@ namespace PythiaGex
         };
         private DateTime _diaToques = DateTime.MinValue;
         private bool _pintandoCapas;
-
-        // los niveles de las capas como lineas nativas de ATAS: ATAS las dibuja, les pone el precio en el eje y el texto
-        private const int LINEAS_EJE = 16;
-        private readonly LineSeries[] _lineasEje = new LineSeries[LINEAS_EJE];
-        private static System.Windows.Media.Color Wpf(Color c) => System.Windows.Media.Color.FromArgb(c.A, c.R, c.G, c.B);
-
-        private void InicializarLineasEje()
-        {
-            for (int i = 0; i < LINEAS_EJE; i++)
-            {
-                var ls = new LineSeries("capa_eje_" + i, "Capa nivel " + (i + 1))
-                {
-                    Color = Wpf(Color.FromArgb(0, 0, 0, 0)), Width = 1,
-                    UseScale = false, IsHidden = true, Value = 0, Text = ""
-                };
-                _lineasEje[i] = ls;
-                LineSeries.Add(ls);
-            }
-        }
-
-        /// <summary>Vuelca los niveles de las capas (agrupados si coinciden) a las lineas nativas: valor, texto, color, estilo.
-        /// Se llama al final de RepreciarCapas. Con CapasEnEje apagado, todas quedan ocultas.</summary>
-        private void ActualizarLineasEje(double futuro)
-        {
-            var activas = _capas.Where(CapaActiva).ToList();
-            var lecturas = new Dictionary<CapaLibro, GammaHoyNucleo.Lectura>();
-            lock (_candado) foreach (var k in activas) lecturas[k] = k.L;
-            var grupos = new List<List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)>>();
-            if (CapasEnEje && activas.Count > 0 && Rayas != EstiloRayas.Ninguna)
-            {
-                double tolFusion = double.IsNaN(futuro) ? 0 : futuro * (double)CapasFusionPct / 100.0;
-                string TipoDe(string texto) { var t = texto.Substring(texto.IndexOf(' ') + 1); return t.StartsWith("D") ? "D" : t; }
-                foreach (var e in EtiquetasCapas(activas, lecturas, futuro, null).OrderByDescending(r => r.Precio))
-                {
-                    var ult = grupos.Count > 0 ? grupos[grupos.Count - 1] : null;
-                    if (ult != null && tolFusion > 0 && ult[0].Precio - e.Precio <= tolFusion && !ult.Any(z => z.K == e.K) && TipoDe(ult[0].Texto) == TipoDe(e.Texto)) ult.Add(e);
-                    else grupos.Add(new List<(double, string, Color, int, CapaLibro)> { e });
-                }
-            }
-            for (int i = 0; i < LINEAS_EJE; i++)
-            {
-                var ls = _lineasEje[i];
-                if (ls == null) continue;
-                if (i >= grupos.Count) { if (!ls.IsHidden) { ls.IsHidden = true; ls.Text = ""; } continue; }
-                var gr = grupos[i];
-                double pm = gr.Count == 1 ? gr[0].Precio : gr.Average(z => z.Precio);
-                string tipo = gr[0].Texto.Substring(gr[0].Texto.IndexOf(' ') + 1);
-                string sentido = tipo.StartsWith("D") ? (pm > futuro ? " ▲" : " ▼") : tipo == "0Γ" ? " ↕" : "";
-                string texto = string.Join("·", gr.Select(z => z.K.Nombre)) + " " + tipo + sentido;
-                bool dom = tipo.StartsWith("D");
-                var col = gr.Count == 1 ? gr[0].Col : ColTexto;
-                if (ls.Value != (decimal)pm) ls.Value = (decimal)pm;
-                if (ls.Text != texto) ls.Text = texto;
-                var colWpf = Wpf(col);
-                if (ls.Color != colWpf) ls.Color = colWpf;
-                int w = dom ? (tipo == "D1" ? 2 : 1) : 1;
-                if (ls.Width != w) ls.Width = w;
-                var estilo = dom ? OFT.Rendering.Settings.LineDashStyle.Dash : OFT.Rendering.Settings.LineDashStyle.Dot;
-                if (ls.LineDashStyle != estilo) ls.LineDashStyle = estilo;
-                if (ls.IsHidden) ls.IsHidden = false;
-            }
-        }
 
         // la beta NQ/ES medida con las velas compartidas (una para todas las capas del S&P)
         private double _betaSp = 1.0, _betaR2 = double.NaN;
@@ -557,7 +491,6 @@ namespace PythiaGex
                         + " toques=" + k.Toques + " rebotes=" + k.Rebotes);
                 }
             }
-            try { ActualizarLineasEje(futuro); } catch (Exception e) { Registrar(e); }
         }
 
         /// <summary>Los niveles de cada capa activa, para el centinela: <capa>_dom0, <capa>_dom1, <capa>_zero_vol,
@@ -798,8 +731,6 @@ namespace PythiaGex
                 }
 
                 // 4) niveles: se listan sin dibujar, se agrupan los que coinciden, y recien ahi se dibujan las rayas
-                //    (con CapasEnEje las lineas y sus rotulos son nativos de ATAS: aca no se dibuja nada mas)
-                if (CapasEnEje) return;
                 var etiquetas = EtiquetasCapas(activas, lecturas, futuro, null);
                 if (Rayas == EstiloRayas.Ninguna || etiquetas.Count == 0) return;
                 double tolFusion = double.IsNaN(futuro) ? 0 : futuro * (double)CapasFusionPct / 100.0;
