@@ -19,15 +19,42 @@ namespace PythiaGex
         public double Rueda = double.NaN;
     }
 
+    /// <summary>La pizarra compartida del DLL (15-09): cada grafico con Gamma Hoy anota su ultimo precio por minuto
+    /// bajo su raiz (ES, NQ, RTY). Con eso el grafico de NQ mide la beta NQ/ES con las velas de los DOS mercados a la
+    /// misma hora, sin depender del spot del libro (que llega cada 5 min por el cache de la nube y salio con r2 0).
+    /// Vive mientras ATAS esta abierto; con un solo grafico no hay beta y se dice.</summary>
+    public static class VelasCompartidas
+    {
+        private static readonly object _llave = new();
+        private static readonly Dictionary<string, SortedDictionary<long, double>> _series = new();
+
+        public static void Anotar(string raiz, DateTime utc, double precio)
+        {
+            if (string.IsNullOrEmpty(raiz) || precio <= 0) return;
+            long min = utc.Ticks / TimeSpan.TicksPerMinute;
+            lock (_llave)
+            {
+                if (!_series.TryGetValue(raiz, out var s)) { s = new SortedDictionary<long, double>(); _series[raiz] = s; }
+                s[min] = precio;
+                if (s.Count > 720) s.Remove(s.Keys.First());
+            }
+        }
+
+        public static SortedDictionary<long, double> Serie(string raiz)
+        {
+            lock (_llave) return _series.TryGetValue(raiz, out var s) ? new SortedDictionary<long, double>(s) : new SortedDictionary<long, double>();
+        }
+    }
+
     /// <summary>Una capa extra (15-09): un libro mas, calculado con el MISMO nucleo y dibujado con su color
     /// encima del grafico de NQ/MNQ. Solo baja su cadena, corre Calcular() y se dibuja; nada de la lectura
     /// primaria (centinela, gatillos, AUDIT, archivo, pelotitas) la lee. Ver conocimiento/traspasos/2026-09-15-capas-nq.md.
     ///
     /// Capas del mismo subyacente (QQQ, TQQQ, NDX, Rithmic NQ): el strike va al futuro por razon (y por
     /// apalancamiento en TQQQ). Capas de OTRO subyacente (SPX, SPY, ES): un muro de SPX no es un precio de NQ;
-    /// se lleva por la distancia porcentual al spot, multiplicada por la beta NQ/S&P MEDIDA en la rueda
-    /// (minuto a minuto, spot del libro alineado contra la vela de NQ): Fut = F x (1 + beta x (K/S - 1)),
-    /// que es el mismo mapeo del apalancamiento con apalancamiento = 1/beta. Sin muestra, beta = 1 y se dice SUPUESTA.</summary>
+    /// se lleva por la distancia porcentual al spot, multiplicada por la beta NQ/S&P MEDIDA con las velas de NQ
+    /// y de ES: Fut = F x (1 + beta x (K/S - 1)), que es el mismo mapeo del apalancamiento con
+    /// apalancamiento = 1/beta. Sin muestra, beta = 1 y se dice SUPUESTA.</summary>
     public sealed class CapaLibro
     {
         public enum TipoCapa { EtfPorRazon, IndiceConBase, RithmicViva, VivaLocal }
@@ -47,11 +74,10 @@ namespace PythiaGex
         public DateTime UltimaBajada = DateTime.MinValue, UltimoCalculo = DateTime.MinValue, UltimoAudit = DateTime.MinValue;
         public Feed.Cadena CCalculada;                          // con que cadena se calculo L (referencia)
 
-        // beta NQ/S&P: pares (ln spot del libro, ln NQ alineado) por cadena nueva; regresion de los retornos por minuto
-        public readonly List<(double LnSpot, double LnNq, DateTime Ts)> Pares = new();
-        public double Beta = double.NaN, BetaR2 = double.NaN;
+        // la beta con la que se dibuja (la mide el indicador con las velas compartidas; manual manda)
+        public double Beta = 1.0, BetaR2 = double.NaN;
         public int BetaN;
-        public string BetaOrigen = "";
+        public string BetaOrigen = "SUPUESTA (sin velas)";
 
         // toques de hoy en las dominantes de esta capa (contados en el indicador, SIN placebo: el laboratorio juzga)
         public int Toques, Rebotes;
@@ -70,48 +96,6 @@ namespace PythiaGex
             if (Tipo == TipoCapa.VivaLocal) return "hace " + Math.Max(0, (DateTime.UtcNow - c.GeneradoUtc).TotalMinutes).ToString("0", es) + " min";
             if (c.EsFuturo) return "vivo";
             return (c.EdadMin + 902.0 / 60.0).ToString("0", es) + " min";
-        }
-
-        /// <summary>Un par nuevo (spot del libro, NQ alineado) cuando la razon salio de la vela alineada.</summary>
-        public void AnotarPar(Feed.Cadena c)
-        {
-            if (c == null || c.SpotIdx <= 0 || c.Escala <= 0 || c.EscalaOrigen != "vela alineada") return;
-            var ts = c.GeneradoUtc == default(DateTime) ? DateTime.UtcNow : c.GeneradoUtc;
-            lock (Pares)
-            {
-                if (Pares.Count > 0 && (ts - Pares[Pares.Count - 1].Ts).TotalSeconds < 30) return;
-                Pares.Add((Math.Log(c.SpotIdx), Math.Log(c.Escala * c.SpotIdx), ts));
-                if (Pares.Count > 180) Pares.RemoveAt(0);
-            }
-        }
-
-        /// <summary>beta = pendiente de los retornos por minuto de NQ sobre los del libro (sin intercepto), acotada a [0,4, 3];
-        /// hace falta 13+ pares seguidos (huecos de mas de 10 min se saltean). Manual > 0 manda. Sin muestra: 1, SUPUESTA.</summary>
-        public void MedirBeta(double manual)
-        {
-            if (!PorBeta) { if (Apalancamiento <= 0) Apalancamiento = 1; return; }
-            if (manual > 0) { Beta = manual; BetaOrigen = "manual"; BetaN = 0; BetaR2 = double.NaN; Apalancamiento = 1.0 / Beta; return; }
-            double sxy = 0, sxx = 0, syy = 0; int n = 0;
-            lock (Pares)
-            {
-                for (int i = 1; i < Pares.Count; i++)
-                {
-                    if ((Pares[i].Ts - Pares[i - 1].Ts).TotalMinutes > 10) continue;
-                    double dx = Pares[i].LnSpot - Pares[i - 1].LnSpot, dy = Pares[i].LnNq - Pares[i - 1].LnNq;
-                    sxy += dx * dy; sxx += dx * dx; syy += dy * dy; n++;
-                }
-            }
-            if (n >= 13 && sxx > 0 && syy > 0 && (sxy * sxy) / (sxx * syy) >= 0.2)
-            {
-                // r2 < 0,2 = los retornos no se parecen (visto el 15-09 con la viva de ES: beta 0,4 y r2 0,00, basura):
-                // ahi no hay beta medida, se sigue con 1 y se dice
-                double b = sxy / sxx;
-                Beta = Math.Max(0.4, Math.Min(3.0, b)); BetaN = n; BetaR2 = (sxy * sxy) / (sxx * syy);
-                BetaOrigen = "medida" + (b != Beta ? " ACOTADA" : "");
-            }
-            else if (n >= 13 && sxx > 0 && syy > 0) { Beta = 1.0; BetaN = n; BetaR2 = (sxy * sxy) / (sxx * syy); BetaOrigen = "SUPUESTA (r2 " + BetaR2.ToString("0.00", CultureInfo.InvariantCulture) + " bajo, n " + n + ")"; }
-            else { Beta = 1.0; BetaN = n; BetaR2 = double.NaN; BetaOrigen = "SUPUESTA (n " + n + " < 13)"; }
-            Apalancamiento = 1.0 / Beta;
         }
     }
 
@@ -133,11 +117,11 @@ namespace PythiaGex
         public bool CapaNdx { get; set; } = false;
 
         [Display(Name = "Capa Rithmic (lima)", GroupName = "5. Capas extra (NQ)", Order = 4,
-                 Description = "Las opciones de NQ desde tu ATAS (la cadena viva). Necesita 'Cadena viva de Rithmic' prendida; no abre una segunda suscripcion.")]
+                 Description = "Las opciones de NQ desde tu ATAS (la cadena viva). Necesita 'Cadena viva de Rithmic' prendida; no abre una segunda suscripcion. OJO: su volumen arranca en cero con cada reinicio de ATAS.")]
         public bool CapaRithmic { get; set; } = false;
 
         [Display(Name = "Capa SPX (violeta): otro subyacente, por beta", GroupName = "5. Capas extra (NQ)", Order = 5,
-                 Description = "Libro de SPX 0DTE por volumen (CBOE, 902 s tarde) llevado a NQ por la distancia porcentual al spot x beta NQ/SPX medida en la rueda. Un muro de SPX NO es un precio de NQ: es 'donde estaria NQ si el S&P llega a su muro y NQ lo sigue con su beta'. Se dice la beta y si es medida o supuesta.")]
+                 Description = "Libro de SPX 0DTE por volumen (CBOE, 902 s tarde) llevado a NQ por la distancia porcentual al spot x beta NQ/ES medida con las velas de los dos graficos. Un muro de SPX NO es un precio de NQ: es 'donde estaria NQ si el S&P llega a su muro y NQ lo sigue con su beta'. Se dice la beta y si es medida o supuesta.")]
         public bool CapaSpx { get; set; } = false;
 
         [Display(Name = "Capa SPY (turquesa): otro subyacente, por beta", GroupName = "5. Capas extra (NQ)", Order = 6,
@@ -148,22 +132,30 @@ namespace PythiaGex
                  Description = "Las opciones de ES por Rithmic que graba el grafico de MES cada minuto (viva-ES-<dia>.jsonl, 'Guardar la cadena viva'); sin segunda suscripcion. Strikes del futuro ES, Black-76, llevados a NQ por beta. Si el grafico de MES no esta abierto, dice hace cuanto es el dato.")]
         public bool CapaEs { get; set; } = false;
 
-        [Display(Name = "Beta NQ vs S&P (0 = medir en la rueda)", GroupName = "5. Capas extra (NQ)", Order = 8,
-                 Description = "Cuanto se mueve NQ por cada 1 % del S&P. 0 = se mide con los retornos por minuto de la rueda (13+ pares); un valor fijo manda sobre la medida y se rotula 'manual'.")]
+        [Display(Name = "Beta NQ vs S&P (0 = medir con las velas de NQ y MES)", GroupName = "5. Capas extra (NQ)", Order = 8,
+                 Description = "Cuanto se mueve NQ por cada 1 % del S&P. 0 = se mide con los retornos por minuto de las velas de este grafico y del grafico de MES (los dos tienen que estar abiertos), ultimos 90 minutos, 20+ pares y r2 >= 0,2; si no, 1 y se rotula SUPUESTA. Un valor fijo manda y se rotula 'manual'.")]
         [Range(0, 3)]
         public decimal BetaManual { get; set; } = 0m;
 
-        [Display(Name = "Capas: dibujar barras", GroupName = "5. Capas extra (NQ)", Order = 10)]
+        [Display(Name = "Capas: dibujar barras (izquierda: gamma x volumen)", GroupName = "5. Capas extra (NQ)", Order = 10)]
         public bool CapasBarras { get; set; } = true;
 
-        [Display(Name = "Capas: dibujar dominantes", GroupName = "5. Capas extra (NQ)", Order = 11)]
+        [Display(Name = "Capas: dibujar el perfil derecho (convexidad)", GroupName = "5. Capas extra (NQ)", Order = 11,
+                 Description = "Por capa, en su color, a la izquierda de la convexidad primaria: cuanto cambia el GEX de cada strike si el precio sube 1 % (mismo libro que la primaria: volumen si hay, OI si no). Negativas con borde rojo.")]
+        public bool CapasConvexidad { get; set; } = true;
+
+        [Display(Name = "Capas: dibujar dominantes", GroupName = "5. Capas extra (NQ)", Order = 12)]
         public bool CapasDominantes { get; set; } = true;
 
-        [Display(Name = "Capas: dibujar el zero gamma de cada una", GroupName = "5. Capas extra (NQ)", Order = 12)]
+        [Display(Name = "Capas: dibujar majors (+Γ / −Γ de cada libro)", GroupName = "5. Capas extra (NQ)", Order = 13,
+                 Description = "La barra positiva mas grande y la negativa mas grande de cada capa, punteadas, en su color, con rotulo.")]
+        public bool CapasMajors { get; set; } = true;
+
+        [Display(Name = "Capas: dibujar el zero gamma de cada una", GroupName = "5. Capas extra (NQ)", Order = 14)]
         public bool CapasZero { get; set; } = false;
 
-        [Display(Name = "Capas: contar toques y rebotes de hoy (sin placebo)", GroupName = "5. Capas extra (NQ)", Order = 13,
-                 Description = "Por capa: cuantas veces el precio llego a una dominante desde lejos y cuantas rebato (misma regla que el laboratorio: banda, llegada de lejos, R a favor antes que R en contra en 20 min). Es un CONTEO del dia, sin placebo: el laboratorio (capas_respeto.py) es el que juzga.")]
+        [Display(Name = "Capas: contar toques y rebotes de hoy (sin placebo)", GroupName = "5. Capas extra (NQ)", Order = 15,
+                 Description = "Por capa: cuantas veces el precio llego a una dominante desde lejos y cuantas reboto (misma regla que el laboratorio: banda, llegada de lejos, R a favor antes que R en contra en 20 min). Es un CONTEO del dia, sin placebo: el laboratorio (capas_respeto.py) es el que juzga.")]
         public bool CapasToques { get; set; } = true;
 
         private readonly CapaLibro[] _capas =
@@ -177,6 +169,12 @@ namespace PythiaGex
             new CapaLibro("ES", "ES", CapaLibro.TipoCapa.VivaLocal, 1, Color.FromArgb(255, 150, 120), porBeta: true),
         };
         private DateTime _diaToques = DateTime.MinValue;
+
+        // la beta NQ/ES medida con las velas compartidas (una para todas las capas del S&P)
+        private double _betaSp = 1.0, _betaR2 = double.NaN;
+        private int _betaN;
+        private string _betaOrigen = "SUPUESTA (sin velas)";
+        private DateTime _ultimaBeta = DateTime.MinValue;
 
         /// <summary>Solo en NQ/MNQ (no inventar capas de ES) y solo si su llave esta prendida.</summary>
         private bool CapaActiva(CapaLibro k)
@@ -197,6 +195,38 @@ namespace PythiaGex
             return false;
         }
 
+        /// <summary>beta = pendiente de los retornos por minuto de NQ (este grafico) sobre los de ES (el grafico de MES),
+        /// minutos comunes de los ultimos 90, sin intercepto; 20+ pares y r2 >= 0,2, acotada a [0,4; 3]. Manual manda.
+        /// Se recalcula una vez por minuto.</summary>
+        private void MedirBetaVelas(DateTime ahoraUtc)
+        {
+            if ((ahoraUtc - _ultimaBeta).TotalSeconds < 60) return;
+            _ultimaBeta = ahoraUtc;
+            double manual = (double)BetaManual;
+            if (manual > 0) { _betaSp = manual; _betaN = 0; _betaR2 = double.NaN; _betaOrigen = "manual"; return; }
+            var nq = VelasCompartidas.Serie(Raiz());
+            var es = VelasCompartidas.Serie("ES");
+            long desde = ahoraUtc.Ticks / TimeSpan.TicksPerMinute - 90;
+            var comunes = nq.Keys.Where(m => m >= desde && es.ContainsKey(m)).OrderBy(m => m).ToList();
+            double sxy = 0, sxx = 0, syy = 0; int n = 0;
+            for (int i = 1; i < comunes.Count; i++)
+            {
+                if (comunes[i] - comunes[i - 1] > 3) continue;
+                double dx = Math.Log(es[comunes[i]] / es[comunes[i - 1]]), dy = Math.Log(nq[comunes[i]] / nq[comunes[i - 1]]);
+                if (dx == 0 && dy == 0) continue;
+                sxy += dx * dy; sxx += dx * dx; syy += dy * dy; n++;
+            }
+            _betaN = n;
+            if (n >= 20 && sxx > 0 && syy > 0)
+            {
+                double r2 = (sxy * sxy) / (sxx * syy), b = sxy / sxx;
+                _betaR2 = r2;
+                if (r2 >= 0.2) { _betaSp = Math.Max(0.4, Math.Min(3.0, b)); _betaOrigen = "velas" + (b != _betaSp ? " ACOTADA" : ""); }
+                else { _betaSp = 1.0; _betaOrigen = "SUPUESTA (r2 " + r2.ToString("0.00", CultureInfo.InvariantCulture) + " bajo)"; }
+            }
+            else { _betaSp = 1.0; _betaR2 = double.NaN; _betaOrigen = es.Count == 0 ? "SUPUESTA (sin velas de MES: abrir su grafico)" : "SUPUESTA (n " + n + " < 20)"; }
+        }
+
         /// <summary>La capa Rithmic se refresca desde el temporizador (cada SegundosLibroRithmic), reusando la viva.
         /// Si la primaria ya es Rithmic, comparte su cadena.</summary>
         private void RefrescarCapaRithmic(DateTime ahora)
@@ -211,15 +241,21 @@ namespace PythiaGex
             catch (Exception e) { k.Error = e.Message; Registrar(e); }
         }
 
-        /// <summary>Un libro de otro subyacente (SPX, SPY, ES) o de un ETF: razon por vela alineada, par para la beta,
-        /// beta medida o manual, y el apalancamiento resultante en la cadena.</summary>
+        /// <summary>Un libro de otro subyacente (SPX, SPY, ES) o de un ETF: razon por vela alineada y el apalancamiento
+        /// (3 en TQQQ, 1/beta en el S&P) en la cadena.</summary>
         private void PrepararCapa(CapaLibro k, Feed.Cadena c, int retrasoSeg, string fuente, bool esFuturo)
         {
             EscalarCon(c, k.Nombre, k.Razon, retrasoSeg);
             c.EsFuturo = esFuturo;
             c.Fuente = fuente;
-            if (k.PorBeta) { k.AnotarPar(c); k.MedirBeta((double)BetaManual); }
+            if (k.PorBeta) AplicarBeta(k);
             c.Apalancamiento = k.Apalancamiento;
+        }
+
+        private void AplicarBeta(CapaLibro k)
+        {
+            k.Beta = _betaSp; k.BetaN = _betaN; k.BetaR2 = _betaR2; k.BetaOrigen = _betaOrigen;
+            k.Apalancamiento = 1.0 / Math.Max(0.1, _betaSp);
         }
 
         /// <summary>Baja las cadenas de las capas de CBOE y del viva local, en serie y cada una en su try: una que falle
@@ -281,12 +317,15 @@ namespace PythiaGex
         /// Se llama al final de RepreciarCon. AUDIT por capa cada 60 s, con reloj propio.</summary>
         private void RepreciarCapas(double futuro, DateTime ahoraUtc)
         {
+            try { MedirBetaVelas(ahoraUtc); } catch (Exception e) { Registrar(e); }
             foreach (var k in _capas)
             {
                 if (!CapaActiva(k)) { if (k.L != null) lock (_candado) k.L = null; continue; }
                 var c = k.C;
                 if (c == null) continue;
-                if (ReferenceEquals(c, k.CCalculada) && (ahoraUtc - k.UltimoCalculo).TotalSeconds < 5) continue;
+                bool betaCambio = k.PorBeta && k.Beta != _betaSp;
+                if (betaCambio) { AplicarBeta(k); c.Apalancamiento = k.Apalancamiento; }
+                if (!betaCambio && ReferenceEquals(c, k.CCalculada) && (ahoraUtc - k.UltimoCalculo).TotalSeconds < 5) continue;
                 var a = k.Nucleo.A; var de = _nucleo.A;
                 var t = typeof(GammaHoyNucleo.Ajustes);
                 foreach (var fi in t.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)) fi.SetValue(a, fi.GetValue(de));
@@ -372,31 +411,34 @@ namespace PythiaGex
             }
         }
 
-        /// <summary>Dibujo de las capas: una columna de barras por capa a la derecha de la columna primaria (cada
-        /// una normalizada a SU maximo; las negativas llevan un borde rojo), las dominantes como raya discontinua
-        /// del color de la capa con rotulo "D1 QQQ 29.150" en su propia columna a la derecha, y una leyenda abajo
-        /// (a la derecha de las barras, para no pisar el cuadro Account de ATAS) con la edad de cada dato, la beta
-        /// si es de otro subyacente y el conteo de toques de hoy. La primaria se dibuja despues (encima).</summary>
+        /// <summary>Dibujo de las capas, todo en el color de la capa: columna de barras (gamma x volumen) a la derecha de la
+        /// columna primaria; columna de convexidad a la izquierda de la convexidad primaria (perfil derecho); dominantes
+        /// (raya discontinua, rotulo "D1 SPX 29.150"), majors (punteada, "+Γ SPX" / "−Γ SPX") y zero opcional; y una
+        /// leyenda abajo con la edad del dato, la beta y el conteo de toques de hoy. La primaria se dibuja despues (encima).</summary>
         private void PintarCapas(RenderContext g, IChartContainer cont, Rectangle area, int piso, int x0, int ancho, int alto,
-                                 int xl0, int xl1, int altoRot, RenderFont fRot, CultureInfo es,
+                                 int xl0, int xl1, int xConv, int altoRot, RenderFont fRot, CultureInfo es,
                                  Action<double, Color, float, System.Drawing.Drawing2D.DashStyle, int> raya)
         {
             var activas = _capas.Where(CapaActiva).ToList();
             if (activas.Count == 0) return;
             int anchoCapa = Math.Max(12, (int)(ancho * 0.45));
             int xLey = Math.Max(x0 + ancho + 8, x0 + 235);   // a la derecha del cuadro Account de ATAS (visto el 15-09: lo pisaba)
+            int xConvPrim = xConv - (int)(ancho * 0.7);        // borde izquierdo de la convexidad primaria
+            bool verConv = VerConvexidad && CapasConvexidad;
+            int corrimientoRot = verConv ? activas.Count * (anchoCapa + 4) + 4 : 0;
             for (int i = 0; i < activas.Count; i++)
             {
                 var k = activas[i];
                 GammaHoyNucleo.Lectura L; lock (_candado) L = k.L;
-                int xk = x0 + ancho + 4 + i * (anchoCapa + 4);
+                int xk = x0 + ancho + 4 + i * (anchoCapa + 4);                    // columna izquierda (barras)
+                int xkDer = xConvPrim - 4 - i * (anchoCapa + 4);                  // borde derecho de la columna derecha (convexidad)
                 var col = k.Color;
 
                 // leyenda, una linea por capa (el numero en su propia linea, nunca al lado de un control)
                 string doms = L == null || L.Doms.Count == 0 ? "" : " · " + string.Join(" ", L.Doms.Select((d, j) => "D" + (j + 1) + " " + d.Fut.ToString("N0", es)));
                 string zero = L == null || double.IsNaN(L.ZeroVol) ? "" : " · 0Γ " + L.ZeroVol.ToString("N0", es);
                 string estado = L == null ? (k.C == null ? "sin dato" : "calculando") : k.Edad(es) + (L.SinBase ? " SIN BASE" : "");
-                string beta = !k.PorBeta ? "" : " · β " + (double.IsNaN(k.Beta) ? "?" : k.Beta.ToString("0.00", es)) + " " + (k.BetaOrigen.StartsWith("medida") ? "(n " + k.BetaN + (double.IsNaN(k.BetaR2) ? "" : ", r² " + k.BetaR2.ToString("0.00", es)) + ")" : k.BetaOrigen);
+                string beta = !k.PorBeta ? "" : " · β " + k.Beta.ToString("0.00", es) + " " + (k.BetaOrigen.StartsWith("velas") ? "(velas n " + k.BetaN + (double.IsNaN(k.BetaR2) ? "" : ", r² " + k.BetaR2.ToString("0.00", es)) + ")" : k.BetaOrigen);
                 string toques = !CapasToques ? "" : " · toques " + k.Toques + " rebota " + k.Rebotes + (k.Pendientes.Count > 0 ? " (+" + k.Pendientes.Count + " abierto)" : "");
                 string ley = "■ " + k.Nombre + " " + estado + beta + doms + zero + toques + (string.IsNullOrEmpty(k.Error) ? "" : " · " + k.Error);
                 int yl = piso - 4 - altoRot * (activas.Count - i);
@@ -405,45 +447,70 @@ namespace PythiaGex
                 g.DrawString(ley, fRot, Color.FromArgb(230, col), xLey, yl);
                 if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
 
-                if (CapasBarras)
+                bool porOi = L.MaxAbsVol <= 0;                 // de noche no hay volumen: OI, y la columna lo dice
+                double maxK = porOi ? L.MaxAbsOi : L.MaxAbsVol;
+                if (CapasBarras && maxK > 0)
                 {
-                    bool porOi = L.MaxAbsVol <= 0;                 // de noche no hay volumen: OI, y la columna lo dice
-                    double maxK = porOi ? L.MaxAbsOi : L.MaxAbsVol;
-                    if (maxK > 0)
+                    foreach (var s in L.Perfil)
                     {
-                        foreach (var s in L.Perfil)
-                        {
-                            double v = porOi ? s.GexOi : s.GexVol;
-                            if (v == 0) continue;
-                            bool fijo = L.Doms.Any(d => d.Fut == s.Fut);
-                            if (UmbralBarraPct > 0 && Math.Abs(v) < maxK * UmbralBarraPct / 100.0 && !fijo) continue;
-                            int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
-                            if (y < area.Top || y > piso) continue;
-                            double fr = Math.Sqrt(Math.Abs(v) / maxK);
-                            int w = Math.Max(1, (int)(fr * anchoCapa));
-                            g.FillRectangle(Color.FromArgb((int)(80 + 120 * fr), col), new Rectangle(xk, y - alto / 2, w, alto));
-                            if (v < 0) g.DrawLine(new RenderPen(Color.FromArgb(220, ColNeg), 1f), xk, y + alto / 2, xk + w, y + alto / 2);
-                        }
+                        double v = porOi ? s.GexOi : s.GexVol;
+                        if (v == 0) continue;
+                        bool fijo = L.Doms.Any(d => d.Fut == s.Fut);
+                        if (UmbralBarraPct > 0 && Math.Abs(v) < maxK * UmbralBarraPct / 100.0 && !fijo) continue;
+                        int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
+                        if (y < area.Top || y > piso) continue;
+                        double fr = Math.Sqrt(Math.Abs(v) / maxK);
+                        int w = Math.Max(1, (int)(fr * anchoCapa));
+                        g.FillRectangle(Color.FromArgb((int)(80 + 120 * fr), col), new Rectangle(xk, y - alto / 2, w, alto));
+                        if (v < 0) g.DrawLine(new RenderPen(Color.FromArgb(220, ColNeg), 1f), xk, y + alto / 2, xk + w, y + alto / 2);
                     }
                     g.DrawString(k.Nombre + (porOi ? " OI" : ""), fRot, Color.FromArgb(220, col), xk, area.Top + 8 + altoRot + 2);
                 }
 
+                // perfil derecho: la convexidad de cada strike (cuanto cambia su GEX si el precio sube 1 %), normalizada a la capa
+                if (verConv && L.MaxAbsConv > 0)
+                {
+                    foreach (var s in L.Perfil)
+                    {
+                        if (s.Conv == 0) continue;
+                        int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
+                        if (y < area.Top || y > piso) continue;
+                        double fr = Math.Sqrt(Math.Abs(s.Conv) / L.MaxAbsConv);
+                        if (UmbralBarraPct > 0 && fr * fr < UmbralBarraPct / 100.0) continue;
+                        int w = Math.Max(1, (int)(fr * anchoCapa));
+                        g.FillRectangle(Color.FromArgb((int)(80 + 120 * fr), col), new Rectangle(xkDer - w, y - alto / 2, w, alto));
+                        if (s.Conv < 0) g.DrawLine(new RenderPen(Color.FromArgb(220, ColNeg), 1f), xkDer - w, y + alto / 2, xkDer, y + alto / 2);
+                    }
+                    var mt = g.MeasureString("Δ" + k.Nombre, fRot);
+                    g.DrawString("Δ" + k.Nombre, fRot, Color.FromArgb(220, col), xkDer - mt.Width, area.Top + 8 + altoRot + 2);
+                }
+
+                void Rotulo(double p, string texto, int fila)
+                {
+                    int y; try { y = cont.GetYByPrice((decimal)p, false); } catch { return; }
+                    if (y < area.Top || y + altoRot > piso) return;
+                    var m = g.MeasureString(texto, fRot);
+                    int xt = xl1 - corrimientoRot - m.Width - 2 - i * (m.Width + 8);   // cada capa en su propia columna, de derecha a izquierda
+                    if (xt < xl0) xt = xl0;
+                    g.FillRectangle(Color.FromArgb(150, ColFondo), new Rectangle(xt - 1, y + 1 + fila * altoRot, m.Width + 2, altoRot));
+                    g.DrawString(texto, fRot, Color.FromArgb(230, col), xt, y + 1 + fila * altoRot);
+                }
                 if (CapasDominantes)
                 {
                     for (int d = 0; d < L.Doms.Count; d++)
                     {
                         double p = L.Doms[d].Fut;
                         raya(p, col, d == 0 ? 1.4f : 1.0f, System.Drawing.Drawing2D.DashStyle.Dash, d == 0 ? 190 : 140);
-                        int y; try { y = cont.GetYByPrice((decimal)p, false); } catch { continue; }
-                        if (y < area.Top || y + altoRot > piso) continue;
-                        string t = "D" + (d + 1) + " " + k.Nombre + " " + p.ToString("N0", es);
-                        var m = g.MeasureString(t, fRot);
-                        int xt = xl1 - m.Width - 2 - i * (m.Width + 8);   // cada capa en su propia columna, de derecha a izquierda
-                        if (xt < xl0) xt = xl0;
-                        g.FillRectangle(Color.FromArgb(150, ColFondo), new Rectangle(xt - 1, y + 1, m.Width + 2, altoRot));
-                        g.DrawString(t, fRot, Color.FromArgb(230, col), xt, y + 1);
+                        Rotulo(p, "D" + (d + 1) + " " + k.Nombre + " " + p.ToString("N0", es), 0);
                     }
-                    if (CapasZero) raya(L.ZeroVol, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
+                    if (CapasZero && !double.IsNaN(L.ZeroVol)) { raya(L.ZeroVol, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120); Rotulo(L.ZeroVol, "0Γ " + k.Nombre + " " + L.ZeroVol.ToString("N0", es), 0); }
+                }
+                if (CapasMajors)
+                {
+                    double mp = porOi ? L.MpOi : L.MpVol, mn = porOi ? L.MnOi : L.MnVol;
+                    bool mpEsDom = L.Doms.Any(d => d.Fut == mp), mnEsDom = L.Doms.Any(d => d.Fut == mn);
+                    if (!double.IsNaN(mp) && !mpEsDom) { raya(mp, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 130); Rotulo(mp, "+Γ " + k.Nombre + " " + mp.ToString("N0", es), 0); }
+                    if (!double.IsNaN(mn) && !mnEsDom) { raya(mn, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 130); Rotulo(mn, "−Γ " + k.Nombre + " " + mn.ToString("N0", es), 0); }
                 }
             }
         }

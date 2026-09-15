@@ -33,6 +33,7 @@ LOG = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "pythiagex-gammahoy.lo
 MULT = 100.0
 PISO_DIAS = 1.0 / 1440.0
 RADIO_DOM_PCT = 2.0     # "Dominantes: radio alrededor del precio (%)" por defecto
+PICO_RADIO_PCT = 0.35   # "Pico de GEX cerca del precio: radio (%)" por defecto; la convexidad en el precio suma ese radio
 CUANTAS = 2
 UNA_POR_LADO = True     # "Canal: una dominante por lado" (por defecto en el indicador)
 TASA = 0.045
@@ -125,6 +126,8 @@ def ultimo_audit(ticker):
         m = re.search(k + r"=(-?[0-9.]+|NaN)", ultimo)
         return float(m.group(1)) if m and m.group(1) != "NaN" else float("nan")
     doms = re.search(r"doms=(\S+)", ultimo)
+    conv_precio = re.search(r"convPrecio=(-?[0-9.]+)M", ultimo)
+    pico = re.search(r" pico=(-?[0-9.]+|NaN)", ultimo)
     doms = [float(x.split("=")[0]) for x in doms.group(1).split("/")] if doms and doms.group(1) else []
     return {
         "linea": ultimo, "hora": ultimo[:19], "fut": num("fut"), "S": num("S"),
@@ -132,6 +135,8 @@ def ultimo_audit(ticker):
         "zeroVol": num("zeroVol"), "mpVol": num("mpVol"), "mnVol": num("mnVol"), "doms": doms,
         "capa": "capa=" in ultimo, "apal": (lambda m: float(m.group(1)) if m else None)(re.search(r"apal_([0-9.]+)x", ultimo)),
         "beta": num("beta"), "betaOrigen": (lambda m: m.group(1) if m else "")(re.search(r"betaOrigen=(\S+)", ultimo)),
+        "convPrecio": float(conv_precio.group(1)) * 1e6 if conv_precio else float("nan"),
+        "pico": float(pico.group(1)) if pico and pico.group(1) != "NaN" else float("nan"),
     }
 
 
@@ -191,17 +196,20 @@ def recalcular(d, fut, razon, apal, ahora):
         return t
 
     por_k = {}
+    Sup = S * 1.01
     for f in filas:
         K, v, oic, oip, ivc, ivp, volc, volp = (float(f[0]), int(f[1]), *map(float, f[2:8]))
         T = max(dias_env[v], PISO_DIAS) / 365.0
         gv = (gam(S, K, T, ivc) * volc - gam(S, K, T, ivp) * volp) * MULT * S * S * 0.01
         go = (gam(S, K, T, ivc) * oic - gam(S, K, T, ivp) * oip) * MULT * S * S * 0.01
+        gv_up = (gam(Sup, K, T, ivc) * volc - gam(Sup, K, T, ivp) * volp) * MULT * Sup * Sup * 0.01
         if gv == 0 and go == 0:
             continue
-        e = por_k.setdefault(K, [0.0, 0.0])
+        e = por_k.setdefault(K, [0.0, 0.0, 0.0])
         e[0] += gv
         e[1] += go
-    perfil = sorted((K, al_futuro(K), gv, go) for K, (gv, go) in por_k.items())
+        e[2] += gv_up - gv          # convexidad por volumen: cuanto cambia el GEX del strike si S sube 1 %
+    perfil = sorted((K, al_futuro(K), gv, go, cv) for K, (gv, go, cv) in por_k.items())
 
     # zero: cruce de signo en el eje del LIBRO, grilla +-3 % x apalancamiento, 61 pasos, interpolado; se mapea al final
     amp = 0.03 * max(1.0, apal)
@@ -217,6 +225,11 @@ def recalcular(d, fut, razon, apal, ahora):
         ant, x_ant = t, x
     zero_fut = al_futuro(zero) if not math.isnan(zero) else float("nan")
 
+    r_pico = fut * PICO_RADIO_PCT / 100.0
+    en_pico = [p for p in perfil if abs(p[1] - fut) <= r_pico]
+    conv_precio = sum(p[4] for p in en_pico)
+    pico = max(en_pico, key=lambda p: abs(p[2])) if en_pico else None
+    conv_max = max(perfil, key=lambda p: abs(p[4])) if perfil else None
     radio = fut * RADIO_DOM_PCT / 100.0
     cerca = [p for p in perfil if abs(p[1] - fut) <= radio and p[2] != 0]
     # "Canal: una dominante por lado" (ajuste por defecto del indicador): la mas fuerte ARRIBA del precio y la mas
@@ -235,7 +248,7 @@ def recalcular(d, fut, razon, apal, ahora):
     return {
         "spot": spot, "S": S, "generado": gen, "ts": c.get("ts"), "envejecer_dias": envejecer, "mas_cerca": mas_cerca,
         "strikes": len(perfil), "zero": zero_fut, "doms": doms, "mp": mp, "mn": mn, "perfil": perfil,
-        "net_vol": sum(p[2] for p in perfil),
+        "net_vol": sum(p[2] for p in perfil), "conv_precio": conv_precio, "pico": pico, "conv_max": conv_max,
     }
 
 
@@ -290,12 +303,23 @@ def main():
             print(f"          D{i+1} K={p[0]:.0f} -> fut {p[1]:.2f}  gexVol {p[2]/1e6:.0f}M")
         if r["mp"]:
             print(f"          major+ K={r['mp'][0]:.0f} -> {r['mp'][1]:.2f}   major- K={r['mn'][0]:.0f} -> {r['mn'][1]:.2f}" if r["mn"] else "")
+        if r["conv_max"] and r["pico"]:
+            print(f"          perfil derecho (convexidad por volumen): mayor |conv| K={r['conv_max'][0]:.0f} -> {r['conv_max'][1]:.2f} ({r['conv_max'][4]/1e6:+.0f}M); "
+                  f"conv en el precio (+-{PICO_RADIO_PCT} %) {r['conv_precio']/1e6:+.0f}M; pico |GEX| K={r['pico'][0]:.0f} -> {r['pico'][1]:.2f}")
         if au:
             ks_log = sorted(round(x / razon if apal == 1 else r["spot"] + apal * (x / razon - r["spot"])) for x in au["doms"])
             ks_prop = sorted(round(p[0]) for p in r["doms"])
             dz = abs(r["zero"] - au["zeroVol"]) if not math.isnan(r["zero"]) and not math.isnan(au["zeroVol"]) else float("nan")
             print(f"  veredicto: dominantes por K log {ks_log} vs propio {ks_prop} -> {'COINCIDEN' if ks_log == ks_prop else 'DISTINTAS'}; "
                   f"zero difiere {dz:.2f} pts -> {'OK' if dz < 5 else 'REVISAR'}")
+            if au["convPrecio"] == au["convPrecio"] and r["conv_precio"] == r["conv_precio"]:
+                mismo_signo = (au["convPrecio"] >= 0) == (r["conv_precio"] >= 0)
+                rel = abs(r["conv_precio"] - au["convPrecio"]) / max(1e-9, abs(au["convPrecio"]))
+                print(f"  perfil derecho: conv en el precio log {au['convPrecio']/1e6:+.0f}M vs propio {r['conv_precio']/1e6:+.0f}M -> "
+                      f"{'MISMO SIGNO' if mismo_signo else 'SIGNO DISTINTO'}, diferencia {rel*100:.0f} % "
+                      f"({'OK' if mismo_signo and rel < 0.25 else 'REVISAR: cadena de otro minuto, precio distinto o tasa distinta'})")
+            if au["pico"] == au["pico"] and r["pico"]:
+                print(f"  pico |GEX| cerca del precio: log {au['pico']:.2f} vs propio {r['pico'][1]:.2f} -> {'COINCIDE' if abs(au['pico'] - r['pico'][1]) < 5 else 'DISTINTO'}")
     print("=" * 100)
     print("Magnitudes NO comparables entre capas (TQQQ lleva un factor x3/x9 que no esta medido): comparar strikes, no barras.")
 

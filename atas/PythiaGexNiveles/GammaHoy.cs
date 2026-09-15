@@ -721,6 +721,9 @@ namespace PythiaGex
             var ahoraRep = DateTime.UtcNow;
             if (bar == _barraRepreciada && (ahoraRep - _ultimoReprecio).TotalMilliseconds < 1000) return;
             _barraRepreciada = bar; _ultimoReprecio = ahoraRep;
+            // capas (15-09): cada grafico publica su ultimo precio por minuto en una pizarra compartida del DLL,
+            // asi el grafico de NQ mide la beta NQ/ES con las velas de los dos (misma hora), no con el libro
+            try { VelasCompartidas.Anotar(Raiz(), ahoraRep, (double)value); } catch { }
             try { Repreciar(); } catch (Exception e) { Registrar(e); }
             if (bar != _barraBig) { CerrarBig(); _barraBig = bar; }
             try { Anotar(bar); } catch (Exception e) { Registrar(e); }
@@ -1817,7 +1820,7 @@ namespace PythiaGex
                         g.DrawLine(new RenderPen(Color.FromArgb(i == 0 ? 120 : 80, ColDom), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xa, yb, xl1, yb);
                 }
             }
-            try { PintarCapas(g, cont, area, piso, x0, ancho, alto, xl0, xl1, altoRot, fRot, es, Raya); } catch (Exception e) { Registrar(e); }
+            try { PintarCapas(g, cont, area, piso, x0, ancho, alto, xl0, xl1, xConv, altoRot, fRot, es, Raya); } catch (Exception e) { Registrar(e); }
             Raya(zeroOi, Color.FromArgb(160, 160, 170), 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
             Raya(zeroVol, ColZero, 1.4f, System.Drawing.Drawing2D.DashStyle.Dash, 200);
             Raya(mpVol, ColPos, 1.6f, System.Drawing.Drawing2D.DashStyle.Solid, 190);
