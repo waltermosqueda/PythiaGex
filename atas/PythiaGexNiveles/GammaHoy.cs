@@ -681,9 +681,9 @@ namespace PythiaGex
         // corre todos los strikes lo que se movio el mercado en 15 min). Si no hay vela alineada, la mediana
         // robusta de la rueda; y si tampoco, la razon cruda, dicha como tal.
         private readonly RazonEtf _razon = new();
-        private void Escalar(Feed.Cadena c) => EscalarCon(c, RaizLibro(), _razon);
+        private void Escalar(Feed.Cadena c) => EscalarCon(c, RaizLibro(), _razon, Math.Max(0, RetrasoCboeSeg));
         /// <summary>Parametrizada (15-09) para las capas extra: cada libro por razon lleva su propia razon y su mediana.</summary>
-        private void EscalarCon(Feed.Cadena c, string ticker, RazonEtf r)
+        private void EscalarCon(Feed.Cadena c, string ticker, RazonEtf r, int retrasoSeg)
         {
             if (c == null || c.SpotIdx <= 0) return;
             c.PorRazon = true; c.EsFuturo = false; c.Base = 0; c.BaseConfiable = false;
@@ -692,7 +692,7 @@ namespace PythiaGex
             double razon = double.NaN; string origen = "";
             if (!string.IsNullOrEmpty(c.Ts) && DateTime.TryParseExact(c.Ts, "yyyy-MM-dd HH:mm:ss", iv, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var ts))
             {
-                int b = BarraDe(ts.AddSeconds(-Math.Max(0, RetrasoCboeSeg)));
+                int b = BarraDe(ts.AddSeconds(-retrasoSeg));
                 if (b >= 0) { try { double p = (double)GetCandle(b).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "vela alineada"; } } catch { } }
             }
             if (double.IsNaN(razon) && !double.IsNaN(r.Rueda)) { razon = r.Rueda; origen = "mediana de la rueda"; }
@@ -1122,7 +1122,9 @@ namespace PythiaGex
                     Doms = _doms, MaxChange = _maxChange, PicoFut = _picoFut, CuadranteN = _cuadranteN
                 };
                 niv = GammaHoyNucleo.Niveles(L);
+                try { NivelesCapas(niv); } catch (Exception e) { Registrar(e); }   // capas (15-09): <capa>_dom0/dom1/zero_vol/mp_vol/mn_vol
             }
+            try { ContarToquesCapas(cerrada, c); } catch (Exception e) { Registrar(e); }
             (int N, double Max, double Buy, double Sell) big; lock (_bigLlave) big = _bigCerrada;
             centUsar.Anotar(cerrada, c.LastTime != default(DateTime) ? c.LastTime : c.Time,
                 (double)c.Open, (double)c.High, (double)c.Low, (double)c.Close,

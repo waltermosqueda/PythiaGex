@@ -316,13 +316,58 @@ namespace PythiaGex
                     foreach (var l in File.ReadLines(p))
                     {
                         if (l.Length < 40) continue;
+                        var cv = ParsearViva(l);
+                        if (cv == null) flacas++; else salida.Add(cv);
+                    }
+                }
+                salida.Sort((x, y) => x.GeneradoUtc.CompareTo(y.GeneradoUtc));
+                log?.Invoke("archivo viva (Rithmic): " + archivos + " dias, " + salida.Count + " cadenas utiles, " + flacas + " flacas");
+                return salida;
+            }
+
+            /// <summary>La ULTIMA linea del viva de hoy (o de ayer si hoy no hay) de otra raiz: asi el grafico de NQ
+            /// lee las opciones de ES que graba el grafico de MES por Rithmic, sin abrir una segunda suscripcion (capas, 15-09).
+            /// Devuelve null si no hay archivo o la linea es flaca. Lee solo la cola del archivo.</summary>
+            public static Cadena UltimaViva(string raiz)
+            {
+                var dir = Path.Combine(Carpeta, "..", "viva");
+                for (int atras = 0; atras <= 1; atras++)
+                {
+                    var p = Path.Combine(dir, "viva-" + raiz + "-" + DateTime.UtcNow.AddDays(-atras).ToString("yyyy-MM-dd") + ".jsonl");
+                    if (!File.Exists(p)) continue;
+                    try
+                    {
+                        using var fs = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        long largo = fs.Length; int cola = (int)Math.Min(largo, 1 << 20);
+                        fs.Seek(largo - cola, SeekOrigin.Begin);
+                        var buf = new byte[cola]; int leidos = 0;
+                        while (leidos < cola) { int n = fs.Read(buf, leidos, cola - leidos); if (n <= 0) break; leidos += n; }
+                        var txt = System.Text.Encoding.UTF8.GetString(buf, 0, leidos);
+                        var lineas = txt.Split((char)10);
+                        for (int i = lineas.Length - 1; i >= 0 && i >= lineas.Length - 3; i--)
+                        {
+                            var l = lineas[i].Trim();
+                            if (l.Length < 40 || !l.StartsWith("{") || !l.EndsWith("}")) continue;   // la ultima puede estar a medio escribir
+                            var c = ParsearViva(l);
+                            if (c != null) return c;
+                        }
+                    }
+                    catch { }
+                }
+                return null;
+            }
+
+            /// <summary>Una linea del viva (formato VivaJson: ts, futuro, filas [strike, dias, es_call, oi, iv, bid, ask,
+            /// vol_hoy, ...]) a cadena de futuro, con la misma regla que DesdeViva: 12 strikes con las dos puntas.</summary>
+            public static Cadena ParsearViva(string l)
+            {
                         try
                         {
                             using var doc = JsonDocument.Parse(l);
                             var r = doc.RootElement;
                             if (!DateTime.TryParseExact(Txt(r, "ts"), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture,
-                                    System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var ts)) continue;
-                            if (!r.TryGetProperty("filas", out var fs) || fs.ValueKind != JsonValueKind.Array) continue;
+                                    System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var ts)) return null;
+                            if (!r.TryGetProperty("filas", out var fs) || fs.ValueKind != JsonValueKind.Array) return null;
                             var dias = new List<double>();
                             var porClave = new Dictionary<(double, double), Fila>();
                             foreach (var f in fs.EnumerateArray())
@@ -342,20 +387,15 @@ namespace PythiaGex
                             var filas = new List<Fila>();
                             foreach (var kv in porClave) { kv.Value.V = dias.IndexOf(kv.Key.Item2); filas.Add(kv.Value); }
                             int utiles = filas.Where(x => x.IvC > 0 && x.IvP > 0).Select(x => x.K).Distinct().Count();
-                            if (utiles < 12) { flacas++; continue; }
-                            salida.Add(new Cadena
+                            if (utiles < 12) return null;
+                            return new Cadena
                             {
                                 Ts = Txt(r, "ts"), SpotIdx = Num(r, "futuro") ?? 0, Dias = dias.ToArray(), Filas = filas.OrderBy(x => x.K).ThenBy(x => x.V).ToList(),
                                 Base = 0, BaseConfiable = true, EdadMin = 0, HorizonteCadena = dias.Count > 0 ? dias[dias.Count - 1] : double.NaN,
                                 RecibidoUtc = ts, GeneradoUtc = ts, EsFuturo = true, Fuente = "Rithmic ES (grabado)",
-                            });
+                            };
                         }
-                        catch { }
-                    }
-                }
-                salida.Sort((x, y) => x.GeneradoUtc.CompareTo(y.GeneradoUtc));
-                log?.Invoke("archivo viva (Rithmic): " + archivos + " dias, " + salida.Count + " cadenas utiles, " + flacas + " flacas");
-                return salida;
+                        catch { return null; }
             }
 
             /// <summary>Lee un archivo por dia (gz de la nube o jsonl local) y

@@ -254,7 +254,7 @@ namespace PythiaGex
             bool Razonable(double b) => double.IsNaN(carry) || Cerca(b, carry);
             string Cota(string o, double b) => double.IsNaN(carry) ? o : o + (Razonable(b) ? "" : " FUERA DE COTA");
             double baseUsada; string origen;
-            if (c.PorRazon) { baseUsada = 0; origen = "libro " + c.Fuente + " x razon " + c.Escala.ToString("0.0000", iv0) + (string.IsNullOrEmpty(c.EscalaOrigen) ? "" : " (" + c.EscalaOrigen + ")") + (c.Apalancamiento != 1.0 ? " apal " + c.Apalancamiento.ToString("0", iv0) + "x" : ""); }
+            if (c.PorRazon) { baseUsada = 0; origen = "libro " + c.Fuente + " x razon " + c.Escala.ToString("0.0000", iv0) + (string.IsNullOrEmpty(c.EscalaOrigen) ? "" : " (" + c.EscalaOrigen + ")") + (c.Apalancamiento != 1.0 ? " apal " + c.Apalancamiento.ToString("0.###", iv0) + "x" : ""); }
             else if (c.EsFuturo) { baseUsada = 0; origen = "libro " + (string.IsNullOrEmpty(c.Fuente) ? "del futuro" : c.Fuente) + ", sin base"; }
             else if (c.BaseConfiable && c.Base != 0 && RazonableMedida(c.Base)) { baseUsada = c.Base; origen = "medida"; }
             else if (c.BaseUltimaBuena != 0 && c.BaseUltimaBuenaEdad <= 360 && RazonableMedida(c.BaseUltimaBuena)) { baseUsada = c.BaseUltimaBuena; origen = "medida hace " + c.BaseUltimaBuenaEdad.ToString("0", iv0) + " min"; }

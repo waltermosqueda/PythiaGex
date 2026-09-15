@@ -27,6 +27,8 @@ import urllib.request
 from datetime import datetime, timezone
 
 RAW = "https://raw.githubusercontent.com/waltermosqueda/PythiaGex/cadenas/ultima-{}.json"
+ARCHIVO = {"SPX": "ES"}          # la cadena de SPX se archiva como ultima-ES.json
+VIVA = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "PythiaGex", "viva")
 LOG = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "pythiagex-gammahoy.log")
 MULT = 100.0
 PISO_DIAS = 1.0 / 1440.0
@@ -50,17 +52,61 @@ def gamma_bs(S, K, T, iv, r):
     return fi(d1) / (S * v)
 
 
+def gamma76(F, K, T, iv):
+    """Black-76 (opciones sobre el futuro, la viva de ES por Rithmic): gamma = fi(d1) / (F sigma sqrt(T))."""
+    if F <= 0 or K <= 0 or T <= 0 or iv <= 0:
+        return 0.0
+    v = iv * math.sqrt(T)
+    d1 = (math.log(F / K) + 0.5 * iv * iv * T) / v
+    return fi(d1) / (F * v)
+
+
 def bajar(ticker):
-    req = urllib.request.Request(RAW.format(ticker), headers={"User-Agent": "PythiaGex-capas_nq/0.1"})
+    if ticker == "ES":
+        return viva_local("ES")
+    req = urllib.request.Request(RAW.format(ARCHIVO.get(ticker, ticker)), headers={"User-Agent": "PythiaGex-capas_nq/0.1"})
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.loads(r.read().decode("utf-8"))
+
+
+def viva_local(raiz):
+    """La ultima linea del viva-<raiz>-<hoy>.jsonl que graba el grafico de MES (formato VivaJson: ts, futuro, filas
+    [strike, dias, es_call, oi, iv, bid, ask, vol_hoy, ...]) convertida al mismo formato que la cadena de la nube."""
+    from datetime import timedelta
+    for atras in (0, 1):
+        dia = (datetime.now(timezone.utc) - timedelta(days=atras)).strftime("%Y-%m-%d")
+        p = os.path.join(VIVA, "viva-%s-%s.jsonl" % (raiz, dia))
+        if not os.path.exists(p):
+            continue
+        with open(p, "rb") as f:
+            f.seek(0, 2); largo = f.tell(); f.seek(max(0, largo - (1 << 20)))
+            lineas = f.read().decode("utf-8", "replace").splitlines()
+        for l in reversed(lineas):
+            l = l.strip()
+            if len(l) < 40 or not l.endswith("}"):
+                continue
+            r = json.loads(l)
+            dias = sorted(set(round(float(x[1]), 4) for x in r["filas"]))
+            por = {}
+            for x in r["filas"]:
+                K, di, call, oi, iv, vol = float(x[0]), round(float(x[1]), 4), float(x[2]) >= 0.5, float(x[3]), float(x[4]), float(x[7])
+                if iv <= 0 or (oi <= 0 and vol <= 0):
+                    continue
+                e = por.setdefault((K, dias.index(di)), [K, dias.index(di), 0, 0, 0, 0, 0, 0])
+                if call: e[2], e[4], e[6] = oi, iv, vol
+                else: e[3], e[5], e[7] = oi, iv, vol
+            ts = r["ts"].replace(" ", "T") + "+00:00"
+            return {"generado": ts, "es_futuro": True,
+                    "cadena": {"ts": r["ts"], "spot_idx": float(r["futuro"]), "vencimientos": [{"dias": d} for d in dias], "filas": list(por.values())}}
+    raise FileNotFoundError("sin viva-%s en %s (el grafico de MES la graba con 'Guardar la cadena viva')" % (raiz, VIVA))
 
 
 def ultimo_audit(ticker):
     """La ultima linea AUDIT del log de ese libro: la primaria (origen=libro_CBOE_<T>_x_razon_...) o la capa (capa=<T>)."""
     if not os.path.exists(LOG):
         return None
-    pat_origen = re.compile(r"origen=libro_CBOE_" + re.escape(ticker) + r"(?:_x\d+)?_x_razon_([0-9.]+)")   # TQQQ lleva "_x3" en la fuente
+    # CBOE_QQQ, CBOE_TQQQ_x3, CBOE_SPX, CBOE_SPY, Rithmic_ES_(grabado): todos "libro ... x razon R"
+    pat_origen = re.compile(r"origen=libro_(?:CBOE_|Rithmic_)" + re.escape(ticker) + r"(?:_x\d+|_\(grabado\))?_x_razon_([0-9.]+)")
     ultimo = None
     with open(LOG, encoding="utf-8", errors="replace") as f:
         for linea in f:
@@ -84,7 +130,8 @@ def ultimo_audit(ticker):
         "linea": ultimo, "hora": ultimo[:19], "fut": num("fut"), "S": num("S"),
         "razon": float(pat_origen.search(ultimo).group(1)),
         "zeroVol": num("zeroVol"), "mpVol": num("mpVol"), "mnVol": num("mnVol"), "doms": doms,
-        "capa": "capa=" in ultimo,
+        "capa": "capa=" in ultimo, "apal": (lambda m: float(m.group(1)) if m else None)(re.search(r"apal_([0-9.]+)x", ultimo)),
+        "beta": num("beta"), "betaOrigen": (lambda m: m.group(1) if m else "")(re.search(r"betaOrigen=(\S+)", ultimo)),
     }
 
 
@@ -105,6 +152,8 @@ def ultimo_fut():
 
 def recalcular(d, fut, razon, apal, ahora):
     c = d["cadena"]
+    es_fut = bool(d.get("es_futuro"))          # Black-76 (viva de ES) o Black-Scholes (CBOE)
+    gam = (lambda x, K, T, iv: gamma76(x, K, T, iv)) if es_fut else (lambda x, K, T, iv: gamma_bs(x, K, T, iv, TASA))
     spot = float(c.get("spot_idx") or 0)
     dias_v = [float(v.get("dias") or 0) for v in c.get("vencimientos", [])]
     gen = d.get("generado")
@@ -138,15 +187,15 @@ def recalcular(d, fut, razon, apal, ahora):
             K, v, oic, oip, ivc, ivp, volc, volp = (float(f[0]), int(f[1]), *map(float, f[2:8]))
             T = max(dias_env[v], PISO_DIAS) / 365.0
             wc, wp = (volc, volp) if por_vol else (oic, oip)
-            t += (gamma_bs(x, K, T, ivc, TASA) * wc - gamma_bs(x, K, T, ivp, TASA) * wp) * MULT * x * x * 0.01
+            t += (gam(x, K, T, ivc) * wc - gam(x, K, T, ivp) * wp) * MULT * x * x * 0.01
         return t
 
     por_k = {}
     for f in filas:
         K, v, oic, oip, ivc, ivp, volc, volp = (float(f[0]), int(f[1]), *map(float, f[2:8]))
         T = max(dias_env[v], PISO_DIAS) / 365.0
-        gv = (gamma_bs(S, K, T, ivc, TASA) * volc - gamma_bs(S, K, T, ivp, TASA) * volp) * MULT * S * S * 0.01
-        go = (gamma_bs(S, K, T, ivc, TASA) * oic - gamma_bs(S, K, T, ivp, TASA) * oip) * MULT * S * S * 0.01
+        gv = (gam(S, K, T, ivc) * volc - gam(S, K, T, ivp) * volp) * MULT * S * S * 0.01
+        go = (gam(S, K, T, ivc) * oic - gam(S, K, T, ivp) * oip) * MULT * S * S * 0.01
         if gv == 0 and go == 0:
             continue
         e = por_k.setdefault(K, [0.0, 0.0])
@@ -192,16 +241,16 @@ def recalcular(d, fut, razon, apal, ahora):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("tickers", nargs="*", default=["QQQ", "TQQQ"])
+    ap.add_argument("tickers", nargs="*", default=["QQQ", "TQQQ", "SPX", "SPY", "ES"])
     ap.add_argument("--apal", type=float, default=None, help="apalancamiento (TQQQ = 3); por defecto 3 si el ticker es TQQQ")
     ap.add_argument("--razon", type=float, default=None, help="razon futuro/ETF a usar (por defecto la del ultimo AUDIT del log)")
     ap.add_argument("--fut", type=float, default=None, help="precio del futuro (por defecto el del ultimo AUDIT del log)")
     a = ap.parse_args()
     ahora = datetime.now(timezone.utc)
     for t in a.tickers:
-        apal = a.apal if a.apal is not None else (3.0 if t.upper() == "TQQQ" else 1.0)
+        apal = a.apal if a.apal is not None else (3.0 if t.upper() == "TQQQ" else None)   # None: del AUDIT (1/beta) o 1
         print("=" * 100)
-        print(f"{t}  apalancamiento {apal:g}")
+        print(f"{t}  apalancamiento {'del log' if apal is None else format(apal, 'g')}")
         au = ultimo_audit(t.upper())
         razon, fut = a.razon, a.fut
         if au:
@@ -209,6 +258,12 @@ def main():
                   f"zeroVol={au['zeroVol']:.2f} mp={au['mpVol']:.2f} mn={au['mnVol']:.2f} doms={au['doms']}")
             razon = razon or au["razon"]
             fut = fut or au["fut"]
+            if apal is None:
+                apal = au["apal"] or 1.0
+                if au["beta"] == au["beta"]:
+                    print(f"  beta del log {au['beta']:.3f} ({au['betaOrigen']}) -> apalancamiento {apal:.3f}")
+        if apal is None:
+            apal = 1.0
         else:
             print("  log: sin AUDIT de este libro (capa apagada o log sin acceso)")
         try:
