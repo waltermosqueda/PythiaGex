@@ -1922,7 +1922,7 @@ namespace PythiaGex
                                 int h = rango == 0 ? grueso : fino;
                                 if (!nueva)
                                 {
-                                    g.FillRectangle(Color.FromArgb(rango == 0 ? 230 : 170, rango == 0 ? ColDom : ColDom2), new Rectangle(x - bw / 2, y - h / 2, bw, h));
+                                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria(rango == 0 ? 230 : 170), rango == 0 ? ColDom : ColDom2), new Rectangle(x - bw / 2, y - h / 2, bw, h));
                                     continue;
                                 }
                                 // NUEVA: nace lila fluo y se funde al amarillo normal a medida que envejece
@@ -1933,7 +1933,7 @@ namespace PythiaGex
                                 int extra = (int)Math.Round(2 * (1 - tEdad));
                                 int hn = h + extra, wn = bw + extra;
                                 if (tEdad < 0.75) g.FillRectangle(Color.FromArgb((int)(230 * (1 - tEdad)), ColFondo), new Rectangle(x - wn / 2 - 1, y - hn / 2 - 1, wn + 2, hn + 2));
-                                g.FillRectangle(Color.FromArgb(rango == 0 ? 255 : 225, colNueva), new Rectangle(x - wn / 2, y - hn / 2, wn, hn));
+                                g.FillRectangle(Color.FromArgb(AtenuarPrimaria(rango == 0 ? 255 : 225), colNueva), new Rectangle(x - wn / 2, y - hn / 2, wn, hn));
                             }
                     }
                     if (mar.TryGetValue(b, out var m))
@@ -2030,7 +2030,17 @@ namespace PythiaGex
             for (int i = 0; i < doms.Count; i++) Add("D" + (i + 1), doms[i].Fut, ColDom);
             // capas (15-09): con capas activas la primaria es fantasma y no lista sus niveles; los de las capas van aca,
             // en la misma escalera, con la misma regla de no pisarse (marcados con ▮ para dibujarlos como caja de color)
-            if (PrimariaSilenciada()) filas.Clear();
+            if (PrimariaSilenciada())
+            {
+                filas.Clear();
+                if (!PrimariaDuplicada())
+                {
+                    // la primaria no es ninguna capa prendida: sus niveles van identificados con el nombre de su libro
+                    string np = NombrePrimaria();
+                    for (int i = 0; i < doms.Count; i++) if (!double.IsNaN(doms[i].Fut) && doms[i].Fut > 0) filas.Add(((i == 0 ? "▮" : "▯") + np + " D" + (i + 1) + (doms[i].Fut > futuro ? " ▲" : " ▼"), doms[i].Fut, ColDom, false));
+                    if (!double.IsNaN(zeroVol) && zeroVol > 0) filas.Add(("▫" + np + " 0Γ ↕", zeroVol, ColDom, false));
+                }
+            }
             // solo los niveles de las capas que estan DENTRO del rango de precios visible (pedido 15-09: "demasiadas
             // etiquetas"): los de afuera aparecen cuando el zoom o el scroll los trae; los de la primaria siguen
             // pegandose al borde como siempre

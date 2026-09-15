@@ -241,6 +241,28 @@ namespace PythiaGex
             return false;
         }
 
+        /// <summary>El nombre del libro de la primaria, con los mismos nombres que las capas: QQQ/SPY (CBOE_ETF), NDX/SPX (CBOE_SPX),
+        /// RITHMIC (Rithmic_ES). Asi se sabe si la primaria es el MISMO libro que una capa prendida.</summary>
+        private string NombrePrimaria()
+        {
+            try
+            {
+                if (Libro == LibroEnVivo.CBOE_ETF) return RaizLibro();
+                if (Libro == LibroEnVivo.Rithmic_ES) return "RITHMIC";
+                return Raiz() == "NQ" ? "NDX" : "SPX";
+            }
+            catch { return "?"; }
+        }
+
+        /// <summary>La primaria es un duplicado cuando su libro es el de una capa prendida (misma cadena, misma cuenta, mismos
+        /// numeros): entonces no se dibuja nada de ella (barras, rayas, banda, estela) y la leyenda lo dice.</summary>
+        private bool PrimariaDuplicada()
+        {
+            var n = NombrePrimaria();
+            foreach (var k in _capas) if (k.Nombre == n && CapaActiva(k)) return true;
+            return false;
+        }
+
         /// <summary>Con capas activas y atenuacion < 100, la primaria es un fantasma: sus barras no llevan rotulo.</summary>
         private bool PrimariaSilenciada()
         {
@@ -252,7 +274,9 @@ namespace PythiaGex
         /// <summary>Con capas activas, las rayas y bandas de la primaria bajan al porcentaje elegido; las de las capas no.</summary>
         private int AtenuarPrimaria(int alfa)
         {
-            if (_pintandoCapas || CapasAtenuarPrimariaPct >= 100) return alfa;
+            if (_pintandoCapas) return alfa;
+            if (PrimariaDuplicada()) return 0;                 // mismo libro que una capa prendida: no se dibuja dos veces
+            if (CapasAtenuarPrimariaPct >= 100) return alfa;
             bool hay = false; foreach (var k in _capas) if (CapaActiva(k)) { hay = true; break; }
             return hay ? Math.Max(0, alfa * CapasAtenuarPrimariaPct / 100) : alfa;
         }
@@ -680,6 +704,17 @@ namespace PythiaGex
                 var lecturas = new Dictionary<CapaLibro, GammaHoyNucleo.Lectura>();
                 foreach (var k in activas) { GammaHoyNucleo.Lectura L; lock (_candado) L = k.L; lecturas[k] = L; }
 
+                // 0) que es la primaria (las rayas ambar): su libro, y si esta oculta por duplicada
+                {
+                    string np = NombrePrimaria();
+                    string leyP = PrimariaDuplicada()
+                        ? "■ primaria (ámbar) = " + np + " · misma cuenta que la capa " + np + ": oculta para no dibujarla dos veces"
+                        : "■ primaria (ámbar) = " + np + " · sus niveles van en la escalera como " + np;
+                    int ylp = piso - 4 - altoRot * (activas.Count + 1);
+                    var mlp = g.MeasureString(leyP, fRot);
+                    g.FillRectangle(Color.FromArgb(170, ColFondo), new Rectangle(xLey - 2, ylp, mlp.Width + 4, altoRot));
+                    g.DrawString(leyP, fRot, Color.FromArgb(235, ColDom), xLey, ylp);
+                }
                 // 1) la leyenda, una linea por capa
                 for (int i = 0; i < activas.Count; i++)
                 {
