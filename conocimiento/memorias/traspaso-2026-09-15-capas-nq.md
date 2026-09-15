@@ -51,6 +51,12 @@ archivo de traspaso queda como registro de trabajo. Agregado: perfil derecho (co
 su color, y la beta medida con las velas de NQ y de MES por una pizarra estatica del DLL (la beta por spot del
 libro fallo: r2 0). En 0DTE la convexidad de un strike es casi menos su gamma: el perfil derecho es un espejo.
 
+Bloque 7 (16:15-16:30): "esta todo muy caotico": rediseño. Una sola escalera de rotulos a la derecha con el
+nombre de la fuente PRIMERO y un cuadrado de su color ("SPX D1 28.981"), ordenada por precio y sin solapes;
+majors solo a menos del 1 % del precio; columnas al 35 %; la primaria atenuada al 40 % mientras haya capas.
+Regla aprendida: los rotulos de niveles van en UNA columna, nunca desparramados por el medio del grafico. Y a
+una pestaña oculta ATAS no le manda OnCalculate: lo que deba correr siempre va tambien en el temporizador.
+
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
