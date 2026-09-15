@@ -363,7 +363,7 @@ namespace PythiaGex
                     k.UltimoAudit = ahoraUtc;
                     var inv = CultureInfo.InvariantCulture;
                     Log("AUDIT capa=" + k.Nombre + " " + GammaHoyNucleo.Audit(L, c, k.Tipo == CapaLibro.TipoCapa.RithmicViva).Substring(6)
-                        + (k.PorBeta ? " beta=" + k.Beta.ToString("0.###", inv) + " betaN=" + k.BetaN + " betaR2=" + (double.IsNaN(k.BetaR2) ? "NaN" : k.BetaR2.ToString("0.00", inv)) + " betaOrigen=" + k.BetaOrigen.Replace(' ', '_') : "")
+                        + (k.PorBeta ? " beta=" + k.Beta.ToString("0.###", inv) + " betaN=" + k.BetaN + " betaR2=" + (double.IsNaN(k.BetaR2) ? "NaN" : k.BetaR2.ToString("0.00", inv)) + " betaOrigen=" + k.BetaOrigen.Replace(' ', '_') + " velasNQ=" + VelasCompartidas.Serie(Raiz()).Count + " velasES=" + VelasCompartidas.Serie("ES").Count : "")
                         + " toques=" + k.Toques + " rebotes=" + k.Rebotes);
                 }
             }
@@ -471,7 +471,7 @@ namespace PythiaGex
                     string doms = L == null || L.Doms.Count == 0 ? "" : " · " + string.Join(" ", L.Doms.Select((d, j) => "D" + (j + 1) + " " + d.Fut.ToString("N0", es)));
                     string estado = L == null ? (k.C == null ? "sin dato" : "calculando") : "dato de hace " + k.Edad(es).Replace("hace ", "") + (L.SinBase ? " SIN BASE" : "");
                     if (L != null && k.C != null && k.C.EsFuturo && k.Tipo != CapaLibro.TipoCapa.VivaLocal) estado = "en vivo";
-                    string beta = !k.PorBeta ? "" : " · β " + k.Beta.ToString("0.00", es) + " " + (k.BetaOrigen.StartsWith("velas") ? "medida (n " + k.BetaN + (double.IsNaN(k.BetaR2) ? "" : ", r² " + k.BetaR2.ToString("0.00", es)) + ")" : k.BetaOrigen.ToLowerInvariant());
+                    string beta = !k.PorBeta ? "" : " · β " + k.Beta.ToString("0.00", es) + " " + (k.BetaOrigen.StartsWith("velas") ? "medida (n " + k.BetaN + (double.IsNaN(k.BetaR2) ? "" : ", r² " + k.BetaR2.ToString("0.00", es)) + ")" : k.BetaOrigen.Replace("SUPUESTA", "supuesta"));
                     string toques = !CapasToques ? "" : " · rebotó " + k.Rebotes + " de " + k.Toques + " toques" + (k.Pendientes.Count > 0 ? " (+" + k.Pendientes.Count + " abierto)" : "");
                     string ley = "■ " + k.Nombre + " · " + estado + beta + doms + toques + (string.IsNullOrEmpty(k.Error) ? "" : " · " + k.Error);
                     int yl = piso - 4 - altoRot * (activas.Count - i);

@@ -1045,6 +1045,8 @@ namespace PythiaGex
             decimal cierre;
             try { cierre = GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { return; }
             if (cierre <= 0) return;
+            // capas (15-09): tambien desde el temporizador, por si a un grafico en una pestaña oculta ATAS no le manda OnCalculate
+            try { VelasCompartidas.Anotar(Raiz(), DateTime.UtcNow, (double)cierre); } catch { }
             try { MedirBaseRueda(_c); } catch (Exception e) { Registrar(e); }
             RepreciarCon(_c, (double)cierre, DateTime.UtcNow, Math.Max(0, CurrentBar - 1));
         }
