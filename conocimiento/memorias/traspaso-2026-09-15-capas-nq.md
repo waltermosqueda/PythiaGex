@@ -63,6 +63,12 @@ atras, primaria de fantasma sin rotulos; rotulo corto adentro de la barra ("SPX 
 ADENTRO de la escalera primaria como cajas de color (no quiere columnas repetidas: "a lo sumo dos"). Regla
 aprendida: los previews con datos reales le sirven para decidir; darle a elegir entre 2-3, no imponer.
 
+Bloque 9 (17:00): todavia "muy caotico": perfil ralo (umbral 25 % por fuente), sin perfil derecho ni majors ni
+columna de precios (ajustes renombrados para pisar lo guardado), rotulo con cuadrado de color en la punta de la
+barra, y FUSION de niveles que coinciden (raya gruesa de colores alternados + "SPX·SPY D1"). Instalado con el
+mercado cerrado: verificar en la rueda del 16-09. Regla: cuando algo "confunde", primero SACAR (barras chicas,
+perfil espejo, columnas repetidas), despues embellecer.
+
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
