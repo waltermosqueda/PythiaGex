@@ -1,6 +1,6 @@
 ---
 name: traspaso-2026-09-15-capas-nq
-description: "Pedido del 15-09: en un grafico de NQ/MNQ ver a la vez barras y dominantes de QQQ, TQQQ, NDX y Rithmic, cada una de un color y con llave. Fable dejo la arquitectura escrita (capas aditivas, primaria intacta) en PythiaGex/conocimiento/traspasos/2026-09-15-capas-nq.md; nada de codigo tocado. Trampa central: TQQQ es 3x, el mapeo por razon simple esta mal."
+description: "Pedido del 15-09: en un grafico de NQ/MNQ ver a la vez barras y dominantes de QQQ, TQQQ, NDX y Rithmic, cada una de un color y con llave. HECHO por Fable (bloques 1-3, commits 1c09a4d3/a4a191b5/67d023ab): GammaHoyCapas.cs, DLL 1.10 instalado 13:55 con todas las capas apagadas, AUDIT de QQQ identico antes/despues. Falta: push (TQQQ no se archiva hasta entonces), prender capas en MNQ#1 por UI, mirar pantalla, capas_nq.py. Trampa central: TQQQ es 3x."
 metadata: 
   node_type: memory
   type: project
@@ -9,9 +9,13 @@ metadata:
 ---
 
 El 2026-09-15, con 7 % de cuota, el operador pidio capas simultaneas de QQQ + TQQQ + NDX + Rithmic
-en un solo grafico de NQ/MNQ (colores distintos, prender/apagar cada una, todo auditado). No se
-escribio codigo: se dejo el diseño completo en
-`PythiaGex/conocimiento/traspasos/2026-09-15-capas-nq.md` (sin commitear; el push lo hace el operador).
+en un solo grafico de NQ/MNQ (colores distintos, prender/apagar cada una, todo auditado). Fable lo
+implemento en tres bloques (commits 1c09a4d3, a4a191b5, 67d023ab en main, SIN push) y dejo el estado
+exacto y lo que falta al principio de `PythiaGex/conocimiento/traspasos/2026-09-15-capas-nq.md`.
+Toda la logica de capas vive en `atas/PythiaGexNiveles/GammaHoyCapas.cs` (clase parcial de GammaHoy);
+en GammaHoy.cs solo hay ganchos de una linea. DLL 1.10 instalado y ATAS reiniciado 13:55 local del 15-09:
+"Gamma Hoy 1.10 (capas NQ) arranca", sin excepciones, AUDIT de MNQ#1 (QQQ) con los mismos strikes
+(706/704) que antes del reinicio. Ninguna capa prendida todavia: eso se hace por el dialogo Indicators.
 
 Lo decidido ahi, para no relitigar:
 - Capas ADITIVAS con una clase nueva `CapaLibro` (cadena + nucleo + lectura + razon por capa); la
