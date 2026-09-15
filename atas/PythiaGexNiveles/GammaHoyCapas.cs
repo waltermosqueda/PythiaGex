@@ -101,12 +101,15 @@ namespace PythiaGex
                     sxy += dx * dy; sxx += dx * dx; syy += dy * dy; n++;
                 }
             }
-            if (n >= 13 && sxx > 0 && syy > 0)
+            if (n >= 13 && sxx > 0 && syy > 0 && (sxy * sxy) / (sxx * syy) >= 0.2)
             {
+                // r2 < 0,2 = los retornos no se parecen (visto el 15-09 con la viva de ES: beta 0,4 y r2 0,00, basura):
+                // ahi no hay beta medida, se sigue con 1 y se dice
                 double b = sxy / sxx;
                 Beta = Math.Max(0.4, Math.Min(3.0, b)); BetaN = n; BetaR2 = (sxy * sxy) / (sxx * syy);
                 BetaOrigen = "medida" + (b != Beta ? " ACOTADA" : "");
             }
+            else if (n >= 13 && sxx > 0 && syy > 0) { Beta = 1.0; BetaN = n; BetaR2 = (sxy * sxy) / (sxx * syy); BetaOrigen = "SUPUESTA (r2 " + BetaR2.ToString("0.00", CultureInfo.InvariantCulture) + " bajo, n " + n + ")"; }
             else { Beta = 1.0; BetaN = n; BetaR2 = double.NaN; BetaOrigen = "SUPUESTA (n " + n + " < 13)"; }
             Apalancamiento = 1.0 / Beta;
         }
