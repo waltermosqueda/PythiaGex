@@ -588,7 +588,7 @@ namespace PythiaGex
                 {
                     bool porOi = L.MaxAbsVol <= 0;
                     double mp = porOi ? L.MpOi : L.MpVol, mn = porOi ? L.MnOi : L.MnVol;
-                    bool mpEsDom = L.Doms.Any(d => d.Fut == mp), mnEsDom = L.Doms.Any(d => d.Fut == mn);
+                    bool mpEsDom = L.Doms.Any(d => Math.Abs(d.Fut - mp) < 1.0), mnEsDom = L.Doms.Any(d => Math.Abs(d.Fut - mn) < 1.0);   // con centroide la dominante se corre unos centavos del strike: tolerancia de 1 pt
                     if (!double.IsNaN(mp) && !mpEsDom && Math.Abs(mp - futuro) <= radioMajors)
                     { raya?.Invoke(mp, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); etiquetas.Add((mp, k.Nombre + " +Γ", col, 1, k)); }
                     if (!double.IsNaN(mn) && !mnEsDom && Math.Abs(mn - futuro) <= radioMajors)

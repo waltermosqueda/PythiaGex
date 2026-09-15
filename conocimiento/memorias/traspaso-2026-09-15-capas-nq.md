@@ -91,6 +91,11 @@ el enum es OFT.Rendering.Settings.LineDashStyle) + escalera oculta con capas: co
 5 min en el login y el operador pidio volver atras (hecho, 8142cd418). Con el DLL viejo el login tardo lo mismo:
 la demora era de la conexion, no del DLL. El codigo queda en 748eb8bfe para reintentar con calma.
 
+Bloques 14-15 (18:40-18:50): el operador decidio que las etiquetas de las capas vayan EN LA ESCALERA del eje
+("SPX D2 ▼ 28.965 −22", caja de color, ordenadas, agrupadas si coinciden) y SOLO las que caen en el rango de
+precios visible (las de afuera entran con zoom/scroll). Regla: en una columna pegada al eje nunca apilar en los
+bordes lo que no esta en pantalla. Los majors que coinciden con una dominante no se repiten (tolerancia 1 pt).
+
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
