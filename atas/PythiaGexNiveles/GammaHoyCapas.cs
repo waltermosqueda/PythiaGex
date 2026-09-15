@@ -141,20 +141,33 @@ namespace PythiaGex
         public bool CapasBarras { get; set; } = true;
 
         [Display(Name = "Capas: dibujar el perfil derecho (convexidad)", GroupName = "5. Capas extra (NQ)", Order = 11,
-                 Description = "Por capa, en su color, a la izquierda de la convexidad primaria: cuanto cambia el GEX de cada strike si el precio sube 1 % (mismo libro que la primaria: volumen si hay, OI si no). Negativas con borde rojo.")]
+                 Description = "Por capa, en su color, a la izquierda de la convexidad primaria: cuanto cambia el GEX de cada strike si el precio sube 1 % (mismo libro que la primaria: volumen si hay, OI si no). Negativas con borde rojo. En 0DTE es casi el espejo del perfil izquierdo.")]
         public bool CapasConvexidad { get; set; } = true;
 
         [Display(Name = "Capas: dibujar dominantes", GroupName = "5. Capas extra (NQ)", Order = 12)]
         public bool CapasDominantes { get; set; } = true;
 
-        [Display(Name = "Capas: dibujar majors (+Γ / −Γ de cada libro)", GroupName = "5. Capas extra (NQ)", Order = 13,
-                 Description = "La barra positiva mas grande y la negativa mas grande de cada capa, punteadas, en su color, con rotulo.")]
+        [Display(Name = "Capas: dibujar majors (+Γ / −Γ) si estan cerca", GroupName = "5. Capas extra (NQ)", Order = 13,
+                 Description = "La barra positiva mas grande y la negativa mas grande de cada capa, punteadas y tenues, en su color, solo dentro del radio de abajo y solo si no son ya una dominante.")]
         public bool CapasMajors { get; set; } = true;
 
-        [Display(Name = "Capas: dibujar el zero gamma de cada una", GroupName = "5. Capas extra (NQ)", Order = 14)]
+        [Display(Name = "Capas: majors solo a menos de (% del precio)", GroupName = "5. Capas extra (NQ)", Order = 14)]
+        [Range(0.1, 5)]
+        public decimal CapasMajorsRadioPct { get; set; } = 1.0m;
+
+        [Display(Name = "Capas: dibujar el zero gamma de cada una", GroupName = "5. Capas extra (NQ)", Order = 15)]
         public bool CapasZero { get; set; } = false;
 
-        [Display(Name = "Capas: contar toques y rebotes de hoy (sin placebo)", GroupName = "5. Capas extra (NQ)", Order = 15,
+        [Display(Name = "Capas: rayas y bandas de la primaria al (%)", GroupName = "5. Capas extra (NQ)", Order = 16,
+                 Description = "Con alguna capa prendida, las rayas y la banda de dominancia del libro primario (amarillo) se dibujan a este porcentaje de su intensidad, para que las capas se lean. 100 = como siempre.")]
+        [Range(0, 100)]
+        public int CapasAtenuarPrimariaPct { get; set; } = 40;
+
+        [Display(Name = "Capas: ancho de sus columnas (% del ancho de barras)", GroupName = "5. Capas extra (NQ)", Order = 17)]
+        [Range(15, 100)]
+        public int CapasAnchoPct { get; set; } = 35;
+
+        [Display(Name = "Capas: contar toques y rebotes de hoy (sin placebo)", GroupName = "5. Capas extra (NQ)", Order = 18,
                  Description = "Por capa: cuantas veces el precio llego a una dominante desde lejos y cuantas reboto (misma regla que el laboratorio: banda, llegada de lejos, R a favor antes que R en contra en 20 min). Es un CONTEO del dia, sin placebo: el laboratorio (capas_respeto.py) es el que juzga.")]
         public bool CapasToques { get; set; } = true;
 
@@ -169,6 +182,7 @@ namespace PythiaGex
             new CapaLibro("ES", "ES", CapaLibro.TipoCapa.VivaLocal, 1, Color.FromArgb(255, 150, 120), porBeta: true),
         };
         private DateTime _diaToques = DateTime.MinValue;
+        private bool _pintandoCapas;
 
         // la beta NQ/ES medida con las velas compartidas (una para todas las capas del S&P)
         private double _betaSp = 1.0, _betaR2 = double.NaN;
@@ -193,6 +207,14 @@ namespace PythiaGex
                 case "ES": return CapaEs;
             }
             return false;
+        }
+
+        /// <summary>Con capas activas, las rayas y bandas de la primaria bajan al porcentaje elegido; las de las capas no.</summary>
+        private int AtenuarPrimaria(int alfa)
+        {
+            if (_pintandoCapas || CapasAtenuarPrimariaPct >= 100) return alfa;
+            bool hay = false; foreach (var k in _capas) if (CapaActiva(k)) { hay = true; break; }
+            return hay ? Math.Max(0, alfa * CapasAtenuarPrimariaPct / 100) : alfa;
         }
 
         /// <summary>beta = pendiente de los retornos por minuto de NQ (este grafico) sobre los de ES (el grafico de MES),
@@ -412,108 +434,142 @@ namespace PythiaGex
             }
         }
 
-        /// <summary>Dibujo de las capas, todo en el color de la capa: columna de barras (gamma x volumen) a la derecha de la
-        /// columna primaria; columna de convexidad a la izquierda de la convexidad primaria (perfil derecho); dominantes
-        /// (raya discontinua, rotulo "D1 SPX 29.150"), majors (punteada, "+Γ SPX" / "−Γ SPX") y zero opcional; y una
-        /// leyenda abajo con la edad del dato, la beta y el conteo de toques de hoy. La primaria se dibuja despues (encima).</summary>
+        /// <summary>Dibujo de las capas (rediseño 15-09 tras "esta todo muy caotico"): todo en el color de la capa.
+        /// Izquierda: una columna finita por capa (gamma x volumen) a la derecha de la primaria. Derecha: una columna
+        /// finita por capa (convexidad) a la izquierda de la convexidad primaria. Rayas: D1 (discontinua, gruesa), D2
+        /// (discontinua, fina), majors punteados y tenues solo cerca del precio, zero opcional. Los rotulos NO van por el
+        /// medio: van todos en UNA escalera a la derecha, "SPX D1 28.989" con el cuadrado de su color adelante, ordenados
+        /// por precio y sin pisarse (si dos niveles estan pegados, el rotulo se corre y una marquita señala el precio
+        /// exacto). Leyenda abajo a la izquierda, una linea por capa. La primaria se dibuja despues, atenuada.</summary>
         private void PintarCapas(RenderContext g, IChartContainer cont, Rectangle area, int piso, int x0, int ancho, int alto,
                                  int xl0, int xl1, int xConv, int altoRot, RenderFont fRot, CultureInfo es,
                                  Action<double, Color, float, System.Drawing.Drawing2D.DashStyle, int> raya)
         {
             var activas = _capas.Where(CapaActiva).ToList();
             if (activas.Count == 0) return;
-            int anchoCapa = Math.Max(12, (int)(ancho * 0.45));
-            int xLey = Math.Max(x0 + ancho + 8, x0 + 235);   // a la derecha del cuadro Account de ATAS (visto el 15-09: lo pisaba)
-            int xConvPrim = xConv - (int)(ancho * 0.7);        // borde izquierdo de la convexidad primaria
-            bool verConv = VerConvexidad && CapasConvexidad;
-            int corrimientoRot = verConv ? activas.Count * (anchoCapa + 4) + 4 : 0;
-            for (int i = 0; i < activas.Count; i++)
+            _pintandoCapas = true;
+            try
             {
-                var k = activas[i];
-                GammaHoyNucleo.Lectura L; lock (_candado) L = k.L;
-                int xk = x0 + ancho + 4 + i * (anchoCapa + 4);                    // columna izquierda (barras)
-                int xkDer = xConvPrim - 4 - i * (anchoCapa + 4);                  // borde derecho de la columna derecha (convexidad)
-                var col = k.Color;
+                int anchoCapa = Math.Max(10, ancho * Math.Max(15, Math.Min(100, CapasAnchoPct)) / 100);
+                int xLey = Math.Max(x0 + ancho + 8, x0 + 235);   // a la derecha del cuadro Account de ATAS (visto el 15-09: lo pisaba)
+                int xConvPrim = xConv - (int)(ancho * 0.7);        // borde izquierdo de la convexidad primaria
+                bool verConv = VerConvexidad && CapasConvexidad;
+                int xRotDer = (verConv ? xConvPrim - 4 - activas.Count * (anchoCapa + 4) : xl1) - 4;   // borde derecho de la escalera de rotulos
+                double futuro; lock (_candado) futuro = _futuro;
+                double radioMajors = double.IsNaN(futuro) ? double.MaxValue : futuro * (double)CapasMajorsRadioPct / 100.0;
+                var rotulos = new List<(double Precio, string Texto, Color Col, int Peso)>();
 
-                // leyenda, una linea por capa (el numero en su propia linea, nunca al lado de un control)
-                string doms = L == null || L.Doms.Count == 0 ? "" : " · " + string.Join(" ", L.Doms.Select((d, j) => "D" + (j + 1) + " " + d.Fut.ToString("N0", es)));
-                string zero = L == null || double.IsNaN(L.ZeroVol) ? "" : " · 0Γ " + L.ZeroVol.ToString("N0", es);
-                string estado = L == null ? (k.C == null ? "sin dato" : "calculando") : k.Edad(es) + (L.SinBase ? " SIN BASE" : "");
-                string beta = !k.PorBeta ? "" : " · β " + k.Beta.ToString("0.00", es) + " " + (k.BetaOrigen.StartsWith("velas") ? "(velas n " + k.BetaN + (double.IsNaN(k.BetaR2) ? "" : ", r² " + k.BetaR2.ToString("0.00", es)) + ")" : k.BetaOrigen);
-                string toques = !CapasToques ? "" : " · toques " + k.Toques + " rebota " + k.Rebotes + (k.Pendientes.Count > 0 ? " (+" + k.Pendientes.Count + " abierto)" : "");
-                string ley = "■ " + k.Nombre + " " + estado + beta + doms + zero + toques + (string.IsNullOrEmpty(k.Error) ? "" : " · " + k.Error);
-                int yl = piso - 4 - altoRot * (activas.Count - i);
-                var ml = g.MeasureString(ley, fRot);
-                g.FillRectangle(Color.FromArgb(160, ColFondo), new Rectangle(xLey - 2, yl, ml.Width + 4, altoRot));
-                g.DrawString(ley, fRot, Color.FromArgb(230, col), xLey, yl);
-                if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
-
-                bool porOi = L.MaxAbsVol <= 0;                 // de noche no hay volumen: OI, y la columna lo dice
-                double maxK = porOi ? L.MaxAbsOi : L.MaxAbsVol;
-                if (CapasBarras && maxK > 0)
+                for (int i = 0; i < activas.Count; i++)
                 {
-                    foreach (var s in L.Perfil)
+                    var k = activas[i];
+                    GammaHoyNucleo.Lectura L; lock (_candado) L = k.L;
+                    int xk = x0 + ancho + 4 + i * (anchoCapa + 4);                    // columna izquierda (barras)
+                    int xkDer = xConvPrim - 4 - i * (anchoCapa + 4);                  // borde derecho de la columna derecha (convexidad)
+                    var col = k.Color;
+
+                    // leyenda, una linea por capa (el numero en su propia linea, nunca al lado de un control)
+                    string doms = L == null || L.Doms.Count == 0 ? "" : " · " + string.Join(" ", L.Doms.Select((d, j) => "D" + (j + 1) + " " + d.Fut.ToString("N0", es)));
+                    string estado = L == null ? (k.C == null ? "sin dato" : "calculando") : "dato de hace " + k.Edad(es).Replace("hace ", "") + (L.SinBase ? " SIN BASE" : "");
+                    if (L != null && k.C != null && k.C.EsFuturo && k.Tipo != CapaLibro.TipoCapa.VivaLocal) estado = "en vivo";
+                    string beta = !k.PorBeta ? "" : " · β " + k.Beta.ToString("0.00", es) + " " + (k.BetaOrigen.StartsWith("velas") ? "medida (n " + k.BetaN + (double.IsNaN(k.BetaR2) ? "" : ", r² " + k.BetaR2.ToString("0.00", es)) + ")" : k.BetaOrigen.ToLowerInvariant());
+                    string toques = !CapasToques ? "" : " · rebotó " + k.Rebotes + " de " + k.Toques + " toques" + (k.Pendientes.Count > 0 ? " (+" + k.Pendientes.Count + " abierto)" : "");
+                    string ley = "■ " + k.Nombre + " · " + estado + beta + doms + toques + (string.IsNullOrEmpty(k.Error) ? "" : " · " + k.Error);
+                    int yl = piso - 4 - altoRot * (activas.Count - i);
+                    var ml = g.MeasureString(ley, fRot);
+                    g.FillRectangle(Color.FromArgb(170, ColFondo), new Rectangle(xLey - 2, yl, ml.Width + 4, altoRot));
+                    g.DrawString(ley, fRot, Color.FromArgb(235, col), xLey, yl);
+                    if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
+
+                    bool porOi = L.MaxAbsVol <= 0;                 // de noche no hay volumen: OI, y la columna lo dice
+                    double maxK = porOi ? L.MaxAbsOi : L.MaxAbsVol;
+                    if (CapasBarras && maxK > 0)
                     {
-                        double v = porOi ? s.GexOi : s.GexVol;
-                        if (v == 0) continue;
-                        bool fijo = L.Doms.Any(d => d.Fut == s.Fut);
-                        if (UmbralBarraPct > 0 && Math.Abs(v) < maxK * UmbralBarraPct / 100.0 && !fijo) continue;
-                        int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
-                        if (y < area.Top || y > piso) continue;
-                        double fr = Math.Sqrt(Math.Abs(v) / maxK);
-                        int w = Math.Max(1, (int)(fr * anchoCapa));
-                        g.FillRectangle(Color.FromArgb((int)(80 + 120 * fr), col), new Rectangle(xk, y - alto / 2, w, alto));
-                        if (v < 0) g.DrawLine(new RenderPen(Color.FromArgb(220, ColNeg), 1f), xk, y + alto / 2, xk + w, y + alto / 2);
+                        foreach (var s in L.Perfil)
+                        {
+                            double v = porOi ? s.GexOi : s.GexVol;
+                            if (v == 0) continue;
+                            bool fijo = L.Doms.Any(d => d.Fut == s.Fut);
+                            if (UmbralBarraPct > 0 && Math.Abs(v) < maxK * UmbralBarraPct / 100.0 && !fijo) continue;
+                            int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
+                            if (y < area.Top || y > piso) continue;
+                            double fr = Math.Sqrt(Math.Abs(v) / maxK);
+                            int w = Math.Max(1, (int)(fr * anchoCapa));
+                            g.FillRectangle(Color.FromArgb((int)(70 + 130 * fr), col), new Rectangle(xk, y - alto / 2, w, alto));
+                            if (v < 0) g.DrawLine(new RenderPen(Color.FromArgb(200, ColNeg), 1f), xk, y + alto / 2, xk + w, y + alto / 2);
+                        }
+                        g.DrawString(k.Nombre, fRot, Color.FromArgb(220, col), xk, area.Top + 8 + altoRot + 2);
                     }
-                    g.DrawString(k.Nombre + (porOi ? " OI" : ""), fRot, Color.FromArgb(220, col), xk, area.Top + 8 + altoRot + 2);
+
+                    // perfil derecho: la convexidad de cada strike (cuanto cambia su GEX si el precio sube 1 %), normalizada a la capa
+                    if (verConv && L.MaxAbsConv > 0)
+                    {
+                        foreach (var s in L.Perfil)
+                        {
+                            if (s.Conv == 0) continue;
+                            int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
+                            if (y < area.Top || y > piso) continue;
+                            double fr = Math.Sqrt(Math.Abs(s.Conv) / L.MaxAbsConv);
+                            if (UmbralBarraPct > 0 && fr * fr < UmbralBarraPct / 100.0) continue;
+                            int w = Math.Max(1, (int)(fr * anchoCapa));
+                            g.FillRectangle(Color.FromArgb((int)(70 + 130 * fr), col), new Rectangle(xkDer - w, y - alto / 2, w, alto));
+                            if (s.Conv < 0) g.DrawLine(new RenderPen(Color.FromArgb(200, ColNeg), 1f), xkDer - w, y + alto / 2, xkDer, y + alto / 2);
+                        }
+                        var mt = g.MeasureString("Δ" + k.Nombre, fRot);
+                        g.DrawString("Δ" + k.Nombre, fRot, Color.FromArgb(220, col), xkDer - mt.Width, area.Top + 8 + altoRot + 2);
+                    }
+
+                    if (CapasDominantes)
+                    {
+                        for (int d = 0; d < L.Doms.Count; d++)
+                        {
+                            double p = L.Doms[d].Fut;
+                            raya(p, col, d == 0 ? 1.6f : 1.1f, System.Drawing.Drawing2D.DashStyle.Dash, d == 0 ? 210 : 150);
+                            rotulos.Add((p, k.Nombre + " D" + (d + 1) + " " + p.ToString("N0", es), col, d == 0 ? 3 : 2));
+                        }
+                        if (CapasZero && !double.IsNaN(L.ZeroVol))
+                        {
+                            raya(L.ZeroVol, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
+                            rotulos.Add((L.ZeroVol, k.Nombre + " 0Γ " + L.ZeroVol.ToString("N0", es), col, 1));
+                        }
+                    }
+                    if (CapasMajors)
+                    {
+                        double mp = porOi ? L.MpOi : L.MpVol, mn = porOi ? L.MnOi : L.MnVol;
+                        bool mpEsDom = L.Doms.Any(d => d.Fut == mp), mnEsDom = L.Doms.Any(d => d.Fut == mn);
+                        if (!double.IsNaN(mp) && !mpEsDom && Math.Abs(mp - futuro) <= radioMajors)
+                        { raya(mp, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); rotulos.Add((mp, k.Nombre + " +Γ " + mp.ToString("N0", es), col, 1)); }
+                        if (!double.IsNaN(mn) && !mnEsDom && Math.Abs(mn - futuro) <= radioMajors)
+                        { raya(mn, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); rotulos.Add((mn, k.Nombre + " −Γ " + mn.ToString("N0", es), col, 1)); }
+                    }
                 }
 
-                // perfil derecho: la convexidad de cada strike (cuanto cambia su GEX si el precio sube 1 %), normalizada a la capa
-                if (verConv && L.MaxAbsConv > 0)
+                // la escalera de rotulos: uno debajo del otro, por precio, sin pisarse; el cuadradito dice de quien es
+                if (rotulos.Count > 0 && Rayas != EstiloRayas.Ninguna)
                 {
-                    foreach (var s in L.Perfil)
+                    var orden = rotulos.OrderByDescending(r => r.Precio).ThenByDescending(r => r.Peso).ToList();
+                    int ultimoFondo = area.Top;
+                    int anchoMax = orden.Max(r => g.MeasureString(r.Texto, fRot).Width);
+                    int xTexto = xRotDer - anchoMax;
+                    foreach (var r in orden)
                     {
-                        if (s.Conv == 0) continue;
-                        int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
-                        if (y < area.Top || y > piso) continue;
-                        double fr = Math.Sqrt(Math.Abs(s.Conv) / L.MaxAbsConv);
-                        if (UmbralBarraPct > 0 && fr * fr < UmbralBarraPct / 100.0) continue;
-                        int w = Math.Max(1, (int)(fr * anchoCapa));
-                        g.FillRectangle(Color.FromArgb((int)(80 + 120 * fr), col), new Rectangle(xkDer - w, y - alto / 2, w, alto));
-                        if (s.Conv < 0) g.DrawLine(new RenderPen(Color.FromArgb(220, ColNeg), 1f), xkDer - w, y + alto / 2, xkDer, y + alto / 2);
+                        int y; try { y = cont.GetYByPrice((decimal)r.Precio, false); } catch { continue; }
+                        if (y < area.Top - altoRot || y > piso + altoRot) continue;
+                        int top = y - altoRot / 2;
+                        if (top < ultimoFondo + 1) top = ultimoFondo + 1;
+                        if (top + altoRot > piso) break;
+                        var m = g.MeasureString(r.Texto, fRot);
+                        int xCaja = xTexto - altoRot - 4;
+                        g.FillRectangle(Color.FromArgb(200, ColFondo), new Rectangle(xCaja - 2, top, altoRot + 6 + anchoMax + 2, altoRot));
+                        g.FillRectangle(Color.FromArgb(235, r.Col), new Rectangle(xCaja, top + 2, altoRot - 4, altoRot - 4));
+                        g.DrawString(r.Texto, fRot, Color.FromArgb(r.Peso >= 2 ? 240 : 180, r.Col), xTexto, top);
+                        // si el rotulo tuvo que correrse, una marquita señala el precio exacto
+                        if (Math.Abs(top + altoRot / 2 - y) > 2 && y >= area.Top && y <= piso)
+                            g.DrawLine(new RenderPen(Color.FromArgb(160, r.Col), 1f), xRotDer + 2, y, xRotDer + 10, y);
+                        ultimoFondo = top + altoRot;
                     }
-                    var mt = g.MeasureString("Δ" + k.Nombre, fRot);
-                    g.DrawString("Δ" + k.Nombre, fRot, Color.FromArgb(220, col), xkDer - mt.Width, area.Top + 8 + altoRot + 2);
-                }
-
-                void Rotulo(double p, string texto, int fila)
-                {
-                    int y; try { y = cont.GetYByPrice((decimal)p, false); } catch { return; }
-                    if (y < area.Top || y + altoRot > piso) return;
-                    var m = g.MeasureString(texto, fRot);
-                    int xt = xl1 - corrimientoRot - m.Width - 2 - i * (m.Width + 8);   // cada capa en su propia columna, de derecha a izquierda
-                    if (xt < xl0) xt = xl0;
-                    g.FillRectangle(Color.FromArgb(150, ColFondo), new Rectangle(xt - 1, y + 1 + fila * altoRot, m.Width + 2, altoRot));
-                    g.DrawString(texto, fRot, Color.FromArgb(230, col), xt, y + 1 + fila * altoRot);
-                }
-                if (CapasDominantes)
-                {
-                    for (int d = 0; d < L.Doms.Count; d++)
-                    {
-                        double p = L.Doms[d].Fut;
-                        raya(p, col, d == 0 ? 1.4f : 1.0f, System.Drawing.Drawing2D.DashStyle.Dash, d == 0 ? 190 : 140);
-                        Rotulo(p, "D" + (d + 1) + " " + k.Nombre + " " + p.ToString("N0", es), 0);
-                    }
-                    if (CapasZero && !double.IsNaN(L.ZeroVol)) { raya(L.ZeroVol, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120); Rotulo(L.ZeroVol, "0Γ " + k.Nombre + " " + L.ZeroVol.ToString("N0", es), 0); }
-                }
-                if (CapasMajors)
-                {
-                    double mp = porOi ? L.MpOi : L.MpVol, mn = porOi ? L.MnOi : L.MnVol;
-                    bool mpEsDom = L.Doms.Any(d => d.Fut == mp), mnEsDom = L.Doms.Any(d => d.Fut == mn);
-                    if (!double.IsNaN(mp) && !mpEsDom) { raya(mp, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 130); Rotulo(mp, "+Γ " + k.Nombre + " " + mp.ToString("N0", es), 0); }
-                    if (!double.IsNaN(mn) && !mnEsDom) { raya(mn, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 130); Rotulo(mn, "−Γ " + k.Nombre + " " + mn.ToString("N0", es), 0); }
                 }
             }
+            finally { _pintandoCapas = false; }
         }
     }
 }

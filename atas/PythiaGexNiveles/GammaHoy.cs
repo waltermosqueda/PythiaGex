@@ -1791,6 +1791,7 @@ namespace PythiaGex
                 if (double.IsNaN(p) || p <= 0) return;
                 if (Rayas == EstiloRayas.Ninguna) return;
                 if (Rayas == EstiloRayas.Tenues) { alfa = Math.Max(30, (int)(alfa * 0.3)); w = Math.Max(1f, w - 0.4f); }
+                alfa = AtenuarPrimaria(alfa);   // capas (15-09): con capas activas, la primaria baja el volumen
                 int y; try { y = cont.GetYByPrice((decimal)p, false); } catch { return; }
                 if (y < area.Top || y > piso) return;
                 // en rebobinado la raya nace en la vela del mouse: se ve desde
@@ -1815,9 +1816,9 @@ namespace PythiaGex
                     int ya, yb; try { ya = cont.GetYByPrice((decimal)doms[i].Fut, false); yb = cont.GetYByPrice((decimal)borde, false); } catch { continue; }
                     int yt = Math.Max(area.Top, Math.Min(ya, yb)), ybt = Math.Min(piso, Math.Max(ya, yb));
                     if (ybt <= yt) continue;
-                    g.FillRectangle(Color.FromArgb(i == 0 ? 28 : 18, ColDom), new Rectangle(xa, yt, Math.Max(1, xl1 - xa), ybt - yt));
+                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria(i == 0 ? 28 : 18), ColDom), new Rectangle(xa, yt, Math.Max(1, xl1 - xa), ybt - yt));
                     if (yb >= area.Top && yb <= piso)
-                        g.DrawLine(new RenderPen(Color.FromArgb(i == 0 ? 120 : 80, ColDom), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xa, yb, xl1, yb);
+                        g.DrawLine(new RenderPen(Color.FromArgb(AtenuarPrimaria(i == 0 ? 120 : 80), ColDom), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xa, yb, xl1, yb);
                 }
             }
             try { PintarCapas(g, cont, area, piso, x0, ancho, alto, xl0, xl1, xConv, altoRot, fRot, es, Raya); } catch (Exception e) { Registrar(e); }
