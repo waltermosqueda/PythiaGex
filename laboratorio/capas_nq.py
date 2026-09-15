@@ -60,7 +60,7 @@ def ultimo_audit(ticker):
     """La ultima linea AUDIT del log de ese libro: la primaria (origen=libro_CBOE_<T>_x_razon_...) o la capa (capa=<T>)."""
     if not os.path.exists(LOG):
         return None
-    pat_origen = re.compile(r"origen=libro_CBOE_" + re.escape(ticker) + r"_x_razon_([0-9.]+)")
+    pat_origen = re.compile(r"origen=libro_CBOE_" + re.escape(ticker) + r"(?:_x\d+)?_x_razon_([0-9.]+)")   # TQQQ lleva "_x3" en la fuente
     ultimo = None
     with open(LOG, encoding="utf-8", errors="replace") as f:
         for linea in f:
@@ -95,7 +95,8 @@ def ultimo_fut():
     fut = None
     with open(LOG, encoding="utf-8", errors="replace") as f:
         for linea in f:
-            if "AUDIT" in linea:
+            # solo el grafico de NQ con capas: las lineas capa= o el libro de QQQ (el log lo comparten MES y MNQ)
+            if "AUDIT" in linea and ("capa=" in linea or "_QQQ_" in linea):
                 m = re.search(r"fut=(-?[0-9.]+)", linea)
                 if m:
                     fut = float(m.group(1))
