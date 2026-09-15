@@ -186,6 +186,10 @@ namespace PythiaGex
         [Range(15, 100)]
         public int CapasAnchoPct { get; set; } = 35;
 
+        [Display(Name = "Capas: sigla de la fuente en la punta de cada barra", GroupName = "5. Capas extra (NQ)", Order = 16,
+                 Description = "En cada barra dibujada (izquierda y derecha) va la sigla de su fuente con letra minima ('SPX', y 'SPX D1' si es una dominante), sin pisarse: si dos barras estan pegadas, la de abajo no lleva sigla.")]
+        public bool CapasSiglas { get; set; } = true;
+
         [Display(Name = "Capas: estela de las dominantes por vela (guiones)", GroupName = "5. Capas extra (NQ)", Order = 17,
                  Description = "Un guion por vela, en el color de la fuente, donde estaba cada dominante en ese momento (D1 grueso, D2 fino). El pasado se rebobina desde el archivo por minuto de la nube al arrancar; el presente se va agregando en vivo. Asi se ve como se comporto cada nivel contra el precio.")]
         public bool CapasEstela { get; set; } = true;
@@ -635,6 +639,25 @@ namespace PythiaGex
             return salida;
         }
 
+        /// <summary>La sigla de la fuente en la punta de cada barra, letra minima, en su color; de arriba abajo y sin pisarse
+        /// (si dos barras estan a menos de una letra de distancia, la segunda no lleva sigla). A la derecha de la punta en las
+        /// barras de la izquierda; a la izquierda de la punta (alineada a la derecha) en las de la derecha.</summary>
+        private void Siglas(RenderContext g, List<(int Y, int X, Color Col, string Texto, bool Der)> items, Rectangle area, int piso, RenderFont fMin, int altoMin)
+        {
+            int ultimoFondo = int.MinValue;
+            foreach (var it in items.OrderBy(i => i.Y).ThenByDescending(i => i.Texto.Length))
+            {
+                int top = it.Y - altoMin / 2;
+                if (top < area.Top || top + altoMin > piso) continue;
+                if (top < ultimoFondo) continue;                 // pegada a la anterior: sin sigla
+                var m = g.MeasureString(it.Texto, fMin);
+                int x = it.Der ? it.X - m.Width : it.X;
+                g.FillRectangle(Color.FromArgb(150, ColFondo), new Rectangle(x - 1, top, m.Width + 2, altoMin));
+                g.DrawString(it.Texto, fMin, Color.FromArgb(235, it.Col), x, top);
+                ultimoFondo = top + altoMin;
+            }
+        }
+
         /// <summary>Dibujo de las capas, disposicion C "superpuestas" afinada (15-09, 17:00): solo las barras que pesan
         /// (umbral por fuente), todas desde el borde izquierdo, transparentes y la mas larga atras; la primaria de
         /// fantasma. Sin perfil derecho ni columna de precios por defecto: la guia es el COLOR de la fuente, la barra y
@@ -652,6 +675,8 @@ namespace PythiaGex
             {
                 int xLey = Math.Max(x0 + ancho + 8, x0 + 235);   // a la derecha del cuadro Account de ATAS
                 double futuro; lock (_candado) futuro = _futuro;
+                var fMin = new RenderFont("Consolas", (float)Math.Max(6m, Math.Min(12m, TamLetra - 3m)));
+                int altoMin = g.MeasureString("0", fMin).Height;
                 var lecturas = new Dictionary<CapaLibro, GammaHoyNucleo.Lectura>();
                 foreach (var k in activas) { GammaHoyNucleo.Lectura L; lock (_candado) L = k.L; lecturas[k] = L; }
 
@@ -675,7 +700,7 @@ namespace PythiaGex
                 var anchoBarra = new Dictionary<(CapaLibro, double), int>();
                 if (CapasBarras)
                 {
-                    var barras = new List<(int W, int Y, Color Col, bool Neg)>();
+                    var barras = new List<(int W, int Y, Color Col, bool Neg, string Sigla)>();
                     foreach (var k in activas)
                     {
                         var L = lecturas[k]; if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
@@ -684,13 +709,14 @@ namespace PythiaGex
                         foreach (var s in L.Perfil)
                         {
                             double v = porOi ? s.GexOi : s.GexVol; if (v == 0) continue;
-                            bool fijo = L.Doms.Any(d => d.Fut == s.Fut);
+                            int idxDom = L.Doms.FindIndex(d => Math.Abs(d.Fut - s.Fut) < 1.0);
+                            bool fijo = idxDom >= 0;
                             if (Math.Abs(v) < maxK * umbral && !fijo) continue;
                             int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                             if (y < area.Top || y > piso) continue;
                             int w = Math.Max(3, (int)(Math.Sqrt(Math.Abs(v) / maxK) * ancho));
                             anchoBarra[(k, s.Fut)] = w;
-                            barras.Add((w, y, k.Color, v < 0));
+                            barras.Add((w, y, k.Color, v < 0, k.Nombre + (fijo ? " D" + (idxDom + 1) : "")));
                         }
                     }
                     foreach (var b in barras.OrderByDescending(b => b.W))
@@ -698,6 +724,7 @@ namespace PythiaGex
                         g.FillRectangle(Color.FromArgb(120, b.Col), new Rectangle(x0, b.Y - alto / 2, b.W, alto));
                         g.DrawLine(new RenderPen(Color.FromArgb(b.Neg ? 220 : 170, b.Neg ? ColNeg : b.Col), 1f), x0, b.Y + alto / 2, x0 + b.W, b.Y + alto / 2);
                     }
+                    if (CapasSiglas) Siglas(g, barras.Select(b => (b.Y, x0 + b.W + 3, b.Col, b.Sigla, false)).ToList(), area, piso, fMin, altoMin);
                     int xt = x0 + 2;
                     foreach (var k in activas) { g.DrawString(k.Nombre, fRot, Color.FromArgb(220, k.Color), xt, area.Top + 8 + altoRot + 2); xt += g.MeasureString(k.Nombre + " ", fRot).Width; }
                 }
@@ -731,7 +758,7 @@ namespace PythiaGex
                 if (VerConvexidad && CapasConvexidadVisible)
                 {
                     int anchoDer = Math.Max(20, (int)(ancho * 0.7));
-                    var barras = new List<(int W, int Y, Color Col, bool Neg)>();
+                    var barras = new List<(int W, int Y, Color Col, bool Neg, string Sigla)>();
                     foreach (var k in activas)
                     {
                         var L = lecturas[k]; if (L == null || L.SinBase || L.Perfil.Count == 0 || L.MaxAbsConv <= 0) continue;
@@ -740,10 +767,11 @@ namespace PythiaGex
                         {
                             if (s.Conv == 0) continue;
                             double fr2 = Math.Abs(s.Conv) / L.MaxAbsConv;
-                            if (fr2 < umbral) continue;
+                            int idxDom = L.Doms.FindIndex(d => Math.Abs(d.Fut - s.Fut) < 1.0);
+                            if (fr2 < umbral && idxDom < 0) continue;
                             int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                             if (y < area.Top || y > piso) continue;
-                            barras.Add((Math.Max(3, (int)(Math.Sqrt(fr2) * anchoDer)), y, k.Color, s.Conv < 0));
+                            barras.Add((Math.Max(3, (int)(Math.Sqrt(fr2) * anchoDer)), y, k.Color, s.Conv < 0, k.Nombre + (idxDom >= 0 ? " D" + (idxDom + 1) : "")));
                         }
                     }
                     foreach (var b in barras.OrderByDescending(b => b.W))
@@ -751,6 +779,7 @@ namespace PythiaGex
                         g.FillRectangle(Color.FromArgb(120, b.Col), new Rectangle(xConv - b.W, b.Y - alto / 2, b.W, alto));
                         g.DrawLine(new RenderPen(Color.FromArgb(b.Neg ? 220 : 170, b.Neg ? ColNeg : b.Col), 1f), xConv - b.W, b.Y + alto / 2, xConv, b.Y + alto / 2);
                     }
+                    if (CapasSiglas) Siglas(g, barras.Select(b => (b.Y, xConv - b.W - 3, b.Col, b.Sigla, true)).ToList(), area, piso, fMin, altoMin);
                 }
 
                 // 4) niveles: se listan sin dibujar, se agrupan los que coinciden, y recien ahi se dibujan las rayas
