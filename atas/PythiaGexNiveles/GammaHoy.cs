@@ -1941,7 +1941,7 @@ namespace PythiaGex
                         if (VerZeroPorVela && !double.IsNaN(m.Zero))
                         {
                             int y; try { y = cont.GetYByPrice((decimal)m.Zero, false); } catch { y = int.MinValue; }
-                            if (y >= area.Top && y <= piso) g.FillEllipse(Color.FromArgb(150, ColZero), new Rectangle(x - 1, y - 1, 3, 3));
+                            if (y >= area.Top && y <= piso) g.FillEllipse(Color.FromArgb(AtenuarPrimaria(150), ColZero), new Rectangle(x - 1, y - 1, 3, 3));
                         }
                         // las semillas: el strike de mayor cambio a 30 (grande), 5 (mediana) y 1 min (chica)
                         // las semillas solo en las ultimas 90 velas (lo "adelantado" es de ahora,
@@ -1953,7 +1953,7 @@ namespace PythiaGex
                                 int y; try { y = cont.GetYByPrice((decimal)m.Mc[i], false); } catch { continue; }
                                 if (y < area.Top || y > piso) continue;
                                 int r = i == 0 ? 2 : 1;
-                                g.FillEllipse(Color.FromArgb(i == 0 ? 190 : (i == 1 ? 140 : 100), ColAviso), new Rectangle(x - r, y - r, 2 * r + 1, 2 * r + 1));
+                                g.FillEllipse(Color.FromArgb(AtenuarPrimaria(i == 0 ? 190 : (i == 1 ? 140 : 100)), ColAviso), new Rectangle(x - r, y - r, 2 * r + 1, 2 * r + 1));
                             }
                     }
                 }
