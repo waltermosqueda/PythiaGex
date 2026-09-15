@@ -2031,7 +2031,11 @@ namespace PythiaGex
             // capas (15-09): con capas activas la primaria es fantasma y no lista sus niveles; los de las capas van aca,
             // en la misma escalera, con la misma regla de no pisarse (marcados con ▮ para dibujarlos como caja de color)
             if (PrimariaSilenciada()) filas.Clear();
-            foreach (var fc in FilasCapas()) filas.Add(("▮" + fc.N, fc.P, fc.C, false));
+            // solo los niveles de las capas que estan DENTRO del rango de precios visible (pedido 15-09: "demasiadas
+            // etiquetas"): los de afuera aparecen cuando el zoom o el scroll los trae; los de la primaria siguen
+            // pegandose al borde como siempre
+            bool EnPantalla(double p) { try { int yp = cont.GetYByPrice((decimal)p, false); return yp >= area.Top && yp <= area.Bottom; } catch { return false; } }
+            foreach (var fc in FilasCapas()) if (EnPantalla(fc.P)) filas.Add(("▮" + fc.N, fc.P, fc.C, false));
             filas.Add(("", futuro, Color.FromArgb(31, 143, 124), true));
             filas.Sort((a, b) => b.P.CompareTo(a.P));
             int n = filas.Count; var y = new int[n]; var alt = new int[n]; var enPant = new bool[n];
