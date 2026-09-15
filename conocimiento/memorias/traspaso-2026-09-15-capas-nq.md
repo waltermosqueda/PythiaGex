@@ -57,6 +57,12 @@ majors solo a menos del 1 % del precio; columnas al 35 %; la primaria atenuada a
 Regla aprendida: los rotulos de niveles van en UNA columna, nunca desparramados por el medio del grafico. Y a
 una pestaña oculta ATAS no le manda OnCalculate: lo que deba correr siempre va tambien en el temporizador.
 
+Bloque 8 (16:30-16:55): entre tres previews (A apiladas, B columnas, C superpuestas; scratchpad/mockups_capas.py
+con PIL y libros reales) eligio la C: barras de todas las capas desde los bordes, transparentes, la mas larga
+atras, primaria de fantasma sin rotulos; rotulo corto adentro de la barra ("SPX D1"); y los precios de las capas
+ADENTRO de la escalera primaria como cajas de color (no quiere columnas repetidas: "a lo sumo dos"). Regla
+aprendida: los previews con datos reales le sirven para decidir; darle a elegir entre 2-3, no imponer.
+
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
