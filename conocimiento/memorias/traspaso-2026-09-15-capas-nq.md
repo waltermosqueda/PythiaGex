@@ -86,6 +86,11 @@ alineadas a la derecha, con ▲/▼/↕ y agrupadas si coinciden; nunca tocan la
 ubicar un elemento, listar TODO lo que ocupa esa zona (incluidos los paneles de la primaria) y reservarle un carril.
 Tras un reinicio el grafico tarda ~3 min en dibujar (rebobinado): no es un error.
 
+Bloque 13 (18:15-18:35): etiquetas ADENTRO del eje via LineSeries nativas (Color es System.Windows.Media.Color;
+el enum es OFT.Rendering.Settings.LineDashStyle) + escalera oculta con capas: compilo y se instalo, ATAS tardo
+5 min en el login y el operador pidio volver atras (hecho, 8142cd418). Con el DLL viejo el login tardo lo mismo:
+la demora era de la conexion, no del DLL. El codigo queda en 748eb8bfe para reintentar con calma.
+
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
