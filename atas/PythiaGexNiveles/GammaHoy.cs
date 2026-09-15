@@ -492,6 +492,7 @@ namespace PythiaGex
             EnableCustomDrawing = true;
             SubscribeToDrawingEvents(DrawingLayouts.Final);
             DrawAbovePrice = false;
+            InicializarLineasEje();   // capas (15-09): los niveles de las capas como LineSeries nativas, con rotulo en el eje
             if (DataSeries.Count > 0 && DataSeries[0] is ValueDataSeries v)
             {
                 v.IsHidden = true;
@@ -1558,6 +1559,7 @@ namespace PythiaGex
                 ? "GAMMA HOY  esperando cadena" + (string.IsNullOrEmpty(_error) ? "" : " (" + _error + ")")
                 : "GAMMA HOY  " + corto + "  " + cuad + "   conv " + (convPrecio >= 0 ? "+" : "-") + " (" + libroConv + ")  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)) + (mucho ? " mucho" : " poco");
             string l2 = (c != null && c.EsFuturo ? "libro " + Raiz() + " Rithmic " + edad + " · " + c.Filas.Count + " filas" : "vol CBOE " + edad) + " · OI de ayer · base " + origenBase + " · dominantes por " + libroDom
+                      + (PrimariaSilenciada() ? " · net vol " + (netVol / 1e6).ToString("+0;-0", es) + "M · net OI " + (netOi / 1e9).ToString("+0.0;-0.0", es) + "B" : "")
                       + (Libro == LibroEnVivo.Rithmic_ES && _vivaFlaca >= 0 ? " · RITHMIC FLACO: " + _vivaFlaca + " strikes con puntas, sigo con CBOE" : "")
                       + (_viva.Activa ? " · vivo Rithmic " + ((int)_viva.VolumenTotalHoy()).ToString("N0", es) + " contr" : " · vivo: " + _viva.Estado);
             if (Fuente != FuenteDatos.Archivo)
@@ -1606,7 +1608,8 @@ namespace PythiaGex
 
             int x0 = area.Left;
             int ancho = Math.Max(30, AnchoBarras);
-            int xLad = VerEscalera ? xr - Math.Max(80, AnchoEscalera) : xr;
+            bool escalera = VerEscalera && !PrimariaSilenciada();   // capas (15-09): sin escalera cuando la primaria es fantasma
+            int xLad = escalera ? xr - Math.Max(80, AnchoEscalera) : xr;
             int xConv = xLad - 6;                       // borde derecho de la convexidad
             int xl0 = x0 + ancho + 8, xl1 = (VerConvexidad ? xConv - (int)(ancho * 0.7) - 8 : xLad - 8);
             if (xl1 - xl0 < 60) { xl0 = x0 + 2; xl1 = xLad - 2; }
@@ -1978,7 +1981,7 @@ namespace PythiaGex
             }
 
             // ---- la escalera pegada al eje
-            if (VerEscalera) Escalera(g, cont, area, xLad, xr, piso, f, fChica, futuro, zeroVol, zeroOi, mpVol, mnVol, doms, mc, netVol, netOi);
+            if (escalera) Escalera(g, cont, area, xLad, xr, piso, f, fChica, futuro, zeroVol, zeroOi, mpVol, mnVol, doms, mc, netVol, netOi);
         }
 
         private int BarraDe(DateTime horaUtc)
