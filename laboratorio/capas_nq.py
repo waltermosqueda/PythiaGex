@@ -32,6 +32,7 @@ MULT = 100.0
 PISO_DIAS = 1.0 / 1440.0
 RADIO_DOM_PCT = 2.0     # "Dominantes: radio alrededor del precio (%)" por defecto
 CUANTAS = 2
+UNA_POR_LADO = True     # "Canal: una dominante por lado" (por defecto en el indicador)
 TASA = 0.045
 
 
@@ -154,7 +155,15 @@ def recalcular(d, fut, razon, apal, ahora):
 
     radio = fut * RADIO_DOM_PCT / 100.0
     cerca = [p for p in perfil if abs(p[1] - fut) <= radio and p[2] != 0]
-    doms = sorted(cerca, key=lambda p: -abs(p[2]))[:CUANTAS]
+    # "Canal: una dominante por lado" (ajuste por defecto del indicador): la mas fuerte ARRIBA del precio y la mas
+    # fuerte ABAJO; sin ese ajuste, las CUANTAS mas fuertes sin mirar el lado
+    if UNA_POR_LADO:
+        arriba = [p for p in cerca if p[1] >= fut]
+        abajo = [p for p in cerca if p[1] < fut]
+        doms = [x for x in (max(arriba, key=lambda p: abs(p[2]), default=None), max(abajo, key=lambda p: abs(p[2]), default=None)) if x]
+        doms = sorted(doms, key=lambda p: -abs(p[2]))
+    else:
+        doms = sorted(cerca, key=lambda p: -abs(p[2]))[:CUANTAS]
     pos = [p for p in perfil if p[2] > 0]
     neg = [p for p in perfil if p[2] < 0]
     mp = max(pos, key=lambda p: p[2]) if pos else None
