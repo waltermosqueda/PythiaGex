@@ -96,6 +96,10 @@ Bloques 14-15 (18:40-18:50): el operador decidio que las etiquetas de las capas 
 precios visible (las de afuera entran con zoom/scroll). Regla: en una columna pegada al eje nunca apilar en los
 bordes lo que no esta en pantalla. Los majors que coinciden con una dominante no se repiten (tolerancia 1 pt).
 
+Bloque 16 (18:55): en la escalera, jerarquia por TAMAÑO (D1 normal, D2 chica, zero/majors minima) en vez de
+correr las filas; marquita al precio exacto y rayita si se corre. Verificado 19:00. Regla del operador: cuando
+las etiquetas se pisan, achicarlas por jerarquia, no esconderlas ni correrlas lejos.
+
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
