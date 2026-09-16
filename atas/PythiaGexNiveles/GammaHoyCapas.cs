@@ -946,14 +946,15 @@ namespace PythiaGex
                             {
                                 int y; try { y = cont.GetYByPrice((decimal)gu.Fut, false); } catch { continue; }
                                 if (y < area.Top || y > piso) continue;
-                                int rango = gu.Rango % 10; bool relleno = gu.Rango >= 10;   // tenue: el nivel se mantuvo sin dato nuevo
+                                // ESTILO C, "PUNTOS FINOS" (elegido por el operador 16-09 02:45 entre cuatro variantes): puntitos chicos e
+                                // iguales para D1 y D2, nuevos o sostenidos, sin bandas gruesas ni brillo; el zero, mas chico y mas tenue.
+                                int rango = gu.Rango % 10;
                                 if (rango == 2)
                                 {
-                                    if (CapasZero) g.FillEllipse(Color.FromArgb(relleno ? 70 : 200, k.Color), new Rectangle(x - 2, y - 2, 4, 4));   // el zero: puntito por vela
+                                    if (CapasZero) g.FillEllipse(Color.FromArgb(130, k.Color), new Rectangle(x - 1, y - 1, 3, 3));
                                     continue;
                                 }
-                                int h = relleno ? 1 : (rango == 0 ? grueso : fino);
-                                Marca(g, relleno ? FormaMarca.Guion : FormaEstela, Color.FromArgb(relleno ? 60 : (rango == 0 ? 225 : 150), k.Color), x, y, bw, h);
+                                g.FillEllipse(Color.FromArgb(190, k.Color), new Rectangle(x - 2, y - 2, 4, 4));
                             }
                         }
                     }
