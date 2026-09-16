@@ -47,23 +47,38 @@ volumen del 0DTE (9:30).
   y "empate 50 %" (6/29): la regla del indicador es la que mejor reproduce el log. Los minutos que no coinciden son
   los de la seccion 4.
 
-## 4. Lo que NO se pudo reproducir hoy, y por que
+## 4. Lo que al principio NO se reproducia, y la causa real (corregido a las 21:00)
 
-Minutos de la rueda (p. ej. NDX 14:14: el log dice 28900 = −2.227M y 29000 = +1.595M con 282 strikes; ninguna cadena
-guardada da eso: todas dan −3.000…−4.100M y 260-264 strikes). Causas encontradas, en orden:
+Durante una hora parecio que minutos enteros de la rueda no cerraban (NDX 14:14: el log decia 28900 = −2.227M y
+29000 = +1.595M con 282 strikes, y ninguna cadena guardada daba eso). La causa era MIA, no del indicador:
 
-1. **El grafico con las capas estuvo en horizonte "Todo"** hasta el reinicio de las 19:22 (arranque de las 14:09:43:
-   `raiz=NQ horizonte=Todo`). Las capas copian los ajustes de la primaria, horizonte incluido. Firma en el log de
-   las capas: strikes 280-281 y netOi POSITIVO, que es lo que da el nucleo con Todo (260 y netOi negativo con Hoy).
-   El auditor asumia Hoy. Desde las 19:22 todos los graficos estan en Hoy (y el C# con Hoy reproduce el log).
-2. **Ni la nube ni el archivo local guardan cada version de la cadena**: los dos deduplican por el sello de CBOE
-   (`ts|base`). La version que la capa tenia en un minuto dado puede no existir en ningun archivo. El log de la
-   capa tampoco decia que cadena uso (`edadFeed` era la edad de la cadena AL GENERARSE, no hasta ahora).
-3. **La nube "cada minuto" corre cada 8-25 minutos** (`gh run list --workflow=cadenas.yml`: 13:13, 13:29, 13:42,
-   13:51, 13:59, 14:22 UTC…): el cron de GitHub no garantiza el minuto. El radar (actualizar.yml) tambien va cada
-   3-15 min. Es decir: el dato de las capas es CBOE 15 min tarde MAS hasta 25 min de nube.
-4. Aun con Todo, el C# sobre las cadenas guardadas no da los numeros del log de esos minutos: la version exacta se
-   perdio (causa 2). No se afirma nada mas sobre esos minutos hasta repetir la auditoria con 1.10b.
+1. **El auditor asumia que el log va en UTC−4. La maquina esta en UTC−3 (Argentina)**: cada minuto quedaba corrido
+   una hora, apareado con la cadena equivocada y envejecido una hora de mas. Con la hora correcta, la cadena que la
+   capa tenia (la `ultima` generada 17:06:18Z, sello de CBOE 17:05:38, o sea 8 min de nube + 15 de CBOE) y el
+   horizonte del grafico, `Rebobina --prueba --ahora 2026-09-15T17:13:55Z --horizonte Todo` reproduce la linea de
+   las 14:13:55 **exactamente**: strikes 282, netVol −7,393B, netOi +0,753B, D1 29.000 = +1.595M, D2 28.900 =
+   −2.227M, majors 29.050 / 28.900, zero 28.991 (en el libro). Regla 7 del protocolo: se dice de frente.
+2. **El grafico con las capas estuvo en horizonte "Todo"** hasta el reinicio de las 19:22 (arranque de las 14:09:43:
+   `raiz=NQ horizonte=Todo`); las capas copian los ajustes de la primaria, horizonte incluido. Firma en el log:
+   strikes 280-282 y netOi positivo (con Hoy: 260 y negativo). Desde las 19:22 todos los graficos estan en Hoy.
+3. **Ni la nube ni el archivo local guardaban cada version de la cadena** (los dos deduplican por el sello de CBOE
+   `ts|base`) y el log de la capa no decia que cadena uso. Arreglado en 1.10b (seccion 5).
+4. **La nube "cada minuto" corre cada 8-25 minutos** (`gh run list --workflow=cadenas.yml`: 13:13, 13:29, 13:42,
+   13:51, 13:59, 14:22 UTC…): el cron de GitHub no garantiza el minuto; el radar (actualizar.yml) va cada 3-15 min.
+   El dato de las capas es CBOE 15 min tarde MAS hasta 25 min de nube.
+
+**Resultado con la hora correcta** (`auditar_estela.py`, tolerancia 15 pts, misma cadena):
+
+| Tramo | Horizonte usado | QQQ | SPX | SPY | NDX |
+|---|---|---|---|---|---|
+| Rueda (hasta 19:22) | Todo | 12/26 | 47/81 | 23/40 | **96/101** |
+| Rueda (hasta 19:22) | Hoy (control) | **26/26** | **74/81** | **38/40** | — |
+| Noche (desde 19:23) | Hoy | **45/45** | **41/41** | **43/43** | **45/45** |
+
+Queda abierto (no se afirma): NDX cierra exacto con Todo y los ETF cierran mejor con Hoy, aunque el codigo copia el
+mismo horizonte a todas las capas. Desde 1.10b cada linea AUDIT de capa anota `horizonte=`, `cadenaTs=` y `gen=`:
+manana se aparea exacto y se cierra. Los pocos minutos que faltan en la rueda son saltos al strike vecino (SPX
+7575↔7580, SPY 755↔750) con la cadena archivada mas cercana, que puede no ser la version exacta (causa 3).
 
 ## 5. Corregido hoy (Gamma Hoy 1.10b, DLL instalada y ATAS reiniciado)
 
@@ -78,7 +93,8 @@ guardada da eso: todas dan −3.000…−4.100M y 260-264 strikes). Causas encon
 
 ### Visto en pantalla (20:58 local, 1.10b)
 
-Leyenda: NDX "dato de hace 32 min", QQQ 17, SPX 36, SPY 36, ES 2 (viva local); cabecera "vol CBOE 32 min tarde".
+Leyenda: NDX "dato de hace 32 min", QQQ 17, SPX 36, SPY 36 → 21 al minuto siguiente (bajo una cadena nueva), ES 2
+(viva local); cabecera "vol CBOE 32 min tarde".
 Contra el log: NDX: cadena de CBOE 23:41:22Z generada 23:47:58Z -> edad real ahora 32 min (log 2026-09-15T20:58:14); QQQ: cadena de CBOE 23:55:57Z generada 23:56:21Z -> edad real ahora 18 min (log 2026-09-15T20:58:14); SPX: cadena de CBOE 23:37:32Z generada 23:39:28Z -> edad real ahora 36 min (log 2026-09-15T20:58:14); SPY: cadena de CBOE 23:55:48Z generada 23:56:24Z -> edad real ahora 18 min (log 2026-09-15T20:58:14). Antes de 1.10b la misma leyenda habria dicho ~25 min.
 
 ## 6. Propuesta (no implementada: espera la palabra del operador)
@@ -98,5 +114,25 @@ cd "C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex" && python laboratori
 Un minuto puntual con el nucleo C# (la cadena sale del `local-NQ-<dia>.jsonl` o de `ultima-NQ.json`):
 
 ```bash
-atas/Rebobina/bin/Release/Rebobina.exe --prueba cadena.json --precio 28966 --ahora 2026-09-15T18:14:56Z --horizonte Hoy --tabla 20
+atas/Rebobina/bin/Release/Rebobina.exe --prueba cadena.json --precio 28966 --ahora 2026-09-15T17:14:56Z --horizonte Hoy --tabla 20
 ```
+
+Ojo con la hora: el log del indicador va en hora local de la maquina (UTC−3); `--ahora` va en UTC.
+
+## 8. "Las ambar y los zero grises no aparecen" (pregunta de las 21:05)
+
+- **Las ambar son la primaria del grafico.** En el grafico que mira (cabecera "base CRUDA 148 ticks") la primaria es
+  el libro NDX, y desde el bloque 18 de hoy se oculta a proposito cuando la capa NDX esta prendida: es la misma cuenta
+  y se dibujaba dos veces (la leyenda lo dice: "primaria (ambar) = NDX: misma cuenta que la capa NDX, oculta"). Las
+  mismas dominantes estan dibujadas en blanco por la capa NDX; esta noche caen en 29.553 / 28.903 (libro flaco,
+  seccion 2), sean ambar o blancas. Para verlas ambar de nuevo: "Capas: atenuar primaria %" = 100 o apagar la capa NDX.
+- **El zero gris esta**: es la raya guion-punto con la sigla "0Γ NDX" en 29.165 (se ve en su propia captura).
+- **Lo que recuerda "cerca del precio de noche" era el libro QQQ**: anoche (14-09, 21:17-22:58) la primaria del
+  grafico de NQ era `libro_CBOE_QQQ` y sus dominantes estaban a +5…+63 / −3…−36 pts del precio con 0,8-1,2B.
+  Esta noche el libro QQQ de manana tiene sus barras grandes en 708 / 700 (29.395 / 29.063, +115 / −217 pts,
+  625M / −545M): es el dato del dia, no el dibujo. Esos niveles se ven en celeste (QQQ D1 / D2).
+- **El libro vivo de Rithmic (capa RITHMIC) quedo vacio por mis reinicios**: el volumen del dia de las opciones de
+  NQ por Rithmic se acumula solo mientras ATAS esta abierto, y hoy reinicie dos veces (19:22 por el contrato
+  MNQZ6, 20:56 por 1.10b). A las 21:02 la capa RITHMIC tiene netVol 0,002B (nada) y Rithmic rechazo las series
+  del 15 y 16-09 ("no data"), como en la memoria nq-rithmic-pierde-0dte. Se recupera con la rueda de manana. Es un
+  costo real de reiniciar de noche: queda anotado.

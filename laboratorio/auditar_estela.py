@@ -84,6 +84,9 @@ def cargar_cadenas(ticker, dia):
     return unicas
 
 
+ZONA_LOG = datetime.now().astimezone().tzinfo    # la zona del log = la de la maquina que corre ATAS (UTC-3 en esta)
+
+
 def lineas_audit(ticker, dia):
     pat = re.compile(r"^(\S+)\s+AUDIT capa=" + re.escape(ticker) + r" (.*)$")
     out = []
@@ -92,7 +95,7 @@ def lineas_audit(ticker, dia):
             m = pat.match(l.rstrip())
             if not m or not m.group(1).startswith(dia):
                 continue
-            ts = datetime.fromisoformat(m.group(1)).replace(tzinfo=timezone(timedelta(hours=-4)))  # el log va en hora local (UTC-4)
+            ts = datetime.fromisoformat(m.group(1)).replace(tzinfo=ZONA_LOG)   # el log va en hora LOCAL de la maquina (UTC-3 aca, medido)
             r = m.group(2)
             def num(k):
                 mm = re.search(k + r"=(-?[0-9.]+|NaN)", r)
@@ -126,6 +129,14 @@ def main():
     if "--sin-lado" in sys.argv: cq.UNA_POR_LADO = False        # hipotesis: el grafico no tiene "una dominante por lado"
     emp = next((sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--empate"), None)
     if emp is not None: cq.EMPATE_PCT = float(emp)             # hipotesis: otro % de empate tecnico
+    global ZONA_LOG
+    off = next((sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--utc-offset"), None)
+    if off is not None: ZONA_LOG = timezone(timedelta(hours=float(off)))   # log de otra maquina
+    hor = next((sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--horizonte"), None)
+    if hor is not None: cq.HORIZONTE = hor                     # para lineas AUDIT viejas, sin horizonte= (antes de 1.10b)
+    desde = next((sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--desde"), "00:00")
+    hasta = next((sys.argv[i + 1] for i, a in enumerate(sys.argv) if a == "--hasta"), "23:59")
+    print(f"log en hora local {ZONA_LOG}; horizonte por defecto {cq.HORIZONTE}; ventana {desde}-{hasta} (hora del log)")
     print(f"regla de dominantes usada: una por lado={cq.UNA_POR_LADO}, empate {cq.EMPATE_PCT} %, radio {cq.RADIO_DOM_PCT} %, tasa {cq.TASA}")
     try:
         nq = yahoo_1m("NQ=F"); print(f"Yahoo NQ=F: {len(nq)} minutos, ultimo {max(nq.items())[1]:.2f}")
@@ -146,6 +157,7 @@ def main():
         dif_spot, dif_fut, dif_razon, arriba, abajo, sin_cadena = [], [], [], [], [], 0
         dif_fut_dic = []
         ejemplos = []
+        au = [a for a in au if desde <= a["ts"].astimezone(ZONA_LOG).strftime("%H:%M") <= hasta]
         for i, a in enumerate(au):
             if i % cada:
                 continue
@@ -185,7 +197,7 @@ def main():
             ok = len(f_log) == len(f_prop) and all(abs(x - y) <= 15 for x, y in zip(f_log, f_prop))
             coinciden += ok
             if not ok and len(ejemplos) < 4:
-                ejemplos.append(f"    {a['ts'].astimezone(timezone(timedelta(hours=-4))).strftime('%H:%M')} log {ks_log} ({[round(x) for x in f_log]}) vs propio {ks_prop} ({[round(x) for x in f_prop]}) (cadena {g.strftime('%H:%M:%S')}Z, edad {edad_arch:.1f} min)")
+                ejemplos.append(f"    {a['ts'].astimezone(ZONA_LOG).strftime('%H:%M')} log {ks_log} ({[round(x) for x in f_log]}) vs propio {ks_prop} ({[round(x) for x in f_prop]}) (cadena {g.strftime('%H:%M:%S')}Z, edad {edad_arch:.1f} min)")
             # 2) externo: el spot de la cadena vs Yahoo al minuto del ts de CBOE; el futuro vs NQ=F al minuto del AUDIT
             ts_cboe = d["cadena"].get("ts")
             if ts_cboe and ext and spot > 0:
