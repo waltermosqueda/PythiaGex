@@ -713,6 +713,15 @@ namespace PythiaGex
         public Dictionary<double, (double bid, double ask)> ApoyoPorStrike()
         {
             var d = new Dictionary<double, (double bid, double ask)>();
+            foreach (var kv in ApoyoPorStrikeLados()) d[kv.Key] = (kv.Value.cb + kv.Value.pb, kv.Value.ca + kv.Value.pa);
+            return d;
+        }
+
+        /// <summary>Apoyo por strike y por lado (16-09, pedido: "que discrimine call/put y compra/venta"): cb = contratos
+        /// apoyados en la punta compradora de los CALLS, ca = en la vendedora de los calls, pb/pa idem de los PUTS.</summary>
+        public Dictionary<double, (double cb, double ca, double pb, double pa)> ApoyoPorStrikeLados()
+        {
+            var d = new Dictionary<double, (double cb, double ca, double pb, double pa)>();
             lock (_llave)
             {
                 foreach (var code in _codigos)
@@ -723,8 +732,9 @@ namespace PythiaGex
                     double b = _bids.TryGetValue(code, out var nb) ? (double)nb.Values.Sum() : 0;
                     double a = _asks.TryGetValue(code, out var na) ? (double)na.Values.Sum() : 0;
                     if (b <= 0 && a <= 0) continue;
+                    bool call = s.Security.OptionType == OptionTypes.Call;
                     d.TryGetValue(K, out var acc);
-                    d[K] = (acc.bid + b, acc.ask + a);
+                    d[K] = (acc.cb + (call ? b : 0), acc.ca + (call ? a : 0), acc.pb + (call ? 0 : b), acc.pa + (call ? 0 : a));
                 }
             }
             return d;

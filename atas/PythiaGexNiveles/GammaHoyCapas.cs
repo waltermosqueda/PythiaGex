@@ -247,8 +247,17 @@ namespace PythiaGex
         private DateTime _ultimaBeta = DateTime.MinValue;
 
         /// <summary>Solo en NQ/MNQ (no inventar capas de ES) y solo si su llave esta prendida.</summary>
+        private static readonly Dictionary<PaletaCapas, Dictionary<string, Color>> PALETAS = new()
+        {
+            [PaletaCapas.VerdeVioleta] = new() { ["NQ"] = Color.FromArgb(140, 255, 50), ["NDX"] = Color.FromArgb(61, 220, 151), ["QQQ"] = Color.FromArgb(79, 195, 247), ["ES"] = Color.FromArgb(180, 120, 255), ["SPX"] = Color.FromArgb(224, 112, 240), ["SPY"] = Color.FromArgb(207, 168, 255) },
+            [PaletaCapas.VerdeNaranja] = new() { ["NQ"] = Color.FromArgb(140, 255, 50), ["NDX"] = Color.FromArgb(32, 197, 181), ["QQQ"] = Color.FromArgb(90, 210, 255), ["ES"] = Color.FromArgb(255, 150, 64), ["SPX"] = Color.FromArgb(255, 122, 112), ["SPY"] = Color.FromArgb(255, 196, 92) },
+            [PaletaCapas.VerdeRosa] = new() { ["NQ"] = Color.FromArgb(140, 255, 50), ["NDX"] = Color.FromArgb(108, 230, 166), ["QQQ"] = Color.FromArgb(96, 200, 255), ["ES"] = Color.FromArgb(255, 90, 160), ["SPX"] = Color.FromArgb(255, 127, 208), ["SPY"] = Color.FromArgb(255, 179, 224) },
+            [PaletaCapas.FrioCalido] = new() { ["NQ"] = Color.FromArgb(141, 255, 58), ["NDX"] = Color.FromArgb(43, 226, 255), ["QQQ"] = Color.FromArgb(90, 168, 255), ["ES"] = Color.FromArgb(255, 107, 92), ["SPX"] = Color.FromArgb(255, 160, 60), ["SPY"] = Color.FromArgb(255, 225, 77) },
+        };
+
         private Color ColorDeCapa(CapaLibro k)
         {
+            if (Paleta != PaletaCapas.Personalizada && PALETAS.TryGetValue(Paleta, out var pal) && pal.TryGetValue(k.Nombre, out var cp)) return cp;
             switch (k.Nombre)
             {
                 case "QQQ": return De(ColorCapaQqq);
@@ -670,7 +679,7 @@ namespace PythiaGex
                     Log("AUDIT capa=" + k.Nombre + " " + GammaHoyNucleo.Audit(L, c, k.Tipo == CapaLibro.TipoCapa.RithmicViva).Substring(6)
                         + (k.PorBeta ? " beta=" + k.Beta.ToString("0.###", inv) + " betaN=" + k.BetaN + " betaR2=" + (double.IsNaN(k.BetaR2) ? "NaN" : k.BetaR2.ToString("0.00", inv)) + " betaOrigen=" + k.BetaOrigen.Replace(' ', '_') + " velasNQ=" + VelasCompartidas.Serie(Raiz()).Count + " velasES=" + VelasCompartidas.Serie("ES").Count : "")
                         + " toques=" + k.Toques + " rebotes=" + k.Rebotes
-                        + (k.Tipo == CapaLibro.TipoCapa.RithmicViva ? " apoyo=" + string.Join("/", _viva.ApoyoPorStrike().OrderByDescending(z => z.Value.bid + z.Value.ask).Take(3).Select(z => z.Key.ToString("0", inv) + ":" + (z.Value.bid + z.Value.ask).ToString("0", inv))) + " evProf=" + _viva.EventosProfundidad : "")
+                        + (k.Tipo == CapaLibro.TipoCapa.RithmicViva ? " apoyo=" + string.Join("/", _viva.ApoyoPorStrikeLados().OrderByDescending(z => z.Value.cb + z.Value.ca + z.Value.pb + z.Value.pa).Take(3).Select(z => z.Key.ToString("0", inv) + ":C" + z.Value.cb.ToString("0", inv) + "|" + z.Value.ca.ToString("0", inv) + "P" + z.Value.pb.ToString("0", inv) + "|" + z.Value.pa.ToString("0", inv))) + " evProf=" + _viva.EventosProfundidad : "")
                         + " cadenaTs=" + (c.Ts ?? "").Replace(' ', '_') + " gen=" + (c.GeneradoUtc == default(DateTime) ? "?" : c.GeneradoUtc.ToString("HH:mm:ss", inv))
                         + " horizonte=" + k.Nucleo.A.Horizonte + " fuente=" + (c.Fuente ?? "").Replace(' ', '_'));
                 }
@@ -954,7 +963,10 @@ namespace PythiaGex
                                     if (CapasZero) g.FillEllipse(Color.FromArgb(130, k.Color), new Rectangle(x - 1, y - 1, 3, 3));
                                     continue;
                                 }
-                                g.FillEllipse(Color.FromArgb(190, k.Color), new Rectangle(x - 2, y - 2, 4, 4));
+                                // forma por tipo (16-09): indice y opciones del futuro = guion fino; ETF = punto
+                                bool guion = CapasFormaPorTipo && k.Tipo != CapaLibro.TipoCapa.EtfPorRazon;
+                                if (guion) g.FillRectangle(Color.FromArgb(190, k.Color), new Rectangle(x - bw / 2, y - 1, Math.Max(3, bw), 2));
+                                else g.FillEllipse(Color.FromArgb(190, k.Color), new Rectangle(x - 2, y - 2, 4, 4));
                             }
                         }
                     }
@@ -1046,14 +1058,17 @@ namespace PythiaGex
                     var kNq = activas.FirstOrDefault(z => z.Tipo == CapaLibro.TipoCapa.RithmicViva);
                     if (kNq != null && VivaProfundidad)
                     {
-                        var ap = _viva.ApoyoPorStrike();
-                        foreach (var z in ap.OrderByDescending(q => q.Value.bid + q.Value.ask).Take(3))
+                        var ap = _viva.ApoyoPorStrikeLados();
+                        foreach (var z in ap.OrderByDescending(q => q.Value.cb + q.Value.ca + q.Value.pb + q.Value.pa).Take(3))
                         {
                             int ya; try { ya = cont.GetYByPrice((decimal)z.Key, false); } catch { continue; }
                             if (ya < area.Top || ya > piso) continue;
                             var ptsR = new[] { new Point(xl0 + 6, ya - 4), new Point(xl0 + 10, ya), new Point(xl0 + 6, ya + 4), new Point(xl0 + 2, ya) };
                             g.FillPolygon(Color.FromArgb(200, kNq.Color), ptsR);
-                            g.DrawString("apoyo " + (z.Value.bid + z.Value.ask).ToString("N0", es), fMin, Color.FromArgb(200, kNq.Color), xl0 + 13, ya - altoMin / 2);
+                            // "apoyo 234 · C 120|60 · P 30|24": total; calls compra|venta; puts compra|venta (contratos apoyados)
+                            double tot = z.Value.cb + z.Value.ca + z.Value.pb + z.Value.pa;
+                            string txt = "apoyo " + tot.ToString("N0", es) + " · C " + z.Value.cb.ToString("N0", es) + "|" + z.Value.ca.ToString("N0", es) + " · P " + z.Value.pb.ToString("N0", es) + "|" + z.Value.pa.ToString("N0", es);
+                            g.DrawString(txt, fMin, Color.FromArgb(200, kNq.Color), xl0 + 13, ya - altoMin / 2);
                         }
                     }
                 }

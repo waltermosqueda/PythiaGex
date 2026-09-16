@@ -102,6 +102,16 @@ namespace PythiaGex
         public enum EstiloLinea { Continua, Guiones, Puntos, GuionPunto }
         public enum FormaMarca { Guion, Punto, Cuadrado, Rombo, Triangulo }
 
+        public enum PaletaCapas { Personalizada, VerdeVioleta, VerdeNaranja, VerdeRosa, FrioCalido }
+
+        [Display(Name = "Capas: paleta por familia", GroupName = "6. Estilo (líneas, colores, textos)", Order = 0,
+                 Description = "Nasdaq (NQ, NDX, QQQ) en una familia de colores y S&P (ES, SPX, SPY) en otra, vecinos entre si. VerdeVioleta la eligio el operador el 16-09 entre cuatro. Personalizada: usa los colores de abajo.")]
+        public PaletaCapas Paleta { get; set; } = PaletaCapas.VerdeVioleta;
+
+        [Display(Name = "Capas: forma por tipo de libro (índice y futuro = guión, ETF = punto)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 3,
+                 Description = "En la estela, NQ, NDX, ES y SPX se dibujan como guiones y QQQ y SPY como puntos, para que la forma diga que tipo de libro es (pedido 16-09). Apagado: todos puntos.")]
+        public bool CapasFormaPorTipo { get; set; } = true;
+
         [Display(Name = "Estela: forma de la marca por vela", GroupName = "6. Estilo (líneas, colores, textos)", Order = 1,
                  Description = "Como se dibuja cada dominante en cada vela (primaria y capas): guion, punto, cuadrado, rombo o triangulo.")]
         public FormaMarca FormaEstela { get; set; } = FormaMarca.Guion;
@@ -719,7 +729,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10v (capas NQ, estela puntos finos) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10w (capas NQ, paleta por familia, apoyo por lado) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
