@@ -65,7 +65,7 @@ namespace PythiaGex
         public readonly TipoCapa Tipo;
         public readonly bool PorBeta;         // otro subyacente: apalancamiento = 1 / beta medida
         public double Apalancamiento;         // 1 (QQQ), 3 (TQQQ), 1/beta (SPX, SPY, ES): solo cambia a que precio del futuro va cada strike
-        public readonly Color Color;
+        public Color Color;                   // se sincroniza con los ajustes de "6. Estilo" en cada dibujo
 
         public Feed.Cadena C;                                   // la ultima cadena bajada
         public readonly GammaHoyNucleo Nucleo = new();          // su propio nucleo (fotos del Max Change propias, sin uso)
@@ -237,6 +237,22 @@ namespace PythiaGex
         private DateTime _ultimaBeta = DateTime.MinValue;
 
         /// <summary>Solo en NQ/MNQ (no inventar capas de ES) y solo si su llave esta prendida.</summary>
+        private Color ColorDeCapa(CapaLibro k)
+        {
+            switch (k.Nombre)
+            {
+                case "QQQ": return De(ColorCapaQqq);
+                case "TQQQ": return De(ColorCapaTqqq);
+                case "NDX": return De(ColorCapaNdx);
+                case "NQ": return De(ColorCapaNq);
+                case "SPX": return De(ColorCapaSpx);
+                case "SPY": return De(ColorCapaSpy);
+                case "ES": return De(ColorCapaEs);
+            }
+            return k.Color;
+        }
+        private void SincronizarColoresCapas() { foreach (var k in _capas) k.Color = ColorDeCapa(k); }
+
         private bool CapaActiva(CapaLibro k)
         {
             if (Fuente == FuenteDatos.Archivo) return false;
@@ -619,13 +635,13 @@ namespace PythiaGex
                     for (int d = 0; d < L.Doms.Count; d++)
                     {
                         double p = L.Doms[d].Fut;
-                        raya?.Invoke(p, col, d == 0 ? 1.6f : 1.1f, System.Drawing.Drawing2D.DashStyle.Dash, d == 0 ? 210 : 150);
-                        etiquetas.Add((p, k.Nombre + " D" + (d + 1), col, d == 0 ? 3 : 2, k));
+                        raya?.Invoke(p, col, d == 0 ? (float)GrosorCapaDominante : (float)Math.Max(0.6, (double)GrosorCapaDominante - 0.5), Trazo(LineaCapaDominante), d == 0 ? 210 : 150);
+                        etiquetas.Add((p, k.Nombre + " " + TextoDominante + (d + 1), col, d == 0 ? 3 : 2, k));
                     }
                     if (CapasZero && !double.IsNaN(L.ZeroVol))
                     {
-                        raya?.Invoke(L.ZeroVol, col, 1.8f, System.Drawing.Drawing2D.DashStyle.DashDot, 210);
-                        etiquetas.Add((L.ZeroVol, k.Nombre + " 0Γ", col, 1, k));
+                        raya?.Invoke(L.ZeroVol, col, (float)GrosorZero + 0.4f, Trazo(LineaCapaZero), 210);
+                        etiquetas.Add((L.ZeroVol, k.Nombre + " " + TextoZero, col, 1, k));
                     }
                 }
                 if (CapasMajorsVisibles)
@@ -634,9 +650,9 @@ namespace PythiaGex
                     double mp = porOi ? L.MpOi : L.MpVol, mn = porOi ? L.MnOi : L.MnVol;
                     bool mpEsDom = L.Doms.Any(d => Math.Abs(d.Fut - mp) < 1.0), mnEsDom = L.Doms.Any(d => Math.Abs(d.Fut - mn) < 1.0);   // con centroide la dominante se corre unos centavos del strike: tolerancia de 1 pt
                     if (!double.IsNaN(mp) && !mpEsDom && Math.Abs(mp - futuro) <= radioMajors)
-                    { raya?.Invoke(mp, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); etiquetas.Add((mp, k.Nombre + " +Γ", col, 1, k)); }
+                    { raya?.Invoke(mp, col, 1f, Trazo(LineaCapaMajors), 110); etiquetas.Add((mp, k.Nombre + " " + TextoMajorPos, col, 1, k)); }
                     if (!double.IsNaN(mn) && !mnEsDom && Math.Abs(mn - futuro) <= radioMajors)
-                    { raya?.Invoke(mn, col, 1f, System.Drawing.Drawing2D.DashStyle.Dot, 110); etiquetas.Add((mn, k.Nombre + " −Γ", col, 1, k)); }
+                    { raya?.Invoke(mn, col, 1f, Trazo(LineaCapaMajors), 110); etiquetas.Add((mn, k.Nombre + " " + TextoMajorNeg, col, 1, k)); }
                 }
             }
             return etiquetas;
@@ -662,6 +678,7 @@ namespace PythiaGex
         /// <summary>Los renglones de las capas para la escalera primaria (nombre corto, precio, color). Vacio sin capas.</summary>
         private List<(string N, double P, Color C, int Peso)> FilasCapas()
         {
+            SincronizarColoresCapas();
             var salida = new List<(string N, double P, Color C, int Peso)>();
             if (!CapasEtiquetasEnEscalera || !VerEscalera || Rayas == EstiloRayas.Ninguna) return salida;
             var activas = _capas.Where(CapaActiva).ToList();
@@ -673,7 +690,7 @@ namespace PythiaGex
             {
                 double pm = gr.Count == 1 ? gr[0].Precio : gr.Average(z => z.Precio);
                 string tipo = gr[0].Texto.Substring(gr[0].Texto.IndexOf(' ') + 1);
-                string sentido = tipo.StartsWith("D") ? (pm > futuro ? " ▲" : " ▼") : tipo == "0Γ" ? " ↕" : "";
+                string sentido = tipo.StartsWith(TextoDominante) ? (pm > futuro ? " ▲" : " ▼") : tipo == TextoZero ? " ↕" : "";
                 salida.Add((string.Join("·", gr.Select(z => z.K.Nombre)) + " " + tipo + sentido, pm, gr.Count == 1 ? gr[0].Col : ColTexto, gr.Max(z => z.Peso)));
             }
             return salida;
@@ -708,6 +725,7 @@ namespace PythiaGex
                                  int xl0, int xl1, int xConv, int altoRot, RenderFont fRot, CultureInfo es,
                                  Action<double, Color, float, System.Drawing.Drawing2D.DashStyle, int> raya)
         {
+            SincronizarColoresCapas();
             var activas = _capas.Where(CapaActiva).ToList();
             if (activas.Count == 0) return;
             _pintandoCapas = true;
@@ -739,7 +757,7 @@ namespace PythiaGex
                 for (int i = 0; i < activas.Count; i++)
                 {
                     var k = activas[i]; var L = lecturas[k]; var col = k.Color;
-                    string doms = L == null || L.Doms.Count == 0 ? "" : " · " + string.Join(" ", L.Doms.Select((d, j) => "D" + (j + 1) + " " + d.Fut.ToString("N0", es)));
+                    string doms = L == null || L.Doms.Count == 0 ? "" : " · " + string.Join(" ", L.Doms.Select((d, j) => TextoDominante + (j + 1) + " " + d.Fut.ToString("N0", es)));
                     string estado = L == null ? (k.C == null ? "sin dato" : "calculando") : "dato de hace " + k.Edad(es).Replace("hace ", "") + (L.SinBase ? " SIN BASE" : "");
                     if (L != null && k.C != null && k.C.EsFuturo && k.Tipo != CapaLibro.TipoCapa.VivaLocal) estado = "en vivo";
                     string beta = !k.PorBeta ? "" : " · β " + k.Beta.ToString("0.00", es) + " " + (k.BetaOrigen.StartsWith("velas") ? "medida (n " + k.BetaN + (double.IsNaN(k.BetaR2) ? "" : ", r² " + k.BetaR2.ToString("0.00", es)) + ")" : k.BetaOrigen.Replace("SUPUESTA", "supuesta"));
@@ -772,7 +790,7 @@ namespace PythiaGex
                             if (y < area.Top || y > piso) continue;
                             int w = Math.Max(3, (int)(Math.Sqrt(Math.Abs(v) / maxK) * ancho));
                             anchoBarra[(k, s.Fut)] = w;
-                            barras.Add((w, y, k.Color, v < 0, k.Nombre + (fijo ? " D" + (idxDom + 1) : "")));
+                            barras.Add((w, y, k.Color, v < 0, k.Nombre + (fijo ? " " + TextoDominante + (idxDom + 1) : "")));
                         }
                     }
                     foreach (var b in barras.OrderByDescending(b => b.W))
@@ -791,6 +809,7 @@ namespace PythiaGex
                     int desdeB = Math.Max(0, FirstVisibleBarNumber), hastaB = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
                     int bw = 5;
                     try { if (hastaB > desdeB) bw = Math.Max(3, (cont.GetXByBar(hastaB, false) - cont.GetXByBar(desdeB, false)) / Math.Max(1, hastaB - desdeB)); } catch { }
+                    if (AnchoGuion > 0) bw = AnchoGuion;
                     int grueso = Math.Max(1, GrosorGuion), fino = Math.Max(1, GrosorGuion - 1);
                     foreach (var k in activas)
                     {
@@ -804,7 +823,7 @@ namespace PythiaGex
                                 int y; try { y = cont.GetYByPrice((decimal)gu.Fut, false); } catch { continue; }
                                 if (y < area.Top || y > piso) continue;
                                 int h = gu.Rango == 0 ? grueso : fino;
-                                g.FillRectangle(Color.FromArgb(gu.Rango == 0 ? 225 : 150, k.Color), new Rectangle(x - bw / 2, y - h / 2, bw, h));
+                                Marca(g, FormaEstela, Color.FromArgb(gu.Rango == 0 ? 225 : 150, k.Color), x, y, bw, h);
                             }
                         }
                     }
@@ -827,7 +846,7 @@ namespace PythiaGex
                             if (fr2 < umbral && idxDom < 0) continue;
                             int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                             if (y < area.Top || y > piso) continue;
-                            barras.Add((Math.Max(3, (int)(Math.Sqrt(fr2) * anchoDer)), y, k.Color, s.Conv < 0, k.Nombre + (idxDom >= 0 ? " D" + (idxDom + 1) : "")));
+                            barras.Add((Math.Max(3, (int)(Math.Sqrt(fr2) * anchoDer)), y, k.Color, s.Conv < 0, k.Nombre + (idxDom >= 0 ? " " + TextoDominante + (idxDom + 1) : "")));
                         }
                     }
                     foreach (var b in barras.OrderByDescending(b => b.W))
@@ -860,10 +879,10 @@ namespace PythiaGex
                     if (gr.Count == 1)
                     {
                         var e = gr[0];
-                        bool dom = e.Texto.Contains(" D"), zero = e.Texto.EndsWith("0Γ");
-                        if (zero) raya(e.Precio, e.Col, 1.8f, System.Drawing.Drawing2D.DashStyle.DashDot, 210);          // el zero, bien visible
-                        else raya(e.Precio, e.Col, dom ? (e.Peso >= 3 ? 1.7f : 1.2f) : 1f, dom ? System.Drawing.Drawing2D.DashStyle.Dash : System.Drawing.Drawing2D.DashStyle.Dot, dom ? (e.Peso >= 3 ? 220 : 160) : 120);
-                        if (zero) { int yz; try { yz = cont.GetYByPrice((decimal)e.Precio, false); } catch { yz = int.MinValue; } if (yz != int.MinValue) siglasZero.Add((yz, xl0 + 2, e.Col, "0Γ " + e.K.Nombre, false)); }
+                        bool dom = e.Texto.Contains(" " + TextoDominante), zero = e.Texto.EndsWith(TextoZero);
+                        if (zero) raya(e.Precio, e.Col, (float)GrosorZero + 0.4f, Trazo(LineaCapaZero), 210);          // el zero, bien visible
+                        else raya(e.Precio, e.Col, dom ? (e.Peso >= 3 ? (float)GrosorCapaDominante + 0.1f : (float)Math.Max(0.6, (double)GrosorCapaDominante - 0.4)) : 1f, dom ? Trazo(LineaCapaDominante) : Trazo(LineaCapaMajors), dom ? (e.Peso >= 3 ? 220 : 160) : 120);
+                        if (zero) { int yz; try { yz = cont.GetYByPrice((decimal)e.Precio, false); } catch { yz = int.MinValue; } if (yz != int.MinValue) siglasZero.Add((yz, xl0 + 2, e.Col, TextoZero + " " + e.K.Nombre, false)); }
                         continue;
                     }
                     // fusion: una raya gruesa, colores alternados por tramo, al precio medio del grupo
@@ -883,7 +902,7 @@ namespace PythiaGex
                 //    arriba/abajo del precio y ↕ para el zero. Nunca tocan las barras ni la escalera aunque el grafico avance.
                 {
                     int xGut1 = xl1 + 2;                                   // borde derecho del carril (las rayas terminan en xl1)
-                    string Sentido(string tipo, double precio) => tipo.StartsWith("D") ? (precio > futuro ? " ▲" : " ▼") : tipo == "0Γ" ? " ↕" : "";
+                    string Sentido(string tipo, double precio) => tipo.StartsWith(TextoDominante) ? (precio > futuro ? " ▲" : " ▼") : tipo == TextoZero ? " ↕" : "";
                     int ultimoFondo = area.Top + altoRot * 2;            // debajo del titulo de las columnas
                     foreach (var gr in grupos)
                     {

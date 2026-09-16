@@ -98,6 +98,106 @@ namespace PythiaGex
         [Range(1, 8)]
         public int GrosorGuion { get; set; } = 3;
 
+        // ---------------- 6. ESTILO: todo lo que se dibuja, editable (pedido del operador 15-09) ----------------
+        public enum EstiloLinea { Continua, Guiones, Puntos, GuionPunto }
+        public enum FormaMarca { Guion, Punto, Cuadrado, Rombo, Triangulo }
+
+        [Display(Name = "Estela: forma de la marca por vela", GroupName = "6. Estilo (líneas, colores, textos)", Order = 1,
+                 Description = "Como se dibuja cada dominante en cada vela (primaria y capas): guion, punto, cuadrado, rombo o triangulo.")]
+        public FormaMarca FormaEstela { get; set; } = FormaMarca.Guion;
+
+        [Display(Name = "Estela: ancho de la marca (px, 0 = el ancho de la vela)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 2)]
+        [Range(0, 24)]
+        public int AnchoGuion { get; set; } = 0;
+
+        [Display(Name = "Color: dominante D1 de la primaria (ámbar)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 10)]
+        public System.Windows.Media.Color ColorDominante { get; set; } = System.Windows.Media.Color.FromRgb(232, 200, 60);
+        [Display(Name = "Color: dominante D2 de la primaria", GroupName = "6. Estilo (líneas, colores, textos)", Order = 11)]
+        public System.Windows.Media.Color ColorDominante2 { get; set; } = System.Windows.Media.Color.FromRgb(232, 168, 56);
+        [Display(Name = "Color: dominante recién nacida (se funde al de D1)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 12)]
+        public System.Windows.Media.Color ColorNueva { get; set; } = System.Windows.Media.Color.FromRgb(205, 120, 255);
+        [Display(Name = "Color: zero gamma", GroupName = "6. Estilo (líneas, colores, textos)", Order = 13)]
+        public System.Windows.Media.Color ColorZero { get; set; } = System.Windows.Media.Color.FromRgb(235, 235, 235);
+        [Display(Name = "Color: gamma positiva (barras y major +Γ)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 14)]
+        public System.Windows.Media.Color ColorPositivo { get; set; } = System.Windows.Media.Color.FromRgb(45, 220, 130);
+        [Display(Name = "Color: gamma negativa (barras y major −Γ)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 15)]
+        public System.Windows.Media.Color ColorNegativo { get; set; } = System.Windows.Media.Color.FromRgb(235, 60, 60);
+        [Display(Name = "Color: convexidad positiva (perfil derecho)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 16)]
+        public System.Windows.Media.Color ColorConvexidadPos { get; set; } = System.Windows.Media.Color.FromRgb(93, 217, 208);
+        [Display(Name = "Color: convexidad negativa (perfil derecho)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 17)]
+        public System.Windows.Media.Color ColorConvexidadNeg { get; set; } = System.Windows.Media.Color.FromRgb(168, 107, 255);
+        [Display(Name = "Color: avisos y pelotitas", GroupName = "6. Estilo (líneas, colores, textos)", Order = 18)]
+        public System.Windows.Media.Color ColorAviso { get; set; } = System.Windows.Media.Color.FromRgb(240, 160, 88);
+        [Display(Name = "Línea: dominantes de la primaria", GroupName = "6. Estilo (líneas, colores, textos)", Order = 20)]
+        public EstiloLinea LineaDominante { get; set; } = EstiloLinea.Continua;
+        [Display(Name = "Grosor: dominante D1 de la primaria (D2 medio punto menos)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 21)]
+        [Range(0.5, 6.0)]
+        public decimal GrosorDominante { get; set; } = 1.6m;
+        [Display(Name = "Línea: zero gamma", GroupName = "6. Estilo (líneas, colores, textos)", Order = 22)]
+        public EstiloLinea LineaZero { get; set; } = EstiloLinea.Guiones;
+        [Display(Name = "Grosor: zero gamma", GroupName = "6. Estilo (líneas, colores, textos)", Order = 23)]
+        [Range(0.5, 6.0)]
+        public decimal GrosorZero { get; set; } = 1.4m;
+        [Display(Name = "Línea: majors +Γ / −Γ", GroupName = "6. Estilo (líneas, colores, textos)", Order = 24)]
+        public EstiloLinea LineaMajors { get; set; } = EstiloLinea.Continua;
+        [Display(Name = "Grosor: majors", GroupName = "6. Estilo (líneas, colores, textos)", Order = 25)]
+        [Range(0.5, 6.0)]
+        public decimal GrosorMajors { get; set; } = 1.6m;
+        [Display(Name = "Texto: dominante (se le agrega 1 o 2: D1, D2)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 30)]
+        public string TextoDominante { get; set; } = "D";
+        [Display(Name = "Texto: zero gamma", GroupName = "6. Estilo (líneas, colores, textos)", Order = 31)]
+        public string TextoZero { get; set; } = "0Γ";
+        [Display(Name = "Texto: major positivo", GroupName = "6. Estilo (líneas, colores, textos)", Order = 32)]
+        public string TextoMajorPos { get; set; } = "+Γ";
+        [Display(Name = "Texto: major negativo", GroupName = "6. Estilo (líneas, colores, textos)", Order = 33)]
+        public string TextoMajorNeg { get; set; } = "−Γ";
+        [Display(Name = "Texto: días al vencimiento (0DTE, 1DTE...)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 34)]
+        public string TextoDTE { get; set; } = "DTE";
+        [Display(Name = "Capas: línea de las dominantes", GroupName = "6. Estilo (líneas, colores, textos)", Order = 40)]
+        public EstiloLinea LineaCapaDominante { get; set; } = EstiloLinea.Guiones;
+        [Display(Name = "Capas: grosor de la dominante D1 (D2 medio punto menos)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 41)]
+        [Range(0.5, 6.0)]
+        public decimal GrosorCapaDominante { get; set; } = 1.6m;
+        [Display(Name = "Capas: línea del zero gamma", GroupName = "6. Estilo (líneas, colores, textos)", Order = 42)]
+        public EstiloLinea LineaCapaZero { get; set; } = EstiloLinea.GuionPunto;
+        [Display(Name = "Capas: línea de los majors", GroupName = "6. Estilo (líneas, colores, textos)", Order = 43)]
+        public EstiloLinea LineaCapaMajors { get; set; } = EstiloLinea.Puntos;
+        [Display(Name = "Capas: color QQQ (ETF Nasdaq-100)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 50)]
+        public System.Windows.Media.Color ColorCapaQqq { get; set; } = System.Windows.Media.Color.FromRgb(80, 180, 255);
+        [Display(Name = "Capas: color TQQQ", GroupName = "6. Estilo (líneas, colores, textos)", Order = 51)]
+        public System.Windows.Media.Color ColorCapaTqqq { get; set; } = System.Windows.Media.Color.FromRgb(255, 90, 200);
+        [Display(Name = "Capas: color NDX (índice Nasdaq-100)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 52)]
+        public System.Windows.Media.Color ColorCapaNdx { get; set; } = System.Windows.Media.Color.FromRgb(232, 232, 245);
+        [Display(Name = "Capas: color NQ (opciones del futuro, en vivo)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 53)]
+        public System.Windows.Media.Color ColorCapaNq { get; set; } = System.Windows.Media.Color.FromRgb(170, 255, 90);
+        [Display(Name = "Capas: color SPX (índice S&P 500)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 54)]
+        public System.Windows.Media.Color ColorCapaSpx { get; set; } = System.Windows.Media.Color.FromRgb(180, 120, 255);
+        [Display(Name = "Capas: color SPY (ETF S&P 500)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 55)]
+        public System.Windows.Media.Color ColorCapaSpy { get; set; } = System.Windows.Media.Color.FromRgb(0, 210, 190);
+        [Display(Name = "Capas: color ES (opciones del futuro, grabadas)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 56)]
+        public System.Windows.Media.Color ColorCapaEs { get; set; } = System.Windows.Media.Color.FromRgb(255, 150, 120);
+
+        private static Color De(System.Windows.Media.Color c) => Color.FromArgb(c.A, c.R, c.G, c.B);
+        private static System.Drawing.Drawing2D.DashStyle Trazo(EstiloLinea e)
+            => e == EstiloLinea.Guiones ? System.Drawing.Drawing2D.DashStyle.Dash
+             : e == EstiloLinea.Puntos ? System.Drawing.Drawing2D.DashStyle.Dot
+             : e == EstiloLinea.GuionPunto ? System.Drawing.Drawing2D.DashStyle.DashDot
+             : System.Drawing.Drawing2D.DashStyle.Solid;
+        /// <summary>Una marca de la estela centrada en (cx, cy): guion de w x h, o punto/cuadrado/rombo/triangulo del alto de la marca.</summary>
+        private static void Marca(RenderContext g, FormaMarca forma, Color col, int cx, int cy, int w, int h)
+        {
+            int d = Math.Max(3, h + 2), r = d / 2;
+            switch (forma)
+            {
+                case FormaMarca.Punto: g.FillEllipse(col, new Rectangle(cx - r, cy - r, d, d)); break;
+                case FormaMarca.Cuadrado: g.FillRectangle(col, new Rectangle(cx - r, cy - r, d, d)); break;
+                case FormaMarca.Rombo: g.FillPolygon(col, new[] { new Point(cx, cy - r - 1), new Point(cx + r + 1, cy), new Point(cx, cy + r + 1), new Point(cx - r - 1, cy) }); break;
+                case FormaMarca.Triangulo: g.FillPolygon(col, new[] { new Point(cx - r - 1, cy + r), new Point(cx + r + 1, cy + r), new Point(cx, cy - r - 1) }); break;
+                default: g.FillRectangle(col, new Rectangle(cx - w / 2, cy - h / 2, w, h)); break;
+            }
+        }
+
+
         [Display(Name = "Semillas del Max Change por vela (30, 5 y 1 min)", GroupName = "3. Pantalla", Order = 13,
                  Description = "Tres puntos naranjas por vela con el strike de mayor cambio de GEX a 30, 5 y 1 min. Alineados varios minutos = ahi suele nacer la proxima dominante (La referencia: 'la semillita').")]
         public bool VerSemillas { get; set; } = true;
@@ -466,23 +566,23 @@ namespace PythiaGex
         private DateTime _ultimoAudit = DateTime.MinValue;
         private int _renders;
 
-        private static readonly Color ColPos = Color.FromArgb(45, 220, 130);
-        private static readonly Color ColNeg = Color.FromArgb(235, 60, 60);
-        private static readonly Color ColConvPos = Color.FromArgb(93, 217, 208);
-        private static readonly Color ColConvNeg = Color.FromArgb(168, 107, 255);
-        private static readonly Color ColDom = Color.FromArgb(232, 200, 60);    // primaria: amarillo (hue 29 medido en la referencia)
+        private Color ColPos => De(ColorPositivo);
+        private Color ColNeg => De(ColorNegativo);
+        private Color ColConvPos => De(ColorConvexidadPos);
+        private Color ColConvNeg => De(ColorConvexidadNeg);
+        private Color ColDom => De(ColorDominante);    // primaria: amarillo (hue 29 medido en la referencia)
         /// <summary>Mezcla lineal de dos colores: t = 0 da a, t = 1 da b.</summary>
         private static Color Mezclar(Color a, Color b, double t)
         {
             t = Math.Max(0.0, Math.Min(1.0, t));
             return Color.FromArgb(255, (int)Math.Round(a.R + (b.R - a.R) * t), (int)Math.Round(a.G + (b.G - a.G) * t), (int)Math.Round(a.B + (b.B - a.B) * t));
         }
-        private static readonly Color ColDom2 = Color.FromArgb(232, 168, 56);   // secundaria: naranja (hue 19 medido)
-        private static readonly Color ColNuevo = Color.FromArgb(255, 205, 120, 255);  // guion recien nacido en vivo: LILA fluo (pedido 2026-09-11), se funde al amarillo con los minutos
-        private static readonly Color ColZero = Color.FromArgb(235, 235, 235);
+        private Color ColDom2 => De(ColorDominante2);   // secundaria: naranja (hue 19 medido)
+        private Color ColNuevo => De(ColorNueva);  // guion recien nacido en vivo: LILA fluo (pedido 2026-09-11), se funde al amarillo con los minutos
+        private Color ColZero => De(ColorZero);
         private static readonly Color ColTexto = Color.FromArgb(225, 230, 236);
         private static readonly Color ColFondo = Color.FromArgb(11, 16, 23);
-        private static readonly Color ColAviso = Color.FromArgb(240, 160, 88);
+        private Color ColAviso => De(ColorAviso);
 
         // ==================================================================
         // Ciclo de vida
@@ -592,7 +692,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10f (capas NQ, sin textos) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10g (capas NQ, estilo editable) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1683,7 +1783,7 @@ namespace PythiaGex
             if (DatosEnBarras != RotulosBarras.Nunca)
             {
                 double mc0 = double.NaN; lock (_candado) mc0 = _masCercaUlt;
-                string venc = double.IsNaN(mc0) ? "" : (mc0 < 1.0 ? "0DTE" : mc0 < 2 ? "1DTE (mañana)" : mc0.ToString("0", es) + " dias");
+                string venc = double.IsNaN(mc0) ? "" : (mc0 < 1.0 ? "0" + TextoDTE : mc0 < 2 ? "1" + TextoDTE + " (mañana)" : mc0.ToString("0", es) + " dias");
                 string tit = "GEX " + (libroDom == "vol" ? "volumen hoy" : "OI") + (venc.Length > 0 ? " · " + venc : "") + (VerSombraOI ? " · sombra OI" : "");
                 g.DrawString(tit, fRot, Color.FromArgb(150, ColTexto), x0 + 2, area.Top + 8);
             }
@@ -1791,7 +1891,7 @@ namespace PythiaGex
                     if (y < area.Top || y > piso) continue;
                     var colP = s.GexVol >= 0 ? ColPos : ColNeg;
                     g.DrawLine(new RenderPen(Color.FromArgb(80, colP), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xl0, y, xl1, y);
-                    string rotP = BmR(s.GexVol) + (s.Dte < 1.0 ? " 0DTE" : (s.Dte < 1e6 ? " " + Math.Round(s.Dte).ToString(es) + "DTE" : ""));   // de noche el mas cercano es el 1DTE (manana)
+                    string rotP = BmR(s.GexVol) + (s.Dte < 1.0 ? " 0" + TextoDTE : (s.Dte < 1e6 ? " " + Math.Round(s.Dte).ToString(es) + TextoDTE : ""));   // de noche el mas cercano es el 1DTE (manana)
                     var mrP = g.MeasureString(rotP, fRot);
                     g.DrawString(rotP, fRot, Color.FromArgb(150, colP), xl1 - mrP.Width - 2, y - mrP.Height - 1);
                 }
@@ -1837,10 +1937,10 @@ namespace PythiaGex
             }
             try { PintarCapas(g, cont, area, piso, x0, ancho, alto, xl0, xl1, xConv, altoRot, fRot, es, Raya); } catch (Exception e) { Registrar(e); }
             Raya(zeroOi, Color.FromArgb(160, 160, 170), 1f, System.Drawing.Drawing2D.DashStyle.Dot, 120);
-            Raya(zeroVol, ColZero, 1.4f, System.Drawing.Drawing2D.DashStyle.Dash, 200);
-            Raya(mpVol, ColPos, 1.6f, System.Drawing.Drawing2D.DashStyle.Solid, 190);
-            Raya(mnVol, ColNeg, 1.6f, System.Drawing.Drawing2D.DashStyle.Solid, 190);
-            for (int i = 0; i < doms.Count; i++) Raya(doms[i].Fut, ColDom, i == 0 ? 1.6f : 1.1f, System.Drawing.Drawing2D.DashStyle.Solid, i == 0 ? 220 : 160);
+            Raya(zeroVol, ColZero, (float)GrosorZero, Trazo(LineaZero), 200);
+            Raya(mpVol, ColPos, (float)GrosorMajors, Trazo(LineaMajors), 190);
+            Raya(mnVol, ColNeg, (float)GrosorMajors, Trazo(LineaMajors), 190);
+            for (int i = 0; i < doms.Count; i++) Raya(doms[i].Fut, ColDom, i == 0 ? (float)GrosorDominante : (float)Math.Max(0.6, (double)GrosorDominante - 0.5), Trazo(LineaDominante), i == 0 ? 220 : 160);
 
             // ---- estela: la dominante que regia en cada vela
             if (VerEstela || VerSemillas || VerZeroPorVela || VerGatillos != GatillosEnPantalla.Ninguno || ModoModelo != GatilloModeloModo.Ninguno || ModoRebote != GatilloReboteModo.Ninguno)
@@ -1858,6 +1958,7 @@ namespace PythiaGex
                 // ancho de una vela en pixeles, medido en el grafico (no supuesto)
                 int bw = 5;
                 try { if (hasta > desde) bw = Math.Max(3, (cont.GetXByBar(hasta, false) - cont.GetXByBar(desde, false)) / Math.Max(1, hasta - desde)); } catch { }
+                if (AnchoGuion > 0) bw = AnchoGuion;
                 int grueso = Math.Max(1, GrosorGuion), fino = Math.Max(1, GrosorGuion - 1);
                 for (int b = desde; b <= hasta; b++)
                 {
@@ -1934,7 +2035,7 @@ namespace PythiaGex
                                 int h = rango == 0 ? grueso : fino;
                                 if (!nueva)
                                 {
-                                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria(rango == 0 ? 230 : 170), rango == 0 ? ColDom : ColDom2), new Rectangle(x - bw / 2, y - h / 2, bw, h));
+                                    Marca(g, FormaEstela, Color.FromArgb(AtenuarPrimaria(rango == 0 ? 230 : 170), rango == 0 ? ColDom : ColDom2), x, y, bw, h);
                                     continue;
                                 }
                                 // NUEVA: nace lila fluo y se funde al amarillo normal a medida que envejece
@@ -1945,7 +2046,7 @@ namespace PythiaGex
                                 int extra = (int)Math.Round(2 * (1 - tEdad));
                                 int hn = h + extra, wn = bw + extra;
                                 if (tEdad < 0.75) g.FillRectangle(Color.FromArgb((int)(230 * (1 - tEdad)), ColFondo), new Rectangle(x - wn / 2 - 1, y - hn / 2 - 1, wn + 2, hn + 2));
-                                g.FillRectangle(Color.FromArgb(AtenuarPrimaria(rango == 0 ? 255 : 225), colNueva), new Rectangle(x - wn / 2, y - hn / 2, wn, hn));
+                                Marca(g, FormaEstela, Color.FromArgb(AtenuarPrimaria(rango == 0 ? 255 : 225), colNueva), x, y, wn, hn);
                             }
                     }
                     if (mar.TryGetValue(b, out var m))
@@ -2037,9 +2138,9 @@ namespace PythiaGex
             // filas a la altura de su precio, como un DOM, sin pisarse
             var filas = new List<(string N, double P, Color C, bool esPrecio)>();
             void Add(string n, double p, Color c) { if (!double.IsNaN(p) && p > 0) filas.Add((n, p, c, false)); }
-            Add("0Γ vol", zeroVol, ColZero); Add("0Γ ayer", zeroOi, Color.FromArgb(160, 160, 170));
-            Add("+Γ", mpVol, ColPos); Add("−Γ", mnVol, ColNeg);
-            for (int i = 0; i < doms.Count; i++) Add("D" + (i + 1), doms[i].Fut, ColDom);
+            Add(TextoZero + " vol", zeroVol, ColZero); Add(TextoZero + " ayer", zeroOi, Color.FromArgb(160, 160, 170));
+            Add(TextoMajorPos, mpVol, ColPos); Add(TextoMajorNeg, mnVol, ColNeg);
+            for (int i = 0; i < doms.Count; i++) Add(TextoDominante + (i + 1), doms[i].Fut, ColDom);
             // capas (15-09): con capas activas la primaria es fantasma y no lista sus niveles; los de las capas van aca,
             // en la misma escalera, con la misma regla de no pisarse (marcados con ▮ para dibujarlos como caja de color)
             if (PrimariaSilenciada())
@@ -2049,8 +2150,8 @@ namespace PythiaGex
                 {
                     // la primaria no es ninguna capa prendida: sus niveles van identificados con el nombre de su libro
                     string np = NombrePrimaria();
-                    for (int i = 0; i < doms.Count; i++) if (!double.IsNaN(doms[i].Fut) && doms[i].Fut > 0) filas.Add(((i == 0 ? "▮" : "▯") + np + " D" + (i + 1) + (doms[i].Fut > futuro ? " ▲" : " ▼"), doms[i].Fut, ColDom, false));
-                    if (!double.IsNaN(zeroVol) && zeroVol > 0) filas.Add(("▫" + np + " 0Γ ↕", zeroVol, ColDom, false));
+                    for (int i = 0; i < doms.Count; i++) if (!double.IsNaN(doms[i].Fut) && doms[i].Fut > 0) filas.Add(((i == 0 ? "▮" : "▯") + np + " " + TextoDominante + (i + 1) + (doms[i].Fut > futuro ? " ▲" : " ▼"), doms[i].Fut, ColDom, false));
+                    if (!double.IsNaN(zeroVol) && zeroVol > 0) filas.Add(("▫" + np + " " + TextoZero + " ↕", zeroVol, ColDom, false));
                 }
             }
             // solo los niveles de las capas que estan DENTRO del rango de precios visible (pedido 15-09: "demasiadas
