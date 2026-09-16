@@ -903,3 +903,62 @@ mirar la pantalla de ATAS despues de cada cambio):**
   dominantes.py). 0 = comportamiento anterior.
 - Los guiones viejos lejanos NO se borran: son la historia del dia (donde estuvo la dominante), en
   amarillo normal. Las bandas y las rayas D1/D2 solo existen para las dominantes actuales.
+
+## 1.10y / 1.10z (2026-09-16, 12:20-12:40 local): auditoria de vencimientos 0DTE, strikes, pelotitas y carga
+
+Pedido del operador: "revisa audita el indicador como estamos, creo que falto afinar los strikes y los
+vencimientos 0DTE; y que las pelotitas de convexidad funcionen bien; los quiero ver ahora, de noche, mañana y
+siempre". Cuatro auditores (vencimientos, strikes, pelotitas, carga) y un esceptico por hallazgo; ninguno
+refutado. Todo medido en el log, en `viva-*.jsonl`, en `cboe-local/ultima-*.json` y en el workspace de ATAS.
+
+**Lo que estaba mal y como se arreglo**
+
+1. **El jueves 17 no existia en el libro vivo.** El puente listaba las series solo con el codigo del grafico
+   (ESZ6/NQZ6) y Rithmic bajo Z6 lista el 16 y el 18 pero NO el 17; bajo ESU6 si ("09-16 Weekly, 09-17 Weekly,
+   09-18 Regular", lo trajo sin querer un grafico de oro). Mañana los graficos en Z6 se quedaban sin 0DTE y
+   `PasaHorizonte(Hoy)` habria tomado el trimestral del 18 como "el mas cercano" sin avisar. Ahora se listan
+   tambien las series del trimestre que vence y se suman las fechas que falten. Log: `roll: 1 vencimiento(s)
+   que solo lista NQU6: 09-17 Weekly`; `6 vencimientos, 4088 contratos`; viva-NQ 15:37 UTC con dias 0,18 (165
+   filas) y 1,18 (85). Ademas `FaltaCercano` nunca se encendia (`ReferenceEquals` sobre `OptionSeries`, que es
+   un struct) y ahora hay `SinCeroDte` con aviso en la cabecera y en el AUDIT (`sin0dte=`).
+2. **La latencia de 22 s NO era la red** (134 pings a Rithmic sin perdidas, Wi-Fi 99 %): `VivaProfundidad=true`
+   quedo persistido en los dos graficos desde la 1.10s (02:03) aunque la 1.10t lo bajo a false. Quotes de 444
+   opciones = 4.000-15.000 eventos/s; "Market Data Connection Broken" cada 62 s desde la apertura (66 en una
+   hora contra 18 en todo el 15-09). ATAS persiste los ajustes POR NOMBRE: la propiedad se renombro a
+   `ProfundidadOpciones` (default false). Tras el reinicio de 12:36: 324 suscripciones sin Quotes, 0 caidas.
+3. **Las pelotitas no se veian** por tres cosas sumadas: `VerPelotitas=false` guardado en el MNQ, la primaria
+   oculta (capa NDX duplicada + `CapasOcultarPrimariaDuplicada=true`) y las capas sin pelotitas. Ahora
+   `PelotitasMaxChange` (renombrada, default true) y `PelotitasCapas`: las tres pelotitas (15/5/1 min) en las
+   barras de CADA capa y en su convexidad, con las fotos por minuto del nucleo propio de la capa, sembradas
+   desde el archivo al arrancar; relleno del color de la capa aclarado y borde del fondo; si las tres caen en
+   el mismo pixel se dibuja solo la grande (quieto). Las de la primaria se atenuan con sus barras.
+4. **El Max Change del libro Rithmic era basura en semana de roll:** la clave de las fotos era el strike
+   corrido (K + spread) y el spread cambia cada minuto (0 strikes comunes entre minutos; `mc30 == mpVol` en 8
+   de 8). Clave estable = strike crudo (`Strike.Clave = -K0` para las opciones del trimestre viejo, K para el
+   resto); columna `strike0` en el viva jsonl y `Feed.ParsearViva` la lee.
+5. **Dias del libro vivo con la fecha local:** de 00:00 a 01:00 (Argentina) el 0DTE valia 0,01 dias y de noche
+   el de mañana 1,01 en vez de 0,7. Ahora con la hora de Nueva York; el trimestral (mismo dia que vence el
+   futuro) vence a las 9:30 (regla de CME, de memoria: confirmar en la especificacion).
+6. **Ventana viva:** el anillo ralo nunca entraba (modulo sobre el strike corrido) y la ventana no se
+   recentraba (NQ a 117 pts del borde). Ahora malla en strikes crudos (92 strikes del 0DTE, 28495..30335) y
+   rearme cada 5 min si el precio se aleja medio radio denso del centro, si cambia el dia en NY o si falta el
+   0DTE. `AUDIT capa=NQ ... ventana=29490±250`.
+7. **Guarda de instrumento:** un grafico de oro (GCZ6, M5, 10:50-11:40) arranco como ES, suscribio 320
+   contratos de ESU6 y escribio 17 lineas de libro U6 en viva-ES (limpiadas). Ahora `RaizSoportada()`.
+8. Menores: Delta de la escalera solo dentro del radio de las dominantes y con piso del 5 % (un +5M a 255 pts
+   ocupaba una fila); `Pintar` copia solo el rango visible (era ~1 MB de basura por cuadro); el archivo de 30
+   dias se suelta tras el rebobinado (0,6 GB por grafico); `Dispose` suelta `MarketDepthsUpdate`; spread Z6-U6
+   por punto medio, cuantizado a 0,25 y con histeresis de 1 pt; paridad web (tope 100 pts en estado_nube.py y
+   nucleo.js); `cadena_atas` no tira strikes con volumen hoy y OI 0.
+
+**Lo que quedo bien (verificado):** KDe aplicado en todos los usos del strike; conversiones NDX/SPX/QQQ -> NQ
+recalculadas a mano a menos de 0,6 pts del AUDIT; la cuenta del Max Change reproducida desde la cadena cruda
+(Δ15' K28850 -90M contra -88M en pantalla); capas con el mismo horizonte que la primaria; paridad de la regla
+de horizonte en C#, Python y JS.
+
+**Pendiente (baja):** la convexidad con sonda del 1 % es casi el espejo del perfil de GEX en 0DTE (corr 0,985
+con -GexVol a ±100 pts): sus pelotitas dicen lo contrario de las de la izquierda; la sonda del 0,25 % lo
+arreglaria pero cambia `convPrecio` y el gatillo MODELO se entreno con 1 %: decision del operador. El centroide
+de 12 pts corre la dominante hasta 1,7 pts del strike en ES. El rotulo del libro Rithmic no dice el strike
+original ni el corrimiento. El viernes 18 en CBOE el SPX/NDX AM del tercer viernes se mezcla con el PM hasta
+las 16:00 (solo pesa en el libro por OI).
