@@ -1,0 +1,32 @@
+---
+name: roll-semana-weeklies-en-el-trimestre-viejo
+description: "En la semana del roll (graficos ya en Z6, U6 todavia vivo) las weeklies de esa semana son opciones sobre U6; el puente de Rithmic las pedia con Z6 y recibia \"no data\", y el libro vivo quedaba sin 0DTE toda la semana. 1.10d las pide con U6 y corre los strikes por el spread Z6-U6."
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 961a521e-545b-452c-9eed-32904fb03eae
+  modified: 2026-09-16T00:40:45.069Z
+---
+
+Medido el 15-09-2026 (semana del roll de septiembre: NQU6/ESU6 vencen el 18-09; los graficos ya estaban en
+MNQZ6/MESZ6): el puente listaba las series bajo NQZ6 ("19 series para NQZ6@CME (09-15 Weekly, 09-16 Weekly, ...)")
+pero al pedir los contratos del 15-09 o del 16-09 Rithmic contestaba "no data" (log 14:09, 19:23, 20:59). Las
+weeklies que vencen antes que el trimestre viejo son opciones SOBRE EL VIEJO (NQU6). Resultado: el libro vivo se quedo
+sin 0DTE ni 1DTE toda la semana (capa RITHMIC: 41 strikes, -0,010B a las 14:30) y "4 vencimientos" en vez de 6.
+El 11-09, con los graficos en U6, ese mismo libro tenia bandas a -18 pts del precio de noche (ver
+[[dominantes-de-noche-resto-de-ayer]], 1.8i). Probablemente el "0DTE perdido a las 10:16" del 11-09 tuvo este mismo
+origen cuando algun grafico ya pedia Z6 ([[nq-rithmic-pierde-0dte]]).
+
+Arreglo (Gamma Hoy 1.10d, CadenaViva.cs + PuenteRithmic.cs): busca en el servidor el trimestre anterior del futuro
+del grafico (`CodigoTrimestreAnterior`: NQZ6 -> NQU6); si todavia no vencio, se suscribe a su precio, las series con
+vencimiento <= su fecha se piden con su codigo (`OpcionesAsync(..., subAlternativo)`) y sus strikes se dibujan
+corridos por el spread vivo Z6 - U6 (`KDe`: ventana al dinero, filas, bloques grandes, volumen por strike). Sin el
+precio del viejo, esas filas no se dibujan (antes que dibujar 300 pts corrido). Log: "[cadena viva] roll: ...". Medido 21:40: 774/806/1018 contratos (15, 16, 18-09) con NQU6, spread +291,13; ES 720/714/872 con ESU6, +66,63; en pantalla RITHMIC D1/D2 a +15/-7 del precio.
+
+**Why:** el operador recordaba dominantes vivas cerca del precio de noche y "una formula mal" de dias atras; la
+formula (empate tecnico) estaba bien, lo roto era el roll: el mismo tipo de falla que la base de 294 pts del 09-09
+([[auditoria-en-vivo-2026-09-09]]), ahora del lado de Rithmic.
+
+**How to apply:** cada semana de roll (marzo, junio, septiembre, diciembre; la semana del tercer viernes) mirar en el
+log "roll:" y "[puente] N contratos ... pedidos con XU6"; si aparece "no data" para la weekly del dia, es esto. Y
+reiniciar ATAS de noche vacia el volumen acumulado del libro vivo: evitarlo si se quiere ver ese libro a la noche.

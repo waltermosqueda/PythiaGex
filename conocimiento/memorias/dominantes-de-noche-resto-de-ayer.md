@@ -56,3 +56,5 @@ noche la dominante de abajo saltaba entre 29.049 (-84 M) y 28.800 (-91 M) por 7 
 cercana al precio. Medido tras reiniciar: D2 paso de 28.825 (-311) a 29.023 (-114) con CBOE; en ES
 Rithmic doms 7613/7600 con el futuro en 7613. (3) Los guiones viejos lejanos se dejan: son la historia
 del dia; bandas y rayas D1/D2 solo para las dominantes actuales.
+
+**OJO (15-09, REGLA ROJA):** esta memoria explica el libro de CBOE de noche, pero la tercera vez que el operador dijo "lejos de noche" la causa fue OTRA: el roll dejo al libro vivo de Rithmic sin 0DTE (semana del roll, weeklies en U6, puente pidiendo Z6). Antes de repetir "la cuenta esta bien", leer [[regla-roja-roll-libro-vivo]] y mirar el log "roll:".

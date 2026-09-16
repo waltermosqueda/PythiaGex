@@ -103,3 +103,20 @@ las etiquetas se pisan, achicarlas por jerarquia, no esconderlas ni correrlas le
 **How to apply:** empezar por leer el traspaso y seguir su orden de trabajo (archivador -> nucleo ->
 capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]], [[nq-rithmic-pierde-0dte]].
+
+- **Bloque 20 (21:00):** auditoria de la estela cerrada (ver [[auditoria-estela-2026-09-15]]); DLL 1.10b instalada
+  (edad real en leyenda/cabecera, AUDIT capa con cadenaTs/gen/horizonte, archivo local con cada version).
+  Pendiente su palabra: modo noche (dominantes atenuadas + tunel de cierre punteado).
+- **Bloque 21 (21:25):** 1.10c: la primaria ambar y su estela se ven siempre (75 %), ocultarla por duplicada es un
+  ajuste apagado. Pedido textual: "que se vean las dominantes ambar por defecto... quiero que aparezca su estela".
+- Visto en pantalla 21:28 (1.10c): rotulos ambar del Max Change arriba a la derecha, estela amarilla sobre las velas
+  de la rueda, NDX D1 29.553 / 0Γ 29.166 / D2 28.903 en la escalera (son la primaria). En ese momento la capa NDX
+  estaba APAGADA en el grafico (el log deja de tener AUDIT capa=NDX desde el reinicio 21:25; no fue un reset: los
+  defaults de todas las capas son false y QQQ/RITHMIC/SPX/SPY/ES siguen prendidas). Con 1.10c, al prender NDX la
+  ambar sigue visible; el % de atenuacion guardado en su grafico sigue en 40 (el default 75 es para graficos nuevos).
+- **Bloque 22 (21:50):** 1.10d instalada: el libro vivo de Rithmic recupero las weeklies de la semana del roll
+  (pedidas con NQU6/ESU6, strikes corridos +291/+67) y dibuja RITHMIC D1/D2 a +15/−7 del precio de noche; ver
+  [[roll-semana-weeklies-en-el-trimestre-viejo]]. El empate tecnico de 1.8i esta activo y verificado barra por barra.
+- **Bloque 23 (22:00):** 1.10e: la capa "RITHMIC" se llama "NQ" (opciones del futuro, CME en vivo) y la leyenda dice
+  que es cada libro tecnicamente; rotulos "1DTE" de noche. Pedido textual: "sacale la etiqueta rithmic... algo mas
+  significativo tecnico".
