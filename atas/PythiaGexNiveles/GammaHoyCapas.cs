@@ -187,6 +187,10 @@ namespace PythiaGex
         [Range(0, 100)]
         public int CapasAtenuarPrimariaPct { get; set; } = 75;
 
+        [Display(Name = "Capas: leyenda (abajo a la izquierda)", GroupName = "5. Capas extra (NQ)", Order = 18,
+                 Description = "La lista de texto con cada libro, su edad, beta, dominantes y toques, y que es la primaria. Apagada por defecto (pedido del operador 15-09: 'esos textos molestan'); la escalera del eje y las siglas de las barras siguen.")]
+        public bool CapasLeyenda { get; set; } = false;
+
         [Display(Name = "Capas: ocultar la primaria si una capa dibuja el mismo libro", GroupName = "5. Capas extra (NQ)", Order = 17,
                  Description = "Apagado (pedido del operador 15-09): la primaria (ambar) y su estela se ven siempre, aunque una capa dibuje el mismo libro. Prendido: si la capa NDX esta activa y la primaria es NDX, la primaria no se dibuja (misma cuenta dos veces).")]
         public bool CapasOcultarPrimariaDuplicada { get; set; } = false;
@@ -716,6 +720,8 @@ namespace PythiaGex
                 var lecturas = new Dictionary<CapaLibro, GammaHoyNucleo.Lectura>();
                 foreach (var k in activas) { GammaHoyNucleo.Lectura L; lock (_candado) L = k.L; lecturas[k] = L; }
 
+                if (CapasLeyenda)   // apagada por defecto (15-09): los textos molestan; queda la escalera y las siglas
+                {
                 // 0) que es la primaria (las rayas ambar): su libro, y si esta oculta por duplicada
                 {
                     string np = NombrePrimaria();
@@ -743,6 +749,7 @@ namespace PythiaGex
                     var ml = g.MeasureString(ley, fRot);
                     g.FillRectangle(Color.FromArgb(170, ColFondo), new Rectangle(xLey - 2, yl, ml.Width + 4, altoRot));
                     g.DrawString(ley, fRot, Color.FromArgb(235, col), xLey, yl);
+                }
                 }
 
                 // 2) barras que pesan, superpuestas desde el borde izquierdo, de la mas larga a la mas corta

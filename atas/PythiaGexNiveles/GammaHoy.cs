@@ -312,6 +312,10 @@ namespace PythiaGex
         [Range(6, 14)]
         public decimal TamLetra { get; set; } = 8m;
 
+        [Display(Name = "Cabecera de estado (arriba a la izquierda)", GroupName = "3. Pantalla", Order = 10,
+                 Description = "Las dos o tres lineas de texto de arriba (regimen, edad del dato, vivo/archivo, vela bajo el mouse). Apagada por defecto (pedido del operador 15-09: 'esos textos molestan'). Si no hay cadena, el aviso de 'esperando cadena' se muestra igual.")]
+        public bool VerCabecera { get; set; } = false;
+
         [Display(Name = "Margen de abajo (px)", GroupName = "3. Pantalla", Order = 10,
                  Description = "ChartArea es mas alto que lo visible: lo pegado al fondo cae detras del eje de tiempo.")]
         [Range(0, 200)]
@@ -588,7 +592,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10e (capas NQ, nombres) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10f (capas NQ, sin textos) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1589,12 +1593,20 @@ namespace PythiaGex
             int yc = area.Top + 26;
             var m1 = g.MeasureString(l1, f); var m2 = g.MeasureString(l2, fChica);
             var m3 = g.MeasureString(l3.Length > 0 ? l3 : "0", fChica);
-            int h3 = l3.Length > 0 ? m3.Height + 2 : 0;
-            int wc = Math.Max(Math.Max(m1.Width, m2.Width), l3.Length > 0 ? m3.Width : 0) + 12;
-            g.FillRectangle(Color.FromArgb(200, ColFondo), new Rectangle(area.Left + 6, yc - 3, wc, m1.Height + m2.Height + h3 + 8));
-            g.DrawString(l1, f, perfil.Count == 0 ? ColAviso : (convPrecio >= 0 ? ColConvPos : ColConvNeg), area.Left + 12, yc);
-            g.DrawString(l2, fChica, Color.FromArgb(170, ColTexto), area.Left + 12, yc + m1.Height + 2);
-            if (l3.Length > 0) g.DrawString(l3, fChica, Color.FromArgb(215, ColDom), area.Left + 12, yc + m1.Height + m2.Height + 4);
+            int h3 = VerCabecera && l3.Length > 0 ? m3.Height + 2 : 0;
+            if (!VerCabecera && perfil.Count > 0) { m2 = g.MeasureString("0", fChica); }   // sin cabecera, lo que va debajo sube
+            if (VerCabecera || perfil.Count == 0)   // apagada por defecto (15-09); el "esperando cadena" se muestra igual
+            {
+                bool soloAviso = !VerCabecera;
+                int wc = Math.Max(Math.Max(m1.Width, soloAviso ? 0 : m2.Width), l3.Length > 0 && !soloAviso ? m3.Width : 0) + 12;
+                g.FillRectangle(Color.FromArgb(200, ColFondo), new Rectangle(area.Left + 6, yc - 3, wc, m1.Height + (soloAviso ? 0 : m2.Height + h3) + 8));
+                g.DrawString(l1, f, perfil.Count == 0 ? ColAviso : (convPrecio >= 0 ? ColConvPos : ColConvNeg), area.Left + 12, yc);
+                if (!soloAviso)
+                {
+                    g.DrawString(l2, fChica, Color.FromArgb(170, ColTexto), area.Left + 12, yc + m1.Height + 2);
+                    if (l3.Length > 0) g.DrawString(l3, fChica, Color.FromArgb(215, ColDom), area.Left + 12, yc + m1.Height + m2.Height + 4);
+                }
+            }
             if (DateTime.UtcNow < alertaHasta && alerta.Length > 0)
             {
                 var ma = g.MeasureString("TRANSICION: " + alerta, f);
