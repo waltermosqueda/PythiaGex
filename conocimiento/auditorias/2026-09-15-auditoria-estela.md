@@ -136,3 +136,19 @@ Ojo con la hora: el log del indicador va en hora local de la maquina (UTC−3); 
   MNQZ6, 20:56 por 1.10b). A las 21:02 la capa RITHMIC tiene netVol 0,002B (nada) y Rithmic rechazo las series
   del 15 y 16-09 ("no data"), como en la memoria nq-rithmic-pierde-0dte. Se recupera con la rueda de manana. Es un
   costo real de reiniciar de noche: queda anotado.
+
+### 8b. Pedido de las 21:20: "que se vean las ambar por defecto, con su estela" (Gamma Hoy 1.10c)
+
+- Cambio: la primaria (ambar) y su estela se dibujan SIEMPRE, al 75 % con capas prendidas (antes 40 %, y 0 si una
+  capa dibujaba el mismo libro). Ocultarla por duplicada paso a ser el ajuste "Capas: ocultar la primaria si una
+  capa dibuja el mismo libro", apagado por defecto. La leyenda dice "las ambar son ese mismo libro, con su estela".
+- Calculado antes de tocar nada (capas_nq.py sobre las cadenas de las 23:41Z y 23:55Z, fut del log):
+
+| Libro | Por volumen (lo que dibuja) | Por interes abierto (alternativa de noche) |
+|---|---|---|
+| NDX (ambar en este grafico) | 29.553 (+289) con 221M / 28.903 (−361) con −64M | 29.403 (+139) con 116M / 29.003 (−261) con −48M |
+| QQQ (el otro MNQ) | 29.387 (+111) con 645M / 29.055 (−221) con −552M | 29.470 (+194) con −55M / 29.055 (−221) con −117M |
+
+  Anoche (14-09, 21:17-22:58) la primaria QQQ estaba a +5…+63 / −3…−36 pts con 0,8-1,2B: eso es lo que el operador
+  recuerda "cerca del precio". Esta noche ni por volumen ni por interes abierto hay una barra grande cerca del precio
+  en ninguno de los dos libros: las ambar vuelven a verse, pero caen lejos porque el dato de hoy es ese.

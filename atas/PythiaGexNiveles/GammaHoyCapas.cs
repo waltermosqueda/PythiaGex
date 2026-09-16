@@ -182,9 +182,13 @@ namespace PythiaGex
         public bool CapasEtiquetasEnEscalera { get; set; } = true;
 
         [Display(Name = "Capas: rayas y bandas de la primaria al (%)", GroupName = "5. Capas extra (NQ)", Order = 16,
-                 Description = "Con alguna capa prendida, las rayas y la banda de dominancia del libro primario (amarillo) se dibujan a este porcentaje de su intensidad, para que las capas se lean. 100 = como siempre.")]
+                 Description = "Con alguna capa prendida, las rayas, la banda de dominancia y la estela del libro primario (ambar) se dibujan a este porcentaje de su intensidad, para que las capas se lean. 100 = como siempre.")]
         [Range(0, 100)]
-        public int CapasAtenuarPrimariaPct { get; set; } = 40;
+        public int CapasAtenuarPrimariaPct { get; set; } = 75;
+
+        [Display(Name = "Capas: ocultar la primaria si una capa dibuja el mismo libro", GroupName = "5. Capas extra (NQ)", Order = 17,
+                 Description = "Apagado (pedido del operador 15-09): la primaria (ambar) y su estela se ven siempre, aunque una capa dibuje el mismo libro. Prendido: si la capa NDX esta activa y la primaria es NDX, la primaria no se dibuja (misma cuenta dos veces).")]
+        public bool CapasOcultarPrimariaDuplicada { get; set; } = false;
 
         [Display(Name = "Capas: ancho de sus columnas (% del ancho de barras)", GroupName = "5. Capas extra (NQ)", Order = 17)]
         [Range(15, 100)]
@@ -279,7 +283,7 @@ namespace PythiaGex
         private int AtenuarPrimaria(int alfa)
         {
             if (_pintandoCapas) return alfa;
-            if (PrimariaDuplicada()) return 0;                 // mismo libro que una capa prendida: no se dibuja dos veces
+            if (CapasOcultarPrimariaDuplicada && PrimariaDuplicada()) return 0;   // solo si el operador lo pide: misma cuenta dos veces
             if (CapasAtenuarPrimariaPct >= 100) return alfa;
             bool hay = false; foreach (var k in _capas) if (CapaActiva(k)) { hay = true; break; }
             return hay ? Math.Max(0, alfa * CapasAtenuarPrimariaPct / 100) : alfa;
@@ -714,7 +718,7 @@ namespace PythiaGex
                 {
                     string np = NombrePrimaria();
                     string leyP = PrimariaDuplicada()
-                        ? "■ primaria (ámbar) = " + np + " · misma cuenta que la capa " + np + ": oculta para no dibujarla dos veces"
+                        ? "■ primaria (ámbar) = " + np + " · misma cuenta que la capa " + np + (CapasOcultarPrimariaDuplicada ? ": oculta para no dibujarla dos veces" : " (las ámbar son ese mismo libro, con su estela)")
                         : "■ primaria (ámbar) = " + np + " · sus niveles van en la escalera como " + np;
                     int ylp = piso - 4 - altoRot * (activas.Count + 1);
                     var mlp = g.MeasureString(leyP, fRot);
