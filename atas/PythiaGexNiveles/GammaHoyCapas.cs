@@ -950,15 +950,29 @@ namespace PythiaGex
                 int xRaya0 = xl0, xRaya1 = xl1;
                 var siglasZero = new List<(int Y, int X, Color Col, string Texto, bool Der)>();
                 if (Rayas == EstiloRayas.Tenues) { /* las capas no se atenuan: son lo que se quiere ver */ }
+                // RAYAS SEPARADAS (16-09, pedido: "no quiero ver mas lineas fusionadas"): dos niveles de libros distintos a
+                // 3-5 pts se dibujaban uno encima del otro y, a guiones, los guiones se intercalaban y parecian UNA raya
+                // rayada de dos colores. Ahora, si una raya cae a menos de 4 px de otra ya dibujada, se corre 4 px (de
+                // arriba hacia abajo, en orden de precio): cada libro queda con su raya entera y su color. El renglon de
+                // la escalera sigue diciendo el precio exacto.
+                var ysCapas = new List<int>();
+                const int sepPx = 4;
                 foreach (var gr in grupos)
                 {
                     if (gr.Count == 1)
                     {
                         var e = gr[0];
+                        if (Rayas == EstiloRayas.Ninguna) continue;
                         bool dom = e.Texto.Contains(" " + TextoDominante), zero = e.Texto.EndsWith(TextoZero);
-                        if (zero) raya(e.Precio, e.Col, (float)GrosorZero + 0.4f, Trazo(LineaCapaZero), 210);          // el zero, bien visible
-                        else raya(e.Precio, e.Col, dom ? (e.Peso >= 3 ? (float)GrosorCapaDominante + 0.1f : (float)Math.Max(0.6, (double)GrosorCapaDominante - 0.4)) : 1f, dom ? Trazo(LineaCapaDominante) : Trazo(LineaCapaMajors), dom ? (e.Peso >= 3 ? 220 : 160) : 120);
-                        if (zero) { int yz; try { yz = cont.GetYByPrice((decimal)e.Precio, false); } catch { yz = int.MinValue; } if (yz != int.MinValue) siglasZero.Add((yz, xl0 + 2, e.Col, TextoZero + " " + e.K.Nombre, false)); }
+                        int y1; try { y1 = cont.GetYByPrice((decimal)e.Precio, false); } catch { continue; }
+                        if (y1 < area.Top || y1 > piso) continue;
+                        while (ysCapas.Any(yu => Math.Abs(yu - y1) < sepPx)) y1 += sepPx;
+                        ysCapas.Add(y1);
+                        float w1 = zero ? (float)GrosorZero + 0.4f : dom ? (e.Peso >= 3 ? (float)GrosorCapaDominante + 0.1f : (float)Math.Max(0.6, (double)GrosorCapaDominante - 0.4)) : 1f;
+                        var ds1 = zero ? Trazo(LineaCapaZero) : dom ? Trazo(LineaCapaDominante) : Trazo(LineaCapaMajors);
+                        int a1 = zero ? 210 : dom ? (e.Peso >= 3 ? 220 : 160) : 120;
+                        g.DrawLine(new RenderPen(Color.FromArgb(a1, e.Col), w1, ds1), xRaya0, y1, xRaya1, y1);
+                        if (zero) siglasZero.Add((y1, xl0 + 2, e.Col, TextoZero + " " + e.K.Nombre, false));
                         continue;
                     }
                     // fusion: una raya gruesa, colores alternados por tramo, al precio medio del grupo
