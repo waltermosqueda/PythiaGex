@@ -729,7 +729,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10w (capas NQ, paleta por familia, apoyo por lado) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10x (capas NQ, escalera solo visible) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -2186,7 +2186,7 @@ namespace PythiaGex
 
             // filas a la altura de su precio, como un DOM, sin pisarse
             var filas = new List<(string N, double P, Color C, bool esPrecio)>();
-            void Add(string n, double p, Color c) { if (!double.IsNaN(p) && p > 0) filas.Add((n, p, c, false)); }
+            void Add(string n, double p, Color c) { if (!double.IsNaN(p) && p > 0 && EnPantalla(p)) filas.Add((n, p, c, false)); }
             Add(TextoZero + " vol", zeroVol, ColZero); Add(TextoZero + " ayer", zeroOi, Color.FromArgb(160, 160, 170));
             Add(TextoMajorPos, mpVol, ColPos); Add(TextoMajorNeg, mnVol, ColNeg);
             for (int i = 0; i < doms.Count; i++) Add(TextoDominante + (i + 1), doms[i].Fut, ColDom);
@@ -2199,14 +2199,17 @@ namespace PythiaGex
                 {
                     // la primaria no es ninguna capa prendida: sus niveles van identificados con el nombre de su libro
                     string np = NombrePrimaria();
-                    for (int i = 0; i < doms.Count; i++) if (!double.IsNaN(doms[i].Fut) && doms[i].Fut > 0) filas.Add(((i == 0 ? "▮" : "▯") + np + " " + TextoDominante + (i + 1) + (doms[i].Fut > futuro ? " ▲" : " ▼"), doms[i].Fut, ColDom, false));
-                    if (!double.IsNaN(zeroVol) && zeroVol > 0) filas.Add(("▫" + np + " " + TextoZero + " ↕", zeroVol, ColDom, false));
+                    for (int i = 0; i < doms.Count; i++) if (!double.IsNaN(doms[i].Fut) && doms[i].Fut > 0 && EnPantalla(doms[i].Fut)) filas.Add(((i == 0 ? "▮" : "▯") + np + " " + TextoDominante + (i + 1) + (doms[i].Fut > futuro ? " ▲" : " ▼"), doms[i].Fut, ColDom, false));
+                    if (!double.IsNaN(zeroVol) && zeroVol > 0 && EnPantalla(zeroVol)) filas.Add(("▫" + np + " " + TextoZero + " ↕", zeroVol, ColDom, false));
                 }
             }
             // solo los niveles de las capas que estan DENTRO del rango de precios visible (pedido 15-09: "demasiadas
             // etiquetas"): los de afuera aparecen cuando el zoom o el scroll los trae; los de la primaria siguen
             // pegandose al borde como siempre
-            bool EnPantalla(double p) { try { int yp = cont.GetYByPrice((decimal)p, false); return yp >= area.Top && yp <= area.Bottom; } catch { return false; } }
+            // SOLO LO QUE SE VE (16-09, pedido: "las etiquetas solo las de la pantalla central; las de arriba o abajo con scroll o zoom,
+            // no las fuerces"): el rango visible real va del techo del area al piso visible (el area de ATAS sigue por debajo del eje
+            // de tiempo), y una fila que quede fuera no se mete a presion en el borde: se deja afuera.
+            bool EnPantalla(double p) { try { int yp = cont.GetYByPrice((decimal)p, false); return yp >= area.Top + 4 && yp <= piso - 4; } catch { return false; } }
             // jerarquia por tamaño (pedido 15-09): D1 con la letra normal (▮), D2 mas chica (▯), zero y majors mas chicos (▫);
             // filas compactas para que se corran lo menos posible, y si una se corre, una rayita la une a su precio exacto
             foreach (var fc in FilasCapas()) if (EnPantalla(fc.P)) filas.Add(((fc.Peso >= 3 ? "▮" : fc.Peso == 2 ? "▯" : "▫") + fc.N, fc.P, fc.C, false));
@@ -2231,6 +2234,7 @@ namespace PythiaGex
             {
                 if (y[i] < yTop) continue;
                 var q = filas[i];
+                if (!q.esPrecio && enPant[i] && Math.Abs((y[i] + alt[i] / 2) - yExacto[i]) > 3 * alt[i]) continue;   // corrida de mas: afuera (16-09)
                 if (q.esPrecio)
                 {
                     g.FillRectangle(q.C, new Rectangle(rect.Left + 2, y[i], rect.Width - 4, alt[i] - 1));
