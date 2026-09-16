@@ -33,6 +33,7 @@ LOG = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "pythiagex-gammahoy.lo
 MULT = 100.0
 PISO_DIAS = 1.0 / 1440.0
 RADIO_DOM_PCT = 2.0     # "Dominantes: radio alrededor del precio (%)" por defecto
+RADIO_MAX_PTS = 100.0   # "Dominantes: radio maximo en puntos" (16-09): el radio efectivo es el menor de los dos
 PICO_RADIO_PCT = 0.35   # "Pico de GEX cerca del precio: radio (%)" por defecto; la convexidad en el precio suma ese radio
 CUANTAS = 2
 UNA_POR_LADO = True     # "Canal: una dominante por lado" (por defecto en el indicador)
@@ -243,7 +244,7 @@ def recalcular(d, fut, razon, apal, ahora, base=0.0):
     conv_precio = sum(p[4] for p in en_pico)
     pico = max(en_pico, key=lambda p: abs(p[2])) if en_pico else None
     conv_max = max(perfil, key=lambda p: abs(p[4])) if perfil else None
-    radio = fut * RADIO_DOM_PCT / 100.0
+    radio = min(fut * RADIO_DOM_PCT / 100.0, RADIO_MAX_PTS) if RADIO_MAX_PTS > 0 else fut * RADIO_DOM_PCT / 100.0
     cerca = [p for p in perfil if abs(p[1] - fut) <= radio and p[2] != 0]
     # "Canal: una dominante por lado" (ajuste por defecto del indicador): la mas fuerte ARRIBA del precio y la mas
     # fuerte ABAJO; sin ese ajuste, las CUANTAS mas fuertes sin mirar el lado

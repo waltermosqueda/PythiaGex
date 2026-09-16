@@ -355,6 +355,11 @@ namespace PythiaGex
         [Display(Name = "Dominantes: radio alrededor del precio (%)", GroupName = "2. Lectura", Order = 2)]
         public decimal RadioDominantesPct { get; set; } = 2.0m;
 
+        [Display(Name = "Dominantes: radio máximo en puntos (0 = solo el %)", GroupName = "2. Lectura", Order = 6,
+                 Description = "Tope del radio en puntos del futuro, dinamico con el precio: la dominante de cada lado se busca solo entre las barras a menos de esta distancia. 100 en NQ deja afuera los niveles a 200-300 pts que son ruido para scalping (pedido 16-09). Vale para la primaria y las capas.")]
+        [Range(0, 2000)]
+        public decimal RadioDominantesMaxPts { get; set; } = 100m;
+
         [Display(Name = "Canal: una dominante por lado (la mas fuerte arriba y la mas fuerte abajo)", GroupName = "2. Lectura", Order = 6,
                  Description = "Apagado: las N barras mas fuertes sin mirar el lado (pueden caer las dos del mismo lado).")]
         public bool UnaPorLado { get; set; } = true;
@@ -714,7 +719,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10t (capas NQ, profundidad opcional) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10u (capas NQ, radio 100 pts) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -965,7 +970,7 @@ namespace PythiaGex
             var nuc = new GammaHoyNucleo();
             var a = nuc.A; var b0 = _nucleo.A;
             a.Tasa = (double)Tasa; a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte; a.CuantasDominantes = CuantasDominantes;
-            a.RadioDominantesPct = (double)RadioDominantesPct; a.PicoRadioPct = (double)PicoRadioPct; a.MuchoPct = MuchoPct; a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
+            a.RadioDominantesPct = (double)RadioDominantesPct; a.RadioDominantesMaxPts = (double)RadioDominantesMaxPts; a.PicoRadioPct = (double)PicoRadioPct; a.MuchoPct = MuchoPct; a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
             a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct; a.DominantesDeNoche = DominantesDeNoche;
             a.ExpiracionFuturoUtc = ExpiracionFuturo(); a.ExpiracionFuturoAltUtc = _expAlt; a.Dividendo = DividendoUsado();
             double edadMax = (double)Math.Max(0.05m, ArchivoEdadMaxHoras);
@@ -1196,7 +1201,7 @@ namespace PythiaGex
             a.Tasa = (double)Tasa;
             a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte;
             a.CuantasDominantes = CuantasDominantes;
-            a.RadioDominantesPct = (double)RadioDominantesPct;
+            a.RadioDominantesPct = (double)RadioDominantesPct; a.RadioDominantesMaxPts = (double)RadioDominantesMaxPts;
             a.PicoRadioPct = (double)PicoRadioPct;
             a.MuchoPct = MuchoPct;
             a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;

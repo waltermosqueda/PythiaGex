@@ -50,6 +50,9 @@ namespace PythiaGex
             public double BaseRueda = double.NaN, BaseRuedaEdadMin = double.NaN;
             public int CuantasDominantes = 2;
             public double RadioDominantesPct = 2.0;
+            // TOPE EN PUNTOS (16-09, pedido: "hasta 100 puntos de distancia para no llenar de ruido"): 2 % de 29.300 son 585 pts
+            // por lado y aparecian dominantes a 200-300 pts, ruido para scalping. El radio efectivo es el menor entre el % y este tope.
+            public double RadioDominantesMaxPts = 100.0;
             public double PicoRadioPct = 0.35;
             public int MuchoPct = 50;
             public LibroConv Convexidad = LibroConv.Auto;
@@ -346,6 +349,7 @@ namespace PythiaGex
             // dominantes: las barras mas largas del volumen cerca del precio;
             // si todavia no hay volumen (noche), las del OI, y se dice
             double radio = futuro * A.RadioDominantesPct / 100.0;
+            if (A.RadioDominantesMaxPts > 0) radio = Math.Min(radio, A.RadioDominantesMaxPts);   // tope en puntos (16-09)
             string libroDom = "vol";
             int cuantas = Math.Max(1, A.CuantasDominantes);
             var candDom = perfil.Where(x => Math.Abs(x.Fut - futuro) <= radio && Math.Abs(x.GexVol) > 0)

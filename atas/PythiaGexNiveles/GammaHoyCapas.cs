@@ -444,6 +444,9 @@ namespace PythiaGex
                 {
                     int bar = BarraDeCapa(cambios[i].T);
                     if (bar < 0) continue;
+                    // con el tope en puntos (16-09) lo guardado con el radio viejo puede estar lejos: se filtra con el cierre de esa vela
+                    double radioMax = _nucleo.A.RadioDominantesMaxPts > 0 ? _nucleo.A.RadioDominantesMaxPts : double.MaxValue;
+                    try { double cierre = (double)GetCandle(bar).Close; for (int j = 0; j < 2 && j < cambios[i].Doms.Count; j++) if (Math.Abs(cambios[i].Doms[j].Fut - cierre) > radioMax) cambios[i].Doms[j] = (0.0, 0.0); } catch { }
                     int hastaBar = i + 1 < cambios.Count ? BarraDeCapa(cambios[i + 1].T) : CurrentBar - 1;
                     if (hastaBar < bar) hastaBar = bar;
                     hastaBar = Math.Min(hastaBar, bar + 2000);
