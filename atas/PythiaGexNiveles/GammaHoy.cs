@@ -340,6 +340,10 @@ namespace PythiaGex
         [Range(50, 800)]
         public int ContratosVivos { get; set; } = 320;
 
+        [Display(Name = "Viva: profundidad del libro de opciones (nivel 2)", GroupName = "1. Datos", Order = 10,
+                 Description = "Pide a Rithmic la profundidad (Quotes) de cada contrato de opciones suscrito y muestra los strikes con mas contratos apoyados (calls + puts, bid y ask). Senal nueva sin prueba; si la latencia de ATAS sube, apagar. 16-09.")]
+        public bool VivaProfundidad { get; set; } = true;
+
         [Display(Name = "Viva: tope de contratos suscritos", GroupName = "1. Datos", Order = 9)]
         [Range(20, 600)]
         public int TopeContratos { get; set; } = 200;
@@ -710,7 +714,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10r (capas NQ, 320 contratos, OI de noche) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10s (capas NQ, profundidad de opciones) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -740,6 +744,7 @@ namespace PythiaGex
             {
                 try
                 {
+                    _viva.Profundidad = VivaProfundidad;
                     await _viva.Arrancar(DataProvider, TradingManager, TradingManager?.Security, Raiz(),
                                          7, Math.Max(5, StrikesEnVivo), Math.Max(1, VencimientosEnVivo),
                                          Math.Max(20, Math.Max(TopeContratos, ContratosVivos)), m => Log("[viva] " + m)).ConfigureAwait(false);

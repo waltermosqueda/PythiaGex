@@ -147,6 +147,13 @@ namespace PythiaGex
         //       Price, Volume, Time y OrderDirection (el lado del agresor).
         // Los dos llegan para cualquier contrato suscrito con Prints|Summary.
         private readonly Dictionary<string, SecuritySummary> _resumen = new();
+        // PROFUNDIDAD DEL LIBRO DE LAS OPCIONES (16-09, punto 3): por contrato, los niveles apoyados por lado
+        // (precio -> contratos), desde MarketDepthsUpdate con la suscripcion Quotes. Es una senal NUEVA, sin prueba:
+        // "cuantos contratos hay apoyados en las opciones de cada strike". Se mide la latencia antes de creerle.
+        public bool Profundidad = true;
+        private readonly Dictionary<string, Dictionary<decimal, decimal>> _bids = new(), _asks = new();
+        private long _evProfundidad;
+        public long EventosProfundidad => _evProfundidad;
         private readonly Dictionary<string, (double compra, double venta, double total, long n)> _cinta = new();
         private readonly HashSet<long> _tradesVistos = new();
         private HashSet<string> _codigos = new();
@@ -513,7 +520,8 @@ namespace PythiaGex
                     var soltar = viejos.Where(v => !nuevos.Contains(v.Code ?? "")).ToList();
                     if (soltar.Count > 0)
                     {
-                        _conn.UnsubscribeFromMarketData(soltar, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+                        _conn.UnsubscribeFromMarketData(soltar, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary | (Profundidad ? SubscriptionType.Quotes : SubscriptionType.None));
+                        lock (_llave) foreach (var v in soltar) { _bids.Remove(v.Code ?? ""); _asks.Remove(v.Code ?? ""); }
                         L("desuscritos " + soltar.Count + " contratos que salieron de la ventana");
                     }
                 }
@@ -540,7 +548,7 @@ namespace PythiaGex
                 try
                 {
                     _conn.SubscribeToMarketData(elegidos,
-                        SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+                        SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary | (Profundidad ? SubscriptionType.Quotes : SubscriptionType.None));
                 }
                 catch (Exception e) { L("la suscripcion fallo: " + e.Message); return; }
 
@@ -561,6 +569,7 @@ namespace PythiaGex
                     {
                         _conn.SecuritySummaryChanged += AlResumen;
                         _conn.NewTrades += AlTrades;
+                        if (Profundidad) { try { _conn.MarketDepthsUpdate += AlProfundidad; } catch (Exception e) { L("profundidad: no pude enganchar MarketDepthsUpdate: " + e.Message); } }
                         _enganchadoConector = true;
                         L("enganchados SecuritySummaryChanged y NewTrades del conector");
                     }
@@ -678,6 +687,49 @@ namespace PythiaGex
         }
 
         /// <summary>El resumen diario de un contrato: se guarda el ultimo por codigo.</summary>
+        private void AlProfundidad(IDataFeedConnector c, IEnumerable<MarketDepth> ds)
+        {
+            try
+            {
+                if (ds == null) return;
+                lock (_llave)
+                {
+                    foreach (var d in ds)
+                    {
+                        var code = d?.Security?.Code;
+                        if (string.IsNullOrEmpty(code) || !_codigos.Contains(code)) continue;
+                        _evProfundidad++;
+                        var libro = d.IsBid ? _bids : _asks;
+                        if (!libro.TryGetValue(code, out var niveles)) { niveles = new Dictionary<decimal, decimal>(); libro[code] = niveles; }
+                        if (d.Volume <= 0) niveles.Remove(d.Price); else niveles[d.Price] = d.Volume;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>Contratos apoyados en las opciones de cada strike (todos los niveles vistos, calls + puts, por lado).
+        /// Strike ya en precio del grafico (KDe). Vacio si no hay profundidad.</summary>
+        public Dictionary<double, (double bid, double ask)> ApoyoPorStrike()
+        {
+            var d = new Dictionary<double, (double bid, double ask)>();
+            lock (_llave)
+            {
+                foreach (var code in _codigos)
+                {
+                    if (!_resumen.TryGetValue(code, out var s) || s.Security == null) continue;
+                    double K = KDe(s.Security);
+                    if (K <= 0) continue;
+                    double b = _bids.TryGetValue(code, out var nb) ? (double)nb.Values.Sum() : 0;
+                    double a = _asks.TryGetValue(code, out var na) ? (double)na.Values.Sum() : 0;
+                    if (b <= 0 && a <= 0) continue;
+                    d.TryGetValue(K, out var acc);
+                    d[K] = (acc.bid + b, acc.ask + a);
+                }
+            }
+            return d;
+        }
+
         private void AlResumen(IDataFeedConnector c, SecuritySummary s)
         {
             try
@@ -1214,7 +1266,7 @@ namespace PythiaGex
                 lock (_llave) { ss = new List<Security>(_suscritos); _suscritos.Clear(); }
                 if (_conn != null && ss.Count > 0)
                     _conn.UnsubscribeFromMarketData(ss,
-                        SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+                        SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary | (Profundidad ? SubscriptionType.Quotes : SubscriptionType.None));
             }
             catch { }
             try

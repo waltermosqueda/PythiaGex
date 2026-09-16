@@ -667,6 +667,7 @@ namespace PythiaGex
                     Log("AUDIT capa=" + k.Nombre + " " + GammaHoyNucleo.Audit(L, c, k.Tipo == CapaLibro.TipoCapa.RithmicViva).Substring(6)
                         + (k.PorBeta ? " beta=" + k.Beta.ToString("0.###", inv) + " betaN=" + k.BetaN + " betaR2=" + (double.IsNaN(k.BetaR2) ? "NaN" : k.BetaR2.ToString("0.00", inv)) + " betaOrigen=" + k.BetaOrigen.Replace(' ', '_') + " velasNQ=" + VelasCompartidas.Serie(Raiz()).Count + " velasES=" + VelasCompartidas.Serie("ES").Count : "")
                         + " toques=" + k.Toques + " rebotes=" + k.Rebotes
+                        + (k.Tipo == CapaLibro.TipoCapa.RithmicViva ? " apoyo=" + string.Join("/", _viva.ApoyoPorStrike().OrderByDescending(z => z.Value.bid + z.Value.ask).Take(3).Select(z => z.Key.ToString("0", inv) + ":" + (z.Value.bid + z.Value.ask).ToString("0", inv))) + " evProf=" + _viva.EventosProfundidad : "")
                         + " cadenaTs=" + (c.Ts ?? "").Replace(' ', '_') + " gen=" + (c.GeneradoUtc == default(DateTime) ? "?" : c.GeneradoUtc.ToString("HH:mm:ss", inv))
                         + " horizonte=" + k.Nucleo.A.Horizonte + " fuente=" + (c.Fuente ?? "").Replace(' ', '_'));
                 }
@@ -756,7 +757,7 @@ namespace PythiaGex
                     {
                         double p = L.Doms[d].Fut;
                         raya?.Invoke(p, col, d == 0 ? (float)GrosorCapaDominante : (float)Math.Max(0.6, (double)GrosorCapaDominante - 0.5), Trazo(LineaCapaDominante), d == 0 ? 210 : 150);
-                        etiquetas.Add((p, k.Nombre + " " + TextoDominante + (d + 1), col, d == 0 ? 3 : 2, k));
+                        etiquetas.Add((p, k.Nombre + " " + TextoDominante + (d + 1) + (L.LibroDom == "OI" ? "·OI" : ""), col, d == 0 ? 3 : 2, k));
                     }
                     if (CapasZero && !double.IsNaN(L.ZeroVol))
                     {
@@ -1035,6 +1036,24 @@ namespace PythiaGex
                 }
 
                 if (CapasSiglas && siglasZero.Count > 0) Siglas(g, siglasZero, area, piso, fMin, altoMin);
+                // PROFUNDIDAD (16-09, punto 3): los 3 strikes con mas contratos apoyados en las opciones del futuro, como rombo y numero
+                try
+                {
+                    var kNq = activas.FirstOrDefault(z => z.Tipo == CapaLibro.TipoCapa.RithmicViva);
+                    if (kNq != null && VivaProfundidad)
+                    {
+                        var ap = _viva.ApoyoPorStrike();
+                        foreach (var z in ap.OrderByDescending(q => q.Value.bid + q.Value.ask).Take(3))
+                        {
+                            int ya; try { ya = cont.GetYByPrice((decimal)z.Key, false); } catch { continue; }
+                            if (ya < area.Top || ya > piso) continue;
+                            var ptsR = new[] { new Point(xl0 + 6, ya - 4), new Point(xl0 + 10, ya), new Point(xl0 + 6, ya + 4), new Point(xl0 + 2, ya) };
+                            g.FillPolygon(Color.FromArgb(200, kNq.Color), ptsR);
+                            g.DrawString("apoyo " + (z.Value.bid + z.Value.ask).ToString("N0", es), fMin, Color.FromArgb(200, kNq.Color), xl0 + 13, ya - altoMin / 2);
+                        }
+                    }
+                }
+                catch { }
                 if (CapasEtiquetasEnEscalera && VerEscalera) return;   // las etiquetas viven en la escalera del eje
                 // 5) las etiquetas, en SU CARRIL: entre el final de las rayas y las barras de la derecha (convexidad) o la
                 //    escalera si la convexidad esta apagada. Alineadas a la derecha, ordenadas por precio, sin pisarse; si
