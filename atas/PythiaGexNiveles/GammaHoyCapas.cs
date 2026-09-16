@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ATAS.Indicators;
@@ -358,6 +359,71 @@ namespace PythiaGex
             }
         }
 
+        // LA ESTELA SOBREVIVE AL REINICIO (15-09 23:50, pedido: "los guiones de NQ desaparecen"). Los guiones de cada capa
+        // vivian solo en memoria: cada reinicio o cambio de grafico los borraba, y el libro NQ en vivo no tiene archivo en
+        // la nube para rebobinar. Ahora cada cambio de dominantes se anota en %APPDATA%\ATAS\PythiaGex\estela\
+        // estela-<capa>-<dia>.jsonl y al arrancar se vuelve a poner en su vela (por hora UTC), antes del rebobinado de la nube.
+        private static readonly string CarpetaEstela = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex", "estela");
+        private readonly Dictionary<string, string> _estelaUltimaLinea = new();
+
+        private void GuardarGuionCapa(CapaLibro k, DateTime horaUtc, List<(double Fut, double Gex)> doms)
+        {
+            try
+            {
+                if (doms == null || doms.Count == 0) return;
+                var inv = CultureInfo.InvariantCulture;
+                string d = string.Join(",", doms.Where(x => !double.IsNaN(x.Fut) && x.Fut > 0).Select(x => x.Fut.ToString("0.00", inv)));
+                if (d.Length == 0) return;
+                lock (_estelaUltimaLinea)
+                {
+                    if (_estelaUltimaLinea.TryGetValue(k.Nombre, out var u) && u == d) return;   // solo cuando cambia
+                    _estelaUltimaLinea[k.Nombre] = d;
+                }
+                Directory.CreateDirectory(CarpetaEstela);
+                File.AppendAllText(Path.Combine(CarpetaEstela, "estela-" + k.Nombre + "-" + horaUtc.ToString("yyyy-MM-dd", inv) + ".jsonl"),
+                                   "{\"t\":\"" + horaUtc.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", inv) + "\",\"d\":[" + d + "]}\n");
+            }
+            catch { }
+        }
+
+        /// <summary>Vuelve a poner en su vela los guiones guardados de los ultimos dias (por hora UTC). Devuelve cuantos entraron.</summary>
+        private int CargarEstelaGuardada(CapaLibro k, DateTime desde, DateTime hasta)
+        {
+            int puestos = 0, lineas = 0;
+            try
+            {
+                var inv = CultureInfo.InvariantCulture;
+                for (var dia = desde.Date; dia <= hasta.Date; dia = dia.AddDays(1))
+                {
+                    var ruta = Path.Combine(CarpetaEstela, "estela-" + k.Nombre + "-" + dia.ToString("yyyy-MM-dd", inv) + ".jsonl");
+                    if (!File.Exists(ruta)) continue;
+                    foreach (var l in File.ReadAllLines(ruta))
+                    {
+                        if (l.Length < 20) continue;
+                        lineas++;
+                        try
+                        {
+                            using var doc = System.Text.Json.JsonDocument.Parse(l);
+                            var r = doc.RootElement;
+                            if (!DateTime.TryParseExact(r.GetProperty("t").GetString(), "yyyy-MM-dd'T'HH:mm:ss'Z'", inv,
+                                    System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var t)) continue;
+                            if (t < desde || t > hasta) continue;
+                            var doms = new List<(double Fut, double Gex)>();
+                            foreach (var x in r.GetProperty("d").EnumerateArray()) doms.Add((x.GetDouble(), 0.0));
+                            int bar = BarraDeCapa(t);
+                            if (bar < 0) continue;
+                            lock (_candado) AgregarGuionesCapa(k, bar, doms, t);
+                            puestos++;
+                        }
+                        catch { }
+                    }
+                }
+                if (lineas > 0) Log("estela guardada " + k.Nombre + ": " + puestos + " de " + lineas + " cambios vueltos a su vela");
+            }
+            catch (Exception e) { Registrar(e); }
+            return puestos;
+        }
+
         /// <summary>La vela que contenia esa hora UTC, buscando hasta 4.000 velas atras (el archivo de 30 h en M2 son 900).</summary>
         private int BarraDeCapa(DateTime horaUtc)
         {
@@ -381,14 +447,20 @@ namespace PythiaGex
         private void CargarEstelaCapa(CapaLibro k)
         {
             if (k.EstelaCargada || k.EstelaCargando) return;
-            if (k.Tipo == CapaLibro.TipoCapa.RithmicViva || k.Tipo == CapaLibro.TipoCapa.VivaLocal) { k.EstelaCargada = true; return; }
             k.EstelaCargando = true;
             string raiz = k.Ticker;                       // QQQ, TQQQ, SPY, ES (=SPX), NQ (=NDX)
             var hasta = DateTime.UtcNow; var desde = hasta.AddHours(-Math.Max(1, CapasEstelaHoras));
+            if (k.Tipo == CapaLibro.TipoCapa.RithmicViva || k.Tipo == CapaLibro.TipoCapa.VivaLocal)
+            {
+                // libros vivos: no hay archivo en la nube; la estela vuelve de lo guardado en esta maquina
+                _ = Task.Run(() => { try { CargarEstelaGuardada(k, desde, hasta); k.EstelaCargada = true; } catch (Exception e) { Registrar(e); } finally { k.EstelaCargando = false; } });
+                return;
+            }
             _ = Task.Run(() =>
             {
                 try
                 {
+                    CargarEstelaGuardada(k, desde, hasta);   // lo visto en vivo en esta maquina, antes que el rebobinado de la nube
                     if (BajarArchivo)
                         for (var d = desde.Date; d <= hasta.Date; d = d.AddDays(1))
                             Feed.Archivo.BajarDia(string.IsNullOrWhiteSpace(UrlArchivo) ? Url : UrlArchivo, raiz, d, Log).GetAwaiter().GetResult();
@@ -535,7 +607,7 @@ namespace PythiaGex
                 lock (_candado)
                 {
                     k.L = L;
-                    if (CapasEstela && L != null && !L.SinBase) AgregarGuionesCapa(k, Math.Max(0, CurrentBar - 1), L.Doms, ahoraUtc);
+                    if (CapasEstela && L != null && !L.SinBase) { AgregarGuionesCapa(k, Math.Max(0, CurrentBar - 1), L.Doms, ahoraUtc); GuardarGuionCapa(k, ahoraUtc, L.Doms); }
                     if (k.Guiones.Count > 6000) foreach (var kb in k.Guiones.Keys.Where(b => b < CurrentBar - 5000).ToList()) k.Guiones.Remove(kb);
                 }
                 if (CapasEstela && Fuente != FuenteDatos.Archivo && CurrentBar > 10) CargarEstelaCapa(k);
