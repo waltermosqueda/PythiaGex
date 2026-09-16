@@ -103,7 +103,7 @@ def construir(crudo, ahora=None, ancho=ANCHO, dias_max=DIAS_MAX):
     # [strike, indice_venc, oi_call, oi_put, iv_call, iv_put, vol_call, vol_put]
     datos = []
     for (K, kd), e in sorted(filas.items()):
-        if not (e["oc"] or e["op"]):
+        if not (e["oc"] or e["op"] or e["vc"] or e["vp"]):   # 16-09: un strike nuevo con volumen hoy y sin OI tambien es libro
             continue
         datos.append([e["k"], idx[kd], e["oc"], e["op"],
                       e["ic"], e["ip"], e["vc"], e["vp"]])

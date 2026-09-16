@@ -364,6 +364,50 @@ namespace PythiaGex
 
         /// <summary>Los puntos de la estela de una lectura, en posicion fija: [0] D1, [1] D2, [2] zero gamma (16-09: el zero
         /// tambien va a la estela, un puntito por vela en el color del libro). 0 donde no hay.</summary>
+        /// <summary>Las tres pelotitas del Max Change de cada barra de cada capa: la punta de esa barra hace 15
+        /// (grande), 5 (mediana) y 1 min (chica), con las fotos por minuto del nucleo de la capa. En el perfil
+        /// izquierdo (GEX por volumen, desde xBorde hacia la derecha) o en la escalera de convexidad (desde xBorde
+        /// hacia la izquierda). Un cambio de signo cuenta como "estaba en cero". Sin fotos viejas (recien
+        /// arrancado) no dibuja nada: no inventa. Solo sobre las barras que se dibujaron (anchoDeBarra).</summary>
+        private void PelotitasCapas(RenderContext g, IChartContainer cont, List<CapaLibro> activas, Dictionary<CapaLibro, GammaHoyNucleo.Lectura> lecturas,
+                                    Dictionary<(CapaLibro, double), int> anchoDeBarra, int xBorde, int ancho, int alto, bool convexidad)
+        {
+            if (anchoDeBarra == null || anchoDeBarra.Count == 0) return;
+            long ahoraMin = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMinute;
+            int[] vent = { 15, 5, 1 };
+            int[] rad = { Math.Max(3, alto / 2 + 1), Math.Max(2, alto / 2), Math.Max(2, alto / 2 - 1) };
+            foreach (var k in activas)
+            {
+                var L = lecturas[k]; if (L == null || L.SinBase || L.Perfil.Count == 0) continue;
+                double maxK = convexidad ? L.MaxAbsConv : L.MaxAbsVol; if (maxK <= 0) continue;
+                List<GammaHoyNucleo.Snap> fotos; try { fotos = k.Nucleo.FotosCopia(); } catch { continue; }
+                if (fotos.Count == 0) continue;
+                var antes = new Dictionary<double, double>[3];
+                for (int i = 0; i < 3; i++) { var f = fotos.Where(z => z.Minuto <= ahoraMin - vent[i]).LastOrDefault(); antes[i] = f == null ? null : (convexidad ? f.Conv : f.GexVol); }
+                if (antes.All(a => a == null)) continue;
+                foreach (var s in L.Perfil)
+                {
+                    if (!anchoDeBarra.ContainsKey((k, s.Fut))) continue;
+                    int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
+                    double ahora = convexidad ? s.Conv : s.GexVol;
+                    int cx0 = int.MinValue;
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (antes[i] == null || !antes[i].TryGetValue(s.Clave, out var vAntes)) continue;
+                        if (Math.Sign(vAntes) != Math.Sign(ahora) && vAntes != 0) vAntes = 0;
+                        int wa = Math.Max(0, (int)(Math.Sqrt(Math.Abs(vAntes) / maxK) * ancho));
+                        int rr = rad[i];
+                        int cx = convexidad ? xBorde - wa : xBorde + wa;
+                        if (i == 0) cx0 = cx; else if (Math.Abs(cx - cx0) <= 1) continue;   // quieto: las tres en el mismo pixel, se dibuja la grande sola
+                        // relleno del color de la capa aclarado, borde del fondo: recorta sobre la barra y sobre el vacio
+                        var claro = Color.FromArgb(235, (k.Color.R * 2 + 255 * 3) / 5, (k.Color.G * 2 + 255 * 3) / 5, (k.Color.B * 2 + 255 * 3) / 5);
+                        g.FillEllipse(claro, new Rectangle(cx - rr, y - rr, 2 * rr, 2 * rr));
+                        g.DrawEllipse(new RenderPen(Color.FromArgb(230, ColFondo), 1f), new Rectangle(cx - rr, y - rr, 2 * rr, 2 * rr));
+                    }
+                }
+            }
+        }
+
         private static List<(double Fut, double Gex)> PuntosEstela(GammaHoyNucleo.Lectura L)
         {
             var p = new List<(double Fut, double Gex)>();
@@ -534,6 +578,8 @@ namespace PythiaGex
                         lecturasRep.Add((bar, PuntosEstela(L), c.GeneradoUtc));
                         con++;
                     }
+                    // las fotos por minuto del rebobinado siembran el Max Change de la capa: pelotitas desde el primer minuto (16-09)
+                    try { k.Nucleo.SembrarFotos(nuc.FotosCopia().Select(z => (z.Minuto, z.GexVol, z.Conv))); } catch (Exception e) { Registrar(e); }
                     // UN PUNTO POR VELA (16-09): cada cadena vale hasta la cadena siguiente (la nube llega cada 8-25 min)
                     lecturasRep.Sort((a, b) => a.Bar.CompareTo(b.Bar));
                     for (int i = 0; i < lecturasRep.Count; i++)
@@ -681,7 +727,7 @@ namespace PythiaGex
                         + " toques=" + k.Toques + " rebotes=" + k.Rebotes
                         + (k.Tipo == CapaLibro.TipoCapa.RithmicViva ? " apoyo=" + string.Join("/", _viva.ApoyoPorStrikeLados().OrderByDescending(z => z.Value.cb + z.Value.ca + z.Value.pb + z.Value.pa).Take(3).Select(z => z.Key.ToString("0", inv) + ":C" + z.Value.cb.ToString("0", inv) + "|" + z.Value.ca.ToString("0", inv) + "P" + z.Value.pb.ToString("0", inv) + "|" + z.Value.pa.ToString("0", inv))) + " evProf=" + _viva.EventosProfundidad : "")
                         + " cadenaTs=" + (c.Ts ?? "").Replace(' ', '_') + " gen=" + (c.GeneradoUtc == default(DateTime) ? "?" : c.GeneradoUtc.ToString("HH:mm:ss", inv))
-                        + " horizonte=" + k.Nucleo.A.Horizonte + " fuente=" + (c.Fuente ?? "").Replace(' ', '_'));
+                        + " horizonte=" + k.Nucleo.A.Horizonte + " fuente=" + (c.Fuente ?? "").Replace(' ', '_') + (k.Tipo == CapaLibro.TipoCapa.RithmicViva ? " sin0dte=" + (_viva.SinCeroDte ? "SI" : "no") + " ventana=" + _viva.CentroVentana.ToString("0", CultureInfo.InvariantCulture) + "±" + _viva.RadioDenso.ToString("0", CultureInfo.InvariantCulture) : ""));
                 }
             }
         }
@@ -931,6 +977,11 @@ namespace PythiaGex
                         g.FillRectangle(Color.FromArgb(120, b.Col), new Rectangle(x0, b.Y - alto / 2, b.W, alto));
                         g.DrawLine(new RenderPen(Color.FromArgb(b.Neg ? 220 : 170, b.Neg ? ColNeg : b.Col), 1f), x0, b.Y + alto / 2, x0 + b.W, b.Y + alto / 2);
                     }
+                    // PELOTITAS DEL MAX CHANGE POR CAPA (16-09): donde estaba la punta de ESA barra hace 15 (grande),
+                    // 5 (mediana) y 1 min (chica), con las fotos por minuto del nucleo de la capa. Adentro de la
+                    // barra = ese strike crece; afuera = decrece; las tres en la punta = quieto. Solo sobre las
+                    // barras que se dibujaron, y solo con el libro por volumen (las fotos son de GEX por volumen).
+                    if (PelotitasMaxChange) PelotitasCapas(g, cont, activas, lecturas, anchoBarra, x0, ancho, alto, false);
                     if (CapasSiglas) Siglas(g, barras.Select(b => (b.Y, x0 + b.W + 3, b.Col, b.Sigla, false)).ToList(), area, piso, fMin, altoMin);
                     int xt = x0 + 2;
                     foreach (var k in activas) { g.DrawString(k.Nombre, fRot, Color.FromArgb(220, k.Color), xt, area.Top + 8 + altoRot + 2); xt += g.MeasureString(k.Nombre + " ", fRot).Width; }
@@ -977,6 +1028,7 @@ namespace PythiaGex
                 {
                     int anchoDer = Math.Max(20, (int)(ancho * 0.7));
                     var barras = new List<(int W, int Y, Color Col, bool Neg, string Sigla)>();
+                    var anchoConv = new Dictionary<(CapaLibro, double), int>();
                     foreach (var k in activas)
                     {
                         var L = lecturas[k]; if (L == null || L.SinBase || L.Perfil.Count == 0 || L.MaxAbsConv <= 0) continue;
@@ -990,6 +1042,7 @@ namespace PythiaGex
                             int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                             if (y < area.Top || y > piso) continue;
                             barras.Add((Math.Max(3, (int)(Math.Sqrt(fr2) * anchoDer)), y, k.Color, s.Conv < 0, k.Nombre + (idxDom >= 0 ? " " + TextoDominante + (idxDom + 1) : "")));
+                            anchoConv[(k, s.Fut)] = Math.Max(3, (int)(Math.Sqrt(fr2) * anchoDer));
                         }
                     }
                     foreach (var b in barras.OrderByDescending(b => b.W))
@@ -997,6 +1050,8 @@ namespace PythiaGex
                         g.FillRectangle(Color.FromArgb(120, b.Col), new Rectangle(xConv - b.W, b.Y - alto / 2, b.W, alto));
                         g.DrawLine(new RenderPen(Color.FromArgb(b.Neg ? 220 : 170, b.Neg ? ColNeg : b.Col), 1f), xConv - b.W, b.Y + alto / 2, xConv, b.Y + alto / 2);
                     }
+                    // las mismas tres pelotitas sobre la convexidad de cada capa (la referencia las lleva en los dos perfiles)
+                    if (PelotitasMaxChange) PelotitasCapas(g, cont, activas, lecturas, anchoConv, xConv, anchoDer, alto, true);
                     if (CapasSiglas) Siglas(g, barras.Select(b => (b.Y, xConv - b.W - 3, b.Col, b.Sigla, true)).ToList(), area, piso, fMin, altoMin);
                 }
 
@@ -1056,7 +1111,7 @@ namespace PythiaGex
                 try
                 {
                     var kNq = activas.FirstOrDefault(z => z.Tipo == CapaLibro.TipoCapa.RithmicViva);
-                    if (kNq != null && VivaProfundidad)
+                    if (kNq != null && ProfundidadOpciones)
                     {
                         var ap = _viva.ApoyoPorStrikeLados();
                         foreach (var z in ap.OrderByDescending(q => q.Value.cb + q.Value.ca + q.Value.pb + q.Value.pa).Take(3))

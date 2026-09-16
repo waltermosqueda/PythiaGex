@@ -17,7 +17,7 @@
 
   function ajustesDefault(raiz) {
     return {
-      horizonte: "Hoy", cuantas: 2, radioDomPct: 2.0, radioCentro: 12.0, picoPct: 0.35, muchoPct: 50,
+      horizonte: "Hoy", cuantas: 2, radioDomPct: 2.0, radioDomMaxPts: 100, radioCentro: 12.0, picoPct: 0.35, muchoPct: 50,
       convexidad: "Auto", unaPorLado: true, centroide: true, empatePct: 20, tasa: 0.0375, dividendo: DIVIDENDO[raiz] || 0.012,
       expFuturo: null, expFuturoAlt: null,
     };
@@ -194,7 +194,8 @@
     const mejor = (k, pos) => { let b = null; for (const s of perfil) { if (pos ? s[k] > 0 : s[k] < 0) { if (!b || (pos ? s[k] > b[k] : s[k] < b[k])) b = s; } } return b ? b.fut : null; };
     const mpVol = mejor("gexVol", true), mnVol = mejor("gexVol", false), mpOi = mejor("gexOi", true), mnOi = mejor("gexOi", false);
     // dominantes
-    const radio = futuro * A.radioDomPct / 100, cuantas = Math.max(1, A.cuantas);
+    let radio = futuro * A.radioDomPct / 100; if (A.radioDomMaxPts > 0) radio = Math.min(radio, A.radioDomMaxPts);
+    const cuantas = Math.max(1, A.cuantas);
     let libroDom = "vol";
     let en = perfil.filter(s => Math.abs(s.fut - futuro) <= radio && Math.abs(s.gexVol) > 0);
     let cand = en.slice().sort((a, b) => Math.abs(b.gexVol) - Math.abs(a.gexVol)).slice(0, cuantas).map(s => [s.fut, s.gexVol]);

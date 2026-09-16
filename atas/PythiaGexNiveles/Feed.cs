@@ -28,6 +28,7 @@ namespace PythiaGex
         public sealed class Fila
         {
             public double K;        // strike en puntos del INDICE
+            public double K0;       // strike CRUDO del contrato (libro Rithmic en semana de roll: K lleva el spread); 0 = igual a K
             public int V;           // indice del vencimiento
             public double OiC, OiP; // interes abierto (de AYER, para todos)
             public double IvC, IvP; // volatilidad implicita
@@ -398,11 +399,11 @@ namespace PythiaGex
                                 var a = f.EnumerateArray().ToArray();
                                 if (a.Length < 8) continue;
                                 double G(int i) => a[i].TryGetDouble(out var x) ? x : 0;
-                                double K = G(0), di = Math.Round(G(1), 4), oi = G(3), iv = G(4), vol = G(7);
+                                double K = G(0), di = Math.Round(G(1), 4), oi = G(3), iv = G(4), vol = G(7), k0 = a.Length > 11 ? G(11) : 0;
                                 bool call = G(2) >= 0.5;
                                 if (iv <= 0 || (oi <= 0 && vol <= 0)) continue;
                                 if (!dias.Contains(di)) dias.Add(di);
-                                if (!porClave.TryGetValue((K, di), out var fila)) { fila = new Fila { K = K }; porClave[(K, di)] = fila; }
+                                if (!porClave.TryGetValue((K, di), out var fila)) { fila = new Fila { K = K, K0 = k0 }; porClave[(K, di)] = fila; }
                                 if (call) { fila.OiC = oi; fila.IvC = iv; fila.VolC = vol; } else { fila.OiP = oi; fila.IvP = iv; fila.VolP = vol; }
                                 fila.V = -1; // se resuelve abajo
                             }

@@ -85,6 +85,8 @@ namespace PythiaGex
         public sealed class Strike
         {
             public double K, Fut;
+            public double Clave;      // clave ESTABLE de las fotos del Max Change: el strike crudo del contrato (16-09: en semana de
+                                      // roll el K corrido del libro Rithmic cambia con el spread cada minuto y las fotos no coincidian)
             public double GexOi, GexVol, Conv;
             public double GexFlujo;   // gamma del DEALER por flujo firmado (solo Rithmic, 1.9): + largo (colchon), - corto (tobogan)
             public double Oi, VolHoy;
@@ -306,7 +308,7 @@ namespace PythiaGex
                 double gOi = Gex(f, S, T, r, false, c.EsFuturo), gVol = Gex(f, S, T, r, true, c.EsFuturo);
                 double gOiUp = Gex(f, Sup, T, r, false, c.EsFuturo), gVolUp = Gex(f, Sup, T, r, true, c.EsFuturo);
                 if (gOi == 0 && gVol == 0) continue;
-                if (!por.TryGetValue(f.K, out var s)) { s = new Strike { K = f.K, Fut = c.PorRazon ? c.AlFuturo(f.K) : f.K + baseUsada }; por[f.K] = s; }
+                if (!por.TryGetValue(f.K, out var s)) { s = new Strike { K = f.K, Clave = f.K0 > 0 ? -f.K0 : f.K, Fut = c.PorRazon ? c.AlFuturo(f.K) : f.K + baseUsada }; por[f.K] = s; }
                 s.GexOi += gOi; s.GexVol += gVol;
                 s.GexFlujo += GexFlujo(f, S, T, r, c.EsFuturo);
                 s.Oi += f.OiC + f.OiP; s.VolHoy += f.VolC + f.VolP;
@@ -472,7 +474,7 @@ namespace PythiaGex
             var foto = _fotos.LastOrDefault();
             if (foto == null || foto.Minuto != minuto) { foto = new Snap { Minuto = minuto }; _fotos.Add(foto); while (_fotos.Count > 40) _fotos.RemoveAt(0); }
             foto.GexVol.Clear(); foto.Conv.Clear();
-            foreach (var x in perfil) { foto.GexVol[x.K] = x.GexVol; foto.Conv[x.K] = x.Conv; }
+            foreach (var x in perfil) { foto.GexVol[x.Clave] = x.GexVol; foto.Conv[x.Clave] = x.Conv; }
             var mc = new (double Fut, double Delta)[Ventanas.Length];
             for (int i = 0; i < Ventanas.Length; i++)
             {
@@ -481,8 +483,12 @@ namespace PythiaGex
                 if (vieja != null)
                     foreach (var x in perfil)
                     {
-                        double antes = vieja.GexVol.TryGetValue(x.K, out var a0) ? a0 : 0;
+                        // solo dentro del radio de las dominantes y con un piso del 5 % del maximo: un +5M a 255 pts
+                        // del precio ocupaba una fila de la escalera (16-09)
+                        if (Math.Abs(x.Fut - futuro) > radio) continue;
+                        double antes = vieja.GexVol.TryGetValue(x.Clave, out var a0) ? a0 : 0;
                         double d = x.GexVol - antes;
+                        if (Math.Abs(d) < 0.05 * maxAbsVol) continue;
                         if (Math.Abs(d) > Math.Abs(mejor)) { mejor = d; futM = x.Fut; }
                     }
                 mc[i] = (futM, mejor);

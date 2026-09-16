@@ -352,7 +352,7 @@ namespace PythiaGex
 
         [Display(Name = "Viva: profundidad del libro de opciones (nivel 2)", GroupName = "1. Datos", Order = 10,
                  Description = "Pide a Rithmic la profundidad (Quotes) de cada contrato de opciones suscrito y muestra los strikes con mas contratos apoyados (calls + puts, bid y ask), como rombo 'apoyo N' a la izquierda. Medido 16-09 02:05: ~1.600 eventos por segundo y +90 % de un nucleo de CPU (179 % contra 88 % sin), sin aviso de latencia. Apagado por defecto: prenderlo cuando se quiera mirar y apagarlo si la cinta se atrasa.")]
-        public bool VivaProfundidad { get; set; } = false;
+        public bool ProfundidadOpciones { get; set; } = false;   // renombrada 16-09: el 'true' guardado en los graficos (1.10s) ahogaba a Rithmic
 
         [Display(Name = "Viva: tope de contratos suscritos", GroupName = "1. Datos", Order = 9)]
         [Range(20, 600)]
@@ -436,7 +436,7 @@ namespace PythiaGex
         public bool VerEstela { get; set; } = true;
 
         [Display(Name = "Pelotitas del Max Change (15, 5 y 1 min)", GroupName = "3. Pantalla", Order = 7)]
-        public bool VerPelotitas { get; set; } = true;
+        public bool PelotitasMaxChange { get; set; } = true;
 
         [Display(Name = "Big Trades sobre las velas", GroupName = "3. Pantalla", Order = 8)]
         public bool VerBigTrades { get; set; } = true;
@@ -729,7 +729,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10x (capas NQ, escalera solo visible) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10z (0DTE del roll, pelotitas por capa, sin profundidad, clave por strike crudo) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -744,22 +744,46 @@ namespace PythiaGex
         /// <summary>Apagada: se reintenta cada 3 min. Activa pero sin el vencimiento mas cercano (el 11-09
         /// Rithmic no contesto el 0DTE de NQ y el libro quedo con lunes/martes todo el dia): cada 5 min,
         /// para recuperarlo sin martillar el feed.</summary>
+        private string _diaViva = "";
+        private static string DiaNy()
+        {
+            try { var ny = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"); return TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.Utc, ny).ToString("yyyy-MM-dd"); }
+            catch { return DateTime.UtcNow.AddHours(-4).ToString("yyyy-MM-dd"); }
+        }
+        /// <summary>Rearma la cadena viva (16-09): apagada (cada 3 min); o cada 5 min si falta el vencimiento mas cercano,
+        /// si cambio el dia en Nueva York (el 0DTE es otro) o si el precio se alejo mas de medio radio denso del centro
+        /// de la ventana armada (el 0DTE al dinero se estaba quedando afuera: NQ a 117 pts del borde el 16-09).
+        /// El rearme suelta solo los contratos que salen de la ventana.</summary>
         private void RearmarVivaSiHaceFalta(DateTime ahora)
         {
-            if (!UsarCadenaViva || _vivaCorriendo) return;
+            if (!UsarCadenaViva || _vivaCorriendo || InstrumentoSinLibro()) return;
             double seg = (ahora - _ultimoIntentoViva).TotalSeconds;
-            if ((!_viva.Activa && seg >= 180) || (_viva.Activa && _viva.FaltaCercano && seg >= 300)) { _ultimoIntentoViva = ahora; ArrancarViva(); }
+            string motivo = null;
+            if (!_viva.Activa && seg >= 180) motivo = "apagada";
+            else if (_viva.Activa && seg >= 300)
+            {
+                string dia = DiaNy();
+                if (_viva.FaltaCercano) motivo = "falta el vencimiento mas cercano";
+                else if (_diaViva.Length > 0 && dia != _diaViva) motivo = "cambio el dia en Nueva York (" + _diaViva + " -> " + dia + "): el 0DTE es otro";
+                else if (_viva.RadioDenso > 0 && _viva.Futuro > 0 && Math.Abs(_viva.Futuro - _viva.CentroVentana) > _viva.RadioDenso * 0.5)
+                    motivo = "el precio se alejo " + Math.Abs(_viva.Futuro - _viva.CentroVentana).ToString("0") + " pts del centro de la ventana (radio denso " + _viva.RadioDenso.ToString("0") + "): se recentra";
+            }
+            if (motivo == null) return;
+            Log("[viva] rearme: " + motivo);
+            _ultimoIntentoViva = ahora; ArrancarViva();
         }
 
         private void ArrancarViva()
         {
+            if (InstrumentoSinLibro()) return;
             _vivaCorriendo = true;
+            _diaViva = DiaNy();
             _viva.UmbralGrande = UmbralBigTrade;
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    _viva.Profundidad = VivaProfundidad;
+                    _viva.Profundidad = ProfundidadOpciones;
                     await _viva.Arrancar(DataProvider, TradingManager, TradingManager?.Security, Raiz(),
                                          7, Math.Max(5, StrikesEnVivo), Math.Max(1, VencimientosEnVivo),
                                          Math.Max(20, Math.Max(TopeContratos, ContratosVivos)), m => Log("[viva] " + m)).ConfigureAwait(false);
@@ -771,6 +795,7 @@ namespace PythiaGex
 
         private async Task BajarFeed()
         {
+            if (InstrumentoSinLibro()) { try { RedrawChart(new RedrawArg(ChartArea)); } catch { } return; }
             if (Interlocked.Exchange(ref _bajando, 1) == 1) return;
             try
             {
@@ -807,6 +832,28 @@ namespace PythiaGex
             if (s.StartsWith("MNQ") || s.StartsWith("NQ")) return "NQ";
             if (s.StartsWith("M2K") || s.StartsWith("RTY")) return "RTY";
             return "ES";
+        }
+
+        /// <summary>Solo los futuros con libro de opciones que este indicador sabe leer. Medido 16-09 10:50: un grafico de
+        /// oro (GCZ6) arranco con raiz "ES" por defecto, suscribio 320 contratos de ESU6 y bajo cadenas de SPX 50 min.</summary>
+        private bool RaizSoportada()
+        {
+            if (!string.IsNullOrWhiteSpace(RaizManual)) return true;
+            var s = (InstrumentInfo?.Instrument ?? "").ToUpperInvariant().TrimStart('#');
+            if (s.Length == 0) return true;   // todavia sin instrumento: no bloquear
+            return s.StartsWith("MES") || s.StartsWith("ES") || s.StartsWith("MNQ") || s.StartsWith("NQ") || s.StartsWith("M2K") || s.StartsWith("RTY");
+        }
+        private bool _avisoRaiz;
+        private bool InstrumentoSinLibro()
+        {
+            if (RaizSoportada()) return false;
+            if (!_avisoRaiz)
+            {
+                _avisoRaiz = true;
+                _error = "instrumento " + (InstrumentInfo?.Instrument ?? "?") + " sin libro de opciones: Gamma Hoy solo lee ES/MES, NQ/MNQ y RTY/M2K (o fija 'Raiz manual')";
+                Log("INSTRUMENTO NO SOPORTADO: " + (InstrumentInfo?.Instrument ?? "?") + ": no se arma la cadena viva ni se bajan cadenas");
+            }
+            return true;
         }
 
         /// <summary>La raiz del LIBRO que se baja (1.9): con CBOE_ETF, SPY para ES y QQQ para NQ (la referencia
@@ -867,6 +914,7 @@ namespace PythiaGex
             // el archivo se recorre en su propio hilo (RecorrerArchivo): aca solo el vivo
             if (Fuente == FuenteDatos.Archivo) return;
             if (bar != CurrentBar - 1) return;
+            if (InstrumentoSinLibro()) return;
             // OnCalculate llega en CADA tick de la ultima vela y Repreciar rehace todo el perfil (211 strikes,
             // cruce de 61 pasos por libro): con cuatro graficos era un nucleo entero de CPU de corrido (medido
             // 10-09 21:55: 19-21 s de CPU por cada 20 s). Alcanza con repreciar una vez por segundo, y siempre
@@ -958,7 +1006,7 @@ namespace PythiaGex
                         }
                         else Log("archivo con libro Rithmic: grabacion insuficiente (" + viva.Count + "), el pasado queda con CBOE");
                     }
-                    lock (_candado) { _archivo = ls; _iArchivo = 0; _barraReb = -1; _fotosBarra.Clear(); }
+                    lock (_candado) { _archivo = null; _iArchivo = 0; _barraReb = -1; _fotosBarra.Clear(); }   // no retener 30 dias de cadenas (0,6 GB por grafico, 16-09): nadie las vuelve a leer
                     Log("REBOBINADO: " + ls.Count + " cadenas cargadas; recorro el grafico en un hilo aparte");
                     RecorrerArchivo(ls);
                     _archivoListo = true;
@@ -1129,7 +1177,7 @@ namespace PythiaGex
             {
                 if (f.IV <= 0 || (f.OI <= 0 && f.VolumenHoy <= 0)) continue;
                 int v = idx[Math.Round(f.Dias, 4)];
-                if (!porClave.TryGetValue((f.K, v), out var fila)) { fila = new Feed.Fila { K = f.K, V = v }; porClave[(f.K, v)] = fila; }
+                if (!porClave.TryGetValue((f.K, v), out var fila)) { fila = new Feed.Fila { K = f.K, K0 = f.K0, V = v }; porClave[(f.K, v)] = fila; }
                 if (f.EsCall) { fila.OiC = f.OI; fila.IvC = f.IV; fila.VolC = f.VolumenHoy; fila.FluC = f.VolCompra - f.VolVenta; }
                 else { fila.OiP = f.OI; fila.IvP = f.IV; fila.VolP = f.VolumenHoy; fila.FluP = f.VolCompra - f.VolVenta; }
             }
@@ -1158,7 +1206,7 @@ namespace PythiaGex
             sb.Append("{\"ts\":\"").Append(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", inv))
               .Append("\",\"futuro\":").Append(_viva.Futuro.ToString("0.####", inv))
               .Append(",\"grandes\":").Append(_viva.Grandes().Count.ToString(inv))
-              .Append(",\"campos\":\"strike,dias,es_call,oi,iv,bid,ask,vol_hoy,vol_cinta,vol_compra,vol_venta\",\"filas\":[");
+              .Append(",\"campos\":\"strike,dias,es_call,oi,iv,bid,ask,vol_hoy,vol_cinta,vol_compra,vol_venta,strike0\",\"filas\":[");
             bool primero = true;
             foreach (var f in fs)
             {
@@ -1168,7 +1216,7 @@ namespace PythiaGex
                   .Append(',').Append(f.IV.ToString("0.######", inv)).Append(',').Append(f.Bid.ToString("0.####", inv))
                   .Append(',').Append(f.Ask.ToString("0.####", inv)).Append(',').Append(f.VolumenHoy.ToString("0.#", inv))
                   .Append(',').Append(f.VolCinta.ToString("0.#", inv)).Append(',').Append(f.VolCompra.ToString("0.#", inv))
-                  .Append(',').Append(f.VolVenta.ToString("0.#", inv)).Append(']');
+                  .Append(',').Append(f.VolVenta.ToString("0.#", inv)).Append(',').Append(f.K0.ToString("0.##", inv)).Append(']');
             }
             sb.Append("]}");
             return sb.ToString();
@@ -1712,7 +1760,7 @@ namespace PythiaGex
                 : "GAMMA HOY  " + corto + "  " + cuad + "   conv " + (convPrecio >= 0 ? "+" : "-") + " (" + libroConv + ")  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)) + (mucho ? " mucho" : " poco");
             string l2 = (c != null && c.EsFuturo ? "libro " + Raiz() + " Rithmic " + edad + " · " + c.Filas.Count + " filas" : "vol CBOE " + edad) + " · OI de ayer · base " + origenBase + " · dominantes por " + libroDom
                       + (Libro == LibroEnVivo.Rithmic_ES && _vivaFlaca >= 0 ? " · RITHMIC FLACO: " + _vivaFlaca + " strikes con puntas, sigo con CBOE" : "")
-                      + (_viva.Activa ? " · vivo Rithmic " + ((int)_viva.VolumenTotalHoy()).ToString("N0", es) + " contr" : " · vivo: " + _viva.Estado);
+                      + (_viva.Activa ? " · vivo Rithmic " + ((int)_viva.VolumenTotalHoy()).ToString("N0", es) + " contr" + (_viva.SinCeroDte ? " · SIN 0DTE EN EL VIVO (mas cercano " + _viva.DiasReales + " d)" : "") : " · vivo: " + _viva.Estado);
             if (Fuente != FuenteDatos.Archivo)
             {
                 if (foto != null)
@@ -1782,7 +1830,7 @@ namespace PythiaGex
             int[] ventPel = { 15, 5, 1 };
             var antesPel = new Dictionary<double, double>[3];
             var antesConv = new Dictionary<double, double>[3];
-            if (VerPelotitas)
+            if (PelotitasMaxChange)
             {
                 if (foto == null)
                 {
@@ -1869,7 +1917,7 @@ namespace PythiaGex
                         g.DrawString(l1r, fRot, Color.FromArgb(235, col), xr0, y - altoRot / 2);
                         if (rotDos) g.DrawString(l2r, fRot, Color.FromArgb(175, ColTexto), xr0, y + altoRot / 2);
                     }
-                    if (VerPelotitas)
+                    if (PelotitasMaxChange)
                     {
                         // donde estaba la punta hace 15 (grande), 5 (mediana) y 1 min (chica): adentro
                         // de la barra = el strike crece, afuera = decrece, juntas en la punta = quieto.
@@ -1877,12 +1925,13 @@ namespace PythiaGex
                         int[] rad = { Math.Max(2, alto / 2), Math.Max(2, alto / 2 - 1), Math.Max(1, alto / 2 - 2) };
                         for (int i = 0; i < 3; i++)
                         {
-                            if (antesPel[i] == null || !antesPel[i].TryGetValue(s.K, out var gAntes)) continue;
+                            if (antesPel[i] == null || !antesPel[i].TryGetValue(s.Clave, out var gAntes)) continue;
                             if (Math.Sign(gAntes) != Math.Sign(s.GexVol) && gAntes != 0) gAntes = 0;   // cambio de signo: "estaba en cero"
                             int wa = Math.Max(0, (int)(Math.Sqrt(Math.Abs(gAntes) / maxV) * ancho));
                             int rr = rad[i];
-                            g.FillEllipse(Color.FromArgb(225, 205, 205, 210), new Rectangle(x0 + wa - rr, y - rr, 2 * rr, 2 * rr));
-                            g.DrawEllipse(new RenderPen(Color.FromArgb(230, col), 1f), new Rectangle(x0 + wa - rr, y - rr, 2 * rr, 2 * rr));
+                            if (AtenuarPrimaria(255) <= 0) continue;   // primaria oculta: sin circulos flotando
+                            g.FillEllipse(Color.FromArgb(AtenuarPrimaria(225), 205, 205, 210), new Rectangle(x0 + wa - rr, y - rr, 2 * rr, 2 * rr));
+                            g.DrawEllipse(new RenderPen(Color.FromArgb(AtenuarPrimaria(230), col), 1f), new Rectangle(x0 + wa - rr, y - rr, 2 * rr, 2 * rr));
                         }
                     }
                 }
@@ -1893,18 +1942,19 @@ namespace PythiaGex
                     int w = Math.Max(1, (int)(fr * ancho * 0.7));
                     var col = vDer >= 0 ? ColConvPos : ColConvNeg;
                     g.FillRectangle(Color.FromArgb(AtenuarPrimaria((int)(110 + 120 * fr)), col), new Rectangle(xConv - w, y - alto / 2, w, alto));
-                    if (VerPelotitas && !usarFlujo)
+                    if (PelotitasMaxChange && !usarFlujo)
                     {
                         // las mismas tres pelotitas sobre la convexidad (el producto las lleva en los dos perfiles)
                         int[] radC = { Math.Max(2, alto / 2), Math.Max(2, alto / 2 - 1), Math.Max(1, alto / 2 - 2) };
                         for (int i = 0; i < 3; i++)
                         {
-                            if (antesConv[i] == null || !antesConv[i].TryGetValue(s.K, out var cAntes)) continue;
+                            if (antesConv[i] == null || !antesConv[i].TryGetValue(s.Clave, out var cAntes)) continue;
                             if (Math.Sign(cAntes) != Math.Sign(s.Conv) && cAntes != 0) cAntes = 0;
                             int wa = Math.Max(0, (int)(Math.Sqrt(Math.Abs(cAntes) / maxC) * ancho * 0.7));
                             int rr = radC[i];
-                            g.FillEllipse(Color.FromArgb(225, 205, 205, 210), new Rectangle(xConv - wa - rr, y - rr, 2 * rr, 2 * rr));
-                            g.DrawEllipse(new RenderPen(Color.FromArgb(230, col), 1f), new Rectangle(xConv - wa - rr, y - rr, 2 * rr, 2 * rr));
+                            if (AtenuarPrimaria(255) <= 0) continue;
+                            g.FillEllipse(Color.FromArgb(AtenuarPrimaria(225), 205, 205, 210), new Rectangle(xConv - wa - rr, y - rr, 2 * rr, 2 * rr));
+                            g.DrawEllipse(new RenderPen(Color.FromArgb(AtenuarPrimaria(230), col), 1f), new Rectangle(xConv - wa - rr, y - rr, 2 * rr, 2 * rr));
                         }
                     }
                     if (rotEsta)
@@ -1997,13 +2047,21 @@ namespace PythiaGex
                 Dictionary<int, double[]> est; Dictionary<int, (double Zero, double[] Mc)> mar; Dictionary<int, List<(double Fut, int Rango, DateTime Hora)>> gui;
                 var ahoraUtc = DateTime.UtcNow;
                 Dictionary<int, List<GatilloBanda.Marca>> dis;
+                int desde = Math.Max(0, FirstVisibleBarNumber), hasta = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
+                // solo el rango visible (16-09): copiar los cuatro diccionarios enteros (5-6.000 velas) en cada cuadro
+                // era ~1 MB de basura por cuadro a 10-20 cuadros/s
+                est = new Dictionary<int, double[]>(); mar = new Dictionary<int, (double, double[])>();
+                gui = new Dictionary<int, List<(double, int, DateTime)>>(); dis = new Dictionary<int, List<GatilloBanda.Marca>>();
                 lock (_candado)
                 {
-                    est = new Dictionary<int, double[]>(_estela); mar = new Dictionary<int, (double, double[])>(_marcas);
-                    gui = _guiones.ToDictionary(kv => kv.Key, kv => kv.Value.ToList());
-                    dis = _disparos.ToDictionary(kv => kv.Key, kv => kv.Value);
+                    for (int b = desde; b <= hasta; b++)
+                    {
+                        if (_estela.TryGetValue(b, out var e0)) est[b] = e0;
+                        if (_marcas.TryGetValue(b, out var m0)) mar[b] = m0;
+                        if (_guiones.TryGetValue(b, out var g0)) gui[b] = g0.ToList();
+                        if (_disparos.TryGetValue(b, out var d0)) dis[b] = d0;
+                    }
                 }
-                int desde = Math.Max(0, FirstVisibleBarNumber), hasta = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
                 // ancho de una vela en pixeles, medido en el grafico (no supuesto)
                 int bw = 5;
                 try { if (hasta > desde) bw = Math.Max(3, (cont.GetXByBar(hasta, false) - cont.GetXByBar(desde, false)) / Math.Max(1, hasta - desde)); } catch { }

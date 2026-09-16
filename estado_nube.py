@@ -44,6 +44,7 @@ class Ajustes:
     horizonte = "Hoy"           # Hoy | Semana | Todo
     cuantas = 2
     radio_dom_pct = 2.0
+    radio_dom_max_pts = 100.0   # tope en puntos (Gamma Hoy 1.10u, 16-09)
     radio_centro = 12.0
     pico_pct = 0.35
     mucho_pct = 50
@@ -275,6 +276,7 @@ def calcular(A, c, futuro, ahora, fotos=None, base_medida_precio=None, edad_medi
     mpVol, mnVol, mpOi, mnOi = mejor("gexVol", True), mejor("gexVol", False), mejor("gexOi", True), mejor("gexOi", False)
     # dominantes
     radio = futuro * A.radio_dom_pct / 100.0
+    if A.radio_dom_max_pts > 0: radio = min(radio, A.radio_dom_max_pts)
     cuantas = max(1, A.cuantas)
     libroDom = "vol"
     en = [s for s in perfil if abs(s["fut"] - futuro) <= radio and abs(s["gexVol"]) > 0]
