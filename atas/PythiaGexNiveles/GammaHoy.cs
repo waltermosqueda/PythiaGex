@@ -701,7 +701,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10i (capas NQ, DTE por fecha) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10j (capas NQ, razon sin empalme) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -803,12 +803,23 @@ namespace PythiaGex
             c.Fuente = "CBOE " + ticker;
             var iv = CultureInfo.InvariantCulture;
             double razon = double.NaN; string origen = "";
+            // CONTRATO CONTINUO (15-09, semana del roll): la historia del grafico mezcla dos contratos (septiembre hasta
+            // el empalme, diciembre despues, 300 pts arriba). La vela "alineada" de hace 902 s puede ser del contrato
+            // viejo y la razon queda 1 % corrida: todos los niveles del ETF se dibujan ~290 pts arriba (medido 19:37-19:45:
+            // razon 41.10 contra 41.51 en el mismo minuto en dos graficos). Si la vela alineada difiere mas de 0,6 % del
+            // precio actual, no es del mismo contrato: se usa la vela actual y se dice.
+            double pAhora = 0; try { pAhora = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { }
             if (!string.IsNullOrEmpty(c.Ts) && DateTime.TryParseExact(c.Ts, "yyyy-MM-dd HH:mm:ss", iv, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var ts))
             {
                 int b = BarraDe(ts.AddSeconds(-retrasoSeg));
-                if (b >= 0) { try { double p = (double)GetCandle(b).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "vela alineada"; } } catch { } }
+                if (b >= 0) { try { double p = (double)GetCandle(b).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "vela alineada";
+                    if (pAhora > 0 && Math.Abs(p / pAhora - 1) > 0.006) { razon = pAhora / c.SpotIdx; origen = "CRUDA: la vela alineada es de otro contrato (" + p.ToString("0", iv) + " vs " + pAhora.ToString("0", iv) + ")"; } } } catch { } }
             }
-            if (double.IsNaN(razon) && !double.IsNaN(r.Rueda)) { razon = r.Rueda; origen = "mediana de la rueda"; }
+            if (double.IsNaN(razon) && !double.IsNaN(r.Rueda))
+            {
+                razon = r.Rueda; origen = "mediana de la rueda";
+                if (pAhora > 0 && c.SpotIdx > 0 && Math.Abs(razon * c.SpotIdx / pAhora - 1) > 0.006) { razon = pAhora / c.SpotIdx; origen = "CRUDA: la mediana de la rueda es de otro contrato"; }
+            }
             if (double.IsNaN(razon)) { try { double p = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "CRUDA sin alinear"; } } catch { } }
             if (double.IsNaN(razon) || razon <= 0) { c.Escala = 1; c.EscalaOrigen = "sin razon"; return; }
             c.Escala = razon; c.EscalaOrigen = origen;
