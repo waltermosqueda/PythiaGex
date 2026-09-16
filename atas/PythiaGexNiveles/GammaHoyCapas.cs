@@ -352,6 +352,16 @@ namespace PythiaGex
             else { _betaSp = 1.0; _betaR2 = double.NaN; _betaOrigen = es.Count == 0 ? "SUPUESTA (sin velas de MES: abrir su grafico)" : "SUPUESTA (n " + n + " < 20)"; }
         }
 
+        /// <summary>Los puntos de la estela de una lectura, en posicion fija: [0] D1, [1] D2, [2] zero gamma (16-09: el zero
+        /// tambien va a la estela, un puntito por vela en el color del libro). 0 donde no hay.</summary>
+        private static List<(double Fut, double Gex)> PuntosEstela(GammaHoyNucleo.Lectura L)
+        {
+            var p = new List<(double Fut, double Gex)>();
+            for (int i = 0; i < 2; i++) p.Add(L != null && L.Doms.Count > i ? L.Doms[i] : (0.0, 0.0));
+            p.Add((L != null && !double.IsNaN(L.ZeroVol) && L.ZeroVol > 0 ? L.ZeroVol : 0.0, 0.0));
+            return p;
+        }
+
         /// <summary>Un guion por dominante cuando se movio mas de un cuarto de punto (misma regla que AgregarGuiones).</summary>
         private static void AgregarGuionesCapa(CapaLibro k, int bar, List<(double Fut, double Gex)> doms, DateTime hora)
         {
@@ -380,8 +390,8 @@ namespace PythiaGex
             {
                 if (doms == null || doms.Count == 0) return;
                 var inv = CultureInfo.InvariantCulture;
-                string d = string.Join(",", doms.Where(x => !double.IsNaN(x.Fut) && x.Fut > 0).Select(x => x.Fut.ToString("0.00", inv)));
-                if (d.Length == 0) return;
+                string d = string.Join(",", doms.Select(x => double.IsNaN(x.Fut) || x.Fut <= 0 ? "0" : x.Fut.ToString("0.00", inv)));
+                if (d.Length == 0 || d.Replace(",", "").Replace("0", "").Length == 0) return;
                 lock (_estelaUltimaLinea)
                 {
                     if (_estelaUltimaLinea.TryGetValue(k.Nombre, out var u) && u == d) return;   // solo cuando cambia
@@ -505,7 +515,7 @@ namespace PythiaGex
                         GammaHoyNucleo.Lectura L;
                         try { L = nuc.Calcular(c, futuro, c.GeneradoUtc); } catch { continue; }
                         if (L == null || L.SinBase) { sinBase++; continue; }
-                        lecturasRep.Add((bar, L.Doms, c.GeneradoUtc));
+                        lecturasRep.Add((bar, PuntosEstela(L), c.GeneradoUtc));
                         con++;
                     }
                     // UN PUNTO POR VELA (16-09): cada cadena vale hasta la cadena siguiente (la nube llega cada 8-25 min)
@@ -634,7 +644,7 @@ namespace PythiaGex
                 lock (_candado)
                 {
                     k.L = L;
-                    if (CapasEstela && L != null && !L.SinBase) { AgregarGuionesCapa(k, Math.Max(0, CurrentBar - 1), L.Doms, ahoraUtc); GuardarGuionCapa(k, ahoraUtc, L.Doms); }
+                    if (CapasEstela && L != null && !L.SinBase) { var pe = PuntosEstela(L); AgregarGuionesCapa(k, Math.Max(0, CurrentBar - 1), pe, ahoraUtc); GuardarGuionCapa(k, ahoraUtc, pe); }
                     if (k.Guiones.Count > 6000) foreach (var kb in k.Guiones.Keys.Where(b => b < CurrentBar - 5000).ToList()) k.Guiones.Remove(kb);
                 }
                 if (CapasEstela && Fuente != FuenteDatos.Archivo && CurrentBar > 10) CargarEstelaCapa(k);
@@ -921,6 +931,11 @@ namespace PythiaGex
                             {
                                 int y; try { y = cont.GetYByPrice((decimal)gu.Fut, false); } catch { continue; }
                                 if (y < area.Top || y > piso) continue;
+                                if (gu.Rango == 2)
+                                {
+                                    if (CapasZero) g.FillEllipse(Color.FromArgb(200, k.Color), new Rectangle(x - 2, y - 2, 4, 4));   // el zero: puntito por vela
+                                    continue;
+                                }
                                 int h = gu.Rango == 0 ? grueso : fino;
                                 Marca(g, FormaEstela, Color.FromArgb(gu.Rango == 0 ? 225 : 150, k.Color), x, y, bw, h);
                             }
