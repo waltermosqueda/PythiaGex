@@ -160,6 +160,10 @@ namespace PythiaGex
                  Description = "En 0DTE la convexidad de cada strike es casi menos su gamma: el perfil derecho es un espejo del izquierdo y solo ensucia. Prenderlo cuando haya vencimientos mas largos en el horizonte.")]
         public bool CapasConvexidadVisible { get; set; } = false;
 
+        [Display(Name = "Capas: fusionar niveles que coinciden en una sola raya", GroupName = "5. Capas extra (NQ)", Order = 11,
+                 Description = "Apagado (pedido 16-09: 'no veo los niveles de QQQ'): cada libro dibuja su propia raya y su propio renglon aunque coincida con otro. Prendido: dos libros con el mismo tipo de nivel a menos de la tolerancia se dibujan como una raya de dos colores con rotulo 'QQQ·ES D1'.")]
+        public bool CapasFusionar { get; set; } = false;
+
         [Display(Name = "Capas: fusionar niveles que coinciden (tolerancia, % del precio)", GroupName = "5. Capas extra (NQ)", Order = 12,
                  Description = "Si dos fuentes tienen un nivel a menos de esta distancia (0,03 % = unos 9 pts de NQ), se dibuja UNA raya gruesa con los colores de las dos alternados y un solo rotulo (SPX·SPY D1). 0 = no fusionar.")]
         [Range(0, 0.2)]
@@ -736,8 +740,8 @@ namespace PythiaGex
             List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)> etiquetas, double futuro)
         {
             var grupos = new List<List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)>>();
-            double tolFusion = double.IsNaN(futuro) ? 0 : futuro * (double)CapasFusionPct / 100.0;
-            string TipoDe(string texto) { var t = texto.Substring(texto.IndexOf(' ') + 1); return t.StartsWith("D") ? "D" : t; }
+            double tolFusion = (!CapasFusionar || double.IsNaN(futuro)) ? 0 : futuro * (double)CapasFusionPct / 100.0;
+            string TipoDe(string texto) { var t = texto.Substring(texto.IndexOf(' ') + 1); return t.StartsWith(TextoDominante) ? TextoDominante : t; }
             foreach (var e in etiquetas.OrderByDescending(r => r.Precio))
             {
                 var ult = grupos.Count > 0 ? grupos[grupos.Count - 1] : null;
