@@ -152,3 +152,8 @@ Ojo con la hora: el log del indicador va en hora local de la maquina (UTC−3); 
   Anoche (14-09, 21:17-22:58) la primaria QQQ estaba a +5…+63 / −3…−36 pts con 0,8-1,2B: eso es lo que el operador
   recuerda "cerca del precio". Esta noche ni por volumen ni por interes abierto hay una barra grande cerca del precio
   en ninguno de los dos libros: las ambar vuelven a verse, pero caen lejos porque el dato de hoy es ese.
+- Visto en pantalla 21:28 (1.10c): rotulos ambar del Max Change arriba a la derecha, estela amarilla sobre las velas
+  de la rueda, NDX D1 29.553 / 0Γ 29.166 / D2 28.903 en la escalera (son la primaria). En ese momento la capa NDX
+  estaba APAGADA en el grafico (el log deja de tener AUDIT capa=NDX desde el reinicio 21:25; no fue un reset: los
+  defaults de todas las capas son false y QQQ/RITHMIC/SPX/SPY/ES siguen prendidas). Con 1.10c, al prender NDX la
+  ambar sigue visible; el % de atenuacion guardado en su grafico sigue en 40 (el default 75 es para graficos nuevos).
