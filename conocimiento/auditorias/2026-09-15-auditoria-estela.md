@@ -186,3 +186,30 @@ transcripciones y las memorias:
   "RITHMIC D1 ▲ 29.291 +15" y "RITHMIC D2 ▼ 29.269 −7" con el precio en 29.276,50. Los tamaños son chicos porque el
   volumen acumulado se perdio con los reinicios; crece con la rueda de manana.
 - Queda: la semana del roll se repite en marzo, junio, septiembre y diciembre; mirar "roll:" en el log esos dias.
+
+## 10. Auditoria externa de las dominantes, libro por libro (16-09, 01:10 local) — `laboratorio/auditar_externo.py`
+
+Pedido: "audita todo indice, derivado o futuro a nivel dominantes, compara manualmente contra ATAS y contra dos o tres
+fuentes de afuera". Tres fuentes: CBOE crudo CON SUS PROPIAS GRIEGAS (no la gamma nuestra), InsiderFinance (gamma e
+interes abierto calculados por ellos) y Yahoo (spot). Misma regla de dominantes en todos (una por lado, radio 2 %,
+empate 20 %), llevada a NQ con la razon/base del log.
+
+| Libro | ATAS (log 01:10) | CBOE con griegas de CBOE | Nuestra gamma sobre CBOE crudo | gamma CBOE / nuestra | Yahoo vs CBOE |
+|---|---|---|---|---|---|
+| QQQ | 700 / 708 → 29.093 / 29.425 | 700 / 708 | 700 / 708 | 0,957 (n 56) | +10 pb (Yahoo 20:00Z) |
+| SPY | 755 / 760 → 29.210 / 29.403 | 755 / 760 | 755 / 760 | 0,984 (n 58) | 0 pb |
+| SPX | 7580 / 7620 → 29.289 / 29.443 | 7580 / 7620 | 7580 / 7620 | 0,972 (n 122) | 0 pb |
+| NDX | 28600 / 29250 → 28.903 / 29.553 | 28600 / 29250 | 28600 / 29250 | 0,901 (n 183) | 0 pb |
+
+- **Los tres coinciden strike por strike en los cuatro libros**: la dominante no depende de quien calcule la gamma
+  (la de CBOE es 2-10 % mas chica que la nuestra por su convencion de tasa/tiempo; el orden de las barras no cambia).
+- **Muros por interes abierto** (otro objeto: posiciones de ayer) contra InsiderFinance con su gamma: QQQ 700/710 =
+  700/710; SPY 760/757 = 760/757; SPX 7625/7525 = 7625/7525; NDX 29100/29000 vs 29100/28500 (la segunda barra difiere:
+  −51M vs −64M, dos barras chicas). Gamma de InsiderFinance / CBOE: 0,75 a 0,99 (griegas propias, y sus datos de SPX/NDX
+  son de las 20:04Z).
+- **NQ y ES (opciones del futuro por Rithmic)**: no hay fuente externa gratuita con volumen por strike de opciones de
+  futuros; se contrastan contra la cuenta interna (auditar_todo, seccion 2) y contra CBOE por la relacion NQ/NDX. Queda
+  como limite conocido.
+- **Niveles ocultos o coincidentes** (16-09 01:10): la fusion de rayas iguales quedo apagada (1.10l); los majors +Γ/−Γ
+  de cada capa venian apagados ("Capas: majors") y en SPX el +Γ (29.559) NO es la D1 (29.443): se prenden para que se
+  vea todo. Los muros por interes abierto de las capas no se dibujan (solo la sombra OI de la primaria).
