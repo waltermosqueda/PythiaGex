@@ -85,6 +85,7 @@ namespace PythiaGex
         // por vela (misma regla que la primaria); el pasado se rebobina desde el archivo por minuto de la nube
         public readonly Dictionary<int, List<(double Fut, int Rango, DateTime Hora)>> Guiones = new();
         public bool EstelaCargada, EstelaCargando;
+        public string UltimoTsEstela = "";                       // sello de la ultima cadena que dejo marca FUERTE en la estela (16-09)
 
         // toques de hoy en las dominantes de esta capa (contados en el indicador, SIN placebo: el laboratorio juzga)
         public int Toques, Rebotes;
@@ -363,7 +364,10 @@ namespace PythiaGex
         }
 
         /// <summary>Un guion por dominante cuando se movio mas de un cuarto de punto (misma regla que AgregarGuiones).</summary>
-        private static void AgregarGuionesCapa(CapaLibro k, int bar, List<(double Fut, double Gex)> doms, DateTime hora)
+        // MARCA FUERTE O TENUE (16-09, pedido: "los competidores dibujan estelas dispersas"): la marca es fuerte cuando
+        // esa vela tuvo un DATO NUEVO (otra cadena de CBOE, o el libro vivo que cambia a cada rato) y tenue cuando el nivel
+        // solo se mantuvo (relleno entre cadenas, o la misma cadena de CBOE vela tras vela). Se codifica en Rango: +10 = tenue.
+        private static void AgregarGuionesCapa(CapaLibro k, int bar, List<(double Fut, double Gex)> doms, DateTime hora, bool relleno = false)
         {
             if (doms == null || bar < 0) return;
             if (!k.Guiones.TryGetValue(bar, out var lg)) { lg = new List<(double, int, DateTime)>(); k.Guiones[bar] = lg; }
@@ -372,8 +376,8 @@ namespace PythiaGex
                 double p = doms[i].Fut;
                 if (double.IsNaN(p) || p <= 0) continue;
                 bool hay = false;
-                for (int j = lg.Count - 1; j >= 0; j--) if (lg[j].Rango == i) { hay = Math.Abs(lg[j].Fut - p) < 0.25; break; }
-                if (!hay && lg.Count < 24) lg.Add((p, i, hora));
+                for (int j = lg.Count - 1; j >= 0; j--) if (lg[j].Rango % 10 == i) { hay = Math.Abs(lg[j].Fut - p) < 0.25; break; }
+                if (!hay && lg.Count < 24) lg.Add((p, i + (relleno ? 10 : 0), hora));
             }
         }
 
@@ -443,7 +447,7 @@ namespace PythiaGex
                     int hastaBar = i + 1 < cambios.Count ? BarraDeCapa(cambios[i + 1].T) : CurrentBar - 1;
                     if (hastaBar < bar) hastaBar = bar;
                     hastaBar = Math.Min(hastaBar, bar + 2000);
-                    lock (_candado) for (int b = bar; b <= hastaBar; b++) AgregarGuionesCapa(k, b, cambios[i].Doms, cambios[i].T);
+                    lock (_candado) for (int b = bar; b <= hastaBar; b++) AgregarGuionesCapa(k, b, cambios[i].Doms, cambios[i].T, b != bar);
                     puestos++;
                 }
                 if (lineas > 0) Log("estela guardada " + k.Nombre + ": " + puestos + " de " + lineas + " cambios vueltos a su vela, rellenados hasta el siguiente");
@@ -524,7 +528,7 @@ namespace PythiaGex
                     {
                         int b0 = lecturasRep[i].Bar, b1 = i + 1 < lecturasRep.Count ? lecturasRep[i + 1].Bar - 1 : Math.Min(CurrentBar - 1, b0 + 60);
                         if (b1 < b0) b1 = b0;
-                        lock (_candado) for (int b = b0; b <= Math.Min(b1, b0 + 2000); b++) AgregarGuionesCapa(k, b, lecturasRep[i].Doms, lecturasRep[i].T);
+                        lock (_candado) for (int b = b0; b <= Math.Min(b1, b0 + 2000); b++) AgregarGuionesCapa(k, b, lecturasRep[i].Doms, lecturasRep[i].T, b != b0);
                     }
                     Log("estela " + k.Nombre + ": " + ls.Count + " cadenas del archivo, " + con + " con guion, " + sinVela + " sin vela, " + sinBase + " sin base");
                     k.EstelaCargada = true;
@@ -644,7 +648,14 @@ namespace PythiaGex
                 lock (_candado)
                 {
                     k.L = L;
-                    if (CapasEstela && L != null && !L.SinBase) { var pe = PuntosEstela(L); AgregarGuionesCapa(k, Math.Max(0, CurrentBar - 1), pe, ahoraUtc); GuardarGuionCapa(k, ahoraUtc, pe); }
+                    if (CapasEstela && L != null && !L.SinBase)
+                    {
+                        var pe = PuntosEstela(L);
+                        bool nuevo = c.EsFuturo || !string.Equals(c.Ts ?? "", k.UltimoTsEstela);   // vivo: siempre; CBOE: solo con otra cadena
+                        k.UltimoTsEstela = c.Ts ?? "";
+                        AgregarGuionesCapa(k, Math.Max(0, CurrentBar - 1), pe, ahoraUtc, !nuevo);
+                        GuardarGuionCapa(k, ahoraUtc, pe);
+                    }
                     if (k.Guiones.Count > 6000) foreach (var kb in k.Guiones.Keys.Where(b => b < CurrentBar - 5000).ToList()) k.Guiones.Remove(kb);
                 }
                 if (CapasEstela && Fuente != FuenteDatos.Archivo && CurrentBar > 10) CargarEstelaCapa(k);
@@ -931,13 +942,14 @@ namespace PythiaGex
                             {
                                 int y; try { y = cont.GetYByPrice((decimal)gu.Fut, false); } catch { continue; }
                                 if (y < area.Top || y > piso) continue;
-                                if (gu.Rango == 2)
+                                int rango = gu.Rango % 10; bool relleno = gu.Rango >= 10;   // tenue: el nivel se mantuvo sin dato nuevo
+                                if (rango == 2)
                                 {
-                                    if (CapasZero) g.FillEllipse(Color.FromArgb(200, k.Color), new Rectangle(x - 2, y - 2, 4, 4));   // el zero: puntito por vela
+                                    if (CapasZero) g.FillEllipse(Color.FromArgb(relleno ? 70 : 200, k.Color), new Rectangle(x - 2, y - 2, 4, 4));   // el zero: puntito por vela
                                     continue;
                                 }
-                                int h = gu.Rango == 0 ? grueso : fino;
-                                Marca(g, FormaEstela, Color.FromArgb(gu.Rango == 0 ? 225 : 150, k.Color), x, y, bw, h);
+                                int h = relleno ? 1 : (rango == 0 ? grueso : fino);
+                                Marca(g, relleno ? FormaMarca.Guion : FormaEstela, Color.FromArgb(relleno ? 60 : (rango == 0 ? 225 : 150), k.Color), x, y, bw, h);
                             }
                         }
                     }
