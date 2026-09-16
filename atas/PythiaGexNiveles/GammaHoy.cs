@@ -178,6 +178,15 @@ namespace PythiaGex
         public System.Windows.Media.Color ColorCapaEs { get; set; } = System.Windows.Media.Color.FromRgb(255, 150, 120);
 
         private static Color De(System.Windows.Media.Color c) => Color.FromArgb(c.A, c.R, c.G, c.B);
+        /// <summary>Dias al vencimiento como se cuentan en la calle: por FECHA de Nueva York (a la noche, el de manana es 1DTE
+        /// aunque falten 18 horas; el de hoy es 0DTE hasta las 16:00). dias = tiempo real al vencimiento en dias.</summary>
+        private static int DteCalendario(double dias)
+        {
+            if (double.IsNaN(dias)) return 0;
+            double frac = 0;
+            try { frac = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time")).TimeOfDay.TotalDays; } catch { }
+            return Math.Max(0, (int)Math.Floor(dias + frac));
+        }
         private static System.Drawing.Drawing2D.DashStyle Trazo(EstiloLinea e)
             => e == EstiloLinea.Guiones ? System.Drawing.Drawing2D.DashStyle.Dash
              : e == EstiloLinea.Puntos ? System.Drawing.Drawing2D.DashStyle.Dot
@@ -692,7 +701,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10h (capas NQ, contrato del grafico) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10i (capas NQ, DTE por fecha) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1783,7 +1792,7 @@ namespace PythiaGex
             if (DatosEnBarras != RotulosBarras.Nunca)
             {
                 double mc0 = double.NaN; lock (_candado) mc0 = _masCercaUlt;
-                string venc = double.IsNaN(mc0) ? "" : (mc0 < 1.0 ? "0" + TextoDTE : mc0 < 2 ? "1" + TextoDTE + " (mañana)" : mc0.ToString("0", es) + " dias");
+                string venc = double.IsNaN(mc0) ? "" : (DteCalendario(mc0) == 0 ? "0" + TextoDTE : DteCalendario(mc0) == 1 ? "1" + TextoDTE + " (mañana)" : DteCalendario(mc0).ToString(es) + " dias");
                 string tit = "GEX " + (libroDom == "vol" ? "volumen hoy" : "OI") + (venc.Length > 0 ? " · " + venc : "") + (VerSombraOI ? " · sombra OI" : "");
                 g.DrawString(tit, fRot, Color.FromArgb(150, ColTexto), x0 + 2, area.Top + 8);
             }
@@ -1891,7 +1900,7 @@ namespace PythiaGex
                     if (y < area.Top || y > piso) continue;
                     var colP = s.GexVol >= 0 ? ColPos : ColNeg;
                     g.DrawLine(new RenderPen(Color.FromArgb(80, colP), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xl0, y, xl1, y);
-                    string rotP = BmR(s.GexVol) + (s.Dte < 1.0 ? " 0" + TextoDTE : (s.Dte < 1e6 ? " " + Math.Round(s.Dte).ToString(es) + TextoDTE : ""));   // de noche el mas cercano es el 1DTE (manana)
+                    string rotP = BmR(s.GexVol) + (s.Dte < 1e6 ? " " + DteCalendario(s.Dte).ToString(es) + TextoDTE : "");   // de noche el mas cercano es el 1DTE (manana)
                     var mrP = g.MeasureString(rotP, fRot);
                     g.DrawString(rotP, fRot, Color.FromArgb(150, colP), xl1 - mrP.Width - 2, y - mrP.Height - 1);
                 }
