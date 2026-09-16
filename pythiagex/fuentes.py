@@ -24,9 +24,20 @@ def normalizar(sym: str) -> str:
 def bajar(sym: str, cache_dir: str = "datos/cache", guardar: bool = True) -> dict:
     """Devuelve la cadena cruda tal como la publica CBOE."""
     s = normalizar(sym)
-    req = urllib.request.Request(CDN.format(s), headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        crudo = r.read()
+    # gzip (16-09): sin Accept-Encoding el CDN mandaba el JSON crudo (NDX ~8 MB, SPX ~20 MB cada 75 s desde la PC
+    # del operador: rafagas de 2-3 MB/s que coincidian con cortes de la conexion de datos de Rithmic). Comprimido
+    # pesa 0,8 / 1,7 MB. Se lee de a trozos con una pausa corta para no saturar la bajada del operador.
+    req = urllib.request.Request(CDN.format(s), headers={"User-Agent": UA, "Accept-Encoding": "gzip"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        trozos = []
+        while True:
+            t = r.read(256 * 1024)
+            if not t: break
+            trozos.append(t)
+            import time as _t; _t.sleep(0.05)   # ~5 MB/s de tope, sin rafagas
+        crudo = b"".join(trozos)
+        if (r.headers.get("Content-Encoding") or "").lower() == "gzip" or crudo[:2] == bytes([0x1f, 0x8b]):
+            crudo = gzip.decompress(crudo)
     if guardar:
         os.makedirs(cache_dir, exist_ok=True)
         sello = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d-%H%M%S")
