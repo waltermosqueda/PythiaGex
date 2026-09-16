@@ -288,10 +288,18 @@ namespace PythiaGex
                                             : raiz == "RTY" ? "M2K" : "M" + raiz;
 
                 var todas = (_conn.Securities ?? Enumerable.Empty<Security>()).ToList();
+                // EL CONTRATO DEL GRAFICO MANDA (22:43, 1.10h): al suscribir el trimestre que vence para el roll (NQU6),
+                // ese futuro entra al catalogo local y "el de vencimiento mas cercano" pasaba a ser NQU6: la cadena
+                // cambiaba de referencia a 28.964 con el grafico en 29.260 y el libro vivo se quedaba sin niveles.
+                // Primero el codigo del grafico (MNQZ6) o su grande derivado (NQZ6); despues, el mas cercano no vencido.
+                string preferidoGrande = CodigosGrande(seguridad?.Code ?? "", grande).FirstOrDefault() ?? "";
+                int Pref(Security x) => string.Equals(x.Code, seguridad?.Code ?? "", StringComparison.OrdinalIgnoreCase)
+                                        || string.Equals(x.Code, preferidoGrande, StringComparison.OrdinalIgnoreCase) ? 0 : 1;
                 Security Buscar(string cod) =>
                     todas.Where(x => x.Type == SecType.Future
-                                && string.Equals(Raiz(x.Code), cod, StringComparison.OrdinalIgnoreCase))
-                         .OrderBy(x => x.Expiration).FirstOrDefault();
+                                && string.Equals(Raiz(x.Code), cod, StringComparison.OrdinalIgnoreCase)
+                                && x.Expiration.Date >= DateTime.Now.Date.AddDays(-1))
+                         .OrderBy(Pref).ThenBy(x => x.Expiration).FirstOrDefault();
 
                 // CANDIDATOS DEL FUTURO GRANDE, EN ORDEN: el local por raiz; si no esta, el
                 // servidor POR CODIGO DE CONTRATO (Code = "ESU6"), derivado del micro que si
