@@ -143,6 +143,8 @@ def main():
     except Exception as e:
         nq = {}; print("Yahoo NQ=F no disponible:", str(e)[:80])
     for t in tickers:
+        if t.upper() in ("NQ", "ES", "RITHMIC"):
+            print(f"{t}: es el libro vivo de opciones del futuro (Rithmic); no hay cadena archivada de CBOE para recalcularlo: se salta"); continue
         print("=" * 110)
         au = lineas_audit(t, dia)
         cad = cargar_cadenas(t, dia)

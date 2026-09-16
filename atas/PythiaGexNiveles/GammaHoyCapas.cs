@@ -59,7 +59,8 @@ namespace PythiaGex
     {
         public enum TipoCapa { EtfPorRazon, IndiceConBase, RithmicViva, VivaLocal }
 
-        public readonly string Nombre;        // "QQQ", "TQQQ", "NDX", "RITHMIC", "SPX", "SPY", "ES"
+        public readonly string Nombre;        // "QQQ", "TQQQ", "NDX", "NQ", "SPX", "SPY", "ES": el producto cuyas opciones son el libro
+        public readonly string Descripcion;   // que es tecnicamente ese libro (para la leyenda): "ETF · opciones CBOE", "futuro · opciones CME en vivo"...
         public readonly string Ticker;        // lo que se baja: ultima-<Ticker>.json / "NQ" (radar -> NDX) / "ES" (radar -> SPX, o viva local)
         public readonly TipoCapa Tipo;
         public readonly bool PorBeta;         // otro subyacente: apalancamiento = 1 / beta medida
@@ -89,8 +90,8 @@ namespace PythiaGex
         public readonly List<Toque> Pendientes = new();
         public sealed class Toque { public double Nivel, Ent; public int Lado, Barra; }
 
-        public CapaLibro(string nombre, string ticker, TipoCapa tipo, double apalancamiento, Color color, bool porBeta = false)
-        { Nombre = nombre; Ticker = ticker; Tipo = tipo; Apalancamiento = apalancamiento; Color = color; PorBeta = porBeta; }
+        public CapaLibro(string nombre, string ticker, TipoCapa tipo, double apalancamiento, Color color, bool porBeta = false, string descripcion = "")
+        { Nombre = nombre; Ticker = ticker; Tipo = tipo; Apalancamiento = apalancamiento; Color = color; PorBeta = porBeta; Descripcion = descripcion; }
 
         /// <summary>Edad del dato, dicha ANTES del numero (regla 4 del protocolo): "vivo", "N min" (ya con los 902 s de CBOE),
         /// "hace N min" para el viva grabado por otro grafico, o "sin dato".</summary>
@@ -125,7 +126,7 @@ namespace PythiaGex
                  Description = "Libro de NDX (CBOE, el mismo que 'Libro en vivo = CBOE_SPX' en NQ) con la base de la rueda de la lectura primaria; si la primaria es un ETF, cae a la base medida o teorica y lo dice.")]
         public bool CapaNdx { get; set; } = false;
 
-        [Display(Name = "Capa Rithmic (lima)", GroupName = "5. Capas extra (NQ)", Order = 4,
+        [Display(Name = "Capa NQ: opciones del futuro, CME en vivo (lima)", GroupName = "5. Capas extra (NQ)", Order = 4,
                  Description = "Las opciones de NQ desde tu ATAS (la cadena viva). Necesita 'Cadena viva de Rithmic' prendida; no abre una segunda suscripcion. OJO: su volumen arranca en cero con cada reinicio de ATAS.")]
         public bool CapaRithmic { get; set; } = false;
 
@@ -213,13 +214,14 @@ namespace PythiaGex
 
         private readonly CapaLibro[] _capas =
         {
-            new CapaLibro("QQQ", "QQQ", CapaLibro.TipoCapa.EtfPorRazon, 1, Color.FromArgb(80, 180, 255)),
-            new CapaLibro("TQQQ", "TQQQ", CapaLibro.TipoCapa.EtfPorRazon, 3, Color.FromArgb(255, 90, 200)),
-            new CapaLibro("NDX", "NQ", CapaLibro.TipoCapa.IndiceConBase, 1, Color.FromArgb(232, 232, 245)),
-            new CapaLibro("RITHMIC", "", CapaLibro.TipoCapa.RithmicViva, 1, Color.FromArgb(170, 255, 90)),
-            new CapaLibro("SPX", "ES", CapaLibro.TipoCapa.EtfPorRazon, 1, Color.FromArgb(180, 120, 255), porBeta: true),
-            new CapaLibro("SPY", "SPY", CapaLibro.TipoCapa.EtfPorRazon, 1, Color.FromArgb(0, 210, 190), porBeta: true),
-            new CapaLibro("ES", "ES", CapaLibro.TipoCapa.VivaLocal, 1, Color.FromArgb(255, 150, 120), porBeta: true),
+            // el NOMBRE es el producto cuyas opciones forman el libro (pedido 15-09: nada de "Rithmic", que es el proveedor)
+            new CapaLibro("QQQ", "QQQ", CapaLibro.TipoCapa.EtfPorRazon, 1, Color.FromArgb(80, 180, 255), descripcion: "ETF Nasdaq-100, opciones CBOE"),
+            new CapaLibro("TQQQ", "TQQQ", CapaLibro.TipoCapa.EtfPorRazon, 3, Color.FromArgb(255, 90, 200), descripcion: "ETF Nasdaq-100 3x, opciones CBOE"),
+            new CapaLibro("NDX", "NQ", CapaLibro.TipoCapa.IndiceConBase, 1, Color.FromArgb(232, 232, 245), descripcion: "índice Nasdaq-100, opciones CBOE"),
+            new CapaLibro("NQ", "", CapaLibro.TipoCapa.RithmicViva, 1, Color.FromArgb(170, 255, 90), descripcion: "futuro E-mini Nasdaq, opciones CME en vivo"),
+            new CapaLibro("SPX", "ES", CapaLibro.TipoCapa.EtfPorRazon, 1, Color.FromArgb(180, 120, 255), porBeta: true, descripcion: "índice S&P 500, opciones CBOE"),
+            new CapaLibro("SPY", "SPY", CapaLibro.TipoCapa.EtfPorRazon, 1, Color.FromArgb(0, 210, 190), porBeta: true, descripcion: "ETF S&P 500, opciones CBOE"),
+            new CapaLibro("ES", "ES", CapaLibro.TipoCapa.VivaLocal, 1, Color.FromArgb(255, 150, 120), porBeta: true, descripcion: "futuro E-mini S&P, opciones CME grabadas del gráfico de MES"),
         };
         private DateTime _diaToques = DateTime.MinValue;
         private bool _pintandoCapas;
@@ -241,7 +243,7 @@ namespace PythiaGex
                 case "QQQ": return CapaQqq;
                 case "TQQQ": return CapaTqqq;
                 case "NDX": return CapaNdx;
-                case "RITHMIC": return CapaRithmic;
+                case "NQ": return CapaRithmic;
                 case "SPX": return CapaSpx;
                 case "SPY": return CapaSpy;
                 case "ES": return CapaEs;
@@ -256,7 +258,7 @@ namespace PythiaGex
             try
             {
                 if (Libro == LibroEnVivo.CBOE_ETF) return RaizLibro();
-                if (Libro == LibroEnVivo.Rithmic_ES) return "RITHMIC";
+                if (Libro == LibroEnVivo.Rithmic_ES) return Raiz() == "NQ" ? "NQ" : "ES";   // opciones del futuro (CME, en vivo)
                 return Raiz() == "NQ" ? "NDX" : "SPX";
             }
             catch { return "?"; }
@@ -717,9 +719,11 @@ namespace PythiaGex
                 // 0) que es la primaria (las rayas ambar): su libro, y si esta oculta por duplicada
                 {
                     string np = NombrePrimaria();
+                    string descP = ""; foreach (var kk in _capas) if (kk.Nombre == np) { descP = kk.Descripcion; break; }
+                    if (descP.Length > 0) descP = " (" + descP.Replace(" grabadas del gráfico de MES", "") + ")";
                     string leyP = PrimariaDuplicada()
-                        ? "■ primaria (ámbar) = " + np + " · misma cuenta que la capa " + np + (CapasOcultarPrimariaDuplicada ? ": oculta para no dibujarla dos veces" : " (las ámbar son ese mismo libro, con su estela)")
-                        : "■ primaria (ámbar) = " + np + " · sus niveles van en la escalera como " + np;
+                        ? "■ primaria (ámbar) = " + np + descP + " · misma cuenta que la capa " + np + (CapasOcultarPrimariaDuplicada ? ": oculta para no dibujarla dos veces" : " (las ámbar son ese mismo libro, con su estela)")
+                        : "■ primaria (ámbar) = " + np + descP + " · sus niveles van en la escalera como " + np;
                     int ylp = piso - 4 - altoRot * (activas.Count + 1);
                     var mlp = g.MeasureString(leyP, fRot);
                     g.FillRectangle(Color.FromArgb(170, ColFondo), new Rectangle(xLey - 2, ylp, mlp.Width + 4, altoRot));
@@ -734,7 +738,7 @@ namespace PythiaGex
                     if (L != null && k.C != null && k.C.EsFuturo && k.Tipo != CapaLibro.TipoCapa.VivaLocal) estado = "en vivo";
                     string beta = !k.PorBeta ? "" : " · β " + k.Beta.ToString("0.00", es) + " " + (k.BetaOrigen.StartsWith("velas") ? "medida (n " + k.BetaN + (double.IsNaN(k.BetaR2) ? "" : ", r² " + k.BetaR2.ToString("0.00", es)) + ")" : k.BetaOrigen.Replace("SUPUESTA", "supuesta"));
                     string toques = !CapasToques ? "" : " · rebotó " + k.Rebotes + " de " + k.Toques + " toques" + (k.Pendientes.Count > 0 ? " (+" + k.Pendientes.Count + " abierto)" : "");
-                    string ley = "■ " + k.Nombre + " · " + estado + beta + doms + toques + (string.IsNullOrEmpty(k.Error) ? "" : " · " + k.Error);
+                    string ley = "■ " + k.Nombre + (string.IsNullOrEmpty(k.Descripcion) ? "" : " (" + k.Descripcion + ")") + " · " + estado + beta + doms + toques + (string.IsNullOrEmpty(k.Error) ? "" : " · " + k.Error);
                     int yl = piso - 4 - altoRot * (activas.Count - i);
                     var ml = g.MeasureString(ley, fRot);
                     g.FillRectangle(Color.FromArgb(170, ColFondo), new Rectangle(xLey - 2, yl, ml.Width + 4, altoRot));

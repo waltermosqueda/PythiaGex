@@ -53,7 +53,7 @@ def ultimas_lineas_audit():
     libro = "?"
     if prim:
         mo = re.search(r"origen=libro_CBOE_([A-Z]+)_x_razon", prim)
-        libro = mo.group(1) if mo else ("RITHMIC" if "Rithmic" in prim else "NDX")
+        libro = mo.group(1) if mo else ("NQ" if "Rithmic" in prim else "NDX")   # capa "NQ" = opciones del futuro por Rithmic (antes "RITHMIC")
     return prim, capas, libro
 
 

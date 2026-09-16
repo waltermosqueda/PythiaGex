@@ -588,7 +588,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10d (capas NQ, roll U6) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10e (capas NQ, nombres) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -1671,7 +1671,7 @@ namespace PythiaGex
             if (DatosEnBarras != RotulosBarras.Nunca)
             {
                 double mc0 = double.NaN; lock (_candado) mc0 = _masCercaUlt;
-                string venc = double.IsNaN(mc0) ? "" : (mc0 < 1.0 ? "0DTE" : mc0 < 2 ? "1 dia" : mc0.ToString("0", es) + " dias");
+                string venc = double.IsNaN(mc0) ? "" : (mc0 < 1.0 ? "0DTE" : mc0 < 2 ? "1DTE (mañana)" : mc0.ToString("0", es) + " dias");
                 string tit = "GEX " + (libroDom == "vol" ? "volumen hoy" : "OI") + (venc.Length > 0 ? " · " + venc : "") + (VerSombraOI ? " · sombra OI" : "");
                 g.DrawString(tit, fRot, Color.FromArgb(150, ColTexto), x0 + 2, area.Top + 8);
             }
@@ -1779,7 +1779,7 @@ namespace PythiaGex
                     if (y < area.Top || y > piso) continue;
                     var colP = s.GexVol >= 0 ? ColPos : ColNeg;
                     g.DrawLine(new RenderPen(Color.FromArgb(80, colP), 1f, System.Drawing.Drawing2D.DashStyle.Dot), xl0, y, xl1, y);
-                    string rotP = BmR(s.GexVol) + (s.Dte < 1.0 ? " 0DTE" : (s.Dte < 1e6 ? " " + Math.Round(s.Dte).ToString(es) + "d" : ""));
+                    string rotP = BmR(s.GexVol) + (s.Dte < 1.0 ? " 0DTE" : (s.Dte < 1e6 ? " " + Math.Round(s.Dte).ToString(es) + "DTE" : ""));   // de noche el mas cercano es el 1DTE (manana)
                     var mrP = g.MeasureString(rotP, fRot);
                     g.DrawString(rotP, fRot, Color.FromArgb(150, colP), xl1 - mrP.Width - 2, y - mrP.Height - 1);
                 }
