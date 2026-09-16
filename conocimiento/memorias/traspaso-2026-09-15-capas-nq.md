@@ -146,3 +146,13 @@ capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
   de noche (NQ +43/−10 contra +89/−12 por volumen; SPX se va a sus muros de OI). Rithmic no tiene opciones de indices ni ETF.
 - **Bloque 37 (02:10, 16-09):** 1.10t: profundidad de opciones por Rithmic implementada y medida (1.600 ev/s, +90 % de
   un nucleo; sin aviso de latencia); queda apagada por defecto ("Viva: profundidad del libro de opciones"). Rombo "apoyo N".
+- **Bloque 38 (02:20, 16-09):** 1.10u: "Dominantes: radio maximo en puntos" = 100 (antes 2 % = 585 pts en NQ): solo
+  las barras a menos de 100 pts del precio pueden ser dominantes; un lado sin barra queda sin dominante. Regla del
+  operador: para scalping, nada a 300-400 pts.
+- **Bloque 39 (02:45, 16-09):** 1.10v: estela de capas estilo C "puntos finos" (elegido entre 4 mockups). Las opciones
+  del micro MNQ no se usan (ilíquidas, solo trimestral): el libro vivo es NQ, mismos puntos de indice.
+- **Bloque 40 (03:00, 16-09):** 1.10w: paleta VerdeVioleta por familia (elegida), guiones para indice/futuro y puntos
+  para ETF, "apoyo" discriminado por lado (C cb|ca, P pb|pa) y anotado por minuto para medirlo despues; su "el precio
+  se dispara cuando aparece" es hipotesis, no prueba.
+- **Bloque 41 (03:20, 16-09):** 1.10x: escalera solo con niveles dentro del rango visible real (piso, no area.Bottom),
+  primaria incluida; una fila que deba correrse mas de 3 alturas no se dibuja. Regla del operador: "no las fuerces".

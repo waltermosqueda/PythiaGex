@@ -49,3 +49,5 @@ tunel". Tenia razon las tres veces.
 
 **How to apply:** ante cualquiera de las frases de arriba, este archivo primero, el log segundo, la explicacion
 tercera. Nunca cerrar con "el dato es asi" sin haber mirado el libro vivo y el roll.
+
+**Segunda parte (16-09, 1.10y):** Rithmic lista bajo Z6 solo ALGUNAS weeklies del trimestre que vence (el 16 y el 18, no el jueves 17). El puente ahora lista tambien con el codigo viejo (NQU6/ESU6) y suma las fechas que falten; log "roll: N vencimiento(s) que solo lista NQU6". Chequeo rapido: `viva-NQ-<hoy>.jsonl` tiene que traer un `dias` entre 1 y 2 de dia. Ver [[auditoria-2026-09-16-0dte-pelotitas-carga]].
