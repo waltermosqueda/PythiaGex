@@ -120,3 +120,29 @@ capas sin dibujo -> auditoria -> dibujo). Ver [[gamma-hoy-1-9-2026-09-14]],
 - **Bloque 23 (22:00):** 1.10e: la capa "RITHMIC" se llama "NQ" (opciones del futuro, CME en vivo) y la leyenda dice
   que es cada libro tecnicamente; rotulos "1DTE" de noche. Pedido textual: "sacale la etiqueta rithmic... algo mas
   significativo tecnico".
+- **Bloque 24 (22:15):** 1.10f: cabecera de estado y leyenda de capas APAGADAS por defecto (VerCabecera, CapasLeyenda);
+  pedido textual "esos textos molestan". Para leer edad/beta/toques hay que prenderlas en los ajustes.
+- **Bloque 25 (22:30):** 1.10g: grupo "6. Estilo": colores, lineas, grosores, textos y forma/ancho de la estela
+  editables, colores por capa. Los colores del codigo (ColDom, ColZero, ColPos...) ya no son fijos: leen los ajustes.
+- **Bloques 26-28 (22:45-00:05):** 1.10h el contrato del grafico manda en la cadena viva (NQU6 en el catalogo la
+  desviaba); 1.10i DTE por fecha NY; 1.10j la razon del ETF descarta la vela alineada del otro contrato (graficos
+  continuos: niveles 290 pts corridos ~15 min tras recargar); 1.10k la estela de cada capa se guarda por dia y
+  vuelve al arrancar (NQ/ES no tenian rebobinado). SPX D1 "no grafica" = fuera del rango visible; NQ D2 lejos = libro
+  vivo flaco de noche (−17M).
+- **Bloque 29 (01:05, 16-09):** 1.10l: la fusion de niveles coincidentes ("QQQ·ES D1") pasa a ser opt-in, apagada:
+  le escondia el color del libro y creyo que QQQ no se dibujaba.
+- **Bloque 31 (01:25, 16-09):** 1.10m: rayas de capas separadas 4 px cuando chocan (los guiones intercalados parecian
+  una raya fusionada); auditar_externo.py: 4/4 libros coinciden con CBOE-griegas, nuestra gamma e InsiderFinance (OI).
+- **Bloque 32 (01:35, 16-09):** 1.10n: las capas ya no dibujan rayas horizontales por defecto (CapasRayas=false):
+  dominantes = puntos por vela (estela continua, rellenada entre cambios), barras a la izquierda y renglones en la
+  escalera. Regla del operador: "las dominantes son puntos tipo estela, no una raya horizontal".
+- **Bloque 33 (01:40, 16-09):** 1.10o: el zero gamma de cada capa tambien en la estela (puntito por vela, color del
+  libro); estela guardada con posiciones fijas [D1, D2, zero].
+- **Bloque 34 (01:45, 16-09):** 1.10p: estela con marca fuerte solo cuando hubo dato nuevo y tenue mientras el nivel se
+  mantiene; explica por que ES/NQ (vivos) se ven dispersos y CBOE de noche parece raya.
+- **Bloque 35 (01:50, 16-09):** cboe_local.py baja CBOE desde la PC cada 75 s (la nube iba cada 8-25 min); 1.10q lee
+  primero la ultima local. Es la respuesta a "por que no es una nube de puntos como con Databento": cadencia, no calculo.
+- **Bloque 36 (02:00, 16-09):** 1.10r: 320 contratos vivos (dio 240 por la ventana, 185 con puntas), dominantes por OI
+  de noche (NQ +43/−10 contra +89/−12 por volumen; SPX se va a sus muros de OI). Rithmic no tiene opciones de indices ni ETF.
+- **Bloque 37 (02:10, 16-09):** 1.10t: profundidad de opciones por Rithmic implementada y medida (1.600 ev/s, +90 % de
+  un nucleo; sin aviso de latencia); queda apagada por defecto ("Viva: profundidad del libro de opciones"). Rombo "apoyo N".

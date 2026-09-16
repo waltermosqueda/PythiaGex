@@ -125,3 +125,5 @@ TaskCompletionSource, manejador de respuesta con ProcessSecurity). PuenteRithmic
 option series ... Received 752 options for 11 Sep 26 ESU6". Subyacente que acepta Rithmic: el codigo del
 contrato ("ESU6"), bolsa "CME", vencimiento "yyyyMMdd". Si una futura version renombra o quita esas piezas, el
 puente lo dice en el log ("FALTAN PIEZAS") y cae a CBOE.
+
+**16-09:** lo que Rithmic da por el conector: series y contratos (puente), Prints, Best, Summary (volumen del dia y OI) y profundidad (Quotes + evento MarketDepthsUpdate; MarketByOrder existe, sin probar). No da opciones de indices ni ETF. Contratos vivos: 320 pedidos, 240 entran por la ventana al dinero. Profundidad medida: 1.600 ev/s, +90 % de un nucleo; apagada por defecto.

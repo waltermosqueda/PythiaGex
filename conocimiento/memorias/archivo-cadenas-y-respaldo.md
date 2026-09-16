@@ -50,3 +50,5 @@ nada). Sirve para probar en el laboratorio el libro que usa la referencia para N
 
 **How to apply:** los datos nuevos son propios desde hoy; Databento solo para
 antes del 2026-08-19. Ver [[rebobina-simulador]], [[databento-cuenta-y-costos]].
+
+**16-09:** ademas de la nube, `herramientas/cboe_local.py --bucle` (lanzado desde Inicio) baja CBOE cada 75 s en la rueda a %APPDATA%\ATAS\PythiaGex\cboe-local; Gamma Hoy 1.10q la prefiere si es mas fresca. La nube de GitHub corre cada 8-25 min, no cada minuto.

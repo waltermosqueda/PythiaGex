@@ -37,3 +37,7 @@ Auditoria del 15-09 (20:30-21:15) sobre "los puntos dominantes se dibujan muy ar
 roto era la edad y la trazabilidad.
 **How to apply:** ante "los niveles estan lejos" de noche, mirar `mucho=` y los M de las dominantes antes de tocar
 el dibujo; para auditar un minuto, usar Rebobina --prueba con la cadena que anota el AUDIT.
+
+- **16-09 01:10, auditoria externa (auditar_externo.py):** las dominantes de QQQ/SPY/SPX/NDX coinciden strike por
+  strike calculadas con la gamma de CBOE, con la nuestra y con lo que dibuja ATAS; muros por OI = InsiderFinance;
+  gamma CBOE/nuestra 0,90-0,98. Opensera es de pago (402). NQ/ES no tienen fuente externa gratuita con volumen.

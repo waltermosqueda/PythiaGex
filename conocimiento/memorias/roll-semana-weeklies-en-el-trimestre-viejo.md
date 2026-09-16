@@ -30,3 +30,16 @@ formula (empate tecnico) estaba bien, lo roto era el roll: el mismo tipo de fall
 **How to apply:** cada semana de roll (marzo, junio, septiembre, diciembre; la semana del tercer viernes) mirar en el
 log "roll:" y "[puente] N contratos ... pedidos con XU6"; si aparece "no data" para la weekly del dia, es esto. Y
 reiniciar ATAS de noche vacia el volumen acumulado del libro vivo: evitarlo si se quiere ver ese libro a la noche.
+
+**Regresion vista el mismo dia (22:43) y arreglada en 1.10h:** suscribir NQU6 lo mete en `_conn.Securities` y `Buscar()`
+("el NQ de vencimiento mas cercano") elegia NQU6 como futuro de la cadena: referencia 300 pts abajo del grafico y sin
+niveles. Ahora Buscar() prefiere el codigo del grafico (MNQZ6/NQZ6) y descarta vencidos. Cualquier cambio en el
+catalogo local cambia el candidato: mirar "futuro XXX en" en el log.
+
+**Contrato continuo, 23:05 (1.10j):** en un grafico "MNQ Continuous" la historia mezcla los dos contratos (empalme
+de ~300 pts al recargar). La razon "vela alineada" (vela de hace 902 s / spot del ETF) tomaba una vela de
+septiembre con el precio en diciembre: razon 41,10 contra 41,51 en el mismo minuto en otro grafico, niveles ~290 pts
+arriba durante ~15 min despues de cada recarga ("se desfasan al abrir un grafico"). 1.10j descarta la vela alineada
+si difiere mas de 0,6 % del precio actual (origen "CRUDA: la vela alineada es de otro contrato"). La estela repetida
+de NDX sobre velas viejas con la base nueva sigue corrida en graficos continuos: usar contrato explicito en la
+semana del roll.

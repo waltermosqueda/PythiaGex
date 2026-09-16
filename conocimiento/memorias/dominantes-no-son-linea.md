@@ -63,3 +63,5 @@ ninguna.
 
 **How to apply:** `VerEstela` encendido es lo correcto; `VerPuntosDominantes`
 apagado. Ver [[radar-dominantes-bigtrades]] y [[ensenar-con-capturas-reales]].
+
+**Capas (16-09):** vale tambien para las capas QQQ/NDX/NQ/SPX/SPY/ES: sin rayas horizontales (CapasRayas apagado en 1.10n); un punto por vela por libro, escalera y barras. Las rayas a guiones de dos libros cercanos parecian 'fusionadas'.
