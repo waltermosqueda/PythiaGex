@@ -335,6 +335,11 @@ namespace PythiaGex
         [Range(1, 6)]
         public int VencimientosEnVivo { get; set; } = 2;
 
+        [Display(Name = "Viva: contratos suscritos (16-09, manda sobre el tope viejo)", GroupName = "1. Datos", Order = 8,
+                 Description = "Cuantos contratos de opciones del futuro se piden a Rithmic por grafico (puntas, operaciones, resumen). 200 era el tope medido el 11-09 (960 dio 7,8 s de latencia). 320 se prueba el 16-09 midiendo la latencia; si la cinta se atrasa, bajar.")]
+        [Range(50, 800)]
+        public int ContratosVivos { get; set; } = 320;
+
         [Display(Name = "Viva: tope de contratos suscritos", GroupName = "1. Datos", Order = 9)]
         [Range(20, 600)]
         public int TopeContratos { get; set; } = 200;
@@ -416,6 +421,10 @@ namespace PythiaGex
 
         [Display(Name = "Big Trades sobre las velas", GroupName = "3. Pantalla", Order = 8)]
         public bool VerBigTrades { get; set; } = true;
+
+        [Display(Name = "De noche (16:00 a 9:30 de Nueva York), dominantes por", GroupName = "2. Lectura", Order = 30,
+                 Description = "Volumen: la barra mas grande del volumen del dia (de noche es el resto de manana, flaco y lejos). InteresAbierto: de noche se eligen las dominantes por interes abierto del vencimiento mas cercano (posiciones abiertas, lo que usan los tableros profesionales overnight). El log dice libroDom=OI. Pedido 16-09.")]
+        public GammaHoyNucleo.NocheDominantes DominantesDeNoche { get; set; } = GammaHoyNucleo.NocheDominantes.InteresAbierto;
 
         [Display(Name = "Tamaño de letra", GroupName = "3. Pantalla", Order = 9)]
         [Range(6, 14)]
@@ -701,7 +710,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10q (capas NQ, CBOE local) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10r (capas NQ, 320 contratos, OI de noche) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -733,7 +742,7 @@ namespace PythiaGex
                 {
                     await _viva.Arrancar(DataProvider, TradingManager, TradingManager?.Security, Raiz(),
                                          7, Math.Max(5, StrikesEnVivo), Math.Max(1, VencimientosEnVivo),
-                                         Math.Max(20, TopeContratos), m => Log("[viva] " + m)).ConfigureAwait(false);
+                                         Math.Max(20, Math.Max(TopeContratos, ContratosVivos)), m => Log("[viva] " + m)).ConfigureAwait(false);
                 }
                 catch (Exception e) { Registrar(e); }
                 finally { _vivaCorriendo = false; }
@@ -952,7 +961,7 @@ namespace PythiaGex
             var a = nuc.A; var b0 = _nucleo.A;
             a.Tasa = (double)Tasa; a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte; a.CuantasDominantes = CuantasDominantes;
             a.RadioDominantesPct = (double)RadioDominantesPct; a.PicoRadioPct = (double)PicoRadioPct; a.MuchoPct = MuchoPct; a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
-            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct;
+            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct; a.DominantesDeNoche = DominantesDeNoche;
             a.ExpiracionFuturoUtc = ExpiracionFuturo(); a.ExpiracionFuturoAltUtc = _expAlt; a.Dividendo = DividendoUsado();
             double edadMax = (double)Math.Max(0.05m, ArchivoEdadMaxHoras);
             int fin = Math.Max(0, CurrentBar - 1);      // la ultima vela es del vivo (Hibrido) o se muestra con la ultima foto (Archivo)
@@ -1186,7 +1195,7 @@ namespace PythiaGex
             a.PicoRadioPct = (double)PicoRadioPct;
             a.MuchoPct = MuchoPct;
             a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
-            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct;
+            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct; a.DominantesDeNoche = DominantesDeNoche;
 
             var L = _nucleo.Calcular(c, futuro, ahoraUtc);
             if (L == null) return;

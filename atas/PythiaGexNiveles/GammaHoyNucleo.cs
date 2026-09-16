@@ -25,6 +25,19 @@ namespace PythiaGex
         public enum LibroConv { Auto, Volumen, OI }
 
         /// <summary>Los mismos ajustes y valores por defecto que muestra ATAS.</summary>
+        public enum NocheDominantes { Volumen, InteresAbierto }
+        /// <summary>Fuera de la rueda de Nueva York (antes de las 9:30 o desde las 16:00, hora de NY).</summary>
+        public static bool FueraDeRueda(DateTime ahoraUtc)
+        {
+            try
+            {
+                var ny = TimeZoneInfo.ConvertTimeFromUtc(ahoraUtc, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"));
+                int m = ny.Hour * 60 + ny.Minute;
+                return ny.DayOfWeek == DayOfWeek.Saturday || ny.DayOfWeek == DayOfWeek.Sunday || m < 9 * 60 + 30 || m >= 16 * 60;
+            }
+            catch { return false; }
+        }
+
         public sealed class Ajustes
         {
             public double Tasa = 0.0375;
@@ -59,6 +72,11 @@ namespace PythiaGex
             // este porcentaje de la mas grande, gana la MAS CERCANA al precio: es la que el
             // precio puede tocar (el "alcance" de dominantes.py). 0 = siempre la mas grande.
             public double EmpatePct = 20.0;
+            // DE NOCHE, DOMINANTES POR INTERES ABIERTO (16-09): el libro por volumen entre las 16:00 y las 9:30 de Nueva York es
+            // el resto de manana (flaco, lejos: medido 15-09, D1 +270 con 233M). El "si no hay volumen, OI" de antes nunca se
+            // disparaba porque el volumen nunca es cero. Con InteresAbierto, fuera de la rueda las dominantes salen del OI del
+            // vencimiento mas cercano (posiciones abiertas), y el AUDIT lo dice: libroDom=OI.
+            public NocheDominantes DominantesDeNoche = NocheDominantes.InteresAbierto;
         }
 
         public sealed class Strike
@@ -333,6 +351,9 @@ namespace PythiaGex
             var candDom = perfil.Where(x => Math.Abs(x.Fut - futuro) <= radio && Math.Abs(x.GexVol) > 0)
                                 .OrderByDescending(x => Math.Abs(x.GexVol)).Take(cuantas)
                                 .Select(x => (x.Fut, x.GexVol)).ToList();
+            bool nocheOi = A.DominantesDeNoche == NocheDominantes.InteresAbierto && FueraDeRueda(ahoraUtc)
+                           && perfil.Any(x => Math.Abs(x.Fut - futuro) <= radio && Math.Abs(x.GexOi) > 0);
+            if (nocheOi) candDom.Clear();   // de noche manda el interes abierto (16-09)
             if (candDom.Count == 0)
             {
                 libroDom = "OI";

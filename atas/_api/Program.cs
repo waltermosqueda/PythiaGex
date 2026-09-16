@@ -84,6 +84,7 @@ class Program
                     }
                     catch { }
                 }
+                foreach (var ev in b.GetEvents(fl)) { try { Console.WriteLine("  evento " + ev.EventHandlerType?.Name + " " + ev.Name); } catch { } }
                 foreach (var p in b.GetProperties(fl))
                     try { Console.WriteLine("  prop " + p.PropertyType.Name + " " + p.Name); } catch { }
             }
