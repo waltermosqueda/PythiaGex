@@ -341,8 +341,8 @@ namespace PythiaGex
         public int ContratosVivos { get; set; } = 320;
 
         [Display(Name = "Viva: profundidad del libro de opciones (nivel 2)", GroupName = "1. Datos", Order = 10,
-                 Description = "Pide a Rithmic la profundidad (Quotes) de cada contrato de opciones suscrito y muestra los strikes con mas contratos apoyados (calls + puts, bid y ask). Senal nueva sin prueba; si la latencia de ATAS sube, apagar. 16-09.")]
-        public bool VivaProfundidad { get; set; } = true;
+                 Description = "Pide a Rithmic la profundidad (Quotes) de cada contrato de opciones suscrito y muestra los strikes con mas contratos apoyados (calls + puts, bid y ask), como rombo 'apoyo N' a la izquierda. Medido 16-09 02:05: ~1.600 eventos por segundo y +90 % de un nucleo de CPU (179 % contra 88 % sin), sin aviso de latencia. Apagado por defecto: prenderlo cuando se quiera mirar y apagarlo si la cinta se atrasa.")]
+        public bool VivaProfundidad { get; set; } = false;
 
         [Display(Name = "Viva: tope de contratos suscritos", GroupName = "1. Datos", Order = 9)]
         [Range(20, 600)]
@@ -714,7 +714,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.10s (capas NQ, profundidad de opciones) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.10t (capas NQ, profundidad opcional) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
