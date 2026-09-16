@@ -160,6 +160,10 @@ namespace PythiaGex
                  Description = "En 0DTE la convexidad de cada strike es casi menos su gamma: el perfil derecho es un espejo del izquierdo y solo ensucia. Prenderlo cuando haya vencimientos mas largos en el horizonte.")]
         public bool CapasConvexidadVisible { get; set; } = false;
 
+        [Display(Name = "Capas: rayas horizontales de los niveles", GroupName = "5. Capas extra (NQ)", Order = 10,
+                 Description = "Apagado (pedido 16-09: 'las dominantes son puntos tipo estela, no una raya horizontal'): las dominantes y el zero de cada libro se ven como puntos por vela (la estela), como barra a la izquierda y como renglon en la escalera del eje. Prendido: ademas una raya horizontal por nivel a lo ancho del grafico.")]
+        public bool CapasRayas { get; set; } = false;
+
         [Display(Name = "Capas: fusionar niveles que coinciden en una sola raya", GroupName = "5. Capas extra (NQ)", Order = 11,
                  Description = "Apagado (pedido 16-09: 'no veo los niveles de QQQ'): cada libro dibuja su propia raya y su propio renglon aunque coincida con otro. Prendido: dos libros con el mismo tipo de nivel a menos de la tolerancia se dibujan como una raya de dos colores con rotulo 'QQQ·ES D1'.")]
         public bool CapasFusionar { get; set; } = false;
@@ -394,6 +398,7 @@ namespace PythiaGex
         private int CargarEstelaGuardada(CapaLibro k, DateTime desde, DateTime hasta)
         {
             int puestos = 0, lineas = 0;
+            var cambios = new List<(DateTime T, List<(double Fut, double Gex)> Doms)>();
             try
             {
                 var inv = CultureInfo.InvariantCulture;
@@ -414,15 +419,24 @@ namespace PythiaGex
                             if (t < desde || t > hasta) continue;
                             var doms = new List<(double Fut, double Gex)>();
                             foreach (var x in r.GetProperty("d").EnumerateArray()) doms.Add((x.GetDouble(), 0.0));
-                            int bar = BarraDeCapa(t);
-                            if (bar < 0) continue;
-                            lock (_candado) AgregarGuionesCapa(k, bar, doms, t);
-                            puestos++;
+                            cambios.Add((t, doms));
                         }
                         catch { }
                     }
                 }
-                if (lineas > 0) Log("estela guardada " + k.Nombre + ": " + puestos + " de " + lineas + " cambios vueltos a su vela");
+                // UN PUNTO POR VELA (16-09): cada cambio vale hasta el cambio siguiente, como la estela de la primaria
+                cambios.Sort((a, b) => a.T.CompareTo(b.T));
+                for (int i = 0; i < cambios.Count; i++)
+                {
+                    int bar = BarraDeCapa(cambios[i].T);
+                    if (bar < 0) continue;
+                    int hastaBar = i + 1 < cambios.Count ? BarraDeCapa(cambios[i + 1].T) : CurrentBar - 1;
+                    if (hastaBar < bar) hastaBar = bar;
+                    hastaBar = Math.Min(hastaBar, bar + 2000);
+                    lock (_candado) for (int b = bar; b <= hastaBar; b++) AgregarGuionesCapa(k, b, cambios[i].Doms, cambios[i].T);
+                    puestos++;
+                }
+                if (lineas > 0) Log("estela guardada " + k.Nombre + ": " + puestos + " de " + lineas + " cambios vueltos a su vela, rellenados hasta el siguiente");
             }
             catch (Exception e) { Registrar(e); }
             return puestos;
@@ -474,6 +488,7 @@ namespace PythiaGex
                     foreach (var fi in t.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)) fi.SetValue(nuc.A, fi.GetValue(_nucleo.A));
                     var razon = new RazonEtf();
                     int con = 0, sinVela = 0, sinBase = 0;
+                    var lecturasRep = new List<(int Bar, List<(double Fut, double Gex)> Doms, DateTime T)>();
                     foreach (var c in ls)
                     {
                         if (c == null || c.GeneradoUtc == default(DateTime)) continue;
@@ -490,8 +505,16 @@ namespace PythiaGex
                         GammaHoyNucleo.Lectura L;
                         try { L = nuc.Calcular(c, futuro, c.GeneradoUtc); } catch { continue; }
                         if (L == null || L.SinBase) { sinBase++; continue; }
-                        lock (_candado) AgregarGuionesCapa(k, bar, L.Doms, c.GeneradoUtc);
+                        lecturasRep.Add((bar, L.Doms, c.GeneradoUtc));
                         con++;
+                    }
+                    // UN PUNTO POR VELA (16-09): cada cadena vale hasta la cadena siguiente (la nube llega cada 8-25 min)
+                    lecturasRep.Sort((a, b) => a.Bar.CompareTo(b.Bar));
+                    for (int i = 0; i < lecturasRep.Count; i++)
+                    {
+                        int b0 = lecturasRep[i].Bar, b1 = i + 1 < lecturasRep.Count ? lecturasRep[i + 1].Bar - 1 : Math.Min(CurrentBar - 1, b0 + 60);
+                        if (b1 < b0) b1 = b0;
+                        lock (_candado) for (int b = b0; b <= Math.Min(b1, b0 + 2000); b++) AgregarGuionesCapa(k, b, lecturasRep[i].Doms, lecturasRep[i].T);
                     }
                     Log("estela " + k.Nombre + ": " + ls.Count + " cadenas del archivo, " + con + " con guion, " + sinVela + " sin vela, " + sinBase + " sin base");
                     k.EstelaCargada = true;
@@ -957,7 +980,7 @@ namespace PythiaGex
                 // la escalera sigue diciendo el precio exacto.
                 var ysCapas = new List<int>();
                 const int sepPx = 4;
-                foreach (var gr in grupos)
+                foreach (var gr in CapasRayas ? grupos : new List<List<(double Precio, string Texto, Color Col, int Peso, CapaLibro K)>>())
                 {
                     if (gr.Count == 1)
                     {
