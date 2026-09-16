@@ -152,6 +152,107 @@ namespace PythiaGex
         [Display(Name = "Capas: dibujar barras (izquierda: gamma x volumen)", GroupName = "5. Capas extra (NQ)", Order = 10)]
         public bool CapasBarras { get; set; } = true;
 
+        // ==================================================================
+        // 6. Puntos por capa (16-09): D1, D2 y zero gamma de cada capa, un punto por vela, configurables
+        // ==================================================================
+        public enum FormaPunto { Auto, Guion, Punto, Cuadrado, Rombo, Triangulo }
+        public enum ColorPunto { DeLaCapa, Fijo }
+
+        [Display(Name = "D1 (dominante mayor): dibujar", GroupName = "6. Puntos por capa", Order = 1,
+                 Description = "Un punto por vela en el precio de la dominante mayor de cada capa (la estela). Fuerte cuando esa vela tuvo dato nuevo, tenue cuando el nivel solo se mantuvo.")]
+        public bool PuntoD1Ver { get; set; } = true;
+        [Display(Name = "D1: forma", GroupName = "6. Puntos por capa", Order = 2, Description = "Auto = guion para indices y opciones del futuro, punto para ETF.")]
+        public FormaPunto PuntoD1Forma { get; set; } = FormaPunto.Auto;
+        [Display(Name = "D1: tamaño (px)", GroupName = "6. Puntos por capa", Order = 3)]
+        [Range(1, 12)]
+        public int PuntoD1Tam { get; set; } = 4;
+        [Display(Name = "D1: color", GroupName = "6. Puntos por capa", Order = 4, Description = "DeLaCapa = el color de la fuente (QQQ celeste, SPX violeta...). Fijo = el color de abajo para todas.")]
+        public ColorPunto PuntoD1Color { get; set; } = ColorPunto.DeLaCapa;
+        [Display(Name = "D1: color fijo", GroupName = "6. Puntos por capa", Order = 5)]
+        public System.Windows.Media.Color PuntoD1ColorFijo { get; set; } = System.Windows.Media.Color.FromRgb(255, 210, 60);
+
+        [Display(Name = "D2 (dominante menor): dibujar", GroupName = "6. Puntos por capa", Order = 6)]
+        public bool PuntoD2Ver { get; set; } = true;
+        [Display(Name = "D2: forma", GroupName = "6. Puntos por capa", Order = 7)]
+        public FormaPunto PuntoD2Forma { get; set; } = FormaPunto.Auto;
+        [Display(Name = "D2: tamaño (px)", GroupName = "6. Puntos por capa", Order = 8)]
+        [Range(1, 12)]
+        public int PuntoD2Tam { get; set; } = 3;
+        [Display(Name = "D2: color", GroupName = "6. Puntos por capa", Order = 9)]
+        public ColorPunto PuntoD2Color { get; set; } = ColorPunto.DeLaCapa;
+        [Display(Name = "D2: color fijo", GroupName = "6. Puntos por capa", Order = 10)]
+        public System.Windows.Media.Color PuntoD2ColorFijo { get; set; } = System.Windows.Media.Color.FromRgb(255, 170, 40);
+
+        [Display(Name = "Zero gamma: dibujar", GroupName = "6. Puntos por capa", Order = 11,
+                 Description = "Un punto por vela en el zero gamma (cruce del GEX por volumen) de cada capa. Antes solo salia con 'Capas: dibujar el zero gamma' y era un puntito de 3 px al 50 %.")]
+        public bool PuntoZeroVer { get; set; } = true;
+        [Display(Name = "Zero gamma: forma", GroupName = "6. Puntos por capa", Order = 12)]
+        public FormaPunto PuntoZeroForma { get; set; } = FormaPunto.Rombo;
+        [Display(Name = "Zero gamma: tamaño (px)", GroupName = "6. Puntos por capa", Order = 13)]
+        [Range(1, 12)]
+        public int PuntoZeroTam { get; set; } = 4;
+        [Display(Name = "Zero gamma: color", GroupName = "6. Puntos por capa", Order = 14)]
+        public ColorPunto PuntoZeroColor { get; set; } = ColorPunto.DeLaCapa;
+        [Display(Name = "Zero gamma: color fijo", GroupName = "6. Puntos por capa", Order = 15)]
+        public System.Windows.Media.Color PuntoZeroColorFijo { get; set; } = System.Windows.Media.Color.FromRgb(235, 235, 235);
+
+        [Display(Name = "Fuerza: alfa de los puntos fuertes (dato nuevo, %)", GroupName = "6. Puntos por capa", Order = 16)]
+        [Range(10, 100)]
+        public int PuntoAlfaFuerte { get; set; } = 80;
+        [Display(Name = "Fuerza: alfa de los puntos tenues (nivel sostenido, %)", GroupName = "6. Puntos por capa", Order = 17)]
+        [Range(0, 100)]
+        public int PuntoAlfaTenue { get; set; } = 45;
+
+        [Display(Name = "Fuente QQQ: sus puntos", GroupName = "6. Puntos por capa", Order = 20)]
+        public bool PuntosQqq { get; set; } = true;
+        [Display(Name = "Fuente TQQQ: sus puntos", GroupName = "6. Puntos por capa", Order = 21)]
+        public bool PuntosTqqq { get; set; } = true;
+        [Display(Name = "Fuente NDX: sus puntos", GroupName = "6. Puntos por capa", Order = 22)]
+        public bool PuntosNdx { get; set; } = true;
+        [Display(Name = "Fuente NQ (CME en vivo): sus puntos", GroupName = "6. Puntos por capa", Order = 23)]
+        public bool PuntosNq { get; set; } = true;
+        [Display(Name = "Fuente SPX: sus puntos", GroupName = "6. Puntos por capa", Order = 24)]
+        public bool PuntosSpx { get; set; } = true;
+        [Display(Name = "Fuente SPY: sus puntos", GroupName = "6. Puntos por capa", Order = 25)]
+        public bool PuntosSpy { get; set; } = true;
+        [Display(Name = "Fuente ES (Rithmic grabado): sus puntos", GroupName = "6. Puntos por capa", Order = 26)]
+        public bool PuntosEs { get; set; } = true;
+
+        private bool PuntosDeCapa(CapaLibro k)
+        {
+            switch (k.Nombre)
+            {
+                case "QQQ": return PuntosQqq;
+                case "TQQQ": return PuntosTqqq;
+                case "NDX": return PuntosNdx;
+                case "NQ": return PuntosNq;
+                case "SPX": return PuntosSpx;
+                case "SPY": return PuntosSpy;
+                case "ES": return PuntosEs;
+            }
+            return true;
+        }
+
+        /// <summary>Dibuja un punto de la estela de una capa (D1 = rango 0, D2 = 1, zero = 2) con la forma, el tamaño,
+        /// el color y la fuerza elegidos en "6. Puntos por capa". bw = ancho de una vela en px.</summary>
+        private void PuntoCapa(RenderContext g, CapaLibro k, int rango, bool tenue, int x, int y, int bw)
+        {
+            bool ver; FormaPunto fp; int tam; ColorPunto cp; System.Windows.Media.Color fijo;
+            if (rango == 2) { ver = PuntoZeroVer; fp = PuntoZeroForma; tam = PuntoZeroTam; cp = PuntoZeroColor; fijo = PuntoZeroColorFijo; }
+            else if (rango == 0) { ver = PuntoD1Ver; fp = PuntoD1Forma; tam = PuntoD1Tam; cp = PuntoD1Color; fijo = PuntoD1ColorFijo; }
+            else { ver = PuntoD2Ver; fp = PuntoD2Forma; tam = PuntoD2Tam; cp = PuntoD2Color; fijo = PuntoD2ColorFijo; }
+            if (!ver) return;
+            var col = cp == ColorPunto.Fijo ? De(fijo) : k.Color;
+            int alfa = Math.Max(0, Math.Min(255, (tenue ? PuntoAlfaTenue : PuntoAlfaFuerte) * 255 / 100));
+            if (alfa <= 0) return;
+            var forma = fp == FormaPunto.Auto
+                ? (k.Tipo != CapaLibro.TipoCapa.EtfPorRazon && rango != 2 ? FormaMarca.Guion : FormaMarca.Punto)
+                : (FormaMarca)((int)fp - 1);
+            tam = Math.Max(1, tam);
+            if (forma == FormaMarca.Guion) g.FillRectangle(Color.FromArgb(alfa, col), new Rectangle(x - bw / 2, y - tam / 2, Math.Max(3, bw), Math.Max(1, tam)));
+            else Marca(g, forma, Color.FromArgb(alfa, col), x, y, Math.Max(3, bw), Math.Max(1, tam - 2));
+        }
+
         [Display(Name = "Capas: barras solo si pesan mas del % del maximo de su fuente", GroupName = "5. Capas extra (NQ)", Order = 10,
                  Description = "Las barras chicas no se dibujan (las dominantes siempre). 25 = un perfil ralo, solo lo que pesa. 0 = todas.")]
         [Range(0, 90)]
@@ -988,7 +1089,7 @@ namespace PythiaGex
                 }
 
                 // 2b) la estela: un guion por vela y por dominante, en el color de la capa (D1 grueso, D2 fino)
-                if (CapasEstela)
+                if (CapasEstela && (PuntoD1Ver || PuntoD2Ver || PuntoZeroVer))
                 {
                     int desdeB = Math.Max(0, FirstVisibleBarNumber), hastaB = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
                     int bw = 5;
@@ -1008,16 +1109,9 @@ namespace PythiaGex
                                 if (y < area.Top || y > piso) continue;
                                 // ESTILO C, "PUNTOS FINOS" (elegido por el operador 16-09 02:45 entre cuatro variantes): puntitos chicos e
                                 // iguales para D1 y D2, nuevos o sostenidos, sin bandas gruesas ni brillo; el zero, mas chico y mas tenue.
-                                int rango = gu.Rango % 10;
-                                if (rango == 2)
-                                {
-                                    if (CapasZero) g.FillEllipse(Color.FromArgb(130, k.Color), new Rectangle(x - 1, y - 1, 3, 3));
-                                    continue;
-                                }
-                                // forma por tipo (16-09): indice y opciones del futuro = guion fino; ETF = punto
-                                bool guion = CapasFormaPorTipo && k.Tipo != CapaLibro.TipoCapa.EtfPorRazon;
-                                if (guion) g.FillRectangle(Color.FromArgb(190, k.Color), new Rectangle(x - bw / 2, y - 1, Math.Max(3, bw), 2));
-                                else g.FillEllipse(Color.FromArgb(190, k.Color), new Rectangle(x - 2, y - 2, 4, 4));
+                                // PUNTOS POR CAPA (16-09): D1, D2 y zero gamma con forma, tamaño, color y fuerza del grupo 6
+                                if (!PuntosDeCapa(k)) continue;
+                                PuntoCapa(g, k, gu.Rango % 10, gu.Rango >= 10, x, y, bw);
                             }
                         }
                     }

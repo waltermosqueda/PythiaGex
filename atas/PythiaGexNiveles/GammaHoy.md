@@ -962,3 +962,26 @@ arreglaria pero cambia `convPrecio` y el gatillo MODELO se entreno con 1 %: deci
 de 12 pts corre la dominante hasta 1,7 pts del strike en ES. El rotulo del libro Rithmic no dice el strike
 original ni el corrimiento. El viernes 18 en CBOE el SPX/NDX AM del tercer viernes se mezcla con el PM hasta
 las 16:00 (solo pesa en el libro por OI).
+
+## 1.11 (2026-09-16, 14:20 local): puntos por capa (D1, D2 y zero gamma) configurables; auditoria del grafico
+
+Pedido: "analiza como esta todo el grafico ahora, valores, calculos, audita todo; y despues calcula y agrega
+visualmente los puntos zero gamma y dominantes de cada uno, que se puedan activar/desactivar y cambiar
+fuente, colores, formas".
+
+**Auditoria (14:16-14:18 local, `laboratorio/auditar_todo.py MNQ M2` contra la cadena cruda de la nube):**
+QQQ y SPY coinciden strike por strike (dominantes K 709/711 y 759/761; zero a 1,3 y 3,6 pts, cadenas de
+distinto minuto). NDX y SPX difieren solo por el centroide de 12 pts: el log dice D2 en 29.105 (mezcla de
+29.100 y 29.110) y 7.601 (7.600/7.605) contra el strike puro del recalculo; el pico |GEX| coincide exacto
+(29.409,82). La primaria (NDX) y su capa gemela dan lo mismo (29.509,37 / 29.414,60). Las betas de SPX/SPY/ES
+estan MEDIDAS (n 89, r2 0,78-0,85). El zero de NDX difiere 8,5 pts entre la cadena local (14:16:41) y la de
+la nube que usa el script: es el minuto, no la cuenta. Si el operador quiere las dominantes clavadas en el
+strike: ajuste `DominanteCentroide = false` (ya existia) o `RadioCentroidePts` menor.
+
+**Lo nuevo (GammaHoyCapas.cs, grupo "6. Puntos por capa"):** D1, D2 y zero gamma de cada capa como un punto
+por vela, cada tipo con: dibujar si/no, forma (Auto = guion para indice/futuro y punto para ETF; o guion,
+punto, cuadrado, rombo, triangulo), tamaño en px, color (el de la capa o uno fijo) y fuerza (alfa de los
+puntos fuertes = dato nuevo, y de los tenues = nivel sostenido). Y que fuentes los muestran: QQQ, TQQQ, NDX,
+NQ vivo, SPX, SPY, ES. El zero por vela de las capas queda prendido por defecto (rombo de 4 px; antes era un
+puntito de 3 px al 50 % y apagado). Los datos ya existian (`AgregarGuionesCapa` guarda D1, D2 y zero por vela
+y `estela-<capa>-<dia>.jsonl` los conserva entre reinicios): lo que faltaba era dibujarlos a gusto.
