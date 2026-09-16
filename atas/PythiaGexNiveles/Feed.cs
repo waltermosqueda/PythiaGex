@@ -107,12 +107,34 @@ namespace PythiaGex
 
         /// <summary>La ULTIMA cadena de la rama "cadenas" (ultima-<raiz>.json, la escribe
         /// cadenas.yml cada minuto en la rueda). Mismo formato que una linea del archivo.</summary>
+        /// <summary>CBOE BAJADA DESDE ESTA PC (16-09, herramientas/cboe_local.py): la nube corre cada 8-25 min; el bajador local
+        /// cada 75 s en la rueda. Si %APPDATA%/ATAS/PythiaGex/cboe-local/ultima-(raiz).json existe y es mas fresca que 3 min,
+        /// se usa antes que la nube; si la nube resulta mas vieja que la local, tambien gana la local.</summary>
+        public static string CarpetaLocalCboe => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex", "cboe-local");
+        private static Cadena UltimaLocal(string raiz)
+        {
+            try
+            {
+                var p = Path.Combine(CarpetaLocalCboe, "ultima-" + raiz + ".json");
+                if (!File.Exists(p)) return null;
+                var txt = File.ReadAllText(p);
+                var c = Parsear(txt);
+                if (c == null || c.Filas.Count == 0) return null;
+                c.Fuente = "ultima local (CBOE directo)";
+                try { Archivo.GuardarLocal(raiz, txt, c); } catch { }
+                return c;
+            }
+            catch { return null; }
+        }
+
         public static async Task<Cadena> BajarUltima(string urlArchivo, string raiz, Action<string> error)
         {
             try
             {
+                var local = UltimaLocal(raiz);
+                if (local != null && local.GeneradoUtc != default(DateTime) && (DateTime.UtcNow - local.GeneradoUtc).TotalMinutes <= 3) return local;
                 var b = (urlArchivo ?? "").Trim();
-                if (b.Length == 0) return null;
+                if (b.Length == 0) return local;
                 if (!b.EndsWith("/")) b += "/";
                 // raw.githubusercontent.com por rama cachea 5 minutos aunque cambie ?t= (medido el 10-09:
                 // la rama devolvia un ultima-NQ.json 8 min mas viejo que el commit). Con un token local
@@ -138,12 +160,13 @@ namespace PythiaGex
                 }
                 if (txt == null) txt = await Http.GetStringAsync(b + "ultima-" + raiz + ".json?t=" + DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ConfigureAwait(false);
                 var c = Parsear(txt);
-                if (c == null || c.Filas.Count == 0) return null;
+                if (c == null || c.Filas.Count == 0) return local;
                 c.Fuente = token != null ? "ultima por API (fresca)" : "ultima por raw (cache 5 min)";
                 try { Archivo.GuardarLocal(raiz, txt, c); } catch { }
+                if (local != null && local.GeneradoUtc > c.GeneradoUtc) return local;   // la de esta PC es mas nueva que la nube
                 return c;
             }
-            catch (Exception e) { error?.Invoke(e.Message.Length > 80 ? e.Message.Substring(0, 80) : e.Message); return null; }
+            catch (Exception e) { error?.Invoke(e.Message.Length > 80 ? e.Message.Substring(0, 80) : e.Message); return UltimaLocal(raiz); }
         }
 
         /// <summary>Baja <raiz>_radar.json de la url base. Devuelve null si fallo;
@@ -433,9 +456,10 @@ namespace PythiaGex
                 for (var d = desdeUtc.Date; d <= hastaUtc.Date; d = d.AddDays(1))
                 {
                     var dia = d.ToString("yyyy-MM-dd");
-                    foreach (var nombre in new[] { "cadena-" + raiz + "-" + dia + ".jsonl.gz", "local-" + raiz + "-" + dia + ".jsonl" })
+                    foreach (var p in new[] { Path.Combine(Carpeta, "cadena-" + raiz + "-" + dia + ".jsonl.gz"), Path.Combine(Carpeta, "local-" + raiz + "-" + dia + ".jsonl"),
+                                              Path.Combine(CarpetaLocalCboe, "cadena-" + raiz + "-" + dia + ".jsonl.gz") })   // 16-09: tambien lo bajado desde esta PC
                     {
-                        var p = Path.Combine(Carpeta, nombre);
+                        var nombre = Path.GetFileName(p);
                         if (!File.Exists(p)) continue;
                         List<Cadena> ls;
                         try { ls = Leer(p); } catch (Exception e) { log?.Invoke("no pude leer " + nombre + ": " + e.Message); continue; }
