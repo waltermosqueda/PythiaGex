@@ -157,3 +157,32 @@ Ojo con la hora: el log del indicador va en hora local de la maquina (UTC−3); 
   estaba APAGADA en el grafico (el log deja de tener AUDIT capa=NDX desde el reinicio 21:25; no fue un reset: los
   defaults de todas las capas son false y QQQ/RITHMIC/SPX/SPY/ES siguen prendidas). Con 1.10c, al prender NDX la
   ambar sigue visible; el % de atenuacion guardado en su grafico sigue en 40 (el default 75 es para graficos nuevos).
+
+## 9. El episodio anterior, revalidado, y la falla real de esta semana (21:40-21:50, Gamma Hoy 1.10d)
+
+El operador insistio: "hace dias tuvimos el mismo problema y encontraste una formula mal". Revisado en las
+transcripciones y las memorias:
+
+- 10-09 23:34 y 11-09 03:22: "las dominantes de MNQ desde las 17 hs con 500 arriba y 200 abajo". El arreglo de
+  entonces (1.8i) fue el **empate tecnico 20 %** (entre barras comparables gana la mas cercana al precio), y la
+  memoria dominantes-de-noche-resto-de-ayer concluyo que la cuenta estaba bien y el libro de la noche es el resto
+  de manana. Esta noche esa regla esta activa y se verifico barra por barra (seccion 2 y capas_nq.py): NDX arriba
+  solo 29.250 (221M) es comparable (la siguiente, 95M, no llega al piso de 177M); abajo solo 28.600 (−64M); QQQ 708
+  (648M) le gana a 710 (632M) por cercania. La regla hace lo que debe.
+- Base y razon contra Yahoo esta noche: NQ=F − ^NDX 309 vs 302,5 del indicador (2 pb); NQ=F / QQQ 41,5112 vs
+  41,5129 (0,4 pb). Ninguna base rota como la del 09-09.
+- **Lo que SI estaba roto** (y explica que "antes de noche se veian cerca"): el libro VIVO de Rithmic. Desde que los
+  graficos estan en el trimestre nuevo (MESZ6/MNQZ6), el puente pedia las series de esta semana (15, 16, 17 y 18-09)
+  con NQZ6/ESZ6 y Rithmic contestaba "no data" (log 14:09, 19:23, 20:59): esas weeklies son opciones sobre
+  NQU6/ESU6 hasta el 18-09. Sin ellas el libro vivo quedo sin 0DTE ni 1DTE toda la semana del roll (capa RITHMIC a las
+  14:30: 41 strikes, −0,010B). El 11-09, con los graficos en U6, ese mismo libro tenia bandas a −18 pts de noche.
+- **Arreglo 1.10d** (CadenaViva.cs + PuenteRithmic.cs): busca el trimestre que vence en el servidor; si todavia
+  cotiza, las series hasta su fecha se piden con su codigo y sus strikes se dibujan corridos por el spread vivo
+  Z6 − U6 (ventana al dinero, filas, bloques grandes, volumen por strike); sin el precio del viejo no se dibujan.
+- **Medido tras reiniciar (21:40)**: "roll: NQU6 en 28.984,38 y NQZ6 en 29.275,5: strikes corridos +291,13"; "774
+  contratos de 20260915 Weekly pedidos con NQU6", 806 del 16-09, 1.018 del 18-09 (ES: 720 / 714 / 872 con ESU6);
+  "5 vencimientos, 3.696 contratos" contra 1.672 antes. Capa RITHMIC 21:40:50: D1 29.290,7 (−98M) y D2 29.269,0
+  (+8M) con el futuro en 29.274. **Visto en pantalla 21:45**: "RITHMIC · en vivo · D1 29.291 D2 29.269", escalera
+  "RITHMIC D1 ▲ 29.291 +15" y "RITHMIC D2 ▼ 29.269 −7" con el precio en 29.276,50. Los tamaños son chicos porque el
+  volumen acumulado se perdio con los reinicios; crece con la rueda de manana.
+- Queda: la semana del roll se repite en marzo, junio, septiembre y diciembre; mirar "roll:" en el log esos dias.

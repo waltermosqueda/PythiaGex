@@ -177,6 +177,47 @@ namespace PythiaGex
         /// Si no es 0 en pleno dia, el mapa NO es el del 0DTE y hay que decirlo.</summary>
         public int DiasReales { get; private set; } = -1;
 
+        // SEMANA DEL ROLL (15-09-2026): cuando el grafico ya esta en el trimestre nuevo (NQZ6) pero el viejo (NQU6)
+        // todavia no vencio, las weeklies de esta semana son opciones sobre el VIEJO. Se piden con su codigo y sus
+        // strikes se llevan al precio del grafico sumando el spread vivo (Z6 - U6), que Rithmic cotiza. Sin esto
+        // el libro vivo se quedaba sin 0DTE toda la semana (medido: "NQZ6 20260915 Weekly: no data").
+        private Action<string> _logRoll;
+        private Security _futuroAnterior;                 // el trimestre que vence (NQU6), si todavia cotiza
+        private double _futuroAnteriorPrecio;
+        private bool _desplazListo;
+        private DateTime _desplazLog = DateTime.MinValue;
+        private readonly HashSet<string> _opsDelAnterior = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        /// <summary>Puntos que se le suman al strike de una opcion del trimestre anterior para ubicarla en el grafico (Z6 - U6).</summary>
+        public double DesplazamientoAnterior { get; private set; }
+        /// <summary>Codigo del trimestre que vence cuyas opciones se estan usando ("NQU6"), o "" si no aplica.</summary>
+        public string CodigoAnterior => _futuroAnterior?.Code ?? "";
+
+        /// <summary>El strike de una opcion en el precio DEL GRAFICO: el suyo, mas el spread si es del trimestre anterior.</summary>
+        private double KDe(Security o)
+        {
+            double k = (double)(o?.StrikePrice ?? 0m);
+            if (k > 0 && o != null && _opsDelAnterior.Count > 0 && _opsDelAnterior.Contains(o.Code ?? "")) k += DesplazamientoAnterior;
+            return k;
+        }
+
+        private void RefrescarDesplazamiento()
+        {
+            var fa = _futuroAnterior; if (fa == null || Futuro <= 0) return;
+            double p = (double)(fa.LastTradePrice ?? 0m);
+            if (p <= 0 && fa.BestBidPrice > 0 && fa.BestAskPrice > 0) p = (double)((fa.BestBidPrice + fa.BestAskPrice) / 2m);
+            if (p <= 0) return;
+            _futuroAnteriorPrecio = p;
+            double nuevo = Futuro - p;
+            if (_desplazListo && Math.Abs(nuevo - DesplazamientoAnterior) < 0.01) return;
+            DesplazamientoAnterior = nuevo; _desplazListo = true;
+            if ((DateTime.UtcNow - _desplazLog).TotalMinutes >= 5)
+            {
+                _desplazLog = DateTime.UtcNow;
+                _logRoll?.Invoke("[cadena viva] roll: " + fa.Code + " en " + p.ToString("0.##", CultureInfo.InvariantCulture) + " y " + (_futuro?.Code ?? "?") + " en " + Futuro.ToString("0.##", CultureInfo.InvariantCulture)
+                  + ": los strikes de las opciones de " + fa.Code + " (" + _opsDelAnterior.Count + " contratos) se dibujan corridos " + nuevo.ToString("+0.##;-0.##", CultureInfo.InvariantCulture) + " pts");
+            }
+        }
+
         // ------------------------------------------------------------------
         // arranque
         // ------------------------------------------------------------------
@@ -196,6 +237,7 @@ namespace PythiaGex
             _armando = true;
             try
             {
+                _logRoll = log;
                 void L(string m) { Estado = m; log?.Invoke("[cadena viva] " + m); }
 
                 var tOpt = Type.GetType("ATAS.DataFeedsCore.IOptionsDataFeed, ATAS.DataFeedsCore");
@@ -290,6 +332,7 @@ namespace PythiaGex
                 foreach (var cand in candidatos)
                 {
                     _futuro = cand; Futuro = 0; ops.Clear(); series.Clear(); todasSeries.Clear();
+                    _futuroAnterior = null; _desplazListo = false; DesplazamientoAnterior = 0; lock (_llave) _opsDelAnterior.Clear();
                     // EL PRECIO DE REFERENCIA ES EL DEL FUTURO DE LA CADENA.
                     try { _conn.SubscribeToMarketData(new[] { _futuro }, SubscriptionType.Prints | SubscriptionType.Best); }
                     catch { }
@@ -302,6 +345,27 @@ namespace PythiaGex
                     }
                     if (Futuro <= 0) { L("no llego el precio de " + _futuro.Code); continue; }
                     L("futuro " + _futuro.Code + " en " + Futuro.ToString("0.##", CultureInfo.InvariantCulture));
+                    // el trimestre que vence (NQU6 cuando el grafico esta en NQZ6): si todavia cotiza, sus weeklies son de el
+                    try
+                    {
+                        string codAnt = CodigoTrimestreAnterior(_futuro.Code);
+                        if (!string.IsNullOrEmpty(codAnt))
+                        {
+                            var r = await _conn.SearchSecuritiesAsync(new SecurityFilter { Code = codAnt, Exchange = "CME", RequestId = DateTime.UtcNow.Ticks % 1000000000L }).ConfigureAwait(false);
+                            var hit = (r ?? Enumerable.Empty<Security>()).FirstOrDefault(x => string.Equals(x.Code, codAnt, StringComparison.OrdinalIgnoreCase));
+                            if (hit != null && hit.Expiration.Date >= hoy)
+                            {
+                                _futuroAnterior = hit;
+                                try { _conn.SubscribeToMarketData(new[] { hit }, SubscriptionType.Prints | SubscriptionType.Best); } catch { }
+                                for (int i = 0; i < 15 && !_desplazListo; i++) { await Task.Delay(1000).ConfigureAwait(false); RefrescarDesplazamiento(); }
+                                L("roll: el trimestre que vence " + hit.Code + " (" + hit.Expiration.ToString("yyyy-MM-dd") + ") todavia cotiza"
+                                  + (_desplazListo ? " en " + _futuroAnteriorPrecio.ToString("0.##", CultureInfo.InvariantCulture) + ": spread " + DesplazamientoAnterior.ToString("+0.##;-0.##", CultureInfo.InvariantCulture) + " pts" : ", pero su precio no llego: sus opciones no se dibujan hasta tenerlo")
+                                  + "; las series hasta esa fecha se piden con " + hit.Code);
+                            }
+                            else L("roll: " + codAnt + (hit == null ? " no esta en el servidor" : " ya vencio") + ": todas las series se piden con " + _futuro.Code);
+                        }
+                    }
+                    catch (Exception e) { L("roll: no pude buscar el trimestre anterior: " + e.Message); }
                     try
                     {
                         // ATAS .399 dejo GetOptionSeriesAsync/GetOptionsAsync del conector de Rithmic como un
@@ -339,13 +403,16 @@ namespace PythiaGex
                         {
                             int antesDeEsta = ops.Count;
                             List<Security> listaOps;
-                            if (_puenteActivo) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log).ConfigureAwait(false);
+                            bool delAnterior = _futuroAnterior != null && serie.Expiration.Date <= _futuroAnterior.Expiration.Date;
+                            string subAlt = delAnterior ? _futuroAnterior.Code : null;
+                            if (_puenteActivo) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log, subAlt).ConfigureAwait(false);
                             else
                             {
                                 var cc = await ((dynamic)feed).GetOptionsAsync(serie);
                                 listaOps = ((IEnumerable<Security>)cc).ToList();
-                                if (listaOps.Count == 0) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log).ConfigureAwait(false);
+                                if (listaOps.Count == 0) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log, subAlt).ConfigureAwait(false);
                             }
+                            if (delAnterior && listaOps.Count > 0) lock (_llave) foreach (var o in listaOps) if (o.Code != null) _opsDelAnterior.Add(o.Code);
                             ops.AddRange(listaOps.Where(o => o.StrikePrice.HasValue));
                             if (ReferenceEquals(serie, series[0])) delCercano = ops.Count - antesDeEsta;
                         }
@@ -395,7 +462,7 @@ namespace PythiaGex
                 foreach (var f2 in fechas)
                 {
                     var grupo = ops.Where(o => o.Expiration.Date == f2).ToList();
-                    var todosK = grupo.Select(o => (double)(o.StrikePrice ?? 0m))
+                    var todosK = grupo.Select(o => KDe(o))
                                       .Distinct().OrderBy(k => k).ToList();
                     if (todosK.Count == 0) continue;
                     // paso tipico de la cadena, medido y no supuesto
@@ -414,7 +481,7 @@ namespace PythiaGex
                         if (d <= radioDenso) ks.Add(k);
                         else if (d <= radioRalo && Math.Abs((k / paso) % 4) < 0.01) ks.Add(k);
                     }
-                    elegidos.AddRange(grupo.Where(o => ks.Contains((double)(o.StrikePrice ?? 0m))));
+                    elegidos.AddRange(grupo.Where(o => ks.Contains(KDe(o))));
                 }
                 if (elegidos.Count > topeContratos)
                 {
@@ -422,7 +489,7 @@ namespace PythiaGex
                     // primero: el 0DTE es el que manda el GEX intradia.
                     elegidos = elegidos
                         .OrderBy(o => o.Expiration.Date)
-                        .ThenBy(o => Math.Abs((double)(o.StrikePrice ?? 0m) - Futuro))
+                        .ThenBy(o => Math.Abs(KDe(o) - Futuro))
                         .Take(topeContratos).ToList();
                 }
 
@@ -654,7 +721,7 @@ namespace PythiaGex
                             _grandes.Add(new Grande
                             {
                                 Hora = DateTime.UtcNow,
-                                K = (double)(t.Security.StrikePrice ?? 0m),
+                                K = KDe(t.Security),
                                 EsCall = t.Security.OptionType == OptionTypes.Call,
                                 Compra = compra, Contratos = v, Precio = (double)t.Price,
                             });
@@ -698,7 +765,7 @@ namespace PythiaGex
                     if (!_resumen.TryGetValue(code, out var s) || s.Security == null) continue;
                     double v = (double)(s.CurrentDayTotalVolume ?? 0m);
                     if (v <= 0) continue;
-                    double K = (double)(s.Security.StrikePrice ?? 0m);
+                    double K = KDe(s.Security);
                     if (K <= 0) continue;
                     bool call = s.Security.OptionType == OptionTypes.Call;
                     d.TryGetValue(K, out var a);
@@ -788,6 +855,7 @@ namespace PythiaGex
                 f = (double)((_futuro.BestBidPrice + _futuro.BestAskPrice) / 2m);
             if (f > 0) Futuro = f;
             if (Futuro <= 0) return null;
+            RefrescarDesplazamiento();
 
             var hoy = DateTime.Now.Date;
             var salida = new List<Fila>(ss.Count);
@@ -799,7 +867,8 @@ namespace PythiaGex
                 double bid = (double)o.BestBidPrice, ask = (double)o.BestAskPrice;
                 if (bid <= 0 || ask <= 0 || ask < bid) continue;
                 double mid = (bid + ask) / 2.0;
-                double K = (double)(o.StrikePrice ?? 0m);
+                if (_opsDelAnterior.Count > 0 && !_desplazListo && _opsDelAnterior.Contains(o.Code ?? "")) continue;   // sin spread no se ubica: no se dibuja
+                double K = KDe(o);
                 if (K <= 0) continue;
                 // EL TIEMPO AL VENCIMIENTO LLEVA LA HORA, NO SOLO EL DIA.
                 //
@@ -933,6 +1002,20 @@ namespace PythiaGex
                 salida.Add(grande + meses[im2] + (char)('0' + (y2 % 10)));
             }
             return salida;
+        }
+
+        /// <summary>NQZ6 -> NQU6, NQH7 -> NQZ6: el trimestre anterior del mismo futuro. "" si el codigo no es trimestral.</summary>
+        private static string CodigoTrimestreAnterior(string cod)
+        {
+            cod = (cod ?? "").Trim().ToUpperInvariant();
+            if (cod.Length < 3) return "";
+            const string meses = "HMUZ";
+            char m = cod[cod.Length - 2]; char y = cod[cod.Length - 1];
+            int im = meses.IndexOf(m);
+            if (im < 0 || !char.IsDigit(y)) return "";
+            int im2 = (im + 3) % 4; int y2 = (y - '0') + (im == 0 ? -1 : 0);
+            if (y2 < 0) y2 = 9;
+            return cod.Substring(0, cod.Length - 2) + meses[im2] + (char)('0' + y2);
         }
 
         private static string Raiz(string codigo)

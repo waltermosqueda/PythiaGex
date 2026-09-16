@@ -157,16 +157,24 @@ namespace PythiaGex
 
         /// <summary>Los contratos de una serie, como los daba GetOptionsAsync (quedan registrados
         /// en el catalogo del conector, asi que despues se pueden suscribir igual que antes).</summary>
-        public static async Task<List<Security>> OpcionesAsync(object conn, OptionSeries serie, Action<string> log)
+        public static async Task<List<Security>> OpcionesAsync(object conn, OptionSeries serie, Action<string> log, string subAlternativo = null)
         {
             var m = Mapear(conn, log);
             if (m == null || !m.Sirve) return new List<Security>();
             string sub = serie.UnderlyingCode ?? "", bolsa = serie.Exchange ?? "CME";
+            // SEMANA DEL ROLL (15-09): las weeklies que vencen antes que el trimestre viejo (15, 16, 17 y 18-09) son
+            // opciones sobre NQU6/ESU6, no sobre Z6. Rithmic las lista bajo Z6 pero contesta "no data" al pedir sus
+            // contratos con Z6. Si la cadena viva sabe que la serie es del trimestre anterior, se pide primero con ese.
+            var subs = new List<string>();
+            if (!string.IsNullOrEmpty(subAlternativo) && !string.Equals(subAlternativo, sub, StringComparison.OrdinalIgnoreCase)) subs.Add(subAlternativo);
+            subs.Add(sub);
             // 2026-09-11: la serie del 0DTE de NQ se perdio a las 10:16 ET porque el primer pedido
             // (fecha exacta) no contesto en 25 s y el segundo (solo mes) vino "no data"; la cadena
             // siguio sin el vencimiento mas importante del dia. Se pide la fecha exacta DOS veces
             // antes de caer al mes.
             string vencDia = serie.Expiration.ToString("yyyyMMdd", CultureInfo.InvariantCulture), vencMes = serie.Expiration.ToString("yyyyMM", CultureInfo.InvariantCulture);
+            foreach (var subUsar in subs)
+            {
             int intento = 0;
             foreach (var venc in new[] { vencDia, vencDia, vencMes })
             {
@@ -175,16 +183,21 @@ namespace PythiaGex
                 object ctx;
                 try { ctx = m.CtxOpciones.Invoke(new object[] { serie, Interlocked.Increment(ref _id), tcs }); }
                 catch (Exception e) { log?.Invoke("[puente] no pude armar el contexto de contratos: " + e.Message); return new List<Security>(); }
-                if (!Pedir(conn, m, sub, bolsa, venc, ctx, log)) return new List<Security>();
+                if (!Pedir(conn, m, subUsar, bolsa, venc, ctx, log)) return new List<Security>();
                 try
                 {
                     var listo = await Task.WhenAny(tcs.Task, Task.Delay(EsperaMs)).ConfigureAwait(false);
                     if (listo != tcs.Task) { log?.Invoke("[puente] Rithmic no contesto en " + (EsperaMs / 1000) + " s los contratos de " + serie.Code + " (" + venc + ", intento " + intento + ")"); continue; }
                     var lista = (await tcs.Task.ConfigureAwait(false) ?? Enumerable.Empty<Security>()).ToList();
-                    if (lista.Count > 0) return lista;
-                    log?.Invoke("[puente] 0 contratos para " + serie.Code + " con vencimiento " + venc);
+                    if (lista.Count > 0)
+                    {
+                        if (!string.Equals(subUsar, sub, StringComparison.OrdinalIgnoreCase)) log?.Invoke("[puente] " + lista.Count + " contratos de " + serie.Code + " pedidos con " + subUsar + " (trimestre que vence), no con " + sub);
+                        return lista;
+                    }
+                    log?.Invoke("[puente] 0 contratos para " + serie.Code + " con vencimiento " + venc + " (subyacente " + subUsar + ")");
                 }
-                catch (Exception e) { log?.Invoke("[puente] Rithmic rechazo los contratos de " + serie.Code + " (" + venc + "): " + e.Message); }
+                catch (Exception e) { log?.Invoke("[puente] Rithmic rechazo los contratos de " + serie.Code + " (" + venc + ", subyacente " + subUsar + "): " + e.Message); }
+            }
             }
             return new List<Security>();
         }
