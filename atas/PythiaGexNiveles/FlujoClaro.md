@@ -7,14 +7,18 @@ demasiado, y siento que me avisa tarde; ¿no hay algo superador?". Después de v
 
 ## Qué dibuja
 
-1. **Cinco cintas pegadas al precio** (arriba del panel, una celda por vela):
-   - *confluencia*: cuántas de las 4 lecturas (presión de la vela, grandes, CVD de 20 velas, dónde cerró el delta)
-     están del mismo lado (intensa = las 4; hueca = vela en curso).
-   - *presión*: el color de la vela cuando el precio ACOMPAÑA al delta (1.2); sostenida a media luz, indecisión casi
-     negra, vela en curso hueca (1.3).
-   - *grandes*: compras menos ventas de las órdenes agresoras de 50 contratos o más.
-   - *cinta*: cantidad de operaciones de la vela contra lo normal (hay apuro ahora; no dice dirección).
-   - *absorción*: mucho delta y el precio avanza menos de un cuarto de lo que ese delta suele mover.
+1. **Cinco cintas pegadas al precio** (arriba del panel, una celda por vela). Desde la 1.4 las tres primeras hablan
+   **de la vela que tienen encima**, con una sola gramática:
+   **verde / rojo** = el flujo ACOMPAÑA a la vela (brillo = cuánto) · **violeta** = el flujo le lleva LA CONTRA ·
+   **gris** = vela de indecisión (doji, martillo) o flujo parejo · **negro** = no hubo nada que medir.
+   - *confluencia*: cuántas de las 4 lecturas (delta de la vela, dónde cerró el delta, grandes, CVD de 20 velas)
+     acompañan a la vela, menos las que van en contra.
+   - *presión*: el delta de la vela contra los de la última hora (por percentil, no en sigmas). Delta a favor = color
+     de la vela, más brillante cuanto más grande; delta en contra y grande = violeta; delta chico = color a media luz.
+   - *grandes*: compras menos ventas de las órdenes agresoras de 50 contratos o más; violeta si fueron contra la vela.
+   - *cinta*: cantidad de operaciones de la vela contra lo normal (hay apuro ahora; no dice dirección). Fila de alarma.
+   - *absorción*: mucho delta y el precio avanza menos de un cuarto de lo que ese delta suele mover. Fila de alarma.
+   La celda de la vela en curso va llena y con un borde fino: se mueve con la vela.
 2. **Panel**: el CVD **anclado** (el cero es el CVD de hace 60 velas: la misma curva, 3-4 veces más alta de leer)
    con línea verde/roja, y detrás las barras de presión con bandas fijas ±1σ y ±2σ. La última barra se mueve con
    cada operación. Opción: velas de delta con mecha (máximo y mínimo del delta dentro de la vela).
@@ -115,6 +119,29 @@ definiciones de giro. Contra su propio placebo (la misma cinta con los deltas ba
   rueda). No hay un arreglo validado; no se toca hasta medirlo.
 - La beta del banco y la del C# difieren levemente (umbral de delta mínimo): los números del banco son aproximados
   al decimal, no al centésimo.
+
+## 1.4 (17-09, 15:30): la celda habla de la vela que tiene encima
+
+El operador, por tercera vez: "el heatmap avisa tarde o el color no corresponde con la vela, o aparecen muchos negros
+huecos; trabajalo hasta que coincidan bien, tengan lógica y muy buen porcentaje". Tenía razón y se midió con su
+criterio (`laboratorio/cvd_coherencia.py`). Para tener muestra, el indicador ahora vuelca TODAS las velas del gráfico
+a `%APPDATA%\ATAS\PythiaGex\flujo\velas-<inst>-<marco>.csv` (copia del 17-09 en `datos/flujo/`): 27.209 velas de
+1 minuto, 20 ruedas, en vez de las 950 del centinela.
+
+**Lo que veía (1.3), en velas de rueda con cuerpo:** presión apagada en el **40 %** de las velas; confluencia con el
+color CONTRARIO en el 8 % y apagada en el 17 %. La causa principal no era la regla fina sino la vara: el delta se
+medía en desvíos estándar de 60 velas, y después de una vela enorme todo lo demás quedaba "chico" y se pintaba negro.
+
+**La 1.4:** el tamaño del delta es su LUGAR entre los de la última hora (percentil: no lo ciega una ráfaga), y la
+celda toma el color de la vela. Resultado en las mismas velas: presión coincide **96,8 %**, violeta 3,2 %, color
+contrario 0, apagada 0. Confluencia coincide 81,4 %, violeta 8,5 %, gris (flujo parejo) 10,1 %, contrario 0.
+Paridad C#/Python: 0 diferencias en 26.889 velas. En pantalla (control por píxeles de la captura): 38 velas con
+cuerpo, 0 celdas negras y 0 contrarias en presión y confluencia.
+
+**Lo que esto NO es (de frente):** coincidir con la vela es **por construcción**, no es acierto. La vela SIGUIENTE
+sale del color de la celda el 48 % de las veces: la cinta no anticipa. Lo que le agrega a la vela es (a) cuánto flujo
+la respalda (el brillo) y (b) cuándo el flujo la contradice (el violeta). La celda violeta tiene un indicio, no una
+prueba: la vela siguiente fue a favor del DELTA el 56,7 % de las veces (247 casos, z +1,8); a 5 velas, nada.
 
 ## Pendiente
 
