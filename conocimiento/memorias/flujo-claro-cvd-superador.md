@@ -1,11 +1,11 @@
 ---
 name: flujo-claro-cvd-superador
-description: "Flujo Claro (17-09): indicador propio que reemplaza al CVD de fabrica: cinco cintas, CVD anclado con presion, marcas en el precio y el AHORA en fila; lo medido (el delta no adelanta, extremo = tarde), como se instalo y las trampas de ATAS que aparecieron."
+description: "Flujo Claro (17-09, v1.5): indicador propio que reemplaza al CVD de fabrica; la celda habla de la vela que tiene encima (verde/rojo acompaña, violeta contra, gris doji); medido: nada anticipa (ni extremo, ni violeta, ni brillo); volcado de velas, paridad C#/Python y trampas de ATAS."
 metadata: 
   node_type: memory
   type: project
   originSessionId: 9345174c-7f69-4fe5-a793-976e41f2dc7c
-  modified: 2026-09-17T17:48:31.048Z
+  modified: 2026-09-17T18:39:56.631Z
 ---
 
 Pedido del operador (17-09): "el CVD de ATAS abajo del grafico es chiquito, apenas se entiende, y siento que me avisa
@@ -40,6 +40,30 @@ pantalla 13:45 en el MNQZ6 1m (version 1.1), sin excepciones.
   de MNQZ6 sin retocar. Abierto: la hora posterior al cierre queda casi ciega (sd de 60 velas), sin arreglo validado.
   Leccion de metodo: una metrica que compara la cinta con la MISMA vela que la define es circular; medir siempre
   contra la vela siguiente y contra el placebo propio (deltas barajados).
+
+- **1.4 (17-09 15:30), tercera queja del operador: "avisa tarde / el color no corresponde con la vela / muchos negros
+  huecos".** Tenia razon OTRA VEZ: medido con SU criterio (`laboratorio/cvd_coherencia.py`), la 1.3 dejaba APAGADO el 40 %
+  de las velas con cuerpo y la confluencia iba del color CONTRARIO en el 8 %. Causa: el delta se media en sigmas de 60 velas
+  y una vela enorme cegaba todo lo demas. Gramatica nueva: **la celda habla de la vela que tiene encima** — verde/rojo = el
+  flujo acompaña (brillo = percentil del |delta| en la ultima hora), VIOLETA = el flujo va contra la vela, GRIS = doji o
+  flujo parejo, negro = nada que medir. Presion coincide 96,8 % / violeta 3,2 % / contrario 0 / apagado 0 (7.530 velas de
+  rueda, 20 dias). Es coincidencia POR CONSTRUCCION, no prediccion (vela siguiente 48 %); se lo dije asi. Leccion: cuando el
+  operador dice "no corresponde", medir con SU criterio (lo que el ojo ve: color, apagado, contrario) antes que con el mio
+  (parpadeo, retraso); y normalizar por PERCENTIL, nunca por sigma, en series con rafagas.
+- **1.5 (17-09 16:06), tres revisores sobre la 1.4 (codigo / estadistico / ojo del scalper):** (a) **RETIRADO 'NO PERSEGUIR'**:
+  con 20 ruedas da 50 % (n 2.716) y estaba prendido el 36-40 % del tiempo; el 36-41 % que le habia dicho al operador era ruido
+  de 950 velas. La violeta NO es señal (56,7 % a 1 vela no sobrevive al placebo por franja ni a la replica nocturna) y el brillo
+  no anticipa nada. (b) El percentil de 60 velas se SATURABA en la apertura (52 % de celdas brillantes a las 13:30 UTC): ahora se
+  divide antes por lo normal de esa hora (mediana de la franja +-15 min de las 5 sesiones previas) -> 25 %. (c) Confluencia: la
+  vela VOTA (vela grande con celda floja 35 % -> 3,8 %), violeta solo con causa propia, gris solo doji. (d) Filas de abajo por
+  percentil y con fondo tenue en las celdas quietas (43 % del panel era negro). (e) Vela en curso: proyeccion gradual y solo
+  para el brillo; se rederiva con el reloj. (f) Texto 'DELTA -145 p69'. La regla vive UNA vez en `laboratorio/cvd_regla15.py`
+  y la paridad con el C# es 0 diferencias en 27.243 velas x 9 columnas. **Leccion:** toda 'señal' medida con menos de ~1.000
+  casos se vuelve a medir cuando hay muestra grande ANTES de dejarla escrita en el tablero; el volcado da esa muestra gratis.
+- **El volcado:** Flujo Claro escribe todas las velas del grafico (crudas + estados) en
+  `%APPDATA%\ATAS\PythiaGex\flujo\velas-<inst>-<marco>.csv` (27 mil velas de 1 min = 20 ruedas): muestra grande para
+  cualquier banco, y paridad C#/Python vela por vela (0 diferencias). Control VISUAL automatico de la captura:
+  `herramientas/ver_celdas.py captura.png x0 x1 yPrecio0 yPrecio1 "yFila1,yFila2,yFila3" nombres` (color de la vela contra color de la celda, por pixeles).
 
 **Trampas de ATAS que salieron (utiles para cualquier indicador de panel):**
 - `GetXByBar(bar, false)` devuelve el CENTRO de la vela; `true` el borde izquierdo.
