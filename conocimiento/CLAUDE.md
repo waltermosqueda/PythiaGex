@@ -40,6 +40,8 @@ No prometas ni insinúes rentabilidad. No presentes como probado nada que no se 
 - `dte=1` de Options Trading Toolbox sirve la cadena de **hoy**. No le creas.
 - El gamma flip de GammaLens es un bug. Ignoralo.
 - **Semana del roll (tercer viernes de marzo, junio, septiembre, diciembre): las weeklies de esa semana son opciones sobre el trimestre QUE VENCE (NQU6/ESU6), no sobre el nuevo.** Con los gráficos ya en Z6, el puente de Rithmic pedía esas series con Z6 y recibía "no data": el libro vivo quedaba sin 0DTE toda la semana y las dominantes de noche se iban lejos. Arreglado en Gamma Hoy 1.10d (pide con U6 y corre los strikes por el spread). **REGLA ROJA:** si el operador dice "las dominantes están lejísimas de noche / antes había túnel y ahora no", mirar `roll:` y `no data` en el log ANTES de explicar que "el dato es así". Ver `memory/regla-roja-roll-libro-vivo.md`.
+- **ATAS persiste los ajustes de un indicador POR NOMBRE en el workspace (.ws).** Cambiar el default en el código no cambia lo guardado: un `VivaProfundidad=true` viejo pidió nivel 2 de 444 opciones y Rithmic cortaba la conexión de datos cada 62 s (16-09). Para pisar un valor guardado, RENOMBRAR la propiedad. Ante "no se ve X", leer el valor en el .ws antes de tocar código.
+- **Toda descarga desde la PC del operador va comprimida y sin ráfagas** (`fuentes.bajar` pide gzip y lee de a trozos): el JSON crudo de SPX son ~20 MB y las ráfagas de 2-3 MB/s cada 75 s coincidían con cortes de Rithmic (166 en el día contra 18 la víspera, 16-09).
 - El open interest es de **ayer** siempre: la OCC lo consolida de noche y publica antes de la apertura. Intradía el GEX solo se mueve por precio y volatilidad.
 
 ## Cómo trabajar sin romperle la vista
