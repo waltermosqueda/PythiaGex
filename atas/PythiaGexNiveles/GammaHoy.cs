@@ -734,7 +734,7 @@ namespace PythiaGex
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 1.11c (roll: la weekly del viernes trimestral va con el trimestre nuevo) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 1.11d (roll: weekly del viernes con Z6; estado del roll atomico; rearme al vencer la trimestral) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -769,6 +769,7 @@ namespace PythiaGex
             {
                 string dia = DiaNy();
                 if (_viva.FaltaCercano) motivo = "falta el vencimiento mas cercano";
+                else if (_viva.TrimestralVencida) motivo = "vencio la trimestral de la mañana (" + _viva.CodigoAnterior + "): se suelta y entra el vencimiento siguiente";
                 else if (_diaViva.Length > 0 && dia != _diaViva) motivo = "cambio el dia en Nueva York (" + _diaViva + " -> " + dia + "): el 0DTE es otro";
                 else if (_viva.RadioDenso > 0 && _viva.Futuro > 0 && Math.Abs(_viva.Futuro - _viva.CentroVentana) > _viva.RadioDenso * 0.5)
                     motivo = "el precio se alejo " + Math.Abs(_viva.Futuro - _viva.CentroVentana).ToString("0") + " pts del centro de la ventana (radio denso " + _viva.RadioDenso.ToString("0") + "): se recentra";

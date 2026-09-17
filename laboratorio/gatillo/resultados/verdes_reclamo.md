@@ -46,3 +46,12 @@ lleva el futuro del escritor ("f"), la fuerza ("g"), la gamma neta ("n") y el li
 Rayas viejas (10 min, de antes del reinicio): ahora <= 150 s y posteriores al arranque. Un solo detector por raiz aunque haya dos graficos (el otro solo dibuja).
 Marcas por HORA, no por indice de vela. Rueda / noche y verdes / control separados en la fila AHORA y en el registro (con hora de la PC, bid y ask).
 En MES el detector queda apagado con aviso: la capa ES de Gamma Hoy esta en precio de NQ y la replica en ES no replico.
+
+## Incidentes del libro (para leer el registro en sombra con contexto)
+
+- **17-09 noche (vispera de la trimestral):** hasta las 23:07 UTC el libro vivo NO tenia la weekly del viernes 18 (el roll la pedia con U6 y
+  Rithmic devolvia la trimestral; arreglado en Gamma Hoy 1.11c, commit c7322f343). Con el arreglo las rayas de esa noche siguieron saliendo de la
+  trimestral (1.554 M arriba contra 91 M la noche anterior; tunel ~125 pts): es real, no un error. La noche no decide nada en el criterio.
+- **18-09 (rueda 1 de la sombra, vencimiento trimestral):** la trimestral sale del libro a las 9:30 NY en punto; desde ahi el 0DTE es la weekly
+  sobre Z6. Sin el arreglo, toda esa rueda habria corrido sin 0DTE y sin aviso.
+

@@ -203,7 +203,7 @@ namespace PythiaGex
         /// <summary>Activa pero sin el vencimiento de HOY (dia habil): el mas cercano listado es de otro dia. Se dibuja igual y se avisa (16-09).</summary>
         public bool SinCeroDte { get; private set; }
         private DateTime _desplazLog = DateTime.MinValue;
-        private readonly HashSet<string> _opsDelAnterior = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private HashSet<string> _opsDelAnterior = new HashSet<string>(StringComparer.OrdinalIgnoreCase);   // se reemplaza entero al final de cada armado (referencia atomica)
         // EL VIERNES DEL VENCIMIENTO TRIMESTRAL CONVIVEN DOS SERIES EL MISMO DIA (17-09-2026): la Regular (la trimestral, sobre el
         // futuro que vence, 9:30 NY) y la Weekly de la tarde (sobre el trimestre NUEVO, 16:00 NY). La fecha sola no las distingue:
         // aca van los contratos de la trimestral (vencen a la mañana). Se reemplaza entero en cada armado (la referencia es atomica).
@@ -212,20 +212,27 @@ namespace PythiaGex
         private static string LlaveSerie(OptionSeries z) => z.Expiration.ToString("yyyyMMdd", CultureInfo.InvariantCulture) + (EsRegular(z) ? "R" : "W");
         /// <summary>Puntos que se le suman al strike de una opcion del trimestre anterior para ubicarla en el grafico (Z6 - U6).</summary>
         public double DesplazamientoAnterior { get; private set; }
+        /// <summary>El libro armado todavia tiene la trimestral de la mañana y ya son las 10:00 NY de su vencimiento (17-09): hay que
+        /// rearmar para soltarla y que entre el vencimiento siguiente. Se apaga solo: tras ese rearme la serie no se pide y _opsAm queda vacio.
+        /// (10:00 y no 9:30: fuera de la gracia de 30 min con que el armado descarta las series ya vencidas.)</summary>
+        public bool TrimestralVencida { get { var fa = _futuroAnterior; return fa != null && _opsAm.Count > 0 && AhoraEnNuevaYork() >= fa.Expiration.Date.AddHours(10.0); } }
         /// <summary>Codigo del trimestre que vence cuyas opciones se estan usando ("NQU6"), o "" si no aplica.</summary>
         public string CodigoAnterior => _futuroAnterior?.Code ?? "";
 
         /// <summary>El strike de una opcion en el precio DEL GRAFICO: el suyo, mas el spread si es del trimestre anterior.</summary>
-        private double KDe(Security o)
+        private double KDe(Security o) => KDe(o, _opsDelAnterior, DesplazamientoAnterior);
+        private static double KDe(Security o, HashSet<string> delAnterior, double desplazamiento)
         {
             double k = (double)(o?.StrikePrice ?? 0m);
-            if (k > 0 && o != null && _opsDelAnterior.Count > 0 && _opsDelAnterior.Contains(o.Code ?? "")) k += DesplazamientoAnterior;
+            if (k > 0 && o != null && delAnterior.Count > 0 && delAnterior.Contains(o.Code ?? "")) k += desplazamiento;
             return k;
         }
 
         private void RefrescarDesplazamiento()
         {
             var fa = _futuroAnterior; if (fa == null || Futuro <= 0) return;
+            // vencido el trimestre viejo (9:30 NY de su fecha) queda el ultimo spread: su precio ya no se mueve ni sirve
+            if (AhoraEnNuevaYork() >= fa.Expiration.Date.AddHours(9.5)) return;
             // el punto medio antes que el ultimo trade (de noche U6 opera poco y un trade viejo contra un Z6 vivo mete el
             // movimiento del Z6 en el spread: 2,6 pts de temblor en 93 min medidos el 16-09), cuantizado a 0,25 y con
             // histeresis de 1 pt para que los strikes del libro no vibren
@@ -364,10 +371,19 @@ namespace PythiaGex
                 var hoy = HoyEnNuevaYork();
                 List<Security> ops = new();
                 List<OptionSeries> series = new(), todasSeries = new();
+                Security futuroAnteriorNuevo = null;
+                var opsDelAnteriorNuevo = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var opsAm = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (var cand in candidatos)
                 {
                     _futuro = cand; Futuro = 0; ops.Clear(); series.Clear(); todasSeries.Clear();
-                    _futuroAnterior = null; _desplazListo = false; DesplazamientoAnterior = 0; lock (_llave) _opsDelAnterior.Clear();
+                    // EL ESTADO DEL ROLL SE PUBLICA AL FINAL, JUNTO CON LOS CONTRATOS (17-09, revision): antes se vaciaba aca
+                    // _opsDelAnterior y a mitad del armado se pisaba _opsAm, mientras _suscritos seguia siendo el armado viejo
+                    // hasta despues de la espera de turno (74-218 s medidos). En ese hueco la foto del libro mezclaba contratos
+                    // viejos con hechos nuevos: la trimestral sin corrimiento (294 pts abajo) o, ya vencida, como si venciera a las
+                    // 16:00. Ahora todo se arma en locales y se cambia en un solo bloque con _suscritos.
+                    // conjuntos NUEVOS por candidato (nunca Clear: el publicado es el de un armado anterior y alguien puede estar leyendolo)
+                    futuroAnteriorNuevo = null; opsDelAnteriorNuevo = new HashSet<string>(StringComparer.OrdinalIgnoreCase); opsAm = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     // EL PRECIO DE REFERENCIA ES EL DEL FUTURO DE LA CADENA.
                     try { _conn.SubscribeToMarketData(new[] { _futuro }, SubscriptionType.Prints | SubscriptionType.Best); }
                     catch { }
@@ -390,7 +406,9 @@ namespace PythiaGex
                             var hit = (r ?? Enumerable.Empty<Security>()).FirstOrDefault(x => string.Equals(x.Code, codAnt, StringComparison.OrdinalIgnoreCase));
                             if (hit != null && hit.Expiration.Date >= hoy)
                             {
-                                _futuroAnterior = hit;
+                                futuroAnteriorNuevo = hit;
+                                // el mismo trimestre que ya teniamos conserva su spread; uno distinto (o el primero) lo mide de cero
+                                if (_futuroAnterior == null || !string.Equals(_futuroAnterior.Code, hit.Code, StringComparison.OrdinalIgnoreCase)) { _futuroAnterior = hit; _desplazListo = false; DesplazamientoAnterior = 0; }
                                 try { _conn.SubscribeToMarketData(new[] { hit }, SubscriptionType.Prints | SubscriptionType.Best); } catch { }
                                 for (int i = 0; i < 15 && !_desplazListo; i++) { await Task.Delay(1000).ConfigureAwait(false); RefrescarDesplazamiento(); }
                                 L("roll: el trimestre que vence " + hit.Code + " (" + hit.Expiration.ToString("yyyy-MM-dd") + ") todavia cotiza"
@@ -422,37 +440,37 @@ namespace PythiaGex
                         // SEMANA DEL ROLL, segunda parte (16-09): Rithmic lista bajo Z6 solo ALGUNAS weeklies del
                         // trimestre que vence (el 16 y el 18, no el jueves 17). Las series del trimestre viejo se
                         // listan con SU codigo y se suman las fechas que falten (hasta su vencimiento inclusive).
-                        if (_futuroAnterior != null)
+                        if (futuroAnteriorNuevo != null)
                         {
                             try
                             {
                                 List<OptionSeries> delViejo;
-                                if (_puenteActivo) delViejo = await PuenteRithmic.SeriesAsync(feed, _futuroAnterior, log).ConfigureAwait(false);
+                                if (_puenteActivo) delViejo = await PuenteRithmic.SeriesAsync(feed, futuroAnteriorNuevo, log).ConfigureAwait(false);
                                 else
                                 {
-                                    var sv = await ((dynamic)feed).GetOptionSeriesAsync(_futuroAnterior);
+                                    var sv = await ((dynamic)feed).GetOptionSeriesAsync(futuroAnteriorNuevo);
                                     delViejo = ((IEnumerable<OptionSeries>)sv).ToList();
-                                    if (delViejo.Count == 0) delViejo = await PuenteRithmic.SeriesAsync(feed, _futuroAnterior, log).ConfigureAwait(false);
+                                    if (delViejo.Count == 0) delViejo = await PuenteRithmic.SeriesAsync(feed, futuroAnteriorNuevo, log).ConfigureAwait(false);
                                 }
                                 // la llave es FECHA + TIPO (17-09): el dia del vencimiento trimestral el nuevo lista "09-18 Weekly" (la de la tarde)
                                 // y el viejo "09-18 Regular" (la trimestral de la mañana). Con la fecha sola la trimestral nunca se sumaba.
                                 var seriesYa = new HashSet<string>(listaSeries.Select(z => LlaveSerie(z)));
-                                var extra = delViejo.Where(z => z.Expiration.Date <= _futuroAnterior.Expiration.Date && z.Expiration.Date >= hoy && !seriesYa.Contains(LlaveSerie(z)))
+                                var extra = delViejo.Where(z => z.Expiration.Date <= futuroAnteriorNuevo.Expiration.Date && z.Expiration.Date >= hoy && !seriesYa.Contains(LlaveSerie(z)))
                                                     .GroupBy(z => LlaveSerie(z)).Select(gq => gq.First()).OrderBy(z => z.Expiration).ToList();
                                 if (extra.Count > 0)
                                 {
                                     listaSeries = listaSeries.Concat(extra).ToList();
-                                    L("roll: " + extra.Count + " vencimiento(s) que solo lista " + _futuroAnterior.Code + ": "
+                                    L("roll: " + extra.Count + " vencimiento(s) que solo lista " + futuroAnteriorNuevo.Code + ": "
                                       + string.Join(", ", extra.Select(z => z.Expiration.ToString("MM-dd") + " " + z.Type)) + " (sumados a los de " + _futuro.Code + ")");
                                 }
-                                else L("roll: " + _futuroAnterior.Code + " no lista vencimientos que falten en " + _futuro.Code + " (" + delViejo.Count + " series)");
+                                else L("roll: " + futuroAnteriorNuevo.Code + " no lista vencimientos que falten en " + _futuro.Code + " (" + delViejo.Count + " series)");
                             }
-                            catch (Exception e) { L("roll: no pude listar las series de " + _futuroAnterior.Code + ": " + e.Message); }
+                            catch (Exception e) { L("roll: no pude listar las series de " + futuroAnteriorNuevo.Code + ": " + e.Message); }
                         }
                         // LAS SERIES QUE YA VENCIERON NO SE PIDEN (17-09): de noche la weekly de hoy (vencida a las 16:00 NY) seguia entrando,
                         // ocupaba un lugar de los vencimientos en vivo y gastaba la cuota de suscripcion en 806 contratos muertos.
                         var ahoraNy = AhoraEnNuevaYork();
-                        bool VenceALaManana(OptionSeries z) => EsRegular(z) && ((_futuroAnterior != null && z.Expiration.Date == _futuroAnterior.Expiration.Date) || (_futuro != null && z.Expiration.Date == _futuro.Expiration.Date));
+                        bool VenceALaManana(OptionSeries z) => EsRegular(z) && ((futuroAnteriorNuevo != null && z.Expiration.Date == futuroAnteriorNuevo.Expiration.Date) || (_futuro != null && z.Expiration.Date == _futuro.Expiration.Date));
                         bool YaVencio(OptionSeries z) => z.Expiration.Date.AddHours(VenceALaManana(z) ? 9.5 : 16.0).AddMinutes(30) < ahoraNy;
                         int vencidas = listaSeries.Count(z => (z.Expiration.Date - hoy).Days >= 0 && YaVencio(z));
                         if (vencidas > 0) L(vencidas + " serie(s) de hoy ya vencida(s): no se piden");
@@ -476,7 +494,6 @@ namespace PythiaGex
                         if (SinCeroDte) L("OJO: el libro vivo NO tiene el vencimiento de hoy (" + hoy.ToString("yyyy-MM-dd") + "): el mas cercano listado es "
                                           + series[0].Expiration.ToString("yyyy-MM-dd") + " (" + DiasReales + " d); se dibuja igual y se avisa en pantalla");
                         int delCercano = -1;
-                        var opsAm = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         var codigosYa = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         foreach (var serie in series)
                         {
@@ -488,10 +505,10 @@ namespace PythiaGex
                             // vieja ("<=" por fecha) la Weekly del viernes se pedia con U6 + 20260918 y Rithmic devolvia los 1028 contratos de la
                             // TRIMESTRAL: el 0DTE del viernes no cargaba y las dominantes de noche salian de los strikes redondos lejanos de la
                             // trimestral (tunel de 130-150 pts en vez de 25-50). El operador lo vio en pantalla; el log lo confirmo.
-                            bool mismoDiaQueElViejo = _futuroAnterior != null && serie.Expiration.Date == _futuroAnterior.Expiration.Date;
-                            bool delAnterior = _futuroAnterior != null && (serie.Expiration.Date < _futuroAnterior.Expiration.Date || (mismoDiaQueElViejo && EsRegular(serie)));
+                            bool mismoDiaQueElViejo = futuroAnteriorNuevo != null && serie.Expiration.Date == futuroAnteriorNuevo.Expiration.Date;
+                            bool delAnterior = futuroAnteriorNuevo != null && (serie.Expiration.Date < futuroAnteriorNuevo.Expiration.Date || (mismoDiaQueElViejo && EsRegular(serie)));
                             bool venceALaManana = VenceALaManana(serie);
-                            string subAlt = delAnterior ? _futuroAnterior.Code : null;
+                            string subAlt = delAnterior ? futuroAnteriorNuevo.Code : null;
                             if (_puenteActivo) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log, subAlt).ConfigureAwait(false);
                             else
                             {
@@ -502,16 +519,15 @@ namespace PythiaGex
                             // un contrato entra UNA vez: si dos series devolvieran los mismos contratos (paso el 17-09: la Weekly pedida con U6
                             // traia los de la Regular) el libro contaria doble
                             listaOps = listaOps.Where(o => o.Code == null || codigosYa.Add(o.Code)).ToList();
-                            if (delAnterior && listaOps.Count > 0) lock (_llave) foreach (var o in listaOps) if (o.Code != null) _opsDelAnterior.Add(o.Code);
+                            if (delAnterior) foreach (var o in listaOps) if (o.Code != null) opsDelAnteriorNuevo.Add(o.Code);
                             if (venceALaManana) foreach (var o in listaOps) if (o.Code != null) opsAm.Add(o.Code);
                             ops.AddRange(listaOps.Where(o => o.StrikePrice.HasValue));
-                            L("serie " + serie.Expiration.ToString("MM-dd") + " " + serie.Type + ": " + listaOps.Count + " contratos, sobre " + (delAnterior ? _futuroAnterior.Code : _futuro.Code)
+                            L("serie " + serie.Expiration.ToString("MM-dd") + " " + serie.Type + ": " + listaOps.Count + " contratos, sobre " + (delAnterior ? futuroAnteriorNuevo.Code : _futuro.Code)
                               + ", vence " + (venceALaManana ? "9:30" : "16:00") + " NY");
                             // OptionSeries es un STRUCT: ReferenceEquals siempre daba false (boxing) y FaltaCercano nunca se encendia (16-09).
                             // El dia mas cercano puede traer DOS series (trimestral + weekly de la tarde): falta si CUALQUIERA vino vacia (17-09).
                             if (serie.Expiration.Date == series[0].Expiration.Date) delCercano = delCercano < 0 ? ops.Count - antesDeEsta : Math.Min(delCercano, ops.Count - antesDeEsta);
                         }
-                        _opsAm = opsAm;
                         L(series.Count + " vencimientos, " + ops.Count + " contratos (" + _futuro.Code + (_puenteActivo ? ", por PUENTE" : "") + ")");
                         FaltaCercano = ops.Count > 0 && delCercano == 0;
                         if (FaltaCercano) L("FALTA EL VENCIMIENTO MAS CERCANO (" + series[0].Expiration.ToString("yyyy-MM-dd") + "): Rithmic no devolvio sus contratos; Gamma Hoy rearma en 5 min");
@@ -559,14 +575,14 @@ namespace PythiaGex
                 // Z6): cada una arma su ventana en SUS strikes crudos, no mezcladas
                 var gruposPorFecha = new List<List<Security>>();
                 foreach (var f1 in fechas)
-                    foreach (var parte in ops.Where(o => o.Expiration.Date == f1).GroupBy(o => _opsDelAnterior.Contains(o.Code ?? "")).OrderByDescending(gq => gq.Key))
+                    foreach (var parte in ops.Where(o => o.Expiration.Date == f1).GroupBy(o => opsDelAnteriorNuevo.Contains(o.Code ?? "")).OrderByDescending(gq => gq.Key))
                         gruposPorFecha.Add(parte.ToList());
                 foreach (var grupo in gruposPorFecha)
                 {
                     var f2 = grupo[0].Expiration.Date;
                     // EN STRIKES CRUDOS (16-09): con el strike corrido el modulo del anillo ralo nunca daba entero y no entraba
                     // ningun strike lejano; el centro se lleva al espacio crudo del vencimiento (precio - spread si es del viejo)
-                    bool delAnt = grupo.Count > 0 && _opsDelAnterior.Count > 0 && _opsDelAnterior.Contains(grupo[0].Code ?? "");
+                    bool delAnt = grupo.Count > 0 && opsDelAnteriorNuevo.Contains(grupo[0].Code ?? "");
                     double corr = delAnt ? DesplazamientoAnterior : 0;
                     double centro = Futuro - corr;
                     var todosK = grupo.Select(o => (double)(o.StrikePrice ?? 0m)).Where(k => k > 0)
@@ -597,7 +613,7 @@ namespace PythiaGex
                     // primero: el 0DTE es el que manda el GEX intradia.
                     elegidos = elegidos
                         .OrderBy(o => o.Expiration.Date)
-                        .ThenBy(o => Math.Abs(KDe(o) - Futuro))
+                        .ThenBy(o => Math.Abs(KDe(o, opsDelAnteriorNuevo, DesplazamientoAnterior) - Futuro))
                         .Take(topeContratos).ToList();
                 }
 
@@ -647,7 +663,7 @@ namespace PythiaGex
                 try
                 {
                     var atm = !Profundidad ? new List<Security>()
-                        : elegidos.OrderBy(o => o.Expiration.Date).ThenBy(o => Math.Abs(KDe(o) - Futuro)).Take(Math.Max(2, ProfundidadContratos)).ToList();
+                        : elegidos.OrderBy(o => o.Expiration.Date).ThenBy(o => Math.Abs(KDe(o, opsDelAnteriorNuevo, DesplazamientoAnterior) - Futuro)).Take(Math.Max(2, ProfundidadContratos)).ToList();
                     var codAtm = new HashSet<string>(atm.Select(x => x.Code ?? ""));
                     List<Security> antes; lock (_llave) antes = new List<Security>(_conQuotes);
                     var codAntes = new HashSet<string>(antes.Select(x => x.Code ?? ""));
@@ -665,6 +681,9 @@ namespace PythiaGex
                     _suscritos = elegidos;
                     _codigos = new HashSet<string>(elegidos.Select(x => x.Code ?? "")
                                                            .Where(x => x.Length > 0));
+                    // los hechos por contrato cambian JUNTO con la lista (17-09): quien lea la foto ve un armado entero, nunca mezcla
+                    _opsDelAnterior = opsDelAnteriorNuevo; _opsAm = opsAm; _futuroAnterior = futuroAnteriorNuevo;
+                    if (futuroAnteriorNuevo == null) { _desplazListo = false; DesplazamientoAnterior = 0; }
                 }
 
                 // EL ENGANCHE QUE SI FUNCIONA: LOS EVENTOS DEL CONECTOR.
@@ -1043,15 +1062,16 @@ namespace PythiaGex
             var salida = new List<Fila>(ss.Count);
             // foto del momento, no acumulado: cuantos contratos tienen
             // volumen de ultima operacion AHORA
-            lock (_llave) { _conUltimoVol = 0; _maxUltimoVol = 0; }
-            var opsAm = _opsAm;
+            HashSet<string> opsAm, delAnt; double desplaz; bool desplazListo;
+            lock (_llave) { _conUltimoVol = 0; _maxUltimoVol = 0; opsAm = _opsAm; delAnt = _opsDelAnterior; desplaz = DesplazamientoAnterior; desplazListo = _desplazListo; }
             foreach (var o in ss)
             {
                 double bid = (double)o.BestBidPrice, ask = (double)o.BestAskPrice;
                 if (bid <= 0 || ask <= 0 || ask < bid) continue;
                 double mid = (bid + ask) / 2.0;
-                if (_opsDelAnterior.Count > 0 && !_desplazListo && _opsDelAnterior.Contains(o.Code ?? "")) continue;   // sin spread no se ubica: no se dibuja
-                double K = KDe(o);
+                bool delViejo = delAnt.Count > 0 && delAnt.Contains(o.Code ?? "");
+                if (delViejo && !desplazListo) continue;   // sin spread no se ubica: no se dibuja
+                double K = KDe(o, delAnt, desplaz);
                 if (K <= 0) continue;
                 // EL TIEMPO AL VENCIMIENTO LLEVA LA HORA, NO SOLO EL DIA.
                 //
@@ -1123,7 +1143,7 @@ namespace PythiaGex
                     OIResumen = oiRes,
                     // K0 solo para las opciones del trimestre que vence (corridas): la clave de las fotos es -K0, que no choca
                     // con el mismo strike crudo del trimestre nuevo cuando el horizonte mezcla los dos (escéptico 16-09)
-                    K = K, K0 = (_opsDelAnterior.Count > 0 && _opsDelAnterior.Contains(o.Code ?? "")) ? (double)(o.StrikePrice ?? 0m) : 0,
+                    K = K, K0 = delViejo ? (double)(o.StrikePrice ?? 0m) : 0,
                     Dias = dias,
                     // el OI de Security viene en cero hasta que el feed lo manda;
                     // el del resumen es el mismo dato por otro camino
