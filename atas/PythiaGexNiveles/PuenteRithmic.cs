@@ -162,7 +162,7 @@ namespace PythiaGex
             var m = Mapear(conn, log);
             if (m == null || !m.Sirve) return new List<Security>();
             string sub = serie.UnderlyingCode ?? "", bolsa = serie.Exchange ?? "CME";
-            // SEMANA DEL ROLL (15-09): las weeklies que vencen antes que el trimestre viejo (15, 16, 17 y 18-09) son
+            // SEMANA DEL ROLL (15-09, corregido 17-09): las weeklies que vencen ANTES que el trimestre viejo (15, 16 y 17-09) y la trimestral del 18 son
             // opciones sobre NQU6/ESU6, no sobre Z6. Rithmic las lista bajo Z6 pero contesta "no data" al pedir sus
             // contratos con Z6. Si la cadena viva sabe que la serie es del trimestre anterior, se pide primero con ese.
             var subs = new List<string>();

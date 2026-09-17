@@ -204,6 +204,12 @@ namespace PythiaGex
         public bool SinCeroDte { get; private set; }
         private DateTime _desplazLog = DateTime.MinValue;
         private readonly HashSet<string> _opsDelAnterior = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // EL VIERNES DEL VENCIMIENTO TRIMESTRAL CONVIVEN DOS SERIES EL MISMO DIA (17-09-2026): la Regular (la trimestral, sobre el
+        // futuro que vence, 9:30 NY) y la Weekly de la tarde (sobre el trimestre NUEVO, 16:00 NY). La fecha sola no las distingue:
+        // aca van los contratos de la trimestral (vencen a la mañana). Se reemplaza entero en cada armado (la referencia es atomica).
+        private HashSet<string> _opsAm = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private static bool EsRegular(OptionSeries z) => string.Equals(z.Type.ToString(), "Regular", StringComparison.OrdinalIgnoreCase);
+        private static string LlaveSerie(OptionSeries z) => z.Expiration.ToString("yyyyMMdd", CultureInfo.InvariantCulture) + (EsRegular(z) ? "R" : "W");
         /// <summary>Puntos que se le suman al strike de una opcion del trimestre anterior para ubicarla en el grafico (Z6 - U6).</summary>
         public double DesplazamientoAnterior { get; private set; }
         /// <summary>Codigo del trimestre que vence cuyas opciones se estan usando ("NQU6"), o "" si no aplica.</summary>
@@ -389,7 +395,7 @@ namespace PythiaGex
                                 for (int i = 0; i < 15 && !_desplazListo; i++) { await Task.Delay(1000).ConfigureAwait(false); RefrescarDesplazamiento(); }
                                 L("roll: el trimestre que vence " + hit.Code + " (" + hit.Expiration.ToString("yyyy-MM-dd") + ") todavia cotiza"
                                   + (_desplazListo ? " en " + _futuroAnteriorPrecio.ToString("0.##", CultureInfo.InvariantCulture) + ": spread " + DesplazamientoAnterior.ToString("+0.##;-0.##", CultureInfo.InvariantCulture) + " pts" : ", pero su precio no llego: sus opciones no se dibujan hasta tenerlo")
-                                  + "; las series hasta esa fecha se piden con " + hit.Code);
+                                  + "; las weeklies ANTERIORES a esa fecha y la trimestral (Regular) de ese dia se piden con " + hit.Code + "; la weekly de esa tarde, con " + _futuro.Code);
                             }
                             else L("roll: " + codAnt + (hit == null ? " no esta en el servidor" : " ya vencio") + ": todas las series se piden con " + _futuro.Code);
                         }
@@ -428,9 +434,11 @@ namespace PythiaGex
                                     delViejo = ((IEnumerable<OptionSeries>)sv).ToList();
                                     if (delViejo.Count == 0) delViejo = await PuenteRithmic.SeriesAsync(feed, _futuroAnterior, log).ConfigureAwait(false);
                                 }
-                                var fechasYa = new HashSet<DateTime>(listaSeries.Select(z => z.Expiration.Date));
-                                var extra = delViejo.Where(z => z.Expiration.Date <= _futuroAnterior.Expiration.Date && z.Expiration.Date >= hoy && !fechasYa.Contains(z.Expiration.Date))
-                                                    .GroupBy(z => z.Expiration.Date).Select(gq => gq.First()).OrderBy(z => z.Expiration).ToList();
+                                // la llave es FECHA + TIPO (17-09): el dia del vencimiento trimestral el nuevo lista "09-18 Weekly" (la de la tarde)
+                                // y el viejo "09-18 Regular" (la trimestral de la mañana). Con la fecha sola la trimestral nunca se sumaba.
+                                var seriesYa = new HashSet<string>(listaSeries.Select(z => LlaveSerie(z)));
+                                var extra = delViejo.Where(z => z.Expiration.Date <= _futuroAnterior.Expiration.Date && z.Expiration.Date >= hoy && !seriesYa.Contains(LlaveSerie(z)))
+                                                    .GroupBy(z => LlaveSerie(z)).Select(gq => gq.First()).OrderBy(z => z.Expiration).ToList();
                                 if (extra.Count > 0)
                                 {
                                     listaSeries = listaSeries.Concat(extra).ToList();
@@ -441,9 +449,16 @@ namespace PythiaGex
                             }
                             catch (Exception e) { L("roll: no pude listar las series de " + _futuroAnterior.Code + ": " + e.Message); }
                         }
+                        // LAS SERIES QUE YA VENCIERON NO SE PIDEN (17-09): de noche la weekly de hoy (vencida a las 16:00 NY) seguia entrando,
+                        // ocupaba un lugar de los vencimientos en vivo y gastaba la cuota de suscripcion en 806 contratos muertos.
+                        var ahoraNy = AhoraEnNuevaYork();
+                        bool VenceALaManana(OptionSeries z) => EsRegular(z) && ((_futuroAnterior != null && z.Expiration.Date == _futuroAnterior.Expiration.Date) || (_futuro != null && z.Expiration.Date == _futuro.Expiration.Date));
+                        bool YaVencio(OptionSeries z) => z.Expiration.Date.AddHours(VenceALaManana(z) ? 9.5 : 16.0).AddMinutes(30) < ahoraNy;
+                        int vencidas = listaSeries.Count(z => (z.Expiration.Date - hoy).Days >= 0 && YaVencio(z));
+                        if (vencidas > 0) L(vencidas + " serie(s) de hoy ya vencida(s): no se piden");
                         todasSeries = listaSeries
-                                      .Where(z => (z.Expiration.Date - hoy).Days >= 0)
-                                      .OrderBy(z => z.Expiration).ToList();
+                                      .Where(z => (z.Expiration.Date - hoy).Days >= 0 && !YaVencio(z))
+                                      .OrderBy(z => z.Expiration).ThenBy(z => VenceALaManana(z) ? 0 : 1).ToList();
                         series = todasSeries.Where(z => (z.Expiration.Date - hoy).Days <= diasMax).ToList();
                         // ANTES DE NO DIBUJAR NADA, DIBUJAR LO QUE HAY Y DECIRLO.
                         if (series.Count == 0 && todasSeries.Count > 0)
@@ -455,15 +470,27 @@ namespace PythiaGex
                         }
                         else if (series.Count > 0)
                             DiasReales = (series[0].Expiration.Date - hoy).Days;
-                        SinCeroDte = series.Count > 0 && DiasReales > 0 && hoy.DayOfWeek != DayOfWeek.Saturday && hoy.DayOfWeek != DayOfWeek.Sunday;
+                        // pasadas las 16:30 NY el vencimiento de hoy ya no existe: que el mas cercano sea el de mañana es lo correcto, no un aviso
+                        SinCeroDte = series.Count > 0 && DiasReales > 0 && hoy.DayOfWeek != DayOfWeek.Saturday && hoy.DayOfWeek != DayOfWeek.Sunday
+                                     && ahoraNy.TimeOfDay < TimeSpan.FromHours(16.5);
                         if (SinCeroDte) L("OJO: el libro vivo NO tiene el vencimiento de hoy (" + hoy.ToString("yyyy-MM-dd") + "): el mas cercano listado es "
                                           + series[0].Expiration.ToString("yyyy-MM-dd") + " (" + DiasReales + " d); se dibuja igual y se avisa en pantalla");
                         int delCercano = -1;
+                        var opsAm = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        var codigosYa = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         foreach (var serie in series)
                         {
                             int antesDeEsta = ops.Count;
                             List<Security> listaOps;
-                            bool delAnterior = _futuroAnterior != null && serie.Expiration.Date <= _futuroAnterior.Expiration.Date;
+                            // DE QUE TRIMESTRE ES LA SERIE (17-09-2026, tercer error del roll). Antes del vencimiento del futuro viejo: del viejo
+                            // (Rithmic las lista bajo Z6 pero las sirve con U6). DESPUES: del nuevo. EL MISMO DIA: solo la Regular (la trimestral,
+                            // 9:30 NY) es del viejo; la Weekly de ese viernes vence a las 16:00, cuando U6 ya no existe: es sobre Z6. Con la regla
+                            // vieja ("<=" por fecha) la Weekly del viernes se pedia con U6 + 20260918 y Rithmic devolvia los 1028 contratos de la
+                            // TRIMESTRAL: el 0DTE del viernes no cargaba y las dominantes de noche salian de los strikes redondos lejanos de la
+                            // trimestral (tunel de 130-150 pts en vez de 25-50). El operador lo vio en pantalla; el log lo confirmo.
+                            bool mismoDiaQueElViejo = _futuroAnterior != null && serie.Expiration.Date == _futuroAnterior.Expiration.Date;
+                            bool delAnterior = _futuroAnterior != null && (serie.Expiration.Date < _futuroAnterior.Expiration.Date || (mismoDiaQueElViejo && EsRegular(serie)));
+                            bool venceALaManana = VenceALaManana(serie);
                             string subAlt = delAnterior ? _futuroAnterior.Code : null;
                             if (_puenteActivo) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log, subAlt).ConfigureAwait(false);
                             else
@@ -472,11 +499,19 @@ namespace PythiaGex
                                 listaOps = ((IEnumerable<Security>)cc).ToList();
                                 if (listaOps.Count == 0) listaOps = await PuenteRithmic.OpcionesAsync(feed, serie, log, subAlt).ConfigureAwait(false);
                             }
+                            // un contrato entra UNA vez: si dos series devolvieran los mismos contratos (paso el 17-09: la Weekly pedida con U6
+                            // traia los de la Regular) el libro contaria doble
+                            listaOps = listaOps.Where(o => o.Code == null || codigosYa.Add(o.Code)).ToList();
                             if (delAnterior && listaOps.Count > 0) lock (_llave) foreach (var o in listaOps) if (o.Code != null) _opsDelAnterior.Add(o.Code);
+                            if (venceALaManana) foreach (var o in listaOps) if (o.Code != null) opsAm.Add(o.Code);
                             ops.AddRange(listaOps.Where(o => o.StrikePrice.HasValue));
-                            // OptionSeries es un STRUCT: ReferenceEquals siempre daba false (boxing) y FaltaCercano nunca se encendia (16-09)
-                            if (serie.Expiration.Date == series[0].Expiration.Date && string.Equals(serie.Code, series[0].Code)) delCercano = ops.Count - antesDeEsta;
+                            L("serie " + serie.Expiration.ToString("MM-dd") + " " + serie.Type + ": " + listaOps.Count + " contratos, sobre " + (delAnterior ? _futuroAnterior.Code : _futuro.Code)
+                              + ", vence " + (venceALaManana ? "9:30" : "16:00") + " NY");
+                            // OptionSeries es un STRUCT: ReferenceEquals siempre daba false (boxing) y FaltaCercano nunca se encendia (16-09).
+                            // El dia mas cercano puede traer DOS series (trimestral + weekly de la tarde): falta si CUALQUIERA vino vacia (17-09).
+                            if (serie.Expiration.Date == series[0].Expiration.Date) delCercano = delCercano < 0 ? ops.Count - antesDeEsta : Math.Min(delCercano, ops.Count - antesDeEsta);
                         }
+                        _opsAm = opsAm;
                         L(series.Count + " vencimientos, " + ops.Count + " contratos (" + _futuro.Code + (_puenteActivo ? ", por PUENTE" : "") + ")");
                         FaltaCercano = ops.Count > 0 && delCercano == 0;
                         if (FaltaCercano) L("FALTA EL VENCIMIENTO MAS CERCANO (" + series[0].Expiration.ToString("yyyy-MM-dd") + "): Rithmic no devolvio sus contratos; Gamma Hoy rearma en 5 min");
@@ -520,9 +555,15 @@ namespace PythiaGex
                 // vive la gamma. De ahi para afuera uno cada varios, que
                 // alcanza para que la suma cruce y para ver los muros lejanos.
                 var elegidos = new List<Security>();
-                foreach (var f2 in fechas)
+                // un mismo dia puede traer DOS series de trimestres distintos (17-09: la trimestral sobre U6 y la weekly de la tarde sobre
+                // Z6): cada una arma su ventana en SUS strikes crudos, no mezcladas
+                var gruposPorFecha = new List<List<Security>>();
+                foreach (var f1 in fechas)
+                    foreach (var parte in ops.Where(o => o.Expiration.Date == f1).GroupBy(o => _opsDelAnterior.Contains(o.Code ?? "")).OrderByDescending(gq => gq.Key))
+                        gruposPorFecha.Add(parte.ToList());
+                foreach (var grupo in gruposPorFecha)
                 {
-                    var grupo = ops.Where(o => o.Expiration.Date == f2).ToList();
+                    var f2 = grupo[0].Expiration.Date;
                     // EN STRIKES CRUDOS (16-09): con el strike corrido el modulo del anillo ralo nunca daba entero y no entraba
                     // ningun strike lejano; el centro se lleva al espacio crudo del vencimiento (precio - spread si es del viejo)
                     bool delAnt = grupo.Count > 0 && _opsDelAnterior.Count > 0 && _opsDelAnterior.Contains(grupo[0].Code ?? "");
@@ -1003,6 +1044,7 @@ namespace PythiaGex
             // foto del momento, no acumulado: cuantos contratos tienen
             // volumen de ultima operacion AHORA
             lock (_llave) { _conUltimoVol = 0; _maxUltimoVol = 0; }
+            var opsAm = _opsAm;
             foreach (var o in ss)
             {
                 double bid = (double)o.BestBidPrice, ask = (double)o.BestAskPrice;
@@ -1030,9 +1072,11 @@ namespace PythiaGex
                 // formula, porque con dias=0 queda justo la fraccion que falta
                 // hasta el cierre.
                 // vence a las 16:00 de Nueva York; el trimestral (el mismo dia en que vence el futuro) a las 9:30 (regla de CME)
-                bool trimestral = (_futuroAnterior != null && o.Expiration.Date == _futuroAnterior.Expiration.Date) || (_futuro != null && o.Expiration.Date == _futuro.Expiration.Date);
+                // (17-09: por CONTRATO y no por fecha: ese mismo viernes tambien vence, a las 16:00, la weekly de la tarde)
+                bool trimestral = opsAm.Contains(o.Code ?? "");
                 double dias = (o.Expiration.Date.AddHours(trimestral ? 9.5 : 16.0) - ahoraNy).TotalDays;
                 if (dias < -0.5 / 24.0) continue;   // ya vencio: fuera del libro
+                if (trimestral && dias <= 0) continue;   // la trimestral se liquida con la apertura: a las 9:30 ya no tiene gamma que cubrir
                 if (dias < 0) dias = 0;
                 // piso de un minuto, no de media hora: ver PISO_DIAS en
                 // GammaVivo. Medido: con 29 minutos subestimabamos el muro del
@@ -1097,6 +1141,12 @@ namespace PythiaGex
         /// <summary>Fraccion de dia que le queda al 0DTE hasta las 16:00 de Nueva York.</summary>
         /// <summary>La fecha de HOY en Nueva York, que es la que manda para
         /// contar dias al vencimiento de un contrato de CME.</summary>
+        private static DateTime AhoraEnNuevaYork()
+        {
+            try { return TimeZoneInfo.ConvertTime(DateTime.UtcNow, TimeZoneInfo.Utc, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time")); }
+            catch { return DateTime.UtcNow.AddHours(-4); }
+        }
+
         private static DateTime HoyEnNuevaYork()
         {
             try

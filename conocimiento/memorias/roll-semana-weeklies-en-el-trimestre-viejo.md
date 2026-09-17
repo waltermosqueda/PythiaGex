@@ -43,3 +43,6 @@ arriba durante ~15 min despues de cada recarga ("se desfasan al abrir un grafico
 si difiere mas de 0,6 % del precio actual (origen "CRUDA: la vela alineada es de otro contrato"). La estela repetida
 de NDX sobre velas viejas con la base nueva sigue corrida en graficos continuos: usar contrato explicito en la
 semana del roll.
+
+**Tercera parte (17-09, 1.11c): la weekly del VIERNES trimestral es del trimestre NUEVO.** U6 vence el viernes 9:30 NY; la weekly de ese viernes vence a las 16:00 y es sobre Z6 (Rithmic: Z6 lista "09-18 Weekly", U6 lista "09-18 Regular"). La regla por fecha ("<= vencimiento de U6") la pedia con U6 y recibia los contratos de la trimestral (ya el 15-09 los "1018 contratos del 18-09 con NQU6" eran eso, sin que se notara). Regla correcta: viejo si vence ANTES, o el mismo dia y es Regular. Mismo dia = dos series: llave fecha+tipo, ventana de strikes por (fecha, trimestre), hora de vencimiento por contrato. En diciembre pasa igual con Z6/H7. Ver [[regla-roja-roll-libro-vivo]].
+
