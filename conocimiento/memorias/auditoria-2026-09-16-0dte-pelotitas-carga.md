@@ -38,6 +38,11 @@ lineas en `atas/PythiaGexNiveles/GammaHoy.md` (seccion 1.10y/1.10z). Lo que hay 
   barras de SPX/QQQ/NDX (izquierda y escalera), viva-NQ con el 17. El build con `-K0` (12:36) quedo en
   bin/Release sin instalar: va en el proximo reinicio (solo importa con Horizonte=Semana/Todo en semana de roll).
 
+- **Los cortes de Rithmic no terminaron con la profundidad:** siguieron ~1 cada 1-2 min. Segunda causa medida: `cboe_local.py`
+  (nuevo hoy 01:48) bajaba las cadenas de CBOE SIN gzip (NDX ~8 MB, SPX ~20 MB cada 75 s): rafagas de 2-3 MB/s de
+  bajada. `fuentes.bajar` ahora pide gzip (0,8 / 1,7 MB) y lee de a trozos. La prueba de 10 min con el bajador
+  pausado y la de 10 min con el bajador comprimido estan en el log de ATAS (`Connection lost` por hora).
+
 **Why:** tres veces el operador tuvo razon contra mi "el dato es asi"; esta vez pidio auditar antes de que
 pasara y tenia razon en las dos cosas (0DTE del jueves y pelotitas).
 
