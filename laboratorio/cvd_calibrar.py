@@ -32,11 +32,10 @@ def cargar(inst, marco):
             of = j.get("of") or {}
             vs.append(dict(t=j["t"], o=j["o"], h=j["h"], l=j["l"], c=j["c"], vol=j["vol"], d=j["delta"],
                            dmax=of.get("dmax", j["delta"]), dmin=of.get("dmin", j["delta"])))
-    vs.sort(key=lambda v: v["t"]); out, visto = [], set()
-    for v in vs:
-        if v["t"] in visto: continue
-        visto.add(v["t"]); out.append(v)
-    return out
+    mejor = {}
+    for v in vs:                                   # duplicados (dos graficos grabando la misma vela): queda la de mayor volumen
+        if v["t"] not in mejor or v["vol"] > mejor[v["t"]]["vol"]: mejor[v["t"]] = v
+    return [mejor[t] for t in sorted(mejor)]
 
 
 def sd_movil(d, k, n=60):

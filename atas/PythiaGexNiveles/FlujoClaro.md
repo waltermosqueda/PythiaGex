@@ -8,8 +8,10 @@ demasiado, y siento que me avisa tarde; ¿no hay algo superador?". Después de v
 ## Qué dibuja
 
 1. **Cinco cintas pegadas al precio** (arriba del panel, una celda por vela):
-   - *confluencia*: cuántas de las 4 lecturas de flujo están del mismo lado (intensa = las 4).
-   - *presión*: delta de las últimas 5 velas contra lo normal de la última hora, en desvíos (σ).
+   - *confluencia*: cuántas de las 4 lecturas (presión de la vela, grandes, CVD de 20 velas, dónde cerró el delta)
+     están del mismo lado (intensa = las 4; hueca = vela en curso).
+   - *presión*: el color de la vela cuando el precio ACOMPAÑA al delta (1.2); sostenida a media luz, indecisión casi
+     negra, vela en curso hueca (1.3).
    - *grandes*: compras menos ventas de las órdenes agresoras de 50 contratos o más.
    - *cinta*: cantidad de operaciones de la vela contra lo normal (hay apuro ahora; no dice dirección).
    - *absorción*: mucho delta y el precio avanza menos de un cuarto de lo que ese delta suele mover.
@@ -63,20 +65,56 @@ El operador: "los colores avisaron tarde: a las 13:57 había un martillo y la pr
 verde y la presión roja y la confluencia negra". Tenía razón y se midió (`laboratorio/cvd_calibrar.py`, `…2.py`,
 `…3.py`; giros = pivotes de ±3 velas con recorrido ≥ 0,05 %; MNQ 1 min / MNQ 2 min / MES 2 min):
 
-- **Antes (suma de 5 velas):** retraso mediano en los giros 3-4 velas; acuerda con la vela actual 44-49 %; va EN
-  CONTRA de la vela 20-22 %; 26-32 % de los colores nuevos duran una sola vela.
-- **Ahora (presión eficaz sostenida):** retraso mediano 1 vela; acuerda 68-78 %; en contra 8-10 %; colores de una
-  vela 19-24 % (parpadea MENOS que la anterior). El delta de la vela a secas era igual de rápido pero parpadeaba el
-  triple (63 %).
+- **Antes (suma de 5 velas):** retraso mediano en los giros 3-4 velas.
+- **Ahora (presión eficaz sostenida):** retraso mediano 1 vela. Esto es lo único que quedó firme después de la
+  verificación (ver 1.3): se repite en 16 de 16 días y con 27 maneras distintas de definir un giro.
+- **RETIRADO (1.3):** acá decía "acuerda con la vela 68-78 %" y "parpadea MENOS". Las dos frases estaban mal; la
+  corrección, con el dato, está en la sección 1.3.
 - **La regla:** el color de la vela solo si el precio ACOMPAÑA al delta (cuerpo del mismo signo y al menos 25 % de
   lo que ese delta suele mover); se sostiene una vela floja; neutro si aparece flujo en contra sin precio (posible
-  absorción) o a la segunda vela sin efecto. La vela de indecisión (cuerpo < 20 % del rango) y la sostenida se
-  dibujan **tenues, casi negras**: hacerlas neutras del todo subía el parpadeo de 22 % a 40 %.
+  absorción) o a la segunda vela sin efecto.
 - **Su ejemplo, vela por vela:** 13:55 rojo fuerte, 13:56-13:57 tenue, 13:58-14:01 verde, 14:02 rojo, 14:03 tenue,
   14:04 verde (antes: rojo hasta las 13:59 inclusive).
-- **Confluencia** con esta presión: retraso 3 → 2 velas, "nunca gira" 25 → 17 %. Y el aviso de extremo salió
-  reforzado: 4 de 4 lecturas, a favor a 5 velas solo 36 % (94 casos, z −2,6); 3 o más, 42 %.
 - Las barras del panel pasan de sumar 5 velas a 2 (`FcPresionVelas`, nombre nuevo para pisar el 5 guardado).
+
+## 1.3 (17-09, 14:45): lo que corrigieron los dos verificadores de la calibración
+
+Dos revisores independientes intentaron romper la calibración 1.2. Veredicto: **se sostiene con reservas**.
+
+**Lo que quedó en pie.** La cinta nueva llega a los giros ~2 velas antes (mediana 1 contra 3-4): 16 de 16 días, 27
+definiciones de giro. Contra su propio placebo (la misma cinta con los deltas barajados) la ventaja real es de
+~0,5-0,6 velas; la suma de 5 velas era PEOR que su propio placebo.
+
+**Lo que se retira, de frente:**
+- *"Acuerda con la vela 68-78 %"* era circular: la regla pinta el color solo cuando la vela ya tiene ese color, así
+  que acordar con ella no prueba nada. La medida honesta es la vela SIGUIENTE: 48-51 % para las dos cintas. **La
+  cinta no anticipa: describe la vela que acaba de cerrar, dos velas antes que la vieja.**
+- *"Parpadea menos"* es falso en absoluto: cambia de color 17,5 veces por hora contra 10,8 (MNQ 1 min, ~60 % más), y
+  los colores de una sola vela pasan de 3,41 a 3,79 por hora. Lo que bajó es la PROPORCIÓN de colores fugaces, no
+  la cantidad. Es el precio de ser rápida.
+- La regla fina (exigir que el precio acompañe) suma poco sobre el delta de una vela a secas: casi toda la mejora
+  viene de mirar 1 vela en vez de 5.
+
+**Lo que se arregló en el código (1.3):**
+- **La celda de la vela en curso va HUECA** en confluencia y presión: a mitad de vela el color difiere del de
+  cierre en el 33 % de las velas (10 % muestra el contrario); antes era 16 % (1 %). Lleno = vela cerrada.
+- **La sostenida se ve a media luz y solo la de indecisión queda casi negra.** Con las dos casi negras el parpadeo
+  que veía el ojo era 72-76 %, no el 19-24 % medido sobre el estado.
+- **La confluencia contaba dos veces lo mismo:** la presión y "delta/volumen de la vela" coincidían en 95-99 % de
+  las velas. La cuarta lectura ahora es **dónde cerró el delta dentro de su recorrido** (capta el martillo: venta
+  temprana, compra al final) y la presión cuenta solo si es de esa vela. Remedido (MNQ 1 min, 950 velas): 3 o más
+  lecturas del mismo lado, a favor a 5 velas 41 % (173 casos, z −1,4); las 4, 36 % (86 casos, z −1,8). Sigue
+  diciendo lo mismo: extremo = tarde, **no perseguir**; y sigue sin ser prueba (|z| < 2).
+- El texto "PRESION xσ" del AHORA era otra cuenta que la cinta "presión": ahora dice **DELTA 2v** (lo que es).
+- El banco (`cvd_calibrar.py`) descarta las filas duplicadas del archivo de 2 min quedándose con la de mayor volumen.
+
+**Reservas que siguen abiertas:**
+- La muestra es chica: MNQ 1 min son ~950 velas de rueda (unas 2,5 sesiones), casi todas del contrato U6. **La regla
+  queda congelada** y se juzga con las próximas 5 sesiones completas de MNQZ6, sin retocarla en el medio.
+- La primera hora después del cierre la cinta queda casi ciega (el desvío "normal" de 60 velas todavía es el de la
+  rueda). No hay un arreglo validado; no se toca hasta medirlo.
+- La beta del banco y la del C# difieren levemente (umbral de delta mínimo): los números del banco son aproximados
+  al decimal, no al centésimo.
 
 ## Pendiente
 
