@@ -263,7 +263,7 @@ namespace PythiaGex
         protected override void OnInitialize()
         {
             try { SubscribeToTimer(TimeSpan.FromSeconds(1), Latido); } catch { }
-            Log("Flujo Claro 1.5 (lo normal de cada hora, la vela vota) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
+            Log("Flujo Claro 1.6 (reclamo en las verdes, en sombra) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
         }
 
         /// <summary>Una vez por segundo: la vela en curso se vuelve a derivar con el RELOJ (sin operaciones la celda quedaba congelada con la ultima proyeccion) y se redibuja.</summary>
@@ -282,7 +282,7 @@ namespace PythiaGex
                 RedrawChart(new RedrawArg(ChartArea));
             }
             catch { }
-            SondaLatido(); LibroLatido();
+            SondaLatido(); LibroLatido(); VerdesLatido();
         }
 
         // ------------------------------------------------------------------ calculo
@@ -532,6 +532,7 @@ namespace PythiaGex
                     if (seg > _ultSeg) { _ultSeg = seg; _relojUltTrade = DateTime.UtcNow; }
                     if (_cubetas.Count > 420) foreach (var viejo in _cubetas.Keys.Where(x => x < seg - 330).ToList()) _cubetas.Remove(viejo);
                 }
+                VerdesOperacion((double)trade.Price, trade.Time);
             }
             catch (Exception e) { Registrar(e); }
         }
@@ -855,6 +856,9 @@ namespace PythiaGex
                 }
             }
 
+            // ---- reclamos en las verdes (operaciones en sombra)
+            try { VerdesPintar(g, b => cont.GetXByBar(b, false), pr => cont.GetYByPrice((decimal)pr, false), cont.Region, desde, hasta, xMax, cCompra, cVenta, cTxt); } catch (Exception e) { Registrar(e); }
+
             // ---- bloque AHORA
             if (rFila.Width > 100) { try { g.SetClip(reg); } catch { } try { PintarFilaAhora(g, rFila, fCh, cCompra, cVenta, cAviso, cTxt, cFondo, dA, lugA, bigA, velA, absA, cfA, hasta == ult, filaAbajo, tonoA); } finally { try { g.SetClip(clipPrevio); } catch { } } }
             if (FcAhoraComo == FormaDelAhora.Bloque && FcBloqueAhora != LugarDelAhora.Oculto && rAhora.Width > 60) { try { g.SetClip(reg); } catch { } try { PintarAhora(g, rAhora, f, fCh, cCompra, cVenta, cAviso, cTxt, cFondo, dA, lugA, bigA, velA, absA, cfA, hasta == ult, tonoA); } finally { try { g.SetClip(clipPrevio); } catch { } } }
@@ -902,6 +906,9 @@ namespace PythiaGex
             var items = new List<(string Texto, Color Col, bool Caja)>();
             string lado = conf > 0 ? "COMPR." : conf < 0 ? "VEND." : "PAREJO";
             items.Add(("FLUJO " + lado + " " + Math.Abs(conf) + "/4", conf > 0 ? cCompra : conf < 0 ? cVenta : cTxt, false));
+            var (vEstado, vCuenta, vSigno) = VerdesTexto();
+            if (vEstado.Length > 0) items.Add((vEstado, De(FcColorReclamo), true));
+            if (vCuenta.Length > 0) items.Add((vCuenta, vSigno > 0 ? cCompra : vSigno < 0 ? cVenta : cTxt, false));
             if (tonoVela == Contra) items.Add(("VELA CONTRA EL FLUJO", _colContra, true));
             else if (tonoVela == Gris) items.Add(("INDECISION", _colGris, false));
             if (abs) items.Add(("ABSORCION", cAviso, true));

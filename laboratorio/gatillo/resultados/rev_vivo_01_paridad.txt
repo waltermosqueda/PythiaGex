@@ -1,0 +1,51 @@
+dias con verdes: 09-08 09-09 09-11 09-14 09-15 09-16 09-17
+  2026-09-08 listo (6 s)
+  2026-09-09 listo (8 s)
+  2026-09-11 listo (12 s)
+  2026-09-14 listo (16 s)
+  2026-09-15 listo (19 s)
+  2026-09-16 listo (23 s)
+  2026-09-17 listo (27 s)
+
+=== 1. EL BANCO (cruce + delta, objetivo 20), rehecho con este arnes ===
+   banco VERDES (debe dar n 158, +1,40)           n  158 | gana 38.6 % | neto +1.40 pts/op (total  +221.1) | t +1.3
+   banco PLACEBO                                  n  688 | gana 32.1 % | neto -0.51 pts/op (total  -351.5) | t -1.0
+     de esas, la raya NACIO al lado del precio    n   13 | gana 46.2 % | neto +4.17 pts/op (total   +54.3) | t +1.0
+     de esas, la raya ya estaba                   n  145 | gana 37.9 % | neto +1.15 pts/op (total  +166.8) | t +1.0
+
+=== 2. LA LOGICA DEL VIVO (porte de FlujoClaroVerdes.cs) sobre los mismos dias ===
+   vivo, entrada a la zona EN RUEDA (comparable)  n  216 | gana 35.6 % | neto +0.55 pts/op (total  +117.9) | t +0.6
+   vivo PLACEBO en rueda                          n  864 | gana 29.3 % | neto -1.10 pts/op (total  -950.7) | t -2.4
+   vivo FUERA de rueda (el banco no lo midio)     n  105 | gana 24.8 % | neto -0.95 pts/op (total  -100.1) | t -0.8
+   vivo PLACEBO fuera de rueda                    n  371 | gana 26.1 % | neto -0.88 pts/op (total  -325.4) | t -1.5
+   vivo en rueda con frescura de 5 min (la del banco) n  214 | gana 35.0 % | neto +0.37 pts/op (total   +79.8) | t +0.4
+   por dia (vivo en rueda): 09-08 +70.4 (41) | 09-09 +10.2 (5) | 09-11 -88.6 (30) | 09-14 -47.9 (47) | 09-15 +21.0 (18) | 09-16 -15.1 (47) | 09-17 +167.9 (28)
+   por dia (banco):         09-08 +14.5 (24) | 09-09 -4.6 (3) | 09-11 +4.2 (24) | 09-14 -11.3 (37) | 09-15 -11.9 (15) | 09-16 +104.3 (32) | 09-17 +125.9 (23)
+
+=== 3. PARIDAD gatillo a gatillo (mismo lado, misma raya, <= 5 s) ===
+   banco 158 | vivo en rueda 216 | COMUNES 130 (82 % del banco) | solo banco 28 | solo vivo 86
+   solo en el banco                               n   28 | gana 46.4 % | neto +4.55 pts/op (total  +127.4) | t +1.7
+      (de esos, raya nacida al lado)              n   11 | gana 54.5 % | neto +6.29 pts/op (total   +69.2) | t +1.4
+   solo en el vivo                                n   86 | gana 32.6 % | neto -0.26 pts/op (total   -22.3) | t -0.2
+   entrada del vivo (1a operacion del segundo siguiente) contra el cierre que decidio: media en contra -0.04 pts | p90 0.50 | max 2.00
+
+=== 4. DE DONDE VENIA EL PRECIO al abrir cada visita del vivo (operacion anterior) ===
+rth    origen     
+False  arriba         189
+       contrario        2
+       zona             1
+       zona_detras      1
+True   arriba         382
+       contrario        9
+       zona             5
+       zona_detras      6
+
+   gatillos del vivo por origen de la visita:
+   rueda=False origen=arriba                      n  104 | gana 25.0 % | neto -0.86 pts/op (total   -89.8) | t -0.8
+   rueda=False origen=zona                        n    1 | gana  0.0 % | neto -10.21 pts/op (total   -10.2) | t +nan
+   rueda=True origen=arriba                       n  206 | gana 35.9 % | neto +0.55 pts/op (total  +114.2) | t +0.6
+   rueda=True origen=contrario                    n    1 | gana 100.0 % | neto +19.04 pts/op (total   +19.0) | t +nan
+   rueda=True origen=zona                         n    5 | gana 20.0 % | neto -1.61 pts/op (total    -8.1) | t -0.3
+   rueda=True origen=zona_detras                  n    4 | gana 25.0 % | neto -1.84 pts/op (total    -7.3) | t -0.3
+
+(27 s)
