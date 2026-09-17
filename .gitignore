@@ -33,3 +33,6 @@ panel/_prueba/
 datos/flujo/cache/
 laboratorio/gatillo/*_cache/
 laboratorio/gatillo/__pycache__/
+atas/VerdesBanco/bin/
+atas/VerdesBanco/obj/
+laboratorio/gatillo/rev_cache/

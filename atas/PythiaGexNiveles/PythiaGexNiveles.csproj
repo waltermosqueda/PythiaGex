@@ -45,6 +45,7 @@
     <Compile Include="FlujoClaro.cs" />
     <Compile Include="FlujoClaroSonda.cs" />
     <Compile Include="FlujoClaroVerdes.cs" />
+    <Compile Include="VerdesNucleo.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.

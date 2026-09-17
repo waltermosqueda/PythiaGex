@@ -263,7 +263,7 @@ namespace PythiaGex
         protected override void OnInitialize()
         {
             try { SubscribeToTimer(TimeSpan.FromSeconds(1), Latido); } catch { }
-            Log("Flujo Claro 1.6 (reclamo en las verdes, en sombra) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
+            Log("Flujo Claro 1.7 (verdes: nucleo unico, en sombra con control) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
         }
 
         /// <summary>Una vez por segundo: la vela en curso se vuelve a derivar con el RELOJ (sin operaciones la celda quedaba congelada con la ultima proyeccion) y se redibuja.</summary>
@@ -532,7 +532,7 @@ namespace PythiaGex
                     if (seg > _ultSeg) { _ultSeg = seg; _relojUltTrade = DateTime.UtcNow; }
                     if (_cubetas.Count > 420) foreach (var viejo in _cubetas.Keys.Where(x => x < seg - 330).ToList()) _cubetas.Remove(viejo);
                 }
-                VerdesOperacion((double)trade.Price, trade.Time);
+                VerdesOperacion((double)trade.Price, trade.Time, sg);
             }
             catch (Exception e) { Registrar(e); }
         }

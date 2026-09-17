@@ -540,8 +540,11 @@ namespace PythiaGex
         // la nube para rebobinar. Ahora cada cambio de dominantes se anota en %APPDATA%\ATAS\PythiaGex\estela\
         // estela-<capa>-<dia>.jsonl y al arrancar se vuelve a poner en su vela (por hora UTC), antes del rebobinado de la nube.
         private static readonly string CarpetaEstela = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex", "estela");
-        private readonly Dictionary<string, string> _estelaUltimaLinea = new();
-        private readonly Dictionary<string, DateTime> _estelaUltimaHora = new();
+        // UN SOLO ESCRITOR POR CAPA (17-09): dos graficos con la capa NQ escribian la misma estela con 0,75 pts de diferencia (cada uno mide su spread del roll)
+        // y a veces con otro strike: el detector de Flujo Claro perdia la raya cada 26 s. Gana el primero; si calla 180 s, lo releva otro.
+        private static readonly Dictionary<string, string> _estelaUltimaLinea = new();
+        private static readonly Dictionary<string, DateTime> _estelaUltimaHora = new();
+        private static readonly Dictionary<string, (object Dueno, DateTime Hora)> _estelaEscritor = new();
 
         private void GuardarGuionCapa(CapaLibro k, DateTime horaUtc, List<(double Fut, double Gex)> doms)
         {
@@ -553,13 +556,15 @@ namespace PythiaGex
                 if (d.Length == 0 || d.Replace(",", "").Replace("0", "").Length == 0) return;
                 lock (_estelaUltimaLinea)
                 {
+                    if (_estelaEscritor.TryGetValue(k.Nombre, out var esc) && !ReferenceEquals(esc.Dueno, this) && (horaUtc - esc.Hora).TotalSeconds < 180) return;   // escribe otro grafico
+                    _estelaEscritor[k.Nombre] = (this, horaUtc);
                     // cuando cambia, o cada 60 s: el detector de Flujo Claro necesita saber que la raya sigue viva y con que fuerza (17-09)
                     bool igual = _estelaUltimaLinea.TryGetValue(k.Nombre, out var u) && u == d;
                     if (igual && _estelaUltimaHora.TryGetValue(k.Nombre, out var h) && (horaUtc - h).TotalSeconds < 60) return;
                     _estelaUltimaLinea[k.Nombre] = d; _estelaUltimaHora[k.Nombre] = horaUtc;
                 }
                 string fz = string.Join(",", doms.Take(2).Select(x => (Math.Abs(x.Gex) / 1e6).ToString("0", inv)));
-                string extra = ",\"g\":[" + fz + "],\"n\":" + ((k.L?.NetVol ?? 0) / 1e6).ToString("0", inv) + ",\"b\":\"" + (k.L?.LibroDom ?? "vol") + "\"";
+                string extra = ",\"g\":[" + fz + "],\"n\":" + ((k.L?.NetVol ?? 0) / 1e6).ToString("0", inv) + ",\"b\":\"" + (k.L?.LibroDom ?? "vol") + "\",\"f\":" + (k.L?.Futuro ?? 0).ToString("0.00", inv);
                 Directory.CreateDirectory(CarpetaEstela);
                 File.AppendAllText(Path.Combine(CarpetaEstela, "estela-" + k.Nombre + "-" + horaUtc.ToString("yyyy-MM-dd", inv) + ".jsonl"),
                                    "{\"t\":\"" + horaUtc.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", inv) + "\",\"d\":[" + d + "]" + extra + "}\n");
