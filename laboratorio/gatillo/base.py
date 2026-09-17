@@ -46,8 +46,21 @@ def _inicio_de(f):
 
 
 def archivos_cinta(reserva=False):
-    fs = [f for f in glob.glob(os.path.join(FLUJO, "cinta-*.csv")) if os.path.exists(f + ".listo")]
+    fs = [f for f in glob.glob(os.path.join(FLUJO, "cinta-MNQ*.csv")) if os.path.exists(f + ".listo")]   # solo MNQ: las cintas de otros instrumentos van por sesiones_de()
     return sorted(f for f in fs if (_inicio_de(f) < INICIO_TRABAJO) == reserva)
+
+
+def sesiones_de(prefijo):
+    """{sesion: tabla de 1 s} de OTRO instrumento (p. ej. 'MES'), armadas archivo por archivo y cacheadas aparte. Mismas columnas que segundos_ricos."""
+    dr = os.path.join(CACHE, prefijo); os.makedirs(dr, exist_ok=True); out = {}
+    for f in sorted(glob.glob(os.path.join(FLUJO, "cinta-%s-*.csv" % prefijo))):
+        if not os.path.exists(f + ".listo"): continue
+        fin = os.path.basename(f).split("-")[3][:8]; ses = "%s-%s-%s" % (fin[:4], fin[4:6], fin[6:8]); pq = os.path.join(dr, "seg-%s.parquet" % ses)
+        if os.path.exists(pq): out[ses] = pd.read_parquet(pq); continue
+        d = pd.read_csv(f, parse_dates=["t"])
+        if len(d) < 1000: continue
+        t = _tabla_1s(d.drop_duplicates()); t.to_parquet(pq); out[ses] = t
+    return out
 
 
 def cinta(refrescar=False):
