@@ -57,6 +57,27 @@ Por eso todo lo que se marca es **lectura**. Cada marca en vivo queda en
 `%APPDATA%\ATAS\PythiaGex\flujo\marcas-<instrumento>-<día>.jsonl` (hora, precio, tipo, sentido y los números de
 la vela) para medirla contra placebo con muestra suficiente antes de llamarla señal.
 
+## 1.2 (17-09, 14:20): la cinta de presión, calibrada para scalping
+
+El operador: "los colores avisaron tarde: a las 13:57 había un martillo y la presión seguía roja; a las 13:58 vela
+verde y la presión roja y la confluencia negra". Tenía razón y se midió (`laboratorio/cvd_calibrar.py`, `…2.py`,
+`…3.py`; giros = pivotes de ±3 velas con recorrido ≥ 0,05 %; MNQ 1 min / MNQ 2 min / MES 2 min):
+
+- **Antes (suma de 5 velas):** retraso mediano en los giros 3-4 velas; acuerda con la vela actual 44-49 %; va EN
+  CONTRA de la vela 20-22 %; 26-32 % de los colores nuevos duran una sola vela.
+- **Ahora (presión eficaz sostenida):** retraso mediano 1 vela; acuerda 68-78 %; en contra 8-10 %; colores de una
+  vela 19-24 % (parpadea MENOS que la anterior). El delta de la vela a secas era igual de rápido pero parpadeaba el
+  triple (63 %).
+- **La regla:** el color de la vela solo si el precio ACOMPAÑA al delta (cuerpo del mismo signo y al menos 25 % de
+  lo que ese delta suele mover); se sostiene una vela floja; neutro si aparece flujo en contra sin precio (posible
+  absorción) o a la segunda vela sin efecto. La vela de indecisión (cuerpo < 20 % del rango) y la sostenida se
+  dibujan **tenues, casi negras**: hacerlas neutras del todo subía el parpadeo de 22 % a 40 %.
+- **Su ejemplo, vela por vela:** 13:55 rojo fuerte, 13:56-13:57 tenue, 13:58-14:01 verde, 14:02 rojo, 14:03 tenue,
+  14:04 verde (antes: rojo hasta las 13:59 inclusive).
+- **Confluencia** con esta presión: retraso 3 → 2 velas, "nunca gira" 25 → 17 %. Y el aviso de extremo salió
+  reforzado: 4 de 4 lecturas, a favor a 5 velas solo 36 % (94 casos, z −2,6); 3 o más, 42 %.
+- Las barras del panel pasan de sumar 5 velas a 2 (`FcPresionVelas`, nombre nuevo para pisar el 5 guardado).
+
 ## Pendiente
 
 - Cinta de **presión del libro** (desbalance del mejor bid/ask, `OnBestBidAskChanged`): en la literatura explica

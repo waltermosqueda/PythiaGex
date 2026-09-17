@@ -66,8 +66,24 @@ namespace PythiaGex
 
         [Display(Name = "Presion: velas que suma", GroupName = "1. Panel CVD", Order = 6)]
         [Range(1, 30)]
-        public int FcVentanaPresion { get => _fcVentanaPresion; set { if (_fcVentanaPresion == value) return; _fcVentanaPresion = value; try { RecalculateValues(); } catch { } } }
-        private int _fcVentanaPresion = 5;
+        public int FcPresionVelas { get => _fcVentanaPresion; set { if (_fcVentanaPresion == value) return; _fcVentanaPresion = value; try { RecalculateValues(); } catch { } } }
+        private int _fcVentanaPresion = 2;
+
+        [Display(Name = "Cinta presion: avance minimo del precio (% de lo habitual para ese delta)", GroupName = "1. Panel CVD", Order = 8,
+                 Description = "La cinta pinta el color de la vela solo si el precio ACOMPAÑA al delta. Calibrado 17-09: retraso en los giros 1 vela (antes 3-4), acuerda con la vela 68-78 % (antes 45 %), parpadea menos.")]
+        [Range(0, 100)]
+        public int FcEficazAvancePct { get => _fcEficazAvance; set { if (_fcEficazAvance == value) return; _fcEficazAvance = value; try { RecalculateValues(); } catch { } } }
+        private int _fcEficazAvance = 25;
+
+        [Display(Name = "Cinta presion: delta minimo de la vela (decimas de sigma)", GroupName = "1. Panel CVD", Order = 9)]
+        [Range(0, 30)]
+        public int FcEficazUmbral { get => _fcEficazUmbral; set { if (_fcEficazUmbral == value) return; _fcEficazUmbral = value; try { RecalculateValues(); } catch { } } }
+        private int _fcEficazUmbral = 4;
+
+        [Display(Name = "Vela de indecision: cuerpo menor a (% del rango) se dibuja tenue", GroupName = "1. Panel CVD", Order = 10,
+                 Description = "Doji o martillo: la cinta no cambia de estado (eso duplicaba el parpadeo) pero la celda se dibuja casi negra.")]
+        [Range(0, 60)]
+        public int FcDojiPct { get; set; } = 20;
 
         [Display(Name = "Presion: velas de referencia (lo normal)", GroupName = "1. Panel CVD", Order = 7)]
         [Range(20, 600)]
@@ -191,7 +207,9 @@ namespace PythiaGex
         private readonly List<double> _d = new(), _vol = new(), _tk = new(), _dmax = new(), _dmin = new(), _o = new(), _h = new(), _l = new(), _c = new();
         private readonly List<double> _cvdC = new(), _cvdS = new(), _z = new(), _vel = new(), _big = new();
         private readonly List<bool> _abs = new();
-        private readonly List<int> _conf = new(), _div = new();
+        private readonly List<int> _conf = new(), _div = new(), _ef = new(), _efCruda = new();
+        private readonly List<double> _z1 = new();
+        private readonly List<bool> _tenue = new();
         private readonly List<DateTime> _t = new(), _tf = new();
         private int _cerradaHasta = -1, _vivoDesde = int.MaxValue;
         private bool _cargado;
@@ -223,7 +241,7 @@ namespace PythiaGex
         protected override void OnInitialize()
         {
             try { SubscribeToTimer(TimeSpan.FromSeconds(1), () => { try { RedrawChart(new RedrawArg(ChartArea)); } catch { } }); } catch { }
-            Log("Flujo Claro 1.1 (AHORA en fila) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
+            Log("Flujo Claro 1.2 (presion calibrada) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
         }
 
         // ------------------------------------------------------------------ calculo
@@ -232,7 +250,7 @@ namespace PythiaGex
             lock (_llave)
             {
                 foreach (var ls in new[] { _d, _vol, _tk, _dmax, _dmin, _o, _h, _l, _c, _cvdC, _cvdS, _z, _vel, _big }) ls.Clear();
-                _abs.Clear(); _conf.Clear(); _div.Clear(); _t.Clear(); _tf.Clear();
+                _abs.Clear(); _conf.Clear(); _div.Clear(); _t.Clear(); _tf.Clear(); _ef.Clear(); _efCruda.Clear(); _z1.Clear(); _tenue.Clear();
                 _cerradaHasta = -1; _vivoDesde = int.MaxValue; _cargado = false; _ultMax = (-1, 0, 0); _ultMin = (-1, 0, 0); _histPedido = false;
             }
         }
@@ -242,7 +260,7 @@ namespace PythiaGex
             while (_d.Count <= bar)
             {
                 _d.Add(0); _vol.Add(0); _tk.Add(0); _dmax.Add(0); _dmin.Add(0); _o.Add(0); _h.Add(0); _l.Add(0); _c.Add(0);
-                _cvdC.Add(0); _cvdS.Add(0); _z.Add(0); _vel.Add(0); _big.Add(0); _abs.Add(false); _conf.Add(0); _div.Add(0); _t.Add(DateTime.MinValue); _tf.Add(DateTime.MinValue);
+                _cvdC.Add(0); _cvdS.Add(0); _z.Add(0); _vel.Add(0); _big.Add(0); _abs.Add(false); _conf.Add(0); _div.Add(0); _t.Add(DateTime.MinValue); _tf.Add(DateTime.MinValue); _ef.Add(0); _efCruda.Add(0); _z1.Add(0); _tenue.Add(false);
             }
         }
 
@@ -285,7 +303,7 @@ namespace PythiaGex
         /// <summary>Todo lo que sale de las velas hasta 'bar' inclusive, sin mirar adelante.</summary>
         private void Derivar(int bar)
         {
-            int w = Math.Max(1, FcVentanaPresion), n = Math.Max(20, FcVentanaNormal);
+            int w = Math.Max(1, FcPresionVelas), n = Math.Max(20, FcVentanaNormal);
             // presion: suma de w velas contra el desvio del delta por vela de las ultimas n
             double s = 0; for (int k = Math.Max(0, bar - w + 1); k <= bar; k++) s += _d[k];
             int a0 = Math.Max(0, bar - n + 1), m = bar - a0 + 1;
@@ -306,19 +324,30 @@ namespace PythiaGex
             double medAbs = ab[ab.Count / 2];
             var rs = new List<double>();
             for (int k = Math.Max(0, bar - 120); k < bar; k++) if (Math.Abs(_d[k]) >= Math.Max(1, medAbs)) rs.Add(Math.Abs(_c[k] - _o[k]) / Math.Abs(_d[k]));
-            bool abs = false;
-            if (rs.Count >= 20 && Math.Abs(_d[bar]) >= pAlto && pAlto > 0)
+            bool abs = false; double beta = 0;
+            if (rs.Count >= 20) { rs.Sort(); beta = rs[rs.Count / 2]; }
+            if (beta > 0 && Math.Abs(_d[bar]) >= pAlto && pAlto > 0)
             {
-                rs.Sort(); double beta = rs[rs.Count / 2];
                 double avance = (_c[bar] - _o[bar]) * (_d[bar] > 0 ? 1 : -1);
                 abs = avance <= FcAbsAvancePct / 100.0 * beta * Math.Abs(_d[bar]);
             }
             _abs[bar] = abs;
+            // PRESION EFICAZ SOSTENIDA (calibrada 17-09): el color de la vela solo si el precio acompaña al delta
+            double z1 = sd > 0 ? Math.Max(-3, Math.Min(3, _d[bar] / sd)) : 0; _z1[bar] = z1;
+            double umbralZ = FcEficazUmbral / 10.0, cuerpo = _c[bar] - _o[bar], rango = Math.Max(1e-9, _h[bar] - _l[bar]);
+            int sg = z1 > umbralZ ? 1 : z1 < -umbralZ ? -1 : 0;
+            bool indecisa = FcDojiPct > 0 && Math.Abs(cuerpo) < FcDojiPct / 100.0 * rango;
+            int ef = sg != 0 && cuerpo * sg > 0 && (beta <= 0 || Math.Abs(cuerpo) >= FcEficazAvancePct / 100.0 * beta * Math.Abs(_d[bar])) ? sg : 0;
+            int act = bar > 0 ? _ef[bar - 1] : 0;
+            if (ef != 0) act = ef;
+            else if (sg != 0 && sg == -act) act = 0;                       // flujo en contra sin precio: neutro (posible absorcion)
+            else if (bar > 0 && _efCruda[bar - 1] == 0) act = 0;           // segunda vela seguida sin efecto
+            _efCruda[bar] = ef; _ef[bar] = act; _tenue[bar] = act != 0 && (ef == 0 || indecisa);
             // confluencia: cuantas de las cuatro lecturas de flujo estan del mismo lado
             int g0 = Math.Max(0, bar - 299);
             var bg = new List<double>(bar - g0 + 1); for (int k = g0; k <= bar; k++) bg.Add(Math.Abs(_big[k])); bg.Sort();
             double bmax = bg[(int)Math.Min(bg.Count - 1, bg.Count * 0.95)];
-            int ca = _z[bar] > 0.5 ? 1 : _z[bar] < -0.5 ? -1 : 0;
+            int ca = _ef[bar];   // la presion eficaz (antes: suma de 5 velas, que llegaba 3-4 velas tarde)
             int cb = bmax > 0 ? (_big[bar] > 0.3 * bmax ? 1 : _big[bar] < -0.3 * bmax ? -1 : 0) : 0;
             int hc = Math.Max(20, 4 * w); int cc = bar >= hc ? Math.Sign(_cvdC[bar] - _cvdC[bar - hc]) : 0;
             double dp = _vol[bar] > 0 ? _d[bar] / _vol[bar] : 0; int ce = dp > 0.05 ? 1 : dp < -0.05 ? -1 : 0;
@@ -497,7 +526,7 @@ namespace PythiaGex
             // copia de lo visible bajo llave
             int n = hasta - desde + 1;
             double[] d = new double[n], z = new double[n], vel = new double[n], big = new double[n], cv = new double[n], cs = new double[n], dmx = new double[n], dmn = new double[n], hi = new double[n], lo = new double[n];
-            bool[] ab = new bool[n]; int[] cf = new int[n], dv = new int[n];
+            bool[] ab = new bool[n], tn = new bool[n]; int[] cf = new int[n], dv = new int[n], efv = new int[n]; double[] z1v = new double[n];
             double bmax = 0, cvdAncla = 0, sesion = 0; int anclaBar; int cerrada;
             double zA = 0, bigA = 0, velA = 0; bool absA = false; int cfA = 0;
             lock (_llave)
@@ -507,7 +536,7 @@ namespace PythiaGex
                 {
                     int b = desde + i;
                     d[i] = _d[b]; z[i] = _z[b]; vel[i] = _vel[b]; big[i] = _big[b]; cv[i] = _cvdC[b]; cs[i] = _cvdS[b]; dmx[i] = _dmax[b]; dmn[i] = _dmin[b]; hi[i] = _h[b]; lo[i] = _l[b];
-                    ab[i] = _abs[b]; cf[i] = _conf[b]; dv[i] = _div[b];
+                    ab[i] = _abs[b]; cf[i] = _conf[b]; dv[i] = _div[b]; efv[i] = _ef[b]; tn[i] = _tenue[b]; z1v[i] = _z1[b];
                 }
                 var bg = new List<double>(); for (int b = Math.Max(0, ult - 299); b <= ult; b++) if (_big[b] != 0) bg.Add(Math.Abs(_big[b])); bg.Sort();
                 bmax = bg.Count >= 5 ? bg[(int)Math.Min(bg.Count - 1, bg.Count * 0.95)] : (bg.Count > 0 ? bg[bg.Count - 1] : 0);
@@ -564,7 +593,7 @@ namespace PythiaGex
                     switch (tipo)
                     {
                         case 0: v = cf[i] / 4.0; break;
-                        case 1: v = Math.Max(-1, Math.Min(1, z[i] / 1.8)); break;
+                        case 1: v = efv[i] == 0 ? 0 : efv[i] * (tn[i] ? 0.06 : Math.Max(0.35, Math.Min(1, Math.Abs(z1v[i]) / 1.8))); break;   // tenue = sostenida o vela de indecision
                         case 2: v = bmax > 0 ? Math.Max(-1, Math.Min(1, big[i] / bmax)) : 0; break;
                         case 3: v = vel[i] / 3.0; col = cAviso; break;
                         case 4: v = ab[i] ? 1 : 0; col = cAviso; break;
@@ -737,7 +766,7 @@ namespace PythiaGex
             items.Add(("FLUJO " + lado + " " + Math.Abs(conf) + "/4", conf > 0 ? cCompra : conf < 0 ? cVenta : cTxt, false));
             if (Math.Abs(conf) >= FcExtremoDesde) items.Add(("NO PERSEGUIR", cAviso, true));
             if (abs) items.Add(("ABSORCION", cAviso, true));
-            items.Add(("PRESION " + z.ToString("+0.0;-0.0", Es) + "σ", z > 0.5 ? cCompra : z < -0.5 ? cVenta : cTxt, false));
+            items.Add(("PRESION " + Math.Round(z, 1).ToString("+0.0;-0.0;0.0", Es) + "σ", z > 0.5 ? cCompra : z < -0.5 ? cVenta : cTxt, false));
             items.Add(("GRANDES " + big.ToString("+#,0;-#,0;0", Es), big > 0 ? cCompra : big < 0 ? cVenta : cTxt, false));
             if (vel > 1) items.Add(("CINTA rapida", cAviso, false));
             if (!alDia) items.Add(("(grafico corrido)", Alfa(cTxt, 160), false));
@@ -781,7 +810,7 @@ namespace PythiaGex
             {
                 g.DrawString(nombre, fCh, cTxt, x, y); var m = g.MeasureString(valor, f); g.DrawString(valor, f, col, xR - m.Width, y - 1); y += paso;
             }
-            Linea("PRESION", z.ToString("+0.0;-0.0", Es) + "σ", z > 0.5 ? cCompra : z < -0.5 ? cVenta : cTxt);
+            Linea("PRESION", Math.Round(z, 1).ToString("+0.0;-0.0;0.0", Es) + "σ", z > 0.5 ? cCompra : z < -0.5 ? cVenta : cTxt);
             Linea("GRANDES", big.ToString("+#,0;-#,0;0", Es), big > 0 ? cCompra : big < 0 ? cVenta : cTxt);
             Linea("CINTA", vel > 1 ? "rapida" : "normal", vel > 1 ? cAviso : cTxt);
             Linea("ABSORCION", abs ? "SI" : "no", abs ? cAviso : cTxt);
