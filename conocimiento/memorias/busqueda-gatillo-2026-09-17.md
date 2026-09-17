@@ -35,6 +35,16 @@ La 'fuerza de la raya' como factor: gradiente lindo con el 17-09, casi nada sin 
 (+30/-15) las verdes de NQ le ganan al placebo 35,9 contra 29,0 % (sin el 17-09: 35,2 contra 28,6): modesto, empata con costos, no replica en ES.
 ERROR MIO A NO REPETIR: le anuncie '62 % sin el 17-09' con n = 8 y una definicion de toque que despues cambie: al recontar quedo en 37 %. Se lo corregi.
 
+**El reclamo en segundos (17-09 noche, Flujo Claro 1.7):** el operador pidio bajar a segundos, probar contra las verdes y despues un bot. Se hizo un
+gatillo de RECLAMO (venia de >= 10 pts, traspasa la verde 0,5-10 pts, vuelve 1,5 pts al lado bueno en <= 90 s con delta de 10 s a favor; stop 1 pt tras la mecha,
+objetivo 20) con NUCLEO UNICO `VerdesNucleo.cs` (lo corren el indicador y `atas/VerdesBanco` sobre la cinta) y rayas de CONTROL corridas +-37,5/+-62,5 en paralelo.
+Medido (7 dias, rueda): verdes +0,95 pts/op (n 198, IC 90 % por dias [-0,43; +2,08]) contra control -0,23; de noche -1,80: PISTA, no ventaja (casi todo sale del
+16 y 17-09). Corre EN SOMBRA (sin ordenes); el juez es `laboratorio/gatillo/verdes_40_sombra.py` con el criterio escrito en `resultados/verdes_reclamo.md`: 30 ruedas
+posteriores al 17-09, solo rueda; a las 20 con neto < +0,5 se abandona. NO construir bot con ordenes antes de eso; si llega, ejecutor aparte que activa el operador.
+ERRORES MIOS A NO REPETIR: (1) le di '+1,40' de un banco en Python que NO era la logica instalada (paridad 82 %; el vivo daba +0,55 y -0,27 sin el 17-09): el banco
+y el vivo tienen que ser EL MISMO codigo desde el primer dia; (2) mi placebo caia adentro del tunel (la peor zona) e inflaba la diferencia: el control va FUERA;
+(3) dos Gamma Hoy escribian la misma estela: todo archivo compartido entre graficos necesita un solo escritor (static).
+
 **Why:** el operador ve rebotes reales (el 17-09 lo fueron) y generaliza desde el dia que mira; la respuesta honesta es medir TODOS los dias con la
 misma regla y el placebo de rayas corridas, y decirle cuales dias si y cuales no.
 **How to apply:** cada dia nuevo suma muestra gratis (estela + viva + cinta por la sonda): correr `laboratorio/gatillo/verdes_06/10` tras el cierre y
