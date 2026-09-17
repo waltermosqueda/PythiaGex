@@ -152,6 +152,11 @@ namespace PythiaGex
         // (precio -> contratos), desde MarketDepthsUpdate con la suscripcion Quotes. Es una senal NUEVA, sin prueba:
         // "cuantos contratos hay apoyados en las opciones de cada strike". Se mide la latencia antes de creerle.
         public bool Profundidad = true;
+        /// <summary>PROFUNDIDAD ACOTADA (17-09): el nivel 2 se pide SOLO a los contratos mas cercanos al dinero del vencimiento
+        /// mas proximo. Con la ventana entera (320 contratos por grafico) eran 4.000-15.000 eventos/s, "Market Data Latency"
+        /// de 18-22 s y la conexion de datos de Rithmic cortandose cada minuto (medido 16-09 y 17-09).</summary>
+        public int ProfundidadContratos = 24;
+        private List<Security> _conQuotes = new List<Security>();
         private readonly Dictionary<string, Dictionary<decimal, decimal>> _bids = new(), _asks = new();
         private long _evProfundidad;
         public long EventosProfundidad => _evProfundidad;
@@ -567,7 +572,7 @@ namespace PythiaGex
                     var soltar = viejos.Where(v => !nuevos.Contains(v.Code ?? "")).ToList();
                     if (soltar.Count > 0)
                     {
-                        _conn.UnsubscribeFromMarketData(soltar, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary | (Profundidad ? SubscriptionType.Quotes : SubscriptionType.None));
+                        _conn.UnsubscribeFromMarketData(soltar, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
                         lock (_llave) foreach (var v in soltar) { _bids.Remove(v.Code ?? ""); _asks.Remove(v.Code ?? ""); }
                         L("desuscritos " + soltar.Count + " contratos que salieron de la ventana");
                     }
@@ -594,10 +599,25 @@ namespace PythiaGex
                 }
                 try
                 {
-                    _conn.SubscribeToMarketData(elegidos,
-                        SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary | (Profundidad ? SubscriptionType.Quotes : SubscriptionType.None));
+                    _conn.SubscribeToMarketData(elegidos, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
                 }
                 catch (Exception e) { L("la suscripcion fallo: " + e.Message); return; }
+                // nivel 2 solo al dinero: los N contratos mas cercanos del vencimiento mas proximo; lo que sale de ese grupo se suelta
+                try
+                {
+                    var atm = !Profundidad ? new List<Security>()
+                        : elegidos.OrderBy(o => o.Expiration.Date).ThenBy(o => Math.Abs(KDe(o) - Futuro)).Take(Math.Max(2, ProfundidadContratos)).ToList();
+                    var codAtm = new HashSet<string>(atm.Select(x => x.Code ?? ""));
+                    List<Security> antes; lock (_llave) antes = new List<Security>(_conQuotes);
+                    var codAntes = new HashSet<string>(antes.Select(x => x.Code ?? ""));
+                    var dejar = antes.Where(x => !codAtm.Contains(x.Code ?? "")).ToList();
+                    var sumar = atm.Where(x => !codAntes.Contains(x.Code ?? "")).ToList();
+                    if (dejar.Count > 0) { _conn.UnsubscribeFromMarketData(dejar, SubscriptionType.Quotes); lock (_llave) foreach (var v in dejar) { _bids.Remove(v.Code ?? ""); _asks.Remove(v.Code ?? ""); } }
+                    if (sumar.Count > 0) _conn.SubscribeToMarketData(sumar, SubscriptionType.Quotes);
+                    lock (_llave) _conQuotes = atm;
+                    if (Profundidad) L("profundidad (nivel 2) acotada a " + atm.Count + " contratos al dinero de " + elegidos.Count + " (+" + sumar.Count + " / -" + dejar.Count + ")");
+                }
+                catch (Exception e) { L("profundidad: no pude acotar la suscripcion: " + e.Message); }
 
                 lock (_llave)
                 {
@@ -1331,8 +1351,9 @@ namespace PythiaGex
                 List<Security> ss;
                 lock (_llave) { ss = new List<Security>(_suscritos); _suscritos.Clear(); }
                 if (_conn != null && ss.Count > 0)
-                    _conn.UnsubscribeFromMarketData(ss,
-                        SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary | (Profundidad ? SubscriptionType.Quotes : SubscriptionType.None));
+                    _conn.UnsubscribeFromMarketData(ss, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+                List<Security> cq; lock (_llave) { cq = new List<Security>(_conQuotes); _conQuotes = new List<Security>(); }
+                if (_conn != null && cq.Count > 0) _conn.UnsubscribeFromMarketData(cq, SubscriptionType.Quotes);
             }
             catch { }
             try
