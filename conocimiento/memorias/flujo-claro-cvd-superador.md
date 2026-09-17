@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 9345174c-7f69-4fe5-a793-976e41f2dc7c
-  modified: 2026-09-17T16:47:46.235Z
+  modified: 2026-09-17T17:48:31.048Z
 ---
 
 Pedido del operador (17-09): "el CVD de ATAS abajo del grafico es chiquito, apenas se entiende, y siento que me avisa
@@ -24,6 +24,22 @@ pantalla 13:45 en el MNQZ6 1m (version 1.1), sin excepciones.
   "NO PERSEGUIR", nunca "compra". Absorcion: 46 % (n 24), sin evidencia; un 57 % anterior era un artefacto de un
   percentil global que miraba adelante.
 - Cada marca en vivo se graba en `%APPDATA%\ATAS\PythiaGex\flujo\marcas-<inst>-<dia>.jsonl` para medirla.
+
+- **Calibracion de la cinta de presion (1.2 -> 1.3, 17-09):** el operador vio que 'avisaba tarde' y tenia razon: la suma
+  de 5 velas giraba 3-4 velas despues del pivote. La regla 'eficaz sostenida' (color de la vela solo si el precio
+  acompaña al delta, sostenida una vela) gira a 1 vela: firme en 16 de 16 dias y 27 definiciones de giro; contra su
+  propio placebo la ventaja real es ~0,5-0,6 velas. **Dos verificadores me hicieron RETIRAR dos frases que le habia
+  dicho al operador:** 'acuerda con la vela 68-78 %' era circular (con la vela SIGUIENTE da 48-51 %, igual que la
+  vieja: NO anticipa) y 'parpadea menos' era falso en absoluto (17,5 cambios de color por hora contra 10,8, ~60 % mas;
+  solo bajo la proporcion de fugaces). Casi toda la mejora viene de mirar 1 vela en vez de 5, no de la regla fina.
+  1.3: celda de la vela en curso HUECA (a mitad de vela el color difiere del cierre en 33 % de las velas, 10 % al
+  contrario), sostenida a media luz e indecision casi negra, confluencia con cuarta lectura independiente (donde cerro
+  el delta en su recorrido; antes presion y delta/volumen coincidian 95-99 %), texto 'DELTA 2v'. Extremo remedido:
+  >=3 lecturas 41 % a favor (n 173, z -1,4), las 4: 36 % (n 86, z -1,8) => sigue 'NO PERSEGUIR', sin ser prueba.
+  **Regla CONGELADA:** muestra chica (~950 velas MNQ M1, casi todo U6); juzgar con las proximas 5 sesiones completas
+  de MNQZ6 sin retocar. Abierto: la hora posterior al cierre queda casi ciega (sd de 60 velas), sin arreglo validado.
+  Leccion de metodo: una metrica que compara la cinta con la MISMA vela que la define es circular; medir siempre
+  contra la vela siguiente y contra el placebo propio (deltas barajados).
 
 **Trampas de ATAS que salieron (utiles para cualquier indicador de panel):**
 - `GetXByBar(bar, false)` devuelve el CENTRO de la vela; `true` el borde izquierdo.
