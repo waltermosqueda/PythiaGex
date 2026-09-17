@@ -31,3 +31,5 @@ panel/_prueba/
 
 # busqueda del gatillo: caches pesados (la cinta cruda vive en %APPDATA%/ATAS/PythiaGex/flujo)
 datos/flujo/cache/
+laboratorio/gatillo/*_cache/
+laboratorio/gatillo/__pycache__/

@@ -1,0 +1,16 @@
+
+confirmar | V03_BARRIDO_RUPTURA_SEGUIR | por dia (+-8): 09-08 60% (10)  09-09 29% (14)  09-10 36% (14)  09-11 53% (15)  09-14 50% (12)  09-15 50% (16)  09-16 75% (12)  09-17 50% (10)
+   compras 51 % | entrada pagando la punta del lado: 38 % | mov medio a favor 10/30/60/120/300 s: -0.62 / -0.08 / -0.50 / -0.45 / -2.08
+
+confirmar | V11_D50_AISLADO_A_FAVOR | por dia (+-8): 09-08 35% (34)  09-09 69% (13)  09-10 46% (13)  09-11 33% (15)  09-14 59% (17)  09-15 50% (24)  09-16 23% (22)  09-17 67% (12)
+   compras 48 % | entrada pagando la punta del lado: 41 % | mov medio a favor 10/30/60/120/300 s: 0.47 / 0.59 / 0.45 / -1.97 / -2.62
+
+  muestra                   variante   barrera   n  acierto_%  empate_%  z_vs_50  placebo_media_%  placebo_desvio  z_vs_placebo dias_arriba  peor_dia_%  neto_pts_por_op
+confirmar V03_BARRIDO_RUPTURA_SEGUIR  +-8/600s 103       49.5      56.0    -0.10             57.0             4.5         -1.67      3 de 8        28.6            -1.04
+confirmar V03_BARRIDO_RUPTURA_SEGUIR  +-5/300s 105       47.6      59.6    -0.49             53.8             4.8         -1.29      2 de 8        35.7            -1.20
+confirmar V03_BARRIDO_RUPTURA_SEGUIR +-12/900s  98       48.0      54.0    -0.40             58.9             4.4         -2.46      3 de 8        14.3            -1.44
+confirmar    V11_D50_AISLADO_A_FAVOR  +-8/600s 150       44.7      56.0    -1.31             54.6             4.3         -2.31      3 de 8        22.7            -1.81
+confirmar    V11_D50_AISLADO_A_FAVOR  +-5/300s 151       50.3      59.6     0.08             52.3             4.0         -0.49      5 de 8        31.8            -0.93
+confirmar    V11_D50_AISLADO_A_FAVOR +-12/900s 146       41.1      54.0    -2.15             56.0             3.8         -3.90      3 de 8        29.4            -3.10
+
+30 s

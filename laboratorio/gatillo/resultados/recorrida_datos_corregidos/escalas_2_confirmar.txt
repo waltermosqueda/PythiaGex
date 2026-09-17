@@ -1,0 +1,39 @@
+CONFIRMACION (8 sesiones: 2026-09-08 .. 2026-09-17)
+                 0
+variante      S15m
+disparos       135
+b8_n           133
+b8_ac         54.1
+b8_z          0.95
+b8_dias     7 de 8
+b8_peor       27.3
+b8_t_dias     0.77
+b5_n           134
+b5_ac         52.2
+b5_z          0.52
+b5_dias     4 de 8
+b5_peor       27.3
+b5_t_dias     0.22
+b12_n          127
+b12_ac        49.6
+b12_z        -0.09
+b12_dias    4 de 8
+b12_peor      18.2
+b12_t_dias   -0.32
+mov10        0.144
+mov30        0.015
+mov60        0.083
+S15m +-8/600s: n 133 acierto 54.1 % | placebo 54.4 % +- 4.5 -> z placebo -0.06 | empate 56.0 % | neto por operacion -0.30 pts
+S15m +-5/300s: n 134 acierto 52.2 % | placebo 53.1 % +- 4.7 -> z placebo -0.18 | empate 59.6 % | neto por operacion -0.74 pts
+S15m +-12/900s: n 127 acierto 49.6 % | placebo 55.3 % +- 4.0 -> z placebo -1.44 | empate 54.0 % | neto por operacion -1.05 pts
+             mean  size
+dia                    
+2026-09-08  0.562    16
+2026-09-09  0.571    14
+2026-09-10  0.273    11
+2026-09-11  0.556    18
+2026-09-14  0.571    21
+2026-09-15  0.522    23
+2026-09-16  0.647    17
+2026-09-17  0.538    13
+tiempo 8.9 s

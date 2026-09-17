@@ -27,7 +27,7 @@ FLUJO = os.path.join(APP, "PythiaGex", "flujo")
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CACHE = os.path.join(RAIZ, "datos", "flujo", "cache")
 TICK = 0.25
-COSTO_PTS = 0.85          # MNQ: 1 tick de spread entre entrada y salida (0,25) + comision ~USD 1,2 ida y vuelta (0,60 pts a USD 2 el punto)
+COSTO_PTS = 0.96          # MNQ: el spread EN REPOSO medido en 20 sesiones es 1,44 ticks = 0,36 pts (no 1 tick) + comision ~USD 1,2 ida y vuelta (0,60 pts a USD 2 el punto)
 RUEDA = ("13:30", "20:00")  # UTC
 
 
@@ -37,10 +37,17 @@ def empate(x, costo=COSTO_PTS):
 
 
 # ------------------------------------------------------------------ cinta
-def archivos_cinta():
+INICIO_TRABAJO = "202608192200"   # las sesiones anteriores al 20-08 son la RESERVA: nadie las mira hasta la validacion final de lo que sobreviva
+
+
+def _inicio_de(f):
+    try: return os.path.basename(f).split("-")[2]
+    except Exception: return ""
+
+
+def archivos_cinta(reserva=False):
     fs = [f for f in glob.glob(os.path.join(FLUJO, "cinta-*.csv")) if os.path.exists(f + ".listo")]
-    fs += glob.glob(os.path.join(RAIZ, "datos", "flujo", "cinta-*-sesion-*.csv"))
-    return sorted(fs)
+    return sorted(f for f in fs if (_inicio_de(f) < INICIO_TRABAJO) == reserva)
 
 
 def cinta(refrescar=False):
@@ -106,15 +113,34 @@ def segundos_ricos(sesion, df=None, refrescar=False):
       ofi                               desbalance del flujo de ordenes en la punta (pasivo + agresivo), muestreado en cada orden
       ofi_pas                           la parte PASIVA del ofi: lo que pasa en la punta ENTRE ordenes (altas y bajas de limites).
                                         Es lo unico que el delta/CVD no ve.
-      bid/bidv/ask/askv                 la punta al final del segundo (relleno hacia adelante)
+      bid/bidv/ask/askv                 la punta DESPUES de la ultima orden del segundo (libro recien comido: el spread sale exagerado)
+      rbid/rbidv/rask/raskv             la punta EN REPOSO: justo ANTES de la ultima orden del segundo (la que sirve para spread, cola y costo)
+      hueco                             True si el segundo cae en un tramo de 30 s con menos de 5 ordenes (corte de Rithmic o mercado parado):
+                                        el precio esta relleno hacia adelante y NO es real. Excluir disparos con hueco entre t-600 y t+900.
       rueda                             True entre 13:30 y 20:00 UTC"""
     os.makedirs(CACHE, exist_ok=True); pq = os.path.join(CACHE, "seg-%s.parquet" % sesion)
     if not refrescar and os.path.exists(pq): return pd.read_parquet(pq)
     if df is None: df = cinta()
-    d = df[df["sesion"] == sesion]
-    if d["px_grupo"].nunique() > 1:   # si la sesion vino de dos contratos, queda el de mas ordenes
-        g = d.groupby("px_grupo").size()
-        if g.max() < 0.9 * len(d): d = d[(d["px_grupo"] - g.idxmax()).abs() <= 1]
+    d = df[df["sesion"] == sesion]   # cada sesion viene de UN solo contrato (verificado): no se filtra nada por precio
+    out = _tabla_1s(d); out.to_parquet(pq)
+    return out
+
+
+def reserva(refrescar=False):
+    """{sesion: tabla de 1 s} de la RESERVA (sesiones anteriores al 20-08, que ningun investigador vio). Se arma archivo por archivo (liviano).
+    SOLO para la validacion final de lo que haya sobrevivido a explorar + confirmar + escepticos. Mirarla antes la arruina."""
+    dr = os.path.join(CACHE, "reserva"); os.makedirs(dr, exist_ok=True); out = {}
+    for f in archivos_cinta(reserva=True):
+        fin = os.path.basename(f).split("-")[3][:8]; ses = "%s-%s-%s" % (fin[:4], fin[4:6], fin[6:8]); pq = os.path.join(dr, "seg-%s.parquet" % ses)
+        if os.path.exists(pq) and not refrescar: out[ses] = pd.read_parquet(pq); continue
+        d = pd.read_csv(f, parse_dates=["t"])
+        if len(d) < 1000: continue
+        d = d.drop_duplicates(); t = _tabla_1s(d); t.to_parquet(pq); out[ses] = t
+    return out
+
+
+def _tabla_1s(d):
+    """El calculo de la tabla de 1 segundo a partir de las ordenes de UNA sesion (ver segundos_ricos)."""
     d = d.sort_values("t", kind="stable")
     vol = d["vol"].to_numpy("float64"); lado = d["lado"].to_numpy(); sv = vol * lado
     ab, abv, aa, aav = (d[c].to_numpy("float64") for c in ("abid", "abidv", "aask", "aaskv")); db, dbv, da, dav = (d[c].to_numpy("float64") for c in ("dbid", "dbidv", "dask", "daskv"))
@@ -125,7 +151,8 @@ def segundos_ricos(sesion, df=None, refrescar=False):
                       "d1": np.where(vol <= 1, sv, 0), "d2_4": np.where((vol >= 2) & (vol <= 4), sv, 0), "d5_9": np.where((vol >= 5) & (vol <= 9), sv, 0),
                       "d10_49": np.where((vol >= 10) & (vol <= 49), sv, 0), "d50": np.where(vol >= 50, sv, 0),
                       "barre_c": np.where(compra & (ult != pri), vol, 0), "barre_v": np.where(venta & (ult != pri), vol, 0),
-                      "abs_bid": np.where(agota_b & (db >= ab), vol, 0), "abs_ask": np.where(agota_a & (da <= aa), vol, 0),
+                      # absorcion LIMPIA: la punta queda en el mismo precio (o mejor) Y con tamaño >= 1 despues (si queda en 0 la foto salio antes de que el libro se actualice)
+                      "abs_bid": np.where(agota_b & (db >= ab) & (dbv >= 1), vol, 0), "abs_ask": np.where(agota_a & (da <= aa) & (dav >= 1), vol, 0),
                       "rompe_bid": np.where(agota_b & (db < ab), vol, 0), "rompe_ask": np.where(agota_a & (da > aa), vol, 0)})
     # ofi: transicion pasiva (despues de la orden anterior -> antes de esta) + transicion de la propia orden (antes -> despues)
     pdb, pdbv, pda, pdav = np.roll(db, 1), np.roll(dbv, 1), np.roll(da, 1), np.roll(dav, 1)
@@ -134,16 +161,19 @@ def segundos_ricos(sesion, df=None, refrescar=False):
     x["ofi_pas"] = pas; x["ofi"] = pas + _ofi(ab, abv, aa, aav, db, dbv, da, dav)
     s = d["t"].dt.floor("s").to_numpy(); x.index = s
     out = x.groupby(level=0).sum()
-    px = pd.DataFrame({"ultimo": ult, "alto": np.maximum(ult, pri), "bajo": np.minimum(ult, pri), "bid": db, "bidv": dbv, "ask": da, "askv": dav}, index=s)
-    px = px.groupby(level=0).agg({"ultimo": "last", "alto": "max", "bajo": "min", "bid": "last", "bidv": "last", "ask": "last", "askv": "last"})
+    px = pd.DataFrame({"ultimo": ult, "alto": np.maximum(ult, pri), "bajo": np.minimum(ult, pri), "bid": db, "bidv": dbv, "ask": da, "askv": dav,
+                       "rbid": ab, "rbidv": abv, "rask": aa, "raskv": aav}, index=s)
+    px = px.groupby(level=0).agg({"ultimo": "last", "alto": "max", "bajo": "min", "bid": "last", "bidv": "last", "ask": "last", "askv": "last",
+                                  "rbid": "last", "rbidv": "last", "rask": "last", "raskv": "last"})
     out = out.join(px); idx = pd.date_range(out.index[0], out.index[-1], freq="s"); out = out.reindex(idx)
     out["ultimo"] = out["ultimo"].ffill(); out["alto"] = out["alto"].fillna(out["ultimo"]); out["bajo"] = out["bajo"].fillna(out["ultimo"])
-    for c in ("bid", "bidv", "ask", "askv"): out[c] = out[c].ffill()
-    out = out.fillna(0.0)[COLS_RICAS]
-    for c in COLS_RICAS:
-        if c not in ("ultimo", "alto", "bajo", "bid", "ask"): out[c] = out[c].astype("float32")
+    for c in ("bid", "bidv", "ask", "askv", "rbid", "rbidv", "rask", "raskv"): out[c] = out[c].ffill()
+    out = out.fillna(0.0)[COLS_RICAS + ["rbid", "rbidv", "rask", "raskv"]]
+    for c in out.columns:
+        if c not in ("ultimo", "alto", "bajo", "bid", "ask", "rbid", "rask"): out[c] = out[c].astype("float32")
+    # hueco = el segundo cae en un tramo de 30 s con menos de 5 ordenes (corte de datos o mercado parado): el precio esta relleno, NO es un precio real
+    n30 = out["n"].rolling(30, min_periods=1).sum(); out["hueco"] = (n30 < 5)
     hm = out.index.strftime("%H:%M"); out["rueda"] = (hm >= RUEDA[0]) & (hm < RUEDA[1])
-    out.to_parquet(pq)
     return out
 
 
