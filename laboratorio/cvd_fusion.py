@@ -59,7 +59,8 @@ def series(todo):
     for i, v in enumerate(todo):
         w = [abs(x["c"] - x["o"]) / abs(x["d"]) for x in todo[max(0, i - 120):i] if abs(x["d"]) >= 50]
         beta = st.median(w) if len(w) >= 20 else None          # puntos de precio por contrato de delta, lo habitual de las ultimas 2 h
-        if beta is None or abs(v["d"]) < p80: absor.append(False); continue
+        w80 = sorted(abs(x["d"]) for x in todo[max(0, i - 59):i + 1]); p80m = w80[min(len(w80) - 1, int(len(w80) * 0.8))]   # movil, sin mirar adelante
+        if beta is None or abs(v["d"]) < p80m or p80m <= 0: absor.append(False); continue
         avance = (v["c"] - v["o"]) * (1 if v["d"] > 0 else -1)   # cuanto avanzo el precio EN EL SENTIDO del delta
         absor.append(avance <= 0.25 * beta * abs(v["d"]))
     # confluencia: cuantas de las cuatro lecturas de flujo apuntan al mismo lado (-4..+4)
@@ -67,7 +68,7 @@ def series(todo):
     for k in range(n):
         a = (1 if z[k] > 0.5 else -1 if z[k] < -0.5 else 0)
         b = (1 if big[k] > 0.3 * bmax else -1 if big[k] < -0.3 * bmax else 0)
-        c = (1 if k >= 5 and cvd[k] > cvd[k - 5] else -1 if k >= 5 and cvd[k] < cvd[k - 5] else 0)
+        c = (1 if k >= 20 and cvd[k] > cvd[k - 20] else -1 if k >= 20 and cvd[k] < cvd[k - 20] else 0)   # 20 velas: con 5 era la misma cuenta que la presion
         dp = todo[k]["d"] / max(1, todo[k]["vol"]); e = (1 if dp > 0.05 else -1 if dp < -0.05 else 0)
         conf.append(a + b + c + e)
     return dict(cvd=cvd, z=z, vel=vel, big=big, bmax=bmax, absor=absor, conf=conf, p80=p80)

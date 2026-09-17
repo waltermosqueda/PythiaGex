@@ -42,6 +42,7 @@
     <Compile Include="GatilloRebote.cs" />
     <Compile Include="GammaHoy.cs" />
     <Compile Include="GammaHoyCapas.cs" />
+    <Compile Include="FlujoClaro.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.
