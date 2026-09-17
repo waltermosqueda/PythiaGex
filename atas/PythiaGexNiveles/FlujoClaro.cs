@@ -24,16 +24,18 @@ namespace PythiaGex
     ///   - Legibilidad: con el CVD del dia entero la ultima hora ocupa el 27-35 % del alto del panel. Anclado, el 100 %.
     ///   - El delta y el precio se mueven JUNTOS: correlacion +0,69 a +0,82 en la misma vela, -0,03 a -0,09 con la
     ///     siguiente. Ninguna lectura de flujo adelanta: dice bien lo que pasa AHORA.
-    ///   - Ninguna señal de vela (presion, z, mecha, confluencia) le gano al azar a 5 velas. Con las 4 lecturas del mismo
-    ///     lado el precio fue a favor solo el 40 % de las veces (96 casos, z -1,4; con 3 o mas, 48 %): por eso el bloque
-    ///     dice "EXTREMO: no perseguir" y NO "compra". Es una tendencia debil, no una prueba.
+    ///   - Ninguna señal de vela (presion, z, mecha, confluencia) le gano al azar a 5 velas. RETIRADO (1.5): el aviso
+    ///     "EXTREMO: no perseguir". Con 950 velas habia dado 36-41 % a favor; con las 20 ruedas del volcado da 50 % (n 2.717,
+    ///     z +0,1) y estaba prendido el 36-40 % del tiempo: no separaba nada. "FLUJO n/4" queda como cuenta descriptiva.
     ///   - Absorcion (mucho delta sin avance): 46 % en contra del delta con 24 casos (z +0,3): SIN evidencia todavia.
     ///     (Con un percentil global que miraba adelante habia dado 57 % con 21 casos: era un artefacto.)
-    /// GRAMATICA DE LAS CINTAS (1.4, pedido del operador: "que el color corresponda con la vela, sin negros, sin llegar tarde"):
+    /// GRAMATICA DE LAS CINTAS (1.4/1.5, pedido del operador: "que el color corresponda con la vela, sin negros, sin llegar tarde"):
     ///   verde / rojo = el flujo ACOMPAÑA a la vela que tiene encima (brillo = cuanto)   violeta = el flujo le lleva LA CONTRA
-    ///   gris = vela de indecision (doji / martillo) o flujo parejo                       negro = no hubo nada que medir
-    /// Coincidir con la vela es por construccion, NO es prediccion: la vela siguiente sale del color de la celda el 50 % de las veces.
-    /// Lo que la cinta agrega a la vela es CUANTO flujo la respalda y CUANDO el flujo la contradice.
+    ///   gris = vela de indecision (doji / martillo)      fondo tenue = fila tranquila (en grandes: no hubo, o sin historial)
+    /// Coincidir con la vela es POR CONSTRUCCION, no es acierto: la vela siguiente sale del color de la celda el 48 % de las veces
+    /// (lo mismo que repetir el color de la vela: 47 %). El brillo dice cuanto delta tuvo ESTA vela contra lo normal de esa hora
+    /// y nada de la que sigue; la celda violeta es un ESTADO (el precio le gano al flujo), no un gatillo (medido: no le gana
+    /// al placebo). La celda de la vela en curso puede cambiar hasta el cierre (la vela tambien).
     /// Por eso todo lo que se marca es LECTURA. Cada marca en vivo queda en
     /// %APPDATA%\ATAS\PythiaGex\flujo\marcas-<instrumento>-<dia>.jsonl para medirla contra placebo.
     ///
@@ -65,8 +67,8 @@ namespace PythiaGex
         [Range(1, 6)]
         public int FcGrosor { get; set; } = 2;
 
-        [Display(Name = "Presion: dibujar las barras", GroupName = "1. Panel CVD", Order = 5,
-                 Description = "Presion = delta de las ultimas velas comparado con lo normal de la ultima hora, en desvios (sigmas). Es el 'chorro de la canilla': se mueve antes que el nivel de la bañera (el CVD).")]
+        [Display(Name = "Barras detras del CVD: dibujarlas", GroupName = "1. Panel CVD", Order = 5,
+                 Description = "Delta de las ultimas velas (2 por defecto) contra el desvio de las ultimas N, en sigmas. OJO: es OTRA lectura que la cinta 'presion' (esa habla de UNA vela y mide por percentil): pueden no coincidir.")]
         public bool FcVerPresion { get; set; } = true;
 
         [Display(Name = "Presion: velas que suma", GroupName = "1. Panel CVD", Order = 6)]
@@ -74,48 +76,55 @@ namespace PythiaGex
         public int FcPresionVelas { get => _fcVentanaPresion; set { if (_fcVentanaPresion == value) return; _fcVentanaPresion = value; try { RecalculateValues(); } catch { } } }
         private int _fcVentanaPresion = 2;
 
-        [Display(Name = "Vela de indecision: cuerpo menor a (% del rango) = celda gris", GroupName = "1. Panel CVD", Order = 8,
-                 Description = "Doji o martillo: el cuerpo es chico contra el recorrido de la vela. La celda va GRIS (estado con nombre, no un hueco). Si ademas hubo mucho delta, la fila absorcion lo marca.")]
-        [Range(0, 60)]
-        public int FcIndecisionPct { get => _fcIndecision; set { if (_fcIndecision == value) return; _fcIndecision = value; try { RecalculateValues(); } catch { } } }
-        private int _fcIndecision = 15;
-
-        [Display(Name = "Delta que cuenta: desde que percentil de la ultima hora", GroupName = "1. Panel CVD", Order = 9,
-                 Description = "El tamaño del delta se mide por su lugar entre los de las ultimas velas (0 = el mas chico, 100 = el mas grande). Por debajo de este piso el delta es ruido: la celda toma el color de la vela a media luz.")]
-        [Range(0, 90)]
-        public int FcPisoDelta { get => _fcPisoDelta; set { if (_fcPisoDelta == value) return; _fcPisoDelta = value; try { RecalculateValues(); } catch { } } }
-        private int _fcPisoDelta = 20;
-
-        [Display(Name = "Celda VIOLETA (vela contra el delta): desde que percentil", GroupName = "1. Panel CVD", Order = 10,
-                 Description = "Vela verde con delta vendedor (o roja con delta comprador) de este tamaño o mas: el precio le gano al flujo. Es un estado con nombre, no un error: pasa en ~3 de cada 100 velas con cuerpo.")]
-        [Range(0, 95)]
-        public int FcContraDesde { get => _fcContraDesde; set { if (_fcContraDesde == value) return; _fcContraDesde = value; try { RecalculateValues(); } catch { } } }
-        private int _fcContraDesde = 35;
-
         [Display(Name = "Presion: velas de referencia (lo normal)", GroupName = "1. Panel CVD", Order = 7)]
         [Range(20, 600)]
         public int FcVentanaNormal { get => _fcVentanaNormal; set { if (_fcVentanaNormal == value) return; _fcVentanaNormal = value; try { RecalculateValues(); } catch { } } }
         private int _fcVentanaNormal = 60;
 
         // ------------------------------------------------------------------ 2. Cintas
-        [Display(Name = "Cinta CONFLUENCIA", GroupName = "2. Cintas", Order = 1, Description = "Cuantas de las 4 lecturas de flujo (delta de la vela, donde cerro el delta, grandes, CVD de 20 velas) ACOMPAÑAN a la vela, menos las que van en contra. Color de la vela = la acompañan (intensa = las 4; medido: intensa suele ser TARDE, no entrada). Violeta = el flujo le lleva la contra. Gris = parejo o vela de indecision.")]
+        [Display(Name = "Cinta CONFLUENCIA", GroupName = "2. Cintas", Order = 1, Description = "La vela vota, y se le suman las lecturas de flujo que la acompañan y se le restan las que van en contra (delta de la vela, donde cerro el delta, grandes, CVD de 20 velas). Color de la vela = la acompañan, mas vivo cuantas mas son. Violeta = solo si el delta de ESA vela o los grandes van contra ella. Gris = vela de indecision. Es descriptiva: no anticipa la vela siguiente.")]
         public bool FcCintaConfluencia { get; set; } = true;
         [Display(Name = "Cinta PRESION", GroupName = "2. Cintas", Order = 2)]
         public bool FcCintaPresion { get; set; } = true;
-        [Display(Name = "Cinta GRANDES", GroupName = "2. Cintas", Order = 3, Description = "Compras menos ventas de las ordenes agresoras de tamaño mayor o igual al umbral, por vela.")]
+        [Display(Name = "Cinta GRANDES", GroupName = "2. Cintas", Order = 3, Description = "Compras menos ventas de las ordenes agresoras de tamaño mayor o igual al umbral, por vela. Brillo = su lugar entre las ultimas 300 velas con grandes. Fondo tenue = no hubo (o es anterior al historial pedido: ver '4. Reglas').")]
         public bool FcCintaGrandes { get; set; } = true;
-        [Display(Name = "Grandes: violeta cuando van contra la vela", GroupName = "2. Cintas", Order = 3,
+        [Display(Name = "Grandes: violeta cuando van contra la vela", GroupName = "2. Cintas", Order = 4,
                  Description = "Misma gramatica que las otras cintas: verde/rojo = los grandes acompañan a la vela; violeta = operaron en contra. Apagado: verde = compraron, rojo = vendieron, sin mirar la vela.")]
-        public bool FcGrandesContraVela { get; set; } = true;
-        [Display(Name = "Cinta CINTA (velocidad)", GroupName = "2. Cintas", Order = 4, Description = "Cantidad de operaciones de la vela contra lo normal: hay apuro AHORA. No dice direccion.")]
+        public bool FcGrandesContraVela { get => _fcGrandesContra; set { if (_fcGrandesContra == value) return; _fcGrandesContra = value; try { RecalculateValues(); } catch { } } }
+        private bool _fcGrandesContra = true;
+        [Display(Name = "Cinta CINTA (velocidad)", GroupName = "2. Cintas", Order = 5, Description = "Fila de alarma: prende cuando la cantidad de operaciones de la vela esta entre el 30 % mas alto de las ultimas velas (descontada la hora del dia). Fondo tenue = tranquila, que es lo normal 7 de cada 10 velas. No dice direccion.")]
         public bool FcCintaVelocidad { get; set; } = true;
-        [Display(Name = "Cinta ABSORCION", GroupName = "2. Cintas", Order = 5)]
+        [Display(Name = "Cinta ABSORCION", GroupName = "2. Cintas", Order = 6, Description = "Fila de alarma: mucho delta y el precio avanzo menos de un cuarto de lo que ese delta suele mover. Pasa pocas veces por rueda: fondo tenue = no hubo.")]
         public bool FcCintaAbsorcion { get; set; } = true;
-        [Display(Name = "Alto de cada cinta (px, 0 = automatico)", GroupName = "2. Cintas", Order = 6)]
+        [Display(Name = "Alto de cada cinta (px, 0 = automatico)", GroupName = "2. Cintas", Order = 7)]
         [Range(0, 30)]
         public int FcAltoFila { get; set; } = 0;
-        [Display(Name = "Rotulos de las cintas", GroupName = "2. Cintas", Order = 7)]
+        [Display(Name = "Rotulos de las cintas", GroupName = "2. Cintas", Order = 8)]
         public bool FcRotulos { get; set; } = true;
+
+        [Display(Name = "Vela de indecision: cuerpo menor a (% del rango) = celda gris", GroupName = "2. Cintas", Order = 10,
+                 Description = "Doji o martillo: el cuerpo es chico contra el recorrido de la vela. La celda va GRIS (estado con nombre, no un hueco). Si ademas hubo mucho delta, la fila absorcion lo marca.")]
+        [Range(0, 60)]
+        public int FcIndecisionPct { get => _fcIndecision; set { if (_fcIndecision == value) return; _fcIndecision = value; try { RecalculateValues(); } catch { } } }
+        private int _fcIndecision = 15;
+
+        [Display(Name = "Delta que cuenta: desde que percentil de las ultimas velas", GroupName = "2. Cintas", Order = 11,
+                 Description = "El tamaño del delta se mide por su lugar entre los de las ultimas N velas (0 = el mas chico, 100 = el mas grande), despues de dividirlo por lo normal de ESA hora del dia (asi la apertura no sale toda brillante). Por debajo de este piso el delta es ruido: la celda toma el color de la vela a media luz.")]
+        [Range(0, 90)]
+        public int FcPisoDelta { get => _fcPisoDelta; set { if (_fcPisoDelta == value) return; _fcPisoDelta = value; try { RecalculateValues(); } catch { } } }
+        private int _fcPisoDelta = 20;
+
+        [Display(Name = "Celda VIOLETA (vela contra el delta): desde que percentil", GroupName = "2. Cintas", Order = 12,
+                 Description = "Vela verde con delta vendedor (o roja con delta comprador) de este tamaño o mas: el precio le gano al flujo. Es un ESTADO, no un gatillo: medido en 20 ruedas no le gana al placebo. Pasa en ~3 de cada 100 velas con cuerpo (el doble de noche).")]
+        [Range(0, 95)]
+        public int FcContraDesde { get => _fcContraDesde; set { if (_fcContraDesde == value) return; _fcContraDesde = value; try { RecalculateValues(); } catch { } } }
+        private int _fcContraDesde = 35;
+
+        [Display(Name = "Delta minimo en contratos para que cuente", GroupName = "2. Cintas", Order = 13,
+                 Description = "De madrugada un delta de 10 contratos puede ser 'el mas grande de la hora'. Por debajo de este piso el delta no cuenta. Con 20 no cambia ninguna celda de rueda.")]
+        [Range(0, 1000)]
+        public int FcDeltaMinimo { get => _fcDeltaMinimo; set { if (_fcDeltaMinimo == value) return; _fcDeltaMinimo = value; try { RecalculateValues(); } catch { } } }
+        private int _fcDeltaMinimo = 20;
 
         // ------------------------------------------------------------------ 3. Marcas
         [Display(Name = "Marcar ABSORCION sobre la vela", GroupName = "3. Marcas en el precio", Order = 1,
@@ -161,11 +170,6 @@ namespace PythiaGex
         public int FcAbsVentana { get => _fcAbsVentana; set { if (_fcAbsVentana == value) return; _fcAbsVentana = value; try { RecalculateValues(); } catch { } } }
         private int _fcAbsVentana = 60;
 
-        [Display(Name = "Extremo: lecturas del mismo lado", GroupName = "4. Reglas", Order = 5, Description = "Con 3 o 4 lecturas del mismo lado el bloque AHORA avisa EXTREMO: no perseguir (medido: a favor solo el 42-45 % de las veces).")]
-        [Range(2, 4)]
-        public int FcExtremoDesde { get => _fcExtremoDesde; set { if (_fcExtremoDesde == value) return; _fcExtremoDesde = value; try { RecalculateValues(); } catch { } } }
-        private int _fcExtremoDesde = 3;
-
         // ------------------------------------------------------------------ 5. Ahora
         [Display(Name = "AHORA: como se muestra", GroupName = "5. Bloque AHORA", Order = 0,
                  Description = "FilaArriba = una fila en el renglon del titulo del panel (no ocupa espacio extra). FilaAbajo = una fila al pie del panel, con mas datos. Bloque = el cuadro grande. Oculto = nada.")]
@@ -193,15 +197,15 @@ namespace PythiaGex
         public System.Windows.Media.Color FcColorCompra { get; set; } = System.Windows.Media.Color.FromRgb(38, 166, 154);
         [Display(Name = "Color venta", GroupName = "6. Colores", Order = 2)]
         public System.Windows.Media.Color FcColorVenta { get; set; } = System.Windows.Media.Color.FromRgb(239, 83, 80);
-        [Display(Name = "Color aviso (absorcion, cinta rapida, extremo)", GroupName = "6. Colores", Order = 3)]
+        [Display(Name = "Color aviso (absorcion, cinta rapida)", GroupName = "6. Colores", Order = 3)]
         public System.Windows.Media.Color FcColorAviso { get; set; } = System.Windows.Media.Color.FromRgb(255, 200, 87);
-        [Display(Name = "Color CONTRA (la vela va contra el flujo)", GroupName = "6. Colores", Order = 3)]
+        [Display(Name = "Color CONTRA (la vela va contra el flujo)", GroupName = "6. Colores", Order = 4)]
         public System.Windows.Media.Color FcColorContra { get; set; } = System.Windows.Media.Color.FromRgb(179, 136, 255);
-        [Display(Name = "Color INDECISION (doji, flujo parejo)", GroupName = "6. Colores", Order = 3)]
+        [Display(Name = "Color INDECISION (doji, martillo)", GroupName = "6. Colores", Order = 5)]
         public System.Windows.Media.Color FcColorIndecision { get; set; } = System.Windows.Media.Color.FromRgb(125, 133, 150);
-        [Display(Name = "Color texto", GroupName = "6. Colores", Order = 4)]
+        [Display(Name = "Color texto", GroupName = "6. Colores", Order = 6)]
         public System.Windows.Media.Color FcColorTexto { get; set; } = System.Windows.Media.Color.FromRgb(184, 192, 208);
-        [Display(Name = "Color fondo de los rotulos", GroupName = "6. Colores", Order = 5)]
+        [Display(Name = "Color fondo de los rotulos", GroupName = "6. Colores", Order = 7)]
         public System.Windows.Media.Color FcColorFondo { get; set; } = System.Windows.Media.Color.FromRgb(14, 17, 24);
 
         // ------------------------------------------------------------------ 7. Alertas y registro
@@ -209,8 +213,6 @@ namespace PythiaGex
         public bool FcAlertaAbsorcion { get; set; } = false;
         [Display(Name = "Alerta: divergencia", GroupName = "7. Alertas y registro", Order = 2)]
         public bool FcAlertaDivergencia { get; set; } = false;
-        [Display(Name = "Alerta: extremo (no perseguir)", GroupName = "7. Alertas y registro", Order = 3)]
-        public bool FcAlertaExtremo { get; set; } = false;
         [Display(Name = "Sonido de las alertas", GroupName = "7. Alertas y registro", Order = 4)]
         public string FcSonido { get; set; } = "alert1";
         [Display(Name = "Grabar cada marca en vivo (para medirla contra placebo)", GroupName = "7. Alertas y registro", Order = 5)]
@@ -221,8 +223,13 @@ namespace PythiaGex
         private readonly List<double> _d = new(), _vol = new(), _tk = new(), _dmax = new(), _dmin = new(), _o = new(), _h = new(), _l = new(), _c = new();
         private readonly List<double> _cvdC = new(), _cvdS = new(), _z = new(), _vel = new(), _big = new();
         private readonly List<bool> _abs = new();
-        private readonly List<int> _conf = new(), _div = new(), _tono = new(), _tonoC = new();
-        private readonly List<double> _bri = new(), _briC = new(), _lugar = new();
+        private readonly List<int> _conf = new(), _div = new(), _tono = new(), _tonoC = new(), _tonoG = new();
+        private readonly List<double> _bri = new(), _briC = new(), _briG = new(), _lugar = new();
+        // lo normal de cada hora: |delta| y operaciones divididos por la mediana de la misma franja de las 5 sesiones anteriores
+        private readonly List<double> _estD = new(), _estT = new(), _dn = new(), _tn = new();
+        private readonly Dictionary<int, List<int>> _porMinuto = new();
+        private int _ultimoIndexado = -1;
+        private double _trViva, _durViva;   // cuanto lleva la vela en curso y cuanto dura una vela (0 = no se sabe)
         private const int Contra = 2, Gris = 3, Aviso = 4;   // tonos de celda, ademas de +1 (compra) y -1 (venta)
         private Color _colContra, _colGris;
         private readonly List<DateTime> _t = new(), _tf = new();
@@ -231,7 +238,6 @@ namespace PythiaGex
         private (int Bar, double Cvd, double Precio) _ultMax = (-1, 0, 0), _ultMin = (-1, 0, 0);
         private DateTime _ultimoProvisorio = DateTime.MinValue;
         private int _barraProvisoria = -1;
-        private double _proyTicks = 1;
         // operaciones en vivo: cubetas por segundo para el bloque AHORA
         private readonly Dictionary<long, (double S, double V)> _cubetas = new();
         private long _ultSeg; private DateTime _relojUltTrade = DateTime.MinValue;
@@ -256,8 +262,26 @@ namespace PythiaGex
 
         protected override void OnInitialize()
         {
-            try { SubscribeToTimer(TimeSpan.FromSeconds(1), () => { try { RedrawChart(new RedrawArg(ChartArea)); } catch { } }); } catch { }
-            Log("Flujo Claro 1.4 (la celda habla de su vela) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
+            try { SubscribeToTimer(TimeSpan.FromSeconds(1), Latido); } catch { }
+            Log("Flujo Claro 1.5 (lo normal de cada hora, la vela vota) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
+        }
+
+        /// <summary>Una vez por segundo: la vela en curso se vuelve a derivar con el RELOJ (sin operaciones la celda quedaba congelada con la ultima proyeccion) y se redibuja.</summary>
+        private void Latido()
+        {
+            try
+            {
+                lock (_llave)
+                {
+                    int bar = CurrentBar - 1;
+                    if (_cargado && bar == _barraProvisoria && bar > _cerradaHasta && bar < _d.Count)
+                    {
+                        MedirTiempoDeLaViva(bar, (_tf[bar] - _t[bar]).TotalSeconds); Derivar(bar);
+                    }
+                }
+                RedrawChart(new RedrawArg(ChartArea));
+            }
+            catch { }
         }
 
         // ------------------------------------------------------------------ calculo
@@ -265,9 +289,10 @@ namespace PythiaGex
         {
             lock (_llave)
             {
-                foreach (var ls in new[] { _d, _vol, _tk, _dmax, _dmin, _o, _h, _l, _c, _cvdC, _cvdS, _z, _vel, _big }) ls.Clear();
-                _abs.Clear(); _conf.Clear(); _div.Clear(); _t.Clear(); _tf.Clear(); _tono.Clear(); _tonoC.Clear(); _bri.Clear(); _briC.Clear(); _lugar.Clear();
+                foreach (var ls in new[] { _d, _vol, _tk, _dmax, _dmin, _o, _h, _l, _c, _cvdC, _cvdS, _z, _vel, _big, _bri, _briC, _briG, _lugar, _estD, _estT, _dn, _tn }) ls.Clear();
+                _abs.Clear(); _conf.Clear(); _div.Clear(); _t.Clear(); _tf.Clear(); _tono.Clear(); _tonoC.Clear(); _tonoG.Clear(); _porMinuto.Clear(); _ultimoIndexado = -1;
                 _cerradaHasta = -1; _vivoDesde = int.MaxValue; _cargado = false; _volcadoEntero = false; _ultMax = (-1, 0, 0); _ultMin = (-1, 0, 0); _histPedido = false;
+                _barraProvisoria = -1; _ultimoProvisorio = DateTime.MinValue; _trViva = 0; _durViva = 0; _bigActual = null;
             }
         }
 
@@ -276,7 +301,8 @@ namespace PythiaGex
             while (_d.Count <= bar)
             {
                 _d.Add(0); _vol.Add(0); _tk.Add(0); _dmax.Add(0); _dmin.Add(0); _o.Add(0); _h.Add(0); _l.Add(0); _c.Add(0);
-                _cvdC.Add(0); _cvdS.Add(0); _z.Add(0); _vel.Add(0); _big.Add(0); _abs.Add(false); _conf.Add(0); _div.Add(0); _t.Add(DateTime.MinValue); _tf.Add(DateTime.MinValue); _tono.Add(0); _tonoC.Add(0); _bri.Add(0); _briC.Add(0); _lugar.Add(0);
+                _cvdC.Add(0); _cvdS.Add(0); _z.Add(0); _vel.Add(0); _big.Add(0); _abs.Add(false); _conf.Add(0); _div.Add(0); _t.Add(DateTime.MinValue); _tf.Add(DateTime.MinValue);
+                _tono.Add(0); _tonoC.Add(0); _tonoG.Add(0); _bri.Add(0); _briC.Add(0); _briG.Add(0); _lugar.Add(0); _estD.Add(0); _estT.Add(0); _dn.Add(0); _tn.Add(0);
             }
         }
 
@@ -291,6 +317,12 @@ namespace PythiaGex
                     Asegurar(bar);
                     _d[bar] = (double)cn.Delta; _vol[bar] = (double)cn.Volume; _tk[bar] = (double)cn.Ticks; _dmax[bar] = (double)cn.MaxDelta; _dmin[bar] = (double)cn.MinDelta;
                     _o[bar] = (double)cn.Open; _h[bar] = (double)cn.High; _l[bar] = (double)cn.Low; _c[bar] = (double)cn.Close; _t[bar] = cn.Time; _tf[bar] = cn.LastTime;
+                    if (bar > _ultimoIndexado)
+                    {
+                        int minuto = cn.Time.Hour * 60 + cn.Time.Minute;
+                        if (!_porMinuto.TryGetValue(minuto, out var lst)) _porMinuto[minuto] = lst = new List<int>();
+                        lst.Add(bar); _ultimoIndexado = bar;
+                    }
                     bool nueva = false; try { nueva = bar > 0 && IsNewSession(bar); } catch { }
                     _cvdC[bar] = (bar > 0 ? _cvdC[bar - 1] : 0) + _d[bar];
                     _cvdS[bar] = (bar > 0 && !nueva ? _cvdS[bar - 1] : 0) + _d[bar];
@@ -302,12 +334,7 @@ namespace PythiaGex
                     if (viva && (bar != _barraProvisoria || (ahora - _ultimoProvisorio).TotalMilliseconds >= 300))
                     {
                         _barraProvisoria = bar; _ultimoProvisorio = ahora;
-                        _proyTicks = 1;
-                        if (bar > 2)
-                        {
-                            double dur = Math.Min((_t[bar] - _t[bar - 1]).TotalSeconds, (_t[bar - 1] - _t[bar - 2]).TotalSeconds), tr = (cn.LastTime - cn.Time).TotalSeconds;
-                            if (dur > 0 && dur <= 3600 && tr >= 5 && tr < dur) _proyTicks = dur / tr;   // solo velas de tiempo parejo
-                        }
+                        MedirTiempoDeLaViva(bar, (cn.LastTime - cn.Time).TotalSeconds);
                         Derivar(bar);
                     }
                 }
@@ -316,75 +343,144 @@ namespace PythiaGex
             catch (Exception e) { Registrar(e); }
         }
 
-        /// <summary>Todo lo que sale de las velas hasta 'bar' inclusive, sin mirar adelante.</summary>
+        /// <summary>Cuanto lleva la vela en curso y cuanto dura una vela (solo graficos de tiempo parejo). Usa el reloj si es coherente con la vela.</summary>
+        private void MedirTiempoDeLaViva(int bar, double trTick)
+        {
+            _trViva = 0; _durViva = 0;
+            if (bar <= 2) return;
+            double dur = Math.Min((_t[bar] - _t[bar - 1]).TotalSeconds, (_t[bar - 1] - _t[bar - 2]).TotalSeconds);
+            if (dur <= 0 || dur > 3600) return;
+            double trReloj = (DateTime.UtcNow - _t[bar]).TotalSeconds, tr = trTick;
+            if (trReloj >= trTick && trReloj <= dur + 2) tr = trReloj;   // en vivo el reloj sigue corriendo aunque no entren operaciones (en replay no es coherente y se ignora)
+            if (tr <= 0) return;
+            _trViva = Math.Min(tr, dur); _durViva = dur;
+        }
+
+        /// <summary>La vela en curso se proyecta al cierre: las operaciones crecen con el tiempo (lineal) y el |delta| como su raiz (medido: la raiz
+        /// queda calibrada desde los 8 s; lineal se pasa). Entrada gradual entre los 3 y los 10 s: antes saltaba de 1 a 3 en un tick a los 5 s.</summary>
+        private double FactorViva(bool raiz)
+        {
+            if (_durViva <= 0 || _trViva <= 0) return 1;
+            double lineal = _durViva / Math.Max(_trViva, 5), f = raiz ? Math.Min(3, Math.Sqrt(lineal)) : Math.Min(12, lineal);
+            double entrada = Math.Max(0, Math.Min(1, (_trViva - 3) / 7.0));
+            return Math.Max(1, 1 + (f - 1) * entrada);
+        }
+
+        /// <summary>Lo normal de ESA hora para la vela: mediana del |delta| y de las operaciones en la misma franja (+-15 min) de las 5 sesiones
+        /// anteriores (>= 12 h atras). Sin historia: las 60 velas previas. Causal. Asi la apertura de Nueva York no sale toda brillante
+        /// (revision 1.4: a las 13:30 UTC el 52 % de las celdas tenia lugar >= 0,8; con esto, 25 %; desvio entre franjas 7,2 -> 2,8 puntos).</summary>
+        private void Estacional(int bar)
+        {
+            int m = _t[bar].Hour * 60 + _t[bar].Minute; var vd = new List<double>(160); var vt = new List<double>(160);
+            for (int off = -15; off <= 15; off++)
+            {
+                if (!_porMinuto.TryGetValue(((m + off) % 1440 + 1440) % 1440, out var lst)) continue;
+                int tomados = 0;
+                for (int i = lst.Count - 1; i >= 0 && tomados < 5; i--)
+                {
+                    int j = lst[i]; if ((_t[bar] - _t[j]).TotalMinutes < 720) continue;
+                    vd.Add(Math.Abs(_d[j])); vt.Add(_tk[j]); tomados++;
+                }
+            }
+            if (vd.Count < 30) { vd.Clear(); vt.Clear(); for (int j = Math.Max(0, bar - 60); j < bar; j++) { vd.Add(Math.Abs(_d[j])); vt.Add(_tk[j]); } }
+            double ed = 1, et = 1;
+            if (vd.Count > 0) { vd.Sort(); vt.Sort(); ed = Math.Max(1.0, vd[vd.Count / 2]); et = Math.Max(1.0, vt[vt.Count / 2]); }
+            _estD[bar] = ed; _estT[bar] = et;
+        }
+
+        /// <summary>Lugar de 'valor' entre los de las ultimas n velas de la serie (0 = el mas chico, 1 = el mas grande). Robusto a rafagas.</summary>
+        private static double Lugar(List<double> serie, int bar, int n, double valor)
+        {
+            int a0 = Math.Max(0, bar - n + 1), m = bar - a0 + 1; if (m < 10) return 0;
+            int cnt = 1; for (int k = a0; k < bar; k++) if (serie[k] <= valor) cnt++;
+            return Math.Min(1.0, (cnt - 0.5) / m);
+        }
+
+        /// <summary>Lugar del |grande| de la vela entre los NO nulos de las ultimas n velas (el brillo de la fila grandes).</summary>
+        private double LugarGrande(int bar, int n)
+        {
+            double a = Math.Abs(_big[bar]); if (a == 0) return 0;
+            int total = 0, cnt = 0;
+            for (int k = Math.Max(0, bar - n + 1); k <= bar; k++) { double x = Math.Abs(_big[k]); if (x == 0) continue; total++; if (x <= a) cnt++; }
+            return total < 5 ? 0.5 : Math.Min(1.0, (cnt - 0.5) / total);
+        }
+
+        /// <summary>Todo lo que sale de las velas hasta 'bar' inclusive, sin mirar adelante. La misma regla esta en laboratorio/cvd_regla15.py (paridad vela por vela).</summary>
         private void Derivar(int bar)
         {
             int w = Math.Max(1, FcPresionVelas), n = Math.Max(20, FcVentanaNormal);
-            // presion: suma de w velas contra el desvio del delta por vela de las ultimas n
+            bool viva = bar == CurrentBar - 1;
+            // barras detras del CVD: suma de w velas contra el desvio del delta de las ultimas n (OTRA lectura que la cinta presion)
             double s = 0; for (int k = Math.Max(0, bar - w + 1); k <= bar; k++) s += _d[k];
             int a0 = Math.Max(0, bar - n + 1), m = bar - a0 + 1;
             double med = 0; for (int k = a0; k <= bar; k++) med += _d[k]; med /= m;
             double var = 0; for (int k = a0; k <= bar; k++) var += (_d[k] - med) * (_d[k] - med);
             double sd = m > 5 ? Math.Sqrt(var / m) : 0;
             _z[bar] = sd > 0 ? Math.Max(-3, Math.Min(3, s / (sd * Math.Sqrt(w)))) : 0;
-            // velocidad de la cinta: operaciones de la vela contra lo normal
-            double mt = 0; for (int k = a0; k <= bar; k++) mt += _tk[k]; mt /= m;
-            double vt = 0; for (int k = a0; k <= bar; k++) vt += (_tk[k] - mt) * (_tk[k] - mt);
-            double sdt = m > 5 ? Math.Sqrt(vt / m) : 0;
-            double tkAhora = _tk[bar] * (bar == CurrentBar - 1 ? _proyTicks : 1);
-            _vel[bar] = sdt > 0 ? Math.Max(0, Math.Min(3, (tkAhora - mt) / sdt)) : 0;
-            // absorcion: mucho delta (percentil) y el precio avanzo menos de lo que ese delta suele mover
+            // lo normal de esa hora (una vez por vela) y los valores ya descontada la hora
+            if (_estD[bar] <= 0) Estacional(bar);
+            _dn[bar] = Math.Abs(_d[bar]) / _estD[bar]; _tn[bar] = _tk[bar] / _estT[bar];
+            // cinta (velocidad): lugar de las operaciones de la vela; en la vela en curso se proyectan al cierre
+            _vel[bar] = Lugar(_tn, bar, n, _tn[bar] * (viva ? FactorViva(false) : 1));
+            // lugar del |delta|: SIN proyectar para DECIDIR (violeta, lecturas, absorcion), proyectado solo para el BRILLO de la vela en curso
+            // (revision 1.4: con el lugar proyectado, 5,6 % de las velas mostraba un violeta temprano y solo el 9 % llegaba al cierre)
+            double rank = Lugar(_dn, bar, n, _dn[bar]); _lugar[bar] = rank;
+            double lugar = Math.Abs(_d[bar]) >= FcDeltaMinimo ? rank : 0;
+            double lugarBrillo = viva && lugar > 0 ? Math.Max(lugar, Lugar(_dn, bar, n, _dn[bar] * FactorViva(true))) : lugar;
+            // absorcion: mucho delta (su lugar) y el precio avanzo menos de lo que ese delta suele mover
             int b0 = Math.Max(0, bar - Math.Max(30, FcAbsVentana) + 1);
             var ab = new List<double>(bar - b0 + 1); for (int k = b0; k <= bar; k++) ab.Add(Math.Abs(_d[k])); ab.Sort();
-            double pAlto = ab[(int)Math.Min(ab.Count - 1, ab.Count * Math.Max(50, FcAbsPercentil) / 100.0)];
             double medAbs = ab[ab.Count / 2];
             var rs = new List<double>();
             for (int k = Math.Max(0, bar - 120); k < bar; k++) if (Math.Abs(_d[k]) >= Math.Max(1, medAbs)) rs.Add(Math.Abs(_c[k] - _o[k]) / Math.Abs(_d[k]));
             bool abs = false; double beta = 0;
             if (rs.Count >= 20) { rs.Sort(); beta = rs[rs.Count / 2]; }
-            if (beta > 0 && Math.Abs(_d[bar]) >= pAlto && pAlto > 0)
+            if (beta > 0 && lugar > 0 && lugar >= Math.Max(50, FcAbsPercentil) / 100.0)
             {
                 double avance = (_c[bar] - _o[bar]) * (_d[bar] > 0 ? 1 : -1);
                 abs = avance <= FcAbsAvancePct / 100.0 * beta * Math.Abs(_d[bar]);
             }
             _abs[bar] = abs;
-            // ---- 1.4: LA CELDA HABLA DE LA VELA QUE TIENE ENCIMA (pedido 17-09: "el color no corresponde con la vela, avisa tarde,
-            // muchos negros"). Medido (laboratorio/cvd_coherencia.py): la regla anterior dejaba apagado el 44 % de las velas con cuerpo,
-            // porque el desvio estandar de 60 velas la cegaba despues de una vela enorme. El tamaño del delta ahora es su LUGAR entre los
-            // de la ultima hora (0 = el mas chico, 1 = el mas grande). En la vela en curso el |delta| crece como la raiz del tiempo.
-            double factor = bar == CurrentBar - 1 ? Math.Min(3, Math.Sqrt(Math.Max(1, _proyTicks))) : 1;
-            double lugar = Lugar(bar, n, factor); _lugar[bar] = lugar;
+            // ---- LA CELDA HABLA DE LA VELA QUE TIENE ENCIMA (1.4) ----
             double cuerpo = _c[bar] - _o[bar], rango = _h[bar] - _l[bar];
             int sVela = rango > 0 && Math.Abs(cuerpo) >= FcIndecisionPct / 100.0 * rango ? Math.Sign(cuerpo) : 0, sDelta = Math.Sign(_d[bar]);
             double piso = FcPisoDelta / 100.0, contraDesde = FcContraDesde / 100.0;
-            if (sVela == 0) { _tono[bar] = Gris; _bri[bar] = 0.45; }                                                      // doji / martillo
-            else if (sDelta == sVela && lugar >= piso) { _tono[bar] = sVela; _bri[bar] = 0.40 + 0.60 * lugar; }           // el flujo acompaña: brillo = cuanto
-            else if (sDelta == -sVela && lugar >= contraDesde) { _tono[bar] = Contra; _bri[bar] = 0.45 + 0.55 * lugar; }  // el precio le gano al flujo
-            else { _tono[bar] = sVela; _bri[bar] = 0.40; }                                                                // se movio casi sin flujo
-            // confluencia: las cuatro lecturas firmadas; la cinta las muestra RESPECTO de la vela
+            bool aFavor = sVela != 0 && sDelta == sVela && lugar >= piso, enContra = sVela != 0 && sDelta == -sVela && lugar >= contraDesde;
+            if (sVela == 0) { _tono[bar] = Gris; _bri[bar] = 0.60; }                          // doji / martillo
+            else if (aFavor) { _tono[bar] = sVela; _bri[bar] = 0.40 + 0.60 * lugarBrillo; }     // el flujo acompaña: brillo = cuanto
+            else if (enContra) { _tono[bar] = Contra; _bri[bar] = 0.45 + 0.55 * lugarBrillo; }  // el precio le gano al flujo
+            else { _tono[bar] = sVela; _bri[bar] = 0.40; }                                      // se movio casi sin flujo
+            // las cuatro lecturas firmadas (el texto FLUJO n/4 es su suma; es descriptiva: a 5 velas acierta el 50 %)
             int g0 = Math.Max(0, bar - 299);
             var bg = new List<double>(bar - g0 + 1); for (int k = g0; k <= bar; k++) bg.Add(Math.Abs(_big[k])); bg.Sort();
             double bmax = bg[(int)Math.Min(bg.Count - 1, bg.Count * 0.95)];
             int ca = lugar >= piso ? sDelta : 0;                                                                          // el delta de la vela
             int cb = bmax > 0 ? (_big[bar] > 0.3 * bmax ? 1 : _big[bar] < -0.3 * bmax ? -1 : 0) : 0;                      // las operaciones grandes
-            int hc = Math.Max(20, 4 * w); int cc = bar >= hc ? Math.Sign(_cvdC[bar] - _cvdC[bar - hc]) : 0;               // el CVD de 20 velas (el fondo)
-            // donde cerro el delta dentro de su recorrido (-1 en su minimo, +1 en su maximo): capta el martillo (venta temprana, compra al final)
+            int cc = bar >= 20 ? Math.Sign(_cvdC[bar] - _cvdC[bar - 20]) : 0;                                             // el CVD de 20 velas (el fondo)
+            // donde cerro el delta dentro de su recorrido (-1 en su minimo, +1 en su maximo). NO es independiente del delta (coinciden 97 %):
+            // en la practica hace que el delta de la vela pese doble cuando ademas cerro de ese lado (medido: sin ese peso, el CVD de fondo
+            // dejaba al minimo al 35 % de las velas GRANDES de la hora)
             double rec = _dmax[bar] - _dmin[bar], cierreD = rec > 0 ? (_d[bar] - _dmin[bar]) / rec * 2 - 1 : 0; int ce = cierreD > 0.3 ? 1 : cierreD < -0.3 ? -1 : 0;
-            int conf = ca + cb + cc + ce; _conf[bar] = conf;
-            int neto = sVela * conf;                                                                                       // lecturas que acompañan a la vela menos las que van en contra
-            if (sVela == 0) { _tonoC[bar] = Gris; _briC[bar] = 0.45; }
-            else if (neto > 0) { _tonoC[bar] = sVela; _briC[bar] = neto >= 4 ? 1.0 : neto == 3 ? 0.80 : neto == 2 ? 0.58 : 0.40; }
-            else if (neto < 0) { _tonoC[bar] = Contra; _briC[bar] = neto <= -4 ? 1.0 : neto == -3 ? 0.82 : neto == -2 ? 0.62 : 0.45; }
-            else { _tonoC[bar] = Gris; _briC[bar] = 0.30; }
-        }
-
-        /// <summary>Lugar del |delta| de la vela entre los de las ultimas n velas (0 = el mas chico, 1 = el mas grande). Robusto a rafagas.</summary>
-        private double Lugar(int bar, int n, double factor)
-        {
-            int a0 = Math.Max(0, bar - n + 1), m = bar - a0 + 1; if (m < 10) return 0.5;
-            double a = Math.Abs(_d[bar]) * factor; int cnt = 1;
-            for (int k = a0; k < bar; k++) if (Math.Abs(_d[k]) <= a) cnt++;
-            return Math.Min(1.0, (cnt - 0.5) / m);
+            _conf[bar] = ca + ce + cb + cc;
+            // confluencia RESPECTO de la vela (revision 1.4): la vela VOTA; para pintar, el delta en contra cuenta recien desde 'contraDesde'
+            // (igual que en presion); violeta SOLO con causa propia (el delta de esa vela o los grandes en contra); gris solo la indecision.
+            // Medido (20 ruedas): vela grande con celda floja 35 % -> 4 % de las grandes; violeta sin causa 3,5 % -> 0.
+            if (sVela == 0) { _tonoC[bar] = Gris; _briC[bar] = 0.60; }
+            else
+            {
+                int caP = aFavor || enContra ? sDelta : 0, neto = 1 + sVela * (caP + ce + cb + cc);
+                bool causa = enContra || cb == -sVela;
+                if (neto >= 1) { _tonoC[bar] = sVela; _briC[bar] = neto >= 4 ? 1.0 : neto == 3 ? 0.80 : neto == 2 ? 0.60 : 0.40; }
+                else if (causa) { _tonoC[bar] = Contra; _briC[bar] = neto <= -3 ? 1.0 : neto == -2 ? 0.82 : neto == -1 ? 0.62 : 0.45; }
+                else { _tonoC[bar] = sVela; _briC[bar] = 0.40; }
+            }
+            // grandes: su signo (violeta si van contra la vela) y su lugar entre las ultimas 300 velas con grandes
+            if (_big[bar] != 0)
+            {
+                int tg = _big[bar] > 0 ? 1 : -1; if (FcGrandesContraVela && sVela != 0 && tg == -sVela) tg = Contra;
+                _tonoG[bar] = tg; _briG[bar] = 0.40 + 0.60 * LugarGrande(bar, 300);
+            }
+            else { _tonoG[bar] = 0; _briG[bar] = 0; }
         }
 
         /// <summary>La vela k ya cerro: valores finales, divergencia, registro y alertas (solo de las cerradas en vivo).</summary>
@@ -416,8 +512,7 @@ namespace PythiaGex
             {
                 Volcar(k);
                 if (_abs[k]) { Marca("absorcion", k, _d[k] > 0 ? -1 : +1); if (FcAlertaAbsorcion) Alertar("ABSORCION: delta " + _d[k].ToString("+0;-0", Es) + " y la vela no avanzo"); }
-                bool ext = Math.Abs(_conf[k]) >= FcExtremoDesde, extAntes = k > 0 && Math.Abs(_conf[k - 1]) >= FcExtremoDesde;
-                if (ext && !extAntes) { Marca("extremo", k, _conf[k] > 0 ? +1 : -1); if (FcAlertaExtremo) Alertar("EXTREMO " + (_conf[k] > 0 ? "comprador" : "vendedor") + ": no perseguir"); }
+                if (_tono[k] == Contra) Marca("contra", k, _d[k] > 0 ? +1 : -1);   // estado, no gatillo: se graba para seguir midiendolo
                 if (_div[k] != 0) { Marca("divergencia", k, _div[k]); if (FcAlertaDivergencia) Alertar("DIVERGENCIA " + (_div[k] < 0 ? "bajista: maximo nuevo sin CVD" : "alcista: minimo nuevo sin CVD")); }
             }
         }
@@ -477,6 +572,7 @@ namespace PythiaGex
             if ((double)t.Volume < FcUmbralGrande) return;
             int bar = BarraDe(t.Time); if (bar < 0 || bar >= _big.Count) bar = Math.Min(CurrentBar - 1, _big.Count - 1); if (bar < 0) return;
             _big[bar] += t.Direction == TradeDirection.Buy ? (double)t.Volume : t.Direction == TradeDirection.Sell ? -(double)t.Volume : 0;
+            if (bar <= _cerradaHasta) Derivar(bar);   // la ultima operacion grande se cuenta recien cuando llega la siguiente: su vela puede haber cerrado
         }
 
         /// <summary>Las operaciones grandes de los dias anteriores salen del historial de ATAS (patron oficial de Market Power).</summary>
@@ -562,9 +658,9 @@ namespace PythiaGex
             // copia de lo visible bajo llave
             int n = hasta - desde + 1;
             double[] d = new double[n], z = new double[n], vel = new double[n], big = new double[n], cv = new double[n], cs = new double[n], dmx = new double[n], dmn = new double[n], hi = new double[n], lo = new double[n];
-            bool[] ab = new bool[n]; int[] cf = new int[n], dv = new int[n], tono = new int[n], tonoC = new int[n], sv = new int[n]; double[] bri = new double[n], briC = new double[n];
+            bool[] ab = new bool[n]; int[] dv = new int[n], tono = new int[n], tonoC = new int[n], tonoG = new int[n]; double[] bri = new double[n], briC = new double[n], briG = new double[n];
             double bmax = 0, cvdAncla = 0, sesion = 0; int anclaBar; int cerrada;
-            double zA = 0, bigA = 0, velA = 0; bool absA = false; int cfA = 0, tonoA = 0;
+            double dA = 0, lugA = 0, bigA = 0, velA = 0; bool absA = false; int cfA = 0, tonoA = 0;
             lock (_llave)
             {
                 if (_d.Count <= ult) return;
@@ -572,14 +668,13 @@ namespace PythiaGex
                 {
                     int b = desde + i;
                     d[i] = _d[b]; z[i] = _z[b]; vel[i] = _vel[b]; big[i] = _big[b]; cv[i] = _cvdC[b]; cs[i] = _cvdS[b]; dmx[i] = _dmax[b]; dmn[i] = _dmin[b]; hi[i] = _h[b]; lo[i] = _l[b];
-                    ab[i] = _abs[b]; cf[i] = _conf[b]; dv[i] = _div[b]; tono[i] = _tono[b]; tonoC[i] = _tonoC[b]; bri[i] = _bri[b]; briC[i] = _briC[b];
-                    double cu = _c[b] - _o[b], rg = _h[b] - _l[b]; sv[i] = rg > 0 && Math.Abs(cu) >= FcIndecisionPct / 100.0 * rg ? Math.Sign(cu) : 0;
+                    ab[i] = _abs[b]; dv[i] = _div[b]; tono[i] = _tono[b]; tonoC[i] = _tonoC[b]; tonoG[i] = _tonoG[b]; bri[i] = _bri[b]; briC[i] = _briC[b]; briG[i] = _briG[b];
                 }
                 var bg = new List<double>(); for (int b = Math.Max(0, ult - 299); b <= ult; b++) if (_big[b] != 0) bg.Add(Math.Abs(_big[b])); bg.Sort();
                 bmax = bg.Count >= 5 ? bg[(int)Math.Min(bg.Count - 1, bg.Count * 0.95)] : (bg.Count > 0 ? bg[bg.Count - 1] : 0);
                 anclaBar = FcAncla == ModoAnclaCvd.Visible ? desde : Math.Max(0, hasta - Math.Max(10, FcAnclaVelas));
                 cvdAncla = _cvdC[Math.Min(anclaBar, _cvdC.Count - 1)]; sesion = _cvdS[ult]; cerrada = _cerradaHasta;
-                zA = _z[ult]; bigA = _big[ult]; velA = _vel[ult]; absA = _abs[ult]; cfA = _conf[ult]; tonoA = _tono[ult] == Contra || _tonoC[ult] == Contra ? Contra : _tono[ult];
+                dA = _d[ult]; lugA = _lugar[ult]; bigA = _big[ult]; velA = _vel[ult]; absA = _abs[ult]; cfA = _conf[ult]; tonoA = _tono[ult];   // la caja CONTRA solo por el delta de ESA vela
             }
             // x de cada vela
             int[] x0 = new int[n + 1];
@@ -631,17 +726,16 @@ namespace PythiaGex
                     {
                         case 0: tn = tonoC[i]; v = briC[i]; break;
                         case 1: tn = tono[i]; v = bri[i]; break;
-                        case 2:
-                            if (big[i] != 0 && bmax > 0)
-                            {
-                                v = Math.Max(0.35, Math.Min(1, Math.Abs(big[i]) / bmax)); tn = big[i] > 0 ? 1 : -1;
-                                if (FcGrandesContraVela && sv[i] != 0 && tn == -sv[i]) tn = Contra;   // los grandes operaron contra la vela
-                            }
-                            break;
-                        case 3: v = vel[i] / 3.0; tn = Aviso; break;
+                        case 2: tn = tonoG[i]; v = briG[i]; break;
+                        case 3: if (vel[i] >= 0.70) { v = 0.40 + 0.60 * Math.Min(1, (vel[i] - 0.70) / 0.30); tn = Aviso; } break;   // el 30 % mas rapido de las ultimas velas
                         case 4: v = ab[i] ? 1 : 0; tn = Aviso; break;
                     }
-                    if (v <= 0 || tn == 0) continue;
+                    if (v <= 0 || tn == 0)
+                    {
+                        // fila tranquila: fondo tenue, para que se lea 'no hubo' y no 'esta rota' (revision 1.4: 43 % del panel era negro puro)
+                        if (tipo >= 2) g.FillRectangle(Alfa(cTxt, 16), new Rectangle(xa, y + 1, Math.Max(1, xb - xa), Math.Max(2, altoFila - 2)));
+                        continue;
+                    }
                     Color col = tn == 1 ? cCompra : tn == -1 ? cVenta : tn == Contra ? _colContra : tn == Gris ? _colGris : cAviso;
                     var rect = new Rectangle(xa, y + 1, Math.Max(1, xb - xa), Math.Max(2, altoFila - 2));
                     g.FillRectangle(Alfa(col, 35 + 215 * Math.Min(1, v)), rect);
@@ -760,8 +854,8 @@ namespace PythiaGex
             }
 
             // ---- bloque AHORA
-            if (rFila.Width > 100) { try { g.SetClip(reg); } catch { } try { PintarFilaAhora(g, rFila, fCh, cCompra, cVenta, cAviso, cTxt, cFondo, zA, bigA, velA, absA, cfA, hasta == ult, filaAbajo, tonoA); } finally { try { g.SetClip(clipPrevio); } catch { } } }
-            if (FcAhoraComo == FormaDelAhora.Bloque && FcBloqueAhora != LugarDelAhora.Oculto && rAhora.Width > 60) { try { g.SetClip(reg); } catch { } try { PintarAhora(g, rAhora, f, fCh, cCompra, cVenta, cAviso, cTxt, cFondo, zA, bigA, velA, absA, cfA, hasta == ult, tonoA); } finally { try { g.SetClip(clipPrevio); } catch { } } }
+            if (rFila.Width > 100) { try { g.SetClip(reg); } catch { } try { PintarFilaAhora(g, rFila, fCh, cCompra, cVenta, cAviso, cTxt, cFondo, dA, lugA, bigA, velA, absA, cfA, hasta == ult, filaAbajo, tonoA); } finally { try { g.SetClip(clipPrevio); } catch { } } }
+            if (FcAhoraComo == FormaDelAhora.Bloque && FcBloqueAhora != LugarDelAhora.Oculto && rAhora.Width > 60) { try { g.SetClip(reg); } catch { } try { PintarAhora(g, rAhora, f, fCh, cCompra, cVenta, cAviso, cTxt, cFondo, dA, lugA, bigA, velA, absA, cfA, hasta == ult, tonoA); } finally { try { g.SetClip(clipPrevio); } catch { } } }
         }
 
         private static void MarcaForma(RenderContext g, FormaDeMarca forma, Color col, int xc, int yc, int r, bool llena)
@@ -785,7 +879,7 @@ namespace PythiaGex
         /// <summary>El AHORA en una sola fila: cuatro celdas (5 s, 15 s, 60 s, 5 min) y, si entran, FLUJO n/4, el aviso de
         /// extremo, PRESION, GRANDES, CINTA rapida y ABSORCION. Lo que no entra se saca de derecha a izquierda por prioridad.</summary>
         private void PintarFilaAhora(RenderContext g, Rectangle r, RenderFont fCh, Color cCompra, Color cVenta, Color cAviso, Color cTxt, Color cFondo,
-                                     double z, double big, double vel, bool abs, int conf, bool alDia, bool conFondo, int tonoVela)
+                                     double dVela, double lugarVela, double big, double vel, bool abs, int conf, bool alDia, bool conFondo, int tonoVela)
         {
             if (conFondo) g.FillRectangle(Alfa(cFondo, 215), r);
             int alto = g.MeasureString("0", fCh).Height, y = r.Top + Math.Max(0, (r.Height - alto) / 2), x = r.Left + 2;
@@ -806,13 +900,13 @@ namespace PythiaGex
             var items = new List<(string Texto, Color Col, bool Caja)>();
             string lado = conf > 0 ? "COMPR." : conf < 0 ? "VEND." : "PAREJO";
             items.Add(("FLUJO " + lado + " " + Math.Abs(conf) + "/4", conf > 0 ? cCompra : conf < 0 ? cVenta : cTxt, false));
-            if (Math.Abs(conf) >= FcExtremoDesde) items.Add(("NO PERSEGUIR", cAviso, true));
             if (tonoVela == Contra) items.Add(("VELA CONTRA EL FLUJO", _colContra, true));
             else if (tonoVela == Gris) items.Add(("INDECISION", _colGris, false));
             if (abs) items.Add(("ABSORCION", cAviso, true));
-            items.Add(("DELTA " + Math.Max(1, FcPresionVelas) + "v " + Math.Round(z, 1).ToString("+0.0;-0.0;0.0", Es) + "σ", z > 0.5 ? cCompra : z < -0.5 ? cVenta : cTxt, false));
+            // el delta de la vela en curso y su lugar entre las ultimas velas (p80 = mas grande que el 80 %): lo MISMO que pinta la celda de presion
+            items.Add(("DELTA " + dVela.ToString("+#,0;-#,0;0", Es) + " p" + Math.Round(lugarVela * 100).ToString("0", Inv), tonoVela == Contra ? _colContra : dVela > 0 ? cCompra : dVela < 0 ? cVenta : cTxt, false));
             items.Add(("GRANDES " + big.ToString("+#,0;-#,0;0", Es), big > 0 ? cCompra : big < 0 ? cVenta : cTxt, false));
-            if (vel > 1) items.Add(("CINTA rapida", cAviso, false));
+            if (vel >= 0.85) items.Add(("CINTA rapida", cAviso, false));
             if (!alDia) items.Add(("(grafico corrido)", Alfa(cTxt, 160), false));
             foreach (var it in items)
             {
@@ -829,7 +923,7 @@ namespace PythiaGex
         }
 
         private void PintarAhora(RenderContext g, Rectangle r, RenderFont f, RenderFont fCh, Color cCompra, Color cVenta, Color cAviso, Color cTxt, Color cFondo,
-                                 double z, double big, double vel, bool abs, int conf, bool alDia, int tonoVela)
+                                 double dVela, double lugarVela, double big, double vel, bool abs, int conf, bool alDia, int tonoVela)
         {
             g.FillRectangle(Alfa(cFondo, 225), r);
             g.DrawRectangle(new RenderPen(Alfa(cTxt, 60), 1f), r);
@@ -854,20 +948,13 @@ namespace PythiaGex
             {
                 g.DrawString(nombre, fCh, cTxt, x, y); var m = g.MeasureString(valor, f); g.DrawString(valor, f, col, xR - m.Width, y - 1); y += paso;
             }
-            Linea("DELTA " + Math.Max(1, FcPresionVelas) + "v", Math.Round(z, 1).ToString("+0.0;-0.0;0.0", Es) + "σ", z > 0.5 ? cCompra : z < -0.5 ? cVenta : cTxt);
+            Linea("DELTA", dVela.ToString("+#,0;-#,0;0", Es) + " p" + Math.Round(lugarVela * 100).ToString("0", Inv), tonoVela == Contra ? _colContra : dVela > 0 ? cCompra : dVela < 0 ? cVenta : cTxt);
             Linea("GRANDES", big.ToString("+#,0;-#,0;0", Es), big > 0 ? cCompra : big < 0 ? cVenta : cTxt);
-            Linea("CINTA", vel > 1 ? "rapida" : "normal", vel > 1 ? cAviso : cTxt);
+            Linea("CINTA", vel >= 0.85 ? "rapida" : "normal", vel >= 0.85 ? cAviso : cTxt);
             Linea("ABSORCION", abs ? "SI" : "no", abs ? cAviso : cTxt);
             if (tonoVela == Contra) Linea("VELA", "contra el flujo", _colContra); else if (tonoVela == Gris) Linea("VELA", "indecision", _colGris);
             string lado = conf > 0 ? "COMPR. " : conf < 0 ? "VEND. " : "PAREJO ";
             Linea("FLUJO", lado + Math.Abs(conf) + "/4", conf > 0 ? cCompra : conf < 0 ? cVenta : cTxt);
-            if (Math.Abs(conf) >= FcExtremoDesde)
-            {
-                string av = "EXTREMO: no perseguir"; var m = g.MeasureString(av, fCh);
-                if (m.Width + 8 > xR - x + 2) { av = "NO PERSEGUIR"; m = g.MeasureString(av, fCh); }
-                var rc = new Rectangle(x - 2, Math.Min(y, r.Bottom - m.Height - 3), Math.Min(xR - x + 2, m.Width + 8), m.Height + 1);
-                g.FillRectangle(Alfa(cAviso, 45), rc); g.DrawRectangle(new RenderPen(cAviso, 1f), rc); g.DrawString(av, fCh, cAviso, rc.Left + 4, rc.Top);
-            }
             if (!alDia) g.DrawString("(grafico corrido)", fCh, Alfa(cTxt, 150), r.Left + pad, r.Bottom - altoCh - 1);
         }
 
@@ -883,26 +970,45 @@ namespace PythiaGex
             if (!FcVolcarVelas) return;
             try
             {
-                var sb = new System.Text.StringBuilder(soloVela >= 0 ? 256 : 1 << 20);
-                bool entero = soloVela < 0 || !_volcadoEntero;
+                const string cab = "t,tf,o,h,l,c,vol,ticks,delta,dmax,dmin,big,tono,brillo,tonoc,brilloc,lugar,conf,abs,div,vel,tonog,brillog";
+                bool entero; int desde, hasta;
+                DateTime[] t, tf; double[] o, h, l, c, vol, tk, d, dmax, dmin, big, bri, briC, lug, vel, briG; int[] tono, tonoC, conf, div, tonoG; bool[] abs;
                 lock (_llave)
                 {
-                    int hasta = Math.Min(_cerradaHasta, _d.Count - 1), desde = entero ? 0 : soloVela;
-                    if (entero) sb.Append("t,tf,o,h,l,c,vol,ticks,delta,dmax,dmin,big,tono,brillo,tonoc,brilloc,lugar,conf,abs,div,vel\n");
-                    for (int k = desde; k <= hasta; k++)
-                        sb.Append(_t[k].ToString("yyyy-MM-ddTHH:mm:ss", Inv)).Append(',').Append(_tf[k].ToString("yyyy-MM-ddTHH:mm:ss", Inv)).Append(',')
-                          .Append(_o[k].ToString("0.####", Inv)).Append(',').Append(_h[k].ToString("0.####", Inv)).Append(',').Append(_l[k].ToString("0.####", Inv)).Append(',').Append(_c[k].ToString("0.####", Inv)).Append(',')
-                          .Append(_vol[k].ToString("0", Inv)).Append(',').Append(_tk[k].ToString("0", Inv)).Append(',').Append(_d[k].ToString("0", Inv)).Append(',').Append(_dmax[k].ToString("0", Inv)).Append(',').Append(_dmin[k].ToString("0", Inv)).Append(',')
-                          .Append(_big[k].ToString("0", Inv)).Append(',').Append(_tono[k]).Append(',').Append(_bri[k].ToString("0.000", Inv)).Append(',').Append(_tonoC[k]).Append(',').Append(_briC[k].ToString("0.000", Inv)).Append(',').Append(_lugar[k].ToString("0.0000", Inv)).Append(',').Append(_conf[k]).Append(',').Append(_abs[k] ? 1 : 0).Append(',').Append(_div[k]).Append(',').Append(_vel[k].ToString("0.00", Inv)).Append('\n');
+                    entero = soloVela < 0 || !_volcadoEntero; hasta = Math.Min(_cerradaHasta, _d.Count - 1); desde = entero ? 0 : soloVela;
+                    if (hasta < desde) return;
+                    int n = hasta - desde + 1;   // copia bajo llave (rapida); el formateo va afuera (revision 1.4: 81 ms con la llave tomada)
+                    t = _t.GetRange(desde, n).ToArray(); tf = _tf.GetRange(desde, n).ToArray(); o = _o.GetRange(desde, n).ToArray(); h = _h.GetRange(desde, n).ToArray();
+                    l = _l.GetRange(desde, n).ToArray(); c = _c.GetRange(desde, n).ToArray(); vol = _vol.GetRange(desde, n).ToArray(); tk = _tk.GetRange(desde, n).ToArray();
+                    d = _d.GetRange(desde, n).ToArray(); dmax = _dmax.GetRange(desde, n).ToArray(); dmin = _dmin.GetRange(desde, n).ToArray(); big = _big.GetRange(desde, n).ToArray();
+                    bri = _bri.GetRange(desde, n).ToArray(); briC = _briC.GetRange(desde, n).ToArray(); lug = _lugar.GetRange(desde, n).ToArray(); vel = _vel.GetRange(desde, n).ToArray(); briG = _briG.GetRange(desde, n).ToArray();
+                    tono = _tono.GetRange(desde, n).ToArray(); tonoC = _tonoC.GetRange(desde, n).ToArray(); conf = _conf.GetRange(desde, n).ToArray(); div = _div.GetRange(desde, n).ToArray(); tonoG = _tonoG.GetRange(desde, n).ToArray();
+                    abs = _abs.GetRange(desde, n).ToArray();
                     _volcadoEntero = true;
                 }
                 var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex", "flujo");
-                Directory.CreateDirectory(dir);
                 string inst = (InstrumentInfo?.Instrument ?? "x").Replace('#', ' ').Trim();
                 string marco = ((ChartInfo?.ChartType.ToString() ?? "") + "-" + (ChartInfo?.TimeFrame ?? "")).Replace(' ', '_');
-                var p = Path.Combine(dir, "velas-" + inst + "-" + marco + ".csv"); var txt = sb.ToString();
-                // el archivo entero una sola vez por carga; despues, una linea por vela cerrada (antes reescribia 3 MB por minuto y por grafico)
-                System.Threading.Tasks.Task.Run(() => { try { lock (_llaveArchivo) { if (entero) File.WriteAllText(p, txt); else File.AppendAllText(p, txt); } } catch { } });
+                var p = Path.Combine(dir, "velas-" + inst + "-" + marco + ".csv");
+                // una sola cola para todos los graficos: las escrituras salen en el orden en que se pidieron (un volcado entero no pisa una linea posterior)
+                lock (_llaveArchivo) _colaArchivo = _colaArchivo.ContinueWith(_ =>
+                {
+                    try
+                    {
+                        var sb = new System.Text.StringBuilder(entero ? 1 << 20 : 256);
+                        if (entero) sb.Append(cab).Append('\n');
+                        for (int k = 0; k < t.Length; k++)
+                            sb.Append(t[k].ToString("yyyy-MM-ddTHH:mm:ss", Inv)).Append(',').Append(tf[k].ToString("yyyy-MM-ddTHH:mm:ss", Inv)).Append(',')
+                              .Append(o[k].ToString("0.####", Inv)).Append(',').Append(h[k].ToString("0.####", Inv)).Append(',').Append(l[k].ToString("0.####", Inv)).Append(',').Append(c[k].ToString("0.####", Inv)).Append(',')
+                              .Append(vol[k].ToString("0", Inv)).Append(',').Append(tk[k].ToString("0", Inv)).Append(',').Append(d[k].ToString("0", Inv)).Append(',').Append(dmax[k].ToString("0", Inv)).Append(',').Append(dmin[k].ToString("0", Inv)).Append(',')
+                              .Append(big[k].ToString("0", Inv)).Append(',').Append(tono[k]).Append(',').Append(bri[k].ToString("0.000", Inv)).Append(',').Append(tonoC[k]).Append(',').Append(briC[k].ToString("0.000", Inv)).Append(',')
+                              .Append(lug[k].ToString("0.0000", Inv)).Append(',').Append(conf[k]).Append(',').Append(abs[k] ? 1 : 0).Append(',').Append(div[k]).Append(',').Append(vel[k].ToString("0.0000", Inv)).Append(',')
+                              .Append(tonoG[k]).Append(',').Append(briG[k].ToString("0.000", Inv)).Append('\n');
+                        Directory.CreateDirectory(dir);
+                        if (entero) File.WriteAllText(p, sb.ToString()); else File.AppendAllText(p, sb.ToString());
+                    }
+                    catch { }
+                });
             }
             catch (Exception e) { Registrar(e); }
         }
@@ -917,16 +1023,18 @@ namespace PythiaGex
                 Directory.CreateDirectory(dir);
                 string inst = (InstrumentInfo?.Instrument ?? "x").Replace('#', ' ').Trim();
                 var p = Path.Combine(dir, "marcas-" + inst + "-" + DateTime.UtcNow.ToString("yyyy-MM-dd", Inv) + ".jsonl");
-                string l = "{\"utc\":\"" + DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss", Inv) + "\",\"tipo\":\"" + tipo + "\",\"sentido\":" + sentido
+                string l = "{\"ver\":\"1.5\",\"utc\":\"" + DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss", Inv) + "\",\"tipo\":\"" + tipo + "\",\"sentido\":" + sentido
                     + ",\"vela\":\"" + _t[bar].ToString("yyyy-MM-ddTHH:mm:ss", Inv) + "\",\"marco\":\"" + (ChartInfo?.ChartType.ToString() ?? "") + " " + (ChartInfo?.TimeFrame ?? "") + "\""
                     + ",\"c\":" + _c[bar].ToString("0.##", Inv) + ",\"delta\":" + _d[bar].ToString("0", Inv) + ",\"vol\":" + _vol[bar].ToString("0", Inv)
-                    + ",\"z\":" + _z[bar].ToString("0.00", Inv) + ",\"grandes\":" + _big[bar].ToString("0", Inv) + ",\"cinta\":" + _vel[bar].ToString("0.00", Inv) + ",\"conf\":" + _conf[bar] + "}";
+                    + ",\"z\":" + _z[bar].ToString("0.00", Inv) + ",\"grandes\":" + _big[bar].ToString("0", Inv) + ",\"cinta\":" + _vel[bar].ToString("0.00", Inv) + ",\"conf\":" + _conf[bar]
+                    + ",\"lugar\":" + _lugar[bar].ToString("0.000", Inv) + ",\"tono\":" + _tono[bar] + ",\"tonoc\":" + _tonoC[bar] + "}";
                 lock (_llaveArchivo) File.AppendAllText(p, l + "\n");
             }
             catch (Exception e) { Registrar(e); }
         }
 
         private static readonly object _llaveArchivo = new object();
+        private static System.Threading.Tasks.Task _colaArchivo = System.Threading.Tasks.Task.CompletedTask;
         [Display(Name = "Volcar las velas a un CSV (banco de pruebas)", GroupName = "7. Alertas y registro", Order = 9)]
         public bool FcVolcarVelas { get; set; } = true;
         private static readonly string RutaLog = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "pythiagex-flujoclaro.log");

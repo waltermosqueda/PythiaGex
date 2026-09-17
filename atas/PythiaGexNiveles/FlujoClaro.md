@@ -10,15 +10,19 @@ demasiado, y siento que me avisa tarde; ¿no hay algo superador?". Después de v
 1. **Cinco cintas pegadas al precio** (arriba del panel, una celda por vela). Desde la 1.4 las tres primeras hablan
    **de la vela que tienen encima**, con una sola gramática:
    **verde / rojo** = el flujo ACOMPAÑA a la vela (brillo = cuánto) · **violeta** = el flujo le lleva LA CONTRA ·
-   **gris** = vela de indecisión (doji, martillo) o flujo parejo · **negro** = no hubo nada que medir.
-   - *confluencia*: cuántas de las 4 lecturas (delta de la vela, dónde cerró el delta, grandes, CVD de 20 velas)
-     acompañan a la vela, menos las que van en contra.
-   - *presión*: el delta de la vela contra los de la última hora (por percentil, no en sigmas). Delta a favor = color
-     de la vela, más brillante cuanto más grande; delta en contra y grande = violeta; delta chico = color a media luz.
-   - *grandes*: compras menos ventas de las órdenes agresoras de 50 contratos o más; violeta si fueron contra la vela.
-   - *cinta*: cantidad de operaciones de la vela contra lo normal (hay apuro ahora; no dice dirección). Fila de alarma.
-   - *absorción*: mucho delta y el precio avanza menos de un cuarto de lo que ese delta suele mover. Fila de alarma.
-   La celda de la vela en curso va llena y con un borde fino: se mueve con la vela.
+   **gris** = vela de indecisión (doji, martillo) · **fondo tenue** = fila tranquila, no hubo nada.
+   - *confluencia*: la vela vota, y se le suman las lecturas de flujo que la acompañan y se le restan las que van en
+     contra (delta de la vela, dónde cerró el delta, grandes, CVD de 20 velas). Más viva cuantas más la acompañan.
+     Violeta solo si el delta de ESA vela o los grandes van contra ella.
+   - *presión*: el delta de la vela contra los de las últimas 60 velas, descontado lo normal de esa hora del día (por
+     percentil, no en sigmas). Delta a favor = color de la vela, más brillante cuanto más grande; delta en contra y
+     grande = violeta; delta chico = color a media luz.
+   - *grandes*: compras menos ventas de las órdenes agresoras de 50 contratos o más; violeta si fueron contra la vela;
+     brillo por su lugar entre las últimas 300 velas con grandes. Fondo tenue = no hubo.
+   - *cinta*: fila de alarma. Prende cuando las operaciones de la vela están entre el 30 % más alto de la hora. No dice
+     dirección. Fondo tenue = tranquila (lo normal 7 de cada 10 velas).
+   - *absorción*: fila de alarma. Mucho delta y el precio avanza menos de un cuarto de lo que ese delta suele mover.
+   La celda de la vela en curso va llena y con un borde fino: se mueve con la vela y puede cambiar hasta el cierre.
 2. **Panel**: el CVD **anclado** (el cero es el CVD de hace 60 velas: la misma curva, 3-4 veces más alta de leer)
    con línea verde/roja, y detrás las barras de presión con bandas fijas ±1σ y ±2σ. La última barra se mueve con
    cada operación. Opción: velas de delta con mecha (máximo y mínimo del delta dentro de la vela).
@@ -27,7 +31,7 @@ demasiado, y siento que me avisa tarde; ¿no hay algo superador?". Después de v
 4. **AHORA, en una fila** (pedido del operador: "el bloque nos roba espacio"): va en el renglón del título del
    panel, a la derecha del nombre que escribe ATAS, así no ocupa nada extra. Cuatro celdas (5 s, 15 s, 60 s,
    5 min) con el delta como % del volumen de esa ventana, calculadas con cada operación; después FLUJO n/4,
-   el aviso **NO PERSEGUIR** (3 o 4 lecturas del mismo lado), ABSORCIÓN, PRESIÓN, GRANDES y CINTA rápida; lo que
+   VELA CONTRA EL FLUJO / INDECISIÓN, ABSORCIÓN, DELTA de la vela con su percentil, GRANDES y CINTA rápida; lo que
    no entra se saca por prioridad. Opciones: fila abajo, bloque (el cuadro grande) u oculto.
 
 Todo se prende, se apaga y cambia de color/tamaño en los ajustes (grupos 1 a 7). Los nombres de los ajustes
@@ -46,6 +50,7 @@ Datos: velas propias de 1 y 2 minutos del 08 al 17-09 (`laboratorio/cvd_superado
 - **Ninguna señal de vela le ganó al azar** a 5 velas (cruce de presión, presión extrema, mecha de delta).
 - **Confluencia 4 de 4: a favor solo el 40 %** de las veces en los 5 minutos siguientes (96 casos, z −1,4; con 3
   o más, 48 %). Tendencia débil, no prueba. Por eso no dice "compra": dice *no perseguir*.
+  **RETIRADO en la 1.5:** con 20 ruedas da 50 % (n 2.716): era ruido de muestra chica. Ver la sección 1.5.
 - **Absorción**: 46 % en contra del delta con 24 casos (z +0,3): sin evidencia todavía. Una primera medición dio
   57 % con 21 casos, pero usaba un percentil global que miraba adelante: era un artefacto (lo encontró la revisión).
 
@@ -108,7 +113,7 @@ definiciones de giro. Contra su propio placebo (la misma cinta con los deltas ba
   las velas. La cuarta lectura ahora es **dónde cerró el delta dentro de su recorrido** (capta el martillo: venta
   temprana, compra al final) y la presión cuenta solo si es de esa vela. Remedido (MNQ 1 min, 950 velas): 3 o más
   lecturas del mismo lado, a favor a 5 velas 41 % (173 casos, z −1,4); las 4, 36 % (86 casos, z −1,8). Sigue
-  diciendo lo mismo: extremo = tarde, **no perseguir**; y sigue sin ser prueba (|z| < 2).
+  diciendo lo mismo: extremo = tarde, **no perseguir**; y sigue sin ser prueba (|z| < 2). **RETIRADO en la 1.5** (50 % con 20 ruedas).
 - El texto "PRESION xσ" del AHORA era otra cuenta que la cinta "presión": ahora dice **DELTA 2v** (lo que es).
 - El banco (`cvd_calibrar.py`) descarta las filas duplicadas del archivo de 2 min quedándose con la de mayor volumen.
 
@@ -142,6 +147,60 @@ cuerpo, 0 celdas negras y 0 contrarias en presión y confluencia.
 sale del color de la celda el 48 % de las veces: la cinta no anticipa. Lo que le agrega a la vela es (a) cuánto flujo
 la respalda (el brillo) y (b) cuándo el flujo la contradice (el violeta). La celda violeta tiene un indicio, no una
 prueba: la vela siguiente fue a favor del DELTA el 56,7 % de las veces (247 casos, z +1,8); a 5 velas, nada.
+
+## 1.5 (17-09, 16:06): lo que encontraron los tres revisores de la 1.4
+
+Tres revisores independientes (código, estadística con scripts propios, y "el ojo del scalper" sobre la captura y
+el CSV) atacaron la 1.4. Veredicto de los tres: **se sostiene con reservas**. Confirmaron lo descriptivo al decimal
+(paridad 0 diferencias, sin mirada adelante, pantalla = CSV en 65 de 65 celdas) y voltearon varias cosas:
+
+**Se retira, de frente:**
+- **"EXTREMO: no perseguir".** Con 950 velas había dado 36-41 % a favor (y ya se había dicho que no era prueba). Con
+  las 20 ruedas del volcado: 50,2 % (n 422 con las 4 lecturas) y 49,6 % (n 2.716 con 3): una moneda. Además estaba
+  prendido el 36-40 % del tiempo: no era un extremo. Salió del tablero, de los ajustes y de las alertas. "FLUJO n/4"
+  queda como cuenta descriptiva.
+- **La celda violeta no es señal.** El 56,7 % a una vela (n 247) es real pero no sobrevive: contra el placebo por
+  franja horaria z +1,8, el intervalo de confianza incluye el cero, en la segunda mitad de la muestra cae a 53 % y de
+  noche, con 4,6 veces más casos, da 47,8 % (por debajo de su base). Es un ESTADO ("el precio le ganó al flujo").
+- **El brillo no dice nada de lo que sigue**: ni dirección (47,6 % brillantes contra 48,2 % tenues) ni rango, una vez
+  descontado el tamaño de la propia vela. Dice cuánto delta tuvo ESTA vela, nada más.
+- **"Coincide 96,8 %" es por construcción.** El número con contenido es cuánto violeta y cuánto gris hay.
+
+**Lo que se arregló (1.5), todo medido en las 20 ruedas:**
+- **La apertura salía toda brillante**: a las 13:30 UTC el 52 % de las celdas tenía lugar >= 0,8 (parejo sería 20 %),
+  porque se comparaban con el premercado. Ahora el |delta| (y las operaciones) se dividen antes por **lo normal de esa
+  hora** (mediana de la misma franja ±15 min de las 5 sesiones anteriores, causal): 13:30 -> 25 %, 20:00 6 -> 15 %,
+  desvío entre las 46 franjas 7,2 -> 2,8 puntos.
+- **La vela más grande salía con la confluencia gris o al mínimo** (el CVD de 20 velas le restaba): 35 % de las velas
+  grandes. Ahora **la vela vota** -> 3,8 %. Se probó pasar el CVD a 10 velas: empeoraba (descartado). Se probó fundir
+  "delta" y "dónde cerró el delta" en una sola lectura (coinciden 97 %): dejaba flojas al 35 % de las grandes; quedan
+  separadas a sabiendas: hacen que el delta de la vela pese doble cuando además cerró de ese lado.
+- **Violeta sin causa** (la vela con delta a favor pero violeta por culpa del fondo): 3,5 % -> 0. El violeta de la
+  confluencia exige que el delta de ESA vela o los grandes vayan contra ella. Confluencia: coincide 97,2 %, violeta 2,8 %.
+- **El gris tenía dos significados y ocupaba 1 de cada 4 celdas**: ahora es solo la vela de indecisión (~15 %) y más
+  visible (0,45 -> 0,60).
+- **"Muchos negros" en las tres filas de abajo (43 % del panel)**: la cinta pasa a percentil (prende el 30 % más
+  rápido; antes se veía el 17,5 %), grandes reparte su brillo por percentil (antes 2 de cada 3 clavadas al mínimo) y
+  las celdas quietas llevan un **fondo tenue**: se lee "tranquila", no "rota". Se evaluó un mapa de calor continuo:
+  prende el 100 % y mata la alarma (descartado).
+- **Vela en curso**: el factor de proyección saltaba de 1 a 3 en el segundo 5 y disparaba violetas tempranos (5,6 % de
+  las velas; solo el 9 % llegaba al cierre). Ahora la proyección entra gradual (3 a 10 s) y se usa SOLO para el brillo:
+  violeta, lecturas y absorción se deciden con el delta sin proyectar. Sin operaciones la celda quedaba congelada:
+  se rederiva una vez por segundo con el reloj.
+- El texto "DELTA 2v xσ" contradecía a la celda en el 10 % de las velas (era otra cuenta): ahora dice el delta de la
+  vela y su percentil ("DELTA -145 p69"), lo mismo que pinta la celda.
+- Código: el volcado retenía la llave 81 ms y pedía 29 MB por vela cerrada y por gráfico: ahora se arma fuera de la
+  llave, una sola vez por carga, y después agrega una línea por vela en una cola ordenada. Un grande que llega con su
+  vela ya cerrada rehace esa vela. Las marcas graban versión, lugar y tonos. Piso absoluto de 20 contratos (no cambia
+  ninguna celda de rueda; de noche, el 1 %).
+
+**Control:** paridad C#/Python (`laboratorio/cvd_regla15.py`) 0 diferencias en 27.243 velas y 9 columnas. En
+pantalla (control por píxeles, 58 velas con cuerpo): confluencia 53 del color de la vela + 3 violetas, presión 54 + 2;
+0 contrarias, 0 negras.
+
+**Lo que hay que saber al leerla:** la celda con borde (vela en curso) puede cambiar de color hasta el cierre en al
+menos 1 de cada 7 velas: es la vela misma cambiando. De noche hay el doble de violeta (mercado fino), no es señal.
+Falta medir el "tarde" DENTRO de la vela: para eso habría que grabar el tono a los 15, 30 y 45 s (no se graba todavía).
 
 ## Pendiente
 
