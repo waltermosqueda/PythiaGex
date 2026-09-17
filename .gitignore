@@ -28,3 +28,6 @@ panel/datos/atas/cadenas/
 datos/databento/
 datos/historico/cadena-*
 panel/_prueba/
+
+# busqueda del gatillo: caches pesados (la cinta cruda vive en %APPDATA%/ATAS/PythiaGex/flujo)
+datos/flujo/cache/

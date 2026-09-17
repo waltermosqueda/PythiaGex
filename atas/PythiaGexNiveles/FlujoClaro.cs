@@ -43,7 +43,7 @@ namespace PythiaGex
     /// </summary>
     [DisplayName("PythiaGex - Flujo Claro")]
     [Category("PythiaGex")]
-    public class FlujoClaro : Indicator
+    public partial class FlujoClaro : Indicator
     {
         public enum ModoAnclaCvd { UltimasVelas, Visible, Sesion }
         public enum DibujoDelCvd { Linea, VelasConMecha }
@@ -282,6 +282,7 @@ namespace PythiaGex
                 RedrawChart(new RedrawArg(ChartArea));
             }
             catch { }
+            SondaLatido(); LibroLatido();
         }
 
         // ------------------------------------------------------------------ calculo
@@ -593,6 +594,7 @@ namespace PythiaGex
         {
             try
             {
+                if (SondaRecibirCinta(request, cumulativeTrades)) return;   // era un tramo pedido por la sonda del laboratorio
                 if (cumulativeTrades == null) return;
                 int puestos = 0, fuera = 0;
                 lock (_llave)
@@ -1037,6 +1039,9 @@ namespace PythiaGex
         private static System.Threading.Tasks.Task _colaArchivo = System.Threading.Tasks.Task.CompletedTask;
         [Display(Name = "Volcar las velas a un CSV (banco de pruebas)", GroupName = "7. Alertas y registro", Order = 9)]
         public bool FcVolcarVelas { get; set; } = true;
+        [Display(Name = "Grabar el libro en vivo (una fila por segundo, para el laboratorio)", GroupName = "7. Alertas y registro", Order = 10,
+                 Description = "Punta del libro, desbalance del flujo de ordenes (OFI), profundidad a 5/10/20 niveles y la orden mas grande cerca del precio. ATAS no guarda historia del libro: solo se puede medir lo que se graba.")]
+        public bool FcGrabarLibro { get; set; } = true;
         private static readonly string RutaLog = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "pythiagex-flujoclaro.log");
         private static void Log(string m) { try { File.AppendAllText(RutaLog, DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss", Inv) + "  " + m + "\n"); } catch { } }
         private void Registrar(Exception e)
