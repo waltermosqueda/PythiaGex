@@ -38,7 +38,7 @@ namespace PythiaGex
         public bool FcTablero { get; set; } = true;
 
         private const int TabAncho = 286, TabAlto = 123;              // completo: cuatro medidores en fila
-        private const int TabAnchoMin = 150, TabAnchoDos = 200, TabAltoDos = 145, TabAltoDosMax = 180;   // con menos lugar a la derecha de la vela: dos filas de dos (18-09, grafico de 5 min con ~190 px libres)
+        private const int TabAnchoMin = 150, TabAnchoDos = 200, TabAltoDos = 100, TabAltoDosMax = 180;   // dos filas: desde 100 px (medidores mas chicos, sin contexto) hasta 180 si el panel da   // con menos lugar a la derecha de la vela: dos filas de dos (18-09, grafico de 5 min con ~190 px libres)
         private static readonly Color TabFondo = Color.FromArgb(255, 26, 33, 46), TabBorde = Color.FromArgb(255, 52, 63, 82), TabGris = Color.FromArgb(139, 148, 158);
         private static readonly Color TabAzul = Color.FromArgb(74, 144, 217), TabCeleste = Color.FromArgb(120, 180, 220), TabNaranja = Color.FromArgb(224, 138, 60), TabRojo = Color.FromArgb(214, 60, 140);   // DESATADO: magenta, nunca el rojo de venden
 
@@ -210,7 +210,7 @@ namespace PythiaGex
                     {
                         c.Zero = e.Zero; c.Neto = e.Neto; c.Libro = e.Libro ?? "vol"; c.EdadSeg = (int)Math.Max(0, (ahora - e.T).TotalSeconds); c.DZero = precio - e.Zero;
                         string hace = c.EdadSeg < 90 ? "hace " + c.EdadSeg + " s" : "hace " + (c.EdadSeg / 60) + " min";
-                        string zeroTxt = "zero " + e.Zero.ToString("#,0", Es) + " · " + c.DZero.ToString("+0;-0", Es) + " pts";
+                        string zeroTxt = "zero " + e.Zero.ToString("#,0", Es) + " · " + c.DZero.ToString("+0;-0;0", Es) + " pts";
                         if (c.EdadSeg > TabGuardiaSeg) { c.Gamma = 0; c.GammaTxt = "sin lectura"; c.GammaCtx = "estela vieja · " + hace + (e.Zero > 0 ? " · " + zeroTxt : ""); }
                         else if (e.Zero <= 0) { c.Gamma = 0; c.GammaTxt = "sin lectura"; c.GammaCtx = "sin zero en la capa NQ · " + hace; }
                         else if (Math.Abs(c.DZero) > TabGuardiaNq) { c.Gamma = 0; c.GammaTxt = "sin lectura"; c.GammaCtx = "libro flaco · " + zeroTxt + " · " + hace; }
@@ -332,7 +332,9 @@ namespace PythiaGex
             try { g.SetSmoothingMode(RenderSmoothingModes.AntiAlias); } catch { }
             int altoMin = g.MeasureString("0", fMin).Height;
             int cols = r.Width >= TabAncho ? 4 : 2, filas = 4 / cols;
-            int colW = (r.Width - 8) / cols, R = Math.Min(20, (colW - 6) / 2), y0 = r.Top + 2, ancho = r.Width - 12, altoMed = altoMin + 1 + R + 2 + altoCh + 2;
+            int colW = (r.Width - 8) / cols, R = Math.Min(20, (colW - 6) / 2), y0 = r.Top + 2, ancho = r.Width - 12;
+            R = Math.Min(R, Math.Max(9, (r.Height - 24) / filas - (altoMin + altoCh + 5)));   // que las filas de medidores + resumen entren en el alto del cuadro
+            int altoMed = altoMin + 1 + R + 2 + altoCh + 2;
             bool compacto = colW < 66;   // menos de 286 px: rotulos cortos y palabras en la letra chica
             string[] tit = compacto ? new[] { "FLUJO 1m", "TEND.", "GAMMA", "VELOC." } : new[] { "FLUJO 60s", "TENDENCIA", "GAMMA", "VELOCIDAD" };
             var fPal = compacto ? fMin : fCh;
@@ -350,14 +352,14 @@ namespace PythiaGex
                     case 0:
                     {
                         double v = Math.Max(-1, Math.Min(1, c.R60 / TabTope60)); TableroMedidor(g, cx, cy, R, sec5, v);
-                        string num = (c.R60 * 100).ToString("+0;-0", Es);
+                        string num = (c.R60 * 100).ToString("+0;-0;0", Es);
                         palabra = Math.Abs(c.R60) < TabMuerta60 ? "parejo " + num : (c.R60 > 0 ? "compran " : "venden ") + num;
                         col = Math.Abs(c.R60) < TabMuerta60 ? TabGris : c.R60 > 0 ? cCompra : cVenta; break;
                     }
                     case 1:
                     {
                         TableroMedidor(g, cx, cy, R, secT, c.Tend);
-                        string num = (c.Tend * 100).ToString("+0;-0", Es);
+                        string num = (c.Tend * 100).ToString("+0;-0;0", Es);
                         palabra = !c.Z15Ok ? "sin historia" : Math.Abs(c.Tend) < 0.2 ? "parejo " + num : (c.Tend > 0 ? "subió " : "bajó ") + num;
                         col = !c.Z15Ok || Math.Abs(c.Tend) < 0.2 ? TabGris : c.Tend > 0 ? cCompra : cVenta; break;
                     }
@@ -391,7 +393,7 @@ namespace PythiaGex
             string cvd = c.Z15Ok ? c.ZCvd.ToString("+0.0;-0.0", Es) : "—", px = c.Z15Ok ? c.ZPx.ToString("+0.0;-0.0", Es) : "—";
             var lineas = new List<(string T, Color C)>
             {
-                ("1m " + (c.R60 * 100).ToString("+0;-0", Es) + " · 5m " + (c.R300 * 100).ToString("+0;-0", Es) + " · gr " + c.G300.ToString("+#,0;-#,0;0", Es) + " · cvd " + cvd + " · px " + px, cTxt),
+                ("1m " + (c.R60 * 100).ToString("+0;-0;0", Es) + " · 5m " + (c.R300 * 100).ToString("+0;-0;0", Es) + " · gr " + c.G300.ToString("+#,0;-#,0;0", Es) + " · cvd " + cvd + " · px " + px, cTxt),
                 (c.GammaCtx, c.Gamma == 0 || c.Gamma == -2 ? dim : cTxt),
                 (c.VelocCtx, cTxt),
                 ("gamma y velocidad no votan · votan 1m x2, 5m, gr, cvd, px", dim),
