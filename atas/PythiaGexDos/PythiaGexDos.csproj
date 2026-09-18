@@ -1,0 +1,85 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>PythiaGexDos</AssemblyName>
+    <RootNamespace>PythiaGexDos</RootNamespace>
+    <Version>2.0.0</Version>
+    <Company>PythiaGex</Company>
+    <Product>PythiaGex 2.0</Product>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Bitacora.cs" />
+    <Compile Include="Black76.cs" />
+    <Compile Include="CadenaViva.cs" />
+    <Compile Include="Centinela.cs" />
+    <Compile Include="Contexto.cs" />
+    <Compile Include="Disparo.cs" />
+    <Compile Include="Estilo.cs" />
+    <Compile Include="Feed.cs" />
+    <Compile Include="GammaHoy.cs" />
+    <Compile Include="GammaHoyCapas.cs" />
+    <Compile Include="GammaHoyNucleo.cs" />
+    <Compile Include="GammaVivo.cs" />
+    <Compile Include="GammaVivoNucleo.cs" />
+    <Compile Include="GatilloBanda.cs" />
+    <Compile Include="GatilloModelo.cs" />
+    <Compile Include="GatilloRebote.cs" />
+    <Compile Include="Gatillos.cs" />
+    <Compile Include="Historia.cs" />
+    <Compile Include="Libro.cs" />
+    <Compile Include="NivelesGamma.cs" />
+    <Compile Include="PuenteRithmic.cs" />
+    <Compile Include="RadarDominantes.cs" />
+    <Compile Include="Reloj.cs" />
+    <Compile Include="SondaOpciones.cs" />
+  </ItemGroup>
+
+  <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.
+       Copiarlos haria que el indicador use una copia distinta de los mismos
+       tipos y ATAS lo rechazaria al cargarlo. -->
+  <ItemGroup>
+    <Reference Include="ATAS.Indicators">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Indicators.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ATAS.DataFeedsCore">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.DataFeedsCore.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ATAS.Types">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Types.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Rendering">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Rendering.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Attributes">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Attributes.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Localization">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Localization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Utils.Common">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\Utils.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Core">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

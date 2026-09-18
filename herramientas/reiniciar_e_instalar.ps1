@@ -51,6 +51,10 @@ if ($p) {
 $dll = Join-Path $PSScriptRoot "../atas/PythiaGexNiveles/bin/Release/PythiaGexNiveles.dll"
 $dst = Join-Path $env:APPDATA "ATAS/Indicators/PythiaGexNiveles.dll"
 if (Test-Path $dll) { Copy-Item -Force $dll $dst; Paso ("DLL instalado: " + (Get-Item $dst).LastWriteTime) } else { Paso "SIN DLL en bin/Release: no se instalo nada" }
+# --- el clon 2.0 (18-09): ensamblado aparte, se instala al lado si existe; la produccion no depende de el
+$dll2 = Join-Path $PSScriptRoot "../atas/PythiaGexDos/bin/Release/PythiaGexDos.dll"
+$dst2 = Join-Path $env:APPDATA "ATAS/Indicators/PythiaGexDos.dll"
+if (Test-Path $dll2) { Copy-Item -Force $dll2 $dst2; Paso ("DLL 2.0 instalado: " + (Get-Item $dst2).LastWriteTime) }
 Start-Process "C:\Program Files (x86)\ATAS Platform\OFT.Platform.exe"
 Paso "lanzado"
 for ($i = 0; $i -lt 60; $i++) {
