@@ -18,6 +18,61 @@ namespace PythiaGexDos
     {
         public readonly List<double> Obs = new();
         public double Rueda = double.NaN;
+        // F2 (2.0.1): la ULTIMA razon valida (vela alineada con cadena fresca), en memoria y en un archivo chico
+        // (%APPDATA%\ATAS\PythiaGex2\razon-<raiz del futuro>-<ticker>.txt, p. ej. razon-NQ-SPY.txt; 2.0.2: antes era
+        // razon-<ticker>.txt y la capa SPY de un grafico de MNQ (NQ/SPY ~ 45) y la de uno de MES (ES/SPY ~ 10) se pisaban)
+        // para que sobreviva al reinicio. Con la cadena vieja (CBOE
+        // congelada de noche) el 18-09 04:02-05:22 una instancia uso NQ_ahora / spot_viejo = 41,80 contra 41,55: +0,8 %,
+        // ~240 pts de NQ en todos los niveles de la capa QQQ durante una hora y pico. Nunca mas esa division.
+        public double Ultima = double.NaN;
+        public DateTime UltimaUtc = DateTime.MinValue;
+        /// <summary>Clave del archivo: raiz del futuro + ticker ("NQ-QQQ", "ES-SPY"...). null = no persiste (los RazonEtf temporales del rebobinado).</summary>
+        public string Ticker;
+        public DateTime UltimoAvisoUtc = DateTime.MinValue;   // para no loguear la guardia mas de una vez cada 5 min
+        private bool _cargada; private DateTime _ultimoGuardadoUtc = DateTime.MinValue;
+
+        private static string Ruta(string ticker) => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex2", "razon-" + ticker + ".txt");
+
+        /// <summary>Lee la ultima razon guardada de este ticker (una vez). Solo vale si tiene menos de 3 dias.</summary>
+        public void CargarSiHaceFalta()
+        {
+            if (_cargada || string.IsNullOrEmpty(Ticker)) return;
+            _cargada = true;
+            try
+            {
+                var p = Ruta(Ticker);
+                if (!File.Exists(p)) return;
+                var partes = File.ReadAllText(p).Trim().Split('|');
+                if (partes.Length < 2) return;
+                if (!double.TryParse(partes[0], NumberStyles.Float, CultureInfo.InvariantCulture, out var v) || v <= 0) return;
+                if (!DateTime.TryParse(partes[1], CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var t)) return;
+                if ((DateTime.UtcNow - t).TotalDays > 3) return;
+                lock (Obs) { if (double.IsNaN(Ultima) || t > UltimaUtc) { Ultima = v; UltimaUtc = t; } }
+            }
+            catch { }
+        }
+
+        /// <summary>Anota una razon valida y la guarda en el archivo (a lo sumo una escritura por minuto, fuera de locks).</summary>
+        public void AnotarValida(double razon, DateTime utc)
+        {
+            bool escribir;
+            lock (Obs)
+            {
+                if (utc < UltimaUtc) return;   // nunca hacia atras
+                Ultima = razon; UltimaUtc = utc;
+                escribir = !string.IsNullOrEmpty(Ticker) && (utc - _ultimoGuardadoUtc).TotalSeconds >= 60;
+                if (escribir) _ultimoGuardadoUtc = utc;
+            }
+            if (!escribir) return;
+            try
+            {
+                var p = Ruta(Ticker);
+                Directory.CreateDirectory(Path.GetDirectoryName(p));
+                File.WriteAllText(p, razon.ToString("R", CultureInfo.InvariantCulture) + "|" + utc.ToString("o", CultureInfo.InvariantCulture));
+            }
+            catch { }
+        }
     }
 
     /// <summary>La pizarra compartida del DLL (15-09): cada grafico con Gamma Hoy anota su ultimo precio por minuto
@@ -679,7 +734,7 @@ namespace PythiaGexDos
                         if (futuro <= 0) continue;
                         if (k.Tipo == CapaLibro.TipoCapa.EtfPorRazon)
                         {
-                            EscalarCon(c, k.Nombre, razon, Math.Max(0, RetrasoCboeSeg));
+                            EscalarCon(c, k.Nombre, razon, Math.Max(0, RetrasoCboeSeg), c.GeneradoUtc, futuro);   // F2: la edad y el precio de ESE minuto
                             c.Fuente = "CBOE " + k.Nombre;
                             c.Apalancamiento = k.PorBeta ? 1.0 / Math.Max(0.1, _betaSp) : k.Apalancamiento;
                         }

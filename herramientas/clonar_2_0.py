@@ -26,7 +26,10 @@ for n in sorted(os.listdir(ORI)):
     s = re.sub(r"(?<![\w.])PythiaGex\.(?=[A-Z])", "PythiaGexDos.", s)
     s = s.replace('[DisplayName("PythiaGex - ', '[DisplayName("PythiaGex 2.0 - ')
     s = s.replace('[Category("PythiaGex")]', '[Category("PythiaGex 2.0")]')
+    # cboe-local es entrada EXTERNA de cboe_local.py (solo lectura para el DLL): se comparte con prod, no se clona (2.0.2)
+    s = s.replace('"ATAS", "PythiaGex", "cboe-local"', "\x00CBOE_LOCAL\x00")
     s = re.sub(r'"ATAS",\s*"PythiaGex"', '"ATAS", "PythiaGex2"', s)
+    s = s.replace("\x00CBOE_LOCAL\x00", '"ATAS", "PythiaGex", "cboe-local"')
     s = s.replace('"pythiagex-', '"pythiagex2-')
     s = s.replace("Gamma Hoy 1.11d (roll: weekly del viernes con Z6; estado del roll atomico; rearme al vencer la trimestral) arranca",
                   "Gamma Hoy 2.0.0 (clon de 1.11d: ensamblado y carpeta de datos propios) arranca")

@@ -238,9 +238,9 @@ namespace PythiaGexDos
 
         public enum GatilloModeloModo { SoloTarde, TodoElDia, Ninguno }
 
-        [Display(Name = "Gatillo MODELO (ES, 1 min): regresion del laboratorio", GroupName = "3. Pantalla", Order = 24,
-                 Description = "Regresion logistica ajustada el 10-09 sobre MES: 10 rasgos (momentum corto, delta, distancias al zero, majors, dominantes y Max Change) -> probabilidad de tocar +3 antes que -3 en 10 min. En velas de 1 min (13 dias): fuera de muestra 61 % con p >= 0,70, en la tarde de Nueva York (14-16 h) 83 % de 59 casos, 7 por dia. En velas de 2 min (16 dias): 62 % con p >= 0,70, tarde 77 % de 30, 3 por dia (mas debil). Rombo verde = largo, rojo = corto, con la p. SOLO raiz ES, graficos de 1 o 2 minutos. En NQ no hay señal. Objetivo 3 pts. Cada disparo se registra y se juzga con dias nuevos.")]
-        public GatilloModeloModo ModoModelo { get; set; } = GatilloModeloModo.SoloTarde;
+        [Display(Name = "Gatillo MODELO (ES, 1 min): regresion del laboratorio (APAGADO en 2.0)", GroupName = "3. Pantalla", Order = 24,
+                 Description = "APAGADO por defecto en 2.0 (F4, 18-09): cada arranque a la tarde dibujaba una flecha CORTO falsa porque el modelo corria FRIO (sin las 60 velas previas de rango tipico y desvio de deltas) y con los niveles en NaN (zero/majors/dominantes todavia sin cadena, que entran al modelo como 'sin nivel' = -40/+40). En 2.0 no dispara hasta tener 60 velas cerradas y zero, majors y una dominante validos. Prenderlo (SoloTarde o TodoElDia) es una decision del operador, con eso ya resuelto. Regresion logistica ajustada el 10-09 sobre MES: 10 rasgos (momentum corto, delta, distancias al zero, majors, dominantes y Max Change) -> probabilidad de tocar +3 antes que -3 en 10 min. En velas de 1 min (13 dias): fuera de muestra 61 % con p >= 0,70, en la tarde de Nueva York (14-16 h) 83 % de 59 casos, 7 por dia. En velas de 2 min (16 dias): 62 % con p >= 0,70, tarde 77 % de 30, 3 por dia (mas debil). Rombo verde = largo, rojo = corto, con la p. SOLO raiz ES, graficos de 1 o 2 minutos. En NQ no hay señal. Objetivo 3 pts. Cada disparo se registra y se juzga con dias nuevos.")]
+        public GatilloModeloModo ModoGatilloModelo { get; set; } = GatilloModeloModo.Ninguno;   // F4 (2.0.1): nombre NUEVO (ATAS persiste por nombre) y apagado
 
         [Display(Name = "Gatillo MODELO: umbral de probabilidad", GroupName = "3. Pantalla", Order = 25,
                  Description = "0,70 = 7 disparos por dia en la tarde (83 % medido); 0,65 = el doble de disparos con ~80 %; mas bajo es ruido.")]
@@ -404,6 +404,10 @@ namespace PythiaGexDos
                  Description = "Auto: volumen si ya hay volumen (>= 20 % del OI en gamma), si no OI. Se rotula cual se uso.")]
         public LibroConv Convexidad { get; set; } = LibroConv.Auto;
 
+        [Display(Name = "Zero gamma interpolado por strike (como la referencia)", GroupName = "2. Lectura", Order = 5,
+                 Description = "F5 (2.0.1). Prendido (default): el zero es el cambio de signo del perfil POR STRIKE, interpolado linealmente entre los dos strikes vecinos (el cruce mas cercano al precio), que es como lo ubica la referencia (medido 11-09: 715 -3,7B y 716 +2,2B => 715,62 => 29.407; y 18-09). Apagado: el cruce REPRECIADO de la suma de gamma en una grilla de +-3 % (Cruce(), lo de siempre: 716,17 => 29.429 en ese mismo libro). La leyenda de la escalera, la cabecera, la estela y el AUDIT (zeroModo=) dicen cual se uso. Cambia el zero, no las dominantes ni los majors.")]
+        public bool ZeroGammaInterpolado { get; set; } = true;
+
         [Display(Name = "Big Trade: contratos minimos (opciones de ES)", GroupName = "2. Lectura", Order = 6,
                  Description = "La referencia usa ~180 en QQQ. Las opciones de ES son menos liquidas: 50 de arranque, se calibra midiendo.")]
         [Range(5, 5000)]
@@ -412,6 +416,10 @@ namespace PythiaGexDos
         [Display(Name = "Ancho de las barras (px)", GroupName = "3. Pantalla", Order = 1)]
         [Range(30, 300)]
         public int AnchoBarras { get; set; } = 90;
+
+        [Display(Name = "Barras relativas: la mas larga = 30 % del ancho del grafico (como la referencia)", GroupName = "3. Pantalla", Order = 1,
+                 Description = "F7 (2.0.1), apagada por defecto. La referencia normaliza cada lado del perfil a floor(0,30 x ancho del grafico): la barra mas larga siempre mide eso, a la izquierda (GEX) y a la derecha (flujo/convexidad), y las demas en proporcion. Prendida, 'Ancho de las barras (px)' no se usa. Apagada, el ancho absoluto de siempre (y el perfil derecho al 70 %).")]
+        public bool BarrasRelativas { get; set; } = false;
 
         [Display(Name = "Barras: ocultar las menores al % de la mas grande (solo pantalla)", GroupName = "3. Pantalla", Order = 1,
                  Description = "1.9a: no dibuja las barras (ni su rotulo, pelotitas, sombra ni perfil derecho) cuyo |GEX| sea menor que este porcentaje de la barra mas grande del libro. NO toca ningun calculo: zero, majors, dominantes, centinela y AUDIT salen del libro entero igual que siempre. Las dominantes y los majors se dibujan siempre aunque sean chicos. 0 = todas (como antes); 20 = saca el ruido y deja los racimos alrededor de las dominantes. Pensado para el libro de Rithmic (strikes cada 5 pts en ES, 50 renglones).")]
@@ -439,6 +447,10 @@ namespace PythiaGexDos
 
         [Display(Name = "Estela de las dominantes por vela", GroupName = "3. Pantalla", Order = 6)]
         public bool VerEstela { get; set; } = true;
+
+        [Display(Name = "Historia del dia: puntitos por minuto de D1, D2 y zero (toda la sesion)", GroupName = "3. Pantalla", Order = 6,
+                 Description = "F6 (2.0.1), apagada por defecto. La referencia dibuja 'Dominant 1/2 history' y 'Zero gamma history': puntitos de donde estuvieron las dos dominantes y el zero durante TODA la sesion (desde las 18:00 de Nueva York), un punto por minuto. La estela por vela de siempre sigue igual; esto agrega puntitos chicos (2-3 px, tenues: D1 ambar, D2 mas tenue, zero gris) sobre las velas visibles. Tope de memoria: 1.500 minutos (25 h). El pasado se llena con el archivo al arrancar (HIBRIDO) y el presente por minuto.")]
+        public bool HistoriaDelDia { get; set; } = false;
 
         [Display(Name = "Pelotitas del Max Change (15, 5 y 1 min)", GroupName = "3. Pantalla", Order = 7)]
         public bool PelotitasMaxChange { get; set; } = true;
@@ -483,6 +495,7 @@ namespace PythiaGexDos
         private readonly CadenaViva _viva = new();
         private bool _vivaCorriendo;
         private DateTime _ultimoIntentoViva = DateTime.MinValue;
+        private DateTime _ultimoLatido = DateTime.MinValue;   // F3 (2.0.1): un renglon cada 15 min para saber si la instancia sigue viva
 
         // resultado del ultimo repricing (se copia bajo llave para dibujar)
         private List<Strike> _perfil = new();
@@ -505,6 +518,73 @@ namespace PythiaGexDos
         private (double Fut, double Delta)[] _maxChange = new (double, double)[GammaHoyNucleo.Ventanas.Length];
         // estela de dominantes por vela
         private readonly Dictionary<int, double[]> _estela = new();
+        // F5 (2.0.1): como se saco el zero que se dibuja ("interp" / "cruce"), para la leyenda y la estela
+        private string _zeroModo = "";
+        private string ZeroModoCorto() { var z = _zeroModo ?? ""; return z.StartsWith("interp") ? "interp" : z.Length > 0 ? "cruce" : "--"; }
+        // F6 (2.0.1): historia del dia. La referencia dibuja "Dominant 1/2 history" y "Zero gamma history": puntitos de donde
+        // estuvieron las dos dominantes y el zero durante TODA la sesion, por minuto (medido 14-09). Un punto por minuto
+        // (la ultima cuenta del minuto), tope de memoria HistoriaTope (25 h); se dibuja solo lo visible y desde las 18:00 NY.
+        private readonly SortedDictionary<long, (double Zero, double D1, double D2)> _historia = new();
+        private const int HistoriaTope = 1500;
+        /// <summary>Bajo _candado. <paramref name="velaUtc"/> = la hora de la cuenta (vivo) o la apertura de la vela (archivo).</summary>
+        private void AnotarHistoria(DateTime velaUtc, GammaHoyNucleo.Lectura L)
+        {
+            if (!HistoriaDelDia || L == null) return;
+            long min = velaUtc.Ticks / TimeSpan.TicksPerMinute;
+            double d1 = L.Doms != null && L.Doms.Count > 0 ? L.Doms[0].Fut : double.NaN, d2 = L.Doms != null && L.Doms.Count > 1 ? L.Doms[1].Fut : double.NaN;
+            _historia[min] = (L.ZeroVol, d1, d2);
+            while (_historia.Count > HistoriaTope) _historia.Remove(_historia.Keys.First());
+        }
+        /// <summary>F6: arranque de la sesion de futuros (18:00 de Nueva York; antes de esa hora, la de ayer), en UTC.</summary>
+        private static DateTime InicioSesionUtc(DateTime ahoraUtc)
+        {
+            try
+            {
+                var ny = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                var local = TimeZoneInfo.ConvertTimeFromUtc(ahoraUtc, ny);
+                var ini = local.Date.AddHours(18);
+                if (local < ini) ini = ini.AddDays(-1);
+                return TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(ini, DateTimeKind.Unspecified), ny);
+            }
+            catch { return ahoraUtc.AddHours(-24); }
+        }
+        /// <summary>F6: puntitos livianos (2-3 px, alfa baja) de D1, D2 y zero por minuto sobre las velas visibles.
+        /// Una pasada por las velas visibles para el mapa minuto -> x y una busqueda binaria por punto.</summary>
+        private void PintarHistoria(RenderContext g, IChartContainer cont, Rectangle area, int piso)
+        {
+            List<KeyValuePair<long, (double Zero, double D1, double D2)>> pts;
+            lock (_candado) { if (_historia.Count == 0) return; pts = _historia.ToList(); }
+            long piso0 = InicioSesionUtc(DateTime.UtcNow).Ticks / TimeSpan.TicksPerMinute;
+            int desde = Math.Max(0, FirstVisibleBarNumber), hasta = Math.Min(CurrentBar - 1, LastVisibleBarNumber);
+            if (hasta < desde) return;
+            var minutos = new List<long>(hasta - desde + 1); var xs = new List<int>(hasta - desde + 1);
+            for (int b = desde; b <= hasta; b++)
+            {
+                IndicatorCandle c; try { c = GetCandle(b); } catch { continue; }
+                int x; try { x = cont.GetXByBar(b, false); } catch { continue; }
+                if (c == null) continue;
+                minutos.Add(Utc(c.Time).Ticks / TimeSpan.TicksPerMinute); xs.Add(x);
+            }
+            if (minutos.Count == 0) return;
+            var colZ = Color.FromArgb(AtenuarPrimaria(90), 170, 170, 180);
+            var col1 = Color.FromArgb(AtenuarPrimaria(120), ColDom);
+            var col2 = Color.FromArgb(AtenuarPrimaria(90), ColDom2);
+            long ultimo = minutos[minutos.Count - 1];
+            foreach (var kv in pts)
+            {
+                if (kv.Key < piso0 || kv.Key < minutos[0] || kv.Key > ultimo + 60) continue;
+                int i = minutos.BinarySearch(kv.Key); if (i < 0) i = ~i - 1; if (i < 0) continue;
+                int x = xs[i];
+                void Punto(double p, Color col, int r)
+                {
+                    if (double.IsNaN(p) || p <= 0) return;
+                    int y; try { y = cont.GetYByPrice((decimal)p, false); } catch { return; }
+                    if (y < area.Top || y > piso) return;
+                    g.FillRectangle(col, new Rectangle(x - r / 2, y - r / 2, r, r));
+                }
+                Punto(kv.Value.Zero, colZ, 2); Punto(kv.Value.D1, col1, 3); Punto(kv.Value.D2, col2, 2);
+            }
+        }
         // UN GUION POR CADA ACTUALIZACION, no uno por vela: medido en la referencia hasta
         // 4-6 guiones por columna en las velas recientes. Cada vez que se reprecia y
         // la dominante se movio mas de un cuarto de punto, se agrega un guion a la vela.
@@ -529,7 +609,7 @@ namespace PythiaGexDos
         private readonly GatilloModelo _modVivo = new();
         private readonly GatilloRebote _rebVivo = new();
         private bool _rebSembrado;
-        private bool _modAvisado; private double _modUltimaP = double.NaN;
+        private bool _modAvisado, _modAvisoFrio; private double _modUltimaP = double.NaN;
         // la base de la rueda, medida por el indicador (1.5): futuro del grafico a la hora real
         // del spot de la cadena (902 s de retraso de CBOE) menos ese spot; mediana de 30
         private readonly List<double> _baseObs = new();
@@ -674,6 +754,16 @@ namespace PythiaGexDos
                 }
                 RearmarVivaSiHaceFalta(ahora);
                 _viva.UmbralGrande = UmbralBigTrade;
+                // F3 (2.0.1): latido. El 18-09 la instancia de MES dejo de escribir TODO (AUDIT, viva, log) a las 06:57 UTC y
+                // no hubo forma de distinguir "Rithmic callado" de "instancia cerrada" hasta ver que volvio a arrancar a las 14:37.
+                if ((ahora - _ultimoLatido).TotalMinutes >= 15)
+                {
+                    _ultimoLatido = ahora;
+                    var cl = _c;
+                    Log("latido: viva " + (_viva.Activa ? "ACTIVA" : "apagada") + (_viva.ArmadoIncompleto ? " (armado incompleto: " + _viva.MotivoIncompleto + ")" : "")
+                        + " · estado: " + _viva.Estado + " · cadena " + (cl == null ? "sin feed" : (cl.EsFuturo ? "Rithmic" : cl.Fuente) + " de " + (cl.GeneradoUtc != default(DateTime) ? cl.GeneradoUtc.ToString("HH:mm") : "--") + " UTC")
+                        + " · vela " + CurrentBar);
+                }
                 // la cadena viva, un renglon por minuto, al archivo local
                 if (GuardarViva && _viva.Activa && (ahora - _ultimaViva).TotalSeconds >= 60)
                 {
@@ -725,7 +815,7 @@ namespace PythiaGexDos
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 1.10 (capas NQ) arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 2.0.2 (F1-F7, revisado) arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -734,7 +824,7 @@ namespace PythiaGexDos
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 2.0.0 (clon de 1.11d: ensamblado y carpeta de datos propios) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 2.0.2 (F1-F7, revisado) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
         }
 
         protected override void OnDispose()
@@ -768,7 +858,10 @@ namespace PythiaGexDos
             else if (_viva.Activa && seg >= 300)
             {
                 string dia = DiaNy();
-                if (_viva.FaltaCercano) motivo = "falta el vencimiento mas cercano";
+                // F3 (2.0.1): un rearme que quedo a mitad (series vacias, sin precio, conector caido, pocas puntas, excepcion)
+                // dejaba Activa en true con la ventana vieja y nadie volvia a intentar hasta que el precio se alejara del centro
+                if (_viva.ArmadoIncompleto) motivo = "el ultimo armado quedo incompleto (" + _viva.MotivoIncompleto + ")";
+                else if (_viva.FaltaCercano) motivo = "falta el vencimiento mas cercano";
                 else if (_viva.TrimestralVencida) motivo = "vencio la trimestral de la mañana (" + _viva.CodigoAnterior + "): se suelta y entra el vencimiento siguiente";
                 else if (_diaViva.Length > 0 && dia != _diaViva) motivo = "cambio el dia en Nueva York (" + _diaViva + " -> " + dia + "): el 0DTE es otro";
                 else if (_viva.RadioDenso > 0 && _viva.Futuro > 0 && Math.Abs(_viva.Futuro - _viva.CentroVentana) > _viva.RadioDenso * 0.5)
@@ -876,42 +969,125 @@ namespace PythiaGexDos
         // corre todos los strikes lo que se movio el mercado en 15 min). Si no hay vela alineada, la mediana
         // robusta de la rueda; y si tampoco, la razon cruda, dicha como tal.
         private readonly RazonEtf _razon = new();
+        /// <summary>F2 (2.0.1): una cadena de CBOE se considera VIEJA si su foto tiene mas de estos minutos por encima del
+        /// retraso normal (RetrasoCboeSeg). De dia la nube + el cache suman 0-8 min de mas; de noche CBOE se congela horas.</summary>
+        private const double RazonCadenaViejaMin = 20;
         private void Escalar(Feed.Cadena c) => EscalarCon(c, RaizLibro(), _razon, Math.Max(0, RetrasoCboeSeg));
-        /// <summary>Parametrizada (15-09) para las capas extra: cada libro por razon lleva su propia razon y su mediana.</summary>
-        private void EscalarCon(Feed.Cadena c, string ticker, RazonEtf r, int retrasoSeg)
+        /// <summary>F2 (2.0.2): "ultimo_trade" de la cadena de CBOE (hora de Nueva York, "2026-09-17T16:14:59") a UTC. Es la hora REAL
+        /// de la foto: de dia ts - ultimo_trade = 15,0 min exactos (el retraso de CBOE; medido en 117 cadenas distintas de QQQ y ES del
+        /// 17 y 18-09) y de noche el ultimo trade queda clavado en 16:14:59 NY mientras ts (la hora de la bajada) sigue avanzando.</summary>
+        private static bool UltimoTradeUtc(string ultimoTrade, out DateTime utc)
+        {
+            utc = default;
+            if (string.IsNullOrEmpty(ultimoTrade)) return false;
+            if (!DateTime.TryParse(ultimoTrade, CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var t)) return false;
+            t = DateTime.SpecifyKind(t, DateTimeKind.Unspecified);
+            try { utc = TimeZoneInfo.ConvertTimeToUtc(t, TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time")); }
+            catch { utc = DateTime.SpecifyKind(t.AddHours(4), DateTimeKind.Utc); }
+            return true;
+        }
+
+        /// <summary>Parametrizada (15-09) para las capas extra: cada libro por razon lleva su propia razon y su mediana.
+        /// F2 (2.0.1): con la cadena VIEJA (CBOE congelada de noche) o sin vela alineada, NUNCA se divide el precio de ahora
+        /// por el spot viejo (18-09 04:02-05:22: razon 41,80 contra 41,55 = +0,8 % = ~240 pts de NQ en toda la capa QQQ);
+        /// se usa la ultima razon valida (memoria + archivo chico) o la mediana del dia, y se dice en el origen y en el log.
+        /// F2 (2.0.2): la vela se alinea al ULTIMO TRADE de la cadena (hora real de la foto), no a ts - 902 s: en la nube ts es la
+        /// hora de la bajada, y entre 16:15 y 00:16 NY la cadena tiene ts fresco con el spot congelado de las 16:14:59 (medido en prod
+        /// 17-09 17:00 -> 18-09 01:30: la razon "vela_alineada" derivo 41,4955 -> 41,4399 -> 41,5527, 0,27 % = 80 pts de NQ, y encima
+        /// se guardaba como valida). CONGELADA = el ultimo trade quedo mas de 20 min por detras de lo que el retraso explica: se alinea
+        /// a esa hora (NQ de las 16:14 NY / 715,79 es la razon verdadera de esa foto, constante toda la noche), no alimenta la mediana
+        /// de la rueda y solo anota como valida con la hora del ultimo trade. El criterio por ts queda para cadenas sin ultimo_trade.
+        /// <paramref name="ahoraUtc"/> y <paramref name="precioAhora"/> los pasa el rebobinado (la cadena y el precio de ESE minuto).</summary>
+        private void EscalarCon(Feed.Cadena c, string ticker, RazonEtf r, int retrasoSeg, DateTime? ahoraUtc = null, double precioAhora = 0)
         {
             if (c == null || c.SpotIdx <= 0) return;
             c.PorRazon = true; c.EsFuturo = false; c.Base = 0; c.BaseConfiable = false;
             c.Fuente = "CBOE " + ticker;
             var iv = CultureInfo.InvariantCulture;
-            double razon = double.NaN; string origen = "";
+            bool enVivo = ahoraUtc == null;
+            var ahora = ahoraUtc ?? DateTime.UtcNow;
+            // 2.0.2: el archivo chico va por RAIZ DEL FUTURO + ticker (razon-NQ-SPY.txt / razon-ES-SPY.txt): la razon es
+            // futuro_del_grafico / spot_del_ticker, y NQ/SPY ~ 45 no es ES/SPY ~ 10; con "razon-SPY.txt" dos graficos se pisaban
+            if (enVivo && string.IsNullOrEmpty(r.Ticker)) r.Ticker = Raiz() + "-" + ticker;
+            r.CargarSiHaceFalta();
+            double razon = double.NaN; string origen = ""; bool valida = false; DateTime validaUtc = ahora; bool guardia = false;
             // CONTRATO CONTINUO (15-09, semana del roll): la historia del grafico mezcla dos contratos (septiembre hasta
             // el empalme, diciembre despues, 300 pts arriba). La vela "alineada" de hace 902 s puede ser del contrato
             // viejo y la razon queda 1 % corrida: todos los niveles del ETF se dibujan ~290 pts arriba (medido 19:37-19:45:
             // razon 41.10 contra 41.51 en el mismo minuto en dos graficos). Si la vela alineada difiere mas de 0,6 % del
-            // precio actual, no es del mismo contrato: se usa la vela actual y se dice.
-            double pAhora = 0; try { pAhora = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { }
-            if (!string.IsNullOrEmpty(c.Ts) && DateTime.TryParseExact(c.Ts, "yyyy-MM-dd HH:mm:ss", iv, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out var ts))
+            // precio actual CON LA CADENA FRESCA, no es del mismo contrato: se usa la vela actual y se dice.
+            double pAhora = precioAhora; if (pAhora <= 0) { try { pAhora = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; } catch { } }
+            DateTime ts = default;
+            bool hayTs = !string.IsNullOrEmpty(c.Ts) && DateTime.TryParseExact(c.Ts, "yyyy-MM-dd HH:mm:ss", iv, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal, out ts);
+            bool hayUt = UltimoTradeUtc(c.UltimoTrade, out var ut);
+            double edadExtraMin = hayTs ? (ahora - ts).TotalMinutes - retrasoSeg / 60.0 : double.NaN;
+            bool vieja = !hayTs || edadExtraMin > RazonCadenaViejaMin;
+            double atrasoUtMin = hayUt ? ((hayTs ? ts : ahora) - ut).TotalMinutes - retrasoSeg / 60.0 : double.NaN;
+            bool congelada = hayUt && atrasoUtMin > RazonCadenaViejaMin;
+            string utNy = hayUt ? (c.UltimoTrade.Length >= 16 ? c.UltimoTrade.Substring(11, 5) : c.UltimoTrade) : "";
+            double pAl = 0;
             {
-                int b = BarraDe(ts.AddSeconds(-retrasoSeg));
-                if (b >= 0) { try { double p = (double)GetCandle(b).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "vela alineada";
-                    if (pAhora > 0 && Math.Abs(p / pAhora - 1) > 0.006) { razon = pAhora / c.SpotIdx; origen = "CRUDA: la vela alineada es de otro contrato (" + p.ToString("0", iv) + " vs " + pAhora.ToString("0", iv) + ")"; } } } catch { } }
+                int b = hayUt ? BarraDeExacta(ut) : hayTs ? BarraDeExacta(ts.AddSeconds(-retrasoSeg)) : -1;
+                if (b >= 0) { try { pAl = (double)GetCandle(b).Close; } catch { pAl = 0; } }
             }
-            if (double.IsNaN(razon) && !double.IsNaN(r.Rueda))
+            if (hayUt && pAl > 0)
             {
-                razon = r.Rueda; origen = "mediana de la rueda";
-                if (pAhora > 0 && c.SpotIdx > 0 && Math.Abs(razon * c.SpotIdx / pAhora - 1) > 0.006) { razon = pAhora / c.SpotIdx; origen = "CRUDA: la mediana de la rueda es de otro contrato"; }
+                // la vela del ultimo trade es la razon verdadera de ESTA foto (fresca o congelada: los dos cotizaban en ese instante)
+                razon = pAl / c.SpotIdx; valida = true; validaUtc = ut;
+                origen = congelada ? "vela alineada al ultimo trade " + utNy + " NY (cadena congelada " + atrasoUtMin.ToString("0", iv) + " min)"
+                                   : "vela alineada (ultimo trade " + utNy + " NY)";
+                // la guardia del contrato continuo SOLO con la cadena fresca: con la congelada el precio de ahora esta horas mas lejos
+                if (!congelada && !vieja && pAhora > 0 && Math.Abs(pAl / pAhora - 1) > 0.006) { razon = pAhora / c.SpotIdx; origen = "CRUDA: la vela alineada es de otro contrato (" + pAl.ToString("0", iv) + " vs " + pAhora.ToString("0", iv) + ")"; valida = false; }
+                guardia = congelada;
             }
-            if (double.IsNaN(razon)) { try { double p = (double)GetCandle(Math.Max(0, CurrentBar - 1)).Close; if (p > 0) { razon = p / c.SpotIdx; origen = "CRUDA sin alinear"; } } catch { } }
+            else if (!hayUt && !vieja && pAl > 0)
+            {
+                razon = pAl / c.SpotIdx; origen = "vela alineada"; valida = true;
+                if (pAhora > 0 && Math.Abs(pAl / pAhora - 1) > 0.006) { razon = pAhora / c.SpotIdx; origen = "CRUDA: la vela alineada es de otro contrato (" + pAl.ToString("0", iv) + " vs " + pAhora.ToString("0", iv) + ")"; valida = false; }
+            }
+            else
+            {
+                // F2: sin vela alineada (o cadena vieja sin ultimo_trade). Orden: la ultima razon valida (hasta 4 dias: el fin de
+                // semana entero), la vela alineada de esa cadena vieja (valida en SU momento), la mediana del dia, y recien al
+                // final la cruda, dicha como tal. NUNCA precio_de_ahora / spot_viejo.
+                string porque = hayUt && congelada ? "cadena congelada (ultimo trade " + utNy + " NY) sin vela alineada"
+                              : hayUt ? "sin vela alineada al ultimo trade " + utNy + " NY"
+                              : !hayTs ? "cadena sin ts" : vieja ? "cadena vieja (" + edadExtraMin.ToString("0", iv) + " min mas que el retraso normal)" : "sin vela alineada";
+                double ult; DateTime ultUtc; lock (r.Obs) { ult = r.Ultima; ultUtc = r.UltimaUtc; }
+                // 2.0.2: cordura de la ultima razon guardada: puesta sobre este spot tiene que dar el precio del grafico a menos de 5 %
+                // (distingue NQ/SPY 45 de ES/SPY 10 sin discutir el 0,8 % del roll). La division aca VALIDA, no dibuja.
+                if (!double.IsNaN(ult) && ult > 0 && pAhora > 0 && Math.Abs(ult * c.SpotIdx / pAhora - 1) > 0.05)
+                {
+                    if (enVivo) Log("razon " + ticker + " (2.0.2): descarto la ultima razon guardada " + ult.ToString("0.0000", iv) + " (" + ultUtc.ToString("yyyy-MM-dd HH:mm", iv) + " UTC): sobre el spot " + c.SpotIdx.ToString("0.00", iv) + " da " + (ult * c.SpotIdx).ToString("0", iv) + " contra " + pAhora.ToString("0", iv) + " del grafico (mas de 5 %): es de otro instrumento");
+                    lock (r.Obs) { if (r.Ultima == ult) { r.Ultima = double.NaN; r.UltimaUtc = DateTime.MinValue; } }
+                    ult = double.NaN; ultUtc = DateTime.MinValue;
+                }
+                // la vela alineada de ESTA cadena vieja (sin ultimo_trade) es una medicion valida de su momento; gana si es mas nueva que la ultima guardada
+                bool alineadaMasNueva = pAl > 0 && hayTs && (double.IsNaN(ult) || ult <= 0 || ts > ultUtc);
+                if (alineadaMasNueva) { razon = pAl / c.SpotIdx; origen = "vela alineada de una " + porque; valida = true; validaUtc = ts; }
+                else if (!double.IsNaN(ult) && ult > 0 && (ahora - ultUtc).TotalDays <= 4) { razon = ult; origen = "ultima valida hace " + (ahora - ultUtc).TotalMinutes.ToString("0", iv) + " min; " + porque; }
+                else if (pAl > 0) { razon = pAl / c.SpotIdx; origen = "vela alineada de una " + porque; valida = true; validaUtc = ts; }
+                else if (!double.IsNaN(r.Rueda) && r.Rueda > 0) { razon = r.Rueda; origen = "mediana de la rueda; " + porque; }
+                else if (pAhora > 0) { razon = pAhora / c.SpotIdx; origen = "CRUDA sin alinear (sin razon valida previa); " + porque; }
+                guardia = true;
+            }
             if (double.IsNaN(razon) || razon <= 0) { c.Escala = 1; c.EscalaOrigen = "sin razon"; return; }
             c.Escala = razon; c.EscalaOrigen = origen;
-            if (origen == "vela alineada")
+            if (valida)
             {
-                lock (r.Obs)
-                {
-                    r.Obs.Add(razon); if (r.Obs.Count > 24) r.Obs.RemoveAt(0);
-                    var ord = r.Obs.OrderBy(x => x).ToList(); r.Rueda = ord[ord.Count / 2];
-                }
+                // la mediana de la rueda solo con fotos frescas: ni congeladas (de noche seria 24 veces la misma) ni viejas
+                if (!vieja && !congelada)
+                    lock (r.Obs)
+                    {
+                        r.Obs.Add(razon); if (r.Obs.Count > 24) r.Obs.RemoveAt(0);
+                        var ord = r.Obs.OrderBy(x => x).ToList(); r.Rueda = ord[ord.Count / 2];
+                    }
+                r.AnotarValida(razon, validaUtc);   // memoria + archivo chico (fuera del lock); con la hora del ultimo trade nunca avanza mas alla de la foto
+            }
+            if (guardia && enVivo && (ahora - r.UltimoAvisoUtc).TotalMinutes >= 5)
+            {
+                r.UltimoAvisoUtc = ahora;
+                Log("razon " + ticker + " (F2): " + origen + " => " + razon.ToString("0.0000", iv) + " (spot " + c.SpotIdx.ToString("0.00", iv) + ", precio " + pAhora.ToString("0.00", iv) + "; la cruda hubiera sido " + (pAhora > 0 ? (pAhora / c.SpotIdx).ToString("0.0000", iv) : "--") + ")");
             }
         }
 
@@ -995,7 +1171,28 @@ namespace PythiaGexDos
                         for (var d = desde.Date; d <= hasta.Date; d = d.AddDays(1))
                             await Feed.Archivo.BajarDia(string.IsNullOrWhiteSpace(UrlArchivo) ? Url : UrlArchivo, raiz, d, Log).ConfigureAwait(false);
                     var ls = Feed.Archivo.Cargar(raiz, desde, hasta, Log);
-                    if (Libro == LibroEnVivo.CBOE_ETF) { foreach (var x in ls) Escalar(x); Log("archivo del ETF " + raiz + ": " + ls.Count + " cadenas llevadas al futuro por razon"); }
+                    if (Libro == LibroEnVivo.CBOE_ETF)
+                    {
+                        // 2.0.2: cada cadena del archivo con SU vela (la de su minuto) y una RazonEtf temporal que no persiste ni toca la
+                        // del vivo. Escalar(x) sin hora juzgaba toda cadena del pasado como "vieja" contra AHORA y le ponia la razon de
+                        // HOY (la ultima valida): el rebobinado entero (estela, fotos, gatillos, historia, centinela) salia corrido
+                        // 0,1-0,3 % (30-90 pts de NQ) y hasta 1 % (300 pts) la semana del roll. Igual que el rebobinado de capas.
+                        var rr = new RazonEtf(); int retraso = Math.Max(0, RetrasoCboeSeg); int sinVela = 0;
+                        var conVela = new List<Feed.Cadena>(ls.Count);
+                        foreach (var x in ls)
+                        {
+                            if (x == null) continue;
+                            int b = x.GeneradoUtc != default ? BarraDeExacta(x.GeneradoUtc) : -1;
+                            double p = 0; if (b >= 0) { try { p = (double)GetCandle(b).Close; } catch { p = 0; } }
+                            if (p <= 0) { sinVela++; x.Escala = 1; x.EscalaOrigen = "sin vela"; continue; }   // fuera del grafico: con escala 1 dibujaria QQQ en 715 sobre NQ
+                            EscalarCon(x, raiz, rr, retraso, x.GeneradoUtc, p);
+                            conVela.Add(x);
+                        }
+                        ls = conVela;
+                        // la mediana de la rueda del archivo siembra la del vivo solo si el vivo todavia no midio nada
+                        lock (_razon.Obs) if (_razon.Obs.Count == 0 && rr.Obs.Count > 0) { _razon.Obs.AddRange(rr.Obs); _razon.Rueda = rr.Rueda; }
+                        Log("archivo del ETF " + raiz + ": " + ls.Count + " cadenas llevadas al futuro por razon, cada una con la vela de su minuto (" + sinVela + " sin vela en el grafico, descartadas)");
+                    }
                     if (Libro == LibroEnVivo.Rithmic_ES)
                     {
                         // el mismo libro que el vivo: la grabacion de Rithmic de las horas en que
@@ -1105,7 +1302,7 @@ namespace PythiaGexDos
                     LibroDom = L.LibroDom, LibroConv = L.LibroConv, Mucho = L.Mucho, Mc = L.MaxChange, Vela = abre, Cadena = cad.GeneradoUtc,
                     Perfil = L.Perfil,
                 };
-                lock (_candado) { _fotosBarra[bar] = foto; _estela[bar] = L.Estela; _marcas[bar] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut }); }
+                lock (_candado) { _fotosBarra[bar] = foto; _estela[bar] = L.Estela; _marcas[bar] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut }); AnotarHistoria(abre, L); }
                 try { AnotarArchivo(bar, c, L); } catch (Exception e) { Registrar(e); }
                 try { Gat(bar, c, cierra, L.Doms); } catch (Exception e) { Registrar(e); }
                 try
@@ -1270,6 +1467,7 @@ namespace PythiaGexDos
             a.MuchoPct = MuchoPct;
             a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
             a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct; a.DominantesDeNoche = DominantesDeNoche;
+            a.ZeroInterpolado = ZeroGammaInterpolado;   // F5 (2.0.1)
 
             var L = _nucleo.Calcular(c, futuro, ahoraUtc);
             if (L == null) return;
@@ -1281,7 +1479,7 @@ namespace PythiaGexDos
                 _perfil = L.Perfil; _S = L.S; _futuro = L.Futuro; _base = L.Base; _baseOrigen = L.BaseOrigen; _masCercaUlt = L.MasCerca;
                 if (L.BaseOrigen != _baseOrigenUlt) { _baseOrigenUlt = L.BaseOrigen; Log("base: " + L.Base.ToString("0.00", CultureInfo.InvariantCulture) + " (" + L.BaseOrigen + ")" + (double.IsNaN(L.Carry) ? "" : " carry teorico " + L.Carry.ToString("0.0", CultureInfo.InvariantCulture))); }
                 if ((ahoraUtc - _ultimoLogPelotitas).TotalMinutes >= 5) { _ultimoLogPelotitas = ahoraUtc; try { LogPelotitas(L); } catch { } }
-                _zeroVol = L.ZeroVol; _zeroOi = L.ZeroOi; _netVol = L.NetVol; _netOi = L.NetOi;
+                _zeroVol = L.ZeroVol; _zeroOi = L.ZeroOi; _netVol = L.NetVol; _netOi = L.NetOi; _zeroModo = L.ZeroModo;
                 _mpVol = L.MpVol; _mnVol = L.MnVol; _mpOi = L.MpOi; _mnOi = L.MnOi;
                 _maxAbsVol = L.MaxAbsVol; _maxAbsOi = L.MaxAbsOi; _maxAbsConv = L.MaxAbsConv;
                 _doms = L.Doms; _libroConvUsado = L.LibroConv; _libroDomUsado = L.LibroDom;
@@ -1292,6 +1490,7 @@ namespace PythiaGexDos
                 _estela[barra] = L.Estela;
                 AgregarGuiones(barra, L.Estela, DateTime.UtcNow);
                 _marcas[barra] = (L.ZeroVol, new[] { L.MaxChange[4].Fut, L.MaxChange[1].Fut, L.MaxChange[0].Fut });
+                AnotarHistoria(ahoraUtc, L);   // F6 (2.0.1)
                 if (_estela.Count > 6000) foreach (var k in _estela.Keys.Where(k => k < barra - 5000).ToList()) { _estela.Remove(k); _marcas.Remove(k); _guiones.Remove(k); }
             }
 
@@ -1577,7 +1776,7 @@ namespace PythiaGexDos
         private GatilloBanda.Marca GatilloModeloVela(GatilloModelo mod, int bar, IndicatorCandle c, DateTime horaUtc,
                                                      List<(double Fut, double Gex)> doms, double zero, double mp, double mn, (double Fut, double Delta)[] mc)
         {
-            if (ModoModelo == GatilloModeloModo.Ninguno || c == null) return null;
+            if (ModoGatilloModelo == GatilloModeloModo.Ninguno || c == null) return null;
             if (Raiz() != "ES") return null;
             string marco = ChartInfo != null ? (ChartInfo.TimeFrame ?? "") : "";
             if (!GatilloModelo.Soporta(marco))
@@ -1597,10 +1796,15 @@ namespace PythiaGexDos
                 }
             double mc30 = mc != null && mc.Length > 4 ? mc[4].Fut : double.NaN;
             var s = mod.Procesar(bar, (double)c.Open, (double)c.High, (double)c.Low, cl, (double)c.Delta, zero, mp, mn, domArr, domAba, mc30);
-            if (ReferenceEquals(mod, _modVivo)) _modUltimaP = s.P;
+            if (ReferenceEquals(mod, _modVivo))
+            {
+                _modUltimaP = s.P;
+                // F4: la primera vez que el modelo NO dispara por frio o por niveles sin valor, se dice una vez en el log
+                if (s.Lado == 0 && !string.IsNullOrEmpty(mod.UltimoMotivo) && !_modAvisoFrio) { _modAvisoFrio = true; Log("gatillo modelo (F4): no dispara todavia: " + mod.UltimoMotivo); }
+            }
             if (s.Lado == 0) return null;
             int horaNY = (horaUtc.Hour + 20) % 24;      // UTC-4 (horario de verano de Nueva York)
-            if (ModoModelo == GatilloModeloModo.SoloTarde && (horaNY < 14 || horaNY >= 16)) return null;
+            if (ModoGatilloModelo == GatilloModeloModo.SoloTarde && (horaNY < 14 || horaNY >= 16)) return null;
             return new GatilloBanda.Marca { Bar = bar, Hora = horaUtc, Tipo = "modelo·es10", Lado = s.Lado, Precio = cl, Dom = double.IsNaN(zero) ? 0 : zero, Dz = s.P, Arriba = s.Lado < 0, Principal = true };
         }
 
@@ -1764,7 +1968,7 @@ namespace PythiaGexDos
             string l1 = perfil.Count == 0
                 ? "GAMMA HOY  esperando cadena" + (string.IsNullOrEmpty(_error) ? "" : " (" + _error + ")")
                 : "GAMMA HOY  " + corto + "  " + cuad + "   conv " + (convPrecio >= 0 ? "+" : "-") + " (" + libroConv + ")  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)) + (mucho ? " mucho" : " poco");
-            string l2 = (c != null && c.EsFuturo ? "libro " + Raiz() + " Rithmic " + edad + " · " + c.Filas.Count + " filas" : "vol CBOE " + edad) + " · OI de ayer · base " + origenBase + " · dominantes por " + libroDom
+            string l2 = (c != null && c.EsFuturo ? "libro " + Raiz() + " Rithmic " + edad + " · " + c.Filas.Count + " filas" : "vol CBOE " + edad) + " · OI de ayer · base " + origenBase + " · zero " + ZeroModoCorto() + " · dominantes por " + libroDom
                       + (Libro == LibroEnVivo.Rithmic_ES && _vivaFlaca >= 0 ? " · RITHMIC FLACO: " + _vivaFlaca + " strikes con puntas, sigo con CBOE" : "")
                       + (_viva.Activa ? " · vivo Rithmic " + ((int)_viva.VolumenTotalHoy()).ToString("N0", es) + " contr" + (_viva.SinCeroDte ? " · SIN 0DTE EN EL VIVO (mas cercano " + _viva.DiasReales + " d)" : "") : " · vivo: " + _viva.Estado);
             if (Fuente != FuenteDatos.Archivo)
@@ -1820,10 +2024,13 @@ namespace PythiaGexDos
             if (perfil.Count == 0 || double.IsNaN(futuro)) return;
 
             int x0 = area.Left;
-            int ancho = Math.Max(30, AnchoBarras);
+            // F7 (2.0.1): la referencia normaliza cada lado del perfil a floor(0,30 x ancho del grafico): la barra mas larga
+            // siempre mide eso. Apagada, el ancho absoluto de siempre (AnchoBarras) y el perfil derecho al 70 %.
+            int ancho = BarrasRelativas ? Math.Max(30, (int)Math.Floor(0.30 * Math.Max(100, xr - area.Left))) : Math.Max(30, AnchoBarras);
+            int anchoDer = BarrasRelativas ? ancho : (int)(ancho * 0.7);
             int xLad = VerEscalera ? xr - Math.Max(80, AnchoEscalera) : xr;
             int xConv = xLad - 6;                       // borde derecho de la convexidad
-            int xl0 = x0 + ancho + 8, xl1 = (VerConvexidad ? xConv - (int)(ancho * 0.7) - 8 : xLad - 8);
+            int xl0 = x0 + ancho + 8, xl1 = (VerConvexidad ? xConv - anchoDer - 8 : xLad - 8);
             if (xl1 - xl0 < 60) { xl0 = x0 + 2; xl1 = xLad - 2; }
 
             // ---- barras: sombra de OI, volumen encima, convexidad a la derecha
@@ -1945,7 +2152,7 @@ namespace PythiaGexDos
                 if (VerConvexidad && maxDer > 0 && Math.Abs(vDer) > 0)
                 {
                     double fr = Math.Sqrt(Math.Abs(vDer) / maxDer);
-                    int w = Math.Max(1, (int)(fr * ancho * 0.7));
+                    int w = Math.Max(1, (int)(fr * anchoDer));
                     var col = vDer >= 0 ? ColConvPos : ColConvNeg;
                     g.FillRectangle(Color.FromArgb(AtenuarPrimaria((int)(110 + 120 * fr)), col), new Rectangle(xConv - w, y - alto / 2, w, alto));
                     if (PelotitasMaxChange && !usarFlujo)
@@ -1956,7 +2163,7 @@ namespace PythiaGexDos
                         {
                             if (antesConv[i] == null || !antesConv[i].TryGetValue(s.Clave, out var cAntes)) continue;
                             if (Math.Sign(cAntes) != Math.Sign(s.Conv) && cAntes != 0) cAntes = 0;
-                            int wa = Math.Max(0, (int)(Math.Sqrt(Math.Abs(cAntes) / maxC) * ancho * 0.7));
+                            int wa = Math.Max(0, (int)(Math.Sqrt(Math.Abs(cAntes) / maxC) * anchoDer));
                             int rr = radC[i];
                             if (AtenuarPrimaria(255) <= 0) continue;
                             g.FillEllipse(Color.FromArgb(AtenuarPrimaria(225), 205, 205, 210), new Rectangle(xConv - wa - rr, y - rr, 2 * rr, 2 * rr));
@@ -2048,7 +2255,7 @@ namespace PythiaGexDos
             for (int i = 0; i < doms.Count; i++) Raya(doms[i].Fut, ColDom, i == 0 ? (float)GrosorDominante : (float)Math.Max(0.6, (double)GrosorDominante - 0.5), Trazo(LineaDominante), i == 0 ? 220 : 160);
 
             // ---- estela: la dominante que regia en cada vela
-            if (VerEstela || VerSemillas || VerZeroPorVela || VerGatillos != GatillosEnPantalla.Ninguno || ModoModelo != GatilloModeloModo.Ninguno || ModoRebote != GatilloReboteModo.Ninguno)
+            if (VerEstela || VerSemillas || VerZeroPorVela || VerGatillos != GatillosEnPantalla.Ninguno || ModoGatilloModelo != GatilloModeloModo.Ninguno || ModoRebote != GatilloReboteModo.Ninguno)
             {
                 Dictionary<int, double[]> est; Dictionary<int, (double Zero, double[] Mc)> mar; Dictionary<int, List<(double Fut, int Rango, DateTime Hora)>> gui;
                 var ahoraUtc = DateTime.UtcNow;
@@ -2078,7 +2285,7 @@ namespace PythiaGexDos
                     int x; try { x = cont.GetXByBar(b, false); } catch { continue; }
                     // los gatillos de order flow: un triangulo apuntando hacia adentro del canal,
                     // pegado a la vela (arriba del maximo para cortos, abajo del minimo para largos)
-                    if ((VerGatillos != GatillosEnPantalla.Ninguno || ModoModelo != GatilloModeloModo.Ninguno || ModoRebote != GatilloReboteModo.Ninguno) && dis.TryGetValue(b, out var lt))
+                    if ((VerGatillos != GatillosEnPantalla.Ninguno || ModoGatilloModelo != GatilloModeloModo.Ninguno || ModoRebote != GatilloReboteModo.Ninguno) && dis.TryGetValue(b, out var lt))
                         foreach (var t in lt)
                         {
                             if (t.Tipo == "modelo·es10")
@@ -2167,7 +2374,12 @@ namespace PythiaGexDos
                         if (VerZeroPorVela && !double.IsNaN(m.Zero))
                         {
                             int y; try { y = cont.GetYByPrice((decimal)m.Zero, false); } catch { y = int.MinValue; }
-                            if (y >= area.Top && y <= piso) g.FillEllipse(Color.FromArgb(AtenuarPrimaria(150), ColZero), new Rectangle(x - 1, y - 1, 3, 3));
+                            if (y >= area.Top && y <= piso)
+                            {
+                                g.FillEllipse(Color.FromArgb(AtenuarPrimaria(150), ColZero), new Rectangle(x - 1, y - 1, 3, 3));
+                                // F5: la estela del zero dice como se saco (en la ultima vela visible, una sola vez)
+                                if (b == hasta && AtenuarPrimaria(255) > 0) { var tz = TextoZero + "·" + ZeroModoCorto(); var mz = g.MeasureString(tz, fChica); g.DrawString(tz, fChica, Color.FromArgb(AtenuarPrimaria(160), ColZero), x + 5, y - mz.Height / 2); }
+                            }
                         }
                         // las semillas: el strike de mayor cambio a 30 (grande), 5 (mediana) y 1 min (chica)
                         // las semillas solo en las ultimas 90 velas (lo "adelantado" es de ahora,
@@ -2184,6 +2396,9 @@ namespace PythiaGexDos
                     }
                 }
             }
+
+            // ---- F6 (2.0.1): historia del dia, puntitos por minuto de D1, D2 y zero desde las 18:00 NY
+            if (HistoriaDelDia) { try { PintarHistoria(g, cont, area, piso); } catch (Exception e) { Registrar(e); } }
 
             // ---- big trades de opciones, sobre la vela del momento
             if (VerBigTrades && _viva.Activa)
@@ -2205,6 +2420,28 @@ namespace PythiaGexDos
 
             // ---- la escalera pegada al eje
             if (VerEscalera) Escalera(g, cont, area, xLad, xr, piso, f, fChica, futuro, zeroVol, zeroOi, mpVol, mnVol, doms, mc, netVol, netOi);
+        }
+
+        /// <summary>2.0.2: la ultima vela abierta a esa hora o antes, buscada en TODO el grafico (busqueda binaria: las velas van
+        /// en orden). BarraDe mira solo 600 velas: la vela del ultimo trade de CBOE (16:14:59 NY) queda a 700 velas de 1 min a las
+        /// 04:00 y a miles el fin de semana; el archivo de 3 dias, mas lejos. Si la hora cae antes de la primera vela o en un hueco
+        /// del grafico de mas de 4 h (el corte 17:00-18:00 NY es 1 h), -1.</summary>
+        private int BarraDeExacta(DateTime horaUtc)
+        {
+            try
+            {
+                int lo = 0, hi = CurrentBar - 1;
+                if (hi < 0) return -1;
+                if (Utc(GetCandle(lo).Time) > horaUtc) return -1;
+                while (lo < hi)
+                {
+                    int mid = lo + (hi - lo + 1) / 2;
+                    if (Utc(GetCandle(mid).Time) <= horaUtc) lo = mid; else hi = mid - 1;
+                }
+                if ((horaUtc - Utc(GetCandle(lo).Time)).TotalHours > 4) return -1;
+                return lo;
+            }
+            catch { return -1; }
         }
 
         private int BarraDe(DateTime horaUtc)
@@ -2251,7 +2488,7 @@ namespace PythiaGexDos
             // filas a la altura de su precio, como un DOM, sin pisarse
             var filas = new List<(string N, double P, Color C, bool esPrecio)>();
             void Add(string n, double p, Color c) { if (!double.IsNaN(p) && p > 0 && EnPantalla(p)) filas.Add((n, p, c, false)); }
-            Add(TextoZero + " vol", zeroVol, ColZero); Add(TextoZero + " ayer", zeroOi, Color.FromArgb(160, 160, 170));
+            Add(TextoZero + " vol·" + ZeroModoCorto(), zeroVol, ColZero); Add(TextoZero + " ayer", zeroOi, Color.FromArgb(160, 160, 170));   // F5: dice como se saco
             Add(TextoMajorPos, mpVol, ColPos); Add(TextoMajorNeg, mnVol, ColNeg);
             for (int i = 0; i < doms.Count; i++) Add(TextoDominante + (i + 1), doms[i].Fut, ColDom);
             // capas (15-09): con capas activas la primaria es fantasma y no lista sus niveles; los de las capas van aca,

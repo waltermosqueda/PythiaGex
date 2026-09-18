@@ -111,7 +111,10 @@ namespace PythiaGexDos
         /// <summary>CBOE BAJADA DESDE ESTA PC (16-09, herramientas/cboe_local.py): la nube corre cada 8-25 min; el bajador local
         /// cada 75 s en la rueda. Si %APPDATA%/ATAS/PythiaGex/cboe-local/ultima-(raiz).json existe y es mas fresca que 3 min,
         /// se usa antes que la nube; si la nube resulta mas vieja que la local, tambien gana la local.</summary>
-        public static string CarpetaLocalCboe => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex2", "cboe-local");
+        /// <summary>2.0.2: entrada EXTERNA de herramientas/cboe_local.py (DESTINO = %APPDATA%/ATAS/PythiaGex/cboe-local), de SOLO
+        /// LECTURA: el clonador la habia mandado a PythiaGex2/cboe-local, donde nadie escribe, y la 2.0 caia siempre a la nube
+        /// (5-25 min mas vieja). Compartirla con prod no choca: el DLL solo la lee. NO clonar (excepcion en clonar_2_0.py).</summary>
+        public static string CarpetaLocalCboe => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex", "cboe-local");
         private static Cadena UltimaLocal(string raiz)
         {
             try
@@ -259,23 +262,51 @@ namespace PythiaGexDos
             public static string Carpeta => Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex2", "cadenas");
 
-            private static readonly Dictionary<string, string> _ultimoSello = new();
+            // F1 (2.0.2): por raiz, CADA sello archivado con la hora en que se escribio (UTC de esta PC). Un solo casillero por
+            // raiz NO alcanzaba: BajarUltima archiva DOS cadenas por ciclo (la local de cboe_local.py y la de la nube) y, si son
+            // distintas, alternan A,B,A,B pisando el casillero y escribiendo cada vez. Medido 18-09 en prod:
+            // local-QQQ-2026-09-18.jsonl 1445 lineas y 34 distintas (34 sellos, 34 "generado", 34 bases: las repeticiones son
+            // copias IDENTICAS en rachas de 10-60-485, 485 copias de la de 04:16:24Z) y local-QQQ-2026-09-17.jsonl 4447 lineas con
+            // 2855 copias de la de 03:55:49 del dia anterior, que ultima-QQQ.json local seguia sirviendo con cboe_local.py parado.
+            private static readonly Dictionary<string, Dictionary<string, DateTime>> _sellos = new();
+            /// <summary>Cada cuanto se archiva igual una cadena que NO cambio (latido), como maximo.</summary>
+            public const int LatidoMinutos = 10;
+            /// <summary>Una cadena mas vieja que esto NO late: ya esta archivada una vez, y repetirla cada 10 min llenaria para
+            /// siempre el archivo del dia viejo (el latido vale solo para la cadena en curso).</summary>
+            public const int SinLatidoDesdeMin = 60;
 
+            /// <summary>F1: el sello es SOLO la cadena de CBOE (foto, ultimo trade y spot): no depende de la base ni del
+            /// "generado" de la nube. (La duplicacion del 18-09 NO era por el sello: ver _sellos.)</summary>
             private static string Sello(Cadena c)
-                => c.Ts + "|" + c.Base.ToString("R", System.Globalization.CultureInfo.InvariantCulture) + "|" + c.GeneradoUtc.ToString("O");
+                => c.Ts + "|" + c.UltimoTrade + "|" + c.SpotIdx.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
 
-            /// <summary>Agrega la cadena recien bajada al archivo local del dia,
-            /// solo si el sello de CBOE cambio (de noche se congela).</summary>
+            /// <summary>Para no repetir al LEER (nube + local del mismo minuto): la cadena mas el minuto en que la nube la publico.
+            /// Dos publicaciones distintas de la misma cadena (latidos, o la nube cada minuto) se conservan las dos: el
+            /// rebobinado usa la base de cada una.</summary>
+            private static string Clave(Cadena c) => Sello(c) + "|" + c.GeneradoUtc.ToString("O");
+
+            /// <summary>Agrega la cadena recien bajada al archivo local del dia si ESE sello no se escribio todavia; si ya se
+            /// escribio, un latido cada <see cref="LatidoMinutos"/> como maximo, y solo mientras la cadena tenga menos de
+            /// <see cref="SinLatidoDesdeMin"/> (una cadena vieja ya archivada no se repite nunca).</summary>
             public static void GuardarLocal(string raiz, string json, Cadena c)
             {
                 if (c == null || c.Filas.Count == 0) return;
                 var sello = Sello(c);
-                lock (_ultimoSello)
+                var ahora = DateTime.UtcNow;
+                var gen = c.GeneradoUtc != default ? c.GeneradoUtc : ahora;
+                bool cadenaVieja = (ahora - gen).TotalMinutes > SinLatidoDesdeMin;
+                lock (_sellos)
                 {
-                    if (_ultimoSello.TryGetValue(raiz, out var u) && u == sello) return;
-                    _ultimoSello[raiz] = sello;
+                    if (!_sellos.TryGetValue(raiz, out var d)) { d = new Dictionary<string, DateTime>(); _sellos[raiz] = d; }
+                    if (d.TryGetValue(sello, out var escrito))
+                    {
+                        if (cadenaVieja) return;                                        // ya archivada: la cadena vieja no late
+                        if ((ahora - escrito).TotalMinutes < LatidoMinutos) return;     // el mismo sello hace menos de 10 min
+                    }
+                    d[sello] = ahora;
+                    if (d.Count > 400)   // poda: un sello por cadena distinta (~400 por rueda); se olvidan los de mas de 26 h
+                        foreach (var k in d.Where(kv => (ahora - kv.Value).TotalHours > 26).Select(kv => kv.Key).ToList()) d.Remove(k);
                 }
-                var gen = c.GeneradoUtc != default ? c.GeneradoUtc : DateTime.UtcNow;
                 Directory.CreateDirectory(Carpeta);
                 var linea = Flaca(json, gen);
                 if (linea == null) return;
@@ -466,7 +497,7 @@ namespace PythiaGexDos
                         try { ls = Leer(p); } catch (Exception e) { log?.Invoke("no pude leer " + nombre + ": " + e.Message); continue; }
                         archivos++;
                         foreach (var c in ls)
-                            if (vistos.Add(Sello(c))) todo.Add(c);
+                            if (vistos.Add(Clave(c))) todo.Add(c);
                     }
                 }
                 todo.Sort((a, b) => a.GeneradoUtc.CompareTo(b.GeneradoUtc));

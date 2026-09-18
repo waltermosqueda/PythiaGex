@@ -80,6 +80,10 @@ namespace PythiaGexDos
             // disparaba porque el volumen nunca es cero. Con InteresAbierto, fuera de la rueda las dominantes salen del OI del
             // vencimiento mas cercano (posiciones abiertas), y el AUDIT lo dice: libroDom=OI.
             public NocheDominantes DominantesDeNoche = NocheDominantes.Volumen;   // 17-09: Volumen por pedido del operador (scalping: donde se opero HOY, no las posiciones acumuladas)
+            // F5 (2.0.1): el zero como la referencia (medida 11-09 y 18-09): cambio de signo del perfil POR STRIKE, interpolado
+            // linealmente entre los dos strikes vecinos (715 -3,7B y 716 +2,2B => 715,62). false = el cruce REPRECIADO en la
+            // grilla de +-3 % (Cruce(), 716,17 en ese mismo libro: no es el de la referencia).
+            public bool ZeroInterpolado = true;
         }
 
         public sealed class Strike
@@ -110,6 +114,8 @@ namespace PythiaGexDos
             public double S, Futuro, Base;
             public string BaseOrigen = "";
             public double ZeroVol = double.NaN, ZeroOi = double.NaN, NetVol, NetOi;
+            /// <summary>F5: como se saco el zero: "interp" (cambio de signo por strike interpolado) o "cruce" (repreciado en grilla).</summary>
+            public string ZeroModo = "";
             public double MpVol = double.NaN, MnVol = double.NaN, MpOi = double.NaN, MnOi = double.NaN;
             public double MaxAbsVol, MaxAbsOi, MaxAbsConv;
             public double MaxAbsFlujo; public bool TieneFlujo;
@@ -222,6 +228,32 @@ namespace PythiaGexDos
             return Math.Min(2.0, (ahoraUtc - c.GeneradoUtc).TotalDays);
         }
 
+        /// <summary>F5 (2.0.1): el zero de la referencia. Entre dos strikes vecinos (sin contar los de GEX cero) con GEX de
+        /// signo distinto, el punto donde la recta que los une corta cero: K0 + (K1 - K0) x (-G0) / (G1 - G0). Si hay varios
+        /// cruces, el mas cercano a S. En el eje del LIBRO (K), como Cruce(); NaN si el perfil no cambia de signo.</summary>
+        private static double ZeroPorSigno(List<Strike> perfil, double S, bool porVolumen)
+        {
+            double mejor = double.NaN, dist = double.MaxValue;
+            Strike ant = null;
+            foreach (var s in perfil)   // ya ordenado por K
+            {
+                double g = porVolumen ? s.GexVol : s.GexOi;
+                if (g == 0 || double.IsNaN(g)) continue;
+                if (ant != null)
+                {
+                    double ga = porVolumen ? ant.GexVol : ant.GexOi;
+                    if ((ga < 0 && g > 0) || (ga > 0 && g < 0))
+                    {
+                        double k = ant.K + (s.K - ant.K) * (-ga) / (g - ga);
+                        double d = Math.Abs(k - S);
+                        if (d < dist) { dist = d; mejor = k; }
+                    }
+                }
+                ant = s;
+            }
+            return mejor;
+        }
+
         private double Cruce(Feed.Cadena c, double S, double r, double masCerca, double envejecer, bool porVolumen)
         {
             double amp = 0.03 * Math.Max(1.0, c.Apalancamiento); double lo = S * (1 - amp), hi = S * (1 + amp); const int pasos = 60;
@@ -331,8 +363,17 @@ namespace PythiaGexDos
             double maxAbsConv = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.Conv)) : 0;
             double maxAbsFlujo = perfil.Count > 0 ? perfil.Max(x => Math.Abs(x.GexFlujo)) : 0;
 
-            // zero gamma de cada libro: donde la suma repreciada cruza cero
-            double zeroVol = Cruce(c, S, r, masCerca, envejecer, true), zeroOi = Cruce(c, S, r, masCerca, envejecer, false);
+            // zero gamma de cada libro. F5 (2.0.1): por defecto el de la referencia (cambio de signo del perfil por strike,
+            // interpolado entre vecinos, el cruce mas cercano al precio); si no hay cambio de signo por strike, o si el
+            // ajuste lo pide, el cruce REPRECIADO en la grilla de +-3 % (Cruce()). Se dice cual se uso (ZeroModo).
+            double zeroVol, zeroOi; string zeroModo;
+            if (A.ZeroInterpolado)
+            {
+                zeroVol = ZeroPorSigno(perfil, S, true); zeroOi = ZeroPorSigno(perfil, S, false); zeroModo = "interp";
+                if (double.IsNaN(zeroVol)) { zeroVol = Cruce(c, S, r, masCerca, envejecer, true); zeroModo = "cruce (sin cambio de signo por strike)"; }
+                if (double.IsNaN(zeroOi)) zeroOi = Cruce(c, S, r, masCerca, envejecer, false);
+            }
+            else { zeroVol = Cruce(c, S, r, masCerca, envejecer, true); zeroOi = Cruce(c, S, r, masCerca, envejecer, false); zeroModo = "cruce"; }
             if (!double.IsNaN(zeroVol)) zeroVol = c.PorRazon ? c.AlFuturo(zeroVol) : zeroVol + baseUsada;
             if (!double.IsNaN(zeroOi)) zeroOi = c.PorRazon ? c.AlFuturo(zeroOi) : zeroOi + baseUsada;
 
@@ -499,7 +540,7 @@ namespace PythiaGexDos
             for (int i = 0; i < est.Length; i++) est[i] = i < candDom.Count ? candDom[i].Item1 : double.NaN;
 
             L.Perfil = perfil; L.S = S; L.Base = baseUsada; L.BaseOrigen = origen; L.MasCerca = masCerca;
-            L.ZeroVol = zeroVol; L.ZeroOi = zeroOi; L.NetVol = netVol; L.NetOi = netOi;
+            L.ZeroVol = zeroVol; L.ZeroOi = zeroOi; L.NetVol = netVol; L.NetOi = netOi; L.ZeroModo = zeroModo;
             L.MpVol = mpVol; L.MnVol = mnVol; L.MpOi = mpOi; L.MnOi = mnOi;
             L.MaxAbsVol = maxAbsVol; L.MaxAbsOi = maxAbsOi; L.MaxAbsConv = maxAbsConv;
             L.MaxAbsFlujo = maxAbsFlujo; L.TieneFlujo = maxAbsFlujo > 0;
@@ -515,11 +556,12 @@ namespace PythiaGexDos
         public static string Audit(Lectura L, Feed.Cadena c, bool vivaActiva)
         {
             var inv = CultureInfo.InvariantCulture;
-            return string.Format(inv, "AUDIT fut={0:F2} S={1:F2} base={2:F2} origen={3} strikes={4} netVol={5:F3}B netOi={6:F3}B zeroVol={7:F2} zeroOi={8:F2} mpVol={9:F2} mnVol={10:F2} doms={11} libroDom={12} conv={13} q={14} pico={15:F2} picoGex={16:F0}M mucho={17} convPrecio={18:F0}M mc30={19:F2}:{20:F0}M edadFeed={21:F1}min vivaActiva={22} flujo={23}",
+            return string.Format(inv, "AUDIT fut={0:F2} S={1:F2} base={2:F2} origen={3} strikes={4} netVol={5:F3}B netOi={6:F3}B zeroVol={7:F2} zeroOi={8:F2} mpVol={9:F2} mnVol={10:F2} doms={11} libroDom={12} conv={13} q={14} pico={15:F2} picoGex={16:F0}M mucho={17} convPrecio={18:F0}M mc30={19:F2}:{20:F0}M edadFeed={21:F1}min vivaActiva={22} flujo={23} zeroModo={24}",
                 L.Futuro, L.S, L.Base, L.BaseOrigen.Replace(' ', '_'), L.Perfil.Count, L.NetVol / 1e9, L.NetOi / 1e9, L.ZeroVol, L.ZeroOi, L.MpVol, L.MnVol,
                 string.Join("/", L.Doms.Select(d => d.Fut.ToString("F2", inv) + "=" + (d.Gex / 1e6).ToString("F0", inv) + "M")),
                 L.LibroDom, L.LibroConv, L.CuadranteN, L.PicoFut, L.PicoGex / 1e6, L.Mucho, L.ConvEnPrecio / 1e6, L.MaxChange[4].Fut, L.MaxChange[4].Delta / 1e6, c.EdadMin, vivaActiva,
-                L.TieneFlujo ? string.Join("/", L.Perfil.OrderByDescending(x => Math.Abs(x.GexFlujo)).Take(2).Select(x => x.Fut.ToString("F2", inv) + "=" + (x.GexFlujo / 1e6).ToString("F0", inv) + "M")) : "no");
+                L.TieneFlujo ? string.Join("/", L.Perfil.OrderByDescending(x => Math.Abs(x.GexFlujo)).Take(2).Select(x => x.Fut.ToString("F2", inv) + "=" + (x.GexFlujo / 1e6).ToString("F0", inv) + "M")) : "no",
+                (L.ZeroModo ?? "").Replace(' ', '_'));
         }
 
         /// <summary>Los niveles que se anotan por vela para el laboratorio, con los

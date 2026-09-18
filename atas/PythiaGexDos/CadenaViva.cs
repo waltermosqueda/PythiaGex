@@ -176,6 +176,13 @@ namespace PythiaGexDos
 
         /// <summary>true solo si hay contratos suscritos Y estan llegando puntas.</summary>
         public bool Activa { get; private set; }
+        /// <summary>F3 (2.0.1): el ULTIMO armado no llego al final (conector no encontrado o desconectado, futuro fuera del
+        /// catalogo, precio que no llego, series vacias, suscripcion con pocas puntas, excepcion). Antes, si Activa seguia
+        /// true por un armado anterior, nadie reintentaba hasta que el precio se alejara del centro (o nunca).
+        /// Gamma Hoy lo lee y rearma a los 5 min. Se limpia al empezar cada armado y cuando uno termina bien.</summary>
+        public bool ArmadoIncompleto { get; private set; }
+        public string MotivoIncompleto { get; private set; } = "";
+        public DateTime IncompletoUtc { get; private set; } = DateTime.MinValue;
         /// <summary>Activa pero SIN el vencimiento mas cercano: Rithmic no devolvio sus contratos. El
         /// 11-09 el 0DTE de NQ se perdio a las 10:16 ET (timeout + "no data") y el libro siguio con lunes
         /// y martes hasta el cierre sin que nadie reintentara. Gamma Hoy lo lee para rearmar cada 5 min.</summary>
@@ -273,6 +280,9 @@ namespace PythiaGexDos
             {
                 _logRoll = log;
                 void L(string m) { Estado = m; log?.Invoke("[cadena viva] " + m); }
+                // F3 (2.0.1): cada salida temprana deja constancia; Gamma Hoy rearma a los 5 min aunque Activa siga true
+                ArmadoIncompleto = false; MotivoIncompleto = "";
+                void Incompleto(string m) { ArmadoIncompleto = true; MotivoIncompleto = m; IncompletoUtc = DateTime.UtcNow; L(m + " (armado INCOMPLETO: se rearma en 5 min)"); }
 
                 var tOpt = Type.GetType("ATAS.DataFeedsCore.IOptionsDataFeed, ATAS.DataFeedsCore");
                 // ATAS 8.0.14.399: el conector de Rithmic dejo de declarar IOptionsDataFeed pero sigue teniendo
@@ -296,15 +306,15 @@ namespace PythiaGexDos
                 if (honda) _ultimaHonda = DateTime.UtcNow;
                 if (feed == null)
                 {
-                    L("no se encontro el conector de opciones (buscado a 5 niveles y en estaticos de ATAS/OFT)");
+                    Incompleto("no se encontro el conector de opciones (buscado a 5 niveles y en estaticos de ATAS/OFT)");
                     if (!_diagnosticado) { _diagnosticado = true; try { Diagnostico(proveedor, manager, seguridad, log); } catch (Exception e) { log?.Invoke("[cadena viva] diagnostico fallo: " + e.Message); } }
                     return;
                 }
                 L("conector de opciones encontrado en " + _camino + " (" + feed.GetType().FullName + ")");
 
                 _conn = feed as IDataFeedConnector;
-                if (_conn == null) { L("el conector no expone IDataFeedConnector"); return; }
-                if (!_conn.IsConnected) { L("el conector no esta conectado"); return; }
+                if (_conn == null) { Incompleto("el conector no expone IDataFeedConnector"); return; }
+                if (!_conn.IsConnected) { Incompleto("el conector no esta conectado"); return; }
 
                 // EL FUTURO SALE DE LA RAIZ DEL GRAFICO, NO DE UNA CONSTANTE.
                 //
@@ -364,7 +374,7 @@ namespace PythiaGexDos
                     }
                 }
                 if (microSec != null) candidatos.Add(microSec);
-                if (candidatos.Count == 0) { L("no esta el futuro de " + raiz + " en el catalogo"); return; }
+                if (candidatos.Count == 0) { Incompleto("no esta el futuro de " + raiz + " en el catalogo"); return; }
 
                 // LA FECHA DE HOY ES LA DE NUEVA YORK, NO LA DE ACA (entre medianoche y las 2
                 // en Argentina en Nueva York todavia es el dia anterior).
@@ -537,7 +547,7 @@ namespace PythiaGexDos
                     if (ops.Count > 0 && (DiasReales <= diasMax || ultimo)) break;
                     if (ops.Count > 0) L(_futuro.Code + " solo lista vencimientos lejanos: pruebo el siguiente candidato");
                 }
-                if (ops.Count == 0) { L("las series vinieron vacias"); return; }
+                if (ops.Count == 0) { Incompleto("las series vinieron vacias" + (Futuro <= 0 ? " (y el precio del futuro no llego)" : "")); return; }
 
                 // VENTANA ALREDEDOR DEL DINERO.
                 //
@@ -622,16 +632,18 @@ namespace PythiaGexDos
                 // contrato en dos segundos dejo a NQ en 8 de 200 puntas (11-09 12:53), y como las
                 // instancias del mismo grafico comparten los mismos objetos Security, soltar uno es
                 // soltarselo tambien a la otra.
+                List<Security> viejos = null; HashSet<string> nuevos = null;
                 try
                 {
-                    List<Security> viejos; lock (_llave) { viejos = new List<Security>(_suscritos); }
-                    var nuevos = new HashSet<string>(elegidos.Select(x => x.Code ?? ""));
+                    lock (_llave) { viejos = new List<Security>(_suscritos); }
+                    nuevos = new HashSet<string>(elegidos.Select(x => x.Code ?? ""));
                     var soltar = viejos.Where(v => !nuevos.Contains(v.Code ?? "")).ToList();
                     if (soltar.Count > 0)
                     {
-                        _conn.UnsubscribeFromMarketData(soltar, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+                        // 2.0.2: con prod en el mismo proceso NO se suelta nada (ver ProdPresente): solo se deja de leer
+                        if (ProdPresente()) L("prod presente (PythiaGexNiveles armo su cadena viva en este proceso): no suelto " + soltar.Count + " contratos que salieron de la ventana, solo dejo de leerlos");
+                        else { _conn.UnsubscribeFromMarketData(soltar, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary); L("desuscritos " + soltar.Count + " contratos que salieron de la ventana"); }
                         lock (_llave) foreach (var v in soltar) { _bids.Remove(v.Code ?? ""); _asks.Remove(v.Code ?? ""); }
-                        L("desuscritos " + soltar.Count + " contratos que salieron de la ventana");
                     }
                 }
                 catch (Exception e) { L("no pude desuscribir el armado anterior: " + e.Message); }
@@ -658,7 +670,21 @@ namespace PythiaGexDos
                 {
                     _conn.SubscribeToMarketData(elegidos, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
                 }
-                catch (Exception e) { L("la suscripcion fallo: " + e.Message); return; }
+                catch (Exception e)
+                {
+                    // F3 (2.0.2): era la UNICA salida temprana sin Incompleto: Activa seguia true, _suscritos apuntaba a la lista vieja
+                    // (parte ya soltada arriba), no habia contratos nuevos y nadie reintentaba hasta que el precio se alejara medio
+                    // radio del NUEVO centro (CentroVentana ya estaba actualizado). Ahora se marca (rearme a los 5 min) y la foto de
+                    // contratos queda solo con los del armado anterior que siguen pedidos (los soltados ya no se leen).
+                    if (viejos != null && nuevos != null)
+                        lock (_llave)
+                        {
+                            _suscritos = viejos.Where(v => nuevos.Contains(v.Code ?? "")).ToList();
+                            _codigos = new HashSet<string>(_suscritos.Select(x => x.Code ?? "").Where(x => x.Length > 0));
+                        }
+                    Incompleto("la suscripcion fallo: " + e.Message);
+                    return;
+                }
                 // nivel 2 solo al dinero: los N contratos mas cercanos del vencimiento mas proximo; lo que sale de ese grupo se suelta
                 try
                 {
@@ -669,7 +695,12 @@ namespace PythiaGexDos
                     var codAntes = new HashSet<string>(antes.Select(x => x.Code ?? ""));
                     var dejar = antes.Where(x => !codAtm.Contains(x.Code ?? "")).ToList();
                     var sumar = atm.Where(x => !codAntes.Contains(x.Code ?? "")).ToList();
-                    if (dejar.Count > 0) { _conn.UnsubscribeFromMarketData(dejar, SubscriptionType.Quotes); lock (_llave) foreach (var v in dejar) { _bids.Remove(v.Code ?? ""); _asks.Remove(v.Code ?? ""); } }
+                    if (dejar.Count > 0)
+                    {
+                        if (ProdPresente()) L("prod presente: no suelto el nivel 2 de " + dejar.Count + " contratos, solo dejo de leerlos");   // 2.0.2
+                        else _conn.UnsubscribeFromMarketData(dejar, SubscriptionType.Quotes);
+                        lock (_llave) foreach (var v in dejar) { _bids.Remove(v.Code ?? ""); _asks.Remove(v.Code ?? ""); }
+                    }
                     if (sumar.Count > 0) _conn.SubscribeToMarketData(sumar, SubscriptionType.Quotes);
                     lock (_llave) _conQuotes = atm;
                     if (Profundidad) L("profundidad (nivel 2) acotada a " + atm.Count + " contratos al dinero de " + elegidos.Count + " (+" + sumar.Count + " / -" + dejar.Count + ")");
@@ -738,16 +769,16 @@ namespace PythiaGexDos
                     int conPunta = elegidos.Count(x => x.BestBidPrice > 0 && x.BestAskPrice > 0);
                     if (conPunta >= minimo)
                     {
-                        Activa = true;
+                        Activa = true; ArmadoIncompleto = false; MotivoIncompleto = "";
                         L("EN VIVO: " + conPunta + " de " + elegidos.Count + " con las dos puntas");
                         return;
                     }
                 }
                 int fin = elegidos.Count(x => x.BestBidPrice > 0 && x.BestAskPrice > 0);
-                L("suscrito pero solo " + fin + " de " + elegidos.Count +
+                Incompleto("suscrito pero solo " + fin + " de " + elegidos.Count +
                   " con las dos puntas (hacian falta " + minimo + "); se reintenta");
             }
-            catch (Exception e) { Estado = "error al arrancar: " + e.Message; }
+            catch (Exception e) { ArmadoIncompleto = true; MotivoIncompleto = "error al arrancar: " + e.Message; IncompletoUtc = DateTime.UtcNow; Estado = MotivoIncompleto; }
             finally { _armando = false; }
         }
 
@@ -763,6 +794,35 @@ namespace PythiaGexDos
         // espaciado GLOBAL entre suscripciones de cualquier instancia (ver el comentario en Arrancar)
         private static readonly object _llaveGlobal = new object();
         private static DateTime _proximoTurnoGlobal = DateTime.MinValue;   // proximo turno libre para suscribir
+
+        // 2.0.2: el conector de Rithmic es UNO por proceso y prod (PythiaGexNiveles) suscribe los MISMOS Security de opciones por la
+        // misma maquinaria privada (no por el DataFeed de los graficos, que si cuenta referencias). NO esta medido que el conector
+        // cuente referencias por Security: una desuscripcion del clon (rearme, OnDispose) podria cortarle las puntas a prod sin un solo
+        // error en su log ("RITHMIC FLACO" o bid/ask congelados). "Presente" = el DLL de prod esta cargado Y su CadenaViva reservo un
+        // turno de suscripcion en este proceso (campo estatico _proximoTurnoGlobal, leido por reflexion; ATAS carga todos los DLL de
+        // Indicators al arrancar, asi que "cargado" solo no alcanza). Queda pegajoso hasta reiniciar ATAS (mejor no soltar de mas).
+        // Si la reflexion falla (prod cambio el campo), se asume presente. Falta medir UNA vez, con los dos DLL en el mismo grafico de
+        // MES, si las puntas de prod ("EN VIVO: N de M") sobreviven a un rearme del clon; recien con eso dejarlos convivir.
+        private static bool _prodPresente; private static DateTime _prodMirado = DateTime.MinValue;
+        internal static bool ProdPresente()
+        {
+            if ((DateTime.UtcNow - _prodMirado).TotalSeconds < 30) return _prodPresente;
+            _prodMirado = DateTime.UtcNow;
+            bool presente = false;
+            try
+            {
+                foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (!string.Equals(a.GetName().Name, "PythiaGexNiveles", StringComparison.OrdinalIgnoreCase)) continue;
+                    var t = a.GetType("PythiaGex.CadenaViva");
+                    var f = t?.GetField("_proximoTurnoGlobal", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                    if (f == null || (f.GetValue(null) is DateTime d && d != DateTime.MinValue)) { presente = true; break; }
+                }
+            }
+            catch { presente = true; }
+            _prodPresente = presente;
+            return presente;
+        }
         private const double ESPACIO_SUSCRIPCION_S = 75;
         private void EngancharVolumen(Security sec)
         {
@@ -1420,10 +1480,14 @@ namespace PythiaGexDos
             {
                 List<Security> ss;
                 lock (_llave) { ss = new List<Security>(_suscritos); _suscritos.Clear(); }
+                bool prod = ProdPresente();   // 2.0.2: al quitarme del grafico tampoco suelto lo que prod puede estar leyendo
                 if (_conn != null && ss.Count > 0)
-                    _conn.UnsubscribeFromMarketData(ss, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+                {
+                    if (prod) _logRoll?.Invoke("[cadena viva] prod presente: al quitarme no suelto " + ss.Count + " contratos (los puede estar leyendo PythiaGexNiveles)");
+                    else _conn.UnsubscribeFromMarketData(ss, SubscriptionType.Prints | SubscriptionType.Best | SubscriptionType.Summary);
+                }
                 List<Security> cq; lock (_llave) { cq = new List<Security>(_conQuotes); _conQuotes = new List<Security>(); }
-                if (_conn != null && cq.Count > 0) _conn.UnsubscribeFromMarketData(cq, SubscriptionType.Quotes);
+                if (_conn != null && cq.Count > 0 && !prod) _conn.UnsubscribeFromMarketData(cq, SubscriptionType.Quotes);
             }
             catch { }
             try

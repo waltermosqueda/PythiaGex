@@ -54,6 +54,15 @@ namespace PythiaGexDos
 
         public double Umbral = 0.70;
         public int Enfriamiento = 5;
+        /// <summary>F4 (2.0.1): velas cerradas que el modelo tiene que haber visto antes de disparar. Con el modelo FRIO
+        /// (sin las 60 velas de rango tipico y desvio de deltas) y los niveles en NaN (zero/majors/dominantes todavia sin
+        /// cadena: -40/+40 rangos "sin nivel"), cada arranque a la tarde dibujaba una flecha CORTO falsa.</summary>
+        public int Calentamiento = 60;
+        /// <summary>F4: sin zero, majors y al menos una dominante validos no se dispara (los rasgos "sin nivel" no son del mercado).</summary>
+        public bool ExigirNiveles = true;
+        public bool Caliente => _cierres.Count >= Calentamiento;
+        /// <summary>Por que NO disparo la ultima vela ("" si podia disparar).</summary>
+        public string UltimoMotivo = "";
 
         private readonly List<double> _cierres = new(), _deltas = new(), _rangos = new();
         private int _ultimoBar = -1, _ultimoDisparo = -10000;
@@ -93,7 +102,12 @@ namespace PythiaGexDos
                 double p = 1.0 / (1.0 + Math.Exp(-logit));
                 s.P = p; s.Rasgos = f;
                 s.Detalle = string.Join(" ", Rasgos.Select((n, i) => n + "=" + f[i].ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)));
-                if (bar - _ultimoDisparo >= Enfriamiento)
+                // F4: nada de disparos con el modelo frio ni con niveles que no son del mercado
+                bool frio = _cierres.Count < Calentamiento;
+                bool Falta(double x) => double.IsNaN(x) || x <= 0;
+                bool sinNiveles = ExigirNiveles && (Falta(zero) || Falta(mp) || Falta(mn) || (Falta(domArr) && Falta(domAba)));
+                UltimoMotivo = frio ? "modelo frio: " + _cierres.Count + " de " + Calentamiento + " velas" : sinNiveles ? "niveles sin valor (zero/majors/dominantes)" : "";
+                if (!frio && !sinNiveles && bar - _ultimoDisparo >= Enfriamiento)
                 {
                     if (p >= Umbral) { s.Lado = 1; _ultimoDisparo = bar; }
                     else if (p <= 1 - Umbral) { s.Lado = -1; _ultimoDisparo = bar; }
