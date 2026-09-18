@@ -58,3 +58,5 @@ Rithmic doms 7613/7600 con el futuro en 7613. (3) Los guiones viejos lejanos se 
 del dia; bandas y rayas D1/D2 solo para las dominantes actuales.
 
 **OJO (15-09, REGLA ROJA):** esta memoria explica el libro de CBOE de noche, pero la tercera vez que el operador dijo "lejos de noche" la causa fue OTRA: el roll dejo al libro vivo de Rithmic sin 0DTE (semana del roll, weeklies en U6, puente pidiendo Z6). Antes de repetir "la cuenta esta bien", leer [[regla-roja-roll-libro-vivo]] y mirar el log "roll:".
+
+**Correccion 17-09:** la 'caida a OI de noche' que se implemento en 1.10r a partir de esto fue un error de criterio para el scalping: el operador la volvio a VOLUMEN y quedo como default. Ver [[dominantes-de-noche-por-volumen]].
