@@ -71,3 +71,24 @@ que nosotros las tenemos abandonadas; habia que saber que esta resuelto y que no
 **How to apply:** no perseguir mas el perfil derecho con cadenas de CBOE: hace falta flujo
 firmado. Ver [[auditoria-2026-09-14-referencia-es]], [[pelotitas-max-change-medidas]],
 [[referencia-formulas-nq-medidas]], [[dos-libros-distintos]].
+
+## 18-09: la referencia en vivo en el panel del navegador (solo mirando: capturas del escritorio + sus dialogos de ajustes)
+
+REGLA DEL OPERADOR (18-09): NO meterse en el codigo ni en las llamadas de la pagina de la referencia ("nos detectan y me bannean"); solo mirar la
+pantalla y sus menus como un usuario. Lo que se vio en sus ajustes: el estudio tiene 2 parametros (ticker QQQ | NDX, expiry 0DTE); en Estilo el
+perfil izquierdo se llama **"GEX profile"** (verde/rojo, ancho 30 %, barra 10 px, izquierda, marcadores azules) y el derecho **"Gamma profile"**
+(cyan/purpura, derecha, marcadores grises); la "nube" son "Dominant 1/2 history" (azul) y "Zero gamma history" (gris): la historia del dia entera.
+Corren DOS instancias superpuestas (QQQ 0DTE y NDX 0DTE): por eso hay 2 zero, 2 major+, 2 major- y barras cada 5/10 pts (NDX) entre las de 41 pts (QQQ).
+Cada lado esta NORMALIZADO a floor(0,3 x ancho del grafico): los largos son relativos a la barra mas larga; de una captura sola no sale la escala.
+Medido con `_referencia/2026-09-18-dashboard/` (medir_pantalla.py, candidatos_qqq.py, replicar.py, resultados.md; 4 capturas validas 12:21-12:29):
+izquierdo QQQ = gamma x (vol_c - vol_p) del 0DTE con la cadena de CBOE del minuto exacto: R2 0,88-0,90 (23 barras, 21/23 signos; solo 5-6 barras QQQ
+visibles, pisadas por NDX; con la cadena de 15 min antes 0,44); zero = cambio de signo interpolado de SU perfil (verificado a 0,01 strike); majors = strike
+de mayor/menor GEX (719/716, igual que nosotros); dominantes = las dos barras mas largas (en NDX verificado; en QQQ la 2a cae fuera del panel). Nuestro zero
+queda 7-15 pts ARRIBA del suyo por UN strike al dinero (717: nosotros -0,81B, ellos ~0/+1,4B): otro volumen al dinero, o firmado. Derecho ("Gamma profile"):
+1.545 candidatas (griegas x vol/OI/vol-oi/vol+oi, estaticas y repreciadas, diferencias 1/5/15/30/60 min y contra apertura, +-izquierda): NINGUNA >= 90 %
+de signo; el 719 (2a mas larga a la izquierda, ~0 a la derecha) las mata a todas. Queda solo flujo firmado por agresor (tienen un estudio "HIROlito").
+Fallas NUESTRAS encontradas de paso: (1) el archivador de QQQ repite la misma cadena (Feed.cs Archivo.Sello incluye la base viva): 1234 lineas pero 42
+cadenas distintas en el dia, una cada 8-21 min en rueda; (2) en el log AUDIT hay dos razones NQ/QQQ intercaladas (dos graficos) y entre 04:02 y 05:22 local
+una instancia uso el spot de CBOE congelado de la noche: mapeo +0,8 % (~240 pts) esa hora y pico; (3) la cadena viva de ES dejo de producir a las 06:57 UTC.
+No se toco produccion. Capturas cada 5 min siguen guardandose para remedir con mas horas (solo sirven las que tienen el panel visible en el escritorio).
+
