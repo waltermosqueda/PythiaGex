@@ -486,6 +486,10 @@ namespace PythiaGexDos
         [Display(Name = "Historia del dia: puntitos por minuto de D1, D2 y zero (toda la sesion)", GroupName = "3. Pantalla", Order = 6,
                  Description = "F6 (2.0.1), apagada por defecto. La referencia dibuja 'Dominant 1/2 history' y 'Zero gamma history': puntitos de donde estuvieron las dos dominantes y el zero durante TODA la sesion (desde las 18:00 de Nueva York), un punto por minuto. La estela por vela de siempre sigue igual; esto agrega puntitos chicos (2-3 px, tenues: D1 ambar, D2 mas tenue, zero gris) sobre las velas visibles. Tope de memoria: 1.500 minutos (25 h). El pasado se llena con el archivo al arrancar (HIBRIDO) y el presente por minuto.")]
         public bool HistoriaDelDia { get; set; } = false;
+        [Display(Name = "Rastro de dominantes y zero por vela (como la referencia)", GroupName = "6. Estilo", Order = 3,
+                 Description = "2.0.6: deja marcado, vela por vela, donde estuvieron las dos dominantes y el zero durante toda la sesion (la 'nube' de la referencia). Medido el 18-09: buena parte de la sensacion de que la referencia 'acierta mas mechas' es este rastro (el toque queda dibujado donde ocurrio, mientras la raya vigente se corre). Apagar para volver a la raya vigente sola.")]
+        public bool RastroReferencia { get; set; } = true;
+        private bool HistoriaActiva => HistoriaDelDia || RastroReferencia;
 
         [Display(Name = "Pelotitas del Max Change (15, 5 y 1 min)", GroupName = "3. Pantalla", Order = 7)]
         public bool PelotitasMaxChange { get; set; } = true;
@@ -564,7 +568,7 @@ namespace PythiaGexDos
         /// <summary>Bajo _candado. <paramref name="velaUtc"/> = la hora de la cuenta (vivo) o la apertura de la vela (archivo).</summary>
         private void AnotarHistoria(DateTime velaUtc, GammaHoyNucleo.Lectura L)
         {
-            if (!HistoriaDelDia || L == null) return;
+            if (!HistoriaActiva || L == null) return;
             long min = velaUtc.Ticks / TimeSpan.TicksPerMinute;
             double d1 = L.Doms != null && L.Doms.Count > 0 ? L.Doms[0].Fut : double.NaN, d2 = L.Doms != null && L.Doms.Count > 1 ? L.Doms[1].Fut : double.NaN;
             _historia[min] = (L.ZeroVol, d1, d2);
@@ -850,7 +854,7 @@ namespace PythiaGexDos
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 2.0.5 (estilo referencia: NDX automatico y dominantes exactas) arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto() + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 2.0.6 (estilo referencia: NDX automatico, dominantes exactas, rastro por vela) arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto() + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -859,7 +863,7 @@ namespace PythiaGexDos
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 2.0.5 (estilo referencia: NDX automatico y dominantes exactas) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto());
+            Log("Gamma Hoy 2.0.6 (estilo referencia: NDX automatico, dominantes exactas, rastro por vela) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto());
         }
 
         protected override void OnDispose()
@@ -2508,7 +2512,7 @@ namespace PythiaGexDos
             }
 
             // ---- F6 (2.0.1): historia del dia, puntitos por minuto de D1, D2 y zero desde las 18:00 NY
-            if (HistoriaDelDia) { try { PintarHistoria(g, cont, area, piso); } catch (Exception e) { Registrar(e); } }
+            if (HistoriaActiva) { try { PintarHistoria(g, cont, area, piso); } catch (Exception e) { Registrar(e); } }
 
             // ---- big trades de opciones, sobre la vela del momento
             if (VerBigTrades && _viva.Activa)
