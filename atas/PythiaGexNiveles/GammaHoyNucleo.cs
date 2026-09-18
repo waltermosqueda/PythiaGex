@@ -79,7 +79,7 @@ namespace PythiaGex
             // el resto de manana (flaco, lejos: medido 15-09, D1 +270 con 233M). El "si no hay volumen, OI" de antes nunca se
             // disparaba porque el volumen nunca es cero. Con InteresAbierto, fuera de la rueda las dominantes salen del OI del
             // vencimiento mas cercano (posiciones abiertas), y el AUDIT lo dice: libroDom=OI.
-            public NocheDominantes DominantesDeNoche = NocheDominantes.InteresAbierto;
+            public NocheDominantes DominantesDeNoche = NocheDominantes.Volumen;   // 17-09: Volumen por pedido del operador (scalping: donde se opero HOY, no las posiciones acumuladas)
         }
 
         public sealed class Strike

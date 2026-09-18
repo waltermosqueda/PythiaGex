@@ -448,7 +448,7 @@ namespace PythiaGex
 
         [Display(Name = "De noche (16:00 a 9:30 de Nueva York), dominantes por", GroupName = "2. Lectura", Order = 30,
                  Description = "Volumen: la barra mas grande del volumen del dia (de noche es el resto de manana, flaco y lejos). InteresAbierto: de noche se eligen las dominantes por interes abierto del vencimiento mas cercano (posiciones abiertas, lo que usan los tableros profesionales overnight). El log dice libroDom=OI. Pedido 16-09.")]
-        public GammaHoyNucleo.NocheDominantes DominantesDeNoche { get; set; } = GammaHoyNucleo.NocheDominantes.InteresAbierto;
+        public GammaHoyNucleo.NocheDominantes DominantesDeNoche { get; set; } = GammaHoyNucleo.NocheDominantes.Volumen;   // 17-09: el operador lo volvio a VOLUMEN (el OI de la vispera trimestral lo mandaba a 130 pts); no cambiar sin avisarle
 
         [Display(Name = "Tamaño de letra", GroupName = "3. Pantalla", Order = 9)]
         [Range(6, 14)]
