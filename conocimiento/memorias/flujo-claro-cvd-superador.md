@@ -87,3 +87,16 @@ paneles; y el proyecto no afirma nada sin medir.
 **How to apply:** antes de prometer "avisa antes", releer los numeros de arriba. Proximo paso acordado: cinta de
 presion del LIBRO (`OnBestBidAskChanged`), midiendo primero; y medir las marcas grabadas con 25+ casos por tipo.
 Ver [[auditoria-2026-09-16-0dte-pelotitas-carga]] (profundidad de opciones acotada a 24 contratos, 1.11b).
+
+**1.8 (18-09, madrugada): TABLERO AHORA.** El operador pidio sacar de la fila las celdas 5s/15s/60s/5m y FLUJO n/4 ("no las uso") y poner en el
+hueco derecho del panel algo que diga "si estamos en short o long" con delta + momentum + gamma. Se investigo (inventario + laboratorio + afuera), se
+le mostraron 3 previews (velocimetros / termometros / flechas) y eligio los VELOCIMETROS. Quedo `FlujoClaroTablero.cs`: FLUJO 60s y TENDENCIA con
+aguja; GAMMA (frenan / sin lectura / empujan, de la estela de Gamma Hoy, guardia de libro flaco > 150 pts o > 150 s) y VELOCIDAD (5 escalones por
+rango de 5 min, tabla de techo_ml.md 210-214) sin aguja y SIN VOTO; resumen en palabras de FLUJO (COMPRAN FUERTE / compran / PAREJO / venden /
+VENDEN FUERTE), nunca LARGO/CORTO, el minuto pesa doble, "a favor n/5", cabecera fija "AHORA estado, no pronostico". Geometria adaptable: 286x123 en
+fila si hay lugar a la derecha de la vela, o dos filas de dos (150-200 px) si no (el grafico de 5 min deja ~190 px). Cada cambio de estado se graba en
+flujo/tablero-<inst>-<marco>-<dia>.jsonl (~850 por rueda). **Medido antes de instalar (tablero_01_placebo.py, 20 ruedas):** describe el ultimo minuto
+el 76-79 % (92-94 % en los fuertes) y NO anticipa (+-8 a 600 s: 50,3 % explorar / 47,8 % confirmar contra placebos 48-52, empate 56 %). Frase para el:
+"espejo retrovisor prolijo, no parabrisas: sirve para no operar EN CONTRA de lo que pasa, nunca como razon para entrar". Trampa de UI: las
+propiedades nuevas con nombre nuevo (FcTablero); el ancho libre a la derecha de la vela depende del offset del grafico del operador.
+
