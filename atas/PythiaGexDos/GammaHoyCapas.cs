@@ -182,6 +182,9 @@ namespace PythiaGexDos
         [Display(Name = "Capa NDX (gris)", GroupName = "5. Capas extra (NQ)", Order = 3,
                  Description = "Libro de NDX (CBOE, el mismo que 'Libro en vivo = CBOE_SPX' en NQ; con 'Libro automatico' la primaria en NQ es QQQ, asi que esta capa es la segunda instancia de la referencia: NDX 0DTE, strikes cada 5 pts) con la base de la rueda de la lectura primaria; si la primaria es un ETF, cae a la base medida o teorica y lo dice. Sus barras se dibujan con el mismo alto y ancho que las de la primaria (no hay opcion de barras finas).")]
         public bool CapaNdx { get; set; } = false;
+        [Display(Name = "Capa NDX automatica en NQ (como la referencia)", GroupName = "5. Capas extra (NQ)", Order = 4,
+                 Description = "2.0.5: en un grafico de NQ/MNQ la capa NDX 0DTE se prende sola (barras finas cada 5 pts + sus dominantes y su zero), como la segunda instancia de la referencia. Apagar para volver a manejar 'Capa NDX' a mano.")]
+        public bool CapasAutoNQ { get; set; } = true;
 
         [Display(Name = "Capa NQ: opciones del futuro, CME en vivo (lima)", GroupName = "5. Capas extra (NQ)", Order = 4,
                  Description = "Las opciones de NQ desde tu ATAS (la cadena viva). Necesita 'Cadena viva de Rithmic' prendida; no abre una segunda suscripcion. OJO: su volumen arranca en cero con cada reinicio de ATAS.")]
@@ -437,7 +440,7 @@ namespace PythiaGexDos
             {
                 case "QQQ": return CapaQqq;
                 case "TQQQ": return CapaTqqq;
-                case "NDX": return CapaNdx;
+                case "NDX": return CapaNdx || (CapasAutoNQ && Raiz() == "NQ");
                 case "NQ": return CapaRithmic;
                 case "SPX": return CapaSpx;
                 case "SPY": return CapaSpy;

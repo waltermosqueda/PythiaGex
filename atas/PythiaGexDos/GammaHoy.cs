@@ -410,6 +410,9 @@ namespace PythiaGexDos
         [Display(Name = "Canal: una dominante por lado (la mas fuerte arriba y la mas fuerte abajo)", GroupName = "2. Lectura", Order = 6,
                  Description = "Apagado: las N barras mas fuertes sin mirar el lado (pueden caer las dos del mismo lado).")]
         public bool UnaPorLado { get; set; } = true;
+        [Display(Name = "Dominantes como la referencia (dos mas grandes, strike exacto)", GroupName = "6. Estilo", Order = 2,
+                 Description = "2.0.5: las dominantes son las DOS barras mas largas en valor absoluto sin importar el lado y se dibujan en el strike exacto (sin centroide), que es lo medido en la referencia (11-09 y 18-09). Apagado: valen 'una por lado' y 'centroide' como antes.")]
+        public bool DominantesReferencia { get; set; } = true;
 
         [Display(Name = "Dominantes: empate tecnico, gana la mas cercana al precio (%)", GroupName = "2. Lectura", Order = 8,
                  Description = "Si dos barras del mismo lado del precio estan dentro de este porcentaje de la mas grande, la dominante es la MAS CERCANA al precio, no la mas grande. Medido de noche con Rithmic: 29.049 (-84 M) contra 28.800 (-91 M) saltaban por 7 M. 0 = siempre la mas grande.")]
@@ -847,7 +850,7 @@ namespace PythiaGexDos
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 2.0.4 (F1-F8, estilo referencia, capas finas) arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto() + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 2.0.5 (estilo referencia: NDX automatico y dominantes exactas) arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto() + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -856,7 +859,7 @@ namespace PythiaGexDos
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 2.0.4 (F1-F8, estilo referencia, capas finas) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto());
+            Log("Gamma Hoy 2.0.5 (estilo referencia: NDX automatico y dominantes exactas) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto());
         }
 
         protected override void OnDispose()
@@ -1264,7 +1267,7 @@ namespace PythiaGexDos
             var a = nuc.A; var b0 = _nucleo.A;
             a.Tasa = (double)Tasa; a.Horizonte = (GammaHoyNucleo.HorizonteVenc)(int)Horizonte; a.CuantasDominantes = CuantasDominantes;
             a.RadioDominantesPct = (double)RadioDominantesPct; a.RadioDominantesMaxPts = (double)RadioDominantesMaxPts; a.PicoRadioPct = (double)PicoRadioPct; a.MuchoPct = MuchoPct; a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
-            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct; a.DominantesDeNoche = DominantesDeNoche;
+            a.Centroide = DominanteCentroide && !DominantesReferencia; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado && !DominantesReferencia; a.EmpatePct = EmpateDominantesPct; a.DominantesDeNoche = DominantesDeNoche;
             a.ExpiracionFuturoUtc = ExpiracionFuturo(); a.ExpiracionFuturoAltUtc = _expAlt; a.Dividendo = DividendoUsado();
             double edadMax = (double)Math.Max(0.05m, ArchivoEdadMaxHoras);
             int fin = Math.Max(0, CurrentBar - 1);      // la ultima vela es del vivo (Hibrido) o se muestra con la ultima foto (Archivo)
@@ -1498,7 +1501,7 @@ namespace PythiaGexDos
             a.PicoRadioPct = (double)PicoRadioPct;
             a.MuchoPct = MuchoPct;
             a.Convexidad = (GammaHoyNucleo.LibroConv)(int)Convexidad;
-            a.Centroide = DominanteCentroide; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado; a.EmpatePct = EmpateDominantesPct; a.DominantesDeNoche = DominantesDeNoche;
+            a.Centroide = DominanteCentroide && !DominantesReferencia; a.RadioCentroidePts = (double)RadioCentroidePts; a.UnaPorLado = UnaPorLado && !DominantesReferencia; a.EmpatePct = EmpateDominantesPct; a.DominantesDeNoche = DominantesDeNoche;
             a.ZeroInterpolado = ZeroGammaInterpolado;   // F5 (2.0.1)
 
             var L = _nucleo.Calcular(c, futuro, ahoraUtc);

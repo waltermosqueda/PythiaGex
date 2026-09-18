@@ -7,7 +7,7 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>PythiaGexDos</AssemblyName>
     <RootNamespace>PythiaGexDos</RootNamespace>
-    <Version>2.0.4</Version>
+    <Version>2.0.5</Version>
     <Company>PythiaGex</Company>
     <Product>PythiaGex 2.0</Product>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
