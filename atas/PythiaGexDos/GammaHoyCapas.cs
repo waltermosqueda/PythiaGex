@@ -180,7 +180,7 @@ namespace PythiaGexDos
         public bool CapaTqqq { get; set; } = false;
 
         [Display(Name = "Capa NDX (gris)", GroupName = "5. Capas extra (NQ)", Order = 3,
-                 Description = "Libro de NDX (CBOE, el mismo que 'Libro en vivo = CBOE_SPX' en NQ) con la base de la rueda de la lectura primaria; si la primaria es un ETF, cae a la base medida o teorica y lo dice.")]
+                 Description = "Libro de NDX (CBOE, el mismo que 'Libro en vivo = CBOE_SPX' en NQ; con 'Libro automatico' la primaria en NQ es QQQ, asi que esta capa es la segunda instancia de la referencia: NDX 0DTE, strikes cada 5 pts) con la base de la rueda de la lectura primaria; si la primaria es un ETF, cae a la base medida o teorica y lo dice. Sus barras se dibujan con el mismo alto y ancho que las de la primaria (no hay opcion de barras finas).")]
         public bool CapaNdx { get; set; } = false;
 
         [Display(Name = "Capa NQ: opciones del futuro, CME en vivo (lima)", GroupName = "5. Capas extra (NQ)", Order = 4,
@@ -452,8 +452,8 @@ namespace PythiaGexDos
         {
             try
             {
-                if (Libro == LibroEnVivo.CBOE_ETF) return RaizLibro();
-                if (Libro == LibroEnVivo.Rithmic_ES) return Raiz() == "NQ" ? "NQ" : "ES";   // opciones del futuro (CME, en vivo)
+                if (LibroEfectivo == LibroEnVivo.CBOE_ETF) return RaizLibro();
+                if (LibroEfectivo == LibroEnVivo.Rithmic_ES) return Raiz() == "NQ" ? "NQ" : "ES";   // opciones del futuro (CME, en vivo)
                 return Raiz() == "NQ" ? "NDX" : "SPX";
             }
             catch { return "?"; }
@@ -551,7 +551,7 @@ namespace PythiaGexDos
                     {
                         if (antes[i] == null || !antes[i].TryGetValue(s.Clave, out var vAntes)) continue;
                         if (Math.Sign(vAntes) != Math.Sign(ahora) && vAntes != 0) vAntes = 0;
-                        int wa = Math.Max(0, (int)(Math.Sqrt(Math.Abs(vAntes) / maxK) * ancho));
+                        int wa = Math.Max(0, (int)((EstiloReferencia ? Math.Abs(vAntes) / maxK : Math.Sqrt(Math.Abs(vAntes) / maxK)) * ancho));
                         int rr = rad[i];
                         int cx = convexidad ? xBorde - wa : xBorde + wa;
                         if (i == 0) cx0 = cx; else if (Math.Abs(cx - cx0) <= 1) continue;   // quieto: las tres en el mismo pixel, se dibuja la grande sola
@@ -768,7 +768,7 @@ namespace PythiaGexDos
         {
             var k = _capas.First(z => z.Tipo == CapaLibro.TipoCapa.RithmicViva);
             if (!CapaActiva(k)) return;
-            if (Libro == LibroEnVivo.Rithmic_ES) { var c0 = _c; if (c0 != null && c0.EsFuturo) { k.C = c0; k.Error = ""; k.UltimaBajada = ahora; } return; }
+            if (LibroEfectivo == LibroEnVivo.Rithmic_ES) { var c0 = _c; if (c0 != null && c0.EsFuturo) { k.C = c0; k.Error = ""; k.UltimaBajada = ahora; } return; }
             if (!_viva.Activa) { k.Error = UsarCadenaViva ? "viva: " + _viva.Estado : "prender 'Cadena viva de Rithmic'"; return; }
             if ((ahora - k.UltimaBajada).TotalSeconds < Math.Max(5, SegundosLibroRithmic)) return;
             k.UltimaBajada = ahora;
@@ -829,7 +829,7 @@ namespace PythiaGexDos
                     else // NDX: si la primaria ya es la cadena de NDX (CBOE_SPX en NQ), es la misma
                     {
                         var c0 = _c;
-                        if (Libro == LibroEnVivo.CBOE_SPX && c0 != null && !c0.EsFuturo && !c0.PorRazon) c = c0;
+                        if (LibroEfectivo == LibroEnVivo.CBOE_SPX && c0 != null && !c0.EsFuturo && !c0.PorRazon) c = c0;
                         else
                         {
                             c = await Feed.Bajar(Url, k.Ticker, err).ConfigureAwait(false);
@@ -1070,6 +1070,7 @@ namespace PythiaGexDos
                                  int xl0, int xl1, int xConv, int altoRot, RenderFont fRot, CultureInfo es,
                                  Action<double, Color, float, System.Drawing.Drawing2D.DashStyle, int> raya)
         {
+            if (EstiloReferencia) alto = Math.Min(alto, 4);   // 2.0.4: capas finas (4 px) en estilo referencia, como la segunda instancia (NDX) de la referencia
             SincronizarColoresCapas();
             var activas = _capas.Where(CapaActiva).ToList();
             if (activas.Count == 0) return;
@@ -1133,7 +1134,7 @@ namespace PythiaGexDos
                             if (Math.Abs(v) < maxK * umbral && !fijo) continue;
                             int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                             if (y < area.Top || y > piso) continue;
-                            int w = Math.Max(3, (int)(Math.Sqrt(Math.Abs(v) / maxK) * ancho));
+                            int w = Math.Max(3, (int)((EstiloReferencia ? Math.Abs(v) / maxK : Math.Sqrt(Math.Abs(v) / maxK)) * ancho));
                             anchoBarra[(k, s.Fut)] = w;
                             barras.Add((w, y, k.Color, v < 0, k.Nombre + (fijo ? " " + TextoDominante + (idxDom + 1) : "")));
                         }
@@ -1200,8 +1201,8 @@ namespace PythiaGexDos
                             if (fr2 < umbral && idxDom < 0) continue;
                             int y; try { y = cont.GetYByPrice((decimal)s.Fut, false); } catch { continue; }
                             if (y < area.Top || y > piso) continue;
-                            barras.Add((Math.Max(3, (int)(Math.Sqrt(fr2) * anchoDer)), y, k.Color, s.Conv < 0, k.Nombre + (idxDom >= 0 ? " " + TextoDominante + (idxDom + 1) : "")));
-                            anchoConv[(k, s.Fut)] = Math.Max(3, (int)(Math.Sqrt(fr2) * anchoDer));
+                            barras.Add((Math.Max(3, (int)((EstiloReferencia ? fr2 : Math.Sqrt(fr2)) * anchoDer)), y, k.Color, s.Conv < 0, k.Nombre + (idxDom >= 0 ? " " + TextoDominante + (idxDom + 1) : "")));
+                            anchoConv[(k, s.Fut)] = Math.Max(3, (int)((EstiloReferencia ? fr2 : Math.Sqrt(fr2)) * anchoDer));
                         }
                     }
                     foreach (var b in barras.OrderByDescending(b => b.W))

@@ -4,6 +4,72 @@ Regla del operador (18-09-2026): la produccion (`atas/PythiaGexNiveles`, "Pythia
 Todo arreglo y toda feature va a este clon (`PythiaGexDos.dll`, "PythiaGex 2.0 - Gamma Hoy"). Si algo se rompe, se vuelve a
 agregar la original al grafico. Cada entrada dice que se arreglo, con que evidencia y donde toca el codigo.
 
+## 2.0.3 (18-09-2026) - F8: estilo referencia y libro automatico
+
+String de arranque: `Gamma Hoy 2.0.3 (F1-F8, estilo referencia) arranca ...`. `<Version>2.0.3</Version>`. Compila con 0 errores.
+Pedido del operador (18-09, con la 2.0 recien cargada en el MNQZ6 de 2 min): "las barras laterales se ven diferentes que en la
+referencia, tanto en tamaño y color; logra algo similar y que se muestre siempre por defecto". Solo DIBUJO y eleccion del libro:
+ningun calculo (zero, majors, dominantes, centinela, AUDIT, gatillos) se toca. Tres propiedades NUEVAS (nombres nuevos: ATAS persiste
+por nombre y el operador ya agrego la 2.0, un default cambiado en una propiedad vieja no le llega).
+
+### F8 - Estilo referencia (GammaHoy.cs `Pintar`, propiedad `EstiloReferencia`, default TRUE, grupo 6)
+
+- Evidencia (medido el 18-09 en `_referencia/2026-09-18-dashboard/medidas.json` y `resultados.md`, 4 capturas 12:21-12:29):
+  perfil izquierdo "GEX profile" = gamma x (vol calls - vol puts) del 0DTE de QQQ, una barra por strike en K x razon NQ/QQQ,
+  9-10 px de alto, nace en el borde izquierdo, verde #089981 / rojo #f23645 opacos; cada lado normalizado: la mas larga =
+  floor(0,30 x ancho del area) (184 px con 614; 225 con 752) y las demas en PROPORCION LINEAL (ajuste largo = k x |gex|, R2 0,88-0,99);
+  perfil derecho "Gamma profile" cyan #00bcd4 / purpura #9c27b0 pegado al borde derecho antes del eje, mismo alto y misma
+  normalizacion; puntitos azules #2962ff (radio ~4 px) sobre las barras izquierdas y grises sobre las derechas; sin sombra de OI.
+  En la 2.0.2 (captura del operador `images/2.png`): barras de 5-9 px con largo por RAIZ CUADRADA (las chicas salen largas), ancho
+  absoluto de 90 px (no 30 % del area), verde (45,220,130) / rojo (235,60,60) con alfa 120-240 segun tamaño, sombra de OI detras,
+  perfil derecho al 70 % en aguamarina/lila, pelotitas gris claro de 2-4 px, rotulos con numeros tapando las barras y DOS titulos
+  pisados en el mismo renglon ("GEX volumen hoy · 0DTE · sombra OI" encima de "volumen hoy · sombra OI ayer").
+- Cambio, con `EstiloReferencia` prendido: (1) alto 10 px fijo; si los strikes en pantalla estan a menos de 11 px, el espacio menos
+  1 px. (2) `relativas = BarrasRelativas || EstiloReferencia`: los dos lados a floor(0,30 x (xr - area.Left)), largo lineal
+  (`Largo()`: fraccion directa en vez de sqrt), izquierda desde `area.Left`, derecha hasta `xr` (o hasta antes de la escalera si
+  `VerEscalera`). (3) colores fijos (`colPosIzq/colNegIzq/colPosDer/colNegDer`) con alfa 230 (`alfaRef`), sin degradado por
+  fraccion; `AtenuarPrimaria` sigue aplicando con capas prendidas. (4) sin sombra de OI (`!refe && VerSombraOI`). (5) pelotitas:
+  puntos azules #2962ff de radio 4 sobre la barra izquierda (punta hace 15/5/1 min, largo lineal, uno solo si caen en el mismo pixel,
+  borde del color del fondo) y grises #9e9e9e sobre la derecha cuando la derecha es convexidad; con flujo firmado (Rithmic) no hay
+  fotos viejas del flujo y no se dibujan, como antes. Respetan `PelotitasMaxChange`. (6) titulos: a la izquierda "GEX profile · QQQ
+  0DTE por volumen (CBOE, por razon NQ/QQQ) · estilo referencia" y a la derecha "Gamma profile · convexidad (vol) de QQQ: + cyan /
+  - purpura" (o "flujo firmado NQ Rithmic: dealer largo (cyan) / corto (purpura)"); la cabecera (si `VerCabecera`) agrega "· estilo
+  referencia". El titulo viejo y el renglon "volumen hoy · sombra OI ayer" solo sin estilo referencia (y ya no se pisan en el modo
+  nuevo). (7) `RotulosBarrasRef` (default FALSE, grupo 6): con estilo referencia los numeros al lado de las barras se apagan
+  (`rotEsta` exige `!refe || RotulosBarrasRef`); prendido siguen la regla de 'Datos en las barras'.
+- Apagado: todo exactamente como 2.0.2 (las ramas viejas quedan intactas).
+- Lo que NO reproduce (dicho de frente): el CONTENIDO del perfil derecho de la referencia sigue sin formula (resultados.md, punto 3:
+  ninguna de 1.545 candidatas; hace falta flujo firmado de QQQ); aca la derecha dibuja la convexidad (CBOE) o el flujo firmado (Rithmic)
+  con los colores de la referencia. Tampoco la segunda instancia NDX con barras finas cada 5 pts: la capa NDX existe (`CapaNdx`,
+  apagada por defecto, sin cambios) y dibuja con el mismo alto/ancho que la primaria; no hay opcion de barras finas en
+  GammaHoyCapas.cs. Las capas (QQQ, TQQQ, NDX, NQ Rithmic, SPX, SPY, ES) no cambian ni de default ni de dibujo (siguen con sqrt y
+  su color por fuente).
+- Toca: GammaHoy.cs `Pintar` (bloque de barras: ancho/xConv, alto, titulo, rotEsta, sombra, barra izq, pelotitas izq, barra der,
+  pelotitas der, titulos), propiedades `EstiloReferencia` y `RotulosBarrasRef` (grupo 6).
+
+### F8b - Libro automatico (GammaHoy.cs `LibroAuto`, `LibroEfectivo`; GammaHoyCapas.cs)
+
+- Evidencia: la referencia dibuja NQ con QQQ 0DTE por volumen (medido 11-09, 14-09 y 18-09, R2 0,88-0,999) y ES con SPX/SPY
+  (14-09). El default de `Libro` era CBOE_SPX (= NDX en NQ), y como el operador ya agrego la 2.0, cambiarle el default no le llega.
+- Cambio: propiedad NUEVA `LibroAuto` (default TRUE, grupo 1): si la raiz es NQ la primaria es CBOE_ETF con QQQ (razon NQ/QQQ);
+  si es ES, CBOE_SPX. `LibroEfectivo` (privada) = LibroAuto ? (Raiz() == "NQ" ? CBOE_ETF : CBOE_SPX) : Libro, y las 11 lecturas del
+  libro (7 en GammaHoy.cs: temporizador Rithmic, BajarFeed, RaizLibro, CargarArchivo x2, cabecera; 4 en GammaHoyCapas.cs:
+  NombrePrimaria x2, RefrescarCapaRithmic, BajarCapas) pasan por ella. `Libro` queda como manual ("solo con 'Libro automatico'
+  apagado"), por ejemplo para Rithmic_ES. RTY sigue cayendo a CBOE_SPX como antes.
+- Ojo: al arrancar sin instrumento `Raiz()` devuelve ES por un instante (como siempre); nada se cachea, el primer BajarFeed con
+  instrumento ya pide QQQ.
+- Toca: GammaHoy.cs propiedades `LibroAuto`, `Libro`, `LibroEfectivo`; regex `Libro (==|!=) LibroEnVivo` -> `LibroEfectivo` en los
+  dos archivos; descripcion de `CapaNdx` (dice que es la segunda instancia de la referencia y que no tiene barras finas).
+- Revision (18-09, defecto confirmado por el revisor, gravedad media): `LibroEfectivo` ignoraba lo guardado en 'Libro en vivo'
+  fuera cual fuera. Si el operador elegia Rithmic_ES (como hizo en produccion con el MNQ#2) sin apagar `LibroAuto`, la primaria
+  seguia siendo QQQ de CBOE (902 s tarde), el temporizador nunca llamaba `DesdeViva`, el aviso RITHMIC FLACO no aparecia y el log
+  de arranca solo decia raiz y horizonte: ninguna linea decia que libro quedo efectivo ni que lo manual fue ignorado. Arreglo:
+  (1) `LibroEfectivo => LibroAuto && Libro != Rithmic_ES ? (NQ ? CBOE_ETF : CBOE_SPX) : Libro` (el automatico decide solo entre los
+  dos libros de CBOE y respeta un Rithmic_ES explicito); (2) `LibroEfectivoTexto()` nuevo: "libro efectivo=<libro>/<raiz del
+  libro> (automático; 'Libro en vivo'=<manual> ignorado)" o "(automático)" / "(manual)", agregado a los dos `Log(... arranca ...)`
+  (VIVO/HIBRIDO y REBOBINADO) y a la l2 de la cabecera; (3) las descripciones de `LibroAuto` y `Libro` dicen la regla nueva.
+  Toca: GammaHoy.cs `LibroEfectivo`, `LibroEfectivoTexto`, los dos `Log` de `OnInitialize`, la `l2` de `Pintar`. Compila con 0 errores.
+
 ## 2.0.2 (18-09-2026) - lo que la revision encontro mal en 2.0.1
 
 String de arranque: `Gamma Hoy 2.0.2 (F1-F7, revisado) arranca ...`. Los revisores confirmaron ocho defectos en el clon (ninguno

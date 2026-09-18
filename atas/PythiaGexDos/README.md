@@ -14,4 +14,4 @@ arreglo y toda feature nueva va aca, y si algo se rompe se vuelve a agregar la o
 - `cboe-local` se comparte con prod (`%APPDATA%\ATAS\PythiaGex\cboe-local`): la escribe `herramientas/cboe_local.py`, el DLL solo la lee.
 - La razon del ETF se guarda por raiz del futuro + ticker (`PythiaGex2\razon-NQ-QQQ.txt`, `razon-ES-SPY.txt`).
 - El instalador `herramientas/reiniciar_e_instalar.ps1` copia los dos DLL si existen.
-- Cambios por version, con evidencia y donde tocan: `CHANGELOG.md` (2.0.1 = F1-F7, 18-09).
+- Cambios por version, con evidencia y donde tocan: `CHANGELOG.md` (2.0.1 = F1-F7, 2.0.2 = revision, 2.0.3 = F8 estilo referencia + libro automatico, 18-09).

@@ -76,7 +76,31 @@ namespace PythiaGexDos
 
         public enum LibroEnVivo { CBOE_SPX, Rithmic_ES, CBOE_ETF }
 
-        [Display(Name = "Libro en vivo", GroupName = "1. Datos", Order = 0,
+        [Display(Name = "Libro automático: el que dibuja la referencia (NQ = QQQ por razón, ES = SPX)", GroupName = "1. Datos", Order = 0,
+                 Description = "F8 (2.0.3), prendido por defecto. Elige solo el libro que dibuja la referencia en cada grafico: en NQ/MNQ el de QQQ 0DTE por volumen llevado al futuro por razon (CBOE_ETF; medido 11-09, 14-09 y 18-09), en ES/MES el de SPX (CBOE_SPX). 'Libro en vivo' queda como manual: con esto prendido solo se respeta si dice Rithmic_ES (el automatico decide entre los dos libros de CBOE y nunca pisa un Rithmic elegido a mano); CBOE_SPX o CBOE_ETF a mano solo valen con esto apagado. El log de arranque y la cabecera dicen siempre 'libro efectivo=' y si lo manual fue ignorado. Las capas extra no cambian. Al arrancar sin instrumento la raiz cae a ES por un instante; en cuanto ATAS informa el instrumento se corrige sola.")]
+        public bool LibroAuto { get; set; } = true;
+
+        /// <summary>F8 (2.0.3): el libro que de verdad se usa. Con LibroAuto, el de la referencia segun la raiz del grafico
+        /// (NQ -> QQQ por razon, ES -> SPX); si no, el elegido a mano en 'Libro en vivo'. TODA lectura del libro pasa por aca.
+        /// Revision 18-09: el automatico decide SOLO entre los dos libros de CBOE; un Rithmic_ES elegido a mano se respeta
+        /// aunque LibroAuto siga prendido (antes lo pisaba en silencio: la primaria seguia siendo QQQ/SPX de CBOE, el
+        /// temporizador nunca llamaba DesdeViva y el aviso RITHMIC FLACO no aparecia, como en el MNQ#2 de produccion).</summary>
+        private LibroEnVivo LibroEfectivo => LibroAuto ? (Raiz() == "NQ" ? LibroEnVivo.CBOE_ETF : LibroEnVivo.CBOE_SPX) : Libro;   // 2.0.4: automatico = el libro que dibuja la referencia, siempre (Rithmic solo con LibroAuto apagado; el log dice cual quedo)
+
+        /// <summary>Revision 18-09: que libro quedo efectivo y por que, para el log de arranque y la cabecera. Si el automatico
+        /// ignoro lo elegido a mano en 'Libro en vivo', lo dice: con la regla roja (mirar el log antes de discutir) esa
+        /// ausencia costaba una sesion.</summary>
+        private string LibroEfectivoTexto()
+        {
+            try
+            {
+                return "libro efectivo=" + LibroEfectivo + "/" + RaizLibro()
+                     + (LibroAuto && Libro != LibroEfectivo ? " (automático; 'Libro en vivo'=" + Libro + " ignorado)" : LibroAuto ? " (automático)" : " (manual)");
+            }
+            catch { return "libro efectivo=?"; }
+        }
+
+        [Display(Name = "Libro en vivo (manual: Rithmic_ES vale siempre; CBOE_SPX/CBOE_ETF solo con 'Libro automático' apagado)", GroupName = "1. Datos", Order = 1,
                  Description = "CBOE_SPX: la cadena de SPX de la nube (llega 902 s tarde, cada minuto en la rueda). Rithmic_ES: las opciones de ES desde tu ATAS, volumen del dia por strike EN TIEMPO REAL e IV de las puntas, sin retraso y sin nube; strikes del futuro, sin base. Con Rithmic el mapa respira con cada operacion, como la referencia. El pasado (archivo) sigue siendo SPX. CBOE_ETF (1.9): el libro que dibuja la referencia: SPY para ES y QQQ para NQ, 0DTE por volumen, cada strike llevado al futuro por RAZON (futuro/ETF, con la vela alineada al retraso de CBOE, como su NQ/QQQ medido el 11-09); llega 902 s tarde y el pasado tambien es del ETF.")]
         public LibroEnVivo Libro { get; set; } = LibroEnVivo.CBOE_SPX;
 
@@ -111,6 +135,14 @@ namespace PythiaGexDos
         [Display(Name = "Capas: forma por tipo de libro (índice y futuro = guión, ETF = punto)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 3,
                  Description = "En la estela, NQ, NDX, ES y SPX se dibujan como guiones y QQQ y SPY como puntos, para que la forma diga que tipo de libro es (pedido 16-09). Apagado: todos puntos.")]
         public bool CapasFormaPorTipo { get; set; } = true;
+
+        [Display(Name = "Estilo referencia: barras como el tablero (F8)", GroupName = "6. Estilo (líneas, colores, textos)", Order = 4,
+                 Description = "F8 (2.0.3), prendido por defecto (pedido del operador 18-09: 'las barras laterales se ven distintas que en la referencia, en tamaño y color'). Dibuja los dos perfiles como el tablero de la referencia, medido el 18-09 (_referencia/2026-09-18-dashboard: medidas.json y resultados.md): barras de 10 px de alto (si los strikes en pantalla estan mas juntos, ese espacio menos 1 px); cada lado normalizado a floor(0,30 x ancho del area del grafico) con largo LINEAL (la mas larga mide eso y las demas en proporcion, sin raiz cuadrada: asi lo mide la referencia, R2 0,88-0,99), la izquierda pegada al borde izquierdo y la derecha al borde derecho antes del eje (o antes de la escalera, si esta prendida); colores fijos: izquierda verde #089981 / rojo #f23645, derecha cyan #00bcd4 (+ / dealer largo) / purpura #9c27b0 (- / dealer corto), alfa 230 sin degradado por tamaño; sin sombra de OI; las pelotitas del Max Change son puntos azules #2962ff de radio 4 px sobre las barras izquierdas y grises #9e9e9e sobre las derechas; los numeros al lado de las barras se apagan (ver 'Estilo referencia: rotulos'); el titulo dice 'estilo referencia' y que libro dibuja cada lado. Manda sobre 'Ancho de las barras', 'Barras relativas', 'Sombra del libro de OI' y los colores de barras del grupo 6. Apagado: todo como en 2.0.2. Solo cambia el DIBUJO: ningun calculo (zero, majors, dominantes, centinela, AUDIT) se toca.")]
+        public bool EstiloReferencia { get; set; } = true;
+
+        [Display(Name = "Estilo referencia: rótulos (números) al lado de las barras", GroupName = "6. Estilo (líneas, colores, textos)", Order = 5,
+                 Description = "F8 (2.0.3), apagado por defecto. Con el estilo referencia los numeros al lado de cada barra (GEX, OI, volumen, IV, ΔGEX) tapan las barras normalizadas, asi que no se dibujan. Prendelo si los queres igual: entonces siguen la regla de 'Datos en las barras'. Sin estilo referencia no hace nada.")]
+        public bool RotulosBarrasRef { get; set; } = false;
 
         [Display(Name = "Estela: forma de la marca por vela", GroupName = "6. Estilo (líneas, colores, textos)", Order = 1,
                  Description = "Como se dibuja cada dominante en cada vela (primaria y capas): guion, punto, cuadrado, rombo o triangulo.")]
@@ -739,7 +771,7 @@ namespace PythiaGexDos
             _tick = () =>
             {
                 var ahora = DateTime.UtcNow;
-                if (Libro == LibroEnVivo.Rithmic_ES && _viva.Activa && (ahora - _ultimoLibroViva).TotalSeconds >= Math.Max(5, SegundosLibroRithmic))
+                if (LibroEfectivo == LibroEnVivo.Rithmic_ES && _viva.Activa && (ahora - _ultimoLibroViva).TotalSeconds >= Math.Max(5, SegundosLibroRithmic))
                 {
                     _ultimoLibroViva = ahora;
                     try { var cv = DesdeViva(); if (cv != null) { _c = cv; _error = ""; } } catch (Exception e) { Registrar(e); }
@@ -815,7 +847,7 @@ namespace PythiaGexDos
                 SubscribeToTimer(_periodo, _tick);
                 _ultimoIntentoViva = DateTime.UtcNow;
                 if (UsarCadenaViva) ArrancarViva();
-                Log("Gamma Hoy 2.0.2 (F1-F7, revisado) arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " carpeta=" + Feed.Archivo.Carpeta);
+                Log("Gamma Hoy 2.0.4 (F1-F8, estilo referencia, capas finas) arranca en REBOBINADO. raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto() + " carpeta=" + Feed.Archivo.Carpeta);
                 return;
             }
             SubscribeToTimer(_periodo, _tick);
@@ -824,7 +856,7 @@ namespace PythiaGexDos
             _ultimoIntentoViva = DateTime.UtcNow;
             _ = BajarFeed();
             if (UsarCadenaViva) ArrancarViva();
-            Log("Gamma Hoy 2.0.2 (F1-F7, revisado) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte);
+            Log("Gamma Hoy 2.0.4 (F1-F8, estilo referencia, capas finas) arranca" + (Fuente == FuenteDatos.Hibrido ? " en HIBRIDO (archivo + vivo)" : " en VIVO (con el pasado del archivo)") + ". raiz=" + Raiz() + " horizonte=" + Horizonte + " " + LibroEfectivoTexto());
         }
 
         protected override void OnDispose()
@@ -899,7 +931,7 @@ namespace PythiaGexDos
             try
             {
                 Feed.Cadena c = null;
-                if (Libro == LibroEnVivo.CBOE_ETF)
+                if (LibroEfectivo == LibroEnVivo.CBOE_ETF)
                 {
                     // el ETF solo esta en la rama cadenas (ultima-QQQ.json / ultima-SPY.json, cada minuto en la rueda)
                     c = await Feed.BajarUltima(UrlArchivo, RaizLibro(), m => _error = m).ConfigureAwait(false);
@@ -914,7 +946,7 @@ namespace PythiaGexDos
                         if (u != null && (c == null || u.GeneradoUtc > c.GeneradoUtc)) c = u;
                     }
                 }
-                if (c != null && !(Libro == LibroEnVivo.Rithmic_ES && _c != null && _c.EsFuturo)) { _c = c; _error = ""; }
+                if (c != null && !(LibroEfectivo == LibroEnVivo.Rithmic_ES && _c != null && _c.EsFuturo)) { _c = c; _error = ""; }
                 await BajarCapas().ConfigureAwait(false);
             }
             finally
@@ -960,7 +992,7 @@ namespace PythiaGexDos
         private string RaizLibro()
         {
             var r = Raiz();
-            if (Libro != LibroEnVivo.CBOE_ETF) return r;
+            if (LibroEfectivo != LibroEnVivo.CBOE_ETF) return r;
             return r == "NQ" ? "QQQ" : r == "ES" ? "SPY" : r;
         }
 
@@ -1171,7 +1203,7 @@ namespace PythiaGexDos
                         for (var d = desde.Date; d <= hasta.Date; d = d.AddDays(1))
                             await Feed.Archivo.BajarDia(string.IsNullOrWhiteSpace(UrlArchivo) ? Url : UrlArchivo, raiz, d, Log).ConfigureAwait(false);
                     var ls = Feed.Archivo.Cargar(raiz, desde, hasta, Log);
-                    if (Libro == LibroEnVivo.CBOE_ETF)
+                    if (LibroEfectivo == LibroEnVivo.CBOE_ETF)
                     {
                         // 2.0.2: cada cadena del archivo con SU vela (la de su minuto) y una RazonEtf temporal que no persiste ni toca la
                         // del vivo. Escalar(x) sin hora juzgaba toda cadena del pasado como "vieja" contra AHORA y le ponia la razon de
@@ -1193,7 +1225,7 @@ namespace PythiaGexDos
                         lock (_razon.Obs) if (_razon.Obs.Count == 0 && rr.Obs.Count > 0) { _razon.Obs.AddRange(rr.Obs); _razon.Rueda = rr.Rueda; }
                         Log("archivo del ETF " + raiz + ": " + ls.Count + " cadenas llevadas al futuro por razon, cada una con la vela de su minuto (" + sinVela + " sin vela en el grafico, descartadas)");
                     }
-                    if (Libro == LibroEnVivo.Rithmic_ES)
+                    if (LibroEfectivo == LibroEnVivo.Rithmic_ES)
                     {
                         // el mismo libro que el vivo: la grabacion de Rithmic de las horas en que
                         // ATAS estuvo abierto; CBOE solo en los dias sin grabacion
@@ -1968,8 +2000,8 @@ namespace PythiaGexDos
             string l1 = perfil.Count == 0
                 ? "GAMMA HOY  esperando cadena" + (string.IsNullOrEmpty(_error) ? "" : " (" + _error + ")")
                 : "GAMMA HOY  " + corto + "  " + cuad + "   conv " + (convPrecio >= 0 ? "+" : "-") + " (" + libroConv + ")  pico " + (double.IsNaN(picoFut) ? "--" : picoFut.ToString("N0", es)) + (mucho ? " mucho" : " poco");
-            string l2 = (c != null && c.EsFuturo ? "libro " + Raiz() + " Rithmic " + edad + " · " + c.Filas.Count + " filas" : "vol CBOE " + edad) + " · OI de ayer · base " + origenBase + " · zero " + ZeroModoCorto() + " · dominantes por " + libroDom
-                      + (Libro == LibroEnVivo.Rithmic_ES && _vivaFlaca >= 0 ? " · RITHMIC FLACO: " + _vivaFlaca + " strikes con puntas, sigo con CBOE" : "")
+            string l2 = (c != null && c.EsFuturo ? "libro " + Raiz() + " Rithmic " + edad + " · " + c.Filas.Count + " filas" : "vol CBOE " + edad) + " · OI de ayer · base " + origenBase + " · zero " + ZeroModoCorto() + " · dominantes por " + libroDom + " · " + LibroEfectivoTexto() + (EstiloReferencia ? " · estilo referencia" : "")
+                      + (LibroEfectivo == LibroEnVivo.Rithmic_ES && _vivaFlaca >= 0 ? " · RITHMIC FLACO: " + _vivaFlaca + " strikes con puntas, sigo con CBOE" : "")
                       + (_viva.Activa ? " · vivo Rithmic " + ((int)_viva.VolumenTotalHoy()).ToString("N0", es) + " contr" + (_viva.SinCeroDte ? " · SIN 0DTE EN EL VIVO (mas cercano " + _viva.DiasReales + " d)" : "") : " · vivo: " + _viva.Estado);
             if (Fuente != FuenteDatos.Archivo)
             {
@@ -2026,16 +2058,41 @@ namespace PythiaGexDos
             int x0 = area.Left;
             // F7 (2.0.1): la referencia normaliza cada lado del perfil a floor(0,30 x ancho del grafico): la barra mas larga
             // siempre mide eso. Apagada, el ancho absoluto de siempre (AnchoBarras) y el perfil derecho al 70 %.
-            int ancho = BarrasRelativas ? Math.Max(30, (int)Math.Floor(0.30 * Math.Max(100, xr - area.Left))) : Math.Max(30, AnchoBarras);
-            int anchoDer = BarrasRelativas ? ancho : (int)(ancho * 0.7);
+            // F8 (2.0.3), estilo referencia: los dos lados normalizados al 30 % del ancho aunque BarrasRelativas este apagada,
+            // largo LINEAL (sin raiz cuadrada), la derecha pegada al borde derecho antes del eje (o antes de la escalera).
+            bool refe = EstiloReferencia;
+            bool relativas = BarrasRelativas || refe;
+            int ancho = relativas ? Math.Max(30, (int)Math.Floor(0.30 * Math.Max(100, xr - area.Left))) : Math.Max(30, AnchoBarras);
+            int anchoDer = relativas ? ancho : (int)(ancho * 0.7);
             int xLad = VerEscalera ? xr - Math.Max(80, AnchoEscalera) : xr;
-            int xConv = xLad - 6;                       // borde derecho de la convexidad
+            int xConv = refe && !VerEscalera ? xr : xLad - 6;   // borde derecho de la convexidad / perfil derecho
+            double Largo(double fraccion) => refe ? Math.Max(0.0, Math.Min(1.0, fraccion)) : Math.Sqrt(Math.Max(0.0, fraccion));
+            // colores de las barras: fijos en estilo referencia (medidos el 18-09), si no los del grupo 6
+            Color colPosIzq = refe ? Color.FromArgb(8, 153, 129) : ColPos, colNegIzq = refe ? Color.FromArgb(242, 54, 69) : ColNeg;        // #089981 / #f23645
+            Color colPosDer = refe ? Color.FromArgb(0, 188, 212) : ColConvPos, colNegDer = refe ? Color.FromArgb(156, 39, 176) : ColConvNeg;  // #00bcd4 / #9c27b0
+            Color colPelIzq = Color.FromArgb(41, 98, 255), colPelDer = Color.FromArgb(158, 158, 158);                                     // #2962ff / #9e9e9e
+            const int radioPel = 4, alfaRef = 230;
             int xl0 = x0 + ancho + 8, xl1 = (VerConvexidad ? xConv - anchoDer - 8 : xLad - 8);
             if (xl1 - xl0 < 60) { xl0 = x0 + 2; xl1 = xLad - 2; }
 
             // ---- barras: sombra de OI, volumen encima, convexidad a la derecha
             int alto = 5;
-            try { int y1 = cont.GetYByPrice((decimal)perfil[0].Fut, false); if (perfil.Count > 1) { int y2 = cont.GetYByPrice((decimal)perfil[1].Fut, false); alto = Math.Max(2, Math.Min(9, Math.Abs(y2 - y1) - 2)); } } catch { }
+            try
+            {
+                int espK = int.MaxValue, yPrev = int.MinValue;
+                foreach (var sK in perfil)   // el menor espacio entre strikes consecutivos que estan en pantalla (perfil viene ordenado por K)
+                {
+                    int yy = cont.GetYByPrice((decimal)sK.Fut, false);
+                    if (yy < area.Top || yy > piso) { yPrev = int.MinValue; continue; }
+                    if (yPrev != int.MinValue && yy != yPrev) espK = Math.Min(espK, Math.Abs(yy - yPrev));
+                    yPrev = yy;
+                }
+                if (espK == int.MaxValue && perfil.Count > 1) { int y1 = cont.GetYByPrice((decimal)perfil[0].Fut, false), y2 = cont.GetYByPrice((decimal)perfil[1].Fut, false); espK = Math.Abs(y2 - y1); }
+                if (espK != int.MaxValue) alto = Math.Max(2, Math.Min(9, espK - 2));
+                // estilo referencia: 10 px fijos (medido: 9-10 px); si los strikes estan mas juntos, el espacio menos 1 px
+                if (refe) alto = espK >= 11 ? 10 : Math.Max(2, espK - 1);
+            }
+            catch { if (refe) alto = 10; }
             var fotos = _nucleo.FotosCopia();
             // las pelotitas del Max Change: la foto vieja de cada ventana, POR STRIKE. En vivo, las
             // fotos por minuto del nucleo; con el mouse sobre una vela del pasado (modo Todo), los
@@ -2090,10 +2147,10 @@ namespace PythiaGexDos
             string Km(double v) => Math.Abs(v) >= 1e6 ? (v / 1e6).ToString("0.0", es) + "M" : Math.Abs(v) >= 1e3 ? (v / 1e3).ToString("0.0", es) + "k" : v.ToString("0", es);
             string BmR(double v) => Math.Abs(v) >= 1e9 ? (v / 1e9).ToString("+0.0;-0.0", es) + "B" : Math.Abs(v) >= 1e6 ? (v / 1e6).ToString("+0;-0", es) + "M" : (v / 1e3).ToString("+0;-0", es) + "k";
             // titulo del perfil: que libro y que vencimiento
-            if (DatosEnBarras != RotulosBarras.Nunca)
+            double mc0 = double.NaN; lock (_candado) mc0 = _masCercaUlt;
+            string venc = double.IsNaN(mc0) ? "" : (DteCalendario(mc0) == 0 ? "0" + TextoDTE : DteCalendario(mc0) == 1 ? "1" + TextoDTE + " (mañana)" : DteCalendario(mc0).ToString(es) + " dias");
+            if (!refe && DatosEnBarras != RotulosBarras.Nunca)
             {
-                double mc0 = double.NaN; lock (_candado) mc0 = _masCercaUlt;
-                string venc = double.IsNaN(mc0) ? "" : (DteCalendario(mc0) == 0 ? "0" + TextoDTE : DteCalendario(mc0) == 1 ? "1" + TextoDTE + " (mañana)" : DteCalendario(mc0).ToString(es) + " dias");
                 string tit = "GEX " + (libroDom == "vol" ? "volumen hoy" : "OI") + (venc.Length > 0 ? " · " + venc : "") + (VerSombraOI ? " · sombra OI" : "");
                 g.DrawString(tit, fRot, Color.FromArgb(150, ColTexto), x0 + 2, area.Top + 8);
             }
@@ -2106,23 +2163,23 @@ namespace PythiaGexDos
                 if (y < area.Top || y > piso) continue;
                 // umbral de pantalla (1.9a): las barras chicas no se dibujan, salvo dominantes y majors
                 if (UmbralBarraPct > 0 && maxV > 0 && Math.Abs(s.GexVol) < maxV * UmbralBarraPct / 100.0 && !fijos.Contains(s.Fut)) continue;
-                bool rotEsta = DatosEnBarras != RotulosBarras.Nunca && rotHayLugar && (rotTodas || elegidos.Contains(s.Fut)) && !PrimariaSilenciada();   // capas (15-09): la primaria de fantasma no rotula sus barras
-                if (VerSombraOI && maxO > 0 && Math.Abs(s.GexOi) > 0)
+                bool rotEsta = (!refe || RotulosBarrasRef) && DatosEnBarras != RotulosBarras.Nunca && rotHayLugar && (rotTodas || elegidos.Contains(s.Fut)) && !PrimariaSilenciada();   // capas (15-09): la primaria de fantasma no rotula sus barras
+                if (!refe && VerSombraOI && maxO > 0 && Math.Abs(s.GexOi) > 0)
                 {
                     int w = Math.Max(1, (int)(Math.Sqrt(Math.Abs(s.GexOi) / maxO) * ancho));
                     g.FillRectangle(Color.FromArgb(AtenuarPrimaria(55), s.GexOi >= 0 ? ColPos : ColNeg), new Rectangle(x0, y - alto / 2 - 1, w, alto + 2));
                 }
                 if (maxV > 0 && Math.Abs(s.GexVol) > 0)
                 {
-                    double fr = Math.Sqrt(Math.Abs(s.GexVol) / maxV);
+                    double fr = Largo(Math.Abs(s.GexVol) / maxV);
                     int w = Math.Max(1, (int)(fr * ancho));
-                    var col = s.GexVol >= 0 ? ColPos : ColNeg;
-                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria((int)(120 + 120 * fr)), col), new Rectangle(x0, y - alto / 2, w, alto));
+                    var col = s.GexVol >= 0 ? colPosIzq : colNegIzq;
+                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria(refe ? alfaRef : (int)(120 + 120 * fr)), col), new Rectangle(x0, y - alto / 2, w, alto));
                     if (rotEsta)
                     {
                         // el dato de la barra, a la derecha de la punta: GEX del libro que dibuja
                         // (y abajo, si hay lugar: OI, volumen del dia e IV media)
-                        string l1r = BmR(s.GexVol) + (VerSombraOI && Math.Abs(s.GexOi) > 0 ? " oi" + BmR(s.GexOi) : "");
+                        string l1r = BmR(s.GexVol) + (!refe && VerSombraOI && Math.Abs(s.GexOi) > 0 ? " oi" + BmR(s.GexOi) : "");
                         string l2r = "OI " + Km(s.Oi) + " v " + Km(s.VolHoy) + (double.IsNaN(s.IvMedia) ? "" : " iv" + (s.IvMedia * 100).ToString("0", es));
                         int xr0 = x0 + w + 4;
                         var m1r = g.MeasureString(l1r, fRot);
@@ -2130,7 +2187,24 @@ namespace PythiaGexDos
                         g.DrawString(l1r, fRot, Color.FromArgb(235, col), xr0, y - altoRot / 2);
                         if (rotDos) g.DrawString(l2r, fRot, Color.FromArgb(175, ColTexto), xr0, y + altoRot / 2);
                     }
-                    if (PelotitasMaxChange)
+                    if (PelotitasMaxChange && refe)
+                    {
+                        // estilo referencia: puntos azules #2962ff de radio 4 px sobre la barra, donde estaba la punta hace 15, 5 y
+                        // 1 min (misma cuenta de siempre, largo lineal). Si dos caen en el mismo pixel se dibuja uno solo (quieto).
+                        int cxAnt = int.MinValue;
+                        for (int i = 0; i < 3; i++)
+                        {
+                            if (antesPel[i] == null || !antesPel[i].TryGetValue(s.Clave, out var gAntes)) continue;
+                            if (Math.Sign(gAntes) != Math.Sign(s.GexVol) && gAntes != 0) gAntes = 0;   // cambio de signo: "estaba en cero"
+                            int cx = x0 + Math.Max(0, (int)(Largo(Math.Abs(gAntes) / maxV) * ancho));
+                            if (cxAnt != int.MinValue && Math.Abs(cx - cxAnt) <= 1) continue;
+                            cxAnt = cx;
+                            if (AtenuarPrimaria(255) <= 0) continue;   // primaria oculta: sin circulos flotando
+                            g.FillEllipse(Color.FromArgb(AtenuarPrimaria(240), colPelIzq), new Rectangle(cx - radioPel, y - radioPel, 2 * radioPel, 2 * radioPel));
+                            g.DrawEllipse(new RenderPen(Color.FromArgb(AtenuarPrimaria(200), ColFondo), 1f), new Rectangle(cx - radioPel, y - radioPel, 2 * radioPel, 2 * radioPel));
+                        }
+                    }
+                    else if (PelotitasMaxChange)
                     {
                         // donde estaba la punta hace 15 (grande), 5 (mediana) y 1 min (chica): adentro
                         // de la barra = el strike crece, afuera = decrece, juntas en la punta = quieto.
@@ -2151,11 +2225,28 @@ namespace PythiaGexDos
                 double vDer = usarFlujo ? s.GexFlujo : s.Conv, maxDer = usarFlujo ? maxF : maxC;
                 if (VerConvexidad && maxDer > 0 && Math.Abs(vDer) > 0)
                 {
-                    double fr = Math.Sqrt(Math.Abs(vDer) / maxDer);
+                    double fr = Largo(Math.Abs(vDer) / maxDer);
                     int w = Math.Max(1, (int)(fr * anchoDer));
-                    var col = vDer >= 0 ? ColConvPos : ColConvNeg;
-                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria((int)(110 + 120 * fr)), col), new Rectangle(xConv - w, y - alto / 2, w, alto));
-                    if (PelotitasMaxChange && !usarFlujo)
+                    var col = vDer >= 0 ? colPosDer : colNegDer;
+                    g.FillRectangle(Color.FromArgb(AtenuarPrimaria(refe ? alfaRef : (int)(110 + 120 * fr)), col), new Rectangle(xConv - w, y - alto / 2, w, alto));
+                    if (PelotitasMaxChange && !usarFlujo && refe)
+                    {
+                        // estilo referencia: puntos grises #9e9e9e de radio 4 px sobre la barra derecha (convexidad), mismas ventanas.
+                        // Con flujo firmado (Rithmic) no hay fotos viejas del flujo: sin pelotitas a la derecha, como antes.
+                        int cxAnt = int.MinValue;
+                        for (int i = 0; i < 3; i++)
+                        {
+                            if (antesConv[i] == null || !antesConv[i].TryGetValue(s.Clave, out var cAntes)) continue;
+                            if (Math.Sign(cAntes) != Math.Sign(s.Conv) && cAntes != 0) cAntes = 0;
+                            int cx = xConv - Math.Max(0, (int)(Largo(Math.Abs(cAntes) / maxC) * anchoDer));
+                            if (cxAnt != int.MinValue && Math.Abs(cx - cxAnt) <= 1) continue;
+                            cxAnt = cx;
+                            if (AtenuarPrimaria(255) <= 0) continue;
+                            g.FillEllipse(Color.FromArgb(AtenuarPrimaria(240), colPelDer), new Rectangle(cx - radioPel, y - radioPel, 2 * radioPel, 2 * radioPel));
+                            g.DrawEllipse(new RenderPen(Color.FromArgb(AtenuarPrimaria(200), ColFondo), 1f), new Rectangle(cx - radioPel, y - radioPel, 2 * radioPel, 2 * radioPel));
+                        }
+                    }
+                    else if (PelotitasMaxChange && !usarFlujo)
                     {
                         // las mismas tres pelotitas sobre la convexidad (el producto las lleva en los dos perfiles)
                         int[] radC = { Math.Max(2, alto / 2), Math.Max(2, alto / 2 - 1), Math.Max(1, alto / 2 - 2) };
@@ -2182,8 +2273,24 @@ namespace PythiaGexDos
                     }
                 }
             }
-            g.DrawString("volumen hoy · sombra OI ayer", fChica, Color.FromArgb(110, ColTexto), x0 + 4, area.Top + 8);
-            if (VerConvexidad) { string titDer = usarFlujo ? "flujo firmado Rithmic: dealer largo (aguamarina) / corto (purpura) gamma" : "convexity ladder (" + libroConv + ")"; var mcx = g.MeasureString(titDer, fChica); g.DrawString(titDer, fChica, Color.FromArgb(110, ColTexto), xConv - mcx.Width, area.Top + 8); }
+            if (refe)
+            {
+                // estilo referencia: un titulo por lado, con el libro que lo dibuja (los nombres de las capas: QQQ, NDX, SPX, NQ, ES)
+                string nomLibro = NombrePrimaria();
+                string origenLibro = LibroEfectivo == LibroEnVivo.CBOE_ETF ? "CBOE, por razón " + Raiz() + "/" + nomLibro : LibroEfectivo == LibroEnVivo.Rithmic_ES ? "Rithmic, en vivo" : "CBOE, con base";
+                string titIzq = "GEX profile · " + nomLibro + (venc.Length > 0 ? " " + venc : "") + " por " + (libroDom == "vol" ? "volumen" : "OI") + " (" + origenLibro + ") · estilo referencia";
+                g.DrawString(titIzq, fChica, Color.FromArgb(150, ColTexto), x0 + 4, area.Top + 8);
+                if (VerConvexidad)
+                {
+                    string titDer = "Gamma profile · " + (usarFlujo ? "flujo firmado " + nomLibro + " Rithmic: dealer largo (cyan) / corto (púrpura)" : "convexidad (" + libroConv + ") de " + nomLibro + ": + cyan / − púrpura");
+                    var mcx = g.MeasureString(titDer, fChica); g.DrawString(titDer, fChica, Color.FromArgb(150, ColTexto), xConv - mcx.Width, area.Top + 8);
+                }
+            }
+            else
+            {
+                g.DrawString("volumen hoy · sombra OI ayer", fChica, Color.FromArgb(110, ColTexto), x0 + 4, area.Top + 8);
+                if (VerConvexidad) { string titDer = usarFlujo ? "flujo firmado Rithmic: dealer largo (aguamarina) / corto (purpura) gamma" : "convexity ladder (" + libroConv + ")"; var mcx = g.MeasureString(titDer, fChica); g.DrawString(titDer, fChica, Color.FromArgb(110, ColTexto), xConv - mcx.Width, area.Top + 8); }
+            }
 
             // ---- barras pesadas cercanas: raya punteada tenue en las N barras con mas GEX de
             // cada lado del precio, dentro del radio; 0DTE pesa 1,5x; sin repetir dominantes/majors
