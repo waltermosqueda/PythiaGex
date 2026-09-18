@@ -29,10 +29,12 @@ demasiado, y siento que me avisa tarde; ¿no hay algo superador?". Después de v
 3. **Marcas sobre las velas del precio**: rombo ámbar = absorción (hueco mientras la vela está abierta);
    triángulo rojo/verde = divergencia precio/CVD (máximo o mínimo nuevo de 20 velas que el CVD no acompaña).
 4. **AHORA, en una fila** (pedido del operador: "el bloque nos roba espacio"): va en el renglón del título del
-   panel, a la derecha del nombre que escribe ATAS, así no ocupa nada extra. Cuatro celdas (5 s, 15 s, 60 s,
-   5 min) con el delta como % del volumen de esa ventana, calculadas con cada operación; después FLUJO n/4,
-   VELA CONTRA EL FLUJO / INDECISIÓN, ABSORCIÓN, DELTA de la vela con su percentil, GRANDES y CINTA rápida; lo que
-   no entra se saca por prioridad. Opciones: fila abajo, bloque (el cuadro grande) u oculto.
+   panel, a la derecha del nombre que escribe ATAS, así no ocupa nada extra. Desde la 1.8 quedan DELTA de la vela
+   con su percentil, GRANDES de la vela, las cajas de estado (VELA CONTRA EL FLUJO / INDECISIÓN / ABSORCIÓN), CINTA
+   rápida y VERDES; lo que no entra se saca por prioridad. Las celdas 5 s / 15 s / 60 s / 5 min y FLUJO n/4 pasaron
+   al **tablero AHORA** (sección 1.8). Opciones: fila abajo, bloque (el cuadro grande) u oculto.
+5. **Tablero AHORA** (1.8): cuatro medidores en la franja derecha del panel y un resumen en palabras de flujo.
+   Ver la sección "Tablero AHORA (1.8)".
 
 Todo se prende, se apaga y cambia de color/tamaño en los ajustes (grupos 1 a 7). Los nombres de los ajustes
 empiezan con `Fc` porque ATAS guarda los ajustes por nombre en el workspace.
@@ -201,6 +203,87 @@ pantalla (control por píxeles, 58 velas con cuerpo): confluencia 53 del color d
 **Lo que hay que saber al leerla:** la celda con borde (vela en curso) puede cambiar de color hasta el cierre en al
 menos 1 de cada 7 velas: es la vela misma cambiando. De noche hay el doble de violeta (mercado fino), no es señal.
 Falta medir el "tarde" DENTRO de la vela: para eso habría que grabar el tono a los 15, 30 y 45 s (no se graba todavía).
+
+## Tablero AHORA (1.8, 18-09)
+
+El operador eligió, entre tres maquetas, la de los **cuatro velocímetros** (`preview_velocimetros.png`). El crítico le
+impuso ocho correcciones y todas están en el código (`FlujoClaroTablero.cs`). En pantalla: un cuadro de **286 × 123 px**
+en la franja derecha del panel, **anclado arriba** (el ChartArea de ATAS es más alto que lo visible: lo que se ancla al
+fondo cae detrás del eje de tiempo), antes del eje de precios. Si no entra —panel bajo, panel angosto, o las velas llegan
+hasta ahí— **se oculta**; nunca cae sobre velas viejas. Encima, en el renglón del título, la cabecera fija
+**"AHORA  estado, no pronostico"**. Ajuste nuevo: `FcTablero` (nombre nuevo a propósito: ATAS guarda por nombre).
+
+**La frase para el operador, tal cual:** el tablero describe **quién empuja ahora y cuánto se va a mover**. **No dice para
+dónde va el precio.** Eso no es una limitación del dibujo: es lo que midieron 9 familias y 101 rasgos en 20 ruedas
+(`techo_ml.md`: AUC 0,47-0,51 hacia adelante, el decil más confiado acertó 37,7 %). La única anticipación validada es
+la del **tamaño** del movimiento (VELOCIDAD), y no dice el lado.
+
+Todo se calcula **una vez por segundo en `TableroLatido`** (desde `Latido`, con `_llave` tomada solo para copiar las velas)
+y se publica como un cuadro entero; `OnRender` solo lo lee y dibuja. Nada pesado en el dibujo.
+
+### Los cuatro medidores, con su fórmula
+
+- **FLUJO 60s** (quién manda en este minuto; aguja). `r60 = delta / volumen` de las operaciones de los últimos 60 s
+  (las cubetas por segundo que llena `OnNewTrade`: es la celda "60s" de antes). Aguja = `r60 / 0,30` topeada a ±1
+  (0,30 era ya el tope de la celda). Palabra: **compran +41 / venden −41 / parejo** (parejo si |r60| < 0,03). Describe
+  la vela que se está formando: el delta explica +0,82 la misma vela y −0,03 la siguiente.
+- **TENDENCIA** (de dónde viene; aguja). Promedio de tres lecturas de fondo, cada una llevada a ±1:
+  `r300 / 0,15` (delta/volumen de 300 s), `zCVD / 2` y `zPrecio / 2`, donde `z = cambio de 15 min / raíz del promedio de
+  los cuadrados de los cambios de 15 min de las últimas 2 horas` (causal, sin la vela viva, mínimo 10 muestras; si no
+  hay, dice "sin historia"). Palabra: **sube +62 / baja −30 / parejo** (parejo si |promedio| < 0,20). Es un **retrato
+  del pasado**: el signo del flujo de 15 min se dio vuelta entre agosto y septiembre (`techo_ml.md`, post-hoc).
+- **GAMMA** (modo del mercado; **tres estados, sin aguja, sin verde ni rojo**): **frenan** (azul) / **sin lectura**
+  (gris) / **empujan** (ámbar). Sale de la **estela** que escribe Gamma Hoy para la capa NQ
+  (`%APPDATA%\ATAS\PythiaGex\estela\estela-NQ-<día>.jsonl`, campo `d = [dominante 1, dominante 2, zero gamma]`,
+  `n` = gamma neta en millones, `b` = vol|OI, `t` = hora UTC), leída de la cola del archivo cada 5 s.
+  `d_zero = precio − zero`. **frenan** si `d_zero ≥ 0` y `n > 0`; **empujan** si `d_zero < 0` o `n < 0`.
+  **Guardia de libro flaco:** si `|d_zero| > 150 pts` (NQ; 40 en ES) o la línea tiene más de 150 s, **sin lectura** en
+  gris (de noche el zero por volumen queda 300-600 puntos abajo: es el libro flaco, no una lectura). La línea de
+  contexto lleva siempre fuente y edad: `zero 29.679 · +31 pts · NQ vol · hace 2 min`; si tiene más de 30 min, la edad
+  va antes del número. En MES no hay capa: **"GAMMA: solo NQ/MNQ"**. **No vota.** No lee nada del centinela.
+- **VELOCIDAD** (cuánto se va a mover y cuánto tarda; **cinco escalones, sin aguja**): rango crudo (máximo − mínimo)
+  de las operaciones de los últimos 5 min (cubetas por segundo; hasta que tengan 5 min de historia, las velas que
+  operaron en la ventana). Cortes de MNQ: **< 16 DORMIDO · 16-24 tranquilo · 24-32 normal · 32-48 movido · ≥ 48
+  DESATADO** pts. La línea de abajo es la tabla medida en `laboratorio/gatillo/resultados/techo_ml.md`
+  (`techo_ml_08_lectura_rango.py`, 20 ruedas, explorar / confirmar): mediana de segundos hasta resolver ±8 =
+  97-125 / 75-86 / 52 / 31-29 / 13-14 s y sin resolver a los 180 s = 24-36 / 17-26 / 11-9 / 3 / 1 %. El tablero usa el
+  promedio de los dos tramos: **110 / 80 / 52 / 30 / 14 s y 30 / 21 / 10 / 3 / 1 %** ("±8 tarda ~30 s · 3 % abierto a
+  3 min"). Son medianas: la mitad de las veces tarda más. En MES los cortes van **/4** (4 / 6 / 8 / 12) y la apuesta es
+  ±2, rotulado **"MNQ/4 sin medir"**: falta remedirlo con la cinta de MES. **No vota.**
+
+### El resumen
+
+Cinco lecturas con lado, cada una vale **−1 / 0 / +1 con zona muerta** (adentro de la zona muerta vale 0):
+
+- **FLUJO 1m, pesa doble**: `r60 = delta / volumen` de 60 s; vale ±1 si `|r60| ≥ 0,03`.
+- **FLUJO 5m**: `r300 = delta / volumen` de 300 s; vale ±1 si `|r300| ≥ 0,015`.
+- **GRANDES 5m**: compras − ventas de las órdenes agresoras de 50 contratos o más en los últimos 300 s (por segundo,
+  desde `ContarGrande`); vale ±1 si `|g300| ≥ 0,30 × p95(|grandes por vela|, 300 velas) × √(300 s / duración de la vela)`
+  (la misma vara 0,30 × p95 que usa el voto de la vela en la confluencia; la raíz porque la suma de k velas crece como √k).
+- **CVD 15m**: `zCVD` (definido arriba, en TENDENCIA); vale ±1 si `|z| ≥ 0,5`.
+- **PRECIO 15m**: `zPrecio`; vale ±1 si `|z| ≥ 0,5`.
+
+`S = 2·v60 + v300 + vG + vCVD + vPx` (de −6 a +6). **|S| ≤ 1 PAREJO · 2-3 compran / venden · ≥ 4 COMPRAN FUERTE /
+VENDEN FUERTE**, y al lado **"a favor n/5"** (cuántas de las cinco van del lado de S; si S = 0, "compran c · venden v").
+Las palabras describen **el flujo**, nunca una posición: no hay LARGO/CORTO ni triángulos. Las zonas muertas y escalas
+son **supuestos de diseño** (están como constantes `TabMuerta*` / `TabTope*` para que el juez use las mismas).
+La línea "1m +41 · 5m +12 · gr +230 · cvd +1,2 · px +0,8" muestra las cinco lecturas crudas; la última línea recuerda
+"gamma y velocidad no votan".
+
+**Lo que ya se sabe de este resumen:** las cinco lecturas se pisan entre sí (delta y retorno de la misma ventana
+coinciden por construcción), así que "COMPRAN FUERTE 5/5" quiere decir *ya subió y lo siguen empujando*. Hacia adelante,
+"todo alineado" acertó 48,8 % (`escalas.md`, A_align) y la vela siguiente sale del lado del flujo el 48-50 %.
+Por eso **cada cambio de estado se graba** en `%APPDATA%\ATAS\PythiaGex\flujo\tablero-<inst>-<día>.jsonl` (hora UTC,
+S, las cinco lecturas con su voto, escalón de velocidad, gamma con zero, distancia, neto y edad) para juzgarlo contra
+tres placebos (azar, gemelo de precio, misma hora) con 25+ casos por estado. Hasta que eso no pase, la palabra es
+lectura del presente y nada más.
+
+### Lo que cambió en la fila
+
+Se fueron las celdas 5s / 15s / 60s / 5m (la de 60 s es la aguja de FLUJO y la de 5 min una lectura de TENDENCIA) y
+"FLUJO n/4" (50 % a 5 velas en 20 ruedas; ca y ce coincidían el 97 %). Quedan DELTA, GRANDES, las cajas de estado,
+CINTA rápida y VERDES. El tablero reserva la franja derecha, así que los rótulos de las cintas caen a la izquierda con
+fondo y las bandas ±σ terminan en el borde del cuadro (el mismo mecanismo del modo Bloque).
 
 ## Pendiente
 

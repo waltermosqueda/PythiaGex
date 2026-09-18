@@ -45,6 +45,7 @@
     <Compile Include="FlujoClaro.cs" />
     <Compile Include="FlujoClaroSonda.cs" />
     <Compile Include="FlujoClaroVerdes.cs" />
+    <Compile Include="FlujoClaroTablero.cs" />
     <Compile Include="VerdesNucleo.cs" />
   </ItemGroup>
 

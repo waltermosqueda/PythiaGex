@@ -263,7 +263,7 @@ namespace PythiaGex
         protected override void OnInitialize()
         {
             try { SubscribeToTimer(TimeSpan.FromSeconds(1), Latido); } catch { }
-            Log("Flujo Claro 1.7 (verdes: nucleo unico, en sombra con control) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
+            Log("Flujo Claro 1.8 (tablero AHORA) arranca en " + (InstrumentInfo?.Instrument ?? "?"));
         }
 
         /// <summary>Una vez por segundo: la vela en curso se vuelve a derivar con el RELOJ (sin operaciones la celda quedaba congelada con la ultima proyeccion) y se redibuja.</summary>
@@ -279,6 +279,7 @@ namespace PythiaGex
                         MedirTiempoDeLaViva(bar, (_tf[bar] - _t[bar]).TotalSeconds); Derivar(bar);
                     }
                 }
+                TableroLatido();   // el cuadro del tablero se arma aca (fuera de OnRender) y se dibuja en el redibujo que sigue
                 RedrawChart(new RedrawArg(ChartArea));
             }
             catch { }
@@ -532,6 +533,7 @@ namespace PythiaGex
                     if (seg > _ultSeg) { _ultSeg = seg; _relojUltTrade = DateTime.UtcNow; }
                     if (_cubetas.Count > 420) foreach (var viejo in _cubetas.Keys.Where(x => x < seg - 330).ToList()) _cubetas.Remove(viejo);
                 }
+                TableroOperacion((double)trade.Price, seg);
                 VerdesOperacion((double)trade.Price, trade.Time, sg);
             }
             catch (Exception e) { Registrar(e); }
@@ -571,9 +573,12 @@ namespace PythiaGex
 
         private void ContarGrande(CumulativeTrade t)
         {
-            if ((double)t.Volume < FcUmbralGrande) return;
+            double vol = (double)t.Volume; if (vol < FcUmbralGrande && vol < TabUmbralGr) return;
+            double firmado = t.Direction == TradeDirection.Buy ? vol : t.Direction == TradeDirection.Sell ? -vol : 0;
+            if (vol >= TabUmbralGr) TableroGrande(t.Time.Ticks / TimeSpan.TicksPerSecond, firmado);   // la ventana de 5 min del tablero (10+), por segundo
+            if (vol < FcUmbralGrande) return;   // de aca para abajo, las grandes de la vela (50+): cinta, fila y confluencia
             int bar = BarraDe(t.Time); if (bar < 0 || bar >= _big.Count) bar = Math.Min(CurrentBar - 1, _big.Count - 1); if (bar < 0) return;
-            _big[bar] += t.Direction == TradeDirection.Buy ? (double)t.Volume : t.Direction == TradeDirection.Sell ? -(double)t.Volume : 0;
+            _big[bar] += firmado;
             if (bar <= _cerradaHasta) Derivar(bar);   // la ultima operacion grande se cuenta recien cuando llega la siguiente: su vela puede haber cerrado
         }
 
@@ -687,6 +692,17 @@ namespace PythiaGex
             int xIzq = reg.Left + 2;
             Rectangle rAhora = Rectangle.Empty;
             const int altoTitulo = 15;   // ATAS escribe el nombre del indicador arriba a la izquierda del panel
+            // ---- tablero AHORA (1.8): franja derecha, anclado ARRIBA (el ChartArea es mas alto que lo visible), antes del eje.
+            // Si no entra (panel bajo, panel angosto o las velas llegan hasta ahi) se OCULTA: nunca cae sobre velas viejas.
+            int xMaxEje = xMax; Rectangle rTab = Rectangle.Empty;
+            // 18-09: en el grafico de 5 min quedaban ~195 px a la derecha de la vela en curso y el tablero se ocultaba entero; ahora se achica hasta TabAnchoMin
+            int libreTab = xMax - x0[n] - 8, anchoTab = 0, altoTab = TabAlto;
+            if (libreTab >= TabAncho) anchoTab = TabAncho;
+            else if (libreTab >= TabAnchoMin) { anchoTab = Math.Min(libreTab, TabAnchoDos); altoTab = Math.Min(TabAltoDosMax, Math.Max(TabAltoDos, reg.Height - altoTitulo - 6)); }   // dos filas de dos medidores
+            if (FcTablero && anchoTab > 0 && reg.Height >= altoTitulo + altoTab + 4 && xMax - reg.Left >= anchoTab + 160)
+            {
+                rTab = new Rectangle(xMax - anchoTab, reg.Top + altoTitulo + 1, anchoTab, altoTab); xMax = rTab.Left - 4;
+            }
             Rectangle rFila = Rectangle.Empty; bool filaAbajo = false;
             if (FcAhoraComo == FormaDelAhora.FilaArriba || FcAhoraComo == FormaDelAhora.FilaAbajo)
             {
@@ -860,8 +876,10 @@ namespace PythiaGex
             try { VerdesPintar(g, b => cont.GetXByBar(b, false), pr => cont.GetYByPrice((decimal)pr, false), cont.Region, desde, hasta, xMax, cCompra, cVenta, cTxt); } catch (Exception e) { Registrar(e); }
 
             // ---- bloque AHORA
-            if (rFila.Width > 100) { try { g.SetClip(reg); } catch { } try { PintarFilaAhora(g, rFila, fCh, cCompra, cVenta, cAviso, cTxt, cFondo, dA, lugA, bigA, velA, absA, cfA, hasta == ult, filaAbajo, tonoA); } finally { try { g.SetClip(clipPrevio); } catch { } } }
+            if (rFila.Width > 100) { try { g.SetClip(reg); } catch { } try { PintarFilaAhora(g, rFila, fCh, cCompra, cVenta, cAviso, cTxt, cFondo, dA, lugA, bigA, velA, absA, hasta == ult, filaAbajo, tonoA, rTab.Width == 0); } finally { try { g.SetClip(clipPrevio); } catch { } } }
             if (FcAhoraComo == FormaDelAhora.Bloque && FcBloqueAhora != LugarDelAhora.Oculto && rAhora.Width > 60) { try { g.SetClip(reg); } catch { } try { PintarAhora(g, rAhora, f, fCh, cCompra, cVenta, cAviso, cTxt, cFondo, dA, lugA, bigA, velA, absA, cfA, hasta == ult, tonoA); } finally { try { g.SetClip(clipPrevio); } catch { } } }
+            // ---- tablero AHORA (1.8): lo ultimo que se dibuja (pone antialias y no lo devuelve)
+            if (rTab.Width > 0) { try { g.SetClip(reg); } catch { } try { TableroPintar(g, rTab, xMaxEje, reg.Top, altoTitulo, fCh, cCompra, cVenta, cAviso, cTxt); } catch (Exception e) { Registrar(e); } finally { try { g.SetClip(clipPrevio); } catch { } } }
         }
 
         private static void MarcaForma(RenderContext g, FormaDeMarca forma, Color col, int xc, int yc, int r, bool llena)
@@ -882,41 +900,35 @@ namespace PythiaGex
             }
         }
 
-        /// <summary>El AHORA en una sola fila: cuatro celdas (5 s, 15 s, 60 s, 5 min) y, si entran, FLUJO n/4, el aviso de
-        /// extremo, PRESION, GRANDES, CINTA rapida y ABSORCION. Lo que no entra se saca de derecha a izquierda por prioridad.</summary>
+        /// <summary>El AHORA en una sola fila (1.8): la cabecera "AHORA  estado, no pronostico" (si el tablero esta a la vista, la cabecera va encima de el),
+        /// DELTA de la vela con su percentil, GRANDES de la vela, las cajas de estado (VELA CONTRA EL FLUJO, INDECISION, ABSORCION), CINTA rapida y VERDES.
+        /// Las celdas 5s/15s/60s/5m y FLUJO n/4 pasaron al tablero. Lo que no entra se saca de derecha a izquierda por prioridad.</summary>
         private void PintarFilaAhora(RenderContext g, Rectangle r, RenderFont fCh, Color cCompra, Color cVenta, Color cAviso, Color cTxt, Color cFondo,
-                                     double dVela, double lugarVela, double big, double vel, bool abs, int conf, bool alDia, bool conFondo, int tonoVela)
+                                     double dVela, double lugarVela, double big, double vel, bool abs, bool alDia, bool conFondo, int tonoVela, bool cabecera)
         {
             if (conFondo) g.FillRectangle(Alfa(cFondo, 215), r);
             int alto = g.MeasureString("0", fCh).Height, y = r.Top + Math.Max(0, (r.Height - alto) / 2), x = r.Left + 2;
-            var vents = new[] { (5, "5s"), (15, "15s"), (60, "60s"), (300, "5m") };
-            int wCel = g.MeasureString("60s +100%", fCh).Width + 8;
-            foreach (var (seg, nombre) in vents)
+            if (cabecera)
             {
-                if (x + wCel > r.Right) return;
-                var (sv, vv) = Ventana(seg); double pct = vv > 0 ? sv / vv : 0, fuerza = Math.Min(1, Math.Abs(pct) / 0.30);
-                var rc = new Rectangle(x, r.Top + 1, wCel - 3, r.Height - 2);
-                g.FillRectangle(vv <= 0 ? Alfa(cTxt, 30) : Alfa(pct >= 0 ? cCompra : cVenta, 45 + 195 * fuerza), rc);
-                string t = nombre + " " + (vv <= 0 ? "—" : (pct * 100).ToString("+0;-0", Es) + "%");
-                g.DrawString(t, fCh, Color.White, rc.Left + 3, y);
-                x += wCel;
+                var fTit = new RenderFont("Consolas", Math.Max(6, FcLetra - 1), FontStyle.Bold);
+                g.DrawString("AHORA", fTit, cTxt, x, y); x += g.MeasureString("AHORA", fTit).Width + 4;
+                string sub = "estado, no pronostico"; int wSub = g.MeasureString(sub, fCh).Width;
+                if (x + wSub < r.Right - 60) { g.DrawString(sub, fCh, Alfa(cTxt, 150), x, y); x += wSub; }
+                x += 12;
             }
-            x += 6;
             // el resto, por prioridad: lo que no entra no se dibuja
             var items = new List<(string Texto, Color Col, bool Caja)>();
-            string lado = conf > 0 ? "COMPR." : conf < 0 ? "VEND." : "PAREJO";
-            items.Add(("FLUJO " + lado + " " + Math.Abs(conf) + "/4", conf > 0 ? cCompra : conf < 0 ? cVenta : cTxt, false));
-            var (vEstado, vCuenta, vSigno) = VerdesTexto();
+            if (!alDia) items.Add(("(grafico corrido)", Alfa(cTxt, 160), false));
+            // el delta de la vela en curso y su lugar entre las ultimas velas (p80 = mas grande que el 80 %): lo MISMO que pinta la celda de presion
+            items.Add(("DELTA " + dVela.ToString("+#,0;-#,0;0", Es) + " p" + Math.Round(lugarVela * 100).ToString("0", Inv), tonoVela == Contra ? _colContra : dVela > 0 ? cCompra : dVela < 0 ? cVenta : cTxt, false));
+            items.Add(("GRANDES " + big.ToString("+#,0;-#,0;0", Es), big > 0 ? cCompra : big < 0 ? cVenta : cTxt, false));
+            var (vEstado, vCuenta, vSigno) = VerdesTexto();   // antes que los avisos: lo que se recorta primero son los avisos, no las verdes
             if (vEstado.Length > 0) items.Add((vEstado, De(FcColorReclamo), true));
             if (vCuenta.Length > 0) items.Add((vCuenta, vSigno > 0 ? cCompra : vSigno < 0 ? cVenta : cTxt, false));
             if (tonoVela == Contra) items.Add(("VELA CONTRA EL FLUJO", _colContra, true));
             else if (tonoVela == Gris) items.Add(("INDECISION", _colGris, false));
             if (abs) items.Add(("ABSORCION", cAviso, true));
-            // el delta de la vela en curso y su lugar entre las ultimas velas (p80 = mas grande que el 80 %): lo MISMO que pinta la celda de presion
-            items.Add(("DELTA " + dVela.ToString("+#,0;-#,0;0", Es) + " p" + Math.Round(lugarVela * 100).ToString("0", Inv), tonoVela == Contra ? _colContra : dVela > 0 ? cCompra : dVela < 0 ? cVenta : cTxt, false));
-            items.Add(("GRANDES " + big.ToString("+#,0;-#,0;0", Es), big > 0 ? cCompra : big < 0 ? cVenta : cTxt, false));
             if (vel >= 0.85) items.Add(("CINTA rapida", cAviso, false));
-            if (!alDia) items.Add(("(grafico corrido)", Alfa(cTxt, 160), false));
             foreach (var it in items)
             {
                 var m = g.MeasureString(it.Texto, fCh); int w = m.Width + (it.Caja ? 10 : 0);
