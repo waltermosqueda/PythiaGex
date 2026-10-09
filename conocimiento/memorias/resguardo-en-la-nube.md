@@ -1,9 +1,15 @@
 ---
 name: resguardo-en-la-nube
-description: "Que hay y que no hay en la nube (2026-09-11): OneDrive NO esta instalado (la carpeta 'OneDrive' del escritorio no sincroniza); el repo publico tiene codigo, DLL, instalador y conocimiento; lo privado (workspace de ATAS, plantillas, viva de Rithmic) va a PythiaGex-privado con respaldar_privado.ps1; push y gh los corre el operador porque el harness los bloquea."
+description: "Que hay en la nube (corregido 09-10: Inversiones SI sube por Google Drive para escritorio). (2026-09-11): OneDrive NO esta instalado (la carpeta 'OneDrive' del escritorio no sincroniza); el repo publico tiene codigo, DLL, instalador y conocimiento; lo privado (workspace de ATAS, plantillas, viva de Rithmic) va a PythiaGex-privado con respaldar_privado.ps1; push habilitado desde el 09-10 (antes lo corria el operador)."
 metadata:
   type: project
 ---
+
+**CORRECCIÓN 09-10-2026 (verificado):** `Escritorio\Inversiones` SÍ sube a la nube: está como carpeta espejada de
+Google Drive para escritorio (aparece en %LOCALAPPDATA%\Google\DriveFS\root_preference_sqlite.db y en mirror_sqlite.db; proceso
+GoogleDriveFS corriendo). OneDrive sigue sin usarse. El operador: "inversiones está sincronizada con Drive ya que OneDrive no suelo
+ocupar". Copias: GitHub público PythiaGex (código), privado PythiaGex-privado (workspace, memorias, DLLs), e Inversiones\PythiaGex-respaldo
+(herramientas/respaldo_inversiones.ps1) que Drive sube. El harness ya deja hacer push (09-10: "te di acceso, me logueé a git").
 
 Pregunta del operador (11-09 02:20): si pierde la PC, se pierde todo? Como pone los
 indicadores en un ATAS virgen rapido?

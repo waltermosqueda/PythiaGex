@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 39e678a6-19fe-4e4f-bcac-6284534defd4
-  modified: 2026-08-06T20:39:40.452Z
+  modified: 2026-09-24T17:52:59.820Z
 ---
 
 Problema recurrente desde hace meses (diagnosticado el 2026-08-06): al abrir el portapapeles (Win+V) la PC se freezea y solo se recupera matando "Windows Input Experience" (TextInputHost.exe).
@@ -41,3 +41,34 @@ fresca; si el reloj sigue clavado, mirar TextInputHost antes que nada.
 **Chequearlo al inicio de cada sesion larga** junto con los permisos: si tiene
 miles de segundos de CPU, matarlo antes de empezar. Ver
 [[clics-que-no-llegan-y-loops]].
+
+## 24-09: causa exacta y vigia automatico
+
+Desactivar "Acciones sugeridas" y nView (06-08) NO lo arreglo: volvio (51.700 s de
+CPU en 35,8 h, un solo hilo al 97 %). Pila medida sin depurador (dbghelp): el hilo
+XAML de una vista de TextInputHost despacha un mensaje a la ventana
+`Internet Explorer_Hidden` de **edgehtml.dll** (motor web viejo) y queda en un
+PeekMessage anidado que nunca sale. Ese hilo nacio al arrancar la PC; su CoreWindow
+ya no existe. Bug de Microsoft sin arreglo (foro techcommunity, mayo 2026).
+
+Matarlo NO pierde el historial: vive en cbdhsvc (23 elementos intactos tras matarlo).
+
+**Vigia instalado 24-09, con OK explicito del operador** ("te doy todos los permisos
+pero resolvelo"; su objetivo: que lo mate ANTES de que abra Win+V, no enterarse del
+bug en vivo). En `herramientas/vigia-portapapeles/` (VigiaTextInputHost.exe, C#
+compilado con el csc de Windows, ~24 MB): tarea programada de usuario
+`VigiaTextInputHost` (al iniciar sesion + relanzar cada 5 min). Revisa cada 5 s:
+GIRO = proceso >70 % y un hilo >60 % de un nucleo en 15 s; CUELGUE = CoreWindow con
+IsHungAppWindow (en pantalla ~10 s, oculta 30 s). Anota la pila en `vigia.log`,
+mata, y anota cuanto tardo Windows en relanzarlo. Freno: >6 muertes/hora = pausa
+30 min. En reposo las 4 CoreWindow estan visibles pero cloaked=2 y responden.
+Primera version (60 s) mato al colgado real a las 14:34; el nuevo quedo en 0 %.
+Reinstalar/actualizar: `instalar.ps1` (frena, recompila, arranca). Sacar: `desinstalar.ps1`.
+
+**Probado con simuladores** (un TextInputHost.exe falso, borrado despues): giro
+cazado a los 18 s, cuelgue en pantalla a los ~12 s, cuelgue oculto a los 35 s, el
+sano y el real intactos, freno activado en la 6a muerte. La prueba encontro un bug
+mio: con dos procesos del mismo nombre el reloj de cuelgue de uno se borraba al
+revisar el otro (arreglado: limpieza global en Revisar). En el log, 14:47-14:51 son
+simulacros; el unico real es 14:34. Para volver a probar, recompilar el simulador
+(fuente en el scratchpad de la sesion f9910eb5, no en el repo).

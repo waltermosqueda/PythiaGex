@@ -1,6 +1,6 @@
 ---
 name: referencia-perfil-derecho-2026-09-14
-description: "Barras y pelotitas de la referencia, medidas el 14-09 con 17 capturas y 5 grabaciones del operador: perfil izquierdo = gamma x volumen neto 0DTE (r 0,999 en ES); pelotitas = punta hace 15/5/1 min (confirmado por su short nuevo); perfil derecho: estable en minutos, largo ~ |gamma x volumen| (r 0,84) pero el SIGNO no es ninguna griega estatica (2016 combinaciones); hipotesis: flujo firmado comprador/vendedor (QuantData). Su nueva 'GAMMAlito Flow' usa QuantData."
+description: "Barras y pelotitas de la referencia, medidas el 14-09 con 17 capturas y 5 grabaciones del operador: perfil izquierdo = gamma x volumen neto 0DTE (r 0,999 en ES); pelotitas = punta hace 15/5/1 min (confirmado por su short nuevo); perfil derecho: estable en minutos, largo ~ |gamma x volumen| (r 0,84) pero el SIGNO no es ninguna griega estatica (2016 combinaciones); hipotesis: flujo firmado comprador/vendedor (QuantData). Su nueva 'la referencia Flow' usa QuantData."
 metadata: 
   node_type: memory
   type: project
@@ -48,7 +48,7 @@ pocos px por minuto).
   0DTE es solo -signo(GEX): el paso se pasa de largo el strike.
 - **Hipotesis que queda**: volumen firmado por agresor (compras - ventas) x gamma, la
   "posicion del dealer por flujo". CBOE no lo da; QuantData si. En la grabacion de 10:46
-  el streamer muestra su herramienta nueva "GAMMAlito Flow" en localhost: "Fuente:
+  el streamer muestra su herramienta nueva "la referencia Flow" en localhost: "Fuente:
   QuantData en vivo (net-cmf 1m + exposure-by-strike)", y una "GEX MATRIX" strike x
   vencimiento (0D..4D + resto) con "flip 7.643,86 (sin 0DTE 7.644,91) 09:45 ET" para SPX;
   nuestro zero por OI repreciado a esa hora daba 7651-7652. Para el libro de ES de Rithmic
@@ -86,7 +86,7 @@ visibles, pisadas por NDX; con la cadena de 15 min antes 0,44); zero = cambio de
 de mayor/menor GEX (719/716, igual que nosotros); dominantes = las dos barras mas largas (en NDX verificado; en QQQ la 2a cae fuera del panel). Nuestro zero
 queda 7-15 pts ARRIBA del suyo por UN strike al dinero (717: nosotros -0,81B, ellos ~0/+1,4B): otro volumen al dinero, o firmado. Derecho ("Gamma profile"):
 1.545 candidatas (griegas x vol/OI/vol-oi/vol+oi, estaticas y repreciadas, diferencias 1/5/15/30/60 min y contra apertura, +-izquierda): NINGUNA >= 90 %
-de signo; el 719 (2a mas larga a la izquierda, ~0 a la derecha) las mata a todas. Queda solo flujo firmado por agresor (tienen un estudio "HIROlito").
+de signo; el 719 (2a mas larga a la izquierda, ~0 a la derecha) las mata a todas. Queda solo flujo firmado por agresor (tienen un estudio "<estudio de flujo de la referencia>").
 Fallas NUESTRAS encontradas de paso: (1) el archivador de QQQ repite la misma cadena (Feed.cs Archivo.Sello incluye la base viva): 1234 lineas pero 42
 cadenas distintas en el dia, una cada 8-21 min en rueda; (2) en el log AUDIT hay dos razones NQ/QQQ intercaladas (dos graficos) y entre 04:02 y 05:22 local
 una instancia uso el spot de CBOE congelado de la noche: mapeo +0,8 % (~240 pts) esa hora y pico; (3) la cadena viva de ES dejo de producir a las 06:57 UTC.

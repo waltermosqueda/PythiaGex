@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-Verificado en pantalla el 2026-08-17: licencia **Ultra con vencimiento 31/12/9999** (vitalicia), versión 8.0.14.397, conexión **Rithmic** (perfil "lucid"), cuenta demo <cuenta>-...-TEST005 de USD 25.000. Opera **MES** en gráficos de 1m, 5m y 30m. Tiene instalados ATAS Platform y ATAS X, más Rithmic Trader Pro y Tradovate.
+Verificado en pantalla el 2026-08-17: licencia **Ultra con vencimiento 31/12/9999** (vitalicia), versión 8.0.14.397, conexión **Rithmic** (perfil "lucid"), cuenta demo <cuenta>-...-<cuenta> de USD 25.000. Opera **MES** en gráficos de 1m, 5m y 30m. Tiene instalados ATAS Platform y ATAS X, más Rithmic Trader Pro y Tradovate.
 
 El **Tablero de opciones β** ya le funciona sobre Rithmic: carga la cadena de ES con bid/ask, IV, delta, theta, y desde el ícono de configuración se pueden activar las columnas de **Open Interest y Gamma** (traen datos reales). **CORREGIDO el 2026-08-19:** sí hay vencimientos **diarios, incluido 0DTE** — estaban ocultos porque el filtro *Series Type* viene en "Regular"; hay que ponerlo en **"All Types"**. Las griegas y el OI se pueblan bien. El límite real que queda es que **no existe ninguna vista que agregue** la gamma de toda la cadena. Detalle completo en [[atas-opciones-es]].
 

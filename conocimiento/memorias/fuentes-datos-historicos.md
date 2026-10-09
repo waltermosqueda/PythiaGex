@@ -1,12 +1,23 @@
 ---
 name: fuentes-datos-historicos
-description: Que datos crudos existen para backtestear (futuros y cadenas de opciones), que cuesta cada uno, que tenemos guardado y por que el cuello de botella es la cadena intradia, no el futuro
-metadata:
+description: "Que datos crudos existen para backtestear (futuros y cadenas de opciones), que cuesta cada uno, que tenemos guardado y por que el cuello de botella es la cadena intradia, no el futuro"
+metadata: 
+  node_type: memory
   type: reference
+  originSessionId: 6b882b35-31bc-4131-8cd4-4b099f670c25
+  modified: 2026-09-22T03:23:38.356Z
 ---
 
 Relevado el 2026-09-07 (Labor Day, mercado cerrado). Verificado en las paginas
 de cada proveedor, no de memoria.
+
+**ACTUALIZADO 22-09 — la cache de ATAS se DECODIFICO (ronda 3):** formato SBE de OFT.Core (FileDataStorage,
+SbeEntitySerializer; descompilado con ilspycmd, solo lectura). CSV validados en
+`PythiaGex\laboratorio\dom\ronda3\velas` (inventario.csv, validacion.txt), columnas
+t,o,h,l,c,vol,bid,ask,delta,ticks,dmin,dmax,niveles,oi. Lo mas valioso: **MES m5 con delta, 276 sesiones
+(2025-08-21..2026-09-21)**, MES m30 611 sesiones y m60 618 (2024-04-14..2026-08), MES m15 220, MNQ m1 34 sesiones,
+NQ/ES m5 ~1-2 meses. Para reglas de velas, esto es 10-20 veces mas muestra que la cinta. La cinta orden por orden de
+ATAS alcanza solo ~7 semanas hacia atras.
 
 **Lo que ya tenemos, gratis:**
 - ATAS + Rithmic ya tiene anos de velas de MES/MNQ en `%APPDATA%\ATAS\Cache_v2`

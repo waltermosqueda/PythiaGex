@@ -39,3 +39,15 @@ git cat-file -s $(git rev-parse HEAD:ruta/archivo)
 **Why:** son semanas de trabajo y de errores ya cometidos y documentados. Reconstruirlo desde cero costaría más que todo lo que llevamos.
 
 **How to apply:** correr `respaldar.py` y commitear cuando cambien memorias. Ver [[auditoria-punta-a-punta]] y [[compilar-indicadores-atas]].
+
+## Desde el 09-10 (auditoría del respaldo)
+
+- `python -I respaldar.py` necesita `PythiaGex-privado/tachar_publico.json` (o la ruta en `PYTHIAGEX_TACHAR`): ahí
+  están los patrones de terceros (la referencia, la directriz) y personales (otra conexión de fondeo, el agente de
+  soporte). Sin ese archivo no copia nada. Antes estaban en base64 dentro del propio respaldar.py público: eso era
+  ofuscación, no remoción, y se sacó (el commit se rehízo antes del push).
+- El login de Rithmic (`LT-...`) se tacha siempre como `<login>`; una auditoría lo encontró publicado en dos memorias.
+- `EXCLUIR_PUBLICO` deja afuera `estrategia-ronda-8-edge-personal.md` y `estrategia-ronda-9-patron.md` (operaciones
+  reales, USD netos, cuentas, liquidaciones) y saca sus renglones del MEMORY.md público. Van solo al privado.
+- Al final escanea conocimiento/, herramientas/ y guias/ y sale con error si queda algo. También avisa "REVISAR A
+  MANO" si una memoria nueva trae montos en USD de 4+ cifras: si son del operador, sumarla a `EXCLUIR_PUBLICO`.

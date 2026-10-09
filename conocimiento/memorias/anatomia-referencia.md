@@ -174,7 +174,7 @@ de YouTube (panel girando, get_transcript 400): hay que transcribir el audio.
   gamma negativa, verde = positiva". Y un clip de operativa: "las pelotitas
   como confirmacion, entrar con el stop debajo; por arriba no tengo
   dominantes".
-- El de 51 min ("Deja de adivinar") es el stream completo del que salio el
+- El de 51 min ("<titulo del stream de la referencia>") es el stream completo del que salio el
   de 27: mismas afirmaciones (volumen, pelotitas 1/5/15, QQQ->NQ, Big Trades
   en cobertura, order flow proximo, version 13).
 
