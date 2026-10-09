@@ -1,0 +1,819 @@
+{
+ "fase": "ENTRENAMIENTO",
+ "candidatas": [
+  "C19_RED25",
+  "C20_RED50",
+  "C21_RED100",
+  "C22_GRILLA_QQQ_C41",
+  "C23_E_RANGO60",
+  "C24_MECHA_PREVIA"
+ ],
+ "m1": {
+  "C19_RED25/noche": {
+   "id": "C19_RED25",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 3642,
+   "llegadas": 3642,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 33,
+   "niveles": 409,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 46.62273476112026,
+   "corridos": 46.06089245932627,
+   "ventaja_corridos": 0.5618423017939946,
+   "ic95_corridos": [
+    -1.2779657333740166,
+    2.462616594860015
+   ],
+   "ic90_inf_corridos": -1.0603445858858995,
+   "azar_media": 46.213879104216076,
+   "azar_p5": 44.68692336396287,
+   "azar_p95": 47.784111826967326,
+   "ventaja_azar": 0.408855656904187,
+   "p_azar": 0.35129740518962077,
+   "ic95_azar": [
+    -0.8043241238682496,
+    1.6175297714422185
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 18,
+   "corridos_por_desplazamiento": {
+    "-31": 48.91156462585034,
+    "-19": 44.64856230031949,
+    "-11": 46.195808211312084,
+    "+11": 45.47577349678926,
+    "+19": 45.22267206477733,
+    "+31": 48.082191780821915
+   }
+  },
+  "C19_RED25/dia": {
+   "id": "C19_RED25",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 2428,
+   "llegadas": 2429,
+   "censuradas": 1,
+   "sesiones_con_llegadas": 33,
+   "niveles": 361,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 49.83525535420099,
+   "corridos": 51.659974537263736,
+   "ventaja_corridos": -1.8247191830627472,
+   "ic95_corridos": [
+    -3.8408510431644944,
+    0.24698083944521385
+   ],
+   "ic90_inf_corridos": -3.5183234369642444,
+   "azar_media": 50.9366840428549,
+   "azar_p5": 49.16569130037357,
+   "azar_p95": 52.69046547401023,
+   "ventaja_azar": -1.101428688653911,
+   "p_azar": 0.8403193612774451,
+   "ic95_azar": [
+    -3.0532082806973038,
+    0.6846939679310158
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 12,
+   "corridos_por_desplazamiento": {
+    "-31": 53.864541832669325,
+    "-19": 50.46153846153846,
+    "-11": 52.70629991126886,
+    "+11": 50.779510022271715,
+    "+19": 52.70935960591133,
+    "+31": 49.25496688741722
+   }
+  },
+  "C20_RED50/noche": {
+   "id": "C20_RED50",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 1871,
+   "llegadas": 1871,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 33,
+   "niveles": 209,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 47.40780331373597,
+   "corridos": 46.63861784978963,
+   "ventaja_corridos": 0.7691854639463358,
+   "ic95_corridos": [
+    -1.6967917938829067,
+    3.2900898298728523
+   ],
+   "ic90_inf_corridos": -1.3813902347027016,
+   "azar_media": 46.48539813871624,
+   "azar_p5": 43.91686470943515,
+   "azar_p95": 49.02748397435898,
+   "ventaja_azar": 0.9224051750197262,
+   "p_azar": 0.26147704590818366,
+   "ic95_azar": [
+    -1.109902829099311,
+    3.009783254227929
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 15,
+   "corridos_por_desplazamiento": {
+    "-31": 47.239263803680984,
+    "-19": 46.22641509433962,
+    "-11": 47.447916666666664,
+    "+11": 45.361380798274006,
+    "+19": 47.5854584915898,
+    "+31": 45.979492714517
+   }
+  },
+  "C20_RED50/dia": {
+   "id": "C20_RED50",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 1371,
+   "llegadas": 1372,
+   "censuradas": 1,
+   "sesiones_con_llegadas": 33,
+   "niveles": 183,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 49.89059080962801,
+   "corridos": 52.07253886010363,
+   "ventaja_corridos": -2.1819480504756186,
+   "ic95_corridos": [
+    -5.4912967097121825,
+    1.1778579985393254
+   ],
+   "ic90_inf_corridos": -4.9847686064540655,
+   "azar_media": 51.79776580413511,
+   "azar_p5": 49.02714388662022,
+   "azar_p95": 54.50520207138195,
+   "ventaja_azar": -1.907174994507102,
+   "p_azar": 0.8702594810379242,
+   "ic95_azar": [
+    -3.7505328441921395,
+    0.0990021506009424
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 12,
+   "corridos_por_desplazamiento": {
+    "-31": 53.61867704280156,
+    "-19": 50.14792899408284,
+    "-11": 52.08480565371025,
+    "+11": 52.303330970942596,
+    "+19": 53.97279885468862,
+    "+31": 50.16051364365971
+   }
+  },
+  "C21_RED100/noche": {
+   "id": "C21_RED100",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 926,
+   "llegadas": 926,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 33,
+   "niveles": 104,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 48.16414686825054,
+   "corridos": 46.87828831988776,
+   "ventaja_corridos": 1.285858548362782,
+   "ic95_corridos": [
+    -2.4420807631627395,
+    5.263315200984569
+   ],
+   "ic90_inf_corridos": -1.9548692151589817,
+   "azar_media": 46.29504744420214,
+   "azar_p5": 42.36188552413386,
+   "azar_p95": 50.25886469267324,
+   "ventaja_azar": 1.8690994240484002,
+   "p_azar": 0.2215568862275449,
+   "ic95_azar": [
+    -1.3235471250266155,
+    4.75673765681048
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 17,
+   "corridos_por_desplazamiento": {
+    "-31": 47.380410022779046,
+    "-19": 45.30201342281879,
+    "-11": 47.171824973319104,
+    "+11": 46.10655737704918,
+    "+19": 48.073022312373226,
+    "+31": 47.13870029097963
+   }
+  },
+  "C21_RED100/dia": {
+   "id": "C21_RED100",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 716,
+   "llegadas": 717,
+   "censuradas": 1,
+   "sesiones_con_llegadas": 33,
+   "niveles": 93,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 52.79329608938548,
+   "corridos": 52.99976835765578,
+   "ventaja_corridos": -0.20647226827030352,
+   "ic95_corridos": [
+    -4.221826846741203,
+    4.181577967089809
+   ],
+   "ic90_inf_corridos": -3.6349619604285226,
+   "azar_media": 51.94164898337143,
+   "azar_p5": 48.23205458843756,
+   "azar_p95": 55.992580314152654,
+   "ventaja_azar": 0.8516471060140489,
+   "p_azar": 0.34530938123752497,
+   "ic95_azar": [
+    -1.8924912870691568,
+    4.213742258807475
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 15,
+   "corridos_por_desplazamiento": {
+    "-31": 56.901408450704224,
+    "-19": 50.14492753623188,
+    "-11": 54.54545454545455,
+    "+11": 53.225806451612904,
+    "+19": 51.75675675675676,
+    "+31": 51.39275766016713
+   }
+  },
+  "C22_GRILLA_QQQ_C41/noche": {
+   "id": "C22_GRILLA_QQQ_C41",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 730,
+   "llegadas": 730,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 12,
+   "niveles": 47,
+   "niveles_tipo": "strikes",
+   "M1": 46.43835616438356,
+   "corridos": 46.2193046438123,
+   "ventaja_corridos": 0.21905152057126287,
+   "ic95_corridos": [
+    -3.1739926297301633,
+    3.9489138592197284
+   ],
+   "ic90_inf_corridos": -2.6825054796657137,
+   "azar_media": 45.804778475133425,
+   "azar_p5": 41.72418686667391,
+   "azar_p95": 49.588546328871494,
+   "ventaja_azar": 0.6335776892501386,
+   "p_azar": 0.3972055888223553,
+   "ic95_azar": [
+    -2.0237086686342614,
+    3.2733843621999834
+   ],
+   "sesiones_con_3": 12,
+   "sesiones_ganadas": 5,
+   "corridos_por_desplazamiento": {
+    "-31": 46.04430379746835,
+    "-19": 46.408839779005525,
+    "-11": 44.81268011527378,
+    "+11": 48.07692307692308,
+    "+19": 46.582984658298464,
+    "+31": 45.14563106796116
+   }
+  },
+  "C22_GRILLA_QQQ_C41/dia": {
+   "id": "C22_GRILLA_QQQ_C41",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 558,
+   "llegadas": 558,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 13,
+   "niveles": 43,
+   "niveles_tipo": "strikes",
+   "M1": 50.7168458781362,
+   "corridos": 49.10394265232975,
+   "ventaja_corridos": 1.6129032258064484,
+   "ic95_corridos": [
+    -3.264526050225413,
+    5.479967360086106
+   ],
+   "ic90_inf_corridos": -2.4517475685595675,
+   "azar_media": 51.25513613547371,
+   "azar_p5": 46.862455399768834,
+   "azar_p95": 55.41991971207087,
+   "ventaja_azar": -0.5382902573375148,
+   "p_azar": 0.5948103792415169,
+   "ic95_azar": [
+    -3.6047288587806583,
+    2.069304278486074
+   ],
+   "sesiones_con_3": 12,
+   "sesiones_ganadas": 7,
+   "corridos_por_desplazamiento": {
+    "-31": 47.97136038186157,
+    "-19": 50.3584229390681,
+    "-11": 51.341681574239715,
+    "+11": 46.51162790697674,
+    "+19": 49.290780141843975,
+    "+31": 48.78048780487805
+   }
+  },
+  "C23_E_RANGO60/noche": {
+   "id": "C23_E_RANGO60",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 1684,
+   "llegadas": 1684,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 33,
+   "niveles": 989,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 45.30878859857482,
+   "corridos": 44.975327957636296,
+   "ventaja_corridos": 0.3334606409385259,
+   "ic95_corridos": [
+    -2.1982287875167397,
+    2.959625683422743
+   ],
+   "ic90_inf_corridos": -1.8081163081541156,
+   "azar_media": 44.96143732632231,
+   "azar_p5": 43.201765321369386,
+   "azar_p95": 46.92337507453786,
+   "ventaja_azar": 0.34735127225251006,
+   "p_azar": 0.3912175648702595,
+   "ic95_azar": [
+    -1.7355103978737492,
+    2.395048975408624
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 16,
+   "corridos_por_desplazamiento": {
+    "-31": 47.338247338247335,
+    "-19": 44.03409090909091,
+    "-11": 45.333333333333336,
+    "+11": 44.07616361071932,
+    "+19": 43.288590604026844,
+    "+31": 46.30503144654088
+   }
+  },
+  "C23_E_RANGO60/dia": {
+   "id": "C23_E_RANGO60",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 724,
+   "llegadas": 725,
+   "censuradas": 1,
+   "sesiones_con_llegadas": 33,
+   "niveles": 524,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 49.171270718232044,
+   "corridos": 48.732251521298174,
+   "ventaja_corridos": 0.43901919693387015,
+   "ic95_corridos": [
+    -3.932328050057122,
+    4.977788415946316
+   ],
+   "ic90_inf_corridos": -3.210315250988186,
+   "azar_media": 50.30361290456411,
+   "azar_p5": 47.51416285440626,
+   "azar_p95": 53.09657360912839,
+   "ventaja_azar": -1.1323421863320675,
+   "p_azar": 0.7504990019960079,
+   "ic95_azar": [
+    -4.915624174931792,
+    2.933021833716717
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 17,
+   "corridos_por_desplazamiento": {
+    "-31": 46.266471449487554,
+    "-19": 49.04831625183016,
+    "-11": 55.865921787709496,
+    "+11": 45.53846153846154,
+    "+19": 47.642276422764226,
+    "+31": 47.23618090452261
+   }
+  },
+  "C24_MECHA_PREVIA/noche": {
+   "id": "C24_MECHA_PREVIA",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 3192,
+   "llegadas": 3192,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 33,
+   "niveles": 944,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 44.611528822055135,
+   "corridos": 45.90078781057917,
+   "ventaja_corridos": -1.2892589885240326,
+   "ic95_corridos": [
+    -2.9860573809561375,
+    0.5506936840265195
+   ],
+   "ic90_inf_corridos": -2.7222748787031557,
+   "azar_media": 45.1190782210096,
+   "azar_p5": 43.78294926334538,
+   "azar_p95": 46.378991329025396,
+   "ventaja_azar": -0.5075493989544668,
+   "p_azar": 0.7265469061876247,
+   "ic95_azar": [
+    -2.1507376318153044,
+    1.2137254460405682
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 14,
+   "corridos_por_desplazamiento": {
+    "-31": 48.25688073394495,
+    "-19": 47.03023758099352,
+    "-11": 44.376068376068375,
+    "+11": 45.33286368439592,
+    "+19": 46.82713347921226,
+    "+31": 45.624385447394296
+   }
+  },
+  "C24_MECHA_PREVIA/dia": {
+   "id": "C24_MECHA_PREVIA",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 2138,
+   "llegadas": 2140,
+   "censuradas": 2,
+   "sesiones_con_llegadas": 33,
+   "niveles": 733,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 50.14031805425631,
+   "corridos": 50.64109589041096,
+   "ventaja_corridos": -0.5007778361546471,
+   "ic95_corridos": [
+    -2.3086358025357288,
+    1.3628705814893627
+   ],
+   "ic90_inf_corridos": -2.0208879709685608,
+   "azar_media": 49.93486975727198,
+   "azar_p5": 48.275387622644374,
+   "azar_p95": 51.594896455327536,
+   "ventaja_azar": 0.2054482969843292,
+   "p_azar": 0.4251497005988024,
+   "ic95_azar": [
+    -1.1951184046226195,
+    1.7021804117183827
+   ],
+   "sesiones_con_3": 33,
+   "sesiones_ganadas": 14,
+   "corridos_por_desplazamiento": {
+    "-31": 48.822800495662946,
+    "-19": 53.02537410540013,
+    "-11": 49.276595744680854,
+    "+11": 50.17667844522968,
+    "+19": 50.6638714185884,
+    "+31": 53.39673913043478
+   }
+  }
+ },
+ "seleccion": {
+  "noche": {
+   "finalistas": [],
+   "referencias": [],
+   "tabla": [
+    {
+     "candidata": "C19_RED25",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -1.0603445858858995,
+     "p_azar": 0.35129740518962077,
+     "mitades": {
+      "primera": {
+       "base": 2925,
+       "ventaja_vs_corridos_pp": 0.40032147515942285
+      },
+      "segunda": {
+       "base": 717,
+       "ventaja_vs_corridos_pp": 1.2312720863173894
+      },
+      "cambia_de_signo": false
+     }
+    },
+    {
+     "candidata": "C20_RED50",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -1.3813902347027016,
+     "p_azar": 0.26147704590818366,
+     "mitades": {
+      "primera": {
+       "base": 1488,
+       "ventaja_vs_corridos_pp": 0.22275608186566842
+      },
+      "segunda": {
+       "base": 383,
+       "ventaja_vs_corridos_pp": 2.8484237985160945
+      },
+      "cambia_de_signo": false
+     }
+    },
+    {
+     "candidata": "C21_RED100",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -1.9548692151589817,
+     "p_azar": 0.2215568862275449,
+     "mitades": {
+      "primera": {
+       "base": 711,
+       "ventaja_vs_corridos_pp": 1.9063719600227245
+      },
+      "segunda": {
+       "base": 215,
+       "ventaja_vs_corridos_pp": -1.069132470831022
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C22_GRILLA_QQQ_C41",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.6825054796657137,
+     "p_azar": 0.3972055888223553,
+     "mitades": {
+      "primera": {
+       "base": 371,
+       "ventaja_vs_corridos_pp": -0.8341581030997318
+      },
+      "segunda": {
+       "base": 359,
+       "ventaja_vs_corridos_pp": 1.3004916805492854
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C23_E_RANGO60",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -1.8081163081541156,
+     "p_azar": 0.3912175648702595,
+     "mitades": {
+      "primera": {
+       "base": 1368,
+       "ventaja_vs_corridos_pp": 0.8208057064830143
+      },
+      "segunda": {
+       "base": 316,
+       "ventaja_vs_corridos_pp": -1.7950321805402396
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C24_MECHA_PREVIA",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.7222748787031557,
+     "p_azar": 0.7265469061876247,
+     "mitades": {
+      "primera": {
+       "base": 2552,
+       "ventaja_vs_corridos_pp": -1.5571223891516723
+      },
+      "segunda": {
+       "base": 640,
+       "ventaja_vs_corridos_pp": -0.23246951219512368
+      },
+      "cambia_de_signo": false
+     }
+    }
+   ]
+  },
+  "dia": {
+   "finalistas": [],
+   "referencias": [],
+   "tabla": [
+    {
+     "candidata": "C19_RED25",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -3.5183234369642444,
+     "p_azar": 0.8403193612774451,
+     "mitades": {
+      "primera": {
+       "base": 1885,
+       "ventaja_vs_corridos_pp": -2.5590883530508037
+      },
+      "segunda": {
+       "base": 543,
+       "ventaja_vs_corridos_pp": 0.7038716477670661
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C20_RED50",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -4.9847686064540655,
+     "p_azar": 0.8702594810379242,
+     "mitades": {
+      "primera": {
+       "base": 1058,
+       "ventaja_vs_corridos_pp": -3.106536736444866
+      },
+      "segunda": {
+       "base": 313,
+       "ventaja_vs_corridos_pp": 0.9287862324711895
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C21_RED100",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -3.6349619604285226,
+     "p_azar": 0.34530938123752497,
+     "mitades": {
+      "primera": {
+       "base": 558,
+       "ventaja_vs_corridos_pp": -1.5102198973166736
+      },
+      "segunda": {
+       "base": 158,
+       "ventaja_vs_corridos_pp": 4.378438690315875
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C22_GRILLA_QQQ_C41",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.4517475685595675,
+     "p_azar": 0.5948103792415169,
+     "mitades": {
+      "primera": {
+       "base": 288,
+       "ventaja_vs_corridos_pp": 4.796873932937238
+      },
+      "segunda": {
+       "base": 270,
+       "ventaja_vs_corridos_pp": -1.8739405147172192
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C23_E_RANGO60",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -3.210315250988186,
+     "p_azar": 0.7504990019960079,
+     "mitades": {
+      "primera": {
+       "base": 609,
+       "ventaja_vs_corridos_pp": -0.16148950318229538
+      },
+      "segunda": {
+       "base": 115,
+       "ventaja_vs_corridos_pp": 2.4626784352184856
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C24_MECHA_PREVIA",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.0208879709685608,
+     "p_azar": 0.4251497005988024,
+     "mitades": {
+      "primera": {
+       "base": 1659,
+       "ventaja_vs_corridos_pp": -0.6315414543262676
+      },
+      "segunda": {
+       "base": 479,
+       "ventaja_vs_corridos_pp": -0.05332093341416311
+      },
+      "cambia_de_signo": false
+     }
+    }
+   ]
+  }
+ },
+ "loo": {
+  "noche": {
+   "eleccion_por_sesion": {
+    "2026-08-17": "C21_RED100",
+    "2026-08-18": "C21_RED100",
+    "2026-08-19": "C21_RED100",
+    "2026-08-20": "C21_RED100",
+    "2026-08-21": "C21_RED100",
+    "2026-08-24": "C21_RED100",
+    "2026-08-25": "C21_RED100",
+    "2026-08-26": "C21_RED100",
+    "2026-08-27": "C21_RED100",
+    "2026-08-28": "C21_RED100",
+    "2026-08-31": "C21_RED100",
+    "2026-09-01": "C21_RED100",
+    "2026-09-02": "C21_RED100",
+    "2026-09-03": "C21_RED100",
+    "2026-09-04": "C21_RED100",
+    "2026-09-07": "C21_RED100",
+    "2026-09-08": "C21_RED100",
+    "2026-09-09": "C21_RED100",
+    "2026-09-10": "C21_RED100",
+    "2026-09-11": "C21_RED100",
+    "2026-09-14": "C21_RED100",
+    "2026-09-15": "C21_RED100",
+    "2026-09-16": "C21_RED100",
+    "2026-09-17": "C21_RED100",
+    "2026-09-18": "C21_RED100",
+    "2026-09-21": "C21_RED100",
+    "2026-09-22": "C22_GRILLA_QQQ_C41",
+    "2026-09-23": "C21_RED100",
+    "2026-09-24": "C21_RED100",
+    "2026-09-25": "C21_RED100",
+    "2026-09-28": "C22_GRILLA_QQQ_C41",
+    "2026-09-29": "C21_RED100",
+    "2026-09-30": "C21_RED100"
+   },
+   "parametro": "C21_RED100",
+   "ventaja_fuera_de_muestra_pp": -0.39553952416091676
+  },
+  "dia": {
+   "eleccion_por_sesion": {
+    "2026-08-17": "C22_GRILLA_QQQ_C41",
+    "2026-08-18": "C22_GRILLA_QQQ_C41",
+    "2026-08-19": "C22_GRILLA_QQQ_C41",
+    "2026-08-20": "C22_GRILLA_QQQ_C41",
+    "2026-08-21": "C22_GRILLA_QQQ_C41",
+    "2026-08-24": "C22_GRILLA_QQQ_C41",
+    "2026-08-25": "C22_GRILLA_QQQ_C41",
+    "2026-08-26": "C22_GRILLA_QQQ_C41",
+    "2026-08-27": "C22_GRILLA_QQQ_C41",
+    "2026-08-28": "C22_GRILLA_QQQ_C41",
+    "2026-08-31": "C22_GRILLA_QQQ_C41",
+    "2026-09-01": "C22_GRILLA_QQQ_C41",
+    "2026-09-02": "C22_GRILLA_QQQ_C41",
+    "2026-09-03": "C22_GRILLA_QQQ_C41",
+    "2026-09-04": "C22_GRILLA_QQQ_C41",
+    "2026-09-07": "C22_GRILLA_QQQ_C41",
+    "2026-09-08": "C22_GRILLA_QQQ_C41",
+    "2026-09-09": "C22_GRILLA_QQQ_C41",
+    "2026-09-10": "C22_GRILLA_QQQ_C41",
+    "2026-09-11": "C22_GRILLA_QQQ_C41",
+    "2026-09-14": "C22_GRILLA_QQQ_C41",
+    "2026-09-15": "C22_GRILLA_QQQ_C41",
+    "2026-09-16": "C22_GRILLA_QQQ_C41",
+    "2026-09-17": "C22_GRILLA_QQQ_C41",
+    "2026-09-18": "C22_GRILLA_QQQ_C41",
+    "2026-09-21": "C22_GRILLA_QQQ_C41",
+    "2026-09-22": "C22_GRILLA_QQQ_C41",
+    "2026-09-23": "C22_GRILLA_QQQ_C41",
+    "2026-09-24": "C22_GRILLA_QQQ_C41",
+    "2026-09-25": "C22_GRILLA_QQQ_C41",
+    "2026-09-28": "C22_GRILLA_QQQ_C41",
+    "2026-09-29": "C22_GRILLA_QQQ_C41",
+    "2026-09-30": "C22_GRILLA_QQQ_C41"
+   },
+   "parametro": "C22_GRILLA_QQQ_C41",
+   "ventaja_fuera_de_muestra_pp": 1.6129032258064484
+  }
+ },
+ "mitades": {},
+ "criterios": {},
+ "chequeo_futuro": {
+  "C19_RED25": {
+   "propia": 2.9205788136529325,
+   "anterior": 2.9326646931471743,
+   "siguiente": 2.839803678811461,
+   "alerta": false
+  },
+  "C20_RED50": {
+   "propia": 1.4503479509554844,
+   "anterior": 1.450315910396324,
+   "siguiente": 1.4425627874071454,
+   "alerta": false
+  },
+  "C21_RED100": {
+   "propia": 0.7069479730476085,
+   "anterior": 0.7080369372155702,
+   "siguiente": 0.7074637424831978,
+   "alerta": false
+  },
+  "C22_GRILLA_QQQ_C41": {
+   "propia": 1.2720848056537104,
+   "anterior": 1.2688724702858978,
+   "siguiente": 1.2763631687242798,
+   "alerta": false
+  },
+  "C23_E_RANGO60": {
+   "propia": 0.9981609908492678,
+   "anterior": 7.270572074267736,
+   "siguiente": 1.0110864745011086,
+   "alerta": false
+  },
+  "C24_MECHA_PREVIA": {
+   "propia": 3.6156754571612013,
+   "anterior": 3.678603700004756,
+   "siguiente": 3.2591235230423248,
+   "alerta": false
+  }
+ }
+}

@@ -1,0 +1,2519 @@
+{
+ "MNQ m1 (08-02..09-17)": {
+  "sesiones": 34,
+  "velas": 46676,
+  "desde": "2026-08-02 22:00:00",
+  "hasta": "2026-09-17 20:59:00",
+  "thetas": {
+   "10": {
+    "ambiguas": 3630,
+    "ventanas": {
+     "noche": {
+      "extremos": 9076,
+      "por_sesion": 266.9,
+      "por_hora": 17.22,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 0.933,
+        "ic90": [
+         0.788,
+         1.076
+        ],
+        "tasa_en_redondo_pct": 13.406,
+        "tasa_fuera_pct": 14.372,
+        "puntas_en_redondo": 1283,
+        "extremos_en_redondo": 172,
+        "sesiones": 34,
+        "recall_pct": 1.9,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 2.03,
+        "lift_geom": 0.842,
+        "lift_ocupacion": 0.934
+       },
+       "G100_tol2": {
+        "rr": 0.963,
+        "ic90": [
+         0.846,
+         1.096
+        ],
+        "tasa_en_redondo_pct": 13.846,
+        "tasa_fuera_pct": 14.372,
+        "puntas_en_redondo": 2405,
+        "extremos_en_redondo": 333,
+        "sesiones": 34,
+        "recall_pct": 3.67,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 3.8,
+        "lift_geom": 0.863,
+        "lift_ocupacion": 0.965
+       },
+       "G50_tol1": {
+        "rr": 1.043,
+        "ic90": [
+         0.956,
+         1.134
+        ],
+        "tasa_en_redondo_pct": 14.937,
+        "tasa_fuera_pct": 14.325,
+        "puntas_en_redondo": 2785,
+        "extremos_en_redondo": 416,
+        "sesiones": 34,
+        "recall_pct": 4.58,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 4.4,
+        "lift_geom": 1.019,
+        "lift_ocupacion": 1.041
+       },
+       "G50_tol2": {
+        "rr": 1.014,
+        "ic90": [
+         0.943,
+         1.09
+        ],
+        "tasa_en_redondo_pct": 14.541,
+        "tasa_fuera_pct": 14.335,
+        "puntas_en_redondo": 5261,
+        "extremos_en_redondo": 765,
+        "sesiones": 34,
+        "recall_pct": 8.43,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 8.32,
+        "lift_geom": 0.992,
+        "lift_ocupacion": 1.013
+       },
+       "G25_tol1": {
+        "rr": 1.039,
+        "ic90": [
+         0.977,
+         1.098
+        ],
+        "tasa_en_redondo_pct": 14.866,
+        "tasa_fuera_pct": 14.302,
+        "puntas_en_redondo": 5610,
+        "extremos_en_redondo": 834,
+        "sesiones": 34,
+        "recall_pct": 9.19,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.87,
+        "lift_geom": 1.021,
+        "lift_ocupacion": 1.036
+       },
+       "G25_tol2": {
+        "rr": 1.011,
+        "ic90": [
+         0.969,
+         1.055
+        ],
+        "tasa_en_redondo_pct": 14.485,
+        "tasa_fuera_pct": 14.325,
+        "puntas_en_redondo": 10604,
+        "extremos_en_redondo": 1536,
+        "sesiones": 34,
+        "recall_pct": 16.92,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.77,
+        "lift_geom": 0.996,
+        "lift_ocupacion": 1.009
+       }
+      },
+      "con_mecha_pct": 72.9,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 163,
+        "pct_extremos": 1.8,
+        "pct_puntas": 1.85,
+        "razon": 0.969
+       },
+       "justo en el redondo (0)": {
+        "extremos": 26,
+        "pct_extremos": 0.29,
+        "pct_puntas": 0.27,
+        "razon": 1.053
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 144,
+        "pct_extremos": 1.59,
+        "pct_puntas": 1.68,
+        "razon": 0.946
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 272,
+        "pct_extremos": 3.0,
+        "pct_puntas": 2.76,
+        "razon": 1.085
+       }
+      }
+     },
+     "dia": {
+      "extremos": 5621,
+      "por_sesion": 165.3,
+      "por_hora": 25.79,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 1.078,
+        "ic90": [
+         0.949,
+         1.222
+        ],
+        "tasa_en_redondo_pct": 23.134,
+        "tasa_fuera_pct": 21.458,
+        "puntas_en_redondo": 536,
+        "extremos_en_redondo": 124,
+        "sesiones": 34,
+        "recall_pct": 2.21,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 2.05,
+        "lift_geom": 0.98,
+        "lift_ocupacion": 1.076
+       },
+       "G100_tol2": {
+        "rr": 1.041,
+        "ic90": [
+         0.922,
+         1.181
+        ],
+        "tasa_en_redondo_pct": 22.338,
+        "tasa_fuera_pct": 21.456,
+        "puntas_en_redondo": 1052,
+        "extremos_en_redondo": 235,
+        "sesiones": 34,
+        "recall_pct": 4.18,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 4.02,
+        "lift_geom": 0.984,
+        "lift_ocupacion": 1.039
+       },
+       "G50_tol1": {
+        "rr": 1.004,
+        "ic90": [
+         0.904,
+         1.109
+        ],
+        "tasa_en_redondo_pct": 21.574,
+        "tasa_fuera_pct": 21.488,
+        "puntas_en_redondo": 1131,
+        "extremos_en_redondo": 244,
+        "sesiones": 34,
+        "recall_pct": 4.34,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 4.32,
+        "lift_geom": 0.965,
+        "lift_ocupacion": 1.004
+       },
+       "G50_tol2": {
+        "rr": 0.956,
+        "ic90": [
+         0.883,
+         1.034
+        ],
+        "tasa_en_redondo_pct": 20.622,
+        "tasa_fuera_pct": 21.57,
+        "puntas_en_redondo": 2153,
+        "extremos_en_redondo": 444,
+        "sesiones": 34,
+        "recall_pct": 7.9,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 8.23,
+        "lift_geom": 0.929,
+        "lift_ocupacion": 0.96
+       },
+       "G25_tol1": {
+        "rr": 1.022,
+        "ic90": [
+         0.938,
+         1.112
+        ],
+        "tasa_en_redondo_pct": 21.931,
+        "tasa_fuera_pct": 21.448,
+        "puntas_en_redondo": 2362,
+        "extremos_en_redondo": 518,
+        "sesiones": 34,
+        "recall_pct": 9.22,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 9.03,
+        "lift_geom": 1.024,
+        "lift_ocupacion": 1.02
+       },
+       "G25_tol2": {
+        "rr": 0.985,
+        "ic90": [
+         0.926,
+         1.05
+        ],
+        "tasa_en_redondo_pct": 21.231,
+        "tasa_fuera_pct": 21.545,
+        "puntas_en_redondo": 4437,
+        "extremos_en_redondo": 942,
+        "sesiones": 34,
+        "recall_pct": 16.76,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.96,
+        "lift_geom": 0.986,
+        "lift_ocupacion": 0.988
+       }
+      },
+      "con_mecha_pct": 72.8,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 137,
+        "pct_extremos": 2.44,
+        "pct_puntas": 2.14,
+        "razon": 1.14
+       },
+       "justo en el redondo (0)": {
+        "extremos": 11,
+        "pct_extremos": 0.2,
+        "pct_puntas": 0.26,
+        "razon": 0.764
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 87,
+        "pct_extremos": 1.55,
+        "pct_puntas": 1.63,
+        "razon": 0.95
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 170,
+        "pct_extremos": 3.02,
+        "pct_puntas": 2.89,
+        "razon": 1.046
+       }
+      }
+     }
+    }
+   },
+   "20": {
+    "ambiguas": 775,
+    "ventanas": {
+     "noche": {
+      "extremos": 3067,
+      "por_sesion": 90.2,
+      "por_hora": 5.82,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 1.095,
+        "ic90": [
+         0.819,
+         1.388
+        ],
+        "tasa_en_redondo_pct": 5.3,
+        "tasa_fuera_pct": 4.841,
+        "puntas_en_redondo": 1283,
+        "extremos_en_redondo": 68,
+        "sesiones": 34,
+        "recall_pct": 2.22,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 2.03,
+        "lift_geom": 0.985,
+        "lift_ocupacion": 1.093
+       },
+       "G100_tol2": {
+        "rr": 1.066,
+        "ic90": [
+         0.846,
+         1.31
+        ],
+        "tasa_en_redondo_pct": 5.156,
+        "tasa_fuera_pct": 4.838,
+        "puntas_en_redondo": 2405,
+        "extremos_en_redondo": 124,
+        "sesiones": 34,
+        "recall_pct": 4.04,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 3.8,
+        "lift_geom": 0.951,
+        "lift_ocupacion": 1.063
+       },
+       "G50_tol1": {
+        "rr": 1.101,
+        "ic90": [
+         0.962,
+         1.241
+        ],
+        "tasa_en_redondo_pct": 5.314,
+        "tasa_fuera_pct": 4.829,
+        "puntas_en_redondo": 2785,
+        "extremos_en_redondo": 148,
+        "sesiones": 34,
+        "recall_pct": 4.83,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 4.4,
+        "lift_geom": 1.072,
+        "lift_ocupacion": 1.096
+       },
+       "G50_tol2": {
+        "rr": 1.021,
+        "ic90": [
+         0.91,
+         1.146
+        ],
+        "tasa_en_redondo_pct": 4.942,
+        "tasa_fuera_pct": 4.842,
+        "puntas_en_redondo": 5261,
+        "extremos_en_redondo": 260,
+        "sesiones": 34,
+        "recall_pct": 8.48,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 8.32,
+        "lift_geom": 0.997,
+        "lift_ocupacion": 1.019
+       },
+       "G25_tol1": {
+        "rr": 1.114,
+        "ic90": [
+         1.013,
+         1.22
+        ],
+        "tasa_en_redondo_pct": 5.348,
+        "tasa_fuera_pct": 4.801,
+        "puntas_en_redondo": 5610,
+        "extremos_en_redondo": 300,
+        "sesiones": 34,
+        "recall_pct": 9.78,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.87,
+        "lift_geom": 1.087,
+        "lift_ocupacion": 1.103
+       },
+       "G25_tol2": {
+        "rr": 1.009,
+        "ic90": [
+         0.944,
+         1.081
+        ],
+        "tasa_en_redondo_pct": 4.885,
+        "tasa_fuera_pct": 4.843,
+        "puntas_en_redondo": 10604,
+        "extremos_en_redondo": 518,
+        "sesiones": 34,
+        "recall_pct": 16.89,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.77,
+        "lift_geom": 0.993,
+        "lift_ocupacion": 1.007
+       }
+      },
+      "con_mecha_pct": 73.0,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 67,
+        "pct_extremos": 2.18,
+        "pct_puntas": 1.85,
+        "razon": 1.179
+       },
+       "justo en el redondo (0)": {
+        "extremos": 16,
+        "pct_extremos": 0.52,
+        "pct_puntas": 0.27,
+        "razon": 1.918
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 41,
+        "pct_extremos": 1.34,
+        "pct_puntas": 1.68,
+        "razon": 0.797
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 97,
+        "pct_extremos": 3.16,
+        "pct_puntas": 2.76,
+        "razon": 1.145
+       }
+      }
+     },
+     "dia": {
+      "extremos": 2727,
+      "por_sesion": 80.2,
+      "por_hora": 12.51,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 1.02,
+        "ic90": [
+         0.81,
+         1.278
+        ],
+        "tasa_en_redondo_pct": 10.634,
+        "tasa_fuera_pct": 10.422,
+        "puntas_en_redondo": 536,
+        "extremos_en_redondo": 57,
+        "sesiones": 34,
+        "recall_pct": 2.09,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 2.05,
+        "lift_geom": 0.929,
+        "lift_ocupacion": 1.02
+       },
+       "G100_tol2": {
+        "rr": 0.956,
+        "ic90": [
+         0.785,
+         1.163
+        ],
+        "tasa_en_redondo_pct": 9.981,
+        "tasa_fuera_pct": 10.445,
+        "puntas_en_redondo": 1052,
+        "extremos_en_redondo": 105,
+        "sesiones": 34,
+        "recall_pct": 3.85,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 4.02,
+        "lift_geom": 0.906,
+        "lift_ocupacion": 0.957
+       },
+       "G50_tol1": {
+        "rr": 0.948,
+        "ic90": [
+         0.842,
+         1.066
+        ],
+        "tasa_en_redondo_pct": 9.903,
+        "tasa_fuera_pct": 10.45,
+        "puntas_en_redondo": 1131,
+        "extremos_en_redondo": 112,
+        "sesiones": 34,
+        "recall_pct": 4.11,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 4.32,
+        "lift_geom": 0.913,
+        "lift_ocupacion": 0.95
+       },
+       "G50_tol2": {
+        "rr": 0.887,
+        "ic90": [
+         0.781,
+         1.009
+        ],
+        "tasa_en_redondo_pct": 9.336,
+        "tasa_fuera_pct": 10.525,
+        "puntas_en_redondo": 2153,
+        "extremos_en_redondo": 201,
+        "sesiones": 34,
+        "recall_pct": 7.37,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 8.23,
+        "lift_geom": 0.867,
+        "lift_ocupacion": 0.895
+       },
+       "G25_tol1": {
+        "rr": 0.999,
+        "ic90": [
+         0.908,
+         1.089
+        ],
+        "tasa_en_redondo_pct": 10.415,
+        "tasa_fuera_pct": 10.428,
+        "puntas_en_redondo": 2362,
+        "extremos_en_redondo": 246,
+        "sesiones": 34,
+        "recall_pct": 9.02,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 9.03,
+        "lift_geom": 1.002,
+        "lift_ocupacion": 0.999
+       },
+       "G25_tol2": {
+        "rr": 0.972,
+        "ic90": [
+         0.889,
+         1.058
+        ],
+        "tasa_en_redondo_pct": 10.187,
+        "tasa_fuera_pct": 10.476,
+        "puntas_en_redondo": 4437,
+        "extremos_en_redondo": 452,
+        "sesiones": 34,
+        "recall_pct": 16.57,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.96,
+        "lift_geom": 0.975,
+        "lift_ocupacion": 0.977
+       }
+      },
+      "con_mecha_pct": 72.9,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 61,
+        "pct_extremos": 2.24,
+        "pct_puntas": 2.14,
+        "razon": 1.047
+       },
+       "justo en el redondo (0)": {
+        "extremos": 9,
+        "pct_extremos": 0.33,
+        "pct_puntas": 0.26,
+        "razon": 1.288
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 35,
+        "pct_extremos": 1.28,
+        "pct_puntas": 1.63,
+        "razon": 0.788
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 85,
+        "pct_extremos": 3.12,
+        "pct_puntas": 2.89,
+        "razon": 1.078
+       }
+      }
+     }
+    }
+   },
+   "40": {
+    "ambiguas": 106,
+    "ventanas": {
+     "noche": {
+      "extremos": 791,
+      "por_sesion": 23.3,
+      "por_hora": 1.5,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 1.061,
+        "ic90": [
+         0.621,
+         1.569
+        ],
+        "tasa_en_redondo_pct": 1.325,
+        "tasa_fuera_pct": 1.249,
+        "puntas_en_redondo": 1283,
+        "extremos_en_redondo": 17,
+        "sesiones": 34,
+        "recall_pct": 2.15,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 2.03,
+        "lift_geom": 0.955,
+        "lift_ocupacion": 1.059
+       },
+       "G100_tol2": {
+        "rr": 1.101,
+        "ic90": [
+         0.72,
+         1.546
+        ],
+        "tasa_en_redondo_pct": 1.372,
+        "tasa_fuera_pct": 1.246,
+        "puntas_en_redondo": 2405,
+        "extremos_en_redondo": 33,
+        "sesiones": 34,
+        "recall_pct": 4.17,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 3.8,
+        "lift_geom": 0.982,
+        "lift_ocupacion": 1.097
+       },
+       "G50_tol1": {
+        "rr": 1.248,
+        "ic90": [
+         0.951,
+         1.58
+        ],
+        "tasa_en_redondo_pct": 1.544,
+        "tasa_fuera_pct": 1.237,
+        "puntas_en_redondo": 2785,
+        "extremos_en_redondo": 43,
+        "sesiones": 34,
+        "recall_pct": 5.44,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 4.4,
+        "lift_geom": 1.208,
+        "lift_ocupacion": 1.234
+       },
+       "G50_tol2": {
+        "rr": 1.07,
+        "ic90": [
+         0.816,
+         1.35
+        ],
+        "tasa_en_redondo_pct": 1.331,
+        "tasa_fuera_pct": 1.244,
+        "puntas_en_redondo": 5261,
+        "extremos_en_redondo": 70,
+        "sesiones": 34,
+        "recall_pct": 8.85,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 8.32,
+        "lift_geom": 1.041,
+        "lift_ocupacion": 1.064
+       },
+       "G25_tol1": {
+        "rr": 1.14,
+        "ic90": [
+         0.943,
+         1.343
+        ],
+        "tasa_en_redondo_pct": 1.408,
+        "tasa_fuera_pct": 1.236,
+        "puntas_en_redondo": 5610,
+        "extremos_en_redondo": 79,
+        "sesiones": 34,
+        "recall_pct": 9.99,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.87,
+        "lift_geom": 1.11,
+        "lift_ocupacion": 1.126
+       },
+       "G25_tol2": {
+        "rr": 0.958,
+        "ic90": [
+         0.821,
+         1.115
+        ],
+        "tasa_en_redondo_pct": 1.207,
+        "tasa_fuera_pct": 1.26,
+        "puntas_en_redondo": 10604,
+        "extremos_en_redondo": 128,
+        "sesiones": 34,
+        "recall_pct": 16.18,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.77,
+        "lift_geom": 0.952,
+        "lift_ocupacion": 0.965
+       }
+      },
+      "con_mecha_pct": 75.5,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 17,
+        "pct_extremos": 2.15,
+        "pct_puntas": 1.85,
+        "razon": 1.16
+       },
+       "justo en el redondo (0)": {
+        "extremos": 2,
+        "pct_extremos": 0.25,
+        "pct_puntas": 0.27,
+        "razon": 0.93
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 14,
+        "pct_extremos": 1.77,
+        "pct_puntas": 1.68,
+        "razon": 1.055
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 22,
+        "pct_extremos": 2.78,
+        "pct_puntas": 2.76,
+        "razon": 1.007
+       }
+      }
+     },
+     "dia": {
+      "extremos": 886,
+      "por_sesion": 26.1,
+      "por_hora": 4.07,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 0.935,
+        "ic90": [
+         0.564,
+         1.394
+        ],
+        "tasa_en_redondo_pct": 3.172,
+        "tasa_fuera_pct": 3.392,
+        "puntas_en_redondo": 536,
+        "extremos_en_redondo": 17,
+        "sesiones": 34,
+        "recall_pct": 1.92,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 2.05,
+        "lift_geom": 0.853,
+        "lift_ocupacion": 0.936
+       },
+       "G100_tol2": {
+        "rr": 0.836,
+        "ic90": [
+         0.587,
+         1.152
+        ],
+        "tasa_en_redondo_pct": 2.852,
+        "tasa_fuera_pct": 3.41,
+        "puntas_en_redondo": 1052,
+        "extremos_en_redondo": 30,
+        "sesiones": 34,
+        "recall_pct": 3.39,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 4.02,
+        "lift_geom": 0.797,
+        "lift_ocupacion": 0.842
+       },
+       "G50_tol1": {
+        "rr": 0.883,
+        "ic90": [
+         0.658,
+         1.125
+        ],
+        "tasa_en_redondo_pct": 3.006,
+        "tasa_fuera_pct": 3.405,
+        "puntas_en_redondo": 1131,
+        "extremos_en_redondo": 34,
+        "sesiones": 34,
+        "recall_pct": 3.84,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 4.32,
+        "lift_geom": 0.853,
+        "lift_ocupacion": 0.887
+       },
+       "G50_tol2": {
+        "rr": 0.795,
+        "ic90": [
+         0.623,
+         0.991
+        ],
+        "tasa_en_redondo_pct": 2.74,
+        "tasa_fuera_pct": 3.446,
+        "puntas_en_redondo": 2153,
+        "extremos_en_redondo": 59,
+        "sesiones": 34,
+        "recall_pct": 6.66,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 8.23,
+        "lift_geom": 0.783,
+        "lift_ocupacion": 0.809
+       },
+       "G25_tol1": {
+        "rr": 1.069,
+        "ic90": [
+         0.875,
+         1.283
+        ],
+        "tasa_en_redondo_pct": 3.599,
+        "tasa_fuera_pct": 3.367,
+        "puntas_en_redondo": 2362,
+        "extremos_en_redondo": 85,
+        "sesiones": 34,
+        "recall_pct": 9.59,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 9.03,
+        "lift_geom": 1.066,
+        "lift_ocupacion": 1.062
+       },
+       "G25_tol2": {
+        "rr": 1.006,
+        "ic90": [
+         0.875,
+         1.153
+        ],
+        "tasa_en_redondo_pct": 3.403,
+        "tasa_fuera_pct": 3.384,
+        "puntas_en_redondo": 4437,
+        "extremos_en_redondo": 151,
+        "sesiones": 34,
+        "recall_pct": 17.04,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.96,
+        "lift_geom": 1.003,
+        "lift_ocupacion": 1.005
+       }
+      },
+      "con_mecha_pct": 72.8,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 19,
+        "pct_extremos": 2.14,
+        "pct_puntas": 2.14,
+        "razon": 1.003
+       },
+       "justo en el redondo (0)": {
+        "extremos": 4,
+        "pct_extremos": 0.45,
+        "pct_puntas": 0.26,
+        "razon": 1.762
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 7,
+        "pct_extremos": 0.79,
+        "pct_puntas": 1.63,
+        "razon": 0.485
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 27,
+        "pct_extremos": 3.05,
+        "pct_puntas": 2.89,
+        "razon": 1.054
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "MNQ m2 replica (>= 09-18)": {
+  "sesiones": 13,
+  "velas": 8969,
+  "desde": "2026-09-17 22:00:00",
+  "hasta": "2026-10-06 20:58:00",
+  "thetas": {
+   "10": {
+    "ambiguas": 1172,
+    "ventanas": {
+     "noche": {
+      "extremos": 2688,
+      "por_sesion": 206.8,
+      "por_hora": 13.34,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 0.98,
+        "ic90": [
+         0.8,
+         1.175
+        ],
+        "tasa_en_redondo_pct": 21.799,
+        "tasa_fuera_pct": 22.244,
+        "puntas_en_redondo": 289,
+        "extremos_en_redondo": 63,
+        "sesiones": 13,
+        "recall_pct": 2.34,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 2.39,
+        "lift_geom": 1.042,
+        "lift_ocupacion": 0.98
+       },
+       "G100_tol2": {
+        "rr": 0.999,
+        "ic90": [
+         0.862,
+         1.129
+        ],
+        "tasa_en_redondo_pct": 22.201,
+        "tasa_fuera_pct": 22.235,
+        "puntas_en_redondo": 536,
+        "extremos_en_redondo": 119,
+        "sesiones": 13,
+        "recall_pct": 4.43,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 4.43,
+        "lift_geom": 1.042,
+        "lift_ocupacion": 0.999
+       },
+       "G50_tol1": {
+        "rr": 1.011,
+        "ic90": [
+         0.849,
+         1.19
+        ],
+        "tasa_en_redondo_pct": 22.464,
+        "tasa_fuera_pct": 22.222,
+        "puntas_en_redondo": 552,
+        "extremos_en_redondo": 124,
+        "sesiones": 13,
+        "recall_pct": 4.61,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 4.57,
+        "lift_geom": 1.025,
+        "lift_ocupacion": 1.01
+       },
+       "G50_tol2": {
+        "rr": 1.047,
+        "ic90": [
+         0.919,
+         1.176
+        ],
+        "tasa_en_redondo_pct": 23.183,
+        "tasa_fuera_pct": 22.146,
+        "puntas_en_redondo": 1018,
+        "extremos_en_redondo": 236,
+        "sesiones": 13,
+        "recall_pct": 8.78,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 8.42,
+        "lift_geom": 1.033,
+        "lift_ocupacion": 1.043
+       },
+       "G25_tol1": {
+        "rr": 1.036,
+        "ic90": [
+         0.923,
+         1.142
+        ],
+        "tasa_en_redondo_pct": 22.969,
+        "tasa_fuera_pct": 22.162,
+        "puntas_en_redondo": 1071,
+        "extremos_en_redondo": 246,
+        "sesiones": 13,
+        "recall_pct": 9.15,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.86,
+        "lift_geom": 1.017,
+        "lift_ocupacion": 1.033
+       },
+       "G25_tol2": {
+        "rr": 1.019,
+        "ic90": [
+         0.909,
+         1.142
+        ],
+        "tasa_en_redondo_pct": 22.587,
+        "tasa_fuera_pct": 22.161,
+        "puntas_en_redondo": 2041,
+        "extremos_en_redondo": 461,
+        "sesiones": 13,
+        "recall_pct": 17.15,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.88,
+        "lift_geom": 1.009,
+        "lift_ocupacion": 1.016
+       }
+      },
+      "con_mecha_pct": 77.3,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 53,
+        "pct_extremos": 1.97,
+        "pct_puntas": 2.1,
+        "razon": 0.939
+       },
+       "justo en el redondo (0)": {
+        "extremos": 9,
+        "pct_extremos": 0.33,
+        "pct_puntas": 0.32,
+        "razon": 1.038
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 57,
+        "pct_extremos": 2.12,
+        "pct_puntas": 2.01,
+        "razon": 1.055
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 73,
+        "pct_extremos": 2.72,
+        "pct_puntas": 2.93,
+        "razon": 0.928
+       }
+      }
+     },
+     "dia": {
+      "extremos": 1288,
+      "por_sesion": 99.1,
+      "por_hora": 15.25,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 1.033,
+        "ic90": [
+         0.69,
+         1.408
+        ],
+        "tasa_en_redondo_pct": 26.25,
+        "tasa_fuera_pct": 25.401,
+        "puntas_en_redondo": 80,
+        "extremos_en_redondo": 21,
+        "sesiones": 13,
+        "recall_pct": 1.63,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 1.58,
+        "lift_geom": 0.725,
+        "lift_ocupacion": 1.033
+       },
+       "G100_tol2": {
+        "rr": 1.11,
+        "ic90": [
+         0.892,
+         1.35
+        ],
+        "tasa_en_redondo_pct": 28.09,
+        "tasa_fuera_pct": 25.317,
+        "puntas_en_redondo": 178,
+        "extremos_en_redondo": 50,
+        "sesiones": 13,
+        "recall_pct": 3.88,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 3.51,
+        "lift_geom": 0.913,
+        "lift_ocupacion": 1.105
+       },
+       "G50_tol1": {
+        "rr": 1.02,
+        "ic90": [
+         0.779,
+         1.3
+        ],
+        "tasa_en_redondo_pct": 25.907,
+        "tasa_fuera_pct": 25.395,
+        "puntas_en_redondo": 193,
+        "extremos_en_redondo": 50,
+        "sesiones": 13,
+        "recall_pct": 3.88,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 3.81,
+        "lift_geom": 0.863,
+        "lift_ocupacion": 1.019
+       },
+       "G50_tol2": {
+        "rr": 1.126,
+        "ic90": [
+         0.946,
+         1.328
+        ],
+        "tasa_en_redondo_pct": 28.351,
+        "tasa_fuera_pct": 25.171,
+        "puntas_en_redondo": 388,
+        "extremos_en_redondo": 110,
+        "sesiones": 13,
+        "recall_pct": 8.54,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 7.66,
+        "lift_geom": 1.005,
+        "lift_ocupacion": 1.116
+       },
+       "G25_tol1": {
+        "rr": 0.95,
+        "ic90": [
+         0.845,
+         1.052
+        ],
+        "tasa_en_redondo_pct": 24.242,
+        "tasa_fuera_pct": 25.523,
+        "puntas_en_redondo": 429,
+        "extremos_en_redondo": 104,
+        "sesiones": 13,
+        "recall_pct": 8.07,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.46,
+        "lift_geom": 0.897,
+        "lift_ocupacion": 0.954
+       },
+       "G25_tol2": {
+        "rr": 1.042,
+        "ic90": [
+         0.976,
+         1.105
+        ],
+        "tasa_en_redondo_pct": 26.303,
+        "tasa_fuera_pct": 25.237,
+        "puntas_en_redondo": 844,
+        "extremos_en_redondo": 222,
+        "sesiones": 13,
+        "recall_pct": 17.24,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.65,
+        "lift_geom": 1.014,
+        "lift_ocupacion": 1.035
+       }
+      },
+      "con_mecha_pct": 76.8,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 29,
+        "pct_extremos": 2.25,
+        "pct_puntas": 2.01,
+        "razon": 1.119
+       },
+       "justo en el redondo (0)": {
+        "extremos": 5,
+        "pct_extremos": 0.39,
+        "pct_puntas": 0.28,
+        "razon": 1.405
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 16,
+        "pct_extremos": 1.24,
+        "pct_puntas": 1.22,
+        "razon": 1.015
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 33,
+        "pct_extremos": 2.56,
+        "pct_puntas": 2.64,
+        "razon": 0.969
+       }
+      }
+     }
+    }
+   },
+   "20": {
+    "ambiguas": 335,
+    "ventanas": {
+     "noche": {
+      "extremos": 1095,
+      "por_sesion": 84.2,
+      "por_hora": 5.43,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 0.798,
+        "ic90": [
+         0.576,
+         1.001
+        ],
+        "tasa_en_redondo_pct": 7.266,
+        "tasa_fuera_pct": 9.101,
+        "puntas_en_redondo": 289,
+        "extremos_en_redondo": 21,
+        "sesiones": 13,
+        "recall_pct": 1.92,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 2.39,
+        "lift_geom": 0.852,
+        "lift_ocupacion": 0.802
+       },
+       "G100_tol2": {
+        "rr": 0.775,
+        "ic90": [
+         0.578,
+         1.034
+        ],
+        "tasa_en_redondo_pct": 7.09,
+        "tasa_fuera_pct": 9.148,
+        "puntas_en_redondo": 536,
+        "extremos_en_redondo": 38,
+        "sesiones": 13,
+        "recall_pct": 3.47,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 4.43,
+        "lift_geom": 0.817,
+        "lift_ocupacion": 0.783
+       },
+       "G50_tol1": {
+        "rr": 0.979,
+        "ic90": [
+         0.716,
+         1.239
+        ],
+        "tasa_en_redondo_pct": 8.877,
+        "tasa_fuera_pct": 9.066,
+        "puntas_en_redondo": 552,
+        "extremos_en_redondo": 49,
+        "sesiones": 13,
+        "recall_pct": 4.47,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 4.57,
+        "lift_geom": 0.994,
+        "lift_ocupacion": 0.98
+       },
+       "G50_tol2": {
+        "rr": 0.892,
+        "ic90": [
+         0.672,
+         1.144
+        ],
+        "tasa_en_redondo_pct": 8.153,
+        "tasa_fuera_pct": 9.14,
+        "puntas_en_redondo": 1018,
+        "extremos_en_redondo": 83,
+        "sesiones": 13,
+        "recall_pct": 7.58,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 8.42,
+        "lift_geom": 0.892,
+        "lift_ocupacion": 0.9
+       },
+       "G25_tol1": {
+        "rr": 0.955,
+        "ic90": [
+         0.773,
+         1.135
+        ],
+        "tasa_en_redondo_pct": 8.683,
+        "tasa_fuera_pct": 9.093,
+        "puntas_en_redondo": 1071,
+        "extremos_en_redondo": 93,
+        "sesiones": 13,
+        "recall_pct": 8.49,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.86,
+        "lift_geom": 0.944,
+        "lift_ocupacion": 0.959
+       },
+       "G25_tol2": {
+        "rr": 0.855,
+        "ic90": [
+         0.683,
+         1.068
+        ],
+        "tasa_en_redondo_pct": 7.937,
+        "tasa_fuera_pct": 9.285,
+        "puntas_en_redondo": 2041,
+        "extremos_en_redondo": 162,
+        "sesiones": 13,
+        "recall_pct": 14.79,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.88,
+        "lift_geom": 0.87,
+        "lift_ocupacion": 0.876
+       }
+      },
+      "con_mecha_pct": 76.2,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 17,
+        "pct_extremos": 1.55,
+        "pct_puntas": 2.1,
+        "razon": 0.739
+       },
+       "justo en el redondo (0)": {
+        "extremos": 5,
+        "pct_extremos": 0.46,
+        "pct_puntas": 0.32,
+        "razon": 1.416
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 16,
+        "pct_extremos": 1.46,
+        "pct_puntas": 2.01,
+        "razon": 0.727
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 34,
+        "pct_extremos": 3.11,
+        "pct_puntas": 2.93,
+        "razon": 1.06
+       }
+      }
+     },
+     "dia": {
+      "extremos": 819,
+      "por_sesion": 63.0,
+      "por_hora": 9.7,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 1.084,
+        "ic90": [
+         0.638,
+         1.59
+        ],
+        "tasa_en_redondo_pct": 17.5,
+        "tasa_fuera_pct": 16.139,
+        "puntas_en_redondo": 80,
+        "extremos_en_redondo": 14,
+        "sesiones": 13,
+        "recall_pct": 1.71,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 1.58,
+        "lift_geom": 0.76,
+        "lift_ocupacion": 1.083
+       },
+       "G100_tol2": {
+        "rr": 1.153,
+        "ic90": [
+         0.822,
+         1.521
+        ],
+        "tasa_en_redondo_pct": 18.539,
+        "tasa_fuera_pct": 16.074,
+        "puntas_en_redondo": 178,
+        "extremos_en_redondo": 33,
+        "sesiones": 13,
+        "recall_pct": 4.03,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 3.51,
+        "lift_geom": 0.948,
+        "lift_ocupacion": 1.147
+       },
+       "G50_tol1": {
+        "rr": 1.06,
+        "ic90": [
+         0.72,
+         1.453
+        ],
+        "tasa_en_redondo_pct": 17.098,
+        "tasa_fuera_pct": 16.123,
+        "puntas_en_redondo": 193,
+        "extremos_en_redondo": 33,
+        "sesiones": 13,
+        "recall_pct": 4.03,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 3.81,
+        "lift_geom": 0.895,
+        "lift_ocupacion": 1.058
+       },
+       "G50_tol2": {
+        "rr": 1.198,
+        "ic90": [
+         0.929,
+         1.514
+        ],
+        "tasa_en_redondo_pct": 19.072,
+        "tasa_fuera_pct": 15.919,
+        "puntas_en_redondo": 388,
+        "extremos_en_redondo": 74,
+        "sesiones": 13,
+        "recall_pct": 9.04,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 7.66,
+        "lift_geom": 1.063,
+        "lift_ocupacion": 1.18
+       },
+       "G25_tol1": {
+        "rr": 0.948,
+        "ic90": [
+         0.778,
+         1.124
+        ],
+        "tasa_en_redondo_pct": 15.385,
+        "tasa_fuera_pct": 16.232,
+        "puntas_en_redondo": 429,
+        "extremos_en_redondo": 66,
+        "sesiones": 13,
+        "recall_pct": 8.06,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.46,
+        "lift_geom": 0.895,
+        "lift_ocupacion": 0.952
+       },
+       "G25_tol2": {
+        "rr": 1.059,
+        "ic90": [
+         0.939,
+         1.188
+        ],
+        "tasa_en_redondo_pct": 16.943,
+        "tasa_fuera_pct": 16.004,
+        "puntas_en_redondo": 844,
+        "extremos_en_redondo": 143,
+        "sesiones": 13,
+        "recall_pct": 17.46,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.65,
+        "lift_geom": 1.027,
+        "lift_ocupacion": 1.048
+       }
+      },
+      "con_mecha_pct": 78.4,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 21,
+        "pct_extremos": 2.56,
+        "pct_puntas": 2.01,
+        "razon": 1.274
+       },
+       "justo en el redondo (0)": {
+        "extremos": 4,
+        "pct_extremos": 0.49,
+        "pct_puntas": 0.28,
+        "razon": 1.768
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 8,
+        "pct_extremos": 0.98,
+        "pct_puntas": 1.22,
+        "razon": 0.798
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 25,
+        "pct_extremos": 3.05,
+        "pct_puntas": 2.64,
+        "razon": 1.154
+       }
+      }
+     }
+    }
+   },
+   "40": {
+    "ambiguas": 61,
+    "ventanas": {
+     "noche": {
+      "extremos": 268,
+      "por_sesion": 20.6,
+      "por_hora": 1.33,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 1.419,
+        "ic90": [
+         0.889,
+         2.039
+        ],
+        "tasa_en_redondo_pct": 3.114,
+        "tasa_fuera_pct": 2.195,
+        "puntas_en_redondo": 289,
+        "extremos_en_redondo": 9,
+        "sesiones": 13,
+        "recall_pct": 3.36,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 2.39,
+        "lift_geom": 1.493,
+        "lift_ocupacion": 1.405
+       },
+       "G100_tol2": {
+        "rr": 1.01,
+        "ic90": [
+         0.717,
+         1.359
+        ],
+        "tasa_en_redondo_pct": 2.239,
+        "tasa_fuera_pct": 2.216,
+        "puntas_en_redondo": 536,
+        "extremos_en_redondo": 12,
+        "sesiones": 13,
+        "recall_pct": 4.48,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 4.43,
+        "lift_geom": 1.054,
+        "lift_ocupacion": 1.01
+       },
+       "G50_tol1": {
+        "rr": 1.327,
+        "ic90": [
+         0.982,
+         1.683
+        ],
+        "tasa_en_redondo_pct": 2.899,
+        "tasa_fuera_pct": 2.184,
+        "puntas_en_redondo": 552,
+        "extremos_en_redondo": 16,
+        "sesiones": 13,
+        "recall_pct": 5.97,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 4.57,
+        "lift_geom": 1.327,
+        "lift_ocupacion": 1.308
+       },
+       "G50_tol2": {
+        "rr": 1.07,
+        "ic90": [
+         0.776,
+         1.37
+        ],
+        "tasa_en_redondo_pct": 2.358,
+        "tasa_fuera_pct": 2.204,
+        "puntas_en_redondo": 1018,
+        "extremos_en_redondo": 24,
+        "sesiones": 13,
+        "recall_pct": 8.96,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 8.42,
+        "lift_geom": 1.054,
+        "lift_ocupacion": 1.064
+       },
+       "G25_tol1": {
+        "rr": 1.105,
+        "ic90": [
+         0.825,
+         1.369
+        ],
+        "tasa_en_redondo_pct": 2.428,
+        "tasa_fuera_pct": 2.196,
+        "puntas_en_redondo": 1071,
+        "extremos_en_redondo": 26,
+        "sesiones": 13,
+        "recall_pct": 9.7,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.86,
+        "lift_geom": 1.078,
+        "lift_ocupacion": 1.095
+       },
+       "G25_tol2": {
+        "rr": 0.889,
+        "ic90": [
+         0.671,
+         1.129
+        ],
+        "tasa_en_redondo_pct": 2.009,
+        "tasa_fuera_pct": 2.259,
+        "puntas_en_redondo": 2041,
+        "extremos_en_redondo": 41,
+        "sesiones": 13,
+        "recall_pct": 15.3,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.88,
+        "lift_geom": 0.9,
+        "lift_ocupacion": 0.906
+       }
+      },
+      "con_mecha_pct": 73.9,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 7,
+        "pct_extremos": 2.61,
+        "pct_puntas": 2.1,
+        "razon": 1.243
+       },
+       "justo en el redondo (0)": {
+        "extremos": 3,
+        "pct_extremos": 1.12,
+        "pct_puntas": 0.32,
+        "razon": 3.47
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 2,
+        "pct_extremos": 0.75,
+        "pct_puntas": 2.01,
+        "razon": 0.371
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 8,
+        "pct_extremos": 2.99,
+        "pct_puntas": 2.93,
+        "razon": 1.019
+       }
+      }
+     },
+     "dia": {
+      "extremos": 361,
+      "por_sesion": 27.8,
+      "por_hora": 4.27,
+      "grillas": {
+       "G100_tol1": {
+        "rr": 1.594,
+        "ic90": [
+         0.86,
+         2.455
+        ],
+        "tasa_en_redondo_pct": 11.25,
+        "tasa_fuera_pct": 7.057,
+        "puntas_en_redondo": 80,
+        "extremos_en_redondo": 9,
+        "sesiones": 13,
+        "recall_pct": 2.49,
+        "cobertura_geom_pct": 2.25,
+        "ocupacion_puntas_pct": 1.58,
+        "lift_geom": 1.108,
+        "lift_ocupacion": 1.579
+       },
+       "G100_tol2": {
+        "rr": 1.442,
+        "ic90": [
+         0.96,
+         1.931
+        ],
+        "tasa_en_redondo_pct": 10.112,
+        "tasa_fuera_pct": 7.014,
+        "puntas_en_redondo": 178,
+        "extremos_en_redondo": 18,
+        "sesiones": 13,
+        "recall_pct": 4.99,
+        "cobertura_geom_pct": 4.25,
+        "ocupacion_puntas_pct": 3.51,
+        "lift_geom": 1.173,
+        "lift_ocupacion": 1.42
+       },
+       "G50_tol1": {
+        "rr": 1.248,
+        "ic90": [
+         0.725,
+         1.82
+        ],
+        "tasa_en_redondo_pct": 8.808,
+        "tasa_fuera_pct": 7.056,
+        "puntas_en_redondo": 193,
+        "extremos_en_redondo": 17,
+        "sesiones": 13,
+        "recall_pct": 4.71,
+        "cobertura_geom_pct": 4.5,
+        "ocupacion_puntas_pct": 3.81,
+        "lift_geom": 1.046,
+        "lift_ocupacion": 1.237
+       },
+       "G50_tol2": {
+        "rr": 1.336,
+        "ic90": [
+         0.906,
+         1.818
+        ],
+        "tasa_en_redondo_pct": 9.278,
+        "tasa_fuera_pct": 6.944,
+        "puntas_en_redondo": 388,
+        "extremos_en_redondo": 36,
+        "sesiones": 13,
+        "recall_pct": 9.97,
+        "cobertura_geom_pct": 8.5,
+        "ocupacion_puntas_pct": 7.66,
+        "lift_geom": 1.173,
+        "lift_ocupacion": 1.303
+       },
+       "G25_tol1": {
+        "rr": 0.945,
+        "ic90": [
+         0.642,
+         1.284
+        ],
+        "tasa_en_redondo_pct": 6.76,
+        "tasa_fuera_pct": 7.157,
+        "puntas_en_redondo": 429,
+        "extremos_en_redondo": 29,
+        "sesiones": 13,
+        "recall_pct": 8.03,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.46,
+        "lift_geom": 0.893,
+        "lift_ocupacion": 0.949
+       },
+       "G25_tol2": {
+        "rr": 1.018,
+        "ic90": [
+         0.818,
+         1.242
+        ],
+        "tasa_en_redondo_pct": 7.227,
+        "tasa_fuera_pct": 7.102,
+        "puntas_en_redondo": 844,
+        "extremos_en_redondo": 61,
+        "sesiones": 13,
+        "recall_pct": 16.9,
+        "cobertura_geom_pct": 17.0,
+        "ocupacion_puntas_pct": 16.65,
+        "lift_geom": 0.994,
+        "lift_ocupacion": 1.015
+       }
+      },
+      "con_mecha_pct": 74.2,
+      "sobrepaso_G100": {
+       "antes (-2..-0.25)": {
+        "extremos": 11,
+        "pct_extremos": 3.05,
+        "pct_puntas": 2.01,
+        "razon": 1.514
+       },
+       "justo en el redondo (0)": {
+        "extremos": 2,
+        "pct_extremos": 0.55,
+        "pct_puntas": 0.28,
+        "razon": 2.006
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 5,
+        "pct_extremos": 1.39,
+        "pct_puntas": 1.22,
+        "razon": 1.132
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 9,
+        "pct_extremos": 2.49,
+        "pct_puntas": 2.64,
+        "razon": 0.943
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "MES m1 (08-03..10-05)": {
+  "sesiones": 45,
+  "velas": 61857,
+  "desde": "2026-08-03 22:00:00",
+  "hasta": "2026-10-05 20:59:00",
+  "thetas": {
+   "3": {
+    "ambiguas": 1126,
+    "ventanas": {
+     "noche": {
+      "extremos": 3972,
+      "por_sesion": 88.3,
+      "por_hora": 5.69,
+      "grillas": {
+       "G25_tol0.5": {
+        "rr": 1.127,
+        "ic90": [
+         0.925,
+         1.367
+        ],
+        "tasa_en_redondo_pct": 5.317,
+        "tasa_fuera_pct": 4.718,
+        "puntas_en_redondo": 3893,
+        "extremos_en_redondo": 207,
+        "sesiones": 45,
+        "recall_pct": 5.21,
+        "cobertura_geom_pct": 5.0,
+        "ocupacion_puntas_pct": 4.65,
+        "lift_geom": 1.042,
+        "lift_ocupacion": 1.12
+       },
+       "G25_tol1": {
+        "rr": 1.085,
+        "ic90": [
+         0.923,
+         1.284
+        ],
+        "tasa_en_redondo_pct": 5.113,
+        "tasa_fuera_pct": 4.712,
+        "puntas_en_redondo": 7022,
+        "extremos_en_redondo": 359,
+        "sesiones": 45,
+        "recall_pct": 9.04,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.39,
+        "lift_geom": 1.004,
+        "lift_ocupacion": 1.077
+       },
+       "G10_tol0.5": {
+        "rr": 1.072,
+        "ic90": [
+         0.961,
+         1.198
+        ],
+        "tasa_en_redondo_pct": 5.045,
+        "tasa_fuera_pct": 4.705,
+        "puntas_en_redondo": 10029,
+        "extremos_en_redondo": 506,
+        "sesiones": 45,
+        "recall_pct": 12.74,
+        "cobertura_geom_pct": 12.5,
+        "ocupacion_puntas_pct": 11.98,
+        "lift_geom": 1.019,
+        "lift_ocupacion": 1.063
+       },
+       "G10_tol1": {
+        "rr": 1.09,
+        "ic90": [
+         0.997,
+         1.191
+        ],
+        "tasa_en_redondo_pct": 5.076,
+        "tasa_fuera_pct": 4.655,
+        "puntas_en_redondo": 17966,
+        "extremos_en_redondo": 912,
+        "sesiones": 45,
+        "recall_pct": 22.96,
+        "cobertura_geom_pct": 22.5,
+        "ocupacion_puntas_pct": 21.47,
+        "lift_geom": 1.02,
+        "lift_ocupacion": 1.07
+       },
+       "G5_tol0.5": {
+        "rr": 1.037,
+        "ic90": [
+         0.951,
+         1.127
+        ],
+        "tasa_en_redondo_pct": 4.875,
+        "tasa_fuera_pct": 4.702,
+        "puntas_en_redondo": 21068,
+        "extremos_en_redondo": 1027,
+        "sesiones": 45,
+        "recall_pct": 25.86,
+        "cobertura_geom_pct": 25.0,
+        "ocupacion_puntas_pct": 25.17,
+        "lift_geom": 1.034,
+        "lift_ocupacion": 1.027
+       },
+       "G5_tol1": {
+        "rr": 1.041,
+        "ic90": [
+         0.958,
+         1.128
+        ],
+        "tasa_en_redondo_pct": 4.852,
+        "tasa_fuera_pct": 4.659,
+        "puntas_en_redondo": 37720,
+        "extremos_en_redondo": 1830,
+        "sesiones": 45,
+        "recall_pct": 46.07,
+        "cobertura_geom_pct": 45.0,
+        "ocupacion_puntas_pct": 45.07,
+        "lift_geom": 1.024,
+        "lift_ocupacion": 1.022
+       }
+      },
+      "con_mecha_pct": 74.1,
+      "sobrepaso_G25": {
+       "antes (-2..-0.25)": {
+        "extremos": 294,
+        "pct_extremos": 7.4,
+        "pct_puntas": 7.35,
+        "razon": 1.007
+       },
+       "justo en el redondo (0)": {
+        "extremos": 49,
+        "pct_extremos": 1.23,
+        "pct_puntas": 0.94,
+        "razon": 1.319
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 319,
+        "pct_extremos": 8.03,
+        "pct_puntas": 7.34,
+        "razon": 1.094
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 488,
+        "pct_extremos": 12.29,
+        "pct_puntas": 10.97,
+        "razon": 1.12
+       }
+      }
+     },
+     "dia": {
+      "extremos": 4719,
+      "por_sesion": 104.9,
+      "por_hora": 16.3,
+      "grillas": {
+       "G25_tol0.5": {
+        "rr": 0.895,
+        "ic90": [
+         0.802,
+         0.991
+        ],
+        "tasa_en_redondo_pct": 12.23,
+        "tasa_fuera_pct": 13.665,
+        "puntas_en_redondo": 1946,
+        "extremos_en_redondo": 238,
+        "sesiones": 45,
+        "recall_pct": 5.04,
+        "cobertura_geom_pct": 5.0,
+        "ocupacion_puntas_pct": 5.6,
+        "lift_geom": 1.009,
+        "lift_ocupacion": 0.9
+       },
+       "G25_tol1": {
+        "rr": 0.881,
+        "ic90": [
+         0.806,
+         0.972
+        ],
+        "tasa_en_redondo_pct": 12.117,
+        "tasa_fuera_pct": 13.749,
+        "puntas_en_redondo": 3491,
+        "extremos_en_redondo": 423,
+        "sesiones": 45,
+        "recall_pct": 8.96,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 10.05,
+        "lift_geom": 0.996,
+        "lift_ocupacion": 0.892
+       },
+       "G10_tol0.5": {
+        "rr": 0.949,
+        "ic90": [
+         0.87,
+         1.038
+        ],
+        "tasa_en_redondo_pct": 12.979,
+        "tasa_fuera_pct": 13.671,
+        "puntas_en_redondo": 4330,
+        "extremos_en_redondo": 562,
+        "sesiones": 45,
+        "recall_pct": 11.91,
+        "cobertura_geom_pct": 12.5,
+        "ocupacion_puntas_pct": 12.46,
+        "lift_geom": 0.953,
+        "lift_ocupacion": 0.955
+       },
+       "G10_tol1": {
+        "rr": 0.954,
+        "ic90": [
+         0.892,
+         1.023
+        ],
+        "tasa_en_redondo_pct": 13.097,
+        "tasa_fuera_pct": 13.725,
+        "puntas_en_redondo": 7765,
+        "extremos_en_redondo": 1017,
+        "sesiones": 45,
+        "recall_pct": 21.55,
+        "cobertura_geom_pct": 22.5,
+        "ocupacion_puntas_pct": 22.35,
+        "lift_geom": 0.958,
+        "lift_ocupacion": 0.964
+       },
+       "G5_tol0.5": {
+        "rr": 0.976,
+        "ic90": [
+         0.915,
+         1.042
+        ],
+        "tasa_en_redondo_pct": 13.342,
+        "tasa_fuera_pct": 13.667,
+        "puntas_en_redondo": 8837,
+        "extremos_en_redondo": 1179,
+        "sesiones": 45,
+        "recall_pct": 24.98,
+        "cobertura_geom_pct": 25.0,
+        "ocupacion_puntas_pct": 25.44,
+        "lift_geom": 0.999,
+        "lift_ocupacion": 0.982
+       },
+       "G5_tol1": {
+        "rr": 0.95,
+        "ic90": [
+         0.904,
+         1.0
+        ],
+        "tasa_en_redondo_pct": 13.207,
+        "tasa_fuera_pct": 13.899,
+        "puntas_en_redondo": 15772,
+        "extremos_en_redondo": 2083,
+        "sesiones": 45,
+        "recall_pct": 44.14,
+        "cobertura_geom_pct": 45.0,
+        "ocupacion_puntas_pct": 45.4,
+        "lift_geom": 0.981,
+        "lift_ocupacion": 0.972
+       }
+      },
+      "con_mecha_pct": 74.4,
+      "sobrepaso_G25": {
+       "antes (-2..-0.25)": {
+        "extremos": 380,
+        "pct_extremos": 8.05,
+        "pct_puntas": 8.62,
+        "razon": 0.935
+       },
+       "justo en el redondo (0)": {
+        "extremos": 48,
+        "pct_extremos": 1.02,
+        "pct_puntas": 1.09,
+        "razon": 0.932
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 392,
+        "pct_extremos": 8.31,
+        "pct_puntas": 9.2,
+        "razon": 0.903
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 567,
+        "pct_extremos": 12.02,
+        "pct_puntas": 12.88,
+        "razon": 0.933
+       }
+      }
+     }
+    }
+   },
+   "5": {
+    "ambiguas": 247,
+    "ventanas": {
+     "noche": {
+      "extremos": 1478,
+      "por_sesion": 32.8,
+      "por_hora": 2.12,
+      "grillas": {
+       "G25_tol0.5": {
+        "rr": 1.034,
+        "ic90": [
+         0.794,
+         1.329
+        ],
+        "tasa_en_redondo_pct": 1.824,
+        "tasa_fuera_pct": 1.763,
+        "puntas_en_redondo": 3893,
+        "extremos_en_redondo": 71,
+        "sesiones": 45,
+        "recall_pct": 4.8,
+        "cobertura_geom_pct": 5.0,
+        "ocupacion_puntas_pct": 4.65,
+        "lift_geom": 0.961,
+        "lift_ocupacion": 1.033
+       },
+       "G25_tol1": {
+        "rr": 0.974,
+        "ic90": [
+         0.773,
+         1.235
+        ],
+        "tasa_en_redondo_pct": 1.723,
+        "tasa_fuera_pct": 1.77,
+        "puntas_en_redondo": 7022,
+        "extremos_en_redondo": 121,
+        "sesiones": 45,
+        "recall_pct": 8.19,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.39,
+        "lift_geom": 0.91,
+        "lift_ocupacion": 0.976
+       },
+       "G10_tol0.5": {
+        "rr": 1.025,
+        "ic90": [
+         0.865,
+         1.214
+        ],
+        "tasa_en_redondo_pct": 1.805,
+        "tasa_fuera_pct": 1.761,
+        "puntas_en_redondo": 10029,
+        "extremos_en_redondo": 181,
+        "sesiones": 45,
+        "recall_pct": 12.25,
+        "cobertura_geom_pct": 12.5,
+        "ocupacion_puntas_pct": 11.98,
+        "lift_geom": 0.98,
+        "lift_ocupacion": 1.022
+       },
+       "G10_tol1": {
+        "rr": 1.106,
+        "ic90": [
+         0.958,
+         1.272
+        ],
+        "tasa_en_redondo_pct": 1.909,
+        "tasa_fuera_pct": 1.727,
+        "puntas_en_redondo": 17966,
+        "extremos_en_redondo": 343,
+        "sesiones": 45,
+        "recall_pct": 23.21,
+        "cobertura_geom_pct": 22.5,
+        "ocupacion_puntas_pct": 21.47,
+        "lift_geom": 1.031,
+        "lift_ocupacion": 1.081
+       },
+       "G5_tol0.5": {
+        "rr": 1.069,
+        "ic90": [
+         0.949,
+         1.185
+        ],
+        "tasa_en_redondo_pct": 1.856,
+        "tasa_fuera_pct": 1.736,
+        "puntas_en_redondo": 21068,
+        "extremos_en_redondo": 391,
+        "sesiones": 45,
+        "recall_pct": 26.45,
+        "cobertura_geom_pct": 25.0,
+        "ocupacion_puntas_pct": 25.17,
+        "lift_geom": 1.058,
+        "lift_ocupacion": 1.051
+       },
+       "G5_tol1": {
+        "rr": 1.091,
+        "ic90": [
+         0.969,
+         1.213
+        ],
+        "tasa_en_redondo_pct": 1.85,
+        "tasa_fuera_pct": 1.697,
+        "puntas_en_redondo": 37720,
+        "extremos_en_redondo": 698,
+        "sesiones": 45,
+        "recall_pct": 47.23,
+        "cobertura_geom_pct": 45.0,
+        "ocupacion_puntas_pct": 45.07,
+        "lift_geom": 1.049,
+        "lift_ocupacion": 1.048
+       }
+      },
+      "con_mecha_pct": 74.8,
+      "sobrepaso_G25": {
+       "antes (-2..-0.25)": {
+        "extremos": 95,
+        "pct_extremos": 6.43,
+        "pct_puntas": 7.35,
+        "razon": 0.875
+       },
+       "justo en el redondo (0)": {
+        "extremos": 18,
+        "pct_extremos": 1.22,
+        "pct_puntas": 0.94,
+        "razon": 1.302
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 123,
+        "pct_extremos": 8.32,
+        "pct_puntas": 7.34,
+        "razon": 1.133
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 177,
+        "pct_extremos": 11.98,
+        "pct_puntas": 10.97,
+        "razon": 1.092
+       }
+      }
+     },
+     "dia": {
+      "extremos": 2109,
+      "por_sesion": 46.9,
+      "por_hora": 7.29,
+      "grillas": {
+       "G25_tol0.5": {
+        "rr": 0.963,
+        "ic90": [
+         0.822,
+         1.129
+        ],
+        "tasa_en_redondo_pct": 5.858,
+        "tasa_fuera_pct": 6.084,
+        "puntas_en_redondo": 1946,
+        "extremos_en_redondo": 114,
+        "sesiones": 45,
+        "recall_pct": 5.41,
+        "cobertura_geom_pct": 5.0,
+        "ocupacion_puntas_pct": 5.6,
+        "lift_geom": 1.081,
+        "lift_ocupacion": 0.965
+       },
+       "G25_tol1": {
+        "rr": 0.948,
+        "ic90": [
+         0.821,
+         1.09
+        ],
+        "tasa_en_redondo_pct": 5.786,
+        "tasa_fuera_pct": 6.103,
+        "puntas_en_redondo": 3491,
+        "extremos_en_redondo": 202,
+        "sesiones": 45,
+        "recall_pct": 9.58,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 10.05,
+        "lift_geom": 1.064,
+        "lift_ocupacion": 0.953
+       },
+       "G10_tol0.5": {
+        "rr": 1.014,
+        "ic90": [
+         0.889,
+         1.148
+        ],
+        "tasa_en_redondo_pct": 6.143,
+        "tasa_fuera_pct": 6.061,
+        "puntas_en_redondo": 4330,
+        "extremos_en_redondo": 266,
+        "sesiones": 45,
+        "recall_pct": 12.61,
+        "cobertura_geom_pct": 12.5,
+        "ocupacion_puntas_pct": 12.46,
+        "lift_geom": 1.009,
+        "lift_ocupacion": 1.012
+       },
+       "G10_tol1": {
+        "rr": 0.985,
+        "ic90": [
+         0.881,
+         1.103
+        ],
+        "tasa_en_redondo_pct": 6.001,
+        "tasa_fuera_pct": 6.091,
+        "puntas_en_redondo": 7765,
+        "extremos_en_redondo": 466,
+        "sesiones": 45,
+        "recall_pct": 22.1,
+        "cobertura_geom_pct": 22.5,
+        "ocupacion_puntas_pct": 22.35,
+        "lift_geom": 0.982,
+        "lift_ocupacion": 0.988
+       },
+       "G5_tol0.5": {
+        "rr": 0.971,
+        "ic90": [
+         0.89,
+         1.056
+        ],
+        "tasa_en_redondo_pct": 5.941,
+        "tasa_fuera_pct": 6.116,
+        "puntas_en_redondo": 8837,
+        "extremos_en_redondo": 525,
+        "sesiones": 45,
+        "recall_pct": 24.89,
+        "cobertura_geom_pct": 25.0,
+        "ocupacion_puntas_pct": 25.44,
+        "lift_geom": 0.996,
+        "lift_ocupacion": 0.979
+       },
+       "G5_tol1": {
+        "rr": 0.945,
+        "ic90": [
+         0.889,
+         1.002
+        ],
+        "tasa_en_redondo_pct": 5.884,
+        "tasa_fuera_pct": 6.227,
+        "puntas_en_redondo": 15772,
+        "extremos_en_redondo": 928,
+        "sesiones": 45,
+        "recall_pct": 44.0,
+        "cobertura_geom_pct": 45.0,
+        "ocupacion_puntas_pct": 45.4,
+        "lift_geom": 0.978,
+        "lift_ocupacion": 0.969
+       }
+      },
+      "con_mecha_pct": 75.1,
+      "sobrepaso_G25": {
+       "antes (-2..-0.25)": {
+        "extremos": 168,
+        "pct_extremos": 7.97,
+        "pct_puntas": 8.62,
+        "razon": 0.925
+       },
+       "justo en el redondo (0)": {
+        "extremos": 22,
+        "pct_extremos": 1.04,
+        "pct_puntas": 1.09,
+        "razon": 0.956
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 177,
+        "pct_extremos": 8.39,
+        "pct_puntas": 9.2,
+        "razon": 0.912
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 260,
+        "pct_extremos": 12.33,
+        "pct_puntas": 12.88,
+        "razon": 0.957
+       }
+      }
+     }
+    }
+   },
+   "10": {
+    "ambiguas": 15,
+    "ventanas": {
+     "noche": {
+      "extremos": 382,
+      "por_sesion": 8.5,
+      "por_hora": 0.55,
+      "grillas": {
+       "G25_tol0.5": {
+        "rr": 1.073,
+        "ic90": [
+         0.659,
+         1.645
+        ],
+        "tasa_en_redondo_pct": 0.488,
+        "tasa_fuera_pct": 0.455,
+        "puntas_en_redondo": 3893,
+        "extremos_en_redondo": 19,
+        "sesiones": 45,
+        "recall_pct": 4.97,
+        "cobertura_geom_pct": 5.0,
+        "ocupacion_puntas_pct": 4.65,
+        "lift_geom": 0.995,
+        "lift_ocupacion": 1.069
+       },
+       "G25_tol1": {
+        "rr": 0.864,
+        "ic90": [
+         0.582,
+         1.258
+        ],
+        "tasa_en_redondo_pct": 0.399,
+        "tasa_fuera_pct": 0.462,
+        "puntas_en_redondo": 7022,
+        "extremos_en_redondo": 28,
+        "sesiones": 45,
+        "recall_pct": 7.33,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 8.39,
+        "lift_geom": 0.814,
+        "lift_ocupacion": 0.874
+       },
+       "G10_tol0.5": {
+        "rr": 1.157,
+        "ic90": [
+         0.847,
+         1.531
+        ],
+        "tasa_en_redondo_pct": 0.518,
+        "tasa_fuera_pct": 0.448,
+        "puntas_en_redondo": 10029,
+        "extremos_en_redondo": 52,
+        "sesiones": 45,
+        "recall_pct": 13.61,
+        "cobertura_geom_pct": 12.5,
+        "ocupacion_puntas_pct": 11.98,
+        "lift_geom": 1.089,
+        "lift_ocupacion": 1.136
+       },
+       "G10_tol1": {
+        "rr": 1.111,
+        "ic90": [
+         0.875,
+         1.38
+        ],
+        "tasa_en_redondo_pct": 0.495,
+        "tasa_fuera_pct": 0.446,
+        "puntas_en_redondo": 17966,
+        "extremos_en_redondo": 89,
+        "sesiones": 45,
+        "recall_pct": 23.3,
+        "cobertura_geom_pct": 22.5,
+        "ocupacion_puntas_pct": 21.47,
+        "lift_geom": 1.035,
+        "lift_ocupacion": 1.085
+       },
+       "G5_tol0.5": {
+        "rr": 1.04,
+        "ic90": [
+         0.848,
+         1.27
+        ],
+        "tasa_en_redondo_pct": 0.47,
+        "tasa_fuera_pct": 0.452,
+        "puntas_en_redondo": 21068,
+        "extremos_en_redondo": 99,
+        "sesiones": 45,
+        "recall_pct": 25.92,
+        "cobertura_geom_pct": 25.0,
+        "ocupacion_puntas_pct": 25.17,
+        "lift_geom": 1.037,
+        "lift_ocupacion": 1.03
+       },
+       "G5_tol1": {
+        "rr": 1.041,
+        "ic90": [
+         0.876,
+         1.237
+        ],
+        "tasa_en_redondo_pct": 0.467,
+        "tasa_fuera_pct": 0.448,
+        "puntas_en_redondo": 37720,
+        "extremos_en_redondo": 176,
+        "sesiones": 45,
+        "recall_pct": 46.07,
+        "cobertura_geom_pct": 45.0,
+        "ocupacion_puntas_pct": 45.07,
+        "lift_geom": 1.024,
+        "lift_ocupacion": 1.022
+       }
+      },
+      "con_mecha_pct": 74.9,
+      "sobrepaso_G25": {
+       "antes (-2..-0.25)": {
+        "extremos": 31,
+        "pct_extremos": 8.12,
+        "pct_puntas": 7.35,
+        "razon": 1.105
+       },
+       "justo en el redondo (0)": {
+        "extremos": 3,
+        "pct_extremos": 0.79,
+        "pct_puntas": 0.94,
+        "razon": 0.839
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 25,
+        "pct_extremos": 6.54,
+        "pct_puntas": 7.34,
+        "razon": 0.891
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 55,
+        "pct_extremos": 14.4,
+        "pct_puntas": 10.97,
+        "razon": 1.313
+       }
+      }
+     },
+     "dia": {
+      "extremos": 545,
+      "por_sesion": 12.1,
+      "por_hora": 1.88,
+      "grillas": {
+       "G25_tol0.5": {
+        "rr": 0.609,
+        "ic90": [
+         0.36,
+         0.913
+        ],
+        "tasa_en_redondo_pct": 0.976,
+        "tasa_fuera_pct": 1.604,
+        "puntas_en_redondo": 1946,
+        "extremos_en_redondo": 19,
+        "sesiones": 45,
+        "recall_pct": 3.49,
+        "cobertura_geom_pct": 5.0,
+        "ocupacion_puntas_pct": 5.6,
+        "lift_geom": 0.697,
+        "lift_ocupacion": 0.622
+       },
+       "G25_tol1": {
+        "rr": 0.747,
+        "ic90": [
+         0.521,
+         1.026
+        ],
+        "tasa_en_redondo_pct": 1.203,
+        "tasa_fuera_pct": 1.61,
+        "puntas_en_redondo": 3491,
+        "extremos_en_redondo": 42,
+        "sesiones": 45,
+        "recall_pct": 7.71,
+        "cobertura_geom_pct": 9.0,
+        "ocupacion_puntas_pct": 10.05,
+        "lift_geom": 0.856,
+        "lift_ocupacion": 0.767
+       },
+       "G10_tol0.5": {
+        "rr": 0.82,
+        "ic90": [
+         0.646,
+         1.016
+        ],
+        "tasa_en_redondo_pct": 1.316,
+        "tasa_fuera_pct": 1.605,
+        "puntas_en_redondo": 4330,
+        "extremos_en_redondo": 57,
+        "sesiones": 45,
+        "recall_pct": 10.46,
+        "cobertura_geom_pct": 12.5,
+        "ocupacion_puntas_pct": 12.46,
+        "lift_geom": 0.837,
+        "lift_ocupacion": 0.839
+       },
+       "G10_tol1": {
+        "rr": 0.929,
+        "ic90": [
+         0.76,
+         1.132
+        ],
+        "tasa_en_redondo_pct": 1.481,
+        "tasa_fuera_pct": 1.594,
+        "puntas_en_redondo": 7765,
+        "extremos_en_redondo": 115,
+        "sesiones": 45,
+        "recall_pct": 21.1,
+        "cobertura_geom_pct": 22.5,
+        "ocupacion_puntas_pct": 22.35,
+        "lift_geom": 0.938,
+        "lift_ocupacion": 0.944
+       },
+       "G5_tol0.5": {
+        "rr": 0.881,
+        "ic90": [
+         0.754,
+         1.018
+        ],
+        "tasa_en_redondo_pct": 1.426,
+        "tasa_fuera_pct": 1.618,
+        "puntas_en_redondo": 8837,
+        "extremos_en_redondo": 126,
+        "sesiones": 45,
+        "recall_pct": 23.12,
+        "cobertura_geom_pct": 25.0,
+        "ocupacion_puntas_pct": 25.44,
+        "lift_geom": 0.925,
+        "lift_ocupacion": 0.909
+       },
+       "G5_tol1": {
+        "rr": 0.997,
+        "ic90": [
+         0.875,
+         1.133
+        ],
+        "tasa_en_redondo_pct": 1.566,
+        "tasa_fuera_pct": 1.571,
+        "puntas_en_redondo": 15772,
+        "extremos_en_redondo": 247,
+        "sesiones": 45,
+        "recall_pct": 45.32,
+        "cobertura_geom_pct": 45.0,
+        "ocupacion_puntas_pct": 45.4,
+        "lift_geom": 1.007,
+        "lift_ocupacion": 0.998
+       }
+      },
+      "con_mecha_pct": 75.0,
+      "sobrepaso_G25": {
+       "antes (-2..-0.25)": {
+        "extremos": 36,
+        "pct_extremos": 6.61,
+        "pct_puntas": 8.62,
+        "razon": 0.767
+       },
+       "justo en el redondo (0)": {
+        "extremos": 4,
+        "pct_extremos": 0.73,
+        "pct_puntas": 1.09,
+        "razon": 0.673
+       },
+       "pasado (+0.25..+2)": {
+        "extremos": 42,
+        "pct_extremos": 7.71,
+        "pct_puntas": 9.2,
+        "razon": 0.838
+       },
+       "pasado (+2.25..+5)": {
+        "extremos": 65,
+        "pct_extremos": 11.93,
+        "pct_puntas": 12.88,
+        "razon": 0.926
+       }
+      }
+     }
+    }
+   }
+  }
+ }
+}

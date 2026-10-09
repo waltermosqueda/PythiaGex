@@ -1,4 +1,4 @@
-# Reinicia ATAS sin tocar credenciales: cierra guardando el workspace, relanza,
+# INSTALADOR DE LA 3.0 (copia de reiniciar_e_instalar.ps1 que SOLO copia PythiaGexTres.dll). Reinicia ATAS sin tocar credenciales: cierra guardando el workspace, relanza,
 # aprieta Connect (la clave recordada) y restaura la ventana. Imprime cada paso.
 $ErrorActionPreference = "SilentlyContinue"
 Add-Type -AssemblyName UIAutomationClient
@@ -47,26 +47,10 @@ if ($p) {
     Paso "ATAS cerrado"
 } else { Paso "ATAS no corria" }
 
-# --- instala el DLL recien compilado antes de relanzar (capas NQ, 15-09): el de bin/Release del repo
-$dll = Join-Path $PSScriptRoot "../atas/PythiaGexNiveles/bin/Release/PythiaGexNiveles.dll"
-$dst = Join-Path $env:APPDATA "ATAS/Indicators/PythiaGexNiveles.dll"
-if (Test-Path $dll) { Copy-Item -Force $dll $dst; Paso ("DLL instalado: " + (Get-Item $dst).LastWriteTime) } else { Paso "SIN DLL en bin/Release: no se instalo nada" }
-# --- el clon 2.0 (18-09): ensamblado aparte, se instala al lado si existe; la produccion no depende de el
-$dll2 = Join-Path $PSScriptRoot "../atas/PythiaGexDos/bin/Release/PythiaGexDos.dll"
-$dst2 = Join-Path $env:APPDATA "ATAS/Indicators/PythiaGexDos.dll"
-if (Test-Path $dll2) { Copy-Item -Force $dll2 $dst2; Paso ("DLL 2.0 instalado: " + (Get-Item $dst2).LastWriteTime) }
-# --- Absorcion Viva (24-09): indicador nuevo, ensamblado aparte, no toca a los otros
-$dll3 = Join-Path $PSScriptRoot "../atas/AbsorcionViva/bin/Release/AbsorcionViva.dll"
-$dst3 = Join-Path $env:APPDATA "ATAS/Indicators/AbsorcionViva.dll"
-if (Test-Path $dll3) { Copy-Item -Force $dll3 $dst3; Paso ("DLL Absorcion Viva instalado: " + (Get-Item $dst3).LastWriteTime) }
-# --- Delta Vivo (24-09): hermano de Absorcion Viva, ensamblado aparte
-$dll4 = Join-Path $PSScriptRoot "../atas/DeltaVivo/bin/Release/DeltaVivo.dll"
-$dst4 = Join-Path $env:APPDATA "ATAS/Indicators/DeltaVivo.dll"
-if (Test-Path $dll4) { Copy-Item -Force $dll4 $dst4; Paso ("DLL Delta Vivo instalado: " + (Get-Item $dst4).LastWriteTime) }
-# --- Pauta (24-09): replica de "la pauta", ensamblado aparte, EN PRUEBA
-$dll5 = Join-Path $PSScriptRoot "../atas/Pauta/bin/Release/Pauta.dll"
-$dst5 = Join-Path $env:APPDATA "ATAS/Indicators/Pauta.dll"
-if (Test-Path $dll5) { Copy-Item -Force $dll5 $dst5; Paso ("DLL Pauta instalado: " + (Get-Item $dst5).LastWriteTime) }
+# --- SOLO la 3.0 (06-10-2026): este instalador no toca PythiaGexNiveles.dll (prod) ni PythiaGexDos.dll (2.0)
+$dll6 = Join-Path $PSScriptRoot "../atas/PythiaGexTres/bin/Release/PythiaGexTres.dll"
+$dst6 = Join-Path $env:APPDATA "ATAS/Indicators/PythiaGexTres.dll"
+if (Test-Path $dll6) { Copy-Item -Force $dll6 $dst6; Paso ("DLL 3.0 instalado: " + (Get-Item $dst6).LastWriteTime + " " + (Get-Item $dst6).Length + " bytes") } else { Paso "SIN DLL 3.0 en bin/Release: no se instalo nada" }
 Start-Process "C:\Program Files (x86)\ATAS Platform\OFT.Platform.exe"
 Paso "lanzado"
 for ($i = 0; $i -lt 60; $i++) {
@@ -79,6 +63,10 @@ if ($p.MainWindowTitle -eq "Authorization") {
     Start-Sleep -Seconds 2
     $res = Invocar "Connect" $null
     Paso "login: $res"
+    if ($res -notlike "INVOCADO*") {
+        # 8.0.15 (06-10): la ventana de login nueva no expone el boton Connect por UIA. Clic en un campo + Enter si funciona.
+        try { $ws = New-Object -ComObject WScript.Shell; $null = $ws.AppActivate($p.Id); Start-Sleep -Seconds 1; $ws.SendKeys("{ENTER}"); Paso "login: Enter enviado a la ventana de login" } catch { Paso "login: no pude mandar Enter: $_" }
+    }
 }
 for ($i = 0; $i -lt 60; $i++) {
     Start-Sleep -Seconds 2
@@ -91,6 +79,7 @@ for ($k = 0; $k -lt 3 -and $p -and $p.MainWindowTitle -eq "Authorization"; $k++)
     Start-Sleep -Seconds 3
     $res = Invocar "Connect" $null
     Paso "login reintento $($k+1): $res"
+    if ($res -notlike "INVOCADO*") { try { $ws = New-Object -ComObject WScript.Shell; $null = $ws.AppActivate($p.Id); Start-Sleep -Seconds 1; $ws.SendKeys("{ENTER}"); Paso "login reintento $($k+1): Enter enviado" } catch {} }
     for ($i = 0; $i -lt 30; $i++) { Start-Sleep -Seconds 2; $p = Get-Process OFT.Platform | Select-Object -First 1; if ($p -and $p.MainWindowTitle -like "ATAS*") { break } }
 }
 Paso "principal: '$($p.MainWindowTitle)'"

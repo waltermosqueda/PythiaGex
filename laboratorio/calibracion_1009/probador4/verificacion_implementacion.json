@@ -1,0 +1,47 @@
+{
+ "C24_vs_juez_pivotes": [
+  {
+   "dia": "2026-08-20",
+   "giros_causal": 226,
+   "giros_juez": 226,
+   "iguales": true,
+   "confirmacion_coherente": true
+  },
+  {
+   "dia": "2026-09-03",
+   "giros_causal": 145,
+   "giros_juez": 145,
+   "iguales": true,
+   "confirmacion_coherente": true
+  },
+  {
+   "dia": "2026-09-16",
+   "giros_causal": 146,
+   "giros_juez": 146,
+   "iguales": true,
+   "confirmacion_coherente": true
+  },
+  {
+   "dia": "2026-09-24",
+   "giros_causal": 209,
+   "giros_juez": 209,
+   "iguales": true,
+   "confirmacion_coherente": true
+  },
+  {
+   "dia": "2026-09-30",
+   "giros_causal": 196,
+   "giros_juez": 196,
+   "iguales": true,
+   "confirmacion_coherente": true
+  }
+ ],
+ "C24_nivel_es_mecha_de_vela_previa_violaciones_de_200": 0,
+ "C23_fuerza_bruta_errores_de_300": 0,
+ "C22_api_publica": {
+  "chequeados": 240,
+  "errores": [],
+  "n_errores": 0
+ },
+ "C19_C21_errores_definicion": 0
+}

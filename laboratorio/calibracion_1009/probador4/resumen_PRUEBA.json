@@ -1,0 +1,776 @@
+{
+ "fase": "PRUEBA",
+ "candidatas": [
+  "C19_RED25",
+  "C20_RED50",
+  "C21_RED100",
+  "C22_GRILLA_QQQ_C41",
+  "C23_E_RANGO60",
+  "C24_MECHA_PREVIA"
+ ],
+ "m1": {
+  "C19_RED25/noche": {
+   "id": "C19_RED25",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 694,
+   "llegadas": 694,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 81,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 49.13544668587896,
+   "corridos": 47.74262353359403,
+   "ventaja_corridos": 1.392823152284933,
+   "ic95_corridos": [
+    -1.4990892531876132,
+    4.443878664435874
+   ],
+   "ic90_inf_corridos": -1.070835096394494,
+   "azar_media": 50.27378293692709,
+   "azar_p5": 46.761669733980256,
+   "azar_p95": 53.848020911127705,
+   "ventaja_azar": -1.1383362510481305,
+   "p_azar": 0.697151424287856,
+   "ic95_azar": [
+    -3.7799298072915835,
+    1.7404786035535769
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 4,
+   "corridos_por_desplazamiento": {
+    "-31": 48.57142857142857,
+    "-19": 47.36842105263158,
+    "-11": 45.482866043613704,
+    "+11": 48.44903988183161,
+    "+19": 47.88135593220339,
+    "+31": 50.93632958801498
+   }
+  },
+  "C19_RED25/dia": {
+   "id": "C19_RED25",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 488,
+   "llegadas": 488,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 72,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 51.02459016393443,
+   "corridos": 51.32612966601179,
+   "ventaja_corridos": -0.301539502077361,
+   "ic95_corridos": [
+    -3.9176917603045758,
+    2.8839356260656257
+   ],
+   "ic90_inf_corridos": -3.262229016120066,
+   "azar_media": 51.50373622024619,
+   "azar_p5": 47.60548909897743,
+   "azar_p95": 55.357647296206615,
+   "ventaja_azar": -0.47914605631176244,
+   "p_azar": 0.5757121439280359,
+   "ic95_azar": [
+    -3.1749372777132634,
+    1.8335582242894222
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 4,
+   "corridos_por_desplazamiento": {
+    "-31": 51.92307692307692,
+    "-19": 52.02312138728324,
+    "-11": 51.30434782608695,
+    "+11": 51.02974828375286,
+    "+19": 50.836120401337794,
+    "+31": 50.85470085470085
+   }
+  },
+  "C20_RED50/noche": {
+   "id": "C20_RED50",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 359,
+   "llegadas": 359,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 39,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 48.18941504178273,
+   "corridos": 49.1725768321513,
+   "ventaja_corridos": -0.9831617903685697,
+   "ic95_corridos": [
+    -4.443884162614618,
+    2.0039384941891947
+   ],
+   "ic90_inf_corridos": -3.8422773952991207,
+   "azar_media": 47.6377820416187,
+   "azar_p5": 42.10407239819005,
+   "azar_p95": 52.91160908807968,
+   "ventaja_azar": 0.5516330001640313,
+   "p_azar": 0.43478260869565216,
+   "ic95_azar": [
+    -1.5985365886844405,
+    2.941571691596062
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 3,
+   "corridos_por_desplazamiento": {
+    "-31": 51.30434782608695,
+    "-19": 50.28409090909091,
+    "-11": 47.67123287671233,
+    "+11": 44.57142857142857,
+    "+19": 51.111111111111114,
+    "+31": 50.14577259475219
+   }
+  },
+  "C20_RED50/dia": {
+   "id": "C20_RED50",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 270,
+   "llegadas": 270,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 39,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 52.592592592592595,
+   "corridos": 49.90735021618283,
+   "ventaja_corridos": 2.685242376409768,
+   "ic95_corridos": [
+    -2.877238734943024,
+    8.374689826302728
+   ],
+   "ic90_inf_corridos": -1.9186598399559274,
+   "azar_media": 53.76710873174297,
+   "azar_p5": 47.82608695652174,
+   "azar_p95": 59.57446808510638,
+   "ventaja_azar": -1.1745161391503771,
+   "p_azar": 0.624687656171914,
+   "ic95_azar": [
+    -5.1741886016837455,
+    3.057166582862314
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 3,
+   "corridos_por_desplazamiento": {
+    "-31": 52.8957528957529,
+    "-19": 44.160583941605836,
+    "-11": 53.15614617940199,
+    "+11": 53.11355311355312,
+    "+19": 52.34657039711191,
+    "+31": 42.5531914893617
+   }
+  },
+  "C21_RED100/noche": {
+   "id": "C21_RED100",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 164,
+   "llegadas": 164,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 20,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 45.73170731707317,
+   "corridos": 48.75,
+   "ventaja_corridos": -3.018292682926827,
+   "ic95_corridos": [
+    -8.464064745037092,
+    1.198496019044247
+   ],
+   "ic90_inf_corridos": -7.532861476238622,
+   "azar_media": 46.41743416867071,
+   "azar_p5": 38.981950253136695,
+   "azar_p95": 53.52364185110664,
+   "ventaja_azar": -0.6857268515975363,
+   "p_azar": 0.5712143928035982,
+   "ic95_azar": [
+    -5.664834486835387,
+    3.447261438995238
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 1,
+   "corridos_por_desplazamiento": {
+    "-31": 50.753768844221106,
+    "-19": 51.666666666666664,
+    "-11": 44.705882352941174,
+    "+11": 44.5859872611465,
+    "+19": 51.5527950310559,
+    "+31": 48.554913294797686
+   }
+  },
+  "C21_RED100/dia": {
+   "id": "C21_RED100",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 130,
+   "llegadas": 130,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 20,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 55.38461538461539,
+   "corridos": 50.29868578255675,
+   "ventaja_corridos": 5.085929602058634,
+   "ic95_corridos": [
+    -3.2644356955380545,
+    15.04107121988899
+   ],
+   "ic90_inf_corridos": -2.011229612905141,
+   "azar_media": 49.23035324398995,
+   "azar_p5": 38.888888888888886,
+   "azar_p95": 58.73015873015873,
+   "ventaja_azar": 6.154262140625434,
+   "p_azar": 0.15792103948025987,
+   "ic95_azar": [
+    -2.147734368147736,
+    12.634149075983036
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 3,
+   "corridos_por_desplazamiento": {
+    "-31": 57.35294117647059,
+    "-19": 41.88034188034188,
+    "-11": 53.84615384615385,
+    "+11": 54.13533834586466,
+    "+19": 49.01960784313726,
+    "+31": 45.833333333333336
+   }
+  },
+  "C22_GRILLA_QQQ_C41/noche": {
+   "id": "C22_GRILLA_QQQ_C41",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 431,
+   "llegadas": 431,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 21,
+   "niveles_tipo": "strikes",
+   "M1": 52.66821345707657,
+   "corridos": 46.22950819672131,
+   "ventaja_corridos": 6.438705260355256,
+   "ic95_corridos": [
+    2.9853329719102373,
+    9.967457724388446
+   ],
+   "ic90_inf_corridos": 3.6192109777015427,
+   "azar_media": 48.689632602792074,
+   "azar_p5": 43.99907407407407,
+   "azar_p95": 53.37028931870112,
+   "ventaja_azar": 3.9785808542844947,
+   "p_azar": 0.08695652173913043,
+   "ic95_azar": [
+    0.9870097932850097,
+    6.4454850395315235
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 5,
+   "corridos_por_desplazamiento": {
+    "-31": 45.37313432835821,
+    "-19": 46.799116997792495,
+    "-11": 45.16129032258065,
+    "+11": 47.71084337349398,
+    "+19": 47.35632183908046,
+    "+31": 44.56521739130435
+   }
+  },
+  "C22_GRILLA_QQQ_C41/dia": {
+   "id": "C22_GRILLA_QQQ_C41",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 323,
+   "llegadas": 323,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 25,
+   "niveles_tipo": "strikes",
+   "M1": 49.845201238390096,
+   "corridos": 51.91011235955056,
+   "ventaja_corridos": -2.0649111211604634,
+   "ic95_corridos": [
+    -5.321804414015801,
+    2.207828032926855
+   ],
+   "ic90_inf_corridos": -4.793972638521559,
+   "azar_media": 49.911710049264336,
+   "azar_p5": 44.44444444444444,
+   "azar_p95": 55.49163211572799,
+   "ventaja_azar": -0.06650881087423954,
+   "p_azar": 0.5122438780609695,
+   "ic95_azar": [
+    -2.5747494699156612,
+    2.617523718669801
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 2,
+   "corridos_por_desplazamiento": {
+    "-31": 53.65853658536585,
+    "-19": 52.58358662613982,
+    "-11": 52.86624203821656,
+    "+11": 52.40963855421687,
+    "+19": 51.533742331288344,
+    "+31": 47.63948497854077
+   }
+  },
+  "C23_E_RANGO60/noche": {
+   "id": "C23_E_RANGO60",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 308,
+   "llegadas": 308,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 191,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 46.753246753246756,
+   "corridos": 47.23171565276829,
+   "ventaja_corridos": -0.4784688995215305,
+   "ic95_corridos": [
+    -6.1456914683579,
+    6.0057887120115785
+   ],
+   "ic90_inf_corridos": -5.4902483205731905,
+   "azar_media": 47.66527937077107,
+   "azar_p5": 43.12283805031446,
+   "azar_p95": 52.15771526001705,
+   "ventaja_azar": -0.9120326175243108,
+   "p_azar": 0.6361819090454772,
+   "ic95_azar": [
+    -6.049404411708526,
+    4.640634219975071
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 2,
+   "corridos_por_desplazamiento": {
+    "-31": 47.916666666666664,
+    "-19": 46.59090909090909,
+    "-11": 42.49084249084249,
+    "+11": 43.89140271493213,
+    "+19": 55.76923076923077,
+    "+31": 46.640316205533594
+   }
+  },
+  "C23_E_RANGO60/dia": {
+   "id": "C23_E_RANGO60",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 129,
+   "llegadas": 129,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 99,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 48.06201550387597,
+   "corridos": 48.1962481962482,
+   "ventaja_corridos": -0.13423269237222968,
+   "ic95_corridos": [
+    -11.27816798361136,
+    12.578814627994955
+   ],
+   "ic90_inf_corridos": -9.731989169348205,
+   "azar_media": 50.583727086611965,
+   "azar_p5": 44.91930577347978,
+   "azar_p95": 56.35642442272276,
+   "ventaja_azar": -2.521711582735996,
+   "p_azar": 0.7631184407796102,
+   "ic95_azar": [
+    -12.322520649139406,
+    10.161186710063697
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 2,
+   "corridos_por_desplazamiento": {
+    "-31": 41.12903225806452,
+    "-19": 50.38167938931298,
+    "-11": 49.25373134328358,
+    "+11": 42.857142857142854,
+    "+19": 52.04081632653061,
+    "+31": 53.7037037037037
+   }
+  },
+  "C24_MECHA_PREVIA/noche": {
+   "id": "C24_MECHA_PREVIA",
+   "ventana": "noche",
+   "modo": "tolerante",
+   "base": 589,
+   "llegadas": 589,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 192,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 48.89643463497453,
+   "corridos": 49.06583629893238,
+   "ventaja_corridos": -0.16940166395784928,
+   "ic95_corridos": [
+    -2.5908679159825585,
+    2.308532384979417
+   ],
+   "ic90_inf_corridos": -2.265885228432829,
+   "azar_media": 49.31321967149436,
+   "azar_p5": 46.069882925545905,
+   "azar_p95": 52.593074487126536,
+   "ventaja_azar": -0.41678503651982624,
+   "p_azar": 0.5832083958020989,
+   "ic95_azar": [
+    -2.201364898603904,
+    1.266613882467005
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 2,
+   "corridos_por_desplazamiento": {
+    "-31": 46.560846560846564,
+    "-19": 49.859154929577464,
+    "-11": 49.82993197278912,
+    "+11": 50.0,
+    "+19": 47.175141242937855,
+    "+31": 48.529411764705884
+   }
+  },
+  "C24_MECHA_PREVIA/dia": {
+   "id": "C24_MECHA_PREVIA",
+   "ventana": "dia",
+   "modo": "tolerante",
+   "base": 384,
+   "llegadas": 384,
+   "censuradas": 0,
+   "sesiones_con_llegadas": 6,
+   "niveles": 144,
+   "niveles_tipo": "niveles 5 pts por sesion",
+   "M1": 50.260416666666664,
+   "corridos": 53.425414364640886,
+   "ventaja_corridos": -3.164997697974222,
+   "ic95_corridos": [
+    -6.724470345452672,
+    0.5599486279493582
+   ],
+   "ic90_inf_corridos": -6.209122776483006,
+   "azar_media": 52.20316779048504,
+   "azar_p5": 48.38666085440279,
+   "azar_p95": 56.043956043956044,
+   "ventaja_azar": -1.9427511238183754,
+   "p_azar": 0.8120939530234883,
+   "ic95_azar": [
+    -5.861745725790861,
+    2.1611027947175527
+   ],
+   "sesiones_con_3": 6,
+   "sesiones_ganadas": 2,
+   "corridos_por_desplazamiento": {
+    "-31": 52.53164556962025,
+    "-19": 57.328990228013026,
+    "-11": 52.863436123348016,
+    "+11": 51.401869158878505,
+    "+19": 54.255319148936174,
+    "+31": 52.48618784530387
+   }
+  }
+ },
+ "seleccion": {},
+ "loo": {},
+ "mitades": {},
+ "criterios": {
+  "C19_RED25/noche": {
+   "p_azar": 0.697151424287856,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": true,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": true,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C19_RED25/dia": {
+   "p_azar": 0.5757121439280359,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": true,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": true,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C20_RED50/noche": {
+   "p_azar": 0.43478260869565216,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C20_RED50/dia": {
+   "p_azar": 0.624687656171914,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": true,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": true,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C21_RED100/noche": {
+   "p_azar": 0.5712143928035982,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C21_RED100/dia": {
+   "p_azar": 0.15792103948025987,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": true,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": true,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C22_GRILLA_QQQ_C41/noche": {
+   "p_azar": 0.08695652173913043,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": true,
+    "E5_no_empeora": true,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": true,
+    "E5_no_empeora": true,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C22_GRILLA_QQQ_C41/dia": {
+   "p_azar": 0.5122438780609695,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C23_E_RANGO60/noche": {
+   "p_azar": 0.6361819090454772,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C23_E_RANGO60/dia": {
+   "p_azar": 0.7631184407796102,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C24_MECHA_PREVIA/noche": {
+   "p_azar": 0.5832083958020989,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  },
+  "C24_MECHA_PREVIA/dia": {
+   "p_azar": 0.8120939530234883,
+   "p_holm_grupo4": 1.0,
+   "con_holm": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   },
+   "sin_ajustar": {
+    "E1_muestra": true,
+    "E2_tamano": false,
+    "E3_significancia": false,
+    "E4_consistencia": false,
+    "E5_no_empeora": false,
+    "E6_no_es_eco": true,
+    "gana": false
+   }
+  }
+ },
+ "chequeo_futuro": {
+  "C19_RED25": {
+   "propia": 3.100072516316171,
+   "anterior": 3.0819434372733863,
+   "siguiente": 3.029753265602322,
+   "alerta": false
+  },
+  "C20_RED50": {
+   "propia": 1.4865844815083396,
+   "anterior": 1.4926275078559343,
+   "siguiente": 1.4695210449927432,
+   "alerta": false
+  },
+  "C21_RED100": {
+   "propia": 0.6647328982354362,
+   "anterior": 0.6647328982354362,
+   "siguiente": 0.6652152878567973,
+   "alerta": false
+  },
+  "C22_GRILLA_QQQ_C41": {
+   "propia": 1.2048922257205135,
+   "anterior": 1.2048922257205135,
+   "siguiente": 1.2057682985942801,
+   "alerta": false
+  },
+  "C23_E_RANGO60": {
+   "propia": 0.7515151515151516,
+   "anterior": 6.866666666666667,
+   "siguiente": 0.7763221737020863,
+   "alerta": false
+  },
+  "C24_MECHA_PREVIA": {
+   "propia": 3.789596424175682,
+   "anterior": 3.7636846537539674,
+   "siguiente": 3.1247974068071316,
+   "alerta": false
+  }
+ }
+}

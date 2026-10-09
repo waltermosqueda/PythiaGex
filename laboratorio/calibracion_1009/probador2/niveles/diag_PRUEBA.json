@@ -1,0 +1,242 @@
+{
+ "2026-10-01": {
+  "dia": "2026-10-01",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-10-01 01:47:41",
+  "oi_nq_como": "salto de OI medido a las 01:47:41 UTC",
+  "minutos_libro": {
+   "QQQ": 1378,
+   "NDX": 1378,
+   "NQ": 707
+  },
+  "sin_conv": {
+   "QQQ": 0,
+   "NDX": 0,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "QQQ": {},
+   "NDX": {},
+   "NQ": {}
+  },
+  "env_max": {
+   "QQQ": 0.19716435185185185,
+   "NDX": 0.027650462962962963,
+   "NQ": 0.0031134259259259257
+  },
+  "zest_sin_cruce": 36,
+  "zest_lejos": 13,
+  "fam_minutos": 656,
+  "fam_sin_oi": 51,
+  "segundos": 35.1,
+  "filas": {
+   "C07": 2264,
+   "C08": 2756,
+   "C09": 2704,
+   "C10": 1329,
+   "C11": 1312,
+   "C12": 1312
+  }
+ },
+ "2026-10-02": {
+  "dia": "2026-10-02",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-10-02 02:00:00",
+  "oi_nq_como": "sin salto visible: suprimido hasta 02:00 UTC",
+  "minutos_libro": {
+   "QQQ": 1378,
+   "NDX": 1378,
+   "NQ": 699
+  },
+  "sin_conv": {
+   "QQQ": 0,
+   "NDX": 0,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "QQQ": {},
+   "NDX": {},
+   "NQ": {}
+  },
+  "env_max": {
+   "QQQ": 0.21489583333333334,
+   "NDX": 0.020497685185185185,
+   "NQ": 0.002800925925925926
+  },
+  "zest_sin_cruce": 77,
+  "zest_lejos": 3,
+  "fam_minutos": 697,
+  "fam_sin_oi": 2,
+  "segundos": 35.2,
+  "filas": {
+   "C07": 1946,
+   "C08": 2756,
+   "C09": 2756,
+   "C10": 1298,
+   "C11": 1274,
+   "C12": 1394
+  }
+ },
+ "2026-10-05": {
+  "dia": "2026-10-05",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "lunes o posferiado: OI ya actualizado",
+  "minutos_libro": {
+   "NQ": 955,
+   "QQQ": 1368,
+   "NDX": 1368
+  },
+  "sin_conv": {
+   "NQ": 0,
+   "QQQ": 0,
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NQ": {},
+   "QQQ": {},
+   "NDX": {}
+  },
+  "env_max": {
+   "NQ": 0.0034375,
+   "QQQ": 0.3782523148148148,
+   "NDX": 0.05534722222222222
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 955,
+  "fam_sin_oi": 0,
+  "segundos": 29.3,
+  "filas": {
+   "C07": 1571,
+   "C08": 2736,
+   "C09": 2736,
+   "C10": 1368,
+   "C11": 1910,
+   "C12": 1910
+  }
+ },
+ "2026-10-06": {
+  "dia": "2026-10-06",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-10-06 01:34:22",
+  "oi_nq_como": "salto de OI medido a las 01:34:22 UTC",
+  "minutos_libro": {
+   "NQ": 748,
+   "NDX": 1378,
+   "QQQ": 1378
+  },
+  "sin_conv": {
+   "NQ": 0,
+   "NDX": 0,
+   "QQQ": 0
+  },
+  "conv_origenes": {
+   "NQ": {},
+   "NDX": {},
+   "QQQ": {}
+  },
+  "env_max": {
+   "NQ": 0.002951388888888889,
+   "NDX": 0.04141203703703704,
+   "QQQ": 0.22203703703703703
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 690,
+  "fam_sin_oi": 58,
+  "segundos": 34.9,
+  "filas": {
+   "C07": 1385,
+   "C08": 2756,
+   "C09": 2756,
+   "C10": 1378,
+   "C11": 1380,
+   "C12": 1380
+  }
+ },
+ "2026-10-07": {
+  "dia": "2026-10-07",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-10-07 01:24:00",
+  "oi_nq_como": "salto de OI medido a las 01:24:00 UTC",
+  "minutos_libro": {
+   "NQ": 1364,
+   "QQQ": 1378,
+   "NDX": 1378
+  },
+  "sin_conv": {
+   "NQ": 0,
+   "QQQ": 0,
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NQ": {},
+   "QQQ": {},
+   "NDX": {}
+  },
+  "env_max": {
+   "NQ": 0.0033564814814814816,
+   "QQQ": 0.06976851851851852,
+   "NDX": 0.02039351851851852
+  },
+  "zest_sin_cruce": 15,
+  "zest_lejos": 4,
+  "fam_minutos": 1161,
+  "fam_sin_oi": 202,
+  "segundos": 38.0,
+  "filas": {
+   "C07": 1543,
+   "C08": 2756,
+   "C09": 2756,
+   "C10": 1359,
+   "C11": 2322,
+   "C12": 2322
+  }
+ },
+ "2026-10-08": {
+  "dia": "2026-10-08",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-10-08 01:29:45",
+  "oi_nq_como": "salto de OI medido a las 01:29:45 UTC",
+  "minutos_libro": {
+   "QQQ": 1378,
+   "NDX": 1378,
+   "NQ": 1316
+  },
+  "sin_conv": {
+   "QQQ": 0,
+   "NDX": 0,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "QQQ": {},
+   "NDX": {},
+   "NQ": {}
+  },
+  "env_max": {
+   "QQQ": 0.20109953703703703,
+   "NDX": 0.013645833333333333,
+   "NQ": 0.002916666666666667
+  },
+  "zest_sin_cruce": 5,
+  "zest_lejos": 3,
+  "fam_minutos": 1148,
+  "fam_sin_oi": 168,
+  "segundos": 36.2,
+  "filas": {
+   "C07": 1915,
+   "C08": 2756,
+   "C09": 2756,
+   "C10": 1370,
+   "C11": 2296,
+   "C12": 2296
+  }
+ }
+}

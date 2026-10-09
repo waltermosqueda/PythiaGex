@@ -1,0 +1,286 @@
+{
+ "generado_utc": "2026-10-09T04:55:17.280204+00:00",
+ "arnes_sha256": "1cd6083989f4ac7c870b96801a128cb8bae25f5c98efa023537d676cf44d991c",
+ "resultados_sha256": {
+  "C13_IMAN_QQQ_vol": "164b20fbb908ddefeddb0f042b78d9d2e671ab8aef8c54a68662d8d36546b2c9",
+  "C14_REPEL_QQQ_vol": "789e06e935c714a543978e7133867dcdc20e7ec5fb2891f9dcd00f48ec4b5ed5",
+  "C15_FLUJO_NQ": "9fcfa85b68d2d2d178387420f9d57f84a5937df413b01e1c4eac864f7ca7944d",
+  "C16_CONFLUENCIA_QQQ_NDX": "a1764b7c9fe6b49f8dce5a67edc7cf3293b061ed30d3ff165680490f31a371cd",
+  "C17_BANDA_EM": "9e3a632e700200fd858cede73e84d08cd2f342b8091998d039a4505b19f15b7d",
+  "C18_CW_PW_OI_QQQ": "e5452e9a7e356942e8cbff15a65856b0455fd57e03a2fda6c23a49250fc87b96"
+ },
+ "por_ventana": {
+  "noche": {
+   "finalistas": [],
+   "referencias": [],
+   "tabla": [
+    {
+     "candidata": "C13_IMAN_QQQ_vol",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.44355702920779,
+     "p_azar": 0.35129740518962077,
+     "mitades": {
+      "primera": {
+       "base": 101,
+       "ventaja_vs_corridos_pp": 1.8269125490748124
+      },
+      "segunda": {
+       "base": 75,
+       "ventaja_vs_corridos_pp": 1.5833333333333357
+      },
+      "cambia_de_signo": false
+     }
+    },
+    {
+     "candidata": "C14_REPEL_QQQ_vol",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -10.729049435472103,
+     "p_azar": 0.5588822355289421,
+     "mitades": {
+      "primera": {
+       "base": 69,
+       "ventaja_vs_corridos_pp": -7.694962042788127
+      },
+      "segunda": {
+       "base": 74,
+       "ventaja_vs_corridos_pp": -0.8474576271186436
+      },
+      "cambia_de_signo": false
+     }
+    },
+    {
+     "candidata": "C15_FLUJO_NQ",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.2911154844992705,
+     "p_azar": 0.3812375249500998,
+     "mitades": {
+      "primera": {
+       "base": 170,
+       "ventaja_vs_corridos_pp": 1.9322638146167535
+      },
+      "segunda": {
+       "base": 129,
+       "ventaja_vs_corridos_pp": -2.031423034330011
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C16_CONFLUENCIA_QQQ_NDX",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": 5.353535353535367,
+     "p_azar": 0.023952095808383235,
+     "mitades": {
+      "primera": {
+       "base": 12,
+       "ventaja_vs_corridos_pp": 36.29032258064516
+      },
+      "segunda": {
+       "base": 4,
+       "ventaja_vs_corridos_pp": -3.8461538461538467
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C17_BANDA_EM",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": null,
+     "p_azar": null,
+     "mitades": {
+      "primera": {
+       "base": 0,
+       "ventaja_vs_corridos_pp": null
+      },
+      "segunda": {
+       "base": 0,
+       "ventaja_vs_corridos_pp": null
+      },
+      "cambia_de_signo": false
+     }
+    },
+    {
+     "candidata": "C18_CW_PW_OI_QQQ",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -3.9130783037316825,
+     "p_azar": 0.11177644710578842,
+     "mitades": {
+      "primera": {
+       "base": 23,
+       "ventaja_vs_corridos_pp": 10.7050060627057
+      },
+      "segunda": {
+       "base": 35,
+       "ventaja_vs_corridos_pp": 2.715074980268348
+      },
+      "cambia_de_signo": false
+     }
+    }
+   ],
+   "loo_elegir_la_mejor": {
+    "eleccion_por_sesion": {
+     "2026-09-08": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-09": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-11": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-14": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-15": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-16": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-17": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-18": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-21": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-22": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-23": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-24": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-25": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-28": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-29": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-30": "C16_CONFLUENCIA_QQQ_NDX"
+    },
+    "parametro": "C16_CONFLUENCIA_QQQ_NDX",
+    "ventaja_fuera_de_muestra_pp": 28.183962264150942
+   }
+  },
+  "dia": {
+   "finalistas": [],
+   "referencias": [],
+   "tabla": [
+    {
+     "candidata": "C13_IMAN_QQQ_vol",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -6.365938748026377,
+     "p_azar": 0.3872255489021956,
+     "mitades": {
+      "primera": {
+       "base": 109,
+       "ventaja_vs_corridos_pp": 2.611583272358871
+      },
+      "segunda": {
+       "base": 90,
+       "ventaja_vs_corridos_pp": -0.5102040816326507
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C14_REPEL_QQQ_vol",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -7.605577105553246,
+     "p_azar": 0.38922155688622756,
+     "mitades": {
+      "primera": {
+       "base": 75,
+       "ventaja_vs_corridos_pp": 9.684210526315788
+      },
+      "segunda": {
+       "base": 65,
+       "ventaja_vs_corridos_pp": -6.618220489188232
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C15_FLUJO_NQ",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -7.906613458663352,
+     "p_azar": 0.720558882235529,
+     "mitades": {
+      "primera": {
+       "base": 250,
+       "ventaja_vs_corridos_pp": -4.4425021422450754
+      },
+      "segunda": {
+       "base": 163,
+       "ventaja_vs_corridos_pp": -1.3168225915920289
+      },
+      "cambia_de_signo": false
+     }
+    },
+    {
+     "candidata": "C16_CONFLUENCIA_QQQ_NDX",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -5.209294871794873,
+     "p_azar": 0.4471057884231537,
+     "mitades": {
+      "primera": {
+       "base": 20,
+       "ventaja_vs_corridos_pp": 10.445544554455445
+      },
+      "segunda": {
+       "base": 13,
+       "ventaja_vs_corridos_pp": -1.791359325605903
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C17_BANDA_EM",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -27.17168737060041,
+     "p_azar": 0.8502994011976048,
+     "mitades": {
+      "primera": {
+       "base": 35,
+       "ventaja_vs_corridos_pp": -14.390885188431199
+      },
+      "segunda": {
+       "base": 8,
+       "ventaja_vs_corridos_pp": -19.642857142857146
+      },
+      "cambia_de_signo": false
+     }
+    },
+    {
+     "candidata": "C18_CW_PW_OI_QQQ",
+     "rol": "candidata",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -7.2120418607308,
+     "p_azar": 0.3912175648702595,
+     "mitades": {
+      "primera": {
+       "base": 66,
+       "ventaja_vs_corridos_pp": 7.782560985903608
+      },
+      "segunda": {
+       "base": 58,
+       "ventaja_vs_corridos_pp": -2.830188679245282
+      },
+      "cambia_de_signo": true
+     }
+    }
+   ],
+   "loo_elegir_la_mejor": {
+    "eleccion_por_sesion": {
+     "2026-09-08": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-09": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-11": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-14": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-15": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-16": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-17": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-18": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-21": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-22": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-23": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-24": "C18_CW_PW_OI_QQQ",
+     "2026-09-25": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-28": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-29": "C16_CONFLUENCIA_QQQ_NDX",
+     "2026-09-30": "C16_CONFLUENCIA_QQQ_NDX"
+    },
+    "parametro": "C16_CONFLUENCIA_QQQ_NDX",
+    "ventaja_fuera_de_muestra_pp": -6.195652173913047
+   }
+  }
+ }
+}

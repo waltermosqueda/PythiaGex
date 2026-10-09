@@ -1,0 +1,71 @@
+{
+ "grupo": 2,
+ "probador": "probador2",
+ "hora_utc": "2026-10-09T05:05:31+00:00",
+ "hora_art": "2026-10-09 02:05:31 ART",
+ "nota": "Sello del GRUPO 2 (no es el arnes/finalistas.json comun: cada probador escribe en su subcarpeta). Las 6 candidatas del grupo son REFERENCIAS (PREREGISTRO sec. 8.3: siempre van a PRUEBA) y no tienen parametros libres (sec. 6 (3)); la seleccion de abajo es la regla 8.1-8.2 aplicada SOLO a este grupo, informativa.",
+ "finalistas_por_ventana_regla_8_solo_grupo2": {
+  "noche": [],
+  "dia": []
+ },
+ "referencias_a_prueba": [
+  "C07_C41_MAJORS_QQQ_oi",
+  "C08_C41_MUROS_QQQ_oi",
+  "C09_C41_MUROS_NDX_vol",
+  "C10_C41_ZEST_QQQ_vol",
+  "C11_C41_MUROS_NQ_oi",
+  "C12_C41_FAM_MUROS_oi"
+ ],
+ "parametros_congelados": {
+  "comun": "PREREGISTRO 7.0: grilla 1 min, F = evaluar.minutos_y_precio, foto/conversion D.conversion(...,'cuatro'), Hoy con envejecimiento, r=0,0375 q=0, M CBOE 100 / NQ 20, R = min(0,02 F, 100), empates al menor K",
+  "C07": "MAJORS QQQ OI: argmax GEX_oi>0 / argmin GEX_oi<0 en R; etiquetas D1/D2; K = strike QQQ",
+  "C08": "MUROS QQQ OI: argmax GC_oi>0 / argmin GP_oi<0 en R; D1/D2; K = strike QQQ",
+  "C09": "MUROS NDX vol: argmax GC_vol>0 / argmin GP_vol<0 en R; base 'cuatro'; D1/D2; K = strike NDX",
+  "C10": "ZEST QQQ vol: grilla c0=round(S) +-7,5 USD paso 0,05, cruce mas cercano a S interpolado, exacto cada minuto (sin cache por cubos), x rho; |Z-F|<=300; etiqueta Z; sin K",
+  "C11": "MUROS NQ OI Black-76, Fut = K + corr; OI con fecha: salto >=50 % de contratos comunes (>=20) entre 22:00 y 03:30 UTC, lunes y 2026-09-08 sin supresion, sin salto suprimido hasta 02:00 UTC; D1/D2; K = strike del libro (en 09-16..09-18 viene corrido por el spread U6->Z6, como lo dibujaba el indicador)",
+  "C12": "FAM MUROS OI: minutos con NQ, NDX y QQQ vigentes y OI de NQ valido; |Fut-F|<=3 % por libro; multiplicador FINAL NQ 20 / NDX y QQQ 100 USD/pt (backtest_familia C1); np.round(Fut/5)*5 y suma; argmax GC / argmin GP en R; sin K"
+ },
+ "arnes": {
+  "evaluar_py_sha256": "1cd6083989f4ac7c870b96801a128cb8bae25f5c98efa023537d676cf44d991c",
+  "juez_sha256": "a20a62688e888da22c36d9200bca5f63f16949ca90837545b37847a16188d5bf",
+  "preregistro_sha256": "927522e3919b4bafbd582b4d6686ab46391efe3108530dda5099f379f751bbca"
+ },
+ "codigo": {
+  "grupo2.py": "0e9e814035274c2f6bf27922b2d5c58f8c0c5d0296a0ebf3500642859324d432",
+  "evaluar_grupo2.py": "571f404261e576ecdde24984dbbf704fbd7f11f9be0f8d62330a9f0087f92c60",
+  "paridad_41.py": "8c2bfed9128cbaac4276e7efd7a7e9c65905312820762a2382ddf4e0f942c5fa"
+ },
+ "resultados_entrenamiento_sha256": {
+  "ENTRENAMIENTO_C07_C41_MAJORS_QQQ_oi.json": "f4e50cb1c0b1e39f29ddfeb2a158fde42a57e9415489bed7df9dcdcda7b0c48b",
+  "ENTRENAMIENTO_C07_C41_MAJORS_QQQ_oi.pkl": "5d3ab76e26f018d8c8cf43810d46edcb39160f6e7b8025c76ae8fa6707b0be9d",
+  "ENTRENAMIENTO_C08_C41_MUROS_QQQ_oi.json": "d6515ac31d3f5d4e4082eee3b3ac0ef1ac82a1e2594e3e87a8ed1aea16821418",
+  "ENTRENAMIENTO_C08_C41_MUROS_QQQ_oi.pkl": "239ac8619b2c3d3c95caf9800ea860e8ed801b2c98cb662d513b64f264478314",
+  "ENTRENAMIENTO_C09_C41_MUROS_NDX_vol.json": "fd594f6b35db99c81f908350f3dfd84d590c150d15c8effb1951125aefbc9899",
+  "ENTRENAMIENTO_C09_C41_MUROS_NDX_vol.pkl": "ae4a4cfa9e9c0a07087c417b45a8669a85504cd33290d331e0d5f0f233f509c0",
+  "ENTRENAMIENTO_C10_C41_ZEST_QQQ_vol.json": "2a0a507a98499dd79c00cee07d830a8e59fa57fa19348bb60eea97fb162d81c1",
+  "ENTRENAMIENTO_C10_C41_ZEST_QQQ_vol.pkl": "f8bc033e8841d8241e172edb3d2201e44cdc7b277bf83810a9054da1844da07b",
+  "ENTRENAMIENTO_C11_C41_MUROS_NQ_oi.json": "bd36cabcb7fdc394f8f2e8ac9a77f15ad7c155575bea20c409a12d3022ce5b17",
+  "ENTRENAMIENTO_C11_C41_MUROS_NQ_oi.pkl": "9958a2bcb1370b848d9cc6f1d12d9efbaa6f4d0e71d8e1ffe9d53c8dd40af7e2",
+  "ENTRENAMIENTO_C12_C41_FAM_MUROS_oi.json": "73f5f46e612f79dec7b55ffd12a95920d89de5dc8614f740fe848ef63e178cd4",
+  "ENTRENAMIENTO_C12_C41_FAM_MUROS_oi.pkl": "1a9e600c06c2ba6d0615792a3b9d04ce346622de8034223333905ac5cd350cb0",
+  "resumen_ENTRENAMIENTO.json": "33b9ebb9f53336e1cfe6e5b3e0bc77e7a1416e7dddfaa8bffb3f3cd2559b2418"
+ },
+ "prueba": {
+  "dias": [
+   "2026-10-01",
+   "2026-10-02",
+   "2026-10-05",
+   "2026-10-06",
+   "2026-10-07",
+   "2026-10-08"
+  ],
+  "n_azar": 2000,
+  "n_boot": 2000,
+  "modos": [
+   "tolerante",
+   "estricto",
+   "muy_tolerante"
+  ],
+  "marco": 1
+ }
+}

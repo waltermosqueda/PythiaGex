@@ -1,0 +1,1013 @@
+{
+ "2026-08-19": {
+  "dia": "2026-08-19",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 440
+  },
+  "sin_conv": {
+   "NDX": 10
+  },
+  "conv_origenes": {
+   "NDX": {
+    "sin rueda sincronizada con >= 20 muestras: NDX no se dibuja": 10
+   }
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 6.5,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-08-20": {
+  "dia": "2026-08-20",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 6.7,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-08-21": {
+  "dia": "2026-08-21",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 6.6,
+  "filas": {
+   "C09": 866
+  }
+ },
+ "2026-08-24": {
+  "dia": "2026-08-24",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 7.1,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-08-25": {
+  "dia": "2026-08-25",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 5.7,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-08-26": {
+  "dia": "2026-08-26",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 5.6,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-08-27": {
+  "dia": "2026-08-27",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 5.8,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-08-28": {
+  "dia": "2026-08-28",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 5.8,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-08-31": {
+  "dia": "2026-08-31",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 5.9,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-09-01": {
+  "dia": "2026-09-01",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 4.7,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-09-02": {
+  "dia": "2026-09-02",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 4.4,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-09-03": {
+  "dia": "2026-09-03",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 5.4,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-09-04": {
+  "dia": "2026-09-04",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 450
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.0
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 4.9,
+  "filas": {
+   "C09": 868
+  }
+ },
+ "2026-09-08": {
+  "dia": "2026-09-08",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "lunes o posferiado: OI ya actualizado",
+  "minutos_libro": {
+   "NDX": 1350,
+   "NQ": 1307
+  },
+  "sin_conv": {
+   "NDX": 0,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "NDX": {},
+   "NQ": {}
+  },
+  "env_max": {
+   "NDX": 0.03847222222222222,
+   "NQ": 0.0033796296296296296
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 9.0,
+  "filas": {
+   "C09": 2700,
+   "C11": 2567
+  }
+ },
+ "2026-09-09": {
+  "dia": "2026-09-09",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-09 02:00:00",
+  "oi_nq_como": "sin salto visible: suprimido hasta 02:00 UTC",
+  "minutos_libro": {
+   "NQ": 359,
+   "NDX": 1368
+  },
+  "sin_conv": {
+   "NQ": 0,
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NQ": {},
+   "NDX": {}
+  },
+  "env_max": {
+   "NQ": 0.003148148148148148,
+   "NDX": 0.04047453703703704
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 7.3,
+  "filas": {
+   "C09": 2736,
+   "C11": 412
+  }
+ },
+ "2026-09-10": {
+  "dia": "2026-09-10",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "sin NQ",
+  "minutos_libro": {
+   "NDX": 1370
+  },
+  "sin_conv": {
+   "NDX": 0
+  },
+  "conv_origenes": {
+   "NDX": {}
+  },
+  "env_max": {
+   "NDX": 0.02466435185185185
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 0,
+  "fam_sin_oi": 0,
+  "segundos": 4.2,
+  "filas": {
+   "C09": 2718
+  }
+ },
+ "2026-09-11": {
+  "dia": "2026-09-11",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-11 02:00:00",
+  "oi_nq_como": "sin fotos de noche: suprimido hasta 02:00 UTC",
+  "minutos_libro": {
+   "NDX": 1379,
+   "QQQ": 126,
+   "NQ": 919
+  },
+  "sin_conv": {
+   "NDX": 0,
+   "QQQ": 175,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "NDX": {},
+   "QQQ": {
+    "razon con < 5 muestras vivas": 175
+   },
+   "NQ": {}
+  },
+  "env_max": {
+   "NDX": 0.031157407407407408,
+   "QQQ": 0.01443287037037037,
+   "NQ": 0.003310185185185185
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 97,
+  "fam_sin_oi": 0,
+  "segundos": 9.8,
+  "filas": {
+   "C07": 129,
+   "C08": 252,
+   "C09": 2758,
+   "C10": 126,
+   "C11": 1838,
+   "C12": 194
+  }
+ },
+ "2026-09-14": {
+  "dia": "2026-09-14",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "lunes o posferiado: OI ya actualizado",
+  "minutos_libro": {
+   "NQ": 798,
+   "NDX": 1370,
+   "QQQ": 1353
+  },
+  "sin_conv": {
+   "NQ": 0,
+   "NDX": 0,
+   "QQQ": 0
+  },
+  "conv_origenes": {
+   "NQ": {},
+   "NDX": {},
+   "QQQ": {}
+  },
+  "env_max": {
+   "NQ": 0.0033564814814814816,
+   "NDX": 0.02826388888888889,
+   "QQQ": 0.47150462962962963
+  },
+  "zest_sin_cruce": 941,
+  "zest_lejos": 0,
+  "fam_minutos": 782,
+  "fam_sin_oi": 0,
+  "segundos": 8.1,
+  "filas": {
+   "C07": 1368,
+   "C08": 2706,
+   "C09": 2740,
+   "C10": 412,
+   "C11": 1596,
+   "C12": 1564
+  }
+ },
+ "2026-09-15": {
+  "dia": "2026-09-15",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-15 02:00:00",
+  "oi_nq_como": "sin salto visible: suprimido hasta 02:00 UTC",
+  "minutos_libro": {
+   "QQQ": 598,
+   "NDX": 301,
+   "NQ": 624
+  },
+  "sin_conv": {
+   "QQQ": 769,
+   "NDX": 1066,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "QQQ": {
+    "contrato de la razon U6 != Z6": 14,
+    "razon con < 5 muestras vivas": 755
+   },
+   "NDX": {
+    "la rueda 2026-09-14 es de U6 y el grafico es Z6: se descarta": 1066
+   },
+   "NQ": {}
+  },
+  "env_max": {
+   "QQQ": 0.02181712962962963,
+   "NDX": 0.015381944444444445,
+   "NQ": 0.0031018518518518517
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 301,
+  "fam_sin_oi": 0,
+  "segundos": 10.5,
+  "filas": {
+   "C07": 733,
+   "C08": 1196,
+   "C09": 602,
+   "C10": 598,
+   "C11": 1238,
+   "C12": 602
+  }
+ },
+ "2026-09-16": {
+  "dia": "2026-09-16",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-16 01:52:40",
+  "oi_nq_como": "salto de OI medido a las 01:52:40 UTC",
+  "minutos_libro": {
+   "NDX": 1377,
+   "NQ": 984,
+   "QQQ": 1367
+  },
+  "sin_conv": {
+   "NDX": 0,
+   "NQ": 0,
+   "QQQ": 0
+  },
+  "conv_origenes": {
+   "NDX": {},
+   "NQ": {},
+   "QQQ": {}
+  },
+  "env_max": {
+   "NDX": 0.032824074074074075,
+   "NQ": 0.003125,
+   "QQQ": 0.10201388888888889
+  },
+  "zest_sin_cruce": 24,
+  "zest_lejos": 3,
+  "fam_minutos": 773,
+  "fam_sin_oi": 201,
+  "segundos": 23.8,
+  "filas": {
+   "C07": 1533,
+   "C08": 2734,
+   "C09": 2754,
+   "C10": 1340,
+   "C11": 1546,
+   "C12": 1546
+  }
+ },
+ "2026-09-17": {
+  "dia": "2026-09-17",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-17 01:33:10",
+  "oi_nq_como": "salto de OI medido a las 01:33:10 UTC",
+  "minutos_libro": {
+   "NDX": 1379,
+   "QQQ": 1379,
+   "NQ": 954
+  },
+  "sin_conv": {
+   "NDX": 0,
+   "QQQ": 0,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "NDX": {},
+   "QQQ": {},
+   "NQ": {}
+  },
+  "env_max": {
+   "NDX": 0.03201388888888889,
+   "QQQ": 0.22381944444444443,
+   "NQ": 0.003425925925925926
+  },
+  "zest_sin_cruce": 2,
+  "zest_lejos": 24,
+  "fam_minutos": 741,
+  "fam_sin_oi": 213,
+  "segundos": 21.4,
+  "filas": {
+   "C07": 1532,
+   "C08": 2758,
+   "C09": 2758,
+   "C10": 1353,
+   "C11": 1482,
+   "C12": 1482
+  }
+ },
+ "2026-09-18": {
+  "dia": "2026-09-18",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-18 01:48:40",
+  "oi_nq_como": "salto de OI medido a las 01:48:40 UTC",
+  "minutos_libro": {
+   "NQ": 1127,
+   "NDX": 1371,
+   "QQQ": 1367
+  },
+  "sin_conv": {
+   "NQ": 0,
+   "NDX": 0,
+   "QQQ": 0
+  },
+  "conv_origenes": {
+   "NQ": {},
+   "NDX": {},
+   "QQQ": {}
+  },
+  "env_max": {
+   "NQ": 0.003425925925925926,
+   "NDX": 0.03347222222222222,
+   "QQQ": 0.20458333333333334
+  },
+  "zest_sin_cruce": 40,
+  "zest_lejos": 20,
+  "fam_minutos": 900,
+  "fam_sin_oi": 216,
+  "segundos": 21.9,
+  "filas": {
+   "C07": 1899,
+   "C08": 2734,
+   "C09": 2742,
+   "C10": 1307,
+   "C11": 1800,
+   "C12": 1800
+  }
+ },
+ "2026-09-21": {
+  "dia": "2026-09-21",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "lunes o posferiado: OI ya actualizado",
+  "minutos_libro": {
+   "QQQ": 1369,
+   "NDX": 1379,
+   "NQ": 932
+  },
+  "sin_conv": {
+   "QQQ": 0,
+   "NDX": 0,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "QQQ": {},
+   "NDX": {},
+   "NQ": {}
+  },
+  "env_max": {
+   "QQQ": 0.14212962962962963,
+   "NDX": 0.04487268518518518,
+   "NQ": 0.0033564814814814816
+  },
+  "zest_sin_cruce": 903,
+  "zest_lejos": 2,
+  "fam_minutos": 923,
+  "fam_sin_oi": 0,
+  "segundos": 24.3,
+  "filas": {
+   "C07": 1369,
+   "C08": 2678,
+   "C09": 2712,
+   "C10": 464,
+   "C11": 1668,
+   "C12": 1787
+  }
+ },
+ "2026-09-22": {
+  "dia": "2026-09-22",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-22 01:29:15",
+  "oi_nq_como": "salto de OI medido a las 01:29:15 UTC",
+  "minutos_libro": {
+   "NDX": 1378,
+   "NQ": 1377,
+   "QQQ": 1378
+  },
+  "sin_conv": {
+   "NDX": 0,
+   "NQ": 0,
+   "QQQ": 0
+  },
+  "conv_origenes": {
+   "NDX": {},
+   "NQ": {},
+   "QQQ": {}
+  },
+  "env_max": {
+   "NDX": 0.031157407407407408,
+   "NQ": 0.003159722222222222,
+   "QQQ": 0.1318287037037037
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 1168,
+  "fam_sin_oi": 208,
+  "segundos": 27.8,
+  "filas": {
+   "C07": 1817,
+   "C08": 2206,
+   "C09": 2756,
+   "C10": 1378,
+   "C11": 2284,
+   "C12": 2336
+  }
+ },
+ "2026-09-23": {
+  "dia": "2026-09-23",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-23 01:27:11",
+  "oi_nq_como": "salto de OI medido a las 01:27:11 UTC",
+  "minutos_libro": {
+   "NDX": 929,
+   "QQQ": 929,
+   "NQ": 934
+  },
+  "sin_conv": {
+   "NDX": 0,
+   "QQQ": 0,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "NDX": {},
+   "QQQ": {},
+   "NQ": {}
+  },
+  "env_max": {
+   "NDX": 0.40186342592592594,
+   "QQQ": 0.3963888888888889,
+   "NQ": 0.0032175925925925926
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 285,
+  "fam_sin_oi": 206,
+  "segundos": 16.8,
+  "filas": {
+   "C07": 929,
+   "C08": 1858,
+   "C09": 1858,
+   "C10": 929,
+   "C11": 1456,
+   "C12": 570
+  }
+ },
+ "2026-09-24": {
+  "dia": "2026-09-24",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-24 01:33:50",
+  "oi_nq_como": "salto de OI medido a las 01:33:50 UTC",
+  "minutos_libro": {
+   "NQ": 1336,
+   "NDX": 1116,
+   "QQQ": 197
+  },
+  "sin_conv": {
+   "NQ": 0,
+   "NDX": 0,
+   "QQQ": 0
+  },
+  "conv_origenes": {
+   "NQ": {},
+   "NDX": {},
+   "QQQ": {}
+  },
+  "env_max": {
+   "NQ": 0.0034375,
+   "NDX": 0.6376157407407408,
+   "QQQ": 0.003287037037037037
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 170,
+  "fam_sin_oi": 0,
+  "segundos": 15.7,
+  "filas": {
+   "C07": 387,
+   "C08": 394,
+   "C09": 1903,
+   "C10": 197,
+   "C11": 2246,
+   "C12": 340
+  }
+ },
+ "2026-09-25": {
+  "dia": "2026-09-25",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-25 02:00:00",
+  "oi_nq_como": "sin salto visible: suprimido hasta 02:00 UTC",
+  "minutos_libro": {
+   "QQQ": 1377,
+   "NDX": 1378,
+   "NQ": 391
+  },
+  "sin_conv": {
+   "QQQ": 0,
+   "NDX": 0,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "QQQ": {},
+   "NDX": {},
+   "NQ": {}
+  },
+  "env_max": {
+   "QQQ": 0.1449074074074074,
+   "NDX": 0.02730324074074074,
+   "NQ": 0.003287037037037037
+  },
+  "zest_sin_cruce": 108,
+  "zest_lejos": 0,
+  "fam_minutos": 273,
+  "fam_sin_oi": 116,
+  "segundos": 20.0,
+  "filas": {
+   "C07": 2138,
+   "C08": 2754,
+   "C09": 2756,
+   "C10": 1269,
+   "C11": 548,
+   "C12": 546
+  }
+ },
+ "2026-09-28": {
+  "dia": "2026-09-28",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "None",
+  "oi_nq_como": "lunes o posferiado: OI ya actualizado",
+  "minutos_libro": {
+   "NQ": 795,
+   "NDX": 1369,
+   "QQQ": 1369
+  },
+  "sin_conv": {
+   "NQ": 0,
+   "NDX": 0,
+   "QQQ": 0
+  },
+  "conv_origenes": {
+   "NQ": {},
+   "NDX": {},
+   "QQQ": {}
+  },
+  "env_max": {
+   "NQ": 0.0033564814814814816,
+   "NDX": 0.03577546296296296,
+   "QQQ": 0.15935185185185186
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 795,
+  "fam_sin_oi": 0,
+  "segundos": 22.9,
+  "filas": {
+   "C07": 1938,
+   "C08": 2738,
+   "C09": 2738,
+   "C10": 1369,
+   "C11": 1590,
+   "C12": 1590
+  }
+ },
+ "2026-09-29": {
+  "dia": "2026-09-29",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-29 02:00:00",
+  "oi_nq_como": "sin salto visible: suprimido hasta 02:00 UTC",
+  "minutos_libro": {
+   "NDX": 1378,
+   "QQQ": 1378,
+   "NQ": 435
+  },
+  "sin_conv": {
+   "NDX": 0,
+   "QQQ": 0,
+   "NQ": 0
+  },
+  "conv_origenes": {
+   "NDX": {},
+   "QQQ": {},
+   "NQ": {}
+  },
+  "env_max": {
+   "NDX": 0.024270833333333332,
+   "QQQ": 0.1909837962962963,
+   "NQ": 0.0032407407407407406
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 435,
+  "fam_sin_oi": 0,
+  "segundos": 22.6,
+  "filas": {
+   "C07": 1897,
+   "C08": 2756,
+   "C09": 2756,
+   "C10": 1378,
+   "C11": 870,
+   "C12": 870
+  }
+ },
+ "2026-09-30": {
+  "dia": "2026-09-30",
+  "minutos": 1380,
+  "minutos_con_F": 1379,
+  "oi_nq_viejo_hasta": "2026-09-30 01:42:27",
+  "oi_nq_como": "salto de OI medido a las 01:42:27 UTC",
+  "minutos_libro": {
+   "NDX": 1379,
+   "NQ": 813,
+   "QQQ": 1378
+  },
+  "sin_conv": {
+   "NDX": 0,
+   "NQ": 0,
+   "QQQ": 0
+  },
+  "conv_origenes": {
+   "NDX": {},
+   "NQ": {},
+   "QQQ": {}
+  },
+  "env_max": {
+   "NDX": 0.022453703703703705,
+   "NQ": 0.003449074074074074,
+   "QQQ": 0.23167824074074075
+  },
+  "zest_sin_cruce": 0,
+  "zest_lejos": 0,
+  "fam_minutos": 607,
+  "fam_sin_oi": 206,
+  "segundos": 14.5,
+  "filas": {
+   "C07": 2160,
+   "C08": 2756,
+   "C09": 2758,
+   "C10": 1378,
+   "C11": 1214,
+   "C12": 1214
+  }
+ }
+}

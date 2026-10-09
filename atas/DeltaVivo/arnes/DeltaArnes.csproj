@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- EL ARNES DE PARIDAD: consola, SIN ninguna referencia a ATAS. Compila el MISMO
+       DeltaNucleo.cs que va adentro del indicador, para que lo que se compara contra el Python
+       sea exactamente el codigo que corre en el grafico. Molde ya probado:
+       atas/AbsorcionViva/arnes/AbsorcionArnes.csproj (ronda 10, 34.326 episodios, 100,000 %). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>DeltaArnes</AssemblyName>
+    <RootNamespace>DeltaArnes</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\DeltaNucleo.cs" Link="DeltaNucleo.cs" />
+  </ItemGroup>
+
+</Project>

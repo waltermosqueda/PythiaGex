@@ -1,0 +1,1290 @@
+{
+ "generado": "2026-10-09T03:42:36.795257+00:00",
+ "fuentes": {},
+ "dias": {
+  "2026-10-07": {
+   "kyle_MNQ": {
+    "minutos": 143,
+    "lambda_pts_por_ctoMNQ_1min": 0.01069627331315923,
+    "r2_1min": 0.6680977520037886,
+    "vol_MNQ_por_min_mediana": 1788.0,
+    "vol_MNQ_dia_rueda": 316581.0,
+    "|flujo_neto_1min|_mediana_MNQ": 190.0,
+    "rango_1min_mediana_pts": 7.5,
+    "rango_5min_mediana_pts": -Infinity,
+    "precio_max_rueda": 31415.25,
+    "precio_min_rueda": 31332.75
+   },
+   "fotos": [
+    {
+     "hora_NY_dato": "2026-10-07T14:30:11",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 31391.0,
+     "QQQ": 757.6,
+     "NDX": 31143.0547,
+     "R": 41.43479408658923,
+     "B": 247.9452999999994,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -10.67238828060889,
+      "L_spot_NDX_ctosNQ_por_pt": 9.339648561186655,
+      "L_spot_familia": -1.3327397194222357,
+      "L_spot_solo0DTE": -1.8515983394225959,
+      "GEX_familia_MUSD_por_1pct": -262.6549794448095,
+      "L_max_grilla": 45.00736819994691,
+      "L_min_grilla": -37.841208472381055,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31396.2
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31667.0,
+        45.0
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 842.0909220753197,
+      "A_spot_ctosNQ_por_hora": 632.6179507982004,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 605.2545642705103,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       755.0,
+       31283.3,
+       -4.37
+      ],
+      "NDX_strike_max_abs": [
+       31080.0,
+       31327.9,
+       2.35
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": 405.11597694528973,
+      "L_spot_NDX_ctosNQ_por_pt": 331.17661687791906,
+      "L_spot_familia": 736.2925938232088,
+      "L_spot_solo0DTE": 725.7226069280439,
+      "GEX_familia_MUSD_por_1pct": 145107.79057432048,
+      "L_max_grilla": 824.7019513518901,
+      "L_min_grilla": -531.8940314308768,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31289.9
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31429.0,
+        824.7
+       ]
+      ],
+      "atractores_charm_0DTE": [
+       31454.1
+      ],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 14598.65252226411,
+      "A_spot_ctosNQ_por_hora": 8991.594807332567,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 2138.3102788114015,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       757.0,
+       31366.1,
+       155.87
+      ],
+      "NDX_strike_max_abs": [
+       31200.0,
+       31447.9,
+       75.48
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 62.27261536790933,
+      "L_spot_NDX_ctosNQ_por_pt": 39.85700125590254,
+      "L_spot_familia": 102.12961662381187,
+      "L_spot_solo0DTE": 49.092738131250314,
+      "GEX_familia_MUSD_por_1pct": 20127.600283919342,
+      "L_max_grilla": 113.43032689535343,
+      "L_min_grilla": 76.7561727208948,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31489.0,
+        113.4
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       31371.7
+      ],
+      "A_max_abs_ctosNQ_por_hora": 643.1186968667876,
+      "A_spot_ctosNQ_por_hora": 191.50808595527644,
+      "vanna_spot_ctosNQ_por_punto_de_vol": -250.32412011122534,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       755.0,
+       31283.3,
+       7.81
+      ],
+      "NDX_strike_max_abs": [
+       31080.0,
+       31327.9,
+       2.54
+      ],
+      "centroide_bruto_+-300": 31386.3
+     },
+     "AL_strike_QQQ_0DTE": {
+      "K": 760.0,
+      "K_en_NQ": 31490.4,
+      "oi_call": 7659.0,
+      "oi_put": 6949.0,
+      "vol_call": 128151.0,
+      "vol_put": 10622.0,
+      "iv": 0.161,
+      "dias": 0.062372685185185184
+     }
+    },
+    {
+     "hora_NY_dato": "2026-10-07T15:15:12",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 31358.0,
+     "QQQ": 756.78,
+     "NDX": 31111.6113,
+     "R": 41.43608446312006,
+     "B": 246.38869999999952,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -14.207497616488876,
+      "L_spot_NDX_ctosNQ_por_pt": 6.435490534621861,
+      "L_spot_familia": -7.772007081867015,
+      "L_spot_solo0DTE": -6.0870966763782235,
+      "GEX_familia_MUSD_por_1pct": -1528.4804732757923,
+      "L_max_grilla": 50.470131478197075,
+      "L_min_grilla": -36.6439968807077,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31390.6
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31579.0,
+        50.5
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 1625.6669302550745,
+      "A_spot_ctosNQ_por_hora": 756.1535921791328,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 551.5872638637555,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       755.0,
+       31284.2,
+       -5.29
+      ],
+      "NDX_strike_max_abs": [
+       31080.0,
+       31326.4,
+       3.91
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": 352.08649244477124,
+      "L_spot_NDX_ctosNQ_por_pt": 224.7688043483864,
+      "L_spot_familia": 576.8552967931577,
+      "L_spot_solo0DTE": 572.4656287276971,
+      "GEX_familia_MUSD_por_1pct": 113447.15049362075,
+      "L_max_grilla": 1039.7612796234414,
+      "L_min_grilla": -600.8901433725609,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31304.4
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31429.0,
+        1039.8
+       ]
+      ],
+      "atractores_charm_0DTE": [
+       31463.3
+      ],
+      "repulsores_charm_0DTE": [
+       31081.6
+      ],
+      "A_max_abs_ctosNQ_por_hora": 22186.94380935355,
+      "A_spot_ctosNQ_por_hora": 21658.36793152903,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 2618.3422573785188,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       757.0,
+       31367.1,
+       228.78
+      ],
+      "NDX_strike_max_abs": [
+       31150.0,
+       31396.4,
+       48.8
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 58.72207128131817,
+      "L_spot_NDX_ctosNQ_por_pt": 37.20842209243486,
+      "L_spot_familia": 95.93049337375302,
+      "L_spot_solo0DTE": 41.25825942656263,
+      "GEX_familia_MUSD_por_1pct": 18866.15443977065,
+      "L_max_grilla": 109.65665291135244,
+      "L_min_grilla": 81.51555963104568,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31491.0,
+        109.7
+       ],
+       [
+        31288.0,
+        99.5
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       31375.7
+      ],
+      "A_max_abs_ctosNQ_por_hora": 1361.9589847205712,
+      "A_spot_ctosNQ_por_hora": -327.85366134814353,
+      "vanna_spot_ctosNQ_por_punto_de_vol": -292.8582130402643,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       755.0,
+       31284.2,
+       9.29
+      ],
+      "NDX_strike_max_abs": [
+       31080.0,
+       31326.4,
+       4.2
+      ],
+      "centroide_bruto_+-300": 31337.6
+     },
+     "AL_strike_QQQ_0DTE": {
+      "K": 760.0,
+      "K_en_NQ": 31491.4,
+      "oi_call": 7659.0,
+      "oi_put": 6949.0,
+      "vol_call": 140238.0,
+      "vol_put": 11382.0,
+      "iv": 0.1807,
+      "dias": 0.03111111111111111
+     }
+    },
+    {
+     "hora_NY_dato": "2026-10-07T15:45:13",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 31392.25,
+     "QQQ": 757.61,
+     "NDX": 31142.0977,
+     "R": 41.435897097451196,
+     "B": 250.15230000000156,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -4.6353369074115,
+      "L_spot_NDX_ctosNQ_por_pt": 4.664212379922365,
+      "L_spot_familia": 0.02887547251086442,
+      "L_spot_solo0DTE": 0.0,
+      "GEX_familia_MUSD_por_1pct": 5.691201783734782,
+      "L_max_grilla": 17.965089895303905,
+      "L_min_grilla": -15.779707639298822,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31391.5
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 0.0,
+      "A_spot_ctosNQ_por_hora": 0.0,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 549.3207293425614,
+      "hay_0DTE_en_la_foto": false,
+      "QQQ_strike_max_abs": [
+       755.0,
+       31284.1,
+       -2.84
+      ],
+      "NDX_strike_max_abs": [
+       31500.0,
+       31750.2,
+       0.87
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": 0.869435360828895,
+      "L_spot_NDX_ctosNQ_por_pt": 5.568710237617451,
+      "L_spot_familia": 6.438145598446346,
+      "L_spot_solo0DTE": 0.0,
+      "GEX_familia_MUSD_por_1pct": 1268.9241950945031,
+      "L_max_grilla": 39.49503302764904,
+      "L_min_grilla": -49.29350357201186,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31361.2
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 0.0,
+      "A_spot_ctosNQ_por_hora": 0.0,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 1091.1590981783356,
+      "hay_0DTE_en_la_foto": false,
+      "QQQ_strike_max_abs": [
+       760.0,
+       31491.3,
+       6.35
+      ],
+      "NDX_strike_max_abs": [
+       31300.0,
+       31550.2,
+       1.08
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 39.26454819895297,
+      "L_spot_NDX_ctosNQ_por_pt": 15.648185375719853,
+      "L_spot_familia": 54.91273357467283,
+      "L_spot_solo0DTE": 0.0,
+      "GEX_familia_MUSD_por_1pct": 10823.007213209938,
+      "L_max_grilla": 58.682531775374144,
+      "L_min_grilla": 44.022152566605186,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31159.0,
+        58.7
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 0.0,
+      "A_spot_ctosNQ_por_hora": 0.0,
+      "vanna_spot_ctosNQ_por_punto_de_vol": -326.3354991041722,
+      "hay_0DTE_en_la_foto": false,
+      "QQQ_strike_max_abs": [
+       754.0,
+       31242.7,
+       5.91
+      ],
+      "NDX_strike_max_abs": [
+       31000.0,
+       31250.2,
+       1.04
+      ],
+      "centroide_bruto_+-300": 31357.0
+     }
+    },
+    {
+     "hora_NY_dato": "2026-10-07T15:56:14",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 31406.0,
+     "QQQ": 757.97,
+     "NDX": 31160.8477,
+     "R": 41.43435756032561,
+     "B": 245.15230000000156,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -4.77049351339296,
+      "L_spot_NDX_ctosNQ_por_pt": 5.088135740005028,
+      "L_spot_familia": 0.317642226612068,
+      "L_spot_solo0DTE": 0.0,
+      "GEX_familia_MUSD_por_1pct": 62.660445755308416,
+      "L_max_grilla": 18.399850932552454,
+      "L_min_grilla": -15.16248030178461,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31401.1
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 0.0,
+      "A_spot_ctosNQ_por_hora": 0.0,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 549.2790172920999,
+      "hay_0DTE_en_la_foto": false,
+      "QQQ_strike_max_abs": [
+       755.0,
+       31282.9,
+       -2.74
+      ],
+      "NDX_strike_max_abs": [
+       31500.0,
+       31745.2,
+       0.9
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": 1.7055035539781032,
+      "L_spot_NDX_ctosNQ_por_pt": 6.904477101439024,
+      "L_spot_familia": 8.609980655417127,
+      "L_spot_solo0DTE": 0.0,
+      "GEX_familia_MUSD_por_1pct": 1698.468215537067,
+      "L_max_grilla": 44.22800390944282,
+      "L_min_grilla": -53.84346830168882,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31369.2
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31701.0,
+        44.2
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 0.0,
+      "A_spot_ctosNQ_por_hora": 0.0,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 1172.0785480335871,
+      "hay_0DTE_en_la_foto": false,
+      "QQQ_strike_max_abs": [
+       760.0,
+       31490.1,
+       7.34
+      ],
+      "NDX_strike_max_abs": [
+       31300.0,
+       31545.2,
+       1.19
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 39.79215035389465,
+      "L_spot_NDX_ctosNQ_por_pt": 15.24087157114964,
+      "L_spot_familia": 55.03302192504429,
+      "L_spot_solo0DTE": 0.0,
+      "GEX_familia_MUSD_por_1pct": 10856.219344213361,
+      "L_max_grilla": 59.038173739547474,
+      "L_min_grilla": 44.13907226218808,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31178.0,
+        59.0
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 0.0,
+      "A_spot_ctosNQ_por_hora": 0.0,
+      "vanna_spot_ctosNQ_por_punto_de_vol": -349.5820684196383,
+      "hay_0DTE_en_la_foto": false,
+      "QQQ_strike_max_abs": [
+       754.0,
+       31241.5,
+       5.82
+      ],
+      "NDX_strike_max_abs": [
+       31000.0,
+       31245.2,
+       1.04
+      ],
+      "centroide_bruto_+-300": 31376.2
+     }
+    }
+   ]
+  },
+  "2026-10-08": {
+   "kyle_MNQ": {
+    "minutos": 365,
+    "lambda_pts_por_ctoMNQ_1min": 0.01400953858815906,
+    "r2_1min": 0.6467465386302845,
+    "vol_MNQ_por_min_mediana": 4163.0,
+    "vol_MNQ_dia_rueda": 1933480.0,
+    "|flujo_neto_1min|_mediana_MNQ": 365.0,
+    "rango_1min_mediana_pts": 15.0,
+    "rango_5min_mediana_pts": 36.75,
+    "precio_max_rueda": 31370.0,
+    "precio_min_rueda": 30792.0
+   },
+   "fotos": [
+    {
+     "hora_NY_dato": "2026-10-08T10:29:16",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 31362.75,
+     "QQQ": 757.0,
+     "NDX": 31101.3945,
+     "R": 41.430317040951124,
+     "B": 261.3555000000015,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -6.267505270163822,
+      "L_spot_NDX_ctosNQ_por_pt": 5.527934526508377,
+      "L_spot_familia": -0.7395707436554453,
+      "L_spot_solo0DTE": -4.339976018680039,
+      "GEX_familia_MUSD_por_1pct": -145.49162375490394,
+      "L_max_grilla": 44.72613943840118,
+      "L_min_grilla": -37.80879157957234,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31366.7
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 371.77911809807586,
+      "A_spot_ctosNQ_por_hora": 355.8274027358593,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 690.3594701533657,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       755.0,
+       31279.9,
+       -2.85
+      ],
+      "NDX_strike_max_abs": [
+       31225.0,
+       31486.4,
+       1.36
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": 91.53494079522434,
+      "L_spot_NDX_ctosNQ_por_pt": 52.36319410760736,
+      "L_spot_familia": 143.8981349028317,
+      "L_spot_solo0DTE": 134.72427427064696,
+      "GEX_familia_MUSD_por_1pct": 28308.276769894717,
+      "L_max_grilla": 163.6939204955118,
+      "L_min_grilla": -108.19829744108961,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31209.4
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31438.0,
+        163.7
+       ]
+      ],
+      "atractores_charm_0DTE": [
+       31452.5
+      ],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 2260.3846325795926,
+      "A_spot_ctosNQ_por_hora": 1157.5665913242951,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 864.8254790633497,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       756.0,
+       31321.3,
+       30.72
+      ],
+      "NDX_strike_max_abs": [
+       31200.0,
+       31461.4,
+       6.01
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 63.27409105428214,
+      "L_spot_NDX_ctosNQ_por_pt": 32.963790772286075,
+      "L_spot_familia": 96.23788182656821,
+      "L_spot_solo0DTE": 45.262731983724244,
+      "GEX_familia_MUSD_por_1pct": 18932.34124496844,
+      "L_max_grilla": 96.50573498640429,
+      "L_min_grilla": 75.78901056820226,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31328.0,
+        96.5
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       31462.4
+      ],
+      "A_max_abs_ctosNQ_por_hora": 61.4798177325966,
+      "A_spot_ctosNQ_por_hora": -21.784614882407645,
+      "vanna_spot_ctosNQ_por_punto_de_vol": -257.8509590889462,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       754.0,
+       31238.5,
+       7.92
+      ],
+      "NDX_strike_max_abs": [
+       31000.0,
+       31261.4,
+       1.78
+      ],
+      "centroide_bruto_+-300": 31342.6
+     },
+     "AL_strike_QQQ_0DTE": {
+      "K": 755.0,
+      "K_en_NQ": 31279.9,
+      "oi_call": 2706.0,
+      "oi_put": 13508.0,
+      "vol_call": 128225.0,
+      "vol_put": 39884.0,
+      "iv": 0.181,
+      "dias": 0.22967592592592592
+     }
+    },
+    {
+     "hora_NY_dato": "2026-10-08T12:00:20",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 31191.75,
+     "QQQ": 752.91,
+     "NDX": 30946.2793,
+     "R": 41.42825835757262,
+     "B": 245.47070000000167,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -21.11519117881924,
+      "L_spot_NDX_ctosNQ_por_pt": -4.79632511767329,
+      "L_spot_familia": -25.911516296492533,
+      "L_spot_solo0DTE": -22.04077286529813,
+      "GEX_familia_MUSD_por_1pct": -5041.993787734168,
+      "L_max_grilla": 32.564256919362656,
+      "L_min_grilla": -38.48645188157619,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31331.7
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 551.51254004174,
+      "A_spot_ctosNQ_por_hora": 333.82646636253537,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 571.9162548493206,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       750.0,
+       31071.2,
+       -4.68
+      ],
+      "NDX_strike_max_abs": [
+       30950.0,
+       31195.5,
+       -0.67
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": -92.6997945981388,
+      "L_spot_NDX_ctosNQ_por_pt": -51.17641399161815,
+      "L_spot_familia": -143.87620858975694,
+      "L_spot_solo0DTE": -142.7985008647834,
+      "GEX_familia_MUSD_por_1pct": -27996.159762001083,
+      "L_max_grilla": 338.5927992276795,
+      "L_min_grilla": -331.2758258517823,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31234.3
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31396.0,
+        338.6
+       ]
+      ],
+      "atractores_charm_0DTE": [
+       31421.6
+      ],
+      "repulsores_charm_0DTE": [
+       31045.8
+      ],
+      "A_max_abs_ctosNQ_por_hora": 6434.367829315348,
+      "A_spot_ctosNQ_por_hora": 5745.368134865694,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 2946.3251421225696,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       753.0,
+       31195.5,
+       -74.38
+      ],
+      "NDX_strike_max_abs": [
+       30950.0,
+       31195.5,
+       -8.86
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 68.49997843718445,
+      "L_spot_NDX_ctosNQ_por_pt": 31.10118556118127,
+      "L_spot_familia": 99.60116399836572,
+      "L_spot_solo0DTE": 45.01320441220678,
+      "GEX_familia_MUSD_por_1pct": 19380.8978364894,
+      "L_max_grilla": 102.43160150011475,
+      "L_min_grilla": 74.65326811477335,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31277.0,
+        102.4
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       31191.6
+      ],
+      "A_max_abs_ctosNQ_por_hora": 180.57109781257697,
+      "A_spot_ctosNQ_por_hora": 0.5113607304217851,
+      "vanna_spot_ctosNQ_por_punto_de_vol": -80.12605601897799,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       754.0,
+       31236.9,
+       10.5
+      ],
+      "NDX_strike_max_abs": [
+       31000.0,
+       31245.5,
+       2.27
+      ],
+      "centroide_bruto_+-300": 31203.3
+     },
+     "AL_strike_QQQ_0DTE": {
+      "K": 755.0,
+      "K_en_NQ": 31278.3,
+      "oi_call": 2706.0,
+      "oi_put": 13508.0,
+      "vol_call": 275037.0,
+      "vol_put": 132380.0,
+      "iv": 0.1574,
+      "dias": 0.16643518518518519
+     }
+    },
+    {
+     "hora_NY_dato": "2026-10-08T13:29:13",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 30832.5,
+     "QQQ": 744.2,
+     "NDX": 30599.0527,
+     "R": 41.43039505509272,
+     "B": 233.4472999999998,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -23.723480291066714,
+      "L_spot_NDX_ctosNQ_por_pt": -10.068367824590691,
+      "L_spot_familia": -33.7918481156574,
+      "L_spot_solo0DTE": -17.645372710865573,
+      "GEX_familia_MUSD_por_1pct": -6424.7971538008715,
+      "L_max_grilla": -15.61530536600629,
+      "L_min_grilla": -33.79262395438158,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 841.1488139230362,
+      "A_spot_ctosNQ_por_hora": 77.13671526666788,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 323.28339119784795,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       750.0,
+       31072.8,
+       -2.55
+      ],
+      "NDX_strike_max_abs": [
+       30500.0,
+       30733.4,
+       -0.88
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": -154.57514332873578,
+      "L_spot_NDX_ctosNQ_por_pt": -161.77026599707023,
+      "L_spot_familia": -316.34540932580603,
+      "L_spot_solo0DTE": -290.0316952271495,
+      "GEX_familia_MUSD_por_1pct": -60146.313350428296,
+      "L_max_grilla": 74.80550739602141,
+      "L_min_grilla": -317.11739132847424,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31098.1
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       30817.5
+      ],
+      "A_max_abs_ctosNQ_por_hora": 15878.22922918649,
+      "A_spot_ctosNQ_por_hora": 734.5422016749982,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 453.8932350453199,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       745.0,
+       30865.6,
+       -34.71
+      ],
+      "NDX_strike_max_abs": [
+       30700.0,
+       30933.4,
+       -19.83
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 49.028699495334614,
+      "L_spot_NDX_ctosNQ_por_pt": 24.549418424015364,
+      "L_spot_familia": 73.57811791934998,
+      "L_spot_solo0DTE": 25.027298668193747,
+      "GEX_familia_MUSD_por_1pct": 13989.30537839475,
+      "L_max_grilla": 89.19830648881704,
+      "L_min_grilla": 54.11350160596753,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       30644.5
+      ],
+      "A_max_abs_ctosNQ_por_hora": 566.334984933485,
+      "A_spot_ctosNQ_por_hora": 230.16439104029817,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 144.2353457388358,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       750.0,
+       31072.8,
+       5.22
+      ],
+      "NDX_strike_max_abs": [
+       30500.0,
+       30733.4,
+       1.42
+      ],
+      "centroide_bruto_+-300": 30857.1
+     },
+     "AL_strike_QQQ_0DTE": {
+      "K": 746.0,
+      "K_en_NQ": 30907.1,
+      "oi_call": 209.0,
+      "oi_put": 4006.0,
+      "vol_call": 29511.0,
+      "vol_put": 100830.0,
+      "iv": 0.3014,
+      "dias": 0.10471064814814815
+     }
+    },
+    {
+     "hora_NY_dato": "2026-10-08T14:30:15",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 30991.75,
+     "QQQ": 748.05,
+     "NDX": 30753.0703,
+     "R": 41.43005146714792,
+     "B": 238.6797000000006,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -30.413521395017796,
+      "L_spot_NDX_ctosNQ_por_pt": -9.82102885091867,
+      "L_spot_familia": -40.23455024593647,
+      "L_spot_solo0DTE": -28.324545984931106,
+      "GEX_familia_MUSD_por_1pct": -7728.965110471645,
+      "L_max_grilla": 2.6183007368694637,
+      "L_min_grilla": -40.40708315297512,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31276.8
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 1289.7423963079748,
+      "A_spot_ctosNQ_por_hora": 178.28072825234062,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 434.7300705054081,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       750.0,
+       31072.5,
+       -6.19
+      ],
+      "NDX_strike_max_abs": [
+       30750.0,
+       30988.7,
+       -1.4
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": -60.274182010837166,
+      "L_spot_NDX_ctosNQ_por_pt": -229.98349934868912,
+      "L_spot_familia": -290.25768135952626,
+      "L_spot_solo0DTE": -271.33715791844594,
+      "GEX_familia_MUSD_por_1pct": -55757.836947630545,
+      "L_max_grilla": 511.7404782952393,
+      "L_min_grilla": -498.5432482135674,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31126.7
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       30791.3
+      ],
+      "A_max_abs_ctosNQ_por_hora": 20347.282381572233,
+      "A_spot_ctosNQ_por_hora": 9450.324517322246,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 2029.822297289481,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       748.0,
+       30989.7,
+       36.08
+      ],
+      "NDX_strike_max_abs": [
+       30700.0,
+       30938.7,
+       -35.18
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 63.40588201864387,
+      "L_spot_NDX_ctosNQ_por_pt": 27.375164772903627,
+      "L_spot_familia": 90.7810467915475,
+      "L_spot_solo0DTE": 37.33791143426297,
+      "GEX_familia_MUSD_por_1pct": 17438.831528005652,
+      "L_max_grilla": 96.52031826757673,
+      "L_min_grilla": 61.946029426922,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31129.0,
+        96.5
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       30872.2
+      ],
+      "A_max_abs_ctosNQ_por_hora": 1049.7854235714642,
+      "A_spot_ctosNQ_por_hora": 328.10816567821286,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 36.63710738660417,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       750.0,
+       31072.5,
+       10.17
+      ],
+      "NDX_strike_max_abs": [
+       30750.0,
+       30988.7,
+       1.72
+      ],
+      "centroide_bruto_+-300": 31028.4
+     },
+     "AL_strike_QQQ_0DTE": {
+      "K": 750.0,
+      "K_en_NQ": 31072.5,
+      "oi_call": 894.0,
+      "oi_put": 13710.0,
+      "vol_call": 171637.0,
+      "vol_put": 221479.0,
+      "iv": 0.2313,
+      "dias": 0.06232638888888889
+     }
+    },
+    {
+     "hora_NY_dato": "2026-10-08T15:15:16",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 30907.5,
+     "QQQ": 745.94,
+     "NDX": 30673.2559,
+     "R": 41.43429766469153,
+     "B": 234.2440999999999,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -24.67684744020275,
+      "L_spot_NDX_ctosNQ_por_pt": -12.45908457566656,
+      "L_spot_familia": -37.13593201586931,
+      "L_spot_solo0DTE": -22.822320738298647,
+      "GEX_familia_MUSD_por_1pct": -7094.994768291542,
+      "L_max_grilla": 13.034095536195132,
+      "L_min_grilla": -37.9107620351525,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31146.1
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 2308.5013720892607,
+      "A_spot_ctosNQ_por_hora": 542.7150271270145,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 390.9930677890587,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       746.0,
+       30910.0,
+       -3.18
+      ],
+      "NDX_strike_max_abs": [
+       30650.0,
+       30884.2,
+       -1.35
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": -209.1581235582396,
+      "L_spot_NDX_ctosNQ_por_pt": -314.54729781181044,
+      "L_spot_familia": -523.7054213700501,
+      "L_spot_solo0DTE": -492.8255015371956,
+      "GEX_familia_MUSD_por_1pct": -100056.38805991452,
+      "L_max_grilla": 968.8693868648788,
+      "L_min_grilla": -710.0655612278972,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       30978.6
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       30787.8
+      ],
+      "A_max_abs_ctosNQ_por_hora": 43211.61485553188,
+      "A_spot_ctosNQ_por_hora": 27066.57951436368,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 2449.464096500326,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       745.0,
+       30868.6,
+       -115.66
+      ],
+      "NDX_strike_max_abs": [
+       30700.0,
+       30934.2,
+       -53.06
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 52.0388538023527,
+      "L_spot_NDX_ctosNQ_por_pt": 27.95296818941003,
+      "L_spot_familia": 79.99182199176272,
+      "L_spot_solo0DTE": 29.018228512368367,
+      "GEX_familia_MUSD_por_1pct": 15282.814452997625,
+      "L_max_grilla": 88.06208426491153,
+      "L_min_grilla": 57.99587720494783,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31009.0,
+        88.1
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [
+       30922.2
+      ],
+      "A_max_abs_ctosNQ_por_hora": 1749.1937729866293,
+      "A_spot_ctosNQ_por_hora": -111.9495245855289,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 43.148705254926085,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       750.0,
+       31075.7,
+       5.25
+      ],
+      "NDX_strike_max_abs": [
+       30700.0,
+       30934.2,
+       1.85
+      ],
+      "centroide_bruto_+-300": 30915.5
+     },
+     "AL_strike_QQQ_0DTE": {
+      "K": 749.0,
+      "K_en_NQ": 31034.3,
+      "oi_call": 430.0,
+      "oi_put": 10867.0,
+      "vol_call": 175019.0,
+      "vol_put": 142654.0,
+      "iv": 0.2325,
+      "dias": 0.031064814814814816
+     }
+    },
+    {
+     "hora_NY_dato": "2026-10-08T15:45:17",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 30931.5,
+     "QQQ": 746.55,
+     "NDX": 30690.1895,
+     "R": 41.43258991360258,
+     "B": 241.3104999999996,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -4.07578728353923,
+      "L_spot_NDX_ctosNQ_por_pt": 3.3987472927903015,
+      "L_spot_familia": -0.6770399907489288,
+      "L_spot_solo0DTE": 0.0,
+      "GEX_familia_MUSD_por_1pct": -129.55264382198132,
+      "L_max_grilla": 18.50006847212844,
+      "L_min_grilla": -13.902068824610254,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       30943.2
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 0.0,
+      "A_spot_ctosNQ_por_hora": 0.0,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 954.4730130659674,
+      "hay_0DTE_en_la_foto": false,
+      "QQQ_strike_max_abs": [
+       760.0,
+       31488.8,
+       4.47
+      ],
+      "NDX_strike_max_abs": [
+       29475.0,
+       29716.3,
+       2.92
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": -23.553517247237497,
+      "L_spot_NDX_ctosNQ_por_pt": -12.240411825481324,
+      "L_spot_familia": -35.793929072718825,
+      "L_spot_solo0DTE": 0.0,
+      "GEX_familia_MUSD_por_1pct": -6849.223395234929,
+      "L_max_grilla": 30.705954223047666,
+      "L_min_grilla": -67.90756095563525,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31093.3
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 0.0,
+      "A_spot_ctosNQ_por_hora": 0.0,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 1607.830828129919,
+      "hay_0DTE_en_la_foto": false,
+      "QQQ_strike_max_abs": [
+       745.0,
+       30867.3,
+       -8.65
+      ],
+      "NDX_strike_max_abs": [
+       30700.0,
+       30941.3,
+       -1.27
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 69.37327686883891,
+      "L_spot_NDX_ctosNQ_por_pt": 34.2915951641041,
+      "L_spot_familia": 103.66487203294301,
+      "L_spot_solo0DTE": 0.0,
+      "GEX_familia_MUSD_por_1pct": 19836.432746726026,
+      "L_max_grilla": 105.51749162779711,
+      "L_min_grilla": 96.77925452078502,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31091.0,
+        105.5
+       ]
+      ],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 0.0,
+      "A_spot_ctosNQ_por_hora": 0.0,
+      "vanna_spot_ctosNQ_por_punto_de_vol": -242.64203744644038,
+      "hay_0DTE_en_la_foto": false,
+      "QQQ_strike_max_abs": [
+       750.0,
+       31074.4,
+       7.6
+      ],
+      "NDX_strike_max_abs": [
+       29475.0,
+       29716.3,
+       2.98
+      ],
+      "centroide_bruto_+-300": 30919.4
+     }
+    },
+    {
+     "hora_NY_dato": "2026-10-08T16:00:18",
+     "edad_cboe": "retraso 15 min (dato de la hora indicada, bajado 15 min despues)",
+     "F_MNQ": 30993.5,
+     "QQQ": 747.98,
+     "NDX": 30727.8242,
+     "R": 41.436268349421105,
+     "B": 265.6758000000009,
+     "clasica": {
+      "L_spot_QQQ_ctosNQ_por_pt": -2.026694224318631,
+      "L_spot_NDX_ctosNQ_por_pt": 4.265543112923141,
+      "L_spot_familia": 2.23884888860451,
+      "L_spot_solo0DTE": -5.187993651727385,
+      "GEX_familia_MUSD_por_1pct": 430.12632408763835,
+      "L_max_grilla": 24.59305803240143,
+      "L_min_grilla": -13.096838488226282,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       30957.6
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 64.85293891072918,
+      "A_spot_ctosNQ_por_hora": 55.90781251182482,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 1022.3322087264974,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       760.0,
+       31491.6,
+       4.89
+      ],
+      "NDX_strike_max_abs": [
+       29475.0,
+       29740.7,
+       3.09
+      ]
+     },
+     "referencia": {
+      "L_spot_QQQ_ctosNQ_por_pt": -13.439996993893118,
+      "L_spot_NDX_ctosNQ_por_pt": -11.37363950913102,
+      "L_spot_familia": -24.81363650302414,
+      "L_spot_solo0DTE": -10.389161170033113,
+      "GEX_familia_MUSD_por_1pct": -4767.181166454325,
+      "L_max_grilla": 54.70313936557099,
+      "L_min_grilla": -71.85846993596498,
+      "zero_repreciado_(cruces +->- y -->+)": [
+       31083.7
+      ],
+      "paredes_L_max_locales_(precio, ctos/pt)": [],
+      "atractores_charm_0DTE": [],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 310.0098927429847,
+      "A_spot_ctosNQ_por_hora": 284.9359059848206,
+      "vanna_spot_ctosNQ_por_punto_de_vol": 1908.3076186538185,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       745.0,
+       30870.0,
+       -8.77
+      ],
+      "NDX_strike_max_abs": [
+       30700.0,
+       30965.7,
+       -1.37
+      ]
+     },
+     "bruta": {
+      "L_spot_QQQ_ctosNQ_por_pt": 69.86596979908599,
+      "L_spot_NDX_ctosNQ_por_pt": 34.57295710050568,
+      "L_spot_familia": 104.43892689959168,
+      "L_spot_solo0DTE": 26.62322609672355,
+      "GEX_familia_MUSD_por_1pct": 20064.744855102348,
+      "L_max_grilla": 105.9871613310836,
+      "L_min_grilla": 96.47611344411223,
+      "zero_repreciado_(cruces +->- y -->+)": [],
+      "paredes_L_max_locales_(precio, ctos/pt)": [
+       [
+        31128.0,
+        106.0
+       ]
+      ],
+      "atractores_charm_0DTE": [
+       31105.5
+      ],
+      "repulsores_charm_0DTE": [],
+      "A_max_abs_ctosNQ_por_hora": 31.38885740815775,
+      "A_spot_ctosNQ_por_hora": 11.614722419655774,
+      "vanna_spot_ctosNQ_por_punto_de_vol": -245.14483609396308,
+      "hay_0DTE_en_la_foto": true,
+      "QQQ_strike_max_abs": [
+       750.0,
+       31077.2,
+       8.13
+      ],
+      "NDX_strike_max_abs": [
+       29475.0,
+       29740.7,
+       3.15
+      ],
+      "centroide_bruto_+-300": 31041.0
+     },
+     "AL_strike_QQQ_0DTE": {
+      "K": 750.0,
+      "K_en_NQ": 31077.2,
+      "oi_call": 8667.0,
+      "oi_put": 12694.0,
+      "vol_call": 63345.0,
+      "vol_put": 53588.0,
+      "iv": 0.1723,
+      "dias": 0.9997916666666666
+     }
+    }
+   ]
+  }
+ },
+ "derivados": {
+  "lambda_MNQ_medido_pts_por_ctoMNQ": 0.012352905950659146,
+  "lambda_tot_pts_por_ctoNQ_(s=0.15)": 0.01852935892598872,
+  "lambda_tot_pts_por_ctoNQ_(s=0.25)": 0.030882264876647865,
+  "lambda_tot_pts_por_ctoNQ_(s=0.4)": 0.049411623802636584
+ }
+}

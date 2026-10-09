@@ -1,0 +1,8 @@
+r20_doms   congelada  real 5.19 % corridas 4.80 % -> dif +0.39  IC90 -1.07 a +1.89  (r20 informo el pareado con corridas/6: 0.80 %)
+           sin 10-09: dif +0.29
+r20_doms   completa   real 4.65 % corridas 4.59 % -> dif +0.05  IC90 -1.02 a +1.25  (r20 informo el pareado con corridas/6: 0.77 %)
+           sin 10-09: dif -0.01
+r20_zero   congelada  real 0.78 % corridas 1.10 % -> dif -0.32  IC90 -1.02 a +0.33  (r20 informo el pareado con corridas/6: 0.18 %)
+           sin 10-09: dif -0.20
+r20_zero   completa   real 0.84 % corridas 0.76 % -> dif +0.08  IC90 -0.40 a +0.53  (r20 informo el pareado con corridas/6: 0.13 %)
+           sin 10-09: dif +0.05

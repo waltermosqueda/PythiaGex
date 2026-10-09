@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- EL ARNES DE PARIDAD: consola, SIN ninguna referencia a ATAS. Compila el MISMO PautaNucleo.cs que va adentro del
+       indicador, para que lo que se compara contra el Python (p_P1_lib.py / p_P2_lib.py) sea exactamente el codigo que
+       corre en el grafico. Molde: atas/Directriz/arnes y atas/AbsorcionViva/arnes. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>PautaArnes</AssemblyName>
+    <RootNamespace>PautaArnes</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\PautaNucleo.cs" Link="PautaNucleo.cs" />
+  </ItemGroup>
+
+</Project>

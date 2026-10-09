@@ -1,0 +1,766 @@
+
+=== h41 | ventana congelada | pistas 306 | noches en ventana 19 | 9 s
+  ESTRICTO      llegadas  307 (techo 159 piso 148) base  307 | sostenidos  100 =  32.6 % (falso romp 25 = 25 % de los sost.) | rotas  67.4 % indef   0.0 % | exactos 75 = 24.4 % | prec med |1.37| (signo +0.27, p75 2.02) | recorrido medio 57.1 med 29.6 tramo 50.9 | llega opuesta 13/42 = 31 % | noches 19 strikes 38
+      corridas +-11/19/31 juntas: sost 31.7 % exactos 24.3 % prec med |1.37| recorrido medio 58.9 llega opuesta 34 % cobertura 4.3 %
+      azar pct_sostenidos         real    32.57 | p5    25.62 p50    29.84 p95    36.58 | percentil  80.0
+      azar pct_exactos            real    24.43 | p5    17.45 p50    22.08 p95    28.43 | percentil  70.0
+      azar pct_rotas              real    67.43 | p5    63.42 p50    70.16 p95    74.38 | percentil  20.0
+      azar precision_mediana_abs  real     1.37 | p5     1.14 p50     1.31 p95     1.69 | percentil  60.0
+      azar recorrido_medio        real    57.13 | p5    45.23 p50    52.75 p95    69.65 | percentil  60.0
+      azar recorrido_mediano      real    29.56 | p5    25.07 p50    28.37 p95    38.66 | percentil  60.0
+      azar recorrido_tramo_medio  real    50.94 | p5    42.99 p50    48.20 p95    55.78 | percentil  60.0
+      azar pct_llega_opuesta      real    30.95 | p5    16.90 p50    28.89 p95    36.82 | percentil  60.0
+      azar cobertura_pct          real     4.17 | p5     1.38 p50     2.28 p95     3.46 | percentil 100.0
+      azar llegadas               real   307.00 | p5   163.20 p50   194.00 p95   230.40 | percentil 100.0
+      IC90 por noche: sost 28.7-37.2 % | exactos 20.8-28.8 % | prec med 1.14-1.49 | recorrido medio 48.0-66.5 | llega opuesta 19-44 %
+  TOLERANTE     llegadas  288 (techo 149 piso 139) base  287 | sostenidos  130 =  45.3 % (falso romp 60 = 46 % de los sost.) | rotas  54.4 % indef   0.3 % | exactos 70 = 24.4 % | prec med |1.79| (signo +1.43, p75 4.12) | recorrido medio 65.9 med 37.6 tramo 52.5 | llega opuesta 21/54 = 39 % | noches 19 strikes 38
+      corridas +-11/19/31 juntas: sost 44.6 % exactos 24.6 % prec med |1.83| recorrido medio 61.7 llega opuesta 41 % cobertura 4.3 %
+      azar pct_sostenidos         real    45.30 | p5    38.46 p50    41.72 p95    50.69 | percentil  60.0
+      azar pct_exactos            real    24.39 | p5    18.08 p50    23.22 p95    28.53 | percentil  60.0
+      azar pct_rotas              real    54.36 | p5    49.31 p50    58.28 p95    61.54 | percentil  40.0
+      azar precision_mediana_abs  real     1.79 | p5     1.56 p50     1.76 p95     2.90 | percentil  60.0
+      azar recorrido_medio        real    65.86 | p5    51.51 p50    59.38 p95    74.13 | percentil  70.0
+      azar recorrido_mediano      real    37.57 | p5    30.87 p50    34.88 p95    45.47 | percentil  70.0
+      azar recorrido_tramo_medio  real    52.47 | p5    44.52 p50    50.87 p95    54.97 | percentil  70.0
+      azar pct_llega_opuesta      real    38.89 | p5    24.06 p50    34.64 p95    43.22 | percentil  80.0
+      azar cobertura_pct          real     4.17 | p5     1.38 p50     2.28 p95     3.46 | percentil 100.0
+      azar llegadas               real   288.00 | p5   154.70 p50   184.00 p95   219.00 | percentil 100.0
+      IC90 por noche: sost 40.1-51.3 % | exactos 20.5-29.1 % | prec med 1.58-2.24 | recorrido medio 57.8-75.0 | llega opuesta 28-51 %
+  MUY_TOLERANTE llegadas  259 (techo 135 piso 124) base  258 | sostenidos  131 =  50.8 % (falso romp 68 = 52 % de los sost.) | rotas  48.8 % indef   0.4 % | exactos 63 = 24.4 % | prec med |2.38| (signo +2.38, p75 5.64) | recorrido medio 64.8 med 39.8 tramo 49.0 | llega opuesta 24/58 = 41 % | noches 19 strikes 38
+      corridas +-11/19/31 juntas: sost 51.5 % exactos 24.3 % prec med |2.26| recorrido medio 63.9 llega opuesta 44 % cobertura 4.3 %
+      azar pct_sostenidos         real    50.78 | p5    41.96 p50    47.97 p95    57.34 | percentil  70.0
+      azar pct_exactos            real    24.42 | p5    18.07 p50    22.61 p95    29.43 | percentil  70.0
+      azar pct_rotas              real    48.84 | p5    42.66 p50    52.03 p95    57.75 | percentil  30.0
+      azar precision_mediana_abs  real     2.38 | p5     1.73 p50     2.22 p95     3.47 | percentil  60.0
+      azar recorrido_medio        real    64.82 | p5    55.75 p50    60.43 p95    73.90 | percentil  60.0
+      azar recorrido_mediano      real    39.82 | p5    31.44 p50    36.96 p95    50.24 | percentil  80.0
+      azar recorrido_tramo_medio  real    49.02 | p5    43.96 p50    49.02 p95    53.76 | percentil  50.0
+      azar pct_llega_opuesta      real    41.38 | p5    19.12 p50    35.81 p95    43.49 | percentil  90.0
+      azar cobertura_pct          real     4.17 | p5     1.38 p50     2.28 p95     3.46 | percentil 100.0
+      azar llegadas               real   259.00 | p5   144.45 p50   170.50 p95   195.85 | percentil 100.0
+      IC90 por noche: sost 46.6-55.7 % | exactos 20.2-29.4 % | prec med 1.70-3.10 | recorrido medio 58.2-72.2 | llega opuesta 28-54 %
+  TOLERANTE azar 'propia': percentiles sost 40.0 exactos 40.0 prec 40.0 recorrido 70.0 cobertura 100.0
+  cobertura de giros (zigzag 20, +-2): 32 de 767 = 4.2 % | sensibilidad +-6: 104 de 767
+
+=== h41 | ventana congelada | pistas 306 | noches en ventana 18 | 8 s
+  ESTRICTO      llegadas  294 (techo 149 piso 145) base  294 | sostenidos   98 =  33.3 % (falso romp 25 = 26 % de los sost.) | rotas  66.7 % indef   0.0 % | exactos 73 = 24.8 % | prec med |1.38| (signo +0.27, p75 2.10) | recorrido medio 57.4 med 29.6 tramo 51.1 | llega opuesta 13/41 = 32 % | noches 18 strikes 38
+      corridas +-11/19/31 juntas: sost 32.0 % exactos 24.6 % prec med |1.32| recorrido medio 59.3 llega opuesta 34 % cobertura 4.3 %
+      azar pct_sostenidos         real    33.33 | p5    25.43 p50    29.95 p95    36.58 | percentil  80.0
+      azar pct_exactos            real    24.83 | p5    17.29 p50    22.18 p95    28.50 | percentil  70.0
+      azar pct_rotas              real    66.67 | p5    63.42 p50    70.05 p95    74.57 | percentil  20.0
+      azar precision_mediana_abs  real     1.38 | p5     1.13 p50     1.30 p95     1.69 | percentil  70.0
+      azar recorrido_medio        real    57.43 | p5    45.47 p50    53.49 p95    69.82 | percentil  60.0
+      azar recorrido_mediano      real    29.56 | p5    25.07 p50    30.09 p95    38.66 | percentil  50.0
+      azar recorrido_tramo_medio  real    51.11 | p5    42.99 p50    48.25 p95    56.27 | percentil  60.0
+      azar pct_llega_opuesta      real    31.71 | p5    16.90 p50    29.29 p95    36.82 | percentil  60.0
+      azar cobertura_pct          real     4.13 | p5     1.29 p50     2.33 p95     3.54 | percentil 100.0
+      azar llegadas               real   294.00 | p5   162.75 p50   193.50 p95   226.40 | percentil 100.0
+      IC90 por noche: sost 29.3-38.1 % | exactos 20.9-29.5 % | prec med 1.21-1.51 | recorrido medio 47.8-67.0 | llega opuesta 19-45 %
+  TOLERANTE     llegadas  276 (techo 140 piso 136) base  276 | sostenidos  127 =  46.0 % (falso romp 59 = 46 % de los sost.) | rotas  53.6 % indef   0.4 % | exactos 68 = 24.6 % | prec med |1.81| (signo +1.44, p75 4.10) | recorrido medio 66.5 med 38.3 tramo 52.8 | llega opuesta 21/52 = 40 % | noches 18 strikes 38
+      corridas +-11/19/31 juntas: sost 44.9 % exactos 24.8 % prec med |1.82| recorrido medio 62.3 llega opuesta 42 % cobertura 4.3 %
+      azar pct_sostenidos         real    46.01 | p5    38.41 p50    41.86 p95    50.69 | percentil  70.0
+      azar pct_exactos            real    24.64 | p5    17.91 p50    23.32 p95    28.65 | percentil  60.0
+      azar pct_rotas              real    53.62 | p5    49.31 p50    58.14 p95    61.59 | percentil  20.0
+      azar precision_mediana_abs  real     1.81 | p5     1.56 p50     1.78 p95     2.90 | percentil  60.0
+      azar recorrido_medio        real    66.51 | p5    51.47 p50    60.02 p95    74.21 | percentil  70.0
+      azar recorrido_mediano      real    38.27 | p5    31.06 p50    34.88 p95    45.47 | percentil  70.0
+      azar recorrido_tramo_medio  real    52.81 | p5    44.46 p50    51.01 p95    54.97 | percentil  70.0
+      azar pct_llega_opuesta      real    40.38 | p5    24.06 p50    34.64 p95    44.11 | percentil  80.0
+      azar cobertura_pct          real     4.13 | p5     1.29 p50     2.33 p95     3.54 | percentil 100.0
+      azar llegadas               real   276.00 | p5   154.25 p50   183.00 p95   216.10 | percentil 100.0
+      IC90 por noche: sost 40.3-51.9 % | exactos 20.4-29.8 % | prec med 1.58-2.27 | recorrido medio 58.6-75.4 | llega opuesta 29-53 %
+  MUY_TOLERANTE llegadas  250 (techo 128 piso 122) base  250 | sostenidos  129 =  51.6 % (falso romp 68 = 53 % de los sost.) | rotas  48.0 % indef   0.4 % | exactos 61 = 24.4 % | prec med |2.56| (signo +2.56, p75 5.72) | recorrido medio 65.2 med 39.8 tramo 49.1 | llega opuesta 24/57 = 42 % | noches 18 strikes 38
+      corridas +-11/19/31 juntas: sost 51.7 % exactos 24.6 % prec med |2.26| recorrido medio 64.5 llega opuesta 44 % cobertura 4.3 %
+      azar pct_sostenidos         real    51.60 | p5    41.91 p50    47.67 p95    57.34 | percentil  70.0
+      azar pct_exactos            real    24.40 | p5    17.82 p50    22.73 p95    29.51 | percentil  70.0
+      azar pct_rotas              real    48.00 | p5    42.66 p50    52.33 p95    57.80 | percentil  30.0
+      azar precision_mediana_abs  real     2.56 | p5     1.73 p50     2.22 p95     3.49 | percentil  70.0
+      azar recorrido_medio        real    65.16 | p5    55.74 p50    61.55 p95    73.90 | percentil  60.0
+      azar recorrido_mediano      real    39.82 | p5    31.46 p50    37.09 p95    50.24 | percentil  80.0
+      azar recorrido_tramo_medio  real    49.12 | p5    43.96 p50    49.43 p95    53.76 | percentil  40.0
+      azar pct_llega_opuesta      real    42.11 | p5    19.12 p50    35.81 p95    44.35 | percentil  90.0
+      azar cobertura_pct          real     4.13 | p5     1.29 p50     2.33 p95     3.54 | percentil 100.0
+      azar llegadas               real   250.00 | p5   144.00 p50   166.00 p95   192.75 | percentil 100.0
+      IC90 por noche: sost 47.4-56.3 % | exactos 19.9-29.7 % | prec med 1.76-3.18 | recorrido medio 59.0-72.4 | llega opuesta 29-56 %
+  cobertura de giros (zigzag 20, +-2): 31 de 751 = 4.1 % | sensibilidad +-6: 101 de 751
+
+=== h41c | ventana congelada | pistas 398 | noches en ventana 19 | 12 s
+  ESTRICTO      llegadas  305 (techo 162 piso 143) base  305 | sostenidos  100 =  32.8 % (falso romp 25 = 25 % de los sost.) | rotas  67.2 % indef   0.0 % | exactos 76 = 24.9 % | prec med |1.46| (signo +0.28, p75 1.95) | recorrido medio 46.7 med 26.7 tramo 44.0 | llega opuesta 18/47 = 38 % | noches 19 strikes 36
+      corridas +-11/19/31 juntas: sost 29.5 % exactos 21.9 % prec med |1.43| recorrido medio 56.9 llega opuesta 35 % cobertura 4.2 %
+      azar pct_sostenidos         real    32.79 | p5    27.40 p50    29.97 p95    35.52 | percentil  90.0
+      azar pct_exactos            real    24.92 | p5    20.12 p50    23.06 p95    27.07 | percentil  90.0
+      azar pct_rotas              real    67.21 | p5    64.48 p50    70.03 p95    72.60 | percentil  10.0
+      azar precision_mediana_abs  real     1.46 | p5     1.15 p50     1.28 p95     1.59 | percentil  80.0
+      azar recorrido_medio        real    46.71 | p5    40.70 p50    53.76 p95    63.88 | percentil  30.0
+      azar recorrido_mediano      real    26.69 | p5    25.93 p50    30.94 p95    37.83 | percentil  10.0
+      azar recorrido_tramo_medio  real    44.01 | p5    37.93 p50    47.31 p95    55.33 | percentil  40.0
+      azar pct_llega_opuesta      real    38.30 | p5    19.41 p50    30.52 p95    45.08 | percentil  70.0
+      azar cobertura_pct          real     4.95 | p5     2.09 p50     2.74 p95     3.68 | percentil 100.0
+      azar llegadas               real   305.00 | p5   197.00 p50   201.50 p95   272.85 | percentil 100.0
+      IC90 por noche: sost 27.9-38.0 % | exactos 20.6-30.1 % | prec med 1.13-1.68 | recorrido medio 38.7-56.7 | llega opuesta 24-55 %
+  TOLERANTE     llegadas  280 (techo 148 piso 132) base  280 | sostenidos  126 =  45.0 % (falso romp 54 = 43 % de los sost.) | rotas  55.0 % indef   0.0 % | exactos 73 = 26.1 % | prec med |1.74| (signo +1.33, p75 3.10) | recorrido medio 60.6 med 39.2 tramo 48.3 | llega opuesta 32/62 = 52 % | noches 19 strikes 36
+      corridas +-11/19/31 juntas: sost 44.0 % exactos 22.2 % prec med |1.98| recorrido medio 62.4 llega opuesta 40 % cobertura 4.2 %
+      azar pct_sostenidos         real    45.00 | p5    39.29 p50    43.80 p95    49.52 | percentil  60.0
+      azar pct_exactos            real    26.07 | p5    20.26 p50    23.66 p95    27.87 | percentil  90.0
+      azar pct_rotas              real    55.00 | p5    50.48 p50    56.20 p95    60.71 | percentil  40.0
+      azar precision_mediana_abs  real     1.74 | p5     1.64 p50     1.90 p95     2.31 | percentil  10.0
+      azar recorrido_medio        real    60.63 | p5    47.21 p50    63.47 p95    71.91 | percentil  40.0
+      azar recorrido_mediano      real    39.23 | p5    27.40 p50    34.55 p95    52.72 | percentil  60.0
+      azar recorrido_tramo_medio  real    48.28 | p5    38.45 p50    48.35 p95    54.84 | percentil  50.0
+      azar pct_llega_opuesta      real    51.61 | p5    20.97 p50    34.17 p95    54.57 | percentil  90.0
+      azar cobertura_pct          real     4.95 | p5     2.09 p50     2.74 p95     3.68 | percentil 100.0
+      azar llegadas               real   280.00 | p5   179.25 p50   191.50 p95   256.15 | percentil 100.0
+      IC90 por noche: sost 40.5-49.3 % | exactos 21.9-30.9 % | prec med 1.54-1.96 | recorrido medio 53.2-69.8 | llega opuesta 43-62 %
+  MUY_TOLERANTE llegadas  260 (techo 137 piso 123) base  259 | sostenidos  131 =  50.6 % (falso romp 63 = 48 % de los sost.) | rotas  49.4 % indef   0.0 % | exactos 68 = 26.3 % | prec med |1.93| (signo +1.71, p75 4.66) | recorrido medio 59.7 med 37.8 tramo 47.7 | llega opuesta 30/65 = 46 % | noches 19 strikes 36
+      corridas +-11/19/31 juntas: sost 51.3 % exactos 22.6 % prec med |2.78| recorrido medio 64.8 llega opuesta 42 % cobertura 4.2 %
+      azar pct_sostenidos         real    50.58 | p5    46.50 p50    49.40 p95    57.96 | percentil  60.0
+      azar pct_exactos            real    26.25 | p5    19.31 p50    23.55 p95    28.58 | percentil  90.0
+      azar pct_rotas              real    49.42 | p5    42.04 p50    50.60 p95    53.50 | percentil  40.0
+      azar precision_mediana_abs  real     1.93 | p5     2.03 p50     2.57 p95     3.53 | percentil  10.0
+      azar recorrido_medio        real    59.70 | p5    50.64 p50    62.24 p95    73.69 | percentil  50.0
+      azar recorrido_mediano      real    37.77 | p5    28.61 p50    39.39 p95    58.40 | percentil  40.0
+      azar recorrido_tramo_medio  real    47.70 | p5    38.47 p50    46.98 p95    52.85 | percentil  60.0
+      azar pct_llega_opuesta      real    46.15 | p5    21.61 p50    35.62 p95    54.10 | percentil  80.0
+      azar cobertura_pct          real     4.95 | p5     2.09 p50     2.74 p95     3.68 | percentil 100.0
+      azar llegadas               real   260.00 | p5   162.80 p50   176.50 p95   236.75 | percentil 100.0
+      IC90 por noche: sost 45.1-55.7 % | exactos 21.6-31.2 % | prec med 1.71-2.23 | recorrido medio 51.9-69.0 | llega opuesta 36-59 %
+  TOLERANTE azar 'propia': percentiles sost 60.0 exactos 70.0 prec 50.0 recorrido 20.0 cobertura 100.0
+  cobertura de giros (zigzag 20, +-2): 38 de 767 = 5.0 % | sensibilidad +-6: 107 de 767
+
+=== h41c | ventana congelada | pistas 398 | noches en ventana 18 | 10 s
+  ESTRICTO      llegadas  292 (techo 153 piso 139) base  292 | sostenidos   97 =  33.2 % (falso romp 25 = 26 % de los sost.) | rotas  66.8 % indef   0.0 % | exactos 73 = 25.0 % | prec med |1.48| (signo +0.30, p75 1.96) | recorrido medio 46.6 med 26.4 tramo 44.2 | llega opuesta 18/47 = 38 % | noches 18 strikes 36
+      corridas +-11/19/31 juntas: sost 29.4 % exactos 21.9 % prec med |1.44| recorrido medio 57.4 llega opuesta 34 % cobertura 4.1 %
+      azar pct_sostenidos         real    33.22 | p5    27.20 p50    30.34 p95    35.35 | percentil  90.0
+      azar pct_exactos            real    25.00 | p5    19.83 p50    23.02 p95    27.30 | percentil  90.0
+      azar pct_rotas              real    66.78 | p5    64.65 p50    69.66 p95    72.80 | percentil  10.0
+      azar precision_mediana_abs  real     1.48 | p5     1.16 p50     1.27 p95     1.59 | percentil  80.0
+      azar recorrido_medio        real    46.63 | p5    40.75 p50    53.76 p95    64.20 | percentil  30.0
+      azar recorrido_mediano      real    26.40 | p5    25.93 p50    30.11 p95    37.83 | percentil  10.0
+      azar recorrido_tramo_medio  real    44.21 | p5    38.02 p50    47.13 p95    55.87 | percentil  40.0
+      azar pct_llega_opuesta      real    38.30 | p5    18.44 p50    30.52 p95    45.08 | percentil  70.0
+      azar cobertura_pct          real     4.79 | p5     1.92 p50     2.66 p95     3.75 | percentil 100.0
+      azar llegadas               real   292.00 | p5   190.35 p50   198.00 p95   270.60 | percentil  90.0
+      IC90 por noche: sost 27.9-38.5 % | exactos 20.5-29.9 % | prec med 1.18-1.71 | recorrido medio 38.6-57.0 | llega opuesta 25-55 %
+  TOLERANTE     llegadas  270 (techo 141 piso 129) base  270 | sostenidos  123 =  45.6 % (falso romp 53 = 43 % de los sost.) | rotas  54.4 % indef   0.0 % | exactos 71 = 26.3 % | prec med |1.74| (signo +1.40, p75 3.08) | recorrido medio 60.6 med 37.8 tramo 48.5 | llega opuesta 32/62 = 52 % | noches 18 strikes 36
+      corridas +-11/19/31 juntas: sost 43.8 % exactos 22.1 % prec med |1.98| recorrido medio 63.1 llega opuesta 39 % cobertura 4.1 %
+      azar pct_sostenidos         real    45.56 | p5    39.27 p50    43.80 p95    49.52 | percentil  70.0
+      azar pct_exactos            real    26.30 | p5    19.97 p50    23.45 p95    28.15 | percentil  90.0
+      azar pct_rotas              real    54.44 | p5    50.48 p50    56.20 p95    60.73 | percentil  30.0
+      azar precision_mediana_abs  real     1.74 | p5     1.63 p50     1.89 p95     2.49 | percentil  10.0
+      azar recorrido_medio        real    60.59 | p5    47.56 p50    63.59 p95    72.14 | percentil  40.0
+      azar recorrido_mediano      real    37.77 | p5    27.99 p50    34.68 p95    52.72 | percentil  60.0
+      azar recorrido_tramo_medio  real    48.55 | p5    38.65 p50    48.39 p95    55.24 | percentil  50.0
+      azar pct_llega_opuesta      real    51.61 | p5    20.06 p50    34.17 p95    54.57 | percentil  90.0
+      azar cobertura_pct          real     4.79 | p5     1.92 p50     2.66 p95     3.75 | percentil 100.0
+      azar llegadas               real   270.00 | p5   176.80 p50   188.00 p95   253.90 | percentil  90.0
+      IC90 por noche: sost 41.2-49.8 % | exactos 22.0-30.8 % | prec med 1.61-2.00 | recorrido medio 52.9-69.9 | llega opuesta 43-63 %
+  MUY_TOLERANTE llegadas  251 (techo 130 piso 121) base  251 | sostenidos  128 =  51.0 % (falso romp 62 = 48 % de los sost.) | rotas  49.0 % indef   0.0 % | exactos 66 = 26.3 % | prec med |1.94| (signo +1.75, p75 4.60) | recorrido medio 59.6 med 35.9 tramo 47.9 | llega opuesta 30/65 = 46 % | noches 18 strikes 36
+      corridas +-11/19/31 juntas: sost 51.4 % exactos 22.6 % prec med |2.81| recorrido medio 65.6 llega opuesta 41 % cobertura 4.1 %
+      azar pct_sostenidos         real    51.00 | p5    46.46 p50    49.99 p95    57.81 | percentil  50.0
+      azar pct_exactos            real    26.29 | p5    18.97 p50    23.66 p95    28.61 | percentil  90.0
+      azar pct_rotas              real    49.00 | p5    42.19 p50    50.01 p95    53.54 | percentil  50.0
+      azar precision_mediana_abs  real     1.94 | p5     2.02 p50     2.54 p95     3.53 | percentil  10.0
+      azar recorrido_medio        real    59.64 | p5    50.88 p50    62.41 p95    73.89 | percentil  50.0
+      azar recorrido_mediano      real    35.93 | p5    28.95 p50    38.12 p95    58.40 | percentil  30.0
+      azar recorrido_tramo_medio  real    47.94 | p5    38.54 p50    46.87 p95    53.14 | percentil  60.0
+      azar pct_llega_opuesta      real    46.15 | p5    20.70 p50    35.62 p95    54.10 | percentil  80.0
+      azar cobertura_pct          real     4.79 | p5     1.92 p50     2.66 p95     3.75 | percentil 100.0
+      azar llegadas               real   251.00 | p5   161.70 p50   174.00 p95   234.50 | percentil 100.0
+      IC90 por noche: sost 45.3-56.5 % | exactos 21.5-31.2 % | prec med 1.72-2.26 | recorrido medio 51.7-69.0 | llega opuesta 36-59 %
+  cobertura de giros (zigzag 20, +-2): 36 de 751 = 4.8 % | sensibilidad +-6: 104 de 751
+
+=== 20dib | ventana congelada | pistas 2925 | noches en ventana 19 | 25 s
+  ESTRICTO      llegadas  324 (techo 169 piso 155) base  323 | sostenidos  113 =  35.0 % (falso romp 34 = 30 % de los sost.) | rotas  65.0 % indef   0.0 % | exactos 81 = 25.1 % | prec med |1.33| (signo +0.87, p75 2.23) | recorrido medio 56.8 med 35.3 tramo 49.0 | llega opuesta 24/61 = 39 % | noches 19 strikes 0
+      corridas +-11/19/31 juntas: sost 31.2 % exactos 23.8 % prec med |1.30| recorrido medio 58.2 llega opuesta 35 % cobertura 4.8 %
+      azar pct_sostenidos         real    34.98 | p5    29.66 p50    31.33 p95    32.93 | percentil 100.0
+      azar pct_exactos            real    25.08 | p5    22.50 p50    23.89 p95    26.44 | percentil  80.0
+      azar pct_rotas              real    65.02 | p5    67.07 p50    68.67 p95    70.34 | percentil   0.0
+      azar precision_mediana_abs  real     1.33 | p5     1.18 p50     1.34 p95     1.59 | percentil  50.0
+      azar recorrido_medio        real    56.82 | p5    49.00 p50    61.24 p95    71.56 | percentil  30.0
+      azar recorrido_mediano      real    35.28 | p5    33.11 p50    34.72 p95    44.93 | percentil  50.0
+      azar recorrido_tramo_medio  real    48.96 | p5    44.94 p50    51.69 p95    60.11 | percentil  10.0
+      azar pct_llega_opuesta      real    39.34 | p5    30.62 p50    38.46 p95    53.33 | percentil  60.0
+      azar cobertura_pct          real     4.95 | p5     2.32 p50     3.39 p95     4.78 | percentil  95.0
+      azar llegadas               real   324.00 | p5   213.30 p50   263.50 p95   322.20 | percentil  90.0
+      IC90 por noche: sost 30.7-39.5 % | exactos 21.6-29.1 % | prec med 1.24-1.51 | recorrido medio 47.1-66.5 | llega opuesta 28-51 %
+  TOLERANTE     llegadas  306 (techo 161 piso 145) base  305 | sostenidos  145 =  47.5 % (falso romp 69 = 48 % de los sost.) | rotas  52.5 % indef   0.0 % | exactos 78 = 25.6 % | prec med |1.78| (signo +1.72, p75 3.96) | recorrido medio 67.7 med 37.3 tramo 51.5 | llega opuesta 43/81 = 53 % | noches 19 strikes 0
+      corridas +-11/19/31 juntas: sost 45.2 % exactos 23.9 % prec med |1.87| recorrido medio 64.8 llega opuesta 41 % cobertura 4.8 %
+      azar pct_sostenidos         real    47.54 | p5    41.54 p50    45.33 p95    48.20 | percentil  80.0
+      azar pct_exactos            real    25.57 | p5    22.27 p50    24.25 p95    26.74 | percentil  90.0
+      azar pct_rotas              real    52.46 | p5    51.80 p50    54.67 p95    58.46 | percentil  20.0
+      azar precision_mediana_abs  real     1.78 | p5     1.59 p50     1.83 p95     2.42 | percentil  50.0
+      azar recorrido_medio        real    67.68 | p5    53.05 p50    65.02 p95    87.53 | percentil  50.0
+      azar recorrido_mediano      real    37.29 | p5    33.42 p50    37.50 p95    55.89 | percentil  50.0
+      azar recorrido_tramo_medio  real    51.48 | p5    43.93 p50    52.00 p95    62.75 | percentil  40.0
+      azar pct_llega_opuesta      real    53.09 | p5    26.27 p50    45.62 p95    55.24 | percentil  80.0
+      azar cobertura_pct          real     4.95 | p5     2.32 p50     3.39 p95     4.78 | percentil  95.0
+      azar llegadas               real   306.00 | p5   202.20 p50   244.50 p95   301.45 | percentil  90.0
+      IC90 por noche: sost 42.9-52.6 % | exactos 22.1-29.6 % | prec med 1.54-2.16 | recorrido medio 53.4-85.3 | llega opuesta 39-68 %
+  MUY_TOLERANTE llegadas  279 (techo 150 piso 129) base  278 | sostenidos  155 =  55.8 % (falso romp 84 = 54 % de los sost.) | rotas  44.2 % indef   0.0 % | exactos 73 = 26.3 % | prec med |2.26| (signo +2.26, p75 6.41) | recorrido medio 72.0 med 45.1 tramo 51.7 | llega opuesta 49/86 = 57 % | noches 19 strikes 0
+      corridas +-11/19/31 juntas: sost 52.7 % exactos 24.5 % prec med |2.56| recorrido medio 67.0 llega opuesta 44 % cobertura 4.8 %
+      azar pct_sostenidos         real    55.76 | p5    48.51 p50    50.80 p95    54.72 | percentil 100.0
+      azar pct_exactos            real    26.26 | p5    21.21 p50    24.33 p95    26.43 | percentil  90.0
+      azar pct_rotas              real    44.24 | p5    45.28 p50    49.20 p95    51.49 | percentil   0.0
+      azar precision_mediana_abs  real     2.26 | p5     1.84 p50     2.27 p95     3.16 | percentil  50.0
+      azar recorrido_medio        real    71.96 | p5    55.30 p50    66.40 p95    91.17 | percentil  60.0
+      azar recorrido_mediano      real    45.06 | p5    34.08 p50    41.44 p95    67.20 | percentil  70.0
+      azar recorrido_tramo_medio  real    51.73 | p5    41.72 p50    52.63 p95    65.09 | percentil  50.0
+      azar pct_llega_opuesta      real    56.98 | p5    27.83 p50    45.92 p95    59.35 | percentil  90.0
+      azar cobertura_pct          real     4.95 | p5     2.32 p50     3.39 p95     4.78 | percentil  95.0
+      azar llegadas               real   279.00 | p5   184.45 p50   224.50 p95   275.90 | percentil  90.0
+      IC90 por noche: sost 50.5-62.0 % | exactos 22.9-29.9 % | prec med 1.80-3.22 | recorrido medio 57.8-89.7 | llega opuesta 42-71 %
+  TOLERANTE azar 'propia': percentiles sost 60.0 exactos 80.0 prec 40.0 recorrido 30.0 cobertura 100.0
+  cobertura de giros (zigzag 20, +-2): 38 de 767 = 5.0 % | sensibilidad +-6: 124 de 767
+
+=== h41 | ventana completa | pistas 306 | noches en ventana 19 | 15 s
+  ESTRICTO      llegadas  609 (techo 317 piso 292) base  609 | sostenidos  194 =  31.9 % (falso romp 46 = 24 % de los sost.) | rotas  68.1 % indef   0.0 % | exactos 150 = 24.6 % | prec med |1.33| (signo +0.19, p75 1.89) | recorrido medio 58.5 med 29.0 tramo 51.6 | llega opuesta 25/91 = 27 % | noches 19 strikes 46
+      corridas +-11/19/31 juntas: sost 31.8 % exactos 24.1 % prec med |1.37| recorrido medio 62.2 llega opuesta 37 % cobertura 4.2 %
+      azar pct_sostenidos         real    31.86 | p5    26.80 p50    30.45 p95    36.27 | percentil  70.0
+      azar pct_exactos            real    24.63 | p5    20.17 p50    22.45 p95    27.33 | percentil  80.0
+      azar pct_rotas              real    68.14 | p5    63.73 p50    69.55 p95    73.20 | percentil  30.0
+      azar precision_mediana_abs  real     1.33 | p5     1.13 p50     1.31 p95     1.50 | percentil  70.0
+      azar recorrido_medio        real    58.48 | p5    56.49 p50    62.90 p95    72.29 | percentil  10.0
+      azar recorrido_mediano      real    28.96 | p5    28.10 p50    32.43 p95    39.30 | percentil  20.0
+      azar recorrido_tramo_medio  real    51.65 | p5    47.38 p50    54.00 p95    60.40 | percentil  40.0
+      azar pct_llega_opuesta      real    27.47 | p5    24.18 p50    28.42 p95    38.82 | percentil  40.0
+      azar cobertura_pct          real     3.85 | p5     2.04 p50     2.42 p95     3.23 | percentil 100.0
+      azar llegadas               real   609.00 | p5   304.65 p50   361.00 p95   410.35 | percentil 100.0
+      IC90 por noche: sost 29.3-34.5 % | exactos 21.9-27.5 % | prec med 1.14-1.42 | recorrido medio 47.9-71.0 | llega opuesta 21-34 %
+  TOLERANTE     llegadas  575 (techo 299 piso 276) base  574 | sostenidos  271 =  47.2 % (falso romp 130 = 48 % de los sost.) | rotas  52.6 % indef   0.2 % | exactos 143 = 24.9 % | prec med |1.86| (signo +1.58, p75 4.57) | recorrido medio 65.1 med 34.5 tramo 51.0 | llega opuesta 48/130 = 37 % | noches 19 strikes 46
+      corridas +-11/19/31 juntas: sost 45.5 % exactos 24.5 % prec med |1.87| recorrido medio 68.5 llega opuesta 43 % cobertura 4.2 %
+      azar pct_sostenidos         real    47.21 | p5    40.49 p50    43.60 p95    50.43 | percentil  70.0
+      azar pct_exactos            real    24.91 | p5    20.88 p50    22.85 p95    27.63 | percentil  80.0
+      azar pct_rotas              real    52.61 | p5    49.57 p50    56.40 p95    59.51 | percentil  30.0
+      azar precision_mediana_abs  real     1.86 | p5     1.75 p50     1.89 p95     2.26 | percentil  40.0
+      azar recorrido_medio        real    65.12 | p5    63.06 p50    67.69 p95    73.46 | percentil  10.0
+      azar recorrido_mediano      real    34.48 | p5    31.94 p50    35.42 p95    43.16 | percentil  40.0
+      azar recorrido_tramo_medio  real    51.03 | p5    47.37 p50    52.49 p95    56.59 | percentil  40.0
+      azar pct_llega_opuesta      real    36.92 | p5    27.91 p50    32.64 p95    41.08 | percentil  60.0
+      azar cobertura_pct          real     3.85 | p5     2.04 p50     2.42 p95     3.23 | percentil 100.0
+      azar llegadas               real   575.00 | p5   292.70 p50   340.00 p95   383.10 | percentil 100.0
+      IC90 por noche: sost 43.5-50.8 % | exactos 22.1-27.8 % | prec med 1.74-2.25 | recorrido medio 55.7-77.3 | llega opuesta 30-44 %
+  MUY_TOLERANTE llegadas  524 (techo 274 piso 250) base  523 | sostenidos  280 =  53.5 % (falso romp 150 = 54 % de los sost.) | rotas  46.3 % indef   0.2 % | exactos 132 = 25.2 % | prec med |2.44| (signo +2.44, p75 5.72) | recorrido medio 69.7 med 36.2 tramo 49.3 | llega opuesta 55/135 = 41 % | noches 19 strikes 46
+      corridas +-11/19/31 juntas: sost 52.9 % exactos 24.7 % prec med |2.33| recorrido medio 72.7 llega opuesta 46 % cobertura 4.2 %
+      azar pct_sostenidos         real    53.54 | p5    47.57 p50    50.73 p95    56.44 | percentil  70.0
+      azar pct_exactos            real    25.24 | p5    21.40 p50    22.75 p95    28.23 | percentil  80.0
+      azar pct_rotas              real    46.27 | p5    43.56 p50    49.12 p95    52.43 | percentil  30.0
+      azar precision_mediana_abs  real     2.44 | p5     2.00 p50     2.48 p95     2.97 | percentil  40.0
+      azar recorrido_medio        real    69.68 | p5    64.00 p50    70.71 p95    77.97 | percentil  50.0
+      azar recorrido_mediano      real    36.19 | p5    34.29 p50    38.70 p95    44.87 | percentil  30.0
+      azar recorrido_tramo_medio  real    49.33 | p5    47.13 p50    51.90 p95    56.53 | percentil  10.0
+      azar pct_llega_opuesta      real    40.74 | p5    26.00 p50    35.21 p95    41.22 | percentil  80.0
+      azar cobertura_pct          real     3.85 | p5     2.04 p50     2.42 p95     3.23 | percentil 100.0
+      azar llegadas               real   524.00 | p5   269.85 p50   316.50 p95   347.10 | percentil 100.0
+      IC90 por noche: sost 50.0-57.5 % | exactos 22.2-28.3 % | prec med 1.87-3.07 | recorrido medio 59.8-81.0 | llega opuesta 31-50 %
+  TOLERANTE azar 'propia': percentiles sost 10.0 exactos 20.0 prec 60.0 recorrido 10.0 cobertura 100.0
+  cobertura de giros (zigzag 20, +-2): 59 de 1531 = 3.9 % | sensibilidad +-6: 208 de 1531
+
+=== h41 | ventana completa | pistas 306 | noches en ventana 18 | 18 s
+  ESTRICTO      llegadas  591 (techo 303 piso 288) base  591 | sostenidos  190 =  32.1 % (falso romp 45 = 24 % de los sost.) | rotas  67.9 % indef   0.0 % | exactos 147 = 24.9 % | prec med |1.35| (signo +0.19, p75 1.89) | recorrido medio 58.8 med 29.0 tramo 51.8 | llega opuesta 25/90 = 28 % | noches 18 strikes 46
+      corridas +-11/19/31 juntas: sost 32.1 % exactos 24.4 % prec med |1.36| recorrido medio 62.5 llega opuesta 37 % cobertura 4.3 %
+      azar pct_sostenidos         real    32.15 | p5    26.88 p50    30.58 p95    36.08 | percentil  70.0
+      azar pct_exactos            real    24.87 | p5    20.16 p50    22.48 p95    27.42 | percentil  80.0
+      azar pct_rotas              real    67.85 | p5    63.92 p50    69.42 p95    73.12 | percentil  30.0
+      azar precision_mediana_abs  real     1.35 | p5     1.13 p50     1.31 p95     1.50 | percentil  70.0
+      azar recorrido_medio        real    58.76 | p5    56.31 p50    64.22 p95    72.63 | percentil  10.0
+      azar recorrido_mediano      real    28.96 | p5    28.31 p50    33.20 p95    38.92 | percentil  20.0
+      azar recorrido_tramo_medio  real    51.78 | p5    47.15 p50    54.42 p95    60.92 | percentil  40.0
+      azar pct_llega_opuesta      real    27.78 | p5    24.30 p50    28.71 p95    38.82 | percentil  40.0
+      azar cobertura_pct          real     3.86 | p5     2.05 p50     2.43 p95     3.25 | percentil 100.0
+      azar llegadas               real   591.00 | p5   301.45 p50   356.00 p95   398.65 | percentil 100.0
+      IC90 por noche: sost 29.6-34.7 % | exactos 21.9-27.6 % | prec med 1.15-1.44 | recorrido medio 48.3-71.6 | llega opuesta 21-35 %
+  TOLERANTE     llegadas  559 (techo 287 piso 272) base  559 | sostenidos  266 =  47.6 % (falso romp 127 = 48 % de los sost.) | rotas  52.2 % indef   0.2 % | exactos 141 = 25.2 % | prec med |1.83| (signo +1.58, p75 4.56) | recorrido medio 65.6 med 34.5 tramo 51.2 | llega opuesta 48/128 = 38 % | noches 18 strikes 46
+      corridas +-11/19/31 juntas: sost 45.7 % exactos 24.8 % prec med |1.83| recorrido medio 69.1 llega opuesta 43 % cobertura 4.3 %
+      azar pct_sostenidos         real    47.58 | p5    40.27 p50    43.63 p95    50.37 | percentil  70.0
+      azar pct_exactos            real    25.22 | p5    20.89 p50    22.81 p95    27.87 | percentil  80.0
+      azar pct_rotas              real    52.24 | p5    49.63 p50    56.37 p95    59.73 | percentil  30.0
+      azar precision_mediana_abs  real     1.83 | p5     1.75 p50     1.86 p95     2.18 | percentil  30.0
+      azar recorrido_medio        real    65.55 | p5    63.10 p50    68.86 p95    73.79 | percentil  20.0
+      azar recorrido_mediano      real    34.53 | p5    32.35 p50    35.42 p95    43.16 | percentil  40.0
+      azar recorrido_tramo_medio  real    51.20 | p5    47.21 p50    52.75 p95    56.97 | percentil  50.0
+      azar pct_llega_opuesta      real    37.50 | p5    28.08 p50    32.94 p95    41.57 | percentil  60.0
+      azar cobertura_pct          real     3.86 | p5     2.05 p50     2.43 p95     3.25 | percentil 100.0
+      azar llegadas               real   559.00 | p5   288.25 p50   335.00 p95   375.75 | percentil 100.0
+      IC90 por noche: sost 43.8-51.1 % | exactos 22.2-28.1 % | prec med 1.72-2.23 | recorrido medio 56.2-77.4 | llega opuesta 30-45 %
+  MUY_TOLERANTE llegadas  511 (techo 264 piso 247) base  511 | sostenidos  276 =  54.0 % (falso romp 148 = 54 % de los sost.) | rotas  45.8 % indef   0.2 % | exactos 130 = 25.4 % | prec med |2.44| (signo +2.44, p75 5.74) | recorrido medio 70.0 med 36.2 tramo 49.4 | llega opuesta 55/134 = 41 % | noches 18 strikes 46
+      corridas +-11/19/31 juntas: sost 53.1 % exactos 25.0 % prec med |2.28| recorrido medio 73.3 llega opuesta 46 % cobertura 4.3 %
+      azar pct_sostenidos         real    54.01 | p5    47.23 p50    51.08 p95    56.43 | percentil  80.0
+      azar pct_exactos            real    25.44 | p5    21.36 p50    23.05 p95    28.48 | percentil  80.0
+      azar pct_rotas              real    45.79 | p5    43.57 p50    48.83 p95    52.77 | percentil  20.0
+      azar precision_mediana_abs  real     2.44 | p5     1.97 p50     2.53 p95     2.95 | percentil  40.0
+      azar recorrido_medio        real    70.03 | p5    64.03 p50    71.13 p95    78.55 | percentil  50.0
+      azar recorrido_mediano      real    36.19 | p5    34.24 p50    38.77 p95    44.87 | percentil  30.0
+      azar recorrido_tramo_medio  real    49.39 | p5    47.07 p50    52.07 p95    56.82 | percentil  20.0
+      azar pct_llega_opuesta      real    41.04 | p5    26.13 p50    35.46 p95    41.52 | percentil  80.0
+      azar cobertura_pct          real     3.86 | p5     2.05 p50     2.43 p95     3.25 | percentil 100.0
+      azar llegadas               real   511.00 | p5   267.65 p50   311.00 p95   342.20 | percentil 100.0
+      IC90 por noche: sost 50.5-57.6 % | exactos 22.2-28.5 % | prec med 1.86-3.10 | recorrido medio 59.8-80.4 | llega opuesta 30-51 %
+  cobertura de giros (zigzag 20, +-2): 58 de 1501 = 3.9 % | sensibilidad +-6: 203 de 1501
+
+=== h41c | ventana completa | pistas 398 | noches en ventana 19 | 21 s
+  ESTRICTO      llegadas  608 (techo 315 piso 293) base  608 | sostenidos  192 =  31.6 % (falso romp 46 = 24 % de los sost.) | rotas  68.4 % indef   0.0 % | exactos 150 = 24.7 % | prec med |1.41| (signo +0.14, p75 1.90) | recorrido medio 53.8 med 27.2 tramo 49.2 | llega opuesta 29/95 = 31 % | noches 19 strikes 45
+      corridas +-11/19/31 juntas: sost 30.5 % exactos 22.9 % prec med |1.37| recorrido medio 59.4 llega opuesta 36 % cobertura 4.2 %
+      azar pct_sostenidos         real    31.58 | p5    27.32 p50    30.96 p95    37.18 | percentil  60.0
+      azar pct_exactos            real    24.67 | p5    20.30 p50    23.59 p95    27.14 | percentil  70.0
+      azar pct_rotas              real    68.42 | p5    62.82 p50    69.04 p95    72.68 | percentil  40.0
+      azar precision_mediana_abs  real     1.41 | p5     1.18 p50     1.37 p95     1.54 | percentil  80.0
+      azar recorrido_medio        real    53.78 | p5    51.43 p50    56.88 p95    66.21 | percentil  30.0
+      azar recorrido_mediano      real    27.21 | p5    27.52 p50    33.67 p95    36.75 | percentil  10.0
+      azar recorrido_tramo_medio  real    49.23 | p5    43.27 p50    48.18 p95    53.46 | percentil  50.0
+      azar pct_llega_opuesta      real    30.53 | p5    25.43 p50    36.80 p95    47.30 | percentil  10.0
+      azar cobertura_pct          real     4.25 | p5     2.29 p50     3.07 p95     3.82 | percentil 100.0
+      azar llegadas               real   608.00 | p5   381.65 p50   424.00 p95   531.60 | percentil 100.0
+      IC90 por noche: sost 28.2-34.6 % | exactos 22.0-27.6 % | prec med 1.12-1.61 | recorrido medio 42.1-68.3 | llega opuesta 19-41 %
+  TOLERANTE     llegadas  570 (techo 294 piso 276) base  570 | sostenidos  265 =  46.5 % (falso romp 124 = 47 % de los sost.) | rotas  53.5 % indef   0.0 % | exactos 145 = 25.4 % | prec med |1.84| (signo +1.54, p75 4.36) | recorrido medio 64.2 med 35.1 tramo 50.2 | llega opuesta 60/137 = 44 % | noches 19 strikes 45
+      corridas +-11/19/31 juntas: sost 45.4 % exactos 23.3 % prec med |1.95| recorrido medio 68.0 llega opuesta 42 % cobertura 4.2 %
+      azar pct_sostenidos         real    46.49 | p5    42.01 p50    45.62 p95    50.18 | percentil  60.0
+      azar pct_exactos            real    25.44 | p5    20.71 p50    23.97 p95    27.38 | percentil  80.0
+      azar pct_rotas              real    53.51 | p5    49.82 p50    54.38 p95    57.99 | percentil  40.0
+      azar precision_mediana_abs  real     1.84 | p5     1.74 p50     1.88 p95     2.18 | percentil  40.0
+      azar recorrido_medio        real    64.15 | p5    59.87 p50    63.12 p95    75.80 | percentil  60.0
+      azar recorrido_mediano      real    35.06 | p5    30.80 p50    37.95 p95    43.21 | percentil  30.0
+      azar recorrido_tramo_medio  real    50.17 | p5    43.72 p50    47.39 p95    55.58 | percentil  60.0
+      azar pct_llega_opuesta      real    43.80 | p5    25.91 p50    42.12 p95    50.39 | percentil  60.0
+      azar cobertura_pct          real     4.25 | p5     2.29 p50     3.07 p95     3.82 | percentil 100.0
+      azar llegadas               real   570.00 | p5   358.80 p50   405.00 p95   504.00 | percentil 100.0
+      IC90 por noche: sost 43.3-49.5 % | exactos 22.9-28.0 % | prec med 1.71-1.99 | recorrido medio 54.5-76.2 | llega opuesta 35-52 %
+  MUY_TOLERANTE llegadas  526 (techo 271 piso 255) base  525 | sostenidos  279 =  53.1 % (falso romp 147 = 53 % de los sost.) | rotas  46.9 % indef   0.0 % | exactos 135 = 25.7 % | prec med |2.11| (signo +2.11, p75 5.44) | recorrido medio 68.3 med 36.1 tramo 49.7 | llega opuesta 62/144 = 43 % | noches 19 strikes 45
+      corridas +-11/19/31 juntas: sost 52.9 % exactos 23.6 % prec med |2.69| recorrido medio 72.1 llega opuesta 44 % cobertura 4.2 %
+      azar pct_sostenidos         real    53.14 | p5    48.75 p50    50.71 p95    58.21 | percentil  60.0
+      azar pct_exactos            real    25.71 | p5    20.28 p50    24.10 p95    27.63 | percentil  70.0
+      azar pct_rotas              real    46.86 | p5    41.79 p50    49.14 p95    51.25 | percentil  40.0
+      azar precision_mediana_abs  real     2.11 | p5     1.98 p50     2.44 p95     3.34 | percentil  20.0
+      azar recorrido_medio        real    68.31 | p5    58.11 p50    70.90 p95    78.57 | percentil  40.0
+      azar recorrido_mediano      real    36.11 | p5    33.74 p50    42.48 p95    50.15 | percentil  40.0
+      azar recorrido_tramo_medio  real    49.69 | p5    42.62 p50    47.85 p95    55.83 | percentil  60.0
+      azar pct_llega_opuesta      real    43.06 | p5    26.14 p50    41.75 p95    52.87 | percentil  60.0
+      azar cobertura_pct          real     4.25 | p5     2.29 p50     3.07 p95     3.82 | percentil 100.0
+      azar llegadas               real   526.00 | p5   330.70 p50   378.50 p95   473.45 | percentil 100.0
+      IC90 por noche: sost 48.5-57.8 % | exactos 22.8-28.7 % | prec med 1.86-2.55 | recorrido medio 58.5-80.1 | llega opuesta 33-52 %
+  TOLERANTE azar 'propia': percentiles sost 50.0 exactos 40.0 prec 50.0 recorrido 30.0 cobertura 100.0
+  cobertura de giros (zigzag 20, +-2): 65 de 1531 = 4.2 % | sensibilidad +-6: 210 de 1531
+
+=== h41c | ventana completa | pistas 398 | noches en ventana 18 | 16 s
+  ESTRICTO      llegadas  590 (techo 302 piso 288) base  590 | sostenidos  187 =  31.7 % (falso romp 45 = 24 % de los sost.) | rotas  68.3 % indef   0.0 % | exactos 146 = 24.7 % | prec med |1.43| (signo +0.19, p75 1.90) | recorrido medio 53.9 med 27.2 tramo 49.4 | llega opuesta 29/95 = 31 % | noches 18 strikes 45
+      corridas +-11/19/31 juntas: sost 30.6 % exactos 23.0 % prec med |1.38| recorrido medio 59.8 llega opuesta 36 % cobertura 4.2 %
+      azar pct_sostenidos         real    31.69 | p5    27.35 p50    30.65 p95    37.01 | percentil  60.0
+      azar pct_exactos            real    24.75 | p5    20.36 p50    23.49 p95    27.18 | percentil  70.0
+      azar pct_rotas              real    68.31 | p5    62.99 p50    69.35 p95    72.65 | percentil  40.0
+      azar precision_mediana_abs  real     1.43 | p5     1.17 p50     1.36 p95     1.53 | percentil  80.0
+      azar recorrido_medio        real    53.92 | p5    52.30 p50    57.29 p95    67.66 | percentil  30.0
+      azar recorrido_mediano      real    27.21 | p5    27.94 p50    33.91 p95    37.05 | percentil  10.0
+      azar recorrido_tramo_medio  real    49.43 | p5    43.83 p50    48.57 p95    54.48 | percentil  50.0
+      azar pct_llega_opuesta      real    30.53 | p5    24.67 p50    35.90 p95    49.08 | percentil  20.0
+      azar cobertura_pct          real     4.20 | p5     2.23 p50     3.06 p95     3.80 | percentil 100.0
+      azar llegadas               real   590.00 | p5   363.95 p50   415.50 p95   518.70 | percentil 100.0
+      IC90 por noche: sost 28.2-34.9 % | exactos 21.8-27.7 % | prec med 1.13-1.62 | recorrido medio 42.1-68.8 | llega opuesta 19-41 %
+  TOLERANTE     llegadas  556 (techo 284 piso 272) base  556 | sostenidos  260 =  46.8 % (falso romp 121 = 47 % de los sost.) | rotas  53.2 % indef   0.0 % | exactos 143 = 25.7 % | prec med |1.82| (signo +1.54, p75 4.34) | recorrido medio 64.3 med 34.6 tramo 50.3 | llega opuesta 60/137 = 44 % | noches 18 strikes 45
+      corridas +-11/19/31 juntas: sost 45.5 % exactos 23.5 % prec med |1.95| recorrido medio 68.6 llega opuesta 41 % cobertura 4.2 %
+      azar pct_sostenidos         real    46.76 | p5    42.24 p50    45.67 p95    49.95 | percentil  70.0
+      azar pct_exactos            real    25.72 | p5    20.75 p50    23.84 p95    27.42 | percentil  80.0
+      azar pct_rotas              real    53.24 | p5    50.05 p50    54.33 p95    57.76 | percentil  30.0
+      azar precision_mediana_abs  real     1.82 | p5     1.74 p50     1.89 p95     2.21 | percentil  40.0
+      azar recorrido_medio        real    64.30 | p5    60.32 p50    63.31 p95    76.95 | percentil  60.0
+      azar recorrido_mediano      real    34.58 | p5    31.66 p50    37.95 p95    43.49 | percentil  30.0
+      azar recorrido_tramo_medio  real    50.33 | p5    44.18 p50    47.56 p95    56.36 | percentil  60.0
+      azar pct_llega_opuesta      real    43.80 | p5    25.49 p50    41.38 p95    52.29 | percentil  60.0
+      azar cobertura_pct          real     4.20 | p5     2.23 p50     3.06 p95     3.80 | percentil 100.0
+      azar llegadas               real   556.00 | p5   343.45 p50   397.00 p95   491.65 | percentil 100.0
+      IC90 por noche: sost 43.5-49.7 % | exactos 23.2-28.3 % | prec med 1.71-1.99 | recorrido medio 54.7-76.1 | llega opuesta 35-52 %
+  MUY_TOLERANTE llegadas  513 (techo 261 piso 252) base  513 | sostenidos  274 =  53.4 % (falso romp 144 = 53 % de los sost.) | rotas  46.6 % indef   0.0 % | exactos 133 = 25.9 % | prec med |2.11| (signo +2.11, p75 5.49) | recorrido medio 68.5 med 35.9 tramo 49.8 | llega opuesta 62/144 = 43 % | noches 18 strikes 45
+      corridas +-11/19/31 juntas: sost 53.1 % exactos 23.8 % prec med |2.68| recorrido medio 72.7 llega opuesta 44 % cobertura 4.2 %
+      azar pct_sostenidos         real    53.41 | p5    48.81 p50    50.62 p95    58.08 | percentil  60.0
+      azar pct_exactos            real    25.93 | p5    20.28 p50    23.93 p95    27.56 | percentil  70.0
+      azar pct_rotas              real    46.59 | p5    41.92 p50    49.36 p95    51.19 | percentil  40.0
+      azar precision_mediana_abs  real     2.11 | p5     1.97 p50     2.56 p95     3.35 | percentil  20.0
+      azar recorrido_medio        real    68.53 | p5    58.52 p50    72.76 p95    79.72 | percentil  40.0
+      azar recorrido_mediano      real    35.93 | p5    34.28 p50    42.65 p95    50.93 | percentil  40.0
+      azar recorrido_tramo_medio  real    49.83 | p5    42.91 p50    47.93 p95    56.52 | percentil  60.0
+      azar pct_llega_opuesta      real    43.06 | p5    25.73 p50    42.13 p95    53.07 | percentil  60.0
+      azar cobertura_pct          real     4.20 | p5     2.23 p50     3.06 p95     3.80 | percentil 100.0
+      azar llegadas               real   513.00 | p5   317.70 p50   370.50 p95   461.65 | percentil 100.0
+      IC90 por noche: sost 48.6-58.1 % | exactos 22.9-28.8 % | prec med 1.86-2.52 | recorrido medio 58.3-79.7 | llega opuesta 33-52 %
+  cobertura de giros (zigzag 20, +-2): 63 de 1501 = 4.2 % | sensibilidad +-6: 205 de 1501
+
+=== 20dib | ventana completa | pistas 2925 | noches en ventana 19 | 35 s
+  ESTRICTO      llegadas  636 (techo 328 piso 308) base  635 | sostenidos  215 =  33.9 % (falso romp 63 = 29 % de los sost.) | rotas  66.1 % indef   0.0 % | exactos 157 = 24.7 % | prec med |1.41| (signo +0.58, p75 2.19) | recorrido medio 55.2 med 33.2 tramo 49.3 | llega opuesta 48/124 = 39 % | noches 19 strikes 0
+      corridas +-11/19/31 juntas: sost 31.7 % exactos 24.1 % prec med |1.34| recorrido medio 61.8 llega opuesta 35 % cobertura 4.6 %
+      azar pct_sostenidos         real    33.86 | p5    30.60 p50    31.75 p95    32.68 | percentil 100.0
+      azar pct_exactos            real    24.72 | p5    22.69 p50    23.61 p95    26.40 | percentil  60.0
+      azar pct_rotas              real    66.14 | p5    67.32 p50    68.25 p95    69.40 | percentil   0.0
+      azar precision_mediana_abs  real     1.41 | p5     1.17 p50     1.29 p95     1.52 | percentil  80.0
+      azar recorrido_medio        real    55.17 | p5    55.06 p50    59.00 p95    68.00 | percentil  10.0
+      azar recorrido_mediano      real    33.25 | p5    30.97 p50    34.13 p95    39.42 | percentil  20.0
+      azar recorrido_tramo_medio  real    49.30 | p5    47.99 p50    52.18 p95    54.49 | percentil  30.0
+      azar pct_llega_opuesta      real    38.71 | p5    35.08 p50    43.60 p95    46.25 | percentil  30.0
+      azar cobertura_pct          real     4.44 | p5     3.06 p50     4.02 p95     5.00 | percentil  80.0
+      azar llegadas               real   636.00 | p5   474.70 p50   547.00 p95   601.75 | percentil 100.0
+      IC90 por noche: sost 30.4-37.4 % | exactos 21.8-27.8 % | prec med 1.24-1.53 | recorrido medio 48.9-62.3 | llega opuesta 31-45 %
+  TOLERANTE     llegadas  612 (techo 318 piso 294) base  611 | sostenidos  284 =  46.5 % (falso romp 135 = 48 % de los sost.) | rotas  53.5 % indef   0.0 % | exactos 154 = 25.2 % | prec med |1.81| (signo +1.64, p75 4.04) | recorrido medio 65.4 med 37.0 tramo 50.3 | llega opuesta 79/166 = 48 % | noches 19 strikes 0
+      corridas +-11/19/31 juntas: sost 46.4 % exactos 24.1 % prec med |1.91| recorrido medio 67.6 llega opuesta 41 % cobertura 4.6 %
+      azar pct_sostenidos         real    46.48 | p5    45.11 p50    46.96 p95    48.92 | percentil  40.0
+      azar pct_exactos            real    25.20 | p5    22.65 p50    23.55 p95    26.91 | percentil  60.0
+      azar pct_rotas              real    53.52 | p5    51.08 p50    53.04 p95    54.89 | percentil  60.0
+      azar precision_mediana_abs  real     1.81 | p5     1.69 p50     1.91 p95     2.29 | percentil  30.0
+      azar recorrido_medio        real    65.44 | p5    61.44 p50    65.29 p95    77.79 | percentil  60.0
+      azar recorrido_mediano      real    37.01 | p5    34.88 p50    37.16 p95    45.89 | percentil  50.0
+      azar recorrido_tramo_medio  real    50.33 | p5    48.25 p50    50.57 p95    55.57 | percentil  40.0
+      azar pct_llega_opuesta      real    47.59 | p5    36.39 p50    46.09 p95    48.38 | percentil  60.0
+      azar cobertura_pct          real     4.44 | p5     3.06 p50     4.02 p95     5.00 | percentil  80.0
+      azar llegadas               real   612.00 | p5   455.90 p50   520.50 p95   574.75 | percentil 100.0
+      IC90 por noche: sost 43.3-49.9 % | exactos 22.4-28.2 % | prec med 1.63-2.10 | recorrido medio 55.3-77.7 | llega opuesta 38-56 %
+  MUY_TOLERANTE llegadas  567 (techo 299 piso 268) base  566 | sostenidos  309 =  54.6 % (falso romp 168 = 54 % de los sost.) | rotas  45.4 % indef   0.0 % | exactos 145 = 25.6 % | prec med |2.45| (signo +2.45, p75 6.24) | recorrido medio 71.0 med 43.5 tramo 50.3 | llega opuesta 92/180 = 51 % | noches 19 strikes 0
+      corridas +-11/19/31 juntas: sost 53.4 % exactos 24.7 % prec med |2.54| recorrido medio 70.7 llega opuesta 44 % cobertura 4.6 %
+      azar pct_sostenidos         real    54.59 | p5    51.77 p50    53.11 p95    54.36 | percentil 100.0
+      azar pct_exactos            real    25.62 | p5    22.34 p50    24.06 p95    27.03 | percentil  70.0
+      azar pct_rotas              real    45.41 | p5    45.64 p50    46.89 p95    48.23 | percentil   0.0
+      azar precision_mediana_abs  real     2.45 | p5     2.02 p50     2.57 p95     3.07 | percentil  40.0
+      azar recorrido_medio        real    71.00 | p5    65.02 p50    67.47 p95    86.49 | percentil  60.0
+      azar recorrido_mediano      real    43.50 | p5    37.15 p50    41.05 p95    52.50 | percentil  70.0
+      azar recorrido_tramo_medio  real    50.31 | p5    47.63 p50    50.39 p95    58.62 | percentil  50.0
+      azar pct_llega_opuesta      real    51.11 | p5    38.40 p50    48.09 p95    52.96 | percentil  80.0
+      azar cobertura_pct          real     4.44 | p5     3.06 p50     4.02 p95     5.00 | percentil  80.0
+      azar llegadas               real   567.00 | p5   427.20 p50   495.00 p95   535.55 | percentil 100.0
+      IC90 por noche: sost 50.9-58.8 % | exactos 22.8-28.6 % | prec med 1.94-3.20 | recorrido medio 60.5-84.3 | llega opuesta 42-60 %
+  TOLERANTE azar 'propia': percentiles sost 80.0 exactos 80.0 prec 10.0 recorrido 30.0 cobertura 100.0
+  cobertura de giros (zigzag 20, +-2): 68 de 1531 = 4.4 % | sensibilidad +-6: 218 de 1531
+
+=== h41 | ventana congelada | SOLO 2026-10-09 | pistas 306 | noches en ventana 1 | 7 s
+  ESTRICTO      llegadas   13 (techo 10 piso 3) base   13 | sostenidos    2 =  15.4 % (falso romp 0 = 0 % de los sost.) | rotas  84.6 % indef   0.0 % | exactos 2 = 15.4 % | prec med |0.91| (signo -0.02, p75 0.92) | recorrido medio 42.4 med 42.4 tramo 42.4 | llega opuesta 0/1 = 0 % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 20.9 % exactos 14.0 % prec med |1.87| recorrido medio 35.0 llega opuesta 50 % cobertura 4.2 %
+      azar pct_sostenidos         real    15.38 | p5     0.00 p50    29.17 p95    46.88 | percentil  33.3
+      azar pct_exactos            real    15.38 | p5     0.00 p50    12.50 p95    31.25 | percentil  50.0
+      azar pct_rotas              real    84.62 | p5    53.12 p50    70.83 p95   100.00 | percentil  66.7
+      azar precision_mediana_abs  real     0.91 | p5     0.77 p50     1.57 p95     2.30 | percentil  25.0
+      azar recorrido_medio        real    42.40 | p5    18.55 p50    34.77 p95    56.09 | percentil  50.0
+      azar recorrido_mediano      real    42.40 | p5    18.78 p50    35.52 p95    56.09 | percentil  50.0
+      azar recorrido_tramo_medio  real    42.40 | p5    18.55 p50    34.77 p95    56.09 | percentil  50.0
+      azar pct_llega_opuesta      real     0.00 | p5     5.00 p50    50.00 p95    95.00 | percentil  25.0
+      azar cobertura_pct          real     6.25 | p5     0.00 p50     0.00 p95     9.69 | percentil  85.0
+      azar llegadas               real    13.00 | p5     0.00 p50     1.50 p95     6.20 | percentil 100.0
+      IC90 por noche: sost 15.4-15.4 % | exactos 15.4-15.4 % | prec med 0.91-0.91 | recorrido medio 42.4-42.4 | llega opuesta 0-0 %
+  TOLERANTE     llegadas   12 (techo 9 piso 3) base   11 | sostenidos    3 =  27.3 % (falso romp 1 = 33 % de los sost.) | rotas  72.7 % indef   0.0 % | exactos 2 = 18.2 % | prec med |0.93| (signo +0.88, p75 3.66) | recorrido medio 38.4 med 30.4 tramo 38.4 | llega opuesta 0/2 = 0 % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 35.0 % exactos 15.0 % prec med |2.31| recorrido medio 32.1 llega opuesta 38 % cobertura 4.2 %
+      azar pct_sostenidos         real    27.27 | p5     8.33 p50    43.75 p95    50.00 | percentil  16.7
+      azar pct_exactos            real    18.18 | p5     0.00 p50    12.50 p95    31.25 | percentil  50.0
+      azar pct_rotas              real    72.73 | p5    50.00 p50    56.25 p95    91.67 | percentil  83.3
+      azar precision_mediana_abs  real     0.93 | p5     1.32 p50     2.36 p95     8.01 | percentil   0.0
+      azar recorrido_medio        real    38.39 | p5    19.02 p50    26.49 p95    53.84 | percentil  80.0
+      azar recorrido_mediano      real    30.37 | p5    19.02 p50    27.99 p95    53.84 | percentil  60.0
+      azar recorrido_tramo_medio  real    38.39 | p5    19.02 p50    26.49 p95    53.84 | percentil  80.0
+      azar pct_llega_opuesta      real     0.00 | p5     0.00 p50     0.00 p95    85.00 | percentil  37.5
+      azar cobertura_pct          real     6.25 | p5     0.00 p50     0.00 p95     9.69 | percentil  85.0
+      azar llegadas               real    12.00 | p5     0.00 p50     1.50 p95     6.20 | percentil 100.0
+      IC90 por noche: sost 27.3-27.3 % | exactos 18.2-18.2 % | prec med 0.93-0.93 | recorrido medio 38.4-38.4 | llega opuesta 0-0 %
+  MUY_TOLERANTE llegadas    9 (techo 7 piso 2) base    8 | sostenidos    2 =  25.0 % (falso romp 0 = 0 % de los sost.) | rotas  75.0 % indef   0.0 % | exactos 2 = 25.0 % | prec med |0.91| (signo -0.02, p75 0.92) | recorrido medio 42.4 med 42.4 tramo 42.4 | llega opuesta 0/1 = 0 % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 43.6 % exactos 15.4 % prec med |3.82| recorrido medio 33.9 llega opuesta 33 % cobertura 4.2 %
+      azar pct_sostenidos         real    25.00 | p5     0.00 p50    50.00 p95    89.29 | percentil  33.3
+      azar pct_exactos            real    25.00 | p5     0.00 p50     0.00 p95    27.68 | percentil  75.0
+      azar pct_rotas              real    75.00 | p5    10.71 p50    50.00 p95   100.00 | percentil  66.7
+      azar precision_mediana_abs  real     0.91 | p5     2.89 p50     4.74 p95     8.49 | percentil   0.0
+      azar recorrido_medio        real    42.40 | p5    24.79 p50    31.06 p95    54.98 | percentil  75.0
+      azar recorrido_mediano      real    42.40 | p5    25.48 p50    31.06 p95    54.98 | percentil  75.0
+      azar recorrido_tramo_medio  real    42.40 | p5    24.79 p50    31.06 p95    40.21 | percentil 100.0
+      azar pct_llega_opuesta      real     0.00 | p5     0.00 p50     0.00 p95    85.00 | percentil  37.5
+      azar cobertura_pct          real     6.25 | p5     0.00 p50     0.00 p95     9.69 | percentil  85.0
+      azar llegadas               real     9.00 | p5     0.00 p50     1.50 p95     5.65 | percentil 100.0
+      IC90 por noche: sost 25.0-25.0 % | exactos 25.0-25.0 % | prec med 0.91-0.91 | recorrido medio 42.4-42.4 | llega opuesta 0-0 %
+  cobertura de giros (zigzag 20, +-2): 1 de 16 = 6.2 % | sensibilidad +-6: 3 de 16
+  LLEGADAS de esta noche (h41, congelada):
+    10-09 00:45 techo 31034.93 QQQ749     -> sostenido  giro de 15 pts                       prec  -0.93 | ESTR sostenido  MUYTOL sostenido  rec 67.93 (tramo 67.93, re-rotura) opuesta - llega None
+    10-09 01:41 techo 31034.93 QQQ749     -> rota       cierre mas alla de +5 con cuerpo 5.00 prec +13.07 | ESTR rota       MUYTOL rota       
+    10-09 02:00 techo 31076.37 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 13.25 prec  +9.63 | ESTR rota       MUYTOL rota       
+    10-09 02:05 piso  31076.37 QQQ750     -> rota       3 cierres seguidos mas alla          prec +12.87 | ESTR rota       MUYTOL rota       
+    10-09 02:10 techo 31076.37 QQQ750     -> sostenido  giro de 15 pts                       prec  +6.38 FALSO ROMP. | ESTR rota       MUYTOL (no llega) rec 30.37 (tramo 30.37, re-rotura) opuesta 31034.93 llega False
+    10-09 02:19 techo 31076.37 QQQ750     -> sostenido  giro de 15 pts                       prec  +0.88 | ESTR sostenido  MUYTOL sostenido  rec 16.87 (tramo 16.87, re-rotura) opuesta 31034.93 llega False
+    10-09 02:26 techo 31076.37 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 5.50 prec +12.88 | ESTR rota       MUYTOL rota       
+    10-09 02:42 techo 31076.37 QQQ750     -> rota       3 cierres seguidos mas alla          prec  +6.13 | ESTR rota       MUYTOL rota       
+    10-09 02:50 piso  31076.37 QQQ750     -> rota       3 cierres seguidos mas alla          prec  +8.62 | ESTR rota       MUYTOL (no llega) 
+    10-09 02:54 techo 31076.37 QQQ750     -> rota       3 cierres seguidos mas alla          prec  +6.88 | ESTR rota       MUYTOL (no llega) 
+    10-09 03:00 piso  31076.37 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 8.50 prec +12.62 | ESTR rota       MUYTOL rota       
+    10-09 03:20 techo 31076.37 QQQ750     -> indefinida fin de datos                         prec  +7.38 | ESTR rota       MUYTOL indefinida 
+
+=== h41c | ventana congelada | SOLO 2026-10-09 | pistas 398 | noches en ventana 1 | 8 s
+  ESTRICTO      llegadas   13 (techo 9 piso 4) base   13 | sostenidos    3 =  23.1 % (falso romp 0 = 0 % de los sost.) | rotas  76.9 % indef   0.0 % | exactos 3 = 23.1 % | prec med |0.67| (signo -0.67, p75 1.04) | recorrido medio 49.1 med 62.2 tramo 37.5 | llega opuesta 0/0 = - % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 33.3 % exactos 24.4 % prec med |0.67| recorrido medio 38.1 llega opuesta 60 % cobertura 6.2 %
+      azar pct_sostenidos         real    23.08 | p5    16.82 p50    45.00 p95    57.50 | percentil  16.7
+      azar pct_exactos            real    23.08 | p5     0.00 p50    30.00 p95    57.50 | percentil  50.0
+      azar pct_rotas              real    76.92 | p5    42.50 p50    55.00 p95    83.18 | percentil  83.3
+      azar precision_mediana_abs  real     0.67 | p5     0.64 p50     1.63 p95     3.39 | percentil  16.7
+      azar recorrido_medio        real    49.08 | p5    24.27 p50    42.82 p95    63.02 | percentil  83.3
+      azar recorrido_mediano      real    62.17 | p5    24.27 p50    42.82 p95    66.30 | percentil  83.3
+      azar recorrido_tramo_medio  real    37.50 | p5    24.27 p50    38.71 p95    62.18 | percentil  50.0
+      azar pct_llega_opuesta      real      nan | p5      nan p50      nan p95      nan | percentil   nan
+      azar cobertura_pct          real    12.50 | p5     0.00 p50     0.00 p95    12.50 | percentil  90.0
+      azar llegadas               real    13.00 | p5     0.00 p50     2.00 p95     8.85 | percentil 100.0
+      IC90 por noche: sost 23.1-23.1 % | exactos 23.1-23.1 % | prec med 0.67-0.67 | recorrido medio 49.1-49.1 | llega opuesta nan-nan %
+  TOLERANTE     llegadas   10 (techo 7 piso 3) base   10 | sostenidos    3 =  30.0 % (falso romp 1 = 33 % de los sost.) | rotas  70.0 % indef   0.0 % | exactos 2 = 20.0 % | prec med |1.42| (signo -0.17, p75 3.12) | recorrido medio 62.2 med 62.2 tramo 37.5 | llega opuesta 0/0 = - % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 48.8 % exactos 25.6 % prec med |1.42| recorrido medio 38.4 llega opuesta 64 % cobertura 6.2 %
+      azar pct_sostenidos         real    30.00 | p5    19.38 p50    50.00 p95    71.25 | percentil  16.7
+      azar pct_exactos            real    20.00 | p5     0.00 p50    30.00 p95    50.00 | percentil  41.7
+      azar pct_rotas              real    70.00 | p5    28.75 p50    50.00 p95    80.62 | percentil  83.3
+      azar precision_mediana_abs  real     1.42 | p5     0.78 p50     1.78 p95     3.70 | percentil  50.0
+      azar recorrido_medio        real    62.17 | p5    24.03 p50    42.82 p95    66.30 | percentil  83.3
+      azar recorrido_mediano      real    62.17 | p5    23.03 p50    42.82 p95    66.30 | percentil  83.3
+      azar recorrido_tramo_medio  real    37.50 | p5    24.03 p50    38.71 p95    62.18 | percentil  50.0
+      azar pct_llega_opuesta      real      nan | p5      nan p50      nan p95      nan | percentil   nan
+      azar cobertura_pct          real    12.50 | p5     0.00 p50     0.00 p95    12.50 | percentil  90.0
+      azar llegadas               real    10.00 | p5     0.00 p50     2.00 p95     7.20 | percentil 100.0
+      IC90 por noche: sost 30.0-30.0 % | exactos 20.0-20.0 % | prec med 1.42-1.42 | recorrido medio 62.2-62.2 | llega opuesta nan-nan %
+  MUY_TOLERANTE llegadas    9 (techo 7 piso 2) base    8 | sostenidos    3 =  37.5 % (falso romp 1 = 33 % de los sost.) | rotas  62.5 % indef   0.0 % | exactos 2 = 25.0 % | prec med |1.42| (signo -0.17, p75 3.12) | recorrido medio 62.2 med 62.2 tramo 37.5 | llega opuesta 0/0 = - % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 50.0 % exactos 23.8 % prec med |2.17| recorrido medio 38.3 llega opuesta 60 % cobertura 6.2 %
+      azar pct_sostenidos         real    37.50 | p5    22.50 p50    50.00 p95    71.25 | percentil  16.7
+      azar pct_exactos            real    25.00 | p5     0.00 p50    30.00 p95    50.00 | percentil  50.0
+      azar pct_rotas              real    62.50 | p5    28.75 p50    50.00 p95    77.50 | percentil  83.3
+      azar precision_mediana_abs  real     1.42 | p5     0.78 p50     1.78 p95     3.70 | percentil  50.0
+      azar recorrido_medio        real    62.17 | p5    24.03 p50    42.82 p95    66.30 | percentil  83.3
+      azar recorrido_mediano      real    62.17 | p5    23.03 p50    42.82 p95    66.30 | percentil  83.3
+      azar recorrido_tramo_medio  real    37.50 | p5    24.03 p50    38.71 p95    62.18 | percentil  50.0
+      azar pct_llega_opuesta      real      nan | p5      nan p50      nan p95      nan | percentil   nan
+      azar cobertura_pct          real    12.50 | p5     0.00 p50     0.00 p95    12.50 | percentil  90.0
+      azar llegadas               real     9.00 | p5     0.00 p50     2.00 p95     6.10 | percentil 100.0
+      IC90 por noche: sost 37.5-37.5 % | exactos 25.0-25.0 % | prec med 1.42-1.42 | recorrido medio 62.2-62.2 | llega opuesta nan-nan %
+  cobertura de giros (zigzag 20, +-2): 2 de 16 = 12.5 % | sensibilidad +-6: 3 de 16
+  LLEGADAS de esta noche (h41c, congelada):
+    10-09 00:35 techo 31029.17 QQQ749     -> sostenido  giro de 15 pts                       prec  -0.17 | ESTR sostenido  MUYTOL sostenido  rec 62.17 (tramo 22.92, re-rotura) opuesta - llega None
+    10-09 00:44 techo 31029.17 QQQ749     -> sostenido  giro de 15 pts                       prec  +4.83 FALSO ROMP. | ESTR rota       MUYTOL sostenido  rec 62.17 (tramo 27.42, re-rotura) opuesta - llega None
+    10-09 00:56 techo 31029.17 QQQ749     -> sostenido  giro de 15 pts                       prec  -1.42 | ESTR sostenido  MUYTOL sostenido  rec 62.17 (tramo 62.17, re-rotura) opuesta - llega None
+    10-09 01:41 techo 31029.17 QQQ749     -> rota       cierre mas alla de +5 con cuerpo 25.75 prec +10.08 | ESTR rota       MUYTOL rota       
+    10-09 02:00 techo 31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 13.25 prec +15.41 | ESTR rota       MUYTOL rota       
+    10-09 02:07 piso  31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 15.75 prec +10.84 | ESTR rota       MUYTOL rota       
+    10-09 02:18 techo 31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 16.25 prec  +8.66 | ESTR rota       MUYTOL rota       
+    10-09 02:38 piso  31070.59 QQQ750     -> rota       3 cierres seguidos mas alla          prec  +9.84 | ESTR rota       MUYTOL rota       
+    10-09 02:51 piso  31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 8.50 prec  +6.84 | ESTR rota       MUYTOL (no llega) 
+    10-09 03:19 techo 31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 5.75 prec +13.16 | ESTR rota       MUYTOL indefinida 
+
+=== 20dib | ventana congelada | SOLO 2026-10-09 | pistas 2925 | noches en ventana 1 | 21 s
+  ESTRICTO      llegadas   11 (techo 9 piso 2) base   10 | sostenidos    8 =  80.0 % (falso romp 2 = 25 % de los sost.) | rotas  20.0 % indef   0.0 % | exactos 6 = 60.0 % | prec med |1.47| (signo +0.37, p75 2.01) | recorrido medio 41.5 med 42.6 tramo 30.8 | llega opuesta 5/8 = 62 % | noches 1 strikes 0
+      corridas +-11/19/31 juntas: sost 15.7 % exactos 11.8 % prec med |1.53| recorrido medio 26.1 llega opuesta 0 % cobertura 1.0 %
+      azar pct_sostenidos         real    80.00 | p5    13.33 p50    50.00 p95    81.43 | percentil  88.9
+      azar pct_exactos            real    60.00 | p5    10.00 p50    50.00 p95    67.86 | percentil  88.9
+      azar pct_rotas              real    20.00 | p5    18.57 p50    50.00 p95    86.67 | percentil  11.1
+      azar precision_mediana_abs  real     1.47 | p5     0.56 p50     1.04 p95     1.33 | percentil 100.0
+      azar recorrido_medio        real    41.49 | p5    21.51 p50    42.46 p95    70.14 | percentil  37.5
+      azar recorrido_mediano      real    42.60 | p5    22.67 p50    42.46 p95    74.72 | percentil  62.5
+      azar recorrido_tramo_medio  real    30.83 | p5    18.91 p50    39.66 p95    67.80 | percentil  37.5
+      azar pct_llega_opuesta      real    62.50 | p5     0.00 p50     0.00 p95    37.50 | percentil 100.0
+      azar cobertura_pct          real     6.25 | p5     0.00 p50     6.25 p95    15.94 | percentil  55.0
+      azar llegadas               real    11.00 | p5     0.45 p50     3.50 p95    10.75 | percentil  90.0
+      IC90 por noche: sost 80.0-80.0 % | exactos 60.0-60.0 % | prec med 1.47-1.47 | recorrido medio 41.5-41.5 | llega opuesta 62-62 %
+  TOLERANTE     llegadas   10 (techo 8 piso 2) base    9 | sostenidos    8 =  88.9 % (falso romp 3 = 38 % de los sost.) | rotas  11.1 % indef   0.0 % | exactos 5 = 55.6 % | prec med |1.47| (signo +0.37, p75 2.35) | recorrido medio 43.7 med 43.5 tramo 30.8 | llega opuesta 8/8 = 100 % | noches 1 strikes 0
+      corridas +-11/19/31 juntas: sost 30.6 % exactos 12.2 % prec med |3.17| recorrido medio 34.8 llega opuesta 0 % cobertura 1.0 %
+      azar pct_sostenidos         real    88.89 | p5    13.33 p50    50.00 p95   100.00 | percentil  66.7
+      azar pct_exactos            real    55.56 | p5    10.00 p50    50.00 p95    66.67 | percentil  77.8
+      azar pct_rotas              real    11.11 | p5     0.00 p50    50.00 p95    86.67 | percentil  33.3
+      azar precision_mediana_abs  real     1.47 | p5     0.78 p50     1.23 p95     2.50 | percentil  75.0
+      azar recorrido_medio        real    43.74 | p5    27.57 p50    42.97 p95    74.72 | percentil  75.0
+      azar recorrido_mediano      real    43.50 | p5    29.45 p50    43.13 p95    74.72 | percentil  62.5
+      azar recorrido_tramo_medio  real    30.83 | p5    21.12 p50    39.66 p95    67.80 | percentil  37.5
+      azar pct_llega_opuesta      real   100.00 | p5     0.00 p50     0.00 p95    37.50 | percentil 100.0
+      azar cobertura_pct          real     6.25 | p5     0.00 p50     6.25 p95    15.94 | percentil  55.0
+      azar llegadas               real    10.00 | p5     0.45 p50     3.00 p95     9.75 | percentil  90.0
+      IC90 por noche: sost 88.9-88.9 % | exactos 55.6-55.6 % | prec med 1.47-1.47 | recorrido medio 43.7-43.7 | llega opuesta 100-100 %
+  MUY_TOLERANTE llegadas    9 (techo 8 piso 1) base    8 | sostenidos    7 =  87.5 % (falso romp 3 = 43 % de los sost.) | rotas  12.5 % indef   0.0 % | exactos 4 = 50.0 % | prec med |1.50| (signo +0.50, p75 2.65) | recorrido medio 43.2 med 43.5 tramo 28.5 | llega opuesta 7/7 = 100 % | noches 1 strikes 0
+      corridas +-11/19/31 juntas: sost 35.0 % exactos 12.5 % prec med |3.46| recorrido medio 35.7 llega opuesta 0 % cobertura 1.0 %
+      azar pct_sostenidos         real    87.50 | p5    20.00 p50    66.67 p95   100.00 | percentil  66.7
+      azar pct_exactos            real    50.00 | p5    10.00 p50    50.00 p95    66.67 | percentil  61.1
+      azar pct_rotas              real    12.50 | p5     0.00 p50    33.33 p95    80.00 | percentil  33.3
+      azar precision_mediana_abs  real     1.50 | p5     1.03 p50     1.34 p95     3.43 | percentil  62.5
+      azar recorrido_medio        real    43.24 | p5    27.57 p50    42.85 p95    74.72 | percentil  50.0
+      azar recorrido_mediano      real    43.50 | p5    28.57 p50    43.13 p95    74.72 | percentil  62.5
+      azar recorrido_tramo_medio  real    28.49 | p5    21.12 p50    38.75 p95    67.72 | percentil  37.5
+      azar pct_llega_opuesta      real   100.00 | p5     0.00 p50     0.00 p95    37.50 | percentil 100.0
+      azar cobertura_pct          real     6.25 | p5     0.00 p50     6.25 p95    15.94 | percentil  55.0
+      azar llegadas               real     9.00 | p5     0.45 p50     3.00 p95     9.75 | percentil  90.0
+      IC90 por noche: sost 87.5-87.5 % | exactos 50.0-50.0 % | prec med 1.50-1.50 | recorrido medio 43.2-43.2 | llega opuesta 100-100 %
+  cobertura de giros (zigzag 20, +-2): 1 de 16 = 6.2 % | sensibilidad +-6: 5 de 16
+  LLEGADAS de esta noche (20dib, congelada):
+    10-09 01:42 techo 31042.06 -          -> rota       cierre mas alla de +5 con cuerpo 4.75 prec  +9.69 | ESTR rota       MUYTOL rota       
+    10-09 01:45 piso  31042.06 -          -> sostenido  giro de 15 pts                       prec  -1.44 | ESTR sostenido  MUYTOL (no llega) rec 47.19 (tramo 47.19, fin de datos) opuesta 31083.50 llega True
+    10-09 02:00 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  -1.50 | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 18.25, fin de datos) opuesta 31042.06 llega True
+    10-09 02:02 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  +3.25 FALSO ROMP. | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 20.00, fin de datos) opuesta 31042.06 llega True
+    10-09 02:10 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  -0.75 | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 37.50, fin de datos) opuesta 31042.06 llega True
+    10-09 02:27 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  +5.75 FALSO ROMP. | ESTR rota       MUYTOL sostenido  rec 43.50 (tramo 22.75, fin de datos) opuesta 31042.06 llega True
+    10-09 02:45 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  +0.25 | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 15.75, fin de datos) opuesta 31042.06 llega True
+    10-09 02:56 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  +0.50 | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 43.50, fin de datos) opuesta 31042.06 llega True
+    10-09 03:10 piso  31042.06 -          -> sostenido  giro de 15 pts                       prec  +2.06 FALSO ROMP. | ESTR sostenido  MUYTOL sostenido  rec 41.69 (tramo 41.69, fin de datos) opuesta 31083.50 llega True
+    10-09 03:21 techo 31083.50 -          -> indefinida fin de datos                         prec  +0.25 | ESTR indefinida MUYTOL indefinida 
+
+=== h41 | ventana completa | SOLO 2026-10-09 | pistas 306 | noches en ventana 1 | 7 s
+  ESTRICTO      llegadas   18 (techo 14 piso 4) base   18 | sostenidos    4 =  22.2 % (falso romp 1 = 25 % de los sost.) | rotas  77.8 % indef   0.0 % | exactos 3 = 16.7 % | prec med |1.05| (signo -0.02, p75 1.63) | recorrido medio 45.3 med 42.4 tramo 45.3 | llega opuesta 0/1 = 0 % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 17.4 % exactos 11.6 % prec med |1.84| recorrido medio 31.4 llega opuesta 33 % cobertura 2.2 %
+      azar pct_sostenidos         real    22.22 | p5     0.00 p50    27.78 p95    65.00 | percentil  33.3
+      azar pct_exactos            real    16.67 | p5     0.00 p50    16.67 p95    40.00 | percentil  50.0
+      azar pct_rotas              real    77.78 | p5    35.00 p50    72.22 p95   100.00 | percentil  66.7
+      azar precision_mediana_abs  real     1.05 | p5     0.83 p50     1.61 p95     2.28 | percentil  14.3
+      azar recorrido_medio        real    45.29 | p5    20.22 p50    48.19 p95    67.87 | percentil  42.9
+      azar recorrido_mediano      real    42.40 | p5    20.85 p50    48.19 p95    59.60 | percentil  28.6
+      azar recorrido_tramo_medio  real    45.29 | p5    19.10 p50    48.19 p95    67.87 | percentil  42.9
+      azar pct_llega_opuesta      real     0.00 | p5     0.00 p50     0.00 p95    86.67 | percentil  30.0
+      azar cobertura_pct          real     3.33 | p5     0.00 p50     0.00 p95     5.17 | percentil  75.0
+      azar llegadas               real    18.00 | p5     0.45 p50     4.50 p95    13.50 | percentil  95.0
+      IC90 por noche: sost 22.2-22.2 % | exactos 16.7-16.7 % | prec med 1.05-1.05 | recorrido medio 45.3-45.3 | llega opuesta 0-0 %
+  TOLERANTE     llegadas   16 (techo 12 piso 4) base   15 | sostenidos    5 =  33.3 % (falso romp 3 = 60 % de los sost.) | rotas  66.7 % indef   0.0 % | exactos 2 = 13.3 % | prec med |3.04| (signo +3.04, p75 5.34) | recorrido medio 42.3 med 30.4 tramo 42.3 | llega opuesta 0/2 = 0 % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 34.8 % exactos 12.1 % prec med |3.82| recorrido medio 31.5 llega opuesta 33 % cobertura 2.2 %
+      azar pct_sostenidos         real    33.33 | p5    30.00 p50    50.00 p95    90.00 | percentil  11.1
+      azar pct_exactos            real    13.33 | p5     0.00 p50    12.50 p95    40.00 | percentil  55.6
+      azar pct_rotas              real    66.67 | p5    10.00 p50    50.00 p95    70.00 | percentil  88.9
+      azar precision_mediana_abs  real     3.04 | p5     1.60 p50     4.19 p95     7.33 | percentil  33.3
+      azar recorrido_medio        real    42.31 | p5    23.37 p50    42.32 p95    66.76 | percentil  44.4
+      azar recorrido_mediano      real    30.37 | p5    21.56 p50    43.05 p95    59.43 | percentil  44.4
+      azar recorrido_tramo_medio  real    42.31 | p5    22.97 p50    42.32 p95    66.76 | percentil  44.4
+      azar pct_llega_opuesta      real     0.00 | p5     0.00 p50     0.00 p95    44.17 | percentil  37.5
+      azar cobertura_pct          real     3.33 | p5     0.00 p50     0.00 p95     5.17 | percentil  75.0
+      azar llegadas               real    16.00 | p5     0.45 p50     4.00 p95    13.50 | percentil  90.0
+      IC90 por noche: sost 33.3-33.3 % | exactos 13.3-13.3 % | prec med 3.04-3.04 | recorrido medio 42.3-42.3 | llega opuesta 0-0 %
+  MUY_TOLERANTE llegadas   13 (techo 10 piso 3) base   12 | sostenidos    4 =  33.3 % (falso romp 2 = 50 % de los sost.) | rotas  66.7 % indef   0.0 % | exactos 2 = 16.7 % | prec med |1.99| (signo +1.96, p75 3.62) | recorrido medio 45.3 med 42.4 tramo 45.3 | llega opuesta 0/1 = 0 % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 44.6 % exactos 12.3 % prec med |4.62| recorrido medio 39.1 llega opuesta 33 % cobertura 2.2 %
+      azar pct_sostenidos         real    33.33 | p5    33.14 p50    50.00 p95   100.00 | percentil  11.1
+      azar pct_exactos            real    16.67 | p5     0.00 p50     0.00 p95    40.00 | percentil  61.1
+      azar pct_rotas              real    66.67 | p5     0.00 p50    50.00 p95    66.86 | percentil  88.9
+      azar precision_mediana_abs  real     1.99 | p5     1.97 p50     4.19 p95     8.48 | percentil  11.1
+      azar recorrido_medio        real    45.29 | p5    24.67 p50    42.32 p95    70.73 | percentil  55.6
+      azar recorrido_mediano      real    42.40 | p5    24.67 p50    43.05 p95    59.43 | percentil  44.4
+      azar recorrido_tramo_medio  real    45.29 | p5    24.07 p50    42.32 p95    59.79 | percentil  55.6
+      azar pct_llega_opuesta      real     0.00 | p5     0.00 p50     0.00 p95    41.25 | percentil  37.5
+      azar cobertura_pct          real     3.33 | p5     0.00 p50     0.00 p95     5.17 | percentil  75.0
+      azar llegadas               real    13.00 | p5     0.45 p50     4.00 p95    12.50 | percentil  90.0
+      IC90 por noche: sost 33.3-33.3 % | exactos 16.7-16.7 % | prec med 1.99-1.99 | recorrido medio 45.3-45.3 | llega opuesta 0-0 %
+  cobertura de giros (zigzag 20, +-2): 1 de 30 = 3.3 % | sensibilidad +-6: 5 de 30
+  LLEGADAS de esta noche (h41, completa):
+    10-08 22:09 techo 31033.46 QQQ749     -> sostenido  giro de 15 pts                       prec  +3.04 FALSO ROMP. | ESTR sostenido  MUYTOL sostenido  rec 15.21 (tramo 15.21, re-rotura) opuesta - llega None
+    10-08 22:13 techo 31033.46 QQQ749     -> rota       cierre mas alla de +5 con cuerpo 12.75 prec +21.54 | ESTR rota       MUYTOL rota       
+    10-08 22:46 piso  31033.41 QQQ749     -> rota       3 cierres seguidos mas alla          prec  +5.16 | ESTR rota       MUYTOL rota       
+    10-08 23:09 techo 31033.41 QQQ749     -> sostenido  giro de 15 pts                       prec  +5.34 FALSO ROMP. | ESTR rota       MUYTOL sostenido  rec 81.16 (tramo 81.16, re-rotura) opuesta - llega None
+    10-09 00:45 techo 31034.93 QQQ749     -> sostenido  giro de 15 pts                       prec  -0.93 | ESTR sostenido  MUYTOL sostenido  rec 67.93 (tramo 67.93, re-rotura) opuesta - llega None
+    10-09 01:41 techo 31034.93 QQQ749     -> rota       cierre mas alla de +5 con cuerpo 5.00 prec +13.07 | ESTR rota       MUYTOL rota       
+    10-09 02:00 techo 31076.37 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 13.25 prec  +9.63 | ESTR rota       MUYTOL rota       
+    10-09 02:05 piso  31076.37 QQQ750     -> rota       3 cierres seguidos mas alla          prec +12.87 | ESTR rota       MUYTOL rota       
+    10-09 02:10 techo 31076.37 QQQ750     -> sostenido  giro de 15 pts                       prec  +6.38 FALSO ROMP. | ESTR rota       MUYTOL (no llega) rec 30.37 (tramo 30.37, re-rotura) opuesta 31034.93 llega False
+    10-09 02:19 techo 31076.37 QQQ750     -> sostenido  giro de 15 pts                       prec  +0.88 | ESTR sostenido  MUYTOL sostenido  rec 16.87 (tramo 16.87, re-rotura) opuesta 31034.93 llega False
+    10-09 02:26 techo 31076.37 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 5.50 prec +12.88 | ESTR rota       MUYTOL rota       
+    10-09 02:42 techo 31076.37 QQQ750     -> rota       3 cierres seguidos mas alla          prec  +6.13 | ESTR rota       MUYTOL rota       
+    10-09 02:50 piso  31076.37 QQQ750     -> rota       3 cierres seguidos mas alla          prec  +8.62 | ESTR rota       MUYTOL (no llega) 
+    10-09 02:54 techo 31076.37 QQQ750     -> rota       3 cierres seguidos mas alla          prec  +6.88 | ESTR rota       MUYTOL (no llega) 
+    10-09 03:00 piso  31076.37 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 8.50 prec +12.62 | ESTR rota       MUYTOL rota       
+    10-09 03:20 techo 31076.37 QQQ750     -> indefinida fin de datos                         prec  +7.38 | ESTR rota       MUYTOL indefinida 
+
+=== h41c | ventana completa | SOLO 2026-10-09 | pistas 398 | noches en ventana 1 | 7 s
+  ESTRICTO      llegadas   18 (techo 13 piso 5) base   18 | sostenidos    5 =  27.8 % (falso romp 1 = 20 % de los sost.) | rotas  72.2 % indef   0.0 % | exactos 4 = 22.2 % | prec med |1.16| (signo -0.67, p75 1.42) | recorrido medio 48.7 med 62.2 tramo 41.8 | llega opuesta 0/0 = - % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 24.6 % exactos 17.4 % prec med |0.89| recorrido medio 35.5 llega opuesta 50 % cobertura 3.3 %
+      azar pct_sostenidos         real    27.78 | p5    17.25 p50    33.33 p95    56.43 | percentil  30.0
+      azar pct_exactos            real    22.22 | p5     2.25 p50    23.02 p95    41.57 | percentil  45.0
+      azar pct_rotas              real    72.22 | p5    43.57 p50    66.67 p95    82.75 | percentil  70.0
+      azar precision_mediana_abs  real     1.16 | p5     0.75 p50     1.39 p95     3.57 | percentil  40.0
+      azar recorrido_medio        real    48.72 | p5    18.18 p50    32.89 p95    56.98 | percentil  90.0
+      azar recorrido_mediano      real    62.17 | p5    16.09 p50    27.69 p95    42.88 | percentil 100.0
+      azar recorrido_tramo_medio  real    41.77 | p5    17.28 p50    30.39 p95    42.88 | percentil  90.0
+      azar pct_llega_opuesta      real      nan | p5      nan p50      nan p95      nan | percentil   nan
+      azar cobertura_pct          real     6.67 | p5     0.00 p50     3.33 p95    10.00 | percentil  70.0
+      azar llegadas               real    18.00 | p5     3.00 p50    11.00 p95    21.00 | percentil  80.0
+      IC90 por noche: sost 27.8-27.8 % | exactos 22.2-22.2 % | prec med 1.16-1.16 | recorrido medio 48.7-48.7 | llega opuesta nan-nan %
+  TOLERANTE     llegadas   14 (techo 10 piso 4) base   14 | sostenidos    5 =  35.7 % (falso romp 3 = 60 % de los sost.) | rotas  64.3 % indef   0.0 % | exactos 2 = 14.3 % | prec med |3.04| (signo +3.04, p75 4.83) | recorrido medio 56.6 med 62.2 tramo 41.8 | llega opuesta 0/0 = - % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 41.8 % exactos 17.9 % prec med |2.29| recorrido medio 36.9 llega opuesta 55 % cobertura 3.3 %
+      azar pct_sostenidos         real    35.71 | p5    23.47 p50    50.00 p95    72.31 | percentil  30.0
+      azar pct_exactos            real    14.29 | p5     2.81 p50    23.61 p95    44.81 | percentil  20.0
+      azar pct_rotas              real    64.29 | p5    27.69 p50    50.00 p95    76.53 | percentil  70.0
+      azar precision_mediana_abs  real     3.04 | p5     1.04 p50     2.24 p95     4.13 | percentil  70.0
+      azar recorrido_medio        real    56.57 | p5    20.35 p50    44.25 p95    72.42 | percentil  70.0
+      azar recorrido_mediano      real    62.17 | p5    19.62 p50    40.37 p95    73.86 | percentil  80.0
+      azar recorrido_tramo_medio  real    41.77 | p5    18.63 p50    34.01 p95    57.82 | percentil  80.0
+      azar pct_llega_opuesta      real      nan | p5      nan p50      nan p95      nan | percentil   nan
+      azar cobertura_pct          real     6.67 | p5     0.00 p50     3.33 p95    10.00 | percentil  70.0
+      azar llegadas               real    14.00 | p5     3.00 p50    10.50 p95    18.65 | percentil  75.0
+      IC90 por noche: sost 35.7-35.7 % | exactos 14.3-14.3 % | prec med 3.04-3.04 | recorrido medio 56.6-56.6 | llega opuesta nan-nan %
+  MUY_TOLERANTE llegadas   13 (techo 10 piso 3) base   12 | sostenidos    5 =  41.7 % (falso romp 3 = 60 % de los sost.) | rotas  58.3 % indef   0.0 % | exactos 2 = 16.7 % | prec med |3.04| (signo +3.04, p75 4.83) | recorrido medio 56.6 med 62.2 tramo 41.8 | llega opuesta 0/0 = - % | noches 1 strikes 2
+      corridas +-11/19/31 juntas: sost 47.0 % exactos 16.7 % prec med |3.92| recorrido medio 41.1 llega opuesta 52 % cobertura 3.3 %
+      azar pct_sostenidos         real    41.67 | p5    27.60 p50    58.95 p95    72.31 | percentil  30.0
+      azar pct_exactos            real    16.67 | p5     3.46 p50    25.66 p95    44.81 | percentil  20.0
+      azar pct_rotas              real    58.33 | p5    27.69 p50    41.05 p95    72.40 | percentil  70.0
+      azar precision_mediana_abs  real     3.04 | p5     1.04 p50     2.36 p95     4.13 | percentil  70.0
+      azar recorrido_medio        real    56.57 | p5    19.77 p50    44.25 p95    72.42 | percentil  70.0
+      azar recorrido_mediano      real    62.17 | p5    19.37 p50    40.37 p95    73.86 | percentil  80.0
+      azar recorrido_tramo_medio  real    41.77 | p5    18.22 p50    34.01 p95    57.82 | percentil  80.0
+      azar pct_llega_opuesta      real      nan | p5      nan p50      nan p95      nan | percentil   nan
+      azar cobertura_pct          real     6.67 | p5     0.00 p50     3.33 p95    10.00 | percentil  70.0
+      azar llegadas               real    13.00 | p5     3.00 p50     9.50 p95    16.75 | percentil  70.0
+      IC90 por noche: sost 41.7-41.7 % | exactos 16.7-16.7 % | prec med 3.04-3.04 | recorrido medio 56.6-56.6 | llega opuesta nan-nan %
+  cobertura de giros (zigzag 20, +-2): 2 de 30 = 6.7 % | sensibilidad +-6: 5 de 30
+  LLEGADAS de esta noche (h41c, completa):
+    10-08 22:09 techo 31033.46 QQQ749     -> sostenido  giro de 15 pts                       prec  +3.04 FALSO ROMP. | ESTR sostenido  MUYTOL sostenido  rec 15.21 (tramo 15.21, re-rotura) opuesta - llega None
+    10-08 22:13 techo 31033.46 QQQ749     -> rota       cierre mas alla de +5 con cuerpo 12.75 prec +21.54 | ESTR rota       MUYTOL rota       
+    10-08 22:46 piso  31033.41 QQQ749     -> rota       3 cierres seguidos mas alla          prec  +5.16 | ESTR rota       MUYTOL rota       
+    10-08 23:09 techo 31033.41 QQQ749     -> sostenido  giro de 15 pts                       prec  +5.34 FALSO ROMP. | ESTR rota       MUYTOL sostenido  rec 81.16 (tramo 81.16, re-rotura) opuesta - llega None
+    10-09 00:35 techo 31029.17 QQQ749     -> sostenido  giro de 15 pts                       prec  -0.17 | ESTR sostenido  MUYTOL sostenido  rec 62.17 (tramo 22.92, re-rotura) opuesta - llega None
+    10-09 00:44 techo 31029.17 QQQ749     -> sostenido  giro de 15 pts                       prec  +4.83 FALSO ROMP. | ESTR rota       MUYTOL sostenido  rec 62.17 (tramo 27.42, re-rotura) opuesta - llega None
+    10-09 00:56 techo 31029.17 QQQ749     -> sostenido  giro de 15 pts                       prec  -1.42 | ESTR sostenido  MUYTOL sostenido  rec 62.17 (tramo 62.17, re-rotura) opuesta - llega None
+    10-09 01:41 techo 31029.17 QQQ749     -> rota       cierre mas alla de +5 con cuerpo 25.75 prec +10.08 | ESTR rota       MUYTOL rota       
+    10-09 02:00 techo 31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 13.25 prec +15.41 | ESTR rota       MUYTOL rota       
+    10-09 02:07 piso  31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 15.75 prec +10.84 | ESTR rota       MUYTOL rota       
+    10-09 02:18 techo 31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 16.25 prec  +8.66 | ESTR rota       MUYTOL rota       
+    10-09 02:38 piso  31070.59 QQQ750     -> rota       3 cierres seguidos mas alla          prec  +9.84 | ESTR rota       MUYTOL rota       
+    10-09 02:51 piso  31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 8.50 prec  +6.84 | ESTR rota       MUYTOL (no llega) 
+    10-09 03:19 techo 31070.59 QQQ750     -> rota       cierre mas alla de +5 con cuerpo 5.75 prec +13.16 | ESTR rota       MUYTOL indefinida 
+
+=== 20dib | ventana completa | SOLO 2026-10-09 | pistas 2925 | noches en ventana 1 | 19 s
+  ESTRICTO      llegadas   19 (techo 15 piso 4) base   18 | sostenidos   13 =  72.2 % (falso romp 3 = 23 % de los sost.) | rotas  27.8 % indef   0.0 % | exactos 10 = 55.6 % | prec med |1.32| (signo +0.25, p75 2.00) | recorrido medio 42.3 med 41.7 tramo 35.8 | llega opuesta 7/13 = 54 % | noches 1 strikes 0
+      corridas +-11/19/31 juntas: sost 20.9 % exactos 18.6 % prec med |1.35| recorrido medio 36.5 llega opuesta 12 % cobertura 3.3 %
+      azar pct_sostenidos         real    72.22 | p5     9.00 p50    33.33 p95    53.93 | percentil 100.0
+      azar pct_exactos            real    55.56 | p5     7.50 p50    26.79 p95    38.88 | percentil 100.0
+      azar pct_rotas              real    27.78 | p5    46.07 p50    66.67 p95    91.00 | percentil   0.0
+      azar precision_mediana_abs  real     1.32 | p5     0.72 p50     1.20 p95     1.99 | percentil  66.7
+      azar recorrido_medio        real    42.32 | p5    35.15 p50    53.66 p95    69.14 | percentil  22.2
+      azar recorrido_mediano      real    41.69 | p5    36.34 p50    46.37 p95    69.14 | percentil  22.2
+      azar recorrido_tramo_medio  real    35.76 | p5    26.80 p50    46.37 p95    69.14 | percentil  33.3
+      azar pct_llega_opuesta      real    53.85 | p5     0.00 p50    25.00 p95    61.67 | percentil  85.7
+      azar cobertura_pct          real     6.67 | p5     1.50 p50     3.33 p95    10.00 | percentil  75.0
+      azar llegadas               real    19.00 | p5     3.35 p50     7.50 p95    19.20 | percentil  90.0
+      IC90 por noche: sost 72.2-72.2 % | exactos 55.6-55.6 % | prec med 1.32-1.32 | recorrido medio 42.3-42.3 | llega opuesta 54-54 %
+  TOLERANTE     llegadas   18 (techo 14 piso 4) base   17 | sostenidos   13 =  76.5 % (falso romp 4 = 31 % de los sost.) | rotas  23.5 % indef   0.0 % | exactos 9 = 52.9 % | prec med |1.32| (signo +0.25, p75 2.06) | recorrido medio 43.7 med 43.5 tramo 35.8 | llega opuesta 10/13 = 77 % | noches 1 strikes 0
+      corridas +-11/19/31 juntas: sost 34.5 % exactos 19.0 % prec med |1.94| recorrido medio 43.7 llega opuesta 19 % cobertura 3.3 %
+      azar pct_sostenidos         real    76.47 | p5    36.33 p50    60.71 p95    81.83 | percentil  80.0
+      azar pct_exactos            real    52.94 | p5     7.50 p50    26.79 p95    38.16 | percentil 100.0
+      azar pct_rotas              real    23.53 | p5    18.17 p50    39.29 p95    63.67 | percentil  20.0
+      azar precision_mediana_abs  real     1.32 | p5     1.32 p50     2.87 p95     5.84 | percentil  10.0
+      azar recorrido_medio        real    43.70 | p5    31.08 p50    51.95 p95    67.35 | percentil  20.0
+      azar recorrido_mediano      real    43.50 | p5    24.90 p50    46.65 p95    61.23 | percentil  50.0
+      azar recorrido_tramo_medio  real    35.76 | p5    26.06 p50    40.84 p95    64.00 | percentil  40.0
+      azar pct_llega_opuesta      real    76.92 | p5     0.00 p50    20.00 p95    50.00 | percentil 100.0
+      azar cobertura_pct          real     6.67 | p5     1.50 p50     3.33 p95    10.00 | percentil  75.0
+      azar llegadas               real    18.00 | p5     3.35 p50     7.00 p95    18.20 | percentil  90.0
+      IC90 por noche: sost 76.5-76.5 % | exactos 52.9-52.9 % | prec med 1.32-1.32 | recorrido medio 43.7-43.7 | llega opuesta 77-77 %
+  MUY_TOLERANTE llegadas   17 (techo 14 piso 3) base   16 | sostenidos   12 =  75.0 % (falso romp 4 = 33 % de los sost.) | rotas  25.0 % indef   0.0 % | exactos 8 = 50.0 % | prec med |1.04| (signo +0.37, p75 2.35) | recorrido medio 43.4 med 43.5 tramo 34.8 | llega opuesta 9/12 = 75 % | noches 1 strikes 0
+      corridas +-11/19/31 juntas: sost 41.1 % exactos 20.5 % prec med |2.45| recorrido medio 45.2 llega opuesta 22 % cobertura 3.3 %
+      azar pct_sostenidos         real    75.00 | p5    36.33 p50    69.05 p95    81.83 | percentil  80.0
+      azar pct_exactos            real    50.00 | p5     7.50 p50    26.79 p95    36.39 | percentil 100.0
+      azar pct_rotas              real    25.00 | p5    18.17 p50    30.95 p95    63.67 | percentil  20.0
+      azar precision_mediana_abs  real     1.04 | p5     1.38 p50     3.02 p95     5.88 | percentil   0.0
+      azar recorrido_medio        real    43.41 | p5    31.08 p50    50.13 p95    67.35 | percentil  20.0
+      azar recorrido_mediano      real    43.50 | p5    24.90 p50    44.76 p95    61.23 | percentil  50.0
+      azar recorrido_tramo_medio  real    34.81 | p5    26.06 p50    40.84 p95    64.00 | percentil  30.0
+      azar pct_llega_opuesta      real    75.00 | p5     0.00 p50    20.00 p95    50.00 | percentil 100.0
+      azar cobertura_pct          real     6.67 | p5     1.50 p50     3.33 p95    10.00 | percentil  75.0
+      azar llegadas               real    17.00 | p5     3.35 p50     7.00 p95    17.65 | percentil  90.0
+      IC90 por noche: sost 75.0-75.0 % | exactos 50.0-50.0 % | prec med 1.04-1.04 | recorrido medio 43.4-43.4 | llega opuesta 75-75 %
+  cobertura de giros (zigzag 20, +-2): 2 de 30 = 6.7 % | sensibilidad +-6: 9 de 30
+  LLEGADAS de esta noche (20dib, completa):
+    10-08 22:05 techo 31022.97 -          -> rota       cierre mas alla de +5 con cuerpo 10.00 prec  +5.53 | ESTR rota       MUYTOL rota       
+    10-08 22:08 techo 31027.12 -          -> rota       cierre mas alla de +5 con cuerpo 6.00 prec  +9.38 | ESTR rota       MUYTOL rota       
+    10-08 22:15 techo 31054.84 -          -> sostenido  giro de 15 pts                       prec  +0.16 | ESTR sostenido  MUYTOL sostenido  rec 15.59 (tramo 15.59, re-rotura) opuesta 31013.44 llega False
+    10-08 22:25 techo 31050.70 -          -> rota       3 cierres seguidos mas alla          prec  +6.55 | ESTR rota       MUYTOL rota       
+    10-08 23:10 techo 31037.43 -          -> sostenido  giro de 15 pts                       prec  +1.32 | ESTR sostenido  MUYTOL sostenido  rec 85.18 (tramo 85.18, re-rotura) opuesta 30996.04 llega True
+    10-08 23:20 techo 31032.04 -          -> sostenido  giro de 15 pts                       prec  +0.21 | ESTR sostenido  MUYTOL sostenido  rec 79.79 (tramo 79.79, re-rotura) opuesta 30990.66 llega True
+    10-08 23:30 piso  30993.56 -          -> sostenido  giro de 15 pts                       prec  +3.56 FALSO ROMP. | ESTR sostenido  MUYTOL sostenido  rec 22.19 (tramo 22.19, re-rotura) opuesta 31034.94 llega False
+    10-08 23:37 piso  30997.29 -          -> sostenido  giro de 15 pts                       prec  -0.21 | ESTR sostenido  MUYTOL sostenido  rec 15.46 (tramo 15.46, re-rotura) opuesta 31038.67 llega False
+    10-09 01:42 techo 31042.06 -          -> rota       cierre mas alla de +5 con cuerpo 4.75 prec  +9.69 | ESTR rota       MUYTOL rota       
+    10-09 01:45 piso  31042.06 -          -> sostenido  giro de 15 pts                       prec  -1.44 | ESTR sostenido  MUYTOL (no llega) rec 47.19 (tramo 47.19, fin de datos) opuesta 31083.50 llega True
+    10-09 02:00 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  -1.50 | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 18.25, fin de datos) opuesta 31042.06 llega True
+    10-09 02:02 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  +3.25 FALSO ROMP. | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 20.00, fin de datos) opuesta 31042.06 llega True
+    10-09 02:10 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  -0.75 | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 37.50, fin de datos) opuesta 31042.06 llega True
+    10-09 02:27 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  +5.75 FALSO ROMP. | ESTR rota       MUYTOL sostenido  rec 43.50 (tramo 22.75, fin de datos) opuesta 31042.06 llega True
+    10-09 02:45 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  +0.25 | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 15.75, fin de datos) opuesta 31042.06 llega True
+    10-09 02:56 techo 31083.50 -          -> sostenido  giro de 15 pts                       prec  +0.50 | ESTR sostenido  MUYTOL sostenido  rec 43.50 (tramo 43.50, fin de datos) opuesta 31042.06 llega True
+    10-09 03:10 piso  31042.06 -          -> sostenido  giro de 15 pts                       prec  +2.06 FALSO ROMP. | ESTR sostenido  MUYTOL sostenido  rec 41.69 (tramo 41.69, fin de datos) opuesta 31083.50 llega True
+    10-09 03:21 techo 31083.50 -          -> indefinida fin de datos                         prec  +0.25 | ESTR indefinida MUYTOL indefinida 
+
+escrito resultados_h02.json

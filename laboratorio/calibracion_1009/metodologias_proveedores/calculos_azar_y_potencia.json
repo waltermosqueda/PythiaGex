@@ -1,0 +1,57 @@
+{
+  "spotgamma_walls": {
+    "call_wall_83pct_equivale_a_linea_a_sigmas": 1.372,
+    "put_wall_89pct_equivale_a_linea_a_sigmas": 1.598,
+    "nota": "Una linea CUALQUIERA a esa distancia (en sigmas del dia, desde la apertura) 'aguanta' lo mismo por azar. SpotGamma dice que los muros suelen estar a 0,5-2 % del precio y el sigma diario del SPX 2019-2024 ronda 1,1 %: es el rango donde el azar ya da 83-89 %. Sin la distancia de cada dia no se puede saber si hay algo mas.",
+    "tabla_linea_a_d_sigmas_no_tocada": {
+      "0.5": 0.3829,
+      "0.75": 0.5467,
+      "1.0": 0.6827,
+      "1.25": 0.7887,
+      "1.5": 0.8664,
+      "1.75": 0.9199,
+      "2.0": 0.9545
+    }
+  },
+  "spotgamma_implied_move": {
+    "cierre_adentro_76pct_equivale_a_banda_de_sigmas_realizados": 1.175,
+    "rango_adentro_65pct_equivale_a_banda_de_sigmas_realizados": 1.356,
+    "browniano_banda_1_sigma": {
+      "cierre_adentro": 0.6827,
+      "rango_adentro": 0.3708
+    },
+    "nota": "Con una banda de exactamente 1 sigma REALIZADO el rango entero quedaria adentro solo ~37 % de los dias. Que den 65 % dice que su banda equivale a ~1,4 sigmas realizados: la volatilidad implicita suele exceder a la realizada (prima de varianza). Es aritmetica de volatilidad, no prueba de posicionamiento."
+  },
+  "menthorq_1d_min_max": {
+    "cierre_debajo_max_85pct_equivale_a_sigmas": 1.036,
+    "cierre_arriba_min_87pct_equivale_a_sigmas": 1.126,
+    "un_lado_1_sigma_normal": 0.8413,
+    "nota": "Un borde a 1 sigma da 84,1 % de cierres del lado de adentro por pura campana. 85-87 % es eso."
+  },
+  "potencia": {
+    "osler_efecto_pp": 4.6,
+    "toques_necesarios_placebo_de_miles_de_lineas": 901,
+    "toques_necesarios_placebo_de_una_linea_por_toque": 1802,
+    "efecto_minimo_detectable_pp_(80%_potencia, 5%_dos_colas)": {
+      "29": 25.5,
+      "50": 19.4,
+      "100": 13.7,
+      "300": 7.9,
+      "1000": 4.3
+    },
+    "nota": "Con 29 toques (la muestra de NQ del 07-09) solo se puede ver una diferencia de ~25 pp. El unico efecto de soporte/resistencia medido con placebo en la literatura (FX, Osler) es de 4,6 pp: hacen falta ~900 toques independientes. Toques sobre el mismo strike el mismo dia NO son independientes (la muestra son niveles)."
+  },
+  "razon_qqq_750": {
+    "nivel_2_0": 31083.52,
+    "nivel_4_1": 31076.4,
+    "diferencia_pts": 7.125,
+    "movimiento_equivalente_del_mnq_pct": 0.0229,
+    "nota": "La 2.0 divide el MNQ de las 16:14 NY por el QQQ del cierre (16:00): la diferencia es el movimiento del MNQ en esos 14 minutos (~0,023 %), no un cambio de la relacion entre los dos mercados."
+  },
+  "carry_por_dia_pts": {
+    "r_menos_q_0.030": 2.55,
+    "r_menos_q_0.035": 2.98,
+    "r_menos_q_0.040": 3.41
+  },
+  "carry_nota": "Una razon fija tomada al cierre del viernes y usada el lunes ignora ~3 dias de carry: el NQ que corresponde al mismo QQQ baja F*(r-q)*dias/365. SUPUESTO: no se midio r ni q hoy."
+}

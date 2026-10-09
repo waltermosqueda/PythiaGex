@@ -1,0 +1,14 @@
+{
+ "candidatas": {
+  "repeticiones": 200,
+  "rechazo_5pct": 0.06,
+  "rechazo_10pct": 0.125,
+  "p_mediana": 0.42
+ },
+ "todas": {
+  "repeticiones": 200,
+  "rechazo_5pct": 0.03,
+  "rechazo_10pct": 0.105,
+  "p_mediana": 0.475
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "rho=0.2|sesiones=5": {
+  "detecta_5pct": 0.25,
+  "tasa_giro_media": 37.1,
+  "tasa_placebo_media": 26.5,
+  "repeticiones": 40
+ },
+ "rho=0.2|sesiones=10": {
+  "detecta_5pct": 0.45,
+  "tasa_giro_media": 36.1,
+  "tasa_placebo_media": 26.3,
+  "repeticiones": 40
+ },
+ "rho=0.2|sesiones=20": {
+  "detecta_5pct": 0.825,
+  "tasa_giro_media": 37.1,
+  "tasa_placebo_media": 25.9,
+  "repeticiones": 40
+ },
+ "rho=0.5|sesiones=5": {
+  "detecta_5pct": 0.7,
+  "tasa_giro_media": 47.7,
+  "tasa_placebo_media": 25.8,
+  "repeticiones": 40
+ },
+ "rho=0.5|sesiones=10": {
+  "detecta_5pct": 0.95,
+  "tasa_giro_media": 48.8,
+  "tasa_placebo_media": 26.0,
+  "repeticiones": 40
+ },
+ "rho=0.5|sesiones=20": {
+  "detecta_5pct": 1.0,
+  "tasa_giro_media": 47.7,
+  "tasa_placebo_media": 25.7,
+  "repeticiones": 40
+ }
+}

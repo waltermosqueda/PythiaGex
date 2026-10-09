@@ -1,0 +1,44 @@
+
+r20_doms CONGELADA — SOLO PRIMERA LLEGADA por pista y noche (TOLERANTE, 500 juegos 'pool'): llegadas 57, base 57, sostenidos 26, noches 20
+   llegadas                     real     57.0 | corridas    347.0 | azar p5     41.0 p50     49.0 p95     57.0 | percentil 95.4
+   pct_sostenidos               real    45.61 | corridas    42.36 | azar p5    32.69 p50    43.61 p95    55.78 | percentil 59.1
+   pct_exactos                  real    24.56 | corridas    23.92 | azar p5    13.99 p50    23.08 p95    34.09 | percentil 61.8
+   pct_rotas                    real    54.39 | corridas    57.64 | azar p5    44.22 p50    56.39 p95    67.31 | percentil 41.1
+   precision_mediana_abs        real     1.74 | corridas     1.86 | azar p5     1.29 p50      1.9 p95     3.44 | percentil 37.2
+   recorrido_medio              real    54.54 | corridas    55.47 | azar p5    42.08 p50    57.02 p95    79.52 | percentil 40.2
+   recorrido_mediano            real    36.87 | corridas    33.37 | azar p5    26.19 p50    36.96 p95    56.77 | percentil 49.6
+   pct_llega_opuesta            real    42.86 | corridas    23.46 | azar p5     12.5 p50    33.33 p95    56.25 | percentil 73.5
+   pct_falso_entre_sostenidos   real    46.15 | corridas    43.54 | azar p5     30.0 p50    48.07 p95    65.45 | percentil 43.0
+
+r20_doms COMPLETA — SOLO PRIMERA LLEGADA por pista y noche (TOLERANTE, 500 juegos 'pool'): llegadas 229, base 229, sostenidos 107, noches 20
+   llegadas                     real    229.0 | corridas   1368.0 | azar p5   199.95 p50    219.0 p95    240.0 | percentil 75.4
+   pct_sostenidos               real    46.72 | corridas    45.98 | azar p5    41.98 p50     47.2 p95    52.27 | percentil 45.7
+   pct_exactos                  real    25.33 | corridas    24.42 | azar p5    19.28 p50    23.63 p95    28.84 | percentil 68.0
+   pct_rotas                    real    53.28 | corridas    54.02 | azar p5    47.73 p50     52.8 p95    58.02 | percentil 54.3
+   precision_mediana_abs        real     1.79 | corridas     1.88 | azar p5     1.66 p50     1.98 p95     2.79 | percentil 15.4
+   recorrido_medio              real    66.35 | corridas    69.58 | azar p5    58.52 p50    69.69 p95    82.36 | percentil 31.6
+   recorrido_mediano            real    37.03 | corridas    39.69 | azar p5    32.13 p50    38.92 p95    49.69 | percentil 34.2
+   pct_llega_opuesta            real    43.55 | corridas    37.63 | azar p5    36.36 p50     46.1 p95    56.94 | percentil 31.2
+   pct_falso_entre_sostenidos   real    47.66 | corridas    48.17 | azar p5    42.45 p50    50.47 p95    57.95 | percentil 28.2
+
+r20_zero CONGELADA — SOLO PRIMERA LLEGADA por pista y noche (TOLERANTE, 500 juegos 'pool'): llegadas 11, base 11, sostenidos 3, noches 10
+   llegadas                     real     11.0 | corridas     68.0 | azar p5      7.0 p50     11.0 p95     15.0 | percentil 52.2
+   pct_sostenidos               real    27.27 | corridas    41.18 | azar p5    21.36 p50    42.86 p95    66.67 | percentil 11.7
+   pct_exactos                  real     9.09 | corridas    23.53 | azar p5      0.0 p50    22.22 p95    43.78 | percentil 11.9
+   pct_rotas                    real    72.73 | corridas    58.82 | azar p5    33.33 p50    57.14 p95    78.64 | percentil 88.3
+   precision_mediana_abs        real     3.09 | corridas     1.72 | azar p5     0.67 p50     1.95 p95     5.87 | percentil 72.5
+   recorrido_medio              real    79.07 | corridas    58.08 | azar p5    23.41 p50    46.44 p95    88.87 | percentil 89.8
+   recorrido_mediano            real    77.27 | corridas     28.3 | azar p5    20.52 p50    36.14 p95    83.08 | percentil 93.8
+   pct_llega_opuesta            real     None | corridas     None | azar p5      0.0 p50      0.0 p95    100.0 | percentil None
+   pct_falso_entre_sostenidos   real    66.67 | corridas    46.43 | azar p5      0.0 p50     50.0 p95    100.0 | percentil 78.4
+
+r20_zero COMPLETA — SOLO PRIMERA LLEGADA por pista y noche (TOLERANTE, 500 juegos 'pool'): llegadas 39, base 39, sostenidos 19, noches 15
+   llegadas                     real     39.0 | corridas    193.0 | azar p5     53.0 p50     64.0 p95     78.0 | percentil 0.2
+   pct_sostenidos               real    48.72 | corridas     45.6 | azar p5     37.5 p50    47.06 p95    57.34 | percentil 60.1
+   pct_exactos                  real    20.51 | corridas    20.21 | azar p5    15.79 p50    24.22 p95    32.36 | percentil 25.2
+   pct_rotas                    real    51.28 | corridas     54.4 | azar p5    42.66 p50    52.94 p95     62.5 | percentil 39.9
+   precision_mediana_abs        real     3.09 | corridas     2.35 | azar p5     1.46 p50     1.95 p95     3.37 | percentil 92.2
+   recorrido_medio              real    60.51 | corridas    65.13 | azar p5    47.62 p50    67.78 p95    92.31 | percentil 27.8
+   recorrido_mediano            real    37.27 | corridas    38.08 | azar p5    28.03 p50    38.44 p95    58.38 | percentil 44.0
+   pct_llega_opuesta            real    100.0 | corridas    92.31 | azar p5      0.0 p50    29.29 p95    83.33 | percentil 97.7
+   pct_falso_entre_sostenidos   real    57.89 | corridas    55.68 | azar p5    36.67 p50     50.0 p95    64.88 | percentil 80.7

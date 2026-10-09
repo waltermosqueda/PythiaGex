@@ -1,0 +1,60 @@
+{
+ "generado": "2026-10-09, agente modelos_matematicos (calibracion_1009)",
+ "convenciones": {
+  "R": "razon NQ/QQQ sincronizada (mediana de muestras alineadas, como la 4.1: 41,4352 el 10-08; medido: MNQ 16:00:00 = 30976,25 / QQQ cierre 747,58 = 41,4354)",
+  "B": "base NQ - NDX (mediana de la rueda sincronizada, como la 4.1)",
+  "S_QQQ(p)": "p / R",
+  "S_NDX(p)": "p - B",
+  "c_QQQ": "20 * R^2  (pasa acciones por $ de QQQ a contratos NQ por punto NQ)",
+  "c_NDX": "20        (pasa unidades de indice por punto a contratos NQ por punto)",
+  "n_k": "posicion neta de dealers en la opcion k. Sin dato de clientes: (a) clasica +OI_call - OI_put; (b) bruta OI_call + OI_put (cota de |efecto|). El gamma x (vol_call - vol_put) NO es una posicion (medido: daria cientos de contratos por punto, mas que toda la liquidez)",
+  "tau": "(16:00 NY del vencimiento - ahora) en anios; iv de CBOE por strike (sticky strike)",
+  "D": "liquidez efectiva del futuro en contratos NQ por punto = 1 / lambda_permanente; lambda se mide de la cinta: dP_1min = lambda_MNQ * flujo_agresor_MNQ_1min (medido 0,0107-0,0140 pts por MNQ, R2 0,65-0,67); lambda_tot = 10 * s * lambda_MNQ con s = parte de MNQ en el flujo NQ-eq (SUPUESTO 0,15-0,40); permanente = mitad (SUPUESTO) -> D ~ 40-110"
+ },
+ "formulas": [
+  {
+   "id": "F1_pared_liquidez_implicita",
+   "definicion": "L(p) = sum_QQQ n_k*Gamma_BS(p/R; K_k, iv_k, tau_k)*100/c_QQQ + sum_NDX n_k*Gamma_BS(p-B; K_k, iv_k, tau_k)*100/c_NDX, vencimientos <= 14 dias, evaluada en una grilla p = F-300..F+300 paso 1 (REPRECIADA en cada p, no al spot). Rayas = maximos locales de L(p) > 0 (ventana +-15 pts) y cruces de signo.",
+   "por_que": "Frey (1998) / Frey-Stremme (1997): la cobertura de un agente con gamma G frente a un mercado de profundidad D cambia la volatilidad local en 1/(1 + G/D) (dealers largos) o 1/(1 - |G|/D) (cortos). L(p) es la gamma que los dealers TENDRIAN si el precio llega a p: es la 'liquidez implicita' que se suma al libro en ese precio. La dominante actual (max |GEX| al spot) mide la gamma en el precio de ahora y por construccion se corre con el precio (beta ~1, laboratorio-formulas).",
+   "prediccion": "Volatilidad local y recorrido por contrato agresivo menores en un factor 1/(1+L/D) dentro de la franja donde L>0. Con escala Cboe (L ~ 2 ctos/pt, D ~ 65): -3 % (indetectable por nivel). Solo con L/D >= 0,3 (L >= 20: ultimos 30 min de un strike 0DTE grande con dealers largos) la caida es >= 23 %. Prueba con potencia: lambda local de la cinta (impacto por contrato, miles de minutos) en p con L alto vs placebo corrido un strike, no conteo de rebotes."
+  },
+  {
+   "id": "F2_atractor_charm_0DTE",
+   "definicion": "A(p) = sum_{k: vence hoy} n_k * dDelta_call/dtau(S(p); K_k, iv_k, tau_k) * 100 / (c' ) en contratos NQ por hora, con dDelta/dtau = phi(d1)*((r-q+iv^2/2)*tau - ln(S/K)) / (2*iv*tau^1.5), c' = 20*R (QQQ) o 20 (NDX). Atractor = cruce de A de + a - al subir p; repulsor = cruce de - a +.",
+   "por_que": "Avellaneda-Lipkin (2003): con dealers largos un strike, el paso del tiempo cambia sus deltas y los obliga a comprar debajo y vender arriba: deriva singular hacia el strike. Generalizado a muchos strikes = campo de fuerza A(p).",
+   "prediccion": "Solo ultimos ~90 min del vencimiento. Probabilidad de cierre en el atractor P = 1 - exp(-2*beta*exp(-z0^2/2)), beta = n*E/(iv*sqrt(2*pi*T)), z0 = ln(F/K_NQ)/(iv*sqrt(T)), E = lambda_perm/F. Medido para QQQ 750 el 10-08 14:30 (14.604 de OI, 81 pts de distancia, 90 min): 4,7-12 % SI los dealers estaban largos; con dealers cortos predice lo contrario (anti-pin). Prueba: distancia del NQ a las 16:00 al atractor vs strikes placebo, >= 100 ruedas."
+  },
+  {
+   "id": "F3_anillo_fuerza_maxima",
+   "definicion": "Para el strike 0DTE dominante K (en NQ: K*R o K+B), banda K_NQ +- iv*sqrt(tau)*F. Valores medidos con iv 0,20: 132 pts a 4 h, 94 a 2 h, 66 a 1 h, 47 a 30 min, 33 a 15 min, 27 a 10 min, 19 a 5 min.",
+   "por_que": "En Avellaneda-Lipkin la fuerza es proporcional a y*exp(-y^2/(2 iv^2 tau)): su maximo esta a |y| = iv*sqrt(tau) del strike, no en el strike. Dentro del anillo el precio es empujado hacia K (dealers largos) o lejos de K (cortos).",
+   "prediccion": "Con dealers largos: el precio oscila ALREDEDOR del strike (lo cruza), con extremos a ~1 sigma-raiz-tau que se achica hacia el cierre; con dealers cortos: rechazo a ~1 sigma-raiz-tau ANTES del strike o ruptura con aceleracion. Ninguna de las dos predice 'toca la raya exacta desde un lado y rebota'. Prueba: histograma de |extremo - K_NQ| / (iv*sqrt(tau)*F) de los maximos/minimos de 5 min en los ultimos 90 min contra el mismo histograma en strikes placebo."
+  },
+  {
+   "id": "F4_divisoria_entre_dos_strikes",
+   "definicion": "Entre dos strikes cargados K1 < K2 (en NQ), x* resuelve n1*f(x-K1) + n2*f(x-K2) = 0 con f(y) = y*exp(-y^2/(2 s^2)), s = iv*sqrt(tau)*F. Con n1 = n2 cae en el medio; se corre hacia el strike de menor n.",
+   "por_que": "Es el punto de equilibrio de los flujos de cobertura por charm de los dos strikes. Con dealers largos en ambos es INESTABLE (divisoria de aguas): el precio no se queda ahi, cae hacia uno de los dos. Con dealers cortos en ambos es estable.",
+   "prediccion": "Dealers largos: transito rapido por x* (tunel), giros cerca de los strikes. Dealers cortos: el precio tiende a quedarse cerca de x* y los strikes rechazan o rompen. El signo decide todo y no se conoce: por eso es candidata de prueba, no de dibujo."
+  },
+  {
+   "id": "F5_recorrido_impulso_agotado",
+   "definicion": "Para un impulso agresivo de Q contratos NQ-eq netos (cinta, ultimos N s) que arranca en p0, el extremo predicho p_fin resuelve integral_{p0}^{p_fin} (D + L(x)) dx = |Q| en la direccion del impulso; con L constante: d = |Q| / (D + L).",
+   "por_que": "Es la 'formula de equilibrio' de la mecha: el impulso se frena donde la liquidez acumulada (libro + gamma de dealers repreciada) igualo al volumen agresivo. Junta la ley de impacto (Toth et al. 2011) con Frey.",
+   "prediccion": "Con D ~ 65 y escala Cboe (L ~ 2), la gamma acorta un impulso de 15 pts en ~0,5 pt; con L = 40 (convencion clasica) lo acortaria a 9,5. O sea: la gamma de dealers no puede ubicar mechas a +-2 pts de un strike salvo en los ultimos minutos de un 0DTE grande. Prueba: regresion del recorrido del impulso sobre Q, Q*L(p) y placebo; coeficiente de Q*L negativo y del tamano 1/D^2."
+  },
+  {
+   "id": "F6_zero_repreciado",
+   "definicion": "p0 con L(p0) = 0 (convencion clasica), el mas cercano al precio, buscado en la grilla repreciada (no el cruce de signo entre strikes del perfil al spot, que se pega al precio: memoria CLAUDE.md, 3.2.5).",
+   "por_que": "Separa la zona donde la cobertura amortigua (L>0) de donde amplifica (L<0).",
+   "prediccion": "Rango realizado de 30 min mayor debajo de p0 en el factor (1+L+/D)/(1-|L-|/D). Con la convencion clasica medida (L ~ -40 el 10-08) daria x2,6, y el laboratorio del operador ya midio que la convexidad negativa NO agranda el rango de 30 min (NQ 62,8 vs 71,5 pts): la convencion clasica sobreestima la posicion neta. Es regimen, no raya de giro."
+  },
+  {
+   "id": "F7_dominante_actual_max_abs_al_spot",
+   "definicion": "argmax_K |sum_venc n_k Gamma(F; K) * ...| evaluada al spot (lo que dibujan 2.0/3.0/4.1).",
+   "por_que": "Referencia de comparacion obligatoria.",
+   "prediccion": "Eco del precio (beta ~1): la gamma al spot es maxima en el strike mas cercano al precio. En NQ empato o perdio contra placebo (62 vs 65 %, 29 toques). Toda formula nueva se compara contra esta y contra su placebo."
+  }
+ ],
+ "muestra_necesaria": "Para detectar +4,6 pp (efecto de Osler 2000 en niveles de soporte/resistencia publicados, FX) hacen falta ~1.800 toques INDEPENDIENTES por brazo (alfa 5 %, potencia 80 %); para +2 pp ~9.300; para +10 pp ~360. Los 29 toques de NQ medidos no distinguen nada menor a ~+30 pp.",
+ "salidas": ["resultados_ordenes.json (ordenes de magnitud medidos 10-07 y 10-08)", "derivados_modelos.json (Frey, Avellaneda-Lipkin, gamma 0DTE por minutos, muestra, impulso)"]
+}

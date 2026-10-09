@@ -1,0 +1,333 @@
+{
+ "que_es": "Registro CONGELADO del probador 3 (grupo 3: C13-C18) antes de cualquier apertura de PRUEBA (PREREGISTRO sec. 8).",
+ "generado_utc": "2026-10-09T05:08:43+00:00",
+ "parametros": "ninguno libre: todo fijado en PREREGISTRO sec. 7 (lineas 234-251); no se eligio nada con datos. Se congela la implementacion (sha256 abajo) y los resultados de ENTRENAMIENTO.",
+ "finalistas": {
+  "noche": "ninguna",
+  "dia": "ninguna"
+ },
+ "motivos_por_candidata": {
+  "C13_IMAN_QQQ_vol": {
+   "noche": {
+    "elegible": false,
+    "fallas": [
+     "ventaja vs azar 1.6 < +5 pp",
+     "p_azar 0.351 >= 0,05",
+     "IC90 inf vs corridos -2.4 <= 0"
+    ]
+   },
+   "dia": {
+    "elegible": false,
+    "fallas": [
+     "ventaja vs azar 1.2 < +5 pp",
+     "p_azar 0.387 >= 0,05",
+     "IC90 inf vs corridos -6.4 <= 0"
+    ]
+   }
+  },
+  "C14_REPEL_QQQ_vol": {
+   "noche": {
+    "elegible": false,
+    "fallas": [
+     "ventaja vs azar -0.7 < +5 pp",
+     "p_azar 0.559 >= 0,05",
+     "IC90 inf vs corridos -10.7 <= 0"
+    ]
+   },
+   "dia": {
+    "elegible": false,
+    "fallas": [
+     "ventaja vs azar 1.5 < +5 pp",
+     "p_azar 0.389 >= 0,05",
+     "IC90 inf vs corridos -7.6 <= 0"
+    ]
+   }
+  },
+  "C15_FLUJO_NQ": {
+   "noche": {
+    "elegible": false,
+    "fallas": [
+     "ventaja vs azar 1.1 < +5 pp",
+     "p_azar 0.381 >= 0,05",
+     "IC90 inf vs corridos -2.3 <= 0"
+    ]
+   },
+   "dia": {
+    "elegible": false,
+    "fallas": [
+     "ventaja vs azar -1.7 < +5 pp",
+     "p_azar 0.721 >= 0,05",
+     "IC90 inf vs corridos -7.9 <= 0"
+    ]
+   }
+  },
+  "C16_CONFLUENCIA_QQQ_NDX": {
+   "noche": {
+    "elegible": false,
+    "fallas": [
+     "base 16 < 30",
+     "niveles distintos 4 < 10"
+    ]
+   },
+   "dia": {
+    "elegible": false,
+    "fallas": [
+     "niveles distintos 9 < 10",
+     "ventaja vs azar 1.7 < +5 pp",
+     "p_azar 0.447 >= 0,05",
+     "IC90 inf vs corridos -5.2 <= 0"
+    ]
+   }
+  },
+  "C17_BANDA_EM": {
+   "noche": {
+    "elegible": false,
+    "fallas": [
+     "base 0 < 30",
+     "niveles distintos 0 < 10",
+     "ventaja vs azar None < +5 pp",
+     "p_azar None >= 0,05",
+     "IC90 inf vs corridos None <= 0"
+    ]
+   },
+   "dia": {
+    "elegible": false,
+    "fallas": [
+     "niveles distintos 8 < 10",
+     "ventaja vs azar -9.5 < +5 pp",
+     "p_azar 0.85 >= 0,05",
+     "IC90 inf vs corridos -27.2 <= 0"
+    ]
+   }
+  },
+  "C18_CW_PW_OI_QQQ": {
+   "noche": {
+    "elegible": false,
+    "fallas": [
+     "niveles distintos 7 < 10",
+     "p_azar 0.112 >= 0,05",
+     "IC90 inf vs corridos -3.9 <= 0"
+    ]
+   },
+   "dia": {
+    "elegible": false,
+    "fallas": [
+     "ventaja vs azar 0.8 < +5 pp",
+     "p_azar 0.391 >= 0,05",
+     "IC90 inf vs corridos -7.2 <= 0"
+    ]
+   }
+  }
+ },
+ "mitades": {
+  "noche": {
+   "C13_IMAN_QQQ_vol": {
+    "primera": {
+     "base": 101,
+     "ventaja_vs_corridos_pp": 1.8269125490748124
+    },
+    "segunda": {
+     "base": 75,
+     "ventaja_vs_corridos_pp": 1.5833333333333357
+    },
+    "cambia_de_signo": false
+   },
+   "C14_REPEL_QQQ_vol": {
+    "primera": {
+     "base": 69,
+     "ventaja_vs_corridos_pp": -7.694962042788127
+    },
+    "segunda": {
+     "base": 74,
+     "ventaja_vs_corridos_pp": -0.8474576271186436
+    },
+    "cambia_de_signo": false
+   },
+   "C15_FLUJO_NQ": {
+    "primera": {
+     "base": 170,
+     "ventaja_vs_corridos_pp": 1.9322638146167535
+    },
+    "segunda": {
+     "base": 129,
+     "ventaja_vs_corridos_pp": -2.031423034330011
+    },
+    "cambia_de_signo": true
+   },
+   "C16_CONFLUENCIA_QQQ_NDX": {
+    "primera": {
+     "base": 12,
+     "ventaja_vs_corridos_pp": 36.29032258064516
+    },
+    "segunda": {
+     "base": 4,
+     "ventaja_vs_corridos_pp": -3.8461538461538467
+    },
+    "cambia_de_signo": true
+   },
+   "C17_BANDA_EM": {
+    "primera": {
+     "base": 0,
+     "ventaja_vs_corridos_pp": null
+    },
+    "segunda": {
+     "base": 0,
+     "ventaja_vs_corridos_pp": null
+    },
+    "cambia_de_signo": false
+   },
+   "C18_CW_PW_OI_QQQ": {
+    "primera": {
+     "base": 23,
+     "ventaja_vs_corridos_pp": 10.7050060627057
+    },
+    "segunda": {
+     "base": 35,
+     "ventaja_vs_corridos_pp": 2.715074980268348
+    },
+    "cambia_de_signo": false
+   }
+  },
+  "dia": {
+   "C13_IMAN_QQQ_vol": {
+    "primera": {
+     "base": 109,
+     "ventaja_vs_corridos_pp": 2.611583272358871
+    },
+    "segunda": {
+     "base": 90,
+     "ventaja_vs_corridos_pp": -0.5102040816326507
+    },
+    "cambia_de_signo": true
+   },
+   "C14_REPEL_QQQ_vol": {
+    "primera": {
+     "base": 75,
+     "ventaja_vs_corridos_pp": 9.684210526315788
+    },
+    "segunda": {
+     "base": 65,
+     "ventaja_vs_corridos_pp": -6.618220489188232
+    },
+    "cambia_de_signo": true
+   },
+   "C15_FLUJO_NQ": {
+    "primera": {
+     "base": 250,
+     "ventaja_vs_corridos_pp": -4.4425021422450754
+    },
+    "segunda": {
+     "base": 163,
+     "ventaja_vs_corridos_pp": -1.3168225915920289
+    },
+    "cambia_de_signo": false
+   },
+   "C16_CONFLUENCIA_QQQ_NDX": {
+    "primera": {
+     "base": 20,
+     "ventaja_vs_corridos_pp": 10.445544554455445
+    },
+    "segunda": {
+     "base": 13,
+     "ventaja_vs_corridos_pp": -1.791359325605903
+    },
+    "cambia_de_signo": true
+   },
+   "C17_BANDA_EM": {
+    "primera": {
+     "base": 35,
+     "ventaja_vs_corridos_pp": -14.390885188431199
+    },
+    "segunda": {
+     "base": 8,
+     "ventaja_vs_corridos_pp": -19.642857142857146
+    },
+    "cambia_de_signo": false
+   },
+   "C18_CW_PW_OI_QQQ": {
+    "primera": {
+     "base": 66,
+     "ventaja_vs_corridos_pp": 7.782560985903608
+    },
+    "segunda": {
+     "base": 58,
+     "ventaja_vs_corridos_pp": -2.830188679245282
+    },
+    "cambia_de_signo": true
+   }
+  }
+ },
+ "loo_elegir_la_mejor": {
+  "noche": {
+   "eleccion_por_sesion": {
+    "2026-09-08": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-09": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-11": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-14": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-15": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-16": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-17": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-18": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-21": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-22": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-23": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-24": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-25": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-28": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-29": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-30": "C16_CONFLUENCIA_QQQ_NDX"
+   },
+   "parametro": "C16_CONFLUENCIA_QQQ_NDX",
+   "ventaja_fuera_de_muestra_pp": 28.183962264150942
+  },
+  "dia": {
+   "eleccion_por_sesion": {
+    "2026-09-08": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-09": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-11": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-14": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-15": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-16": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-17": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-18": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-21": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-22": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-23": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-24": "C18_CW_PW_OI_QQQ",
+    "2026-09-25": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-28": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-29": "C16_CONFLUENCIA_QQQ_NDX",
+    "2026-09-30": "C16_CONFLUENCIA_QQQ_NDX"
+   },
+   "parametro": "C16_CONFLUENCIA_QQQ_NDX",
+   "ventaja_fuera_de_muestra_pp": -6.195652173913047
+  }
+ },
+ "decision_prueba": "NO se abre PRUEBA para el grupo 3: ninguna candidata del grupo es elegible en ninguna ventana (sec. 8: si ninguna es elegible en una ventana, se escribe 'ninguna' y en esa ventana PRUEBA solo mide las referencias). La elegibilidad es absoluta por candidata: la seleccion global (hasta 3 por ventana sobre las 24) no puede incluir a ninguna del grupo 3. No se escribe arnes/finalistas.json (lo escribe quien junte los cuatro grupos).",
+ "hashes": {
+  "PREREGISTRO.md": "927522e3919b4bafbd582b4d6686ab46391efe3108530dda5099f379f751bbca",
+  "arnes/evaluar.py": "1cd6083989f4ac7c870b96801a128cb8bae25f5c98efa023537d676cf44d991c",
+  "arnes/juez_operador_v1.py": "a20a62688e888da22c36d9200bca5f63f16949ca90837545b37847a16188d5bf",
+  "probador3/diag_niveles_ENTRENAMIENTO.json": "59e420f6a10db6a6fb466cd4df594ab62222a6ddbdaea2e851c37ee86362f86c",
+  "probador3/g3_congelar.py": "4563714d55794bafd37e1cb580f5835d68c496e7f8f2cfca9bc0bfd0f327ff41",
+  "probador3/g3_evaluar.py": "1d67eafb6b45504e55fc7d214b2a7f1eed33585ff55e824fd9f5ed18205fbc04",
+  "probador3/g3_niveles.py": "79bcb485a1eeb71327ecf3f3042d475a4d18c756eb82d30ddacf0685bf2a3d32",
+  "probador3/g3_tabla.py": "2cd34da467e0f16c64011661f0b3b7112a557ded701d4d08f4568abdacd69747",
+  "probador3/g3_verificar.py": "c7efb42307751c10cb1831e7deff89288dd85227d85bb614fcbc625996b22b5f",
+  "probador3/resultados_ENTRENAMIENTO/C13_IMAN_QQQ_vol.json": "7573f805cb3df0bd6e97d55cfa48cc4b4a0eee9b3f356a68c5a2c5c0ee134244",
+  "probador3/resultados_ENTRENAMIENTO/C14_REPEL_QQQ_vol.json": "5ca1135afd29a64fda827dc2b7a20c28a5a1b8f5e2ccae90a3d10f4fb4241082",
+  "probador3/resultados_ENTRENAMIENTO/C15_FLUJO_NQ.json": "e2e898ac2d73064e6a91d8ca3e8339e261af75a2dd0e19f8ab194964da1d82e4",
+  "probador3/resultados_ENTRENAMIENTO/C16_CONFLUENCIA_QQQ_NDX.json": "88cd3a6d98b76da2ecdc0941be04f57622037bf1adfa4849206d5356ac1ac56f",
+  "probador3/resultados_ENTRENAMIENTO/C17_BANDA_EM.json": "0883bedf117d2377be630581e174d03d886b30474590a069241e1e18d3c7a5ea",
+  "probador3/resultados_ENTRENAMIENTO/C18_CW_PW_OI_QQQ.json": "4ff4b0cad106d819633899e9130533d2d6f527a965a417ce0663533ecdd03f45",
+  "probador3/seleccion_ENTRENAMIENTO.json": "b8b5a15f87c6ce88d9174dc5b3e92613353e8297ed9b50ce11698f597e0c3a1b",
+  "probador3/tabla_ENTRENAMIENTO.json": "3b8584d7dea92b891da32c978f1ce9d360856b7da43fac22ed6d314f3da3f736",
+  "probador3/verificacion_g3.json": "10c160b6a6dbfda8d642ddda023f38dc4d1f09916c87855dff5fff9d19512e9d",
+  "probadores/grupo3/C13_IMAN_QQQ_vol/niveles_ENTRENAMIENTO.parquet": "50d1fdaf2d205b33d5d718535919796394d653254574ccbf8ceb74af9570c04e",
+  "probadores/grupo3/C14_REPEL_QQQ_vol/niveles_ENTRENAMIENTO.parquet": "7480dc5e33a3f8e06e795cae5481e4eba16206e2265de8cf380cc25fb75faca8",
+  "probadores/grupo3/C15_FLUJO_NQ/niveles_ENTRENAMIENTO.parquet": "2d1f513474cef03302d33ad319e03440a3f4713d7c7fdffccb5a5885173e5a39",
+  "probadores/grupo3/C16_CONFLUENCIA_QQQ_NDX/niveles_ENTRENAMIENTO.parquet": "4d0a1afa5907b959dadd722414e7a32523158cf650a98f1d5880afc6a3333fdf",
+  "probadores/grupo3/C17_BANDA_EM/niveles_ENTRENAMIENTO.parquet": "19edcabb912d358d3891a139505542846b95a16a828c7c31184dcf7c56a4b9f3",
+  "probadores/grupo3/C18_CW_PW_OI_QQQ/niveles_ENTRENAMIENTO.parquet": "b07ad8fd108f7e0df0c9dd7842ab533e677f405d901c3ee2ba021b3f01a970ab"
+ }
+}

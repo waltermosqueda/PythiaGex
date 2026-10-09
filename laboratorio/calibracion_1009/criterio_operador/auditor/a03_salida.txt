@@ -1,0 +1,50 @@
+
+== ventana congelada: 19 noches
+   2.0 - VWAP             sin -                      dif  +5.4  IC90  +0.5 a +10.8
+   2.0 - VWAP             sin 2026-10-09             dif  +4.2  IC90  -0.8 a  +9.0
+   2.0 - VWAP             sin 2026-10-09+2026-10-05  dif  +3.7  IC90  -1.5 a  +8.3
+   2.0 - G25              sin -                      dif  +0.6  IC90  -4.4 a  +6.6
+   2.0 - G25              sin 2026-10-09             dif  -0.9  IC90  -5.3 a  +4.0
+   2.0 - G25              sin 2026-10-09+2026-10-05  dif  -2.3  IC90  -6.6 a  +2.0
+   2.0 - G50              sin -                      dif  -0.6  IC90  -6.1 a  +6.0
+   2.0 - G50              sin 2026-10-09             dif  -2.2  IC90  -7.3 a  +3.4
+   2.0 - G50              sin 2026-10-09+2026-10-05  dif  -4.2  IC90  -8.6 a  +0.3
+   2.0 - G100             sin -                      dif  -1.3  IC90  -7.6 a  +6.0
+   2.0 - G100             sin 2026-10-09             dif  -3.1  IC90  -8.7 a  +3.1
+   2.0 - G100             sin 2026-10-09+2026-10-05  dif  -4.9  IC90 -10.0 a  +0.5
+   2.0 - PIVOTES          sin -                      dif  +3.9  IC90  -1.2 a +10.0
+   2.0 - PIVOTES          sin 2026-10-09             dif  +2.2  IC90  -2.5 a  +7.1
+   2.0 - PIVOTES          sin 2026-10-09+2026-10-05  dif  +1.1  IC90  -3.8 a  +5.8
+   2.0 - HOD_LOD          sin -                      dif  +4.9  IC90  -2.4 a +12.1
+   2.0 - HOD_LOD          sin 2026-10-09             dif  +3.9  IC90  -3.3 a +11.0
+   2.0 - HOD_LOD          sin 2026-10-09+2026-10-05  dif  +3.3  IC90  -4.7 a +10.7
+   2.0 - ORACULO_NOCHE40  sin -                      dif  -4.2  IC90  -8.8 a  +1.3
+   2.0 - ORACULO_NOCHE40  sin 2026-10-09             dif  -5.7  IC90  -9.8 a  -1.2
+   2.0 - ORACULO_NOCHE40  sin 2026-10-09+2026-10-05  dif  -7.5  IC90 -11.0 a  -4.1
+
+== ventana completa: 19 noches
+   2.0 - VWAP             sin -                      dif  +3.3  IC90  +0.0 a  +7.1
+   2.0 - VWAP             sin 2026-10-09             dif  +2.5  IC90  -0.6 a  +6.1
+   2.0 - VWAP             sin 2026-10-09+2026-10-05  dif  +2.7  IC90  -0.6 a  +6.1
+   2.0 - G25              sin -                      dif  -0.8  IC90  -5.1 a  +4.2
+   2.0 - G25              sin 2026-10-09             dif  -1.9  IC90  -5.7 a  +2.6
+   2.0 - G25              sin 2026-10-09+2026-10-05  dif  -2.4  IC90  -6.5 a  +1.9
+   2.0 - G50              sin -                      dif  -1.5  IC90  -6.1 a  +3.7
+   2.0 - G50              sin 2026-10-09             dif  -2.5  IC90  -6.8 a  +2.1
+   2.0 - G50              sin 2026-10-09+2026-10-05  dif  -3.4  IC90  -7.6 a  +1.0
+   2.0 - G100             sin -                      dif  -2.1  IC90  -7.2 a  +3.8
+   2.0 - G100             sin 2026-10-09             dif  -3.2  IC90  -7.9 a  +2.3
+   2.0 - G100             sin 2026-10-09+2026-10-05  dif  -3.6  IC90  -8.6 a  +1.8
+   2.0 - PIVOTES          sin -                      dif  +1.6  IC90  -2.0 a  +5.9
+   2.0 - PIVOTES          sin 2026-10-09             dif  +0.7  IC90  -2.6 a  +4.6
+   2.0 - PIVOTES          sin 2026-10-09+2026-10-05  dif  +0.5  IC90  -3.0 a  +4.6
+   2.0 - HOD_LOD          sin -                      dif  +3.9  IC90  -2.1 a +10.5
+   2.0 - HOD_LOD          sin 2026-10-09             dif  +3.2  IC90  -2.7 a  +9.7
+   2.0 - HOD_LOD          sin 2026-10-09+2026-10-05  dif  +3.1  IC90  -3.1 a  +9.9
+   2.0 - ORACULO_NOCHE40  sin -                      dif  -6.5  IC90  -9.7 a  -2.7
+   2.0 - ORACULO_NOCHE40  sin 2026-10-09             dif  -7.4  IC90 -10.2 a  -4.1
+   2.0 - ORACULO_NOCHE40  sin 2026-10-09+2026-10-05  dif  -8.1  IC90 -11.0 a  -5.1
+
+REF_2_0 congelada: 306 llegadas; 176 llegan <= 15 min despues de decidirse la anterior de la misma raya (101 tras rota, 75 tras sostenido)
+raya-noche con llegadas: 56; llegadas por raya-noche: max 20, top5 [20, 16, 15, 14, 14]; las 5 rayas-noche mas testeadas suman 79 de 306
+velas con 2+ llegadas simultaneas: 0

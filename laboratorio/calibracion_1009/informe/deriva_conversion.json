@@ -1,0 +1,320 @@
+{
+ "por_sesion": [
+  {
+   "sesion": "2026-09-11",
+   "ventana": "dia",
+   "minutos": 66,
+   "mediana_pts": 2.7,
+   "p90_pts": 10.2,
+   "max_pts": 10.2
+  },
+  {
+   "sesion": "2026-09-14",
+   "ventana": "dia",
+   "minutos": 374,
+   "mediana_pts": 4.1,
+   "p90_pts": 14.8,
+   "max_pts": 534.6
+  },
+  {
+   "sesion": "2026-09-14",
+   "ventana": "noche",
+   "minutos": 919,
+   "mediana_pts": 5.5,
+   "p90_pts": 530.1,
+   "max_pts": 556.9
+  },
+  {
+   "sesion": "2026-09-15",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 3.2,
+   "p90_pts": 16.8,
+   "max_pts": 284.5
+  },
+  {
+   "sesion": "2026-09-15",
+   "ventana": "noche",
+   "minutos": 148,
+   "mediana_pts": 261.1,
+   "p90_pts": 281.5,
+   "max_pts": 284.5
+  },
+  {
+   "sesion": "2026-09-16",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 3.0,
+   "p90_pts": 28.0,
+   "max_pts": 123.1
+  },
+  {
+   "sesion": "2026-09-16",
+   "ventana": "noche",
+   "minutos": 917,
+   "mediana_pts": 12.1,
+   "p90_pts": 110.6,
+   "max_pts": 152.7
+  },
+  {
+   "sesion": "2026-09-17",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 8.7,
+   "p90_pts": 14.9,
+   "max_pts": 484.2
+  },
+  {
+   "sesion": "2026-09-17",
+   "ventana": "noche",
+   "minutos": 929,
+   "mediana_pts": 196.6,
+   "p90_pts": 332.6,
+   "max_pts": 497.5
+  },
+  {
+   "sesion": "2026-09-18",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 4.3,
+   "p90_pts": 15.4,
+   "max_pts": 74.7
+  },
+  {
+   "sesion": "2026-09-18",
+   "ventana": "noche",
+   "minutos": 917,
+   "mediana_pts": 22.8,
+   "p90_pts": 155.1,
+   "max_pts": 207.8
+  },
+  {
+   "sesion": "2026-09-21",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 1.8,
+   "p90_pts": 7.4,
+   "max_pts": 265.8
+  },
+  {
+   "sesion": "2026-09-21",
+   "ventana": "noche",
+   "minutos": 919,
+   "mediana_pts": 21.9,
+   "p90_pts": 271.7,
+   "max_pts": 301.1
+  },
+  {
+   "sesion": "2026-09-22",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 1.7,
+   "p90_pts": 8.5,
+   "max_pts": 21.9
+  },
+  {
+   "sesion": "2026-09-22",
+   "ventana": "noche",
+   "minutos": 928,
+   "mediana_pts": 76.7,
+   "p90_pts": 76.7,
+   "max_pts": 76.7
+  },
+  {
+   "sesion": "2026-09-23",
+   "ventana": "noche",
+   "minutos": 929,
+   "mediana_pts": 45.0,
+   "p90_pts": 45.0,
+   "max_pts": 45.0
+  },
+  {
+   "sesion": "2026-09-24",
+   "ventana": "dia",
+   "minutos": 137,
+   "mediana_pts": 3.2,
+   "p90_pts": 8.2,
+   "max_pts": 12.8
+  },
+  {
+   "sesion": "2026-09-25",
+   "ventana": "dia",
+   "minutos": 389,
+   "mediana_pts": 9.2,
+   "p90_pts": 18.7,
+   "max_pts": 220.4
+  },
+  {
+   "sesion": "2026-09-25",
+   "ventana": "noche",
+   "minutos": 928,
+   "mediana_pts": 9.1,
+   "p90_pts": 267.2,
+   "max_pts": 302.2
+  },
+  {
+   "sesion": "2026-09-28",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 3.8,
+   "p90_pts": 13.9,
+   "max_pts": 189.5
+  },
+  {
+   "sesion": "2026-09-28",
+   "ventana": "noche",
+   "minutos": 919,
+   "mediana_pts": 35.2,
+   "p90_pts": 312.6,
+   "max_pts": 356.7
+  },
+  {
+   "sesion": "2026-09-29",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 3.3,
+   "p90_pts": 16.2,
+   "max_pts": 106.8
+  },
+  {
+   "sesion": "2026-09-29",
+   "ventana": "noche",
+   "minutos": 928,
+   "mediana_pts": 27.0,
+   "p90_pts": 102.6,
+   "max_pts": 147.4
+  },
+  {
+   "sesion": "2026-09-30",
+   "ventana": "dia",
+   "minutos": 389,
+   "mediana_pts": 2.8,
+   "p90_pts": 16.3,
+   "max_pts": 110.6
+  },
+  {
+   "sesion": "2026-09-30",
+   "ventana": "noche",
+   "minutos": 929,
+   "mediana_pts": 83.0,
+   "p90_pts": 83.0,
+   "max_pts": 110.6
+  },
+  {
+   "sesion": "2026-10-01",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 4.1,
+   "p90_pts": 18.3,
+   "max_pts": 131.1
+  },
+  {
+   "sesion": "2026-10-01",
+   "ventana": "noche",
+   "minutos": 928,
+   "mediana_pts": 104.7,
+   "p90_pts": 168.8,
+   "max_pts": 231.2
+  },
+  {
+   "sesion": "2026-10-02",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 4.7,
+   "p90_pts": 15.8,
+   "max_pts": 363.3
+  },
+  {
+   "sesion": "2026-10-02",
+   "ventana": "noche",
+   "minutos": 928,
+   "mediana_pts": 31.1,
+   "p90_pts": 210.8,
+   "max_pts": 383.9
+  },
+  {
+   "sesion": "2026-10-05",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 1.6,
+   "p90_pts": 9.3,
+   "max_pts": 73.4
+  },
+  {
+   "sesion": "2026-10-05",
+   "ventana": "noche",
+   "minutos": 918,
+   "mediana_pts": 15.7,
+   "p90_pts": 82.8,
+   "max_pts": 112.3
+  },
+  {
+   "sesion": "2026-10-06",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 2.5,
+   "p90_pts": 8.8,
+   "max_pts": 181.8
+  },
+  {
+   "sesion": "2026-10-06",
+   "ventana": "noche",
+   "minutos": 928,
+   "mediana_pts": 14.5,
+   "p90_pts": 147.6,
+   "max_pts": 199.7
+  },
+  {
+   "sesion": "2026-10-07",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 3.6,
+   "p90_pts": 16.5,
+   "max_pts": 254.3
+  },
+  {
+   "sesion": "2026-10-07",
+   "ventana": "noche",
+   "minutos": 928,
+   "mediana_pts": 4.9,
+   "p90_pts": 224.1,
+   "max_pts": 269.2
+  },
+  {
+   "sesion": "2026-10-08",
+   "ventana": "dia",
+   "minutos": 390,
+   "mediana_pts": 5.8,
+   "p90_pts": 20.7,
+   "max_pts": 180.4
+  },
+  {
+   "sesion": "2026-10-08",
+   "ventana": "noche",
+   "minutos": 928,
+   "mediana_pts": 32.5,
+   "p90_pts": 208.0,
+   "max_pts": 253.6
+  },
+  {
+   "sesion": "2026-10-09",
+   "ventana": "noche",
+   "minutos": 929,
+   "mediana_pts": 7.5,
+   "p90_pts": 19.2,
+   "max_pts": 74.5
+  }
+ ],
+ "dia": {
+  "sesiones": 19,
+  "mediana_de_medianas": 3.3,
+  "p90_mediano": 15.4,
+  "p90_maximo": 28.0
+ },
+ "noche": {
+  "sesiones": 19,
+  "mediana_de_medianas": 27.0,
+  "p90_mediano": 168.8,
+  "p90_maximo": 530.1
+ }
+}

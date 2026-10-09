@@ -1,0 +1,74 @@
+{
+ "rho=0|sesiones=5": {
+  "detecta_5pct": 0.067,
+  "tasa_giro_media": 30.4,
+  "tasa_placebo_media": 28.0,
+  "repeticiones": 60
+ },
+ "rho=0|sesiones=10": {
+  "detecta_5pct": 0.033,
+  "tasa_giro_media": 28.0,
+  "tasa_placebo_media": 28.5,
+  "repeticiones": 60
+ },
+ "rho=0|sesiones=20": {
+  "detecta_5pct": 0.083,
+  "tasa_giro_media": 27.7,
+  "tasa_placebo_media": 28.1,
+  "repeticiones": 60
+ },
+ "rho=0.02|sesiones=5": {
+  "detecta_5pct": 0.033,
+  "tasa_giro_media": 26.4,
+  "tasa_placebo_media": 27.3,
+  "repeticiones": 60
+ },
+ "rho=0.02|sesiones=10": {
+  "detecta_5pct": 0.067,
+  "tasa_giro_media": 28.9,
+  "tasa_placebo_media": 28.4,
+  "repeticiones": 60
+ },
+ "rho=0.02|sesiones=20": {
+  "detecta_5pct": 0.067,
+  "tasa_giro_media": 28.1,
+  "tasa_placebo_media": 28.0,
+  "repeticiones": 60
+ },
+ "rho=0.05|sesiones=5": {
+  "detecta_5pct": 0.033,
+  "tasa_giro_media": 28.4,
+  "tasa_placebo_media": 27.9,
+  "repeticiones": 60
+ },
+ "rho=0.05|sesiones=10": {
+  "detecta_5pct": 0.067,
+  "tasa_giro_media": 28.2,
+  "tasa_placebo_media": 28.0,
+  "repeticiones": 60
+ },
+ "rho=0.05|sesiones=20": {
+  "detecta_5pct": 0.05,
+  "tasa_giro_media": 27.4,
+  "tasa_placebo_media": 27.9,
+  "repeticiones": 60
+ },
+ "rho=0.15|sesiones=5": {
+  "detecta_5pct": 0.033,
+  "tasa_giro_media": 28.2,
+  "tasa_placebo_media": 28.3,
+  "repeticiones": 60
+ },
+ "rho=0.15|sesiones=10": {
+  "detecta_5pct": 0.1,
+  "tasa_giro_media": 28.8,
+  "tasa_placebo_media": 27.9,
+  "repeticiones": 60
+ },
+ "rho=0.15|sesiones=20": {
+  "detecta_5pct": 0.017,
+  "tasa_giro_media": 28.1,
+  "tasa_placebo_media": 28.0,
+  "repeticiones": 60
+ }
+}

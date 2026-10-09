@@ -19,7 +19,11 @@ import glob, json, os
 import numpy as np, pandas as pd
 
 try:   # todo lo que use esta base corre en PRIORIDAD BAJA: la PC es un i3 de 4 nucleos con ATAS abierto y el operador operando en vivo
-    import ctypes; ctypes.windll.kernel32.SetPriorityClass(ctypes.windll.kernel32.GetCurrentProcess(), 0x00004000)
+    # MEDIDO 06-10-2026: sin restype/argtypes el handle -1 se trunca a 32 bits y SetPriorityClass FALLA (GetLastError 6): el proceso
+    # quedaba en Normal (Priority 8 en Win32_Process). Con los tipos declarados queda en BELOW_NORMAL (Priority 6).
+    import ctypes, ctypes.wintypes as _W
+    _k = ctypes.windll.kernel32; _k.GetCurrentProcess.restype = _W.HANDLE; _k.SetPriorityClass.argtypes = [_W.HANDLE, _W.DWORD]
+    _k.SetPriorityClass(_k.GetCurrentProcess(), 0x00004000)
 except Exception: pass
 
 APP = os.path.join(os.environ.get("APPDATA", ""), "ATAS")

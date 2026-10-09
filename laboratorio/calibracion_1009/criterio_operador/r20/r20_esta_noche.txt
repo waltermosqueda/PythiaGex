@@ -1,0 +1,1084 @@
+A) velas_m1.csv: ultima vela 2026-10-09 03:22:00 UTC.
+B) extension con el centinela vivo de la 2.0: {"velas_extra": 71, "desde": "2026-10-09 03:23:00", "hasta": "2026-10-09 04:33:00", "solape_con_velas_m1": {"n": 110, "iguales_ohlc": 110}, "cruce_cinta_min": 68, "cierre_igual_pct": 97.05882352941177, "dif_cierre_p95": 0.0, "dif_alto_p95": 1.5749999999999993, "dif_bajo_p95": 1.0, "cinta_hasta": "2026-10-09 04:30:05.995000"}
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [A hasta 03:22] r20_doms (dom0+dom1) ventana CONGELADA 2026-10-09 00:35:00 -> 2026-10-09 08:30:00 | velas en la ventana 168 (2026-10-09 00:35:00 -> 2026-10-09 03:22:00) rango 30967.00-31089.25
+  10-09 01:42 techo 31042.06 dom1                       -> rota       cierre mas alla de +5 con cuerpo 4.75    prec  +9.69 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:45 piso  31042.06 dom1                       -> sostenido  giro de 15 pts                           prec  -1.44 | ESTRICTO sostenido  MUY TOL (no llega) rec 47.19 (desde punta 47.19, tramo 47.19, fin fin de datos) opuesta 31083.50 llega True
+  10-09 02:00 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -1.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 18.25, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:02 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +3.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 46.75, tramo 20.00, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:10 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -0.75 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 37.50, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:27 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +5.75 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 43.50 (desde punta 49.25, tramo 22.75, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:45 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.75, tramo 15.75, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:56 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 44.00, tramo 43.50, fin fin de datos) opuesta 31042.06 llega True
+  10-09 03:10 piso  31042.06 dom1                       -> sostenido  giro de 15 pts                           prec  +2.06 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 41.69 (desde punta 43.75, tramo 41.69, fin fin de datos) opuesta 31083.50 llega True
+  10-09 03:21 techo 31083.50 dom0+dom1                  -> indefinida fin de datos                             prec  +0.25 | ESTRICTO indefinida MUY TOL indefinida 
+  TOLERANTE     llegadas 10 (base 9, censuradas 1) sostenidos 8 (88.9 %; falso romp. 3) rotas 1 indef 0 | exactos 5 | precision |med| 1.47 (signo 0.37) | recorrido medio 43.7 mediano 43.5 tramo 30.8 | llega opuesta 8/8
+  ESTRICTO      llegadas 11 (base 10, censuradas 1) sostenidos 8 (80.0 %; falso romp. 2) rotas 2 indef 0 | exactos 6 | precision |med| 1.47 (signo 0.37) | recorrido medio 41.5 mediano 42.6 tramo 30.8 | llega opuesta 5/8
+  MUY_TOLERANTE llegadas 9 (base 8, censuradas 1) sostenidos 7 (87.5 %; falso romp. 3) rotas 1 indef 0 | exactos 4 | precision |med| 1.5 (signo 0.5) | recorrido medio 43.2 mediano 43.5 tramo 28.5 | llega opuesta 7/7
+  COBERTURA giros zigzag 20: +-2: 1/16; +-4: 4/16; +-6: 5/16
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31083.50, a 54.50 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31083.50, a 77.25 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31042.06, a 8.06 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31042.06, a 40.31 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31042.06, a 14.31 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30917.72, a 56.78 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30917.72, a 77.28 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30959.17, a 7.83 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31083.50, a 66.75 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30917.72, a 63.53 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31083.50, a 3.25 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31042.06, a 3.94 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31083.50, a 5.75 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31042.06, a 18.69 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto True (raya mas cercana 31083.50, a 0.50 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31042.06, a 2.06 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     10.0 | azar p5      0.0 p50      5.0 p95     13.0 | percentil 83.8 (n 500)
+     pct_sostenidos           real    88.89 | azar p5      0.0 p50     40.0 p95    100.0 | percentil 89.8 (n 430)
+     pct_exactos              real    55.56 | azar p5      0.0 p50     20.0 p95    66.67 | percentil 91.2 (n 430)
+     pct_rotas                real    11.11 | azar p5      0.0 p50     60.0 p95    100.0 | percentil 10.2 (n 430)
+     precision_mediana_abs    real     1.47 | azar p5     0.54 p50     2.13 p95     6.88 | percentil 31.4 (n 398)
+     recorrido_medio          real    43.74 | azar p5    19.22 p50     42.0 p95    107.1 | percentil 57.0 (n 398)
+     recorrido_mediano        real     43.5 | azar p5    18.82 p50    38.53 p95   107.75 | percentil 64.3 (n 398)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50      0.0 p95    100.0 | percentil 87.3 (n 288)
+     cobertura_pct            real     6.25 | azar p5      0.0 p50      0.0 p95     12.5 | percentil 69.9 (n 500)
+     corridas +-11/19/31 juntas: llegadas 49 sostenidos 30.6 % exactos 12.2 % recorrido medio 34.8 llega opuesta 0.0 % cobertura 1.0 %
+     por corrimiento: -31: 5 lleg, 40.0 % sost | -19: 12 lleg, 50.0 % sost | -11: 9 lleg, 11.0 % sost | +11: 5 lleg, 40.0 % sost | +19: 9 lleg, 33.0 % sost | +31: 9 lleg, 11.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     10.0 | azar p5      0.0 p50      7.0 p95     14.0 | percentil 69.5 (n 500)
+     pct_sostenidos           real    88.89 | azar p5     50.0 p50     75.0 p95    100.0 | percentil 72.5 (n 465)
+     pct_exactos              real    55.56 | azar p5      0.0 p50    38.46 p95    66.67 | percentil 83.7 (n 465)
+     pct_rotas                real    11.11 | azar p5      0.0 p50     25.0 p95     50.0 | percentil 27.5 (n 465)
+     precision_mediana_abs    real     1.47 | azar p5     1.13 p50     1.78 p95     8.75 | percentil 10.1 (n 465)
+     recorrido_medio          real    43.74 | azar p5    17.31 p50    41.91 p95    46.95 | percentil 62.2 (n 465)
+     recorrido_mediano        real     43.5 | azar p5    17.31 p50     43.5 p95    47.19 | percentil 48.5 (n 465)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50      0.0 p95    100.0 | percentil 88.5 (n 368)
+     cobertura_pct            real     6.25 | azar p5      0.0 p50      0.0 p95     6.25 | percentil 76.3 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [A hasta 03:22] r20_doms (dom0+dom1) ventana COMPLETA 2026-10-08 22:00:00 -> 2026-10-09 13:30:00 | velas en la ventana 323 (2026-10-08 22:00:00 -> 2026-10-09 03:22:00) rango 30952.25-31089.25
+  10-08 22:05 techo 31022.97 dom0+dom1                  -> rota       cierre mas alla de +5 con cuerpo 10.00   prec  +5.53 | ESTRICTO rota       MUY TOL rota       
+  10-08 22:08 techo 31027.12 dom1                       -> rota       cierre mas alla de +5 con cuerpo 6.00    prec  +9.38 | ESTRICTO rota       MUY TOL rota       
+  10-08 22:15 techo 31054.84 dom0                       -> sostenido  giro de 15 pts                           prec  +0.16 | ESTRICTO sostenido  MUY TOL sostenido  rec 15.59 (desde punta 15.75, tramo 15.59, fin re-rotura) opuesta 31013.44 llega False
+  10-08 22:25 techo 31050.70 dom0                       -> rota       3 cierres seguidos mas alla              prec  +6.55 | ESTRICTO rota       MUY TOL rota       
+  10-08 23:10 techo 31037.43 dom0                       -> sostenido  giro de 15 pts                           prec  +1.32 | ESTRICTO sostenido  MUY TOL sostenido  rec 85.18 (desde punta 86.50, tramo 85.18, fin re-rotura) opuesta 30996.04 llega True
+  10-08 23:20 techo 31032.04 dom0                       -> sostenido  giro de 15 pts                           prec  +0.21 | ESTRICTO sostenido  MUY TOL sostenido  rec 79.79 (desde punta 80.00, tramo 79.79, fin re-rotura) opuesta 30990.66 llega True
+  10-08 23:30 piso  30993.56 dom1                       -> sostenido  giro de 15 pts                           prec  +3.56 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 22.19 (desde punta 25.75, tramo 22.19, fin re-rotura) opuesta 31034.94 llega False
+  10-08 23:37 piso  30997.29 dom1                       -> sostenido  giro de 15 pts                           prec  -0.21 | ESTRICTO sostenido  MUY TOL sostenido  rec 15.46 (desde punta 15.46, tramo 15.46, fin re-rotura) opuesta 31038.67 llega False
+  10-09 01:42 techo 31042.06 dom1                       -> rota       cierre mas alla de +5 con cuerpo 4.75    prec  +9.69 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:45 piso  31042.06 dom1                       -> sostenido  giro de 15 pts                           prec  -1.44 | ESTRICTO sostenido  MUY TOL (no llega) rec 47.19 (desde punta 47.19, tramo 47.19, fin fin de datos) opuesta 31083.50 llega True
+  10-09 02:00 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -1.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 18.25, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:02 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +3.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 46.75, tramo 20.00, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:10 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -0.75 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 37.50, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:27 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +5.75 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 43.50 (desde punta 49.25, tramo 22.75, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:45 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.75, tramo 15.75, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:56 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 44.00, tramo 43.50, fin fin de datos) opuesta 31042.06 llega True
+  10-09 03:10 piso  31042.06 dom1                       -> sostenido  giro de 15 pts                           prec  +2.06 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 41.69 (desde punta 43.75, tramo 41.69, fin fin de datos) opuesta 31083.50 llega True
+  10-09 03:21 techo 31083.50 dom0+dom1                  -> indefinida fin de datos                             prec  +0.25 | ESTRICTO indefinida MUY TOL indefinida 
+  TOLERANTE     llegadas 18 (base 17, censuradas 1) sostenidos 13 (76.5 %; falso romp. 4) rotas 4 indef 0 | exactos 9 | precision |med| 1.32 (signo 0.25) | recorrido medio 43.7 mediano 43.5 tramo 35.8 | llega opuesta 10/13
+  ESTRICTO      llegadas 19 (base 18, censuradas 1) sostenidos 13 (72.2 %; falso romp. 3) rotas 5 indef 0 | exactos 10 | precision |med| 1.32 (signo 0.25) | recorrido medio 42.3 mediano 41.7 tramo 35.8 | llega opuesta 7/13
+  MUY_TOLERANTE llegadas 17 (base 16, censuradas 1) sostenidos 12 (75.0 %; falso romp. 4) rotas 4 indef 0 | exactos 8 | precision |med| 1.04 (signo 0.37) | recorrido medio 43.4 mediano 43.5 tramo 34.8 | llega opuesta 9/12
+  COBERTURA giros zigzag 20: +-2: 2/30; +-4: 7/30; +-6: 9/30
+     22:00 max 31033.25 (izq 20.2 der 40.0) aprox 22:00 -> cubierto False (raya mas cercana 31030.44, a 2.81 pts)
+     22:03 min 30993.25 (izq 40.0 der 79.2) aprox 22:03 -> cubierto False (raya mas cercana 31022.97, a 29.72 pts)
+     22:36 max 31072.50 (izq 79.2 der 55.5) aprox 22:35 -> cubierto False (raya mas cercana 31012.99, a 59.51 pts)
+     23:07 min 31017.00 (izq 55.5 der 21.8) aprox 23:06 -> cubierto False (raya mas cercana 31037.43, a 20.43 pts)
+     23:10 max 31038.75 (izq 21.8 der 48.8) aprox 23:10 -> cubierto True (raya mas cercana 31037.43, a 1.32 pts)
+     23:30 min 30990.00 (izq 48.8 der 25.8) aprox 23:30 -> cubierto False (raya mas cercana 30993.56, a 3.56 pts)
+     23:32 max 31015.75 (izq 25.8 der 47.8) aprox 23:32 -> cubierto False (raya mas cercana 30995.63, a 20.12 pts)
+     23:51 min 30968.00 (izq 47.8 der 34.8) aprox 23:51 -> cubierto False (raya mas cercana 30895.41, a 72.59 pts)
+     00:01 max 31002.75 (izq 34.8 der 50.5) aprox 00:01 -> cubierto False (raya mas cercana 31067.30, a 64.55 pts)
+     00:03 min 30952.25 (izq 50.5 der 40.8) aprox 00:03 -> cubierto False (raya mas cercana 30943.03, a 9.22 pts)
+     00:08 max 30993.00 (izq 40.8 der 30.5) aprox 00:07 -> cubierto False (raya mas cercana 30918.14, a 74.86 pts)
+     00:09 min 30962.50 (izq 30.5 der 32.8) aprox 00:09 -> cubierto False (raya mas cercana 30925.58, a 36.92 pts)
+     00:22 max 30995.25 (izq 32.8 der 30.2) aprox 00:21 -> cubierto False (raya mas cercana 30917.72, a 77.53 pts)
+     00:26 min 30965.00 (izq 30.2 der 64.0) aprox 00:26 -> cubierto False (raya mas cercana 30917.72, a 47.28 pts)
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31083.50, a 54.50 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31083.50, a 77.25 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31042.06, a 8.06 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31042.06, a 40.31 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31042.06, a 14.31 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30917.72, a 56.78 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30917.72, a 77.28 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30959.17, a 7.83 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31083.50, a 66.75 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30917.72, a 63.53 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31083.50, a 3.25 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31042.06, a 3.94 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31083.50, a 5.75 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31042.06, a 18.69 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto True (raya mas cercana 31083.50, a 0.50 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31042.06, a 2.06 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     18.0 | azar p5      4.0 p50     11.0 p95     21.0 | percentil 87.0 (n 500)
+     pct_sostenidos           real    76.47 | azar p5    19.95 p50    46.15 p95     80.0 | percentil 93.8 (n 500)
+     pct_exactos              real    52.94 | azar p5      0.0 p50    21.43 p95     50.0 | percentil 97.4 (n 500)
+     pct_rotas                real    23.53 | azar p5     20.0 p50    53.85 p95    80.05 | percentil 6.2 (n 500)
+     precision_mediana_abs    real     1.32 | azar p5      0.8 p50      2.5 p95      6.1 | percentil 19.6 (n 498)
+     recorrido_medio          real     43.7 | azar p5    24.69 p50    48.45 p95    88.34 | percentil 38.4 (n 498)
+     recorrido_mediano        real     43.5 | azar p5    19.92 p50    39.81 p95   100.37 | percentil 60.8 (n 498)
+     pct_llega_opuesta        real    76.92 | azar p5      0.0 p50     50.0 p95    100.0 | percentil 82.4 (n 478)
+     cobertura_pct            real     6.67 | azar p5      0.0 p50     3.33 p95     10.0 | percentil 78.5 (n 500)
+     corridas +-11/19/31 juntas: llegadas 84 sostenidos 34.5 % exactos 19.0 % recorrido medio 43.7 llega opuesta 18.8 % cobertura 3.3 %
+     por corrimiento: -31: 11 lleg, 45.0 % sost | -19: 17 lleg, 47.0 % sost | -11: 14 lleg, 14.0 % sost | +11: 12 lleg, 50.0 % sost | +19: 16 lleg, 31.0 % sost | +31: 14 lleg, 21.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     18.0 | azar p5      6.0 p50     14.0 p95     21.0 | percentil 76.8 (n 500)
+     pct_sostenidos           real    76.47 | azar p5    44.44 p50    66.67 p95    84.62 | percentil 82.7 (n 500)
+     pct_exactos              real    52.94 | azar p5     25.0 p50     40.0 p95    57.14 | percentil 86.9 (n 500)
+     pct_rotas                real    23.53 | azar p5    15.38 p50    33.33 p95    55.56 | percentil 17.3 (n 500)
+     precision_mediana_abs    real     1.32 | azar p5     0.57 p50     1.38 p95     2.07 | percentil 40.9 (n 500)
+     recorrido_medio          real     43.7 | azar p5    33.89 p50     43.0 p95    53.97 | percentil 55.5 (n 500)
+     recorrido_mediano        real     43.5 | azar p5    21.68 p50     43.5 p95    51.95 | percentil 57.7 (n 500)
+     pct_llega_opuesta        real    76.92 | azar p5      0.0 p50    34.85 p95     90.0 | percentil 79.9 (n 492)
+     cobertura_pct            real     6.67 | azar p5     3.33 p50     3.33 p95     6.67 | percentil 76.3 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [A hasta 03:22] r20_zero (zero_vol) ventana CONGELADA 2026-10-09 00:35:00 -> 2026-10-09 08:30:00 | velas en la ventana 168 (2026-10-09 00:35:00 -> 2026-10-09 03:22:00) rango 30967.00-31089.25
+  10-09 00:39 piso  31014.03 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 10.50   prec  +7.78 | ESTRICTO rota       MUY TOL sostenido  
+  10-09 00:48 piso  31013.97 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 13.50   prec +12.22 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:58 piso  30987.14 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 14.50   prec +10.64 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:09 techo 30987.24 zero_vol                   -> sostenido  giro de 15 pts                           prec  +7.76 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 20.24 (desde punta 28.00, tramo 20.24, fin re-rotura) opuesta - llega None
+  10-09 01:23 techo 30987.22 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 16.50   prec +19.03 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:27 techo 31014.10 zero_vol                   -> sostenido  giro de 15 pts                           prec  +2.65 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 32.85 (desde punta 35.50, tramo 32.85, fin re-rotura) opuesta - llega None
+  10-09 01:32 piso  30987.16 zero_vol                   -> sostenido  giro de 15 pts                           prec  +5.91 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 102.09 (desde punta 108.00, tramo 102.09, fin fin de datos) opuesta - llega None
+  TOLERANTE     llegadas 7 (base 7, censuradas 0) sostenidos 3 (42.9 %; falso romp. 3) rotas 4 indef 0 | exactos 0 | precision |med| 5.91 (signo 5.91) | recorrido medio 51.7 mediano 32.8 tramo 51.7 | llega opuesta 0/0
+  ESTRICTO      llegadas 7 (base 7, censuradas 0) sostenidos 1 (14.3 %; falso romp. 1) rotas 6 indef 0 | exactos 0 | precision |med| 2.65 (signo 2.65) | recorrido medio 32.8 mediano 32.8 tramo 32.8 | llega opuesta 0/0
+  MUY_TOLERANTE llegadas 7 (base 7, censuradas 0) sostenidos 4 (57.1 %; falso romp. 4) rotas 3 indef 0 | exactos 0 | precision |med| 6.84 (signo 6.84) | recorrido medio 43.8 mediano 26.5 tramo 43.8 | llega opuesta 0/0
+  COBERTURA giros zigzag 20: +-2: 0/16; +-4: 1/16; +-6: 2/16
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31014.03, a 14.97 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31014.03, a 7.78 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31013.96, a 20.04 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31014.01, a 12.26 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31014.02, a 13.73 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30987.17, a 12.67 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30987.20, a 7.80 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30987.25, a 20.25 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31014.10, a 2.65 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30987.16, a 5.91 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31115.09, a 28.34 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31013.75, a 32.25 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31115.06, a 25.81 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31115.14, a 54.39 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto False (raya mas cercana 31115.05, a 31.05 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31013.82, a 26.18 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real      7.0 | azar p5      0.0 p50      1.0 p95      7.0 | percentil 94.7 (n 500)
+     pct_sostenidos           real    42.86 | azar p5      0.0 p50    33.33 p95    100.0 | percentil 60.2 (n 269)
+     pct_exactos              real      0.0 | azar p5      0.0 p50      0.0 p95    66.67 | percentil 25.1 (n 269)
+     pct_rotas                real    57.14 | azar p5      0.0 p50    66.67 p95    100.0 | percentil 39.8 (n 269)
+     precision_mediana_abs    real     5.91 | azar p5     0.44 p50     1.96 p95     8.63 | percentil 88.9 (n 189)
+     recorrido_medio          real    51.73 | azar p5     20.0 p50    40.14 p95   116.44 | percentil 69.3 (n 189)
+     recorrido_mediano        real    32.85 | azar p5    18.99 p50    37.99 p95   116.44 | percentil 44.4 (n 189)
+     pct_llega_opuesta        real     None | azar p5     None p50     None p95     None | percentil None (n 8)
+     cobertura_pct            real      0.0 | azar p5      0.0 p50      0.0 p95     6.25 | percentil 40.9 (n 500)
+     corridas +-11/19/31 juntas: llegadas 25 sostenidos 58.3 % exactos 37.5 % recorrido medio 46.3 llega opuesta None % cobertura 6.2 %
+     por corrimiento: -31: 6 lleg, 100.0 % sost | -19: 3 lleg, 33.0 % sost | -11: 4 lleg, 50.0 % sost | +11: 6 lleg, 33.0 % sost | +19: 3 lleg, 67.0 % sost | +31: 3 lleg, 67.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real      7.0 | azar p5      3.0 p50      5.0 p95      9.0 | percentil 66.2 (n 500)
+     pct_sostenidos           real    42.86 | azar p5    33.33 p50    42.86 p95     60.0 | percentil 38.4 (n 500)
+     pct_exactos              real      0.0 | azar p5      0.0 p50      0.0 p95     40.0 | percentil 25.5 (n 500)
+     pct_rotas                real    57.14 | azar p5     40.0 p50    57.14 p95    66.67 | percentil 61.6 (n 500)
+     precision_mediana_abs    real     5.91 | azar p5     1.66 p50     2.65 p95     5.91 | percentil 76.8 (n 500)
+     recorrido_medio          real    51.73 | azar p5    32.85 p50    42.43 p95    51.73 | percentil 87.4 (n 500)
+     recorrido_mediano        real    32.85 | azar p5    26.09 p50    32.85 p95    32.85 | percentil 74.5 (n 500)
+     pct_llega_opuesta        real     None | azar p5     None p50     None p95     None | percentil None (n 0)
+     cobertura_pct            real      0.0 | azar p5      0.0 p50      0.0 p95     6.25 | percentil 25.5 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [A hasta 03:22] r20_zero (zero_vol) ventana COMPLETA 2026-10-08 22:00:00 -> 2026-10-09 13:30:00 | velas en la ventana 323 (2026-10-08 22:00:00 -> 2026-10-09 03:22:00) rango 30952.25-31089.25
+  10-08 22:03 piso  30994.92 zero_vol                   -> sostenido  giro de 15 pts                           prec  +1.67 | ESTRICTO sostenido  MUY TOL sostenido  rec 77.58 (desde punta 79.25, tramo 77.58, fin re-rotura) opuesta - llega None
+  10-08 22:35 techo 31073.68 zero_vol                   -> sostenido  giro de 15 pts                           prec  -1.18 | ESTRICTO sostenido  MUY TOL sostenido  rec 121.43 (desde punta 121.43, tramo 121.43, fin re-rotura) opuesta 31052.10 llega True
+  10-08 23:43 piso  30993.70 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 6.00    prec +11.70 | ESTRICTO rota       MUY TOL rota       
+  10-08 23:50 piso  30978.06 zero_vol                   -> sostenido  giro de 15 pts                           prec +10.06 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 24.69 (desde punta 34.75, tramo 16.94, fin re-rotura) opuesta 30991.68 llega True
+  10-08 23:53 techo 30991.68 zero_vol                   -> sostenido  giro de 15 pts                           prec  +3.32 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 39.43 (desde punta 42.75, tramo 15.43, fin re-rotura) opuesta 30987.14 llega True
+  10-08 23:57 techo 30987.14 zero_vol                   -> sostenido  giro de 15 pts                           prec  +4.36 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 34.89 (desde punta 39.25, tramo 16.64, fin re-rotura) opuesta - llega None
+  10-09 00:05 techo 30971.09 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 17.00   prec +21.66 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:07 techo 30987.70 zero_vol                   -> sostenido  giro de 15 pts                           prec  +5.30 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 25.20 (desde punta 30.50, tramo 25.20, fin re-rotura) opuesta - llega None
+  10-09 00:13 techo 30983.10 zero_vol                   -> sostenido  giro de 15 pts                           prec  +1.65 | ESTRICTO sostenido  MUY TOL sostenido  rec 18.85 (desde punta 20.50, tramo 16.85, fin re-rotura) opuesta - llega None
+  10-09 00:15 techo 30983.15 zero_vol                   -> rota       3 cierres seguidos mas alla              prec  +7.85 | ESTRICTO rota       MUY TOL sostenido  
+  10-09 00:28 techo 30987.27 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 12.00   prec +10.73 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:31 techo 31014.06 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 10.75   prec +12.94 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:39 piso  31014.03 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 10.50   prec  +7.78 | ESTRICTO rota       MUY TOL sostenido  
+  10-09 00:48 piso  31013.97 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 13.50   prec +12.22 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:58 piso  30987.14 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 14.50   prec +10.64 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:09 techo 30987.24 zero_vol                   -> sostenido  giro de 15 pts                           prec  +7.76 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 20.24 (desde punta 28.00, tramo 20.24, fin re-rotura) opuesta - llega None
+  10-09 01:23 techo 30987.22 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 16.50   prec +19.03 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:27 techo 31014.10 zero_vol                   -> sostenido  giro de 15 pts                           prec  +2.65 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 32.85 (desde punta 35.50, tramo 32.85, fin re-rotura) opuesta - llega None
+  10-09 01:32 piso  30987.16 zero_vol                   -> sostenido  giro de 15 pts                           prec  +5.91 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 102.09 (desde punta 108.00, tramo 102.09, fin fin de datos) opuesta - llega None
+  TOLERANTE     llegadas 19 (base 19, censuradas 0) sostenidos 10 (52.6 %; falso romp. 7) rotas 9 indef 0 | exactos 3 | precision |med| 3.84 (signo 3.84) | recorrido medio 49.7 mediano 33.9 tramo 44.5 | llega opuesta 3/3
+  ESTRICTO      llegadas 19 (base 19, censuradas 0) sostenidos 5 (26.3 %; falso romp. 2) rotas 14 indef 0 | exactos 3 | precision |med| 1.67 (signo 1.67) | recorrido medio 53.2 mediano 32.8 tramo 52.8 | llega opuesta 2/2
+  MUY_TOLERANTE llegadas 19 (base 19, censuradas 0) sostenidos 12 (63.2 %; falso romp. 9) rotas 7 indef 0 | exactos 3 | precision |med| 4.83 (signo 4.83) | recorrido medio 44.6 mediano 29.0 tramo 40.3 | llega opuesta 3/3
+  COBERTURA giros zigzag 20: +-2: 2/30; +-4: 3/30; +-6: 5/30
+     22:00 max 31033.25 (izq 20.2 der 40.0) aprox 22:00 -> cubierto False (raya mas cercana 31002.33, a 30.92 pts)
+     22:03 min 30993.25 (izq 40.0 der 79.2) aprox 22:03 -> cubierto True (raya mas cercana 30994.92, a 1.67 pts)
+     22:36 max 31072.50 (izq 79.2 der 55.5) aprox 22:35 -> cubierto True (raya mas cercana 31073.68, a 1.18 pts)
+     23:07 min 31017.00 (izq 55.5 der 21.8) aprox 23:06 -> cubierto False (raya mas cercana 31068.93, a 51.93 pts)
+     23:10 max 31038.75 (izq 21.8 der 48.8) aprox 23:10 -> cubierto False (raya mas cercana 31068.92, a 30.17 pts)
+     23:30 min 30990.00 (izq 48.8 der 25.8) aprox 23:30 -> cubierto False (raya mas cercana 30965.39, a 24.61 pts)
+     23:32 max 31015.75 (izq 25.8 der 47.8) aprox 23:32 -> cubierto False (raya mas cercana 30967.46, a 48.29 pts)
+     23:51 min 30968.00 (izq 47.8 der 34.8) aprox 23:51 -> cubierto False (raya mas cercana 30991.73, a 23.73 pts)
+     00:01 max 31002.75 (izq 34.8 der 50.5) aprox 00:01 -> cubierto False (raya mas cercana 30997.88, a 4.87 pts)
+     00:03 min 30952.25 (izq 50.5 der 40.8) aprox 00:03 -> cubierto False (raya mas cercana 30971.09, a 18.84 pts)
+     00:08 max 30993.00 (izq 40.8 der 30.5) aprox 00:07 -> cubierto False (raya mas cercana 30987.70, a 5.30 pts)
+     00:09 min 30962.50 (izq 30.5 der 32.8) aprox 00:09 -> cubierto False (raya mas cercana 30995.19, a 32.69 pts)
+     00:22 max 30995.25 (izq 32.8 der 30.2) aprox 00:21 -> cubierto False (raya mas cercana 30987.19, a 8.06 pts)
+     00:26 min 30965.00 (izq 30.2 der 64.0) aprox 00:26 -> cubierto False (raya mas cercana 30987.31, a 22.31 pts)
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31014.03, a 14.97 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31014.03, a 7.78 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31013.96, a 20.04 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31014.01, a 12.26 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31014.02, a 13.73 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30987.17, a 12.67 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30987.20, a 7.80 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30987.25, a 20.25 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31014.10, a 2.65 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30987.16, a 5.91 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31115.09, a 28.34 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31013.75, a 32.25 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31115.06, a 25.81 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31115.14, a 54.39 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto False (raya mas cercana 31115.05, a 31.05 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31013.82, a 26.18 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     19.0 | azar p5      0.0 p50      3.0 p95     10.0 | percentil 100.0 (n 500)
+     pct_sostenidos           real    52.63 | azar p5      0.0 p50    46.15 p95    100.0 | percentil 66.0 (n 447)
+     pct_exactos              real    15.79 | azar p5      0.0 p50     12.5 p95    100.0 | percentil 52.1 (n 447)
+     pct_rotas                real    47.37 | azar p5      0.0 p50    53.85 p95    100.0 | percentil 34.0 (n 447)
+     precision_mediana_abs    real     3.84 | azar p5     0.58 p50     2.52 p95      8.7 | percentil 66.3 (n 359)
+     recorrido_medio          real    49.72 | azar p5    17.86 p50    45.28 p95   116.53 | percentil 55.2 (n 359)
+     recorrido_mediano        real    33.87 | azar p5    17.33 p50    41.79 p95    118.4 | percentil 40.4 (n 359)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50      0.0 p95    100.0 | percentil 84.2 (n 130)
+     cobertura_pct            real     6.67 | azar p5      0.0 p50      0.0 p95     6.67 | percentil 94.8 (n 500)
+     corridas +-11/19/31 juntas: llegadas 61 sostenidos 55.0 % exactos 30.0 % recorrido medio 59.7 llega opuesta 100.0 % cobertura 5.6 %
+     por corrimiento: -31: 12 lleg, 82.0 % sost | -19: 10 lleg, 50.0 % sost | -11: 14 lleg, 50.0 % sost | +11: 11 lleg, 45.0 % sost | +19: 7 lleg, 43.0 % sost | +31: 7 lleg, 57.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     19.0 | azar p5     10.0 p50     15.5 p95     23.0 | percentil 72.6 (n 500)
+     pct_sostenidos           real    52.63 | azar p5    35.69 p50     50.0 p95    61.54 | percentil 68.6 (n 500)
+     pct_exactos              real    15.79 | azar p5     5.56 p50    18.18 p95    36.36 | percentil 38.4 (n 500)
+     pct_rotas                real    47.37 | azar p5    38.46 p50     50.0 p95    64.31 | percentil 31.4 (n 500)
+     precision_mediana_abs    real     3.84 | azar p5     1.65 p50     3.32 p95      5.3 | percentil 59.9 (n 500)
+     recorrido_medio          real    49.72 | azar p5    32.35 p50    47.89 p95    66.96 | percentil 57.6 (n 500)
+     recorrido_mediano        real    33.87 | azar p5    23.22 p50    29.03 p95     58.5 | percentil 72.8 (n 500)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50    100.0 p95    100.0 | percentil 67.5 (n 429)
+     cobertura_pct            real     6.67 | azar p5      0.0 p50     3.33 p95     10.0 | percentil 69.5 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [A hasta 03:22] r20_doms+ndx (dom0+dom1+ndx_dom0+ndx_dom1) ventana CONGELADA 2026-10-09 00:35:00 -> 2026-10-09 08:30:00 | velas en la ventana 168 (2026-10-09 00:35:00 -> 2026-10-09 03:22:00) rango 30967.00-31089.25
+  10-09 01:42 techo 31042.06 dom1+ndx_dom0+ndx_dom1     -> rota       cierre mas alla de +5 con cuerpo 4.75    prec  +9.69 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:45 piso  31042.06 dom1+ndx_dom0+ndx_dom1     -> sostenido  giro de 15 pts                           prec  -1.44 | ESTRICTO sostenido  MUY TOL (no llega) rec 47.19 (desde punta 47.19, tramo 47.19, fin fin de datos) opuesta 31083.50 llega True
+  10-09 02:00 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -1.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 18.25, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:02 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +3.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 46.75, tramo 20.00, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:10 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -0.75 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 37.50, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:27 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +5.75 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 43.50 (desde punta 49.25, tramo 22.75, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:45 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.75, tramo 15.75, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:56 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 44.00, tramo 43.50, fin fin de datos) opuesta 31042.06 llega True
+  10-09 03:10 piso  31042.06 dom1+ndx_dom0+ndx_dom1     -> sostenido  giro de 15 pts                           prec  +2.06 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 41.69 (desde punta 43.75, tramo 41.69, fin fin de datos) opuesta 31083.50 llega True
+  10-09 03:21 techo 31083.50 dom0+dom1                  -> indefinida fin de datos                             prec  +0.25 | ESTRICTO indefinida MUY TOL indefinida 
+  TOLERANTE     llegadas 10 (base 9, censuradas 1) sostenidos 8 (88.9 %; falso romp. 3) rotas 1 indef 0 | exactos 5 | precision |med| 1.47 (signo 0.37) | recorrido medio 43.7 mediano 43.5 tramo 30.8 | llega opuesta 8/8
+  ESTRICTO      llegadas 11 (base 10, censuradas 1) sostenidos 8 (80.0 %; falso romp. 2) rotas 2 indef 0 | exactos 6 | precision |med| 1.47 (signo 0.37) | recorrido medio 41.5 mediano 42.6 tramo 30.8 | llega opuesta 5/8
+  MUY_TOLERANTE llegadas 9 (base 8, censuradas 1) sostenidos 7 (87.5 %; falso romp. 3) rotas 1 indef 0 | exactos 4 | precision |med| 1.5 (signo 0.5) | recorrido medio 43.2 mediano 43.5 tramo 28.5 | llega opuesta 7/7
+  COBERTURA giros zigzag 20: +-2: 2/16; +-4: 4/16; +-6: 5/16
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31083.50, a 54.50 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31083.50, a 77.25 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31042.06, a 8.06 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31042.06, a 40.31 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31042.06, a 14.31 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30917.72, a 56.78 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30917.72, a 77.28 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30959.17, a 7.83 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31083.50, a 66.75 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30917.72, a 63.53 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31083.50, a 3.25 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31042.06, a 3.94 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31083.50, a 5.75 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31042.06, a 18.69 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto True (raya mas cercana 31083.50, a 0.50 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto True (raya mas cercana 31041.83, a 1.83 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     10.0 | azar p5      0.0 p50      7.0 p95    16.05 | percentil 72.3 (n 500)
+     pct_sostenidos           real    88.89 | azar p5      0.0 p50     40.0 p95     87.5 | percentil 95.3 (n 468)
+     pct_exactos              real    55.56 | azar p5      0.0 p50     20.0 p95    57.14 | percentil 94.4 (n 468)
+     pct_rotas                real    11.11 | azar p5     12.5 p50     60.0 p95    100.0 | percentil 4.7 (n 468)
+     precision_mediana_abs    real     1.47 | azar p5     0.64 p50     2.09 p95     6.75 | percentil 25.9 (n 417)
+     recorrido_medio          real    43.74 | azar p5    20.63 p50    41.05 p95    87.39 | percentil 60.0 (n 417)
+     recorrido_mediano        real     43.5 | azar p5    18.54 p50    36.59 p95    89.74 | percentil 70.0 (n 417)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50    33.33 p95    100.0 | percentil 87.4 (n 354)
+     cobertura_pct            real     12.5 | azar p5      0.0 p50     6.25 p95     12.5 | percentil 90.4 (n 500)
+     corridas +-11/19/31 juntas: llegadas 68 sostenidos 33.8 % exactos 14.7 % recorrido medio 33.5 llega opuesta 50.0 % cobertura 1.0 %
+     por corrimiento: -31: 6 lleg, 33.0 % sost | -19: 13 lleg, 46.0 % sost | -11: 10 lleg, 10.0 % sost | +11: 7 lleg, 57.0 % sost | +19: 14 lleg, 36.0 % sost | +31: 18 lleg, 28.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     10.0 | azar p5      2.0 p50     10.0 p95     17.0 | percentil 52.2 (n 500)
+     pct_sostenidos           real    88.89 | azar p5    14.29 p50     60.0 p95     93.5 | percentil 93.6 (n 494)
+     pct_exactos              real    55.56 | azar p5      0.0 p50    30.77 p95    55.56 | percentil 95.0 (n 494)
+     pct_rotas                real    11.11 | azar p5      6.5 p50     40.0 p95    85.71 | percentil 6.4 (n 494)
+     precision_mediana_abs    real     1.47 | azar p5     1.13 p50     1.78 p95      8.8 | percentil 10.0 (n 470)
+     recorrido_medio          real    43.74 | azar p5    17.31 p50    41.91 p95    51.95 | percentil 63.0 (n 470)
+     recorrido_mediano        real     43.5 | azar p5    17.31 p50     43.5 p95    51.95 | percentil 49.0 (n 470)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50    85.71 p95    100.0 | percentil 84.3 (n 394)
+     cobertura_pct            real     12.5 | azar p5      0.0 p50     6.25 p95     12.5 | percentil 88.3 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [A hasta 03:22] r20_doms+ndx (dom0+dom1+ndx_dom0+ndx_dom1) ventana COMPLETA 2026-10-08 22:00:00 -> 2026-10-09 13:30:00 | velas en la ventana 323 (2026-10-08 22:00:00 -> 2026-10-09 03:22:00) rango 30952.25-31089.25
+  10-08 22:05 techo 31022.97 dom0+dom1                  -> rota       cierre mas alla de +5 con cuerpo 10.00   prec  +5.53 | ESTRICTO rota       MUY TOL rota       
+  10-08 22:08 techo 31027.12 dom1                       -> rota       cierre mas alla de +5 con cuerpo 6.00    prec  +9.38 | ESTRICTO rota       MUY TOL rota       
+  10-08 22:15 techo 31054.84 dom0                       -> sostenido  giro de 15 pts                           prec  +0.16 | ESTRICTO sostenido  MUY TOL sostenido  rec 15.59 (desde punta 15.75, tramo 15.59, fin re-rotura) opuesta 31013.44 llega False
+  10-08 22:25 techo 31050.70 dom0                       -> rota       3 cierres seguidos mas alla              prec  +6.55 | ESTRICTO rota       MUY TOL rota       
+  10-08 23:10 techo 31037.43 dom0                       -> sostenido  giro de 15 pts                           prec  +1.32 | ESTRICTO sostenido  MUY TOL sostenido  rec 85.18 (desde punta 86.50, tramo 85.18, fin re-rotura) opuesta 30996.04 llega True
+  10-08 23:20 techo 31032.04 dom0                       -> sostenido  giro de 15 pts                           prec  +0.21 | ESTRICTO sostenido  MUY TOL sostenido  rec 79.79 (desde punta 80.00, tramo 79.79, fin re-rotura) opuesta 30990.66 llega True
+  10-08 23:30 piso  30993.56 dom1                       -> sostenido  giro de 15 pts                           prec  +3.56 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 22.19 (desde punta 25.75, tramo 22.19, fin re-rotura) opuesta 31034.94 llega False
+  10-08 23:37 piso  30997.29 dom1                       -> sostenido  giro de 15 pts                           prec  -0.21 | ESTRICTO sostenido  MUY TOL sostenido  rec 15.46 (desde punta 15.46, tramo 15.46, fin re-rotura) opuesta 31038.67 llega False
+  10-09 01:42 techo 31042.06 dom1+ndx_dom0+ndx_dom1     -> rota       cierre mas alla de +5 con cuerpo 4.75    prec  +9.69 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:45 piso  31042.06 dom1+ndx_dom0+ndx_dom1     -> sostenido  giro de 15 pts                           prec  -1.44 | ESTRICTO sostenido  MUY TOL (no llega) rec 47.19 (desde punta 47.19, tramo 47.19, fin fin de datos) opuesta 31083.50 llega True
+  10-09 02:00 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -1.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 18.25, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:02 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +3.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 46.75, tramo 20.00, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:10 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -0.75 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 37.50, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:27 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +5.75 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 43.50 (desde punta 49.25, tramo 22.75, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:45 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.75, tramo 15.75, fin fin de datos) opuesta 31042.06 llega True
+  10-09 02:56 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 44.00, tramo 43.50, fin fin de datos) opuesta 31042.06 llega True
+  10-09 03:10 piso  31042.06 dom1+ndx_dom0+ndx_dom1     -> sostenido  giro de 15 pts                           prec  +2.06 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 41.69 (desde punta 43.75, tramo 41.69, fin fin de datos) opuesta 31083.50 llega True
+  10-09 03:21 techo 31083.50 dom0+dom1                  -> indefinida fin de datos                             prec  +0.25 | ESTRICTO indefinida MUY TOL indefinida 
+  TOLERANTE     llegadas 18 (base 17, censuradas 1) sostenidos 13 (76.5 %; falso romp. 4) rotas 4 indef 0 | exactos 9 | precision |med| 1.32 (signo 0.25) | recorrido medio 43.7 mediano 43.5 tramo 35.8 | llega opuesta 10/13
+  ESTRICTO      llegadas 19 (base 18, censuradas 1) sostenidos 13 (72.2 %; falso romp. 3) rotas 5 indef 0 | exactos 10 | precision |med| 1.32 (signo 0.25) | recorrido medio 42.3 mediano 41.7 tramo 35.8 | llega opuesta 7/13
+  MUY_TOLERANTE llegadas 17 (base 16, censuradas 1) sostenidos 12 (75.0 %; falso romp. 4) rotas 4 indef 0 | exactos 8 | precision |med| 1.04 (signo 0.37) | recorrido medio 43.4 mediano 43.5 tramo 34.8 | llega opuesta 9/12
+  COBERTURA giros zigzag 20: +-2: 3/30; +-4: 7/30; +-6: 9/30
+     22:00 max 31033.25 (izq 20.2 der 40.0) aprox 22:00 -> cubierto False (raya mas cercana 31030.44, a 2.81 pts)
+     22:03 min 30993.25 (izq 40.0 der 79.2) aprox 22:03 -> cubierto False (raya mas cercana 31022.97, a 29.72 pts)
+     22:36 max 31072.50 (izq 79.2 der 55.5) aprox 22:35 -> cubierto False (raya mas cercana 31012.99, a 59.51 pts)
+     23:07 min 31017.00 (izq 55.5 der 21.8) aprox 23:06 -> cubierto False (raya mas cercana 31037.43, a 20.43 pts)
+     23:10 max 31038.75 (izq 21.8 der 48.8) aprox 23:10 -> cubierto True (raya mas cercana 31037.43, a 1.32 pts)
+     23:30 min 30990.00 (izq 48.8 der 25.8) aprox 23:30 -> cubierto False (raya mas cercana 30993.56, a 3.56 pts)
+     23:32 max 31015.75 (izq 25.8 der 47.8) aprox 23:32 -> cubierto False (raya mas cercana 30995.63, a 20.12 pts)
+     23:51 min 30968.00 (izq 47.8 der 34.8) aprox 23:51 -> cubierto False (raya mas cercana 30895.41, a 72.59 pts)
+     00:01 max 31002.75 (izq 34.8 der 50.5) aprox 00:01 -> cubierto False (raya mas cercana 31067.30, a 64.55 pts)
+     00:03 min 30952.25 (izq 50.5 der 40.8) aprox 00:03 -> cubierto False (raya mas cercana 30943.03, a 9.22 pts)
+     00:08 max 30993.00 (izq 40.8 der 30.5) aprox 00:07 -> cubierto False (raya mas cercana 30918.14, a 74.86 pts)
+     00:09 min 30962.50 (izq 30.5 der 32.8) aprox 00:09 -> cubierto False (raya mas cercana 30925.58, a 36.92 pts)
+     00:22 max 30995.25 (izq 32.8 der 30.2) aprox 00:21 -> cubierto False (raya mas cercana 30917.72, a 77.53 pts)
+     00:26 min 30965.00 (izq 30.2 der 64.0) aprox 00:26 -> cubierto False (raya mas cercana 30917.72, a 47.28 pts)
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31083.50, a 54.50 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31083.50, a 77.25 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31042.06, a 8.06 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31042.06, a 40.31 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31042.06, a 14.31 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30917.72, a 56.78 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30917.72, a 77.28 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30959.17, a 7.83 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31083.50, a 66.75 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30917.72, a 63.53 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31083.50, a 3.25 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31042.06, a 3.94 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31083.50, a 5.75 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31042.06, a 18.69 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto True (raya mas cercana 31083.50, a 0.50 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto True (raya mas cercana 31041.83, a 1.83 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     18.0 | azar p5      5.0 p50     13.0 p95     24.0 | percentil 77.7 (n 500)
+     pct_sostenidos           real    76.47 | azar p5     20.0 p50    45.45 p95    71.43 | percentil 97.2 (n 500)
+     pct_exactos              real    52.94 | azar p5      0.0 p50    20.76 p95    45.45 | percentil 97.6 (n 500)
+     pct_rotas                real    23.53 | azar p5    28.57 p50    54.55 p95     80.0 | percentil 2.8 (n 500)
+     precision_mediana_abs    real     1.32 | azar p5     0.79 p50     2.32 p95     6.05 | percentil 16.2 (n 494)
+     recorrido_medio          real     43.7 | azar p5     25.2 p50    48.02 p95    79.55 | percentil 39.3 (n 494)
+     recorrido_mediano        real     43.5 | azar p5    21.33 p50    40.04 p95    83.14 | percentil 61.9 (n 494)
+     pct_llega_opuesta        real    76.92 | azar p5      0.0 p50     50.0 p95    100.0 | percentil 79.4 (n 482)
+     cobertura_pct            real     10.0 | azar p5      0.0 p50     3.33 p95     10.0 | percentil 90.8 (n 500)
+     corridas +-11/19/31 juntas: llegadas 103 sostenidos 35.9 % exactos 19.4 % recorrido medio 41.0 llega opuesta 45.8 % cobertura 3.3 %
+     por corrimiento: -31: 12 lleg, 42.0 % sost | -19: 18 lleg, 44.0 % sost | -11: 15 lleg, 13.0 % sost | +11: 14 lleg, 57.0 % sost | +19: 21 lleg, 33.0 % sost | +31: 23 lleg, 30.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     18.0 | azar p5      8.0 p50     16.0 p95     24.0 | percentil 61.8 (n 500)
+     pct_sostenidos           real    76.47 | azar p5    36.36 p50    59.09 p95     80.0 | percentil 92.2 (n 500)
+     pct_exactos              real    52.94 | azar p5     20.0 p50    35.71 p95     50.0 | percentil 95.6 (n 500)
+     pct_rotas                real    23.53 | azar p5     20.0 p50    40.91 p95    63.64 | percentil 7.8 (n 500)
+     precision_mediana_abs    real     1.32 | azar p5     0.57 p50     1.38 p95     2.06 | percentil 42.0 (n 500)
+     recorrido_medio          real     43.7 | azar p5    33.61 p50    43.02 p95    52.99 | percentil 57.3 (n 500)
+     recorrido_mediano        real     43.5 | azar p5    21.66 p50     43.5 p95    51.95 | percentil 58.1 (n 500)
+     pct_llega_opuesta        real    76.92 | azar p5      0.0 p50     50.0 p95    88.89 | percentil 78.1 (n 499)
+     cobertura_pct            real     10.0 | azar p5     3.33 p50     6.67 p95     10.0 | percentil 88.3 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [A hasta 03:22] r20_zero_ndx (ndx_zero_vol) ventana CONGELADA 2026-10-09 00:35:00 -> 2026-10-09 08:30:00 | velas en la ventana 168 (2026-10-09 00:35:00 -> 2026-10-09 03:22:00) rango 30967.00-31089.25
+  10-09 01:35 techo 31000.56 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 14.75   prec +15.44 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:43 techo 31050.72 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 6.25    prec +12.28 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:58 techo 31064.95 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 5.50    prec +17.05 | ESTRICTO rota       MUY TOL rota       
+  10-09 02:01 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  -0.30 | ESTRICTO sostenido  MUY TOL (no llega) rec 21.80 (desde punta 21.80, tramo 21.80, fin re-rotura) opuesta - llega None
+  10-09 02:24 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +5.45 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 24.30 (desde punta 29.75, tramo 24.30, fin re-rotura) opuesta 31081.75 llega True
+  10-09 02:27 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +7.50 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 41.75 (desde punta 49.25, tramo 21.00, fin fin de datos) opuesta - llega None
+  10-09 02:43 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +2.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 41.75 (desde punta 44.00, tramo 41.75, fin fin de datos) opuesta 31064.95 llega True
+  10-09 03:03 piso  31064.95 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec  +8.95 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:09 piso  31050.71 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec +10.71 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:12 techo 31050.72 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec  +9.78 | ESTRICTO rota       MUY TOL (no llega) 
+  10-09 03:19 techo 31064.95 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 4.75    prec +10.55 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:21 techo 31081.75 ndx_zero_vol               -> indefinida fin de datos                             prec  +2.00 | ESTRICTO indefinida MUY TOL indefinida 
+  TOLERANTE     llegadas 12 (base 11, censuradas 1) sostenidos 4 (36.4 %; falso romp. 3) rotas 7 indef 0 | exactos 1 | precision |med| 3.85 (signo 3.85) | recorrido medio 32.4 mediano 33.0 tramo 27.2 | llega opuesta 2/2
+  ESTRICTO      llegadas 13 (base 12, censuradas 1) sostenidos 3 (25.0 %; falso romp. 2) rotas 9 indef 0 | exactos 1 | precision |med| 2.25 (signo 2.25) | recorrido medio 35.1 mediano 41.7 tramo 28.2 | llega opuesta 1/1
+  MUY_TOLERANTE llegadas 11 (base 10, censuradas 1) sostenidos 3 (30.0 %; falso romp. 3) rotas 7 indef 0 | exactos 0 | precision |med| 5.45 (signo 5.45) | recorrido medio 35.9 mediano 41.7 tramo 29.0 | llega opuesta 2/2
+  COBERTURA giros zigzag 20: +-2: 0/16; +-4: 1/16; +-6: 0/16
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana -, a - pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana -, a - pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana -, a - pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana -, a - pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana -, a - pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana -, a - pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana -, a - pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana -, a - pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana -, a - pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana -, a - pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31064.95, a 21.80 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31064.95, a 18.95 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31081.75, a 7.50 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31064.95, a 4.20 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto False (raya mas cercana 31081.75, a 2.25 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31050.72, a 10.72 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     12.0 | azar p5      3.0 p50      7.0 p95    10.05 | percentil 99.2 (n 500)
+     pct_sostenidos           real    36.36 | azar p5      0.0 p50    33.33 p95     80.0 | percentil 54.9 (n 500)
+     pct_exactos              real     9.09 | azar p5      0.0 p50     20.0 p95     60.0 | percentil 24.7 (n 500)
+     pct_rotas                real    63.64 | azar p5     20.0 p50    66.67 p95    100.0 | percentil 45.1 (n 500)
+     precision_mediana_abs    real     3.85 | azar p5     0.41 p50     1.82 p95     6.46 | percentil 78.1 (n 445)
+     recorrido_medio          real     32.4 | azar p5    23.71 p50    41.56 p95    55.55 | percentil 21.5 (n 445)
+     recorrido_mediano        real    33.02 | azar p5    23.71 p50    41.75 p95    51.83 | percentil 26.2 (n 445)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50    100.0 p95    100.0 | percentil 56.2 (n 192)
+     cobertura_pct            real      0.0 | azar p5      0.0 p50     6.25 p95     12.5 | percentil 21.0 (n 500)
+     corridas +-11/19/31 juntas: llegadas 26 sostenidos 44.0 % exactos 32.0 % recorrido medio 32.5 llega opuesta None % cobertura 2.1 %
+     por corrimiento: -31: 0 lleg, None % sost | -19: 4 lleg, 75.0 % sost | -11: 5 lleg, 40.0 % sost | +11: 13 lleg, 25.0 % sost | +19: 4 lleg, 75.0 % sost | +31: 0 lleg, None % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     12.0 | azar p5      4.0 p50      7.0 p95     11.0 | percentil 98.3 (n 500)
+     pct_sostenidos           real    36.36 | azar p5    36.36 p50     50.0 p95    100.0 | percentil 3.2 (n 500)
+     pct_exactos              real     9.09 | azar p5      0.0 p50    28.57 p95     50.0 | percentil 24.7 (n 500)
+     pct_rotas                real    63.64 | azar p5      0.0 p50     50.0 p95    63.64 | percentil 96.8 (n 500)
+     precision_mediana_abs    real     3.85 | azar p5     1.34 p50     1.82 p95     7.05 | percentil 65.8 (n 500)
+     recorrido_medio          real     32.4 | azar p5     32.4 p50    37.83 p95    44.39 | percentil 11.2 (n 500)
+     recorrido_mediano        real    33.02 | azar p5    33.02 p50    39.05 p95    48.39 | percentil 11.2 (n 500)
+     pct_llega_opuesta        real    100.0 | azar p5    100.0 p50    100.0 p95    100.0 | percentil 50.0 (n 365)
+     cobertura_pct            real      0.0 | azar p5      0.0 p50     6.25 p95     6.25 | percentil 22.7 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [A hasta 03:22] r20_zero_ndx (ndx_zero_vol) ventana COMPLETA 2026-10-08 22:00:00 -> 2026-10-09 13:30:00 | velas en la ventana 323 (2026-10-08 22:00:00 -> 2026-10-09 03:22:00) rango 30952.25-31089.25
+  10-09 01:35 techo 31000.56 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 14.75   prec +15.44 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:43 techo 31050.72 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 6.25    prec +12.28 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:58 techo 31064.95 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 5.50    prec +17.05 | ESTRICTO rota       MUY TOL rota       
+  10-09 02:01 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  -0.30 | ESTRICTO sostenido  MUY TOL (no llega) rec 21.80 (desde punta 21.80, tramo 21.80, fin re-rotura) opuesta - llega None
+  10-09 02:24 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +5.45 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 24.30 (desde punta 29.75, tramo 24.30, fin re-rotura) opuesta 31081.75 llega True
+  10-09 02:27 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +7.50 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 41.75 (desde punta 49.25, tramo 21.00, fin fin de datos) opuesta - llega None
+  10-09 02:43 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +2.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 41.75 (desde punta 44.00, tramo 41.75, fin fin de datos) opuesta 31064.95 llega True
+  10-09 03:03 piso  31064.95 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec  +8.95 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:09 piso  31050.71 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec +10.71 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:12 techo 31050.72 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec  +9.78 | ESTRICTO rota       MUY TOL (no llega) 
+  10-09 03:19 techo 31064.95 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 4.75    prec +10.55 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:21 techo 31081.75 ndx_zero_vol               -> indefinida fin de datos                             prec  +2.00 | ESTRICTO indefinida MUY TOL indefinida 
+  TOLERANTE     llegadas 12 (base 11, censuradas 1) sostenidos 4 (36.4 %; falso romp. 3) rotas 7 indef 0 | exactos 1 | precision |med| 3.85 (signo 3.85) | recorrido medio 32.4 mediano 33.0 tramo 27.2 | llega opuesta 2/2
+  ESTRICTO      llegadas 13 (base 12, censuradas 1) sostenidos 3 (25.0 %; falso romp. 2) rotas 9 indef 0 | exactos 1 | precision |med| 2.25 (signo 2.25) | recorrido medio 35.1 mediano 41.7 tramo 28.2 | llega opuesta 1/1
+  MUY_TOLERANTE llegadas 11 (base 10, censuradas 1) sostenidos 3 (30.0 %; falso romp. 3) rotas 7 indef 0 | exactos 0 | precision |med| 5.45 (signo 5.45) | recorrido medio 35.9 mediano 41.7 tramo 29.0 | llega opuesta 2/2
+  COBERTURA giros zigzag 20: +-2: 0/30; +-4: 1/30; +-6: 0/30
+     22:00 max 31033.25 (izq 20.2 der 40.0) aprox 22:00 -> cubierto False (raya mas cercana -, a - pts)
+     22:03 min 30993.25 (izq 40.0 der 79.2) aprox 22:03 -> cubierto False (raya mas cercana -, a - pts)
+     22:36 max 31072.50 (izq 79.2 der 55.5) aprox 22:35 -> cubierto False (raya mas cercana -, a - pts)
+     23:07 min 31017.00 (izq 55.5 der 21.8) aprox 23:06 -> cubierto False (raya mas cercana -, a - pts)
+     23:10 max 31038.75 (izq 21.8 der 48.8) aprox 23:10 -> cubierto False (raya mas cercana -, a - pts)
+     23:30 min 30990.00 (izq 48.8 der 25.8) aprox 23:30 -> cubierto False (raya mas cercana -, a - pts)
+     23:32 max 31015.75 (izq 25.8 der 47.8) aprox 23:32 -> cubierto False (raya mas cercana -, a - pts)
+     23:51 min 30968.00 (izq 47.8 der 34.8) aprox 23:51 -> cubierto False (raya mas cercana -, a - pts)
+     00:01 max 31002.75 (izq 34.8 der 50.5) aprox 00:01 -> cubierto False (raya mas cercana -, a - pts)
+     00:03 min 30952.25 (izq 50.5 der 40.8) aprox 00:03 -> cubierto False (raya mas cercana -, a - pts)
+     00:08 max 30993.00 (izq 40.8 der 30.5) aprox 00:07 -> cubierto False (raya mas cercana -, a - pts)
+     00:09 min 30962.50 (izq 30.5 der 32.8) aprox 00:09 -> cubierto False (raya mas cercana -, a - pts)
+     00:22 max 30995.25 (izq 32.8 der 30.2) aprox 00:21 -> cubierto False (raya mas cercana -, a - pts)
+     00:26 min 30965.00 (izq 30.2 der 64.0) aprox 00:26 -> cubierto False (raya mas cercana -, a - pts)
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana -, a - pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana -, a - pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana -, a - pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana -, a - pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana -, a - pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana -, a - pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana -, a - pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana -, a - pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana -, a - pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana -, a - pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31064.95, a 21.80 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31064.95, a 18.95 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31081.75, a 7.50 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31064.95, a 4.20 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto False (raya mas cercana 31081.75, a 2.25 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31050.72, a 10.72 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     12.0 | azar p5      3.0 p50      7.0 p95    10.05 | percentil 99.2 (n 500)
+     pct_sostenidos           real    36.36 | azar p5      0.0 p50    33.33 p95     80.0 | percentil 54.9 (n 500)
+     pct_exactos              real     9.09 | azar p5      0.0 p50     20.0 p95     60.0 | percentil 24.7 (n 500)
+     pct_rotas                real    63.64 | azar p5     20.0 p50    66.67 p95    100.0 | percentil 45.1 (n 500)
+     precision_mediana_abs    real     3.85 | azar p5     0.41 p50     1.82 p95     6.46 | percentil 78.1 (n 445)
+     recorrido_medio          real     32.4 | azar p5    23.71 p50    41.56 p95    55.55 | percentil 21.5 (n 445)
+     recorrido_mediano        real    33.02 | azar p5    23.71 p50    41.75 p95    51.83 | percentil 26.2 (n 445)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50    100.0 p95    100.0 | percentil 56.2 (n 192)
+     cobertura_pct            real      0.0 | azar p5      0.0 p50     3.33 p95     6.67 | percentil 21.0 (n 500)
+     corridas +-11/19/31 juntas: llegadas 26 sostenidos 44.0 % exactos 32.0 % recorrido medio 32.5 llega opuesta None % cobertura 1.1 %
+     por corrimiento: -31: 0 lleg, None % sost | -19: 4 lleg, 75.0 % sost | -11: 5 lleg, 40.0 % sost | +11: 13 lleg, 25.0 % sost | +19: 4 lleg, 75.0 % sost | +31: 0 lleg, None % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     12.0 | azar p5      4.0 p50      7.0 p95     11.0 | percentil 98.3 (n 500)
+     pct_sostenidos           real    36.36 | azar p5    36.36 p50     50.0 p95    100.0 | percentil 3.2 (n 500)
+     pct_exactos              real     9.09 | azar p5      0.0 p50    28.57 p95     50.0 | percentil 24.7 (n 500)
+     pct_rotas                real    63.64 | azar p5      0.0 p50     50.0 p95    63.64 | percentil 96.8 (n 500)
+     precision_mediana_abs    real     3.85 | azar p5     1.34 p50     1.82 p95     7.05 | percentil 65.8 (n 500)
+     recorrido_medio          real     32.4 | azar p5     32.4 p50    37.83 p95    44.39 | percentil 11.2 (n 500)
+     recorrido_mediano        real    33.02 | azar p5    33.02 p50    39.05 p95    48.39 | percentil 11.2 (n 500)
+     pct_llega_opuesta        real    100.0 | azar p5    100.0 p50    100.0 p95    100.0 | percentil 50.0 (n 365)
+     cobertura_pct            real      0.0 | azar p5      0.0 p50     3.33 p95     3.33 | percentil 22.7 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [B hasta 04:33] r20_doms (dom0+dom1) ventana CONGELADA 2026-10-09 00:35:00 -> 2026-10-09 08:30:00 | velas en la ventana 239 (2026-10-09 00:35:00 -> 2026-10-09 04:33:00) rango 30967.00-31134.00
+  10-09 01:42 techo 31042.06 dom1                       -> rota       cierre mas alla de +5 con cuerpo 4.75    prec  +9.69 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:45 piso  31042.06 dom1                       -> sostenido  giro de 15 pts                           prec  -1.44 | ESTRICTO sostenido  MUY TOL (no llega) rec 91.94 (desde punta 91.94, tramo 47.19, fin fin de datos) opuesta 31083.50 llega True
+  10-09 02:00 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -1.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 18.25, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:02 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +3.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 46.75, tramo 20.00, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:10 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -0.75 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 37.50, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:27 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +5.75 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 43.50 (desde punta 49.25, tramo 22.75, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:45 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.75, tramo 15.75, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:56 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 44.00, tramo 43.50, fin re-rotura) opuesta 31042.06 llega True
+  10-09 03:10 piso  31042.06 dom1                       -> sostenido  giro de 15 pts                           prec  +2.06 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 91.94 (desde punta 94.00, tramo 91.94, fin fin de datos) opuesta 31083.50 llega True
+  10-09 03:21 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 20.00 (desde punta 20.25, tramo 20.00, fin re-rotura) opuesta 31042.06 llega False
+  10-09 03:35 techo 31083.50 dom0+dom1                  -> rota       cierre mas alla de +5 con cuerpo 5.00    prec  +9.50 | ESTRICTO rota       MUY TOL rota       
+  TOLERANTE     llegadas 11 (base 11, censuradas 0) sostenidos 9 (81.8 %; falso romp. 3) rotas 2 indef 0 | exactos 6 | precision |med| 1.44 (signo 0.25) | recorrido medio 51.7 mediano 43.5 tramo 35.2 | llega opuesta 8/9
+  ESTRICTO      llegadas 12 (base 12, censuradas 0) sostenidos 9 (75.0 %; falso romp. 2) rotas 3 indef 0 | exactos 7 | precision |med| 1.44 (signo 0.25) | recorrido medio 49.7 mediano 43.5 tramo 35.2 | llega opuesta 5/9
+  MUY_TOLERANTE llegadas 10 (base 10, censuradas 0) sostenidos 8 (80.0 %; falso romp. 3) rotas 2 indef 0 | exactos 5 | precision |med| 1.13 (signo 0.37) | recorrido medio 46.6 mediano 43.5 tramo 33.7 | llega opuesta 7/8
+  COBERTURA giros zigzag 20: +-2: 2/19; +-4: 5/19; +-6: 6/19
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31083.50, a 54.50 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31083.50, a 77.25 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31042.06, a 8.06 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31042.06, a 40.31 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31042.06, a 14.31 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30917.72, a 56.78 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30917.72, a 77.28 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30959.17, a 7.83 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31083.50, a 66.75 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30917.72, a 63.53 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31083.50, a 3.25 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31042.06, a 3.94 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31083.50, a 5.75 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31042.06, a 18.69 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto True (raya mas cercana 31083.50, a 0.50 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31042.06, a 2.06 pts)
+     03:21 max 31083.75 (izq 43.8 der 20.2) aprox 03:21 -> cubierto True (raya mas cercana 31083.50, a 0.25 pts)
+     03:33 min 31063.50 (izq 20.2 der 70.5) aprox 03:33 -> cubierto False (raya mas cercana 31083.50, a 20.00 pts)
+     04:14 max 31134.00 (izq 70.5 der 22.0) aprox 04:13 -> cubierto False (raya mas cercana 31083.50, a 50.50 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     11.0 | azar p5      0.0 p50      6.0 p95     14.0 | percentil 84.6 (n 500)
+     pct_sostenidos           real    81.82 | azar p5      0.0 p50     40.0 p95    100.0 | percentil 90.8 (n 452)
+     pct_exactos              real    54.55 | azar p5      0.0 p50     20.0 p95    64.37 | percentil 92.3 (n 452)
+     pct_rotas                real    18.18 | azar p5      0.0 p50     60.0 p95    100.0 | percentil 9.2 (n 452)
+     precision_mediana_abs    real     1.44 | azar p5     0.55 p50     2.08 p95     6.88 | percentil 31.4 (n 411)
+     recorrido_medio          real    51.65 | azar p5    21.03 p50    46.28 p95   148.32 | percentil 55.5 (n 411)
+     recorrido_mediano        real     43.5 | azar p5    18.97 p50    39.48 p95   149.63 | percentil 59.1 (n 411)
+     pct_llega_opuesta        real    88.89 | azar p5      0.0 p50      0.0 p95    100.0 | percentil 74.1 (n 297)
+     cobertura_pct            real    10.53 | azar p5      0.0 p50     5.26 p95    10.53 | percentil 90.3 (n 500)
+     corridas +-11/19/31 juntas: llegadas 54 sostenidos 31.5 % exactos 14.8 % recorrido medio 41.5 llega opuesta 12.5 % cobertura 1.8 %
+     por corrimiento: -31: 5 lleg, 40.0 % sost | -19: 14 lleg, 57.0 % sost | -11: 9 lleg, 11.0 % sost | +11: 6 lleg, 33.0 % sost | +19: 10 lleg, 30.0 % sost | +31: 10 lleg, 10.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     11.0 | azar p5      0.0 p50      7.0 p95     15.0 | percentil 69.5 (n 500)
+     pct_sostenidos           real    81.82 | azar p5     50.0 p50    73.33 p95    100.0 | percentil 72.5 (n 465)
+     pct_exactos              real    54.55 | azar p5      0.0 p50     40.0 p95     62.5 | percentil 83.7 (n 465)
+     pct_rotas                real    18.18 | azar p5      0.0 p50    26.67 p95     50.0 | percentil 27.5 (n 465)
+     precision_mediana_abs    real     1.44 | azar p5     0.75 p50      1.5 p95     8.75 | percentil 20.0 (n 465)
+     recorrido_medio          real    51.65 | azar p5    17.31 p50    51.65 p95    91.94 | percentil 51.2 (n 465)
+     recorrido_mediano        real     43.5 | azar p5    17.31 p50     43.5 p95    91.94 | percentil 39.9 (n 465)
+     pct_llega_opuesta        real    88.89 | azar p5      0.0 p50      0.0 p95    88.89 | percentil 88.5 (n 368)
+     cobertura_pct            real    10.53 | azar p5      0.0 p50      0.0 p95    10.53 | percentil 76.3 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [B hasta 04:33] r20_doms (dom0+dom1) ventana COMPLETA 2026-10-08 22:00:00 -> 2026-10-09 13:30:00 | velas en la ventana 394 (2026-10-08 22:00:00 -> 2026-10-09 04:33:00) rango 30952.25-31134.00
+  10-08 22:05 techo 31022.97 dom0+dom1                  -> rota       cierre mas alla de +5 con cuerpo 10.00   prec  +5.53 | ESTRICTO rota       MUY TOL rota       
+  10-08 22:08 techo 31027.12 dom1                       -> rota       cierre mas alla de +5 con cuerpo 6.00    prec  +9.38 | ESTRICTO rota       MUY TOL rota       
+  10-08 22:15 techo 31054.84 dom0                       -> sostenido  giro de 15 pts                           prec  +0.16 | ESTRICTO sostenido  MUY TOL sostenido  rec 15.59 (desde punta 15.75, tramo 15.59, fin re-rotura) opuesta 31013.44 llega False
+  10-08 22:25 techo 31050.70 dom0                       -> rota       3 cierres seguidos mas alla              prec  +6.55 | ESTRICTO rota       MUY TOL rota       
+  10-08 23:10 techo 31037.43 dom0                       -> sostenido  giro de 15 pts                           prec  +1.32 | ESTRICTO sostenido  MUY TOL sostenido  rec 85.18 (desde punta 86.50, tramo 85.18, fin re-rotura) opuesta 30996.04 llega True
+  10-08 23:20 techo 31032.04 dom0                       -> sostenido  giro de 15 pts                           prec  +0.21 | ESTRICTO sostenido  MUY TOL sostenido  rec 79.79 (desde punta 80.00, tramo 79.79, fin re-rotura) opuesta 30990.66 llega True
+  10-08 23:30 piso  30993.56 dom1                       -> sostenido  giro de 15 pts                           prec  +3.56 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 22.19 (desde punta 25.75, tramo 22.19, fin re-rotura) opuesta 31034.94 llega False
+  10-08 23:37 piso  30997.29 dom1                       -> sostenido  giro de 15 pts                           prec  -0.21 | ESTRICTO sostenido  MUY TOL sostenido  rec 15.46 (desde punta 15.46, tramo 15.46, fin re-rotura) opuesta 31038.67 llega False
+  10-09 01:42 techo 31042.06 dom1                       -> rota       cierre mas alla de +5 con cuerpo 4.75    prec  +9.69 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:45 piso  31042.06 dom1                       -> sostenido  giro de 15 pts                           prec  -1.44 | ESTRICTO sostenido  MUY TOL (no llega) rec 91.94 (desde punta 91.94, tramo 47.19, fin fin de datos) opuesta 31083.50 llega True
+  10-09 02:00 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -1.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 18.25, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:02 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +3.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 46.75, tramo 20.00, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:10 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -0.75 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 37.50, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:27 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +5.75 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 43.50 (desde punta 49.25, tramo 22.75, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:45 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.75, tramo 15.75, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:56 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 44.00, tramo 43.50, fin re-rotura) opuesta 31042.06 llega True
+  10-09 03:10 piso  31042.06 dom1                       -> sostenido  giro de 15 pts                           prec  +2.06 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 91.94 (desde punta 94.00, tramo 91.94, fin fin de datos) opuesta 31083.50 llega True
+  10-09 03:21 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 20.00 (desde punta 20.25, tramo 20.00, fin re-rotura) opuesta 31042.06 llega False
+  10-09 03:35 techo 31083.50 dom0+dom1                  -> rota       cierre mas alla de +5 con cuerpo 5.00    prec  +9.50 | ESTRICTO rota       MUY TOL rota       
+  TOLERANTE     llegadas 19 (base 19, censuradas 0) sostenidos 14 (73.7 %; falso romp. 4) rotas 5 indef 0 | exactos 10 | precision |med| 1.04 (signo 0.25) | recorrido medio 48.8 mediano 43.5 tramo 38.2 | llega opuesta 10/14
+  ESTRICTO      llegadas 20 (base 20, censuradas 0) sostenidos 14 (70.0 %; falso romp. 3) rotas 6 indef 0 | exactos 11 | precision |med| 1.04 (signo 0.25) | recorrido medio 47.5 mediano 40.5 tramo 38.2 | llega opuesta 7/14
+  MUY_TOLERANTE llegadas 18 (base 18, censuradas 0) sostenidos 13 (72.2 %; falso romp. 4) rotas 5 indef 0 | exactos 9 | precision |med| 0.75 (signo 0.25) | recorrido medio 45.5 mediano 43.5 tramo 37.5 | llega opuesta 9/13
+  COBERTURA giros zigzag 20: +-2: 3/33; +-4: 8/33; +-6: 10/33
+     22:00 max 31033.25 (izq 20.2 der 40.0) aprox 22:00 -> cubierto False (raya mas cercana 31030.44, a 2.81 pts)
+     22:03 min 30993.25 (izq 40.0 der 79.2) aprox 22:03 -> cubierto False (raya mas cercana 31022.97, a 29.72 pts)
+     22:36 max 31072.50 (izq 79.2 der 55.5) aprox 22:35 -> cubierto False (raya mas cercana 31012.99, a 59.51 pts)
+     23:07 min 31017.00 (izq 55.5 der 21.8) aprox 23:06 -> cubierto False (raya mas cercana 31037.43, a 20.43 pts)
+     23:10 max 31038.75 (izq 21.8 der 48.8) aprox 23:10 -> cubierto True (raya mas cercana 31037.43, a 1.32 pts)
+     23:30 min 30990.00 (izq 48.8 der 25.8) aprox 23:30 -> cubierto False (raya mas cercana 30993.56, a 3.56 pts)
+     23:32 max 31015.75 (izq 25.8 der 47.8) aprox 23:32 -> cubierto False (raya mas cercana 30995.63, a 20.12 pts)
+     23:51 min 30968.00 (izq 47.8 der 34.8) aprox 23:51 -> cubierto False (raya mas cercana 30895.41, a 72.59 pts)
+     00:01 max 31002.75 (izq 34.8 der 50.5) aprox 00:01 -> cubierto False (raya mas cercana 31067.30, a 64.55 pts)
+     00:03 min 30952.25 (izq 50.5 der 40.8) aprox 00:03 -> cubierto False (raya mas cercana 30943.03, a 9.22 pts)
+     00:08 max 30993.00 (izq 40.8 der 30.5) aprox 00:07 -> cubierto False (raya mas cercana 30918.14, a 74.86 pts)
+     00:09 min 30962.50 (izq 30.5 der 32.8) aprox 00:09 -> cubierto False (raya mas cercana 30925.58, a 36.92 pts)
+     00:22 max 30995.25 (izq 32.8 der 30.2) aprox 00:21 -> cubierto False (raya mas cercana 30917.72, a 77.53 pts)
+     00:26 min 30965.00 (izq 30.2 der 64.0) aprox 00:26 -> cubierto False (raya mas cercana 30917.72, a 47.28 pts)
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31083.50, a 54.50 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31083.50, a 77.25 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31042.06, a 8.06 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31042.06, a 40.31 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31042.06, a 14.31 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30917.72, a 56.78 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30917.72, a 77.28 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30959.17, a 7.83 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31083.50, a 66.75 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30917.72, a 63.53 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31083.50, a 3.25 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31042.06, a 3.94 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31083.50, a 5.75 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31042.06, a 18.69 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto True (raya mas cercana 31083.50, a 0.50 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31042.06, a 2.06 pts)
+     03:21 max 31083.75 (izq 43.8 der 20.2) aprox 03:21 -> cubierto True (raya mas cercana 31083.50, a 0.25 pts)
+     03:33 min 31063.50 (izq 20.2 der 70.5) aprox 03:33 -> cubierto False (raya mas cercana 31083.50, a 20.00 pts)
+     04:14 max 31134.00 (izq 70.5 der 22.0) aprox 04:13 -> cubierto False (raya mas cercana 31083.50, a 50.50 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     19.0 | azar p5      4.0 p50     12.0 p95     22.0 | percentil 87.5 (n 500)
+     pct_sostenidos           real    73.68 | azar p5     20.0 p50    46.15 p95    76.92 | percentil 93.2 (n 500)
+     pct_exactos              real    52.63 | azar p5      0.0 p50    21.58 p95     50.0 | percentil 98.0 (n 500)
+     pct_rotas                real    26.32 | azar p5    23.08 p50    53.85 p95     80.0 | percentil 6.8 (n 500)
+     precision_mediana_abs    real     1.04 | azar p5      0.8 p50      2.5 p95     5.93 | percentil 9.4 (n 498)
+     recorrido_medio          real    48.79 | azar p5    25.53 p50    53.24 p95    104.7 | percentil 40.8 (n 498)
+     recorrido_mediano        real     43.5 | azar p5    20.43 p50    39.83 p95   105.41 | percentil 58.4 (n 498)
+     pct_llega_opuesta        real    71.43 | azar p5      0.0 p50     50.0 p95    100.0 | percentil 76.3 (n 478)
+     cobertura_pct            real     9.09 | azar p5      0.0 p50     3.03 p95     9.09 | percentil 90.5 (n 500)
+     corridas +-11/19/31 juntas: llegadas 89 sostenidos 34.8 % exactos 20.2 % recorrido medio 49.4 llega opuesta 25.0 % cobertura 3.5 %
+     por corrimiento: -31: 11 lleg, 45.0 % sost | -19: 19 lleg, 53.0 % sost | -11: 14 lleg, 14.0 % sost | +11: 13 lleg, 46.0 % sost | +19: 17 lleg, 29.0 % sost | +31: 15 lleg, 20.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     19.0 | azar p5      6.0 p50     14.0 p95     22.0 | percentil 76.8 (n 500)
+     pct_sostenidos           real    73.68 | azar p5    44.44 p50    65.22 p95     80.0 | percentil 82.3 (n 500)
+     pct_exactos              real    52.63 | azar p5     25.0 p50     40.0 p95    56.25 | percentil 86.9 (n 500)
+     pct_rotas                real    26.32 | azar p5     20.0 p50    34.78 p95    55.56 | percentil 17.7 (n 500)
+     precision_mediana_abs    real     1.04 | azar p5     0.57 p50     1.32 p95     2.07 | percentil 33.9 (n 500)
+     recorrido_medio          real    48.79 | azar p5    34.65 p50    47.58 p95    67.69 | percentil 54.9 (n 500)
+     recorrido_mediano        real     43.5 | azar p5    21.68 p50     43.5 p95    82.48 | percentil 48.5 (n 500)
+     pct_llega_opuesta        real    71.43 | azar p5      0.0 p50    33.33 p95    81.82 | percentil 78.7 (n 492)
+     cobertura_pct            real     9.09 | azar p5     3.03 p50     3.03 p95     9.09 | percentil 76.3 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [B hasta 04:33] r20_zero (zero_vol) ventana CONGELADA 2026-10-09 00:35:00 -> 2026-10-09 08:30:00 | velas en la ventana 239 (2026-10-09 00:35:00 -> 2026-10-09 04:33:00) rango 30967.00-31134.00
+  10-09 00:39 piso  31014.03 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 10.50   prec  +7.78 | ESTRICTO rota       MUY TOL sostenido  
+  10-09 00:48 piso  31013.97 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 13.50   prec +12.22 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:58 piso  30987.14 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 14.50   prec +10.64 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:09 techo 30987.24 zero_vol                   -> sostenido  giro de 15 pts                           prec  +7.76 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 20.24 (desde punta 28.00, tramo 20.24, fin re-rotura) opuesta - llega None
+  10-09 01:23 techo 30987.22 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 16.50   prec +19.03 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:27 techo 31014.10 zero_vol                   -> sostenido  giro de 15 pts                           prec  +2.65 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 32.85 (desde punta 35.50, tramo 32.85, fin re-rotura) opuesta - llega None
+  10-09 01:32 piso  30987.16 zero_vol                   -> sostenido  giro de 15 pts                           prec  +5.91 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 146.84 (desde punta 152.75, tramo 146.84, fin fin de datos) opuesta - llega None
+  10-09 04:16 piso  31114.91 zero_vol                   -> sostenido  giro de 15 pts                           prec  +2.91 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 16.09 (desde punta 19.00, tramo 16.09, fin fin de datos) opuesta - llega None
+  TOLERANTE     llegadas 8 (base 8, censuradas 0) sostenidos 4 (50.0 %; falso romp. 4) rotas 4 indef 0 | exactos 0 | precision |med| 4.41 (signo 4.41) | recorrido medio 54.0 mediano 26.5 tramo 54.0 | llega opuesta 0/0
+  ESTRICTO      llegadas 8 (base 8, censuradas 0) sostenidos 2 (25.0 %; falso romp. 2) rotas 6 indef 0 | exactos 0 | precision |med| 2.78 (signo 2.78) | recorrido medio 24.5 mediano 24.5 tramo 24.5 | llega opuesta 0/0
+  MUY_TOLERANTE llegadas 8 (base 8, censuradas 0) sostenidos 5 (62.5 %; falso romp. 5) rotas 3 indef 0 | exactos 0 | precision |med| 5.91 (signo 5.91) | recorrido medio 47.2 mediano 20.2 tramo 47.2 | llega opuesta 0/0
+  COBERTURA giros zigzag 20: +-2: 0/19; +-4: 1/19; +-6: 2/19
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31014.03, a 14.97 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31014.03, a 7.78 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31013.96, a 20.04 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31014.01, a 12.26 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31014.02, a 13.73 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30987.17, a 12.67 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30987.20, a 7.80 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30987.25, a 20.25 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31014.10, a 2.65 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30987.16, a 5.91 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31115.09, a 28.34 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31013.75, a 32.25 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31115.06, a 25.81 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31115.14, a 54.39 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto False (raya mas cercana 31115.05, a 31.05 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31013.82, a 26.18 pts)
+     03:21 max 31083.75 (izq 43.8 der 20.2) aprox 03:21 -> cubierto False (raya mas cercana 31115.09, a 31.34 pts)
+     03:33 min 31063.50 (izq 20.2 der 70.5) aprox 03:33 -> cubierto False (raya mas cercana 31115.11, a 51.61 pts)
+     04:14 max 31134.00 (izq 70.5 der 22.0) aprox 04:13 -> cubierto False (raya mas cercana 31114.86, a 19.14 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real      8.0 | azar p5      0.0 p50      1.0 p95      8.0 | percentil 94.1 (n 500)
+     pct_sostenidos           real     50.0 | azar p5      0.0 p50    33.33 p95    100.0 | percentil 66.2 (n 314)
+     pct_exactos              real      0.0 | azar p5      0.0 p50      0.0 p95     62.5 | percentil 26.3 (n 314)
+     pct_rotas                real     50.0 | azar p5      0.0 p50    66.67 p95    100.0 | percentil 33.8 (n 314)
+     precision_mediana_abs    real     4.41 | azar p5     0.29 p50     1.98 p95      9.3 | percentil 75.8 (n 215)
+     recorrido_medio          real     54.0 | azar p5    19.43 p50    40.95 p95    148.5 | percentil 62.3 (n 215)
+     recorrido_mediano        real    26.54 | azar p5     18.1 p50    31.02 p95    148.5 | percentil 39.1 (n 215)
+     pct_llega_opuesta        real     None | azar p5     None p50     None p95     None | percentil None (n 15)
+     cobertura_pct            real      0.0 | azar p5      0.0 p50      0.0 p95     5.26 | percentil 39.1 (n 500)
+     corridas +-11/19/31 juntas: llegadas 32 sostenidos 50.0 % exactos 34.4 % recorrido medio 51.9 llega opuesta None % cobertura 7.0 %
+     por corrimiento: -31: 7 lleg, 86.0 % sost | -19: 5 lleg, 20.0 % sost | -11: 5 lleg, 40.0 % sost | +11: 8 lleg, 25.0 % sost | +19: 4 lleg, 75.0 % sost | +31: 3 lleg, 67.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real      8.0 | azar p5      3.0 p50      7.0 p95     11.0 | percentil 63.0 (n 500)
+     pct_sostenidos           real     50.0 | azar p5    33.33 p50     50.0 p95    60.33 | percentil 46.6 (n 500)
+     pct_exactos              real      0.0 | azar p5      0.0 p50    18.18 p95     40.0 | percentil 23.9 (n 500)
+     pct_rotas                real     50.0 | azar p5    39.67 p50     50.0 p95    66.67 | percentil 53.4 (n 500)
+     precision_mediana_abs    real     4.41 | azar p5     1.66 p50     2.78 p95     5.91 | percentil 63.7 (n 500)
+     recorrido_medio          real     54.0 | azar p5    24.47 p50    57.35 p95    67.83 | percentil 42.6 (n 500)
+     recorrido_mediano        real    26.54 | azar p5    22.98 p50    26.09 p95    32.85 | percentil 72.0 (n 500)
+     pct_llega_opuesta        real     None | azar p5     None p50     None p95     None | percentil None (n 0)
+     cobertura_pct            real      0.0 | azar p5      0.0 p50     5.26 p95     5.26 | percentil 23.9 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [B hasta 04:33] r20_zero (zero_vol) ventana COMPLETA 2026-10-08 22:00:00 -> 2026-10-09 13:30:00 | velas en la ventana 394 (2026-10-08 22:00:00 -> 2026-10-09 04:33:00) rango 30952.25-31134.00
+  10-08 22:03 piso  30994.92 zero_vol                   -> sostenido  giro de 15 pts                           prec  +1.67 | ESTRICTO sostenido  MUY TOL sostenido  rec 77.58 (desde punta 79.25, tramo 77.58, fin re-rotura) opuesta - llega None
+  10-08 22:35 techo 31073.68 zero_vol                   -> sostenido  giro de 15 pts                           prec  -1.18 | ESTRICTO sostenido  MUY TOL sostenido  rec 121.43 (desde punta 121.43, tramo 121.43, fin re-rotura) opuesta 31052.10 llega True
+  10-08 23:43 piso  30993.70 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 6.00    prec +11.70 | ESTRICTO rota       MUY TOL rota       
+  10-08 23:50 piso  30978.06 zero_vol                   -> sostenido  giro de 15 pts                           prec +10.06 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 24.69 (desde punta 34.75, tramo 16.94, fin re-rotura) opuesta 30991.68 llega True
+  10-08 23:53 techo 30991.68 zero_vol                   -> sostenido  giro de 15 pts                           prec  +3.32 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 39.43 (desde punta 42.75, tramo 15.43, fin re-rotura) opuesta 30987.14 llega True
+  10-08 23:57 techo 30987.14 zero_vol                   -> sostenido  giro de 15 pts                           prec  +4.36 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 34.89 (desde punta 39.25, tramo 16.64, fin re-rotura) opuesta - llega None
+  10-09 00:05 techo 30971.09 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 17.00   prec +21.66 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:07 techo 30987.70 zero_vol                   -> sostenido  giro de 15 pts                           prec  +5.30 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 25.20 (desde punta 30.50, tramo 25.20, fin re-rotura) opuesta - llega None
+  10-09 00:13 techo 30983.10 zero_vol                   -> sostenido  giro de 15 pts                           prec  +1.65 | ESTRICTO sostenido  MUY TOL sostenido  rec 18.85 (desde punta 20.50, tramo 16.85, fin re-rotura) opuesta - llega None
+  10-09 00:15 techo 30983.15 zero_vol                   -> rota       3 cierres seguidos mas alla              prec  +7.85 | ESTRICTO rota       MUY TOL sostenido  
+  10-09 00:28 techo 30987.27 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 12.00   prec +10.73 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:31 techo 31014.06 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 10.75   prec +12.94 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:39 piso  31014.03 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 10.50   prec  +7.78 | ESTRICTO rota       MUY TOL sostenido  
+  10-09 00:48 piso  31013.97 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 13.50   prec +12.22 | ESTRICTO rota       MUY TOL rota       
+  10-09 00:58 piso  30987.14 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 14.50   prec +10.64 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:09 techo 30987.24 zero_vol                   -> sostenido  giro de 15 pts                           prec  +7.76 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 20.24 (desde punta 28.00, tramo 20.24, fin re-rotura) opuesta - llega None
+  10-09 01:23 techo 30987.22 zero_vol                   -> rota       cierre mas alla de +5 con cuerpo 16.50   prec +19.03 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:27 techo 31014.10 zero_vol                   -> sostenido  giro de 15 pts                           prec  +2.65 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 32.85 (desde punta 35.50, tramo 32.85, fin re-rotura) opuesta - llega None
+  10-09 01:32 piso  30987.16 zero_vol                   -> sostenido  giro de 15 pts                           prec  +5.91 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 146.84 (desde punta 152.75, tramo 146.84, fin fin de datos) opuesta - llega None
+  10-09 04:16 piso  31114.91 zero_vol                   -> sostenido  giro de 15 pts                           prec  +2.91 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 16.09 (desde punta 19.00, tramo 16.09, fin fin de datos) opuesta - llega None
+  TOLERANTE     llegadas 20 (base 20, censuradas 0) sostenidos 11 (55.0 %; falso romp. 8) rotas 9 indef 0 | exactos 3 | precision |med| 3.32 (signo 3.32) | recorrido medio 50.7 mediano 32.8 tramo 46.0 | llega opuesta 3/3
+  ESTRICTO      llegadas 20 (base 20, censuradas 0) sostenidos 6 (30.0 %; falso romp. 3) rotas 14 indef 0 | exactos 3 | precision |med| 2.16 (signo 2.16) | recorrido medio 47.0 mediano 25.8 tramo 46.7 | llega opuesta 2/2
+  MUY_TOLERANTE llegadas 20 (base 20, censuradas 0) sostenidos 13 (65.0 %; falso romp. 10) rotas 7 indef 0 | exactos 3 | precision |med| 4.36 (signo 4.36) | recorrido medio 45.9 mediano 25.2 tramo 41.9 | llega opuesta 3/3
+  COBERTURA giros zigzag 20: +-2: 2/33; +-4: 3/33; +-6: 5/33
+     22:00 max 31033.25 (izq 20.2 der 40.0) aprox 22:00 -> cubierto False (raya mas cercana 31002.33, a 30.92 pts)
+     22:03 min 30993.25 (izq 40.0 der 79.2) aprox 22:03 -> cubierto True (raya mas cercana 30994.92, a 1.67 pts)
+     22:36 max 31072.50 (izq 79.2 der 55.5) aprox 22:35 -> cubierto True (raya mas cercana 31073.68, a 1.18 pts)
+     23:07 min 31017.00 (izq 55.5 der 21.8) aprox 23:06 -> cubierto False (raya mas cercana 31068.93, a 51.93 pts)
+     23:10 max 31038.75 (izq 21.8 der 48.8) aprox 23:10 -> cubierto False (raya mas cercana 31068.92, a 30.17 pts)
+     23:30 min 30990.00 (izq 48.8 der 25.8) aprox 23:30 -> cubierto False (raya mas cercana 30965.39, a 24.61 pts)
+     23:32 max 31015.75 (izq 25.8 der 47.8) aprox 23:32 -> cubierto False (raya mas cercana 30967.46, a 48.29 pts)
+     23:51 min 30968.00 (izq 47.8 der 34.8) aprox 23:51 -> cubierto False (raya mas cercana 30991.73, a 23.73 pts)
+     00:01 max 31002.75 (izq 34.8 der 50.5) aprox 00:01 -> cubierto False (raya mas cercana 30997.88, a 4.87 pts)
+     00:03 min 30952.25 (izq 50.5 der 40.8) aprox 00:03 -> cubierto False (raya mas cercana 30971.09, a 18.84 pts)
+     00:08 max 30993.00 (izq 40.8 der 30.5) aprox 00:07 -> cubierto False (raya mas cercana 30987.70, a 5.30 pts)
+     00:09 min 30962.50 (izq 30.5 der 32.8) aprox 00:09 -> cubierto False (raya mas cercana 30995.19, a 32.69 pts)
+     00:22 max 30995.25 (izq 32.8 der 30.2) aprox 00:21 -> cubierto False (raya mas cercana 30987.19, a 8.06 pts)
+     00:26 min 30965.00 (izq 30.2 der 64.0) aprox 00:26 -> cubierto False (raya mas cercana 30987.31, a 22.31 pts)
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31014.03, a 14.97 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31014.03, a 7.78 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31013.96, a 20.04 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31014.01, a 12.26 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31014.02, a 13.73 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30987.17, a 12.67 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30987.20, a 7.80 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30987.25, a 20.25 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31014.10, a 2.65 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30987.16, a 5.91 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31115.09, a 28.34 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31013.75, a 32.25 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31115.06, a 25.81 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31115.14, a 54.39 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto False (raya mas cercana 31115.05, a 31.05 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31013.82, a 26.18 pts)
+     03:21 max 31083.75 (izq 43.8 der 20.2) aprox 03:21 -> cubierto False (raya mas cercana 31115.09, a 31.34 pts)
+     03:33 min 31063.50 (izq 20.2 der 70.5) aprox 03:33 -> cubierto False (raya mas cercana 31115.11, a 51.61 pts)
+     04:14 max 31134.00 (izq 70.5 der 22.0) aprox 04:13 -> cubierto False (raya mas cercana 31114.86, a 19.14 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     20.0 | azar p5      0.0 p50      3.0 p95     11.0 | percentil 100.0 (n 500)
+     pct_sostenidos           real     55.0 | azar p5      0.0 p50    44.44 p95    100.0 | percentil 70.3 (n 464)
+     pct_exactos              real     15.0 | azar p5      0.0 p50    14.29 p95    66.67 | percentil 51.5 (n 464)
+     pct_rotas                real     45.0 | azar p5      0.0 p50    55.56 p95    100.0 | percentil 29.7 (n 464)
+     precision_mediana_abs    real     3.32 | azar p5      0.5 p50     2.57 p95      9.1 | percentil 64.0 (n 375)
+     recorrido_medio          real    50.74 | azar p5    17.98 p50    47.06 p95   123.91 | percentil 56.5 (n 375)
+     recorrido_mediano        real    32.85 | azar p5    17.82 p50    39.39 p95   155.11 | percentil 41.9 (n 375)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50      0.0 p95    100.0 | percentil 86.9 (n 122)
+     cobertura_pct            real     6.06 | azar p5      0.0 p50      0.0 p95     6.06 | percentil 96.3 (n 500)
+     corridas +-11/19/31 juntas: llegadas 68 sostenidos 51.5 % exactos 29.4 % recorrido medio 68.3 llega opuesta 100.0 % cobertura 6.1 %
+     por corrimiento: -31: 13 lleg, 77.0 % sost | -19: 12 lleg, 42.0 % sost | -11: 15 lleg, 47.0 % sost | +11: 13 lleg, 38.0 % sost | +19: 8 lleg, 50.0 % sost | +31: 7 lleg, 57.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     20.0 | azar p5     11.0 p50     16.0 p95     24.0 | percentil 71.5 (n 500)
+     pct_sostenidos           real     55.0 | azar p5    36.36 p50     50.0 p95    61.54 | percentil 77.5 (n 500)
+     pct_exactos              real     15.0 | azar p5     4.99 p50    18.18 p95    35.71 | percentil 36.8 (n 500)
+     pct_rotas                real     45.0 | azar p5    38.46 p50     50.0 p95    63.64 | percentil 22.5 (n 500)
+     precision_mediana_abs    real     3.32 | azar p5     1.66 p50     3.32 p95     4.83 | percentil 52.4 (n 500)
+     recorrido_medio          real    50.74 | azar p5    36.34 p50    55.56 p95    75.18 | percentil 37.0 (n 500)
+     recorrido_mediano        real    32.85 | azar p5    21.76 p50    26.09 p95     58.5 | percentil 73.0 (n 500)
+     pct_llega_opuesta        real    100.0 | azar p5      0.0 p50    100.0 p95    100.0 | percentil 64.3 (n 414)
+     cobertura_pct            real     6.06 | azar p5      0.0 p50     4.55 p95     9.09 | percentil 68.2 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [B hasta 04:33] r20_doms+ndx (dom0+dom1+ndx_dom0+ndx_dom1) ventana CONGELADA 2026-10-09 00:35:00 -> 2026-10-09 08:30:00 | velas en la ventana 239 (2026-10-09 00:35:00 -> 2026-10-09 04:33:00) rango 30967.00-31134.00
+  10-09 01:42 techo 31042.06 dom1+ndx_dom0+ndx_dom1     -> rota       cierre mas alla de +5 con cuerpo 4.75    prec  +9.69 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:45 piso  31042.06 dom1+ndx_dom0+ndx_dom1     -> sostenido  giro de 15 pts                           prec  -1.44 | ESTRICTO sostenido  MUY TOL (no llega) rec 91.94 (desde punta 91.94, tramo 47.19, fin fin de datos) opuesta 31083.50 llega True
+  10-09 02:00 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -1.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 18.25, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:02 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +3.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 46.75, tramo 20.00, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:10 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -0.75 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 37.50, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:27 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +5.75 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 43.50 (desde punta 49.25, tramo 22.75, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:45 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.75, tramo 15.75, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:56 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 44.00, tramo 43.50, fin re-rotura) opuesta 31042.06 llega True
+  10-09 03:10 piso  31042.06 dom1+ndx_dom0+ndx_dom1     -> sostenido  giro de 15 pts                           prec  +2.06 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 91.94 (desde punta 94.00, tramo 91.94, fin fin de datos) opuesta 31083.50 llega True
+  10-09 03:21 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 20.00 (desde punta 20.25, tramo 20.00, fin re-rotura) opuesta 31042.06 llega False
+  10-09 03:35 techo 31083.50 dom0+dom1                  -> rota       cierre mas alla de +5 con cuerpo 5.00    prec  +9.50 | ESTRICTO rota       MUY TOL rota       
+  TOLERANTE     llegadas 11 (base 11, censuradas 0) sostenidos 9 (81.8 %; falso romp. 3) rotas 2 indef 0 | exactos 6 | precision |med| 1.44 (signo 0.25) | recorrido medio 51.7 mediano 43.5 tramo 35.2 | llega opuesta 8/9
+  ESTRICTO      llegadas 12 (base 12, censuradas 0) sostenidos 9 (75.0 %; falso romp. 2) rotas 3 indef 0 | exactos 7 | precision |med| 1.44 (signo 0.25) | recorrido medio 49.7 mediano 43.5 tramo 35.2 | llega opuesta 5/9
+  MUY_TOLERANTE llegadas 10 (base 10, censuradas 0) sostenidos 8 (80.0 %; falso romp. 3) rotas 2 indef 0 | exactos 5 | precision |med| 1.13 (signo 0.37) | recorrido medio 46.6 mediano 43.5 tramo 33.7 | llega opuesta 7/8
+  COBERTURA giros zigzag 20: +-2: 3/19; +-4: 5/19; +-6: 6/19
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31083.50, a 54.50 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31083.50, a 77.25 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31042.06, a 8.06 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31042.06, a 40.31 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31042.06, a 14.31 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30917.72, a 56.78 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30917.72, a 77.28 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30959.17, a 7.83 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31083.50, a 66.75 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30917.72, a 63.53 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31083.50, a 3.25 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31042.06, a 3.94 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31083.50, a 5.75 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31042.06, a 18.69 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto True (raya mas cercana 31083.50, a 0.50 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto True (raya mas cercana 31041.83, a 1.83 pts)
+     03:21 max 31083.75 (izq 43.8 der 20.2) aprox 03:21 -> cubierto True (raya mas cercana 31083.50, a 0.25 pts)
+     03:33 min 31063.50 (izq 20.2 der 70.5) aprox 03:33 -> cubierto False (raya mas cercana 31083.50, a 20.00 pts)
+     04:14 max 31134.00 (izq 70.5 der 22.0) aprox 04:13 -> cubierto False (raya mas cercana 31083.50, a 50.50 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     11.0 | azar p5      1.0 p50      7.0 p95     20.0 | percentil 73.0 (n 500)
+     pct_sostenidos           real    81.82 | azar p5      0.0 p50     37.5 p95     80.0 | percentil 95.1 (n 483)
+     pct_exactos              real    54.55 | azar p5      0.0 p50    19.05 p95     60.0 | percentil 94.0 (n 483)
+     pct_rotas                real    18.18 | azar p5     20.0 p50     62.5 p95    100.0 | percentil 4.9 (n 483)
+     precision_mediana_abs    real     1.44 | azar p5     0.53 p50     1.97 p95     6.81 | percentil 28.4 (n 433)
+     recorrido_medio          real    51.65 | azar p5    21.87 p50    47.86 p95   116.14 | percentil 57.5 (n 433)
+     recorrido_mediano        real     43.5 | azar p5    19.31 p50     41.2 p95   123.93 | percentil 57.3 (n 433)
+     pct_llega_opuesta        real    88.89 | azar p5      0.0 p50     50.0 p95    100.0 | percentil 75.0 (n 356)
+     cobertura_pct            real    15.79 | azar p5      0.0 p50     5.26 p95    15.79 | percentil 96.1 (n 500)
+     corridas +-11/19/31 juntas: llegadas 74 sostenidos 35.1 % exactos 17.6 % recorrido medio 43.1 llega opuesta 58.8 % cobertura 2.6 %
+     por corrimiento: -31: 6 lleg, 33.0 % sost | -19: 15 lleg, 53.0 % sost | -11: 10 lleg, 10.0 % sost | +11: 8 lleg, 50.0 % sost | +19: 15 lleg, 33.0 % sost | +31: 20 lleg, 30.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     11.0 | azar p5      2.0 p50      9.0 p95     17.0 | percentil 61.2 (n 500)
+     pct_sostenidos           real    81.82 | azar p5     7.14 p50    56.25 p95    83.33 | percentil 92.4 (n 491)
+     pct_exactos              real    54.55 | azar p5      0.0 p50     25.0 p95    54.55 | percentil 94.0 (n 491)
+     pct_rotas                real    18.18 | azar p5    16.67 p50    43.75 p95    92.86 | percentil 7.6 (n 491)
+     precision_mediana_abs    real     1.44 | azar p5     0.84 p50     1.75 p95      8.8 | percentil 20.9 (n 466)
+     recorrido_medio          real    51.65 | azar p5    17.31 p50    51.65 p95    91.94 | percentil 52.7 (n 466)
+     recorrido_mediano        real     43.5 | azar p5    17.31 p50     43.5 p95    91.94 | percentil 39.1 (n 466)
+     pct_llega_opuesta        real    88.89 | azar p5      0.0 p50    66.67 p95    100.0 | percentil 83.8 (n 401)
+     cobertura_pct            real    15.79 | azar p5      0.0 p50     5.26 p95    15.79 | percentil 88.1 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [B hasta 04:33] r20_doms+ndx (dom0+dom1+ndx_dom0+ndx_dom1) ventana COMPLETA 2026-10-08 22:00:00 -> 2026-10-09 13:30:00 | velas en la ventana 394 (2026-10-08 22:00:00 -> 2026-10-09 04:33:00) rango 30952.25-31134.00
+  10-08 22:05 techo 31022.97 dom0+dom1                  -> rota       cierre mas alla de +5 con cuerpo 10.00   prec  +5.53 | ESTRICTO rota       MUY TOL rota       
+  10-08 22:08 techo 31027.12 dom1                       -> rota       cierre mas alla de +5 con cuerpo 6.00    prec  +9.38 | ESTRICTO rota       MUY TOL rota       
+  10-08 22:15 techo 31054.84 dom0                       -> sostenido  giro de 15 pts                           prec  +0.16 | ESTRICTO sostenido  MUY TOL sostenido  rec 15.59 (desde punta 15.75, tramo 15.59, fin re-rotura) opuesta 31013.44 llega False
+  10-08 22:25 techo 31050.70 dom0                       -> rota       3 cierres seguidos mas alla              prec  +6.55 | ESTRICTO rota       MUY TOL rota       
+  10-08 23:10 techo 31037.43 dom0                       -> sostenido  giro de 15 pts                           prec  +1.32 | ESTRICTO sostenido  MUY TOL sostenido  rec 85.18 (desde punta 86.50, tramo 85.18, fin re-rotura) opuesta 30996.04 llega True
+  10-08 23:20 techo 31032.04 dom0                       -> sostenido  giro de 15 pts                           prec  +0.21 | ESTRICTO sostenido  MUY TOL sostenido  rec 79.79 (desde punta 80.00, tramo 79.79, fin re-rotura) opuesta 30990.66 llega True
+  10-08 23:30 piso  30993.56 dom1                       -> sostenido  giro de 15 pts                           prec  +3.56 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 22.19 (desde punta 25.75, tramo 22.19, fin re-rotura) opuesta 31034.94 llega False
+  10-08 23:37 piso  30997.29 dom1                       -> sostenido  giro de 15 pts                           prec  -0.21 | ESTRICTO sostenido  MUY TOL sostenido  rec 15.46 (desde punta 15.46, tramo 15.46, fin re-rotura) opuesta 31038.67 llega False
+  10-09 01:42 techo 31042.06 dom1+ndx_dom0+ndx_dom1     -> rota       cierre mas alla de +5 con cuerpo 4.75    prec  +9.69 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:45 piso  31042.06 dom1+ndx_dom0+ndx_dom1     -> sostenido  giro de 15 pts                           prec  -1.44 | ESTRICTO sostenido  MUY TOL (no llega) rec 91.94 (desde punta 91.94, tramo 47.19, fin fin de datos) opuesta 31083.50 llega True
+  10-09 02:00 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -1.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 18.25, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:02 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +3.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 46.75, tramo 20.00, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:10 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  -0.75 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.50, tramo 37.50, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:27 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +5.75 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 43.50 (desde punta 49.25, tramo 22.75, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:45 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 43.75, tramo 15.75, fin re-rotura) opuesta 31042.06 llega True
+  10-09 02:56 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.50 | ESTRICTO sostenido  MUY TOL sostenido  rec 43.50 (desde punta 44.00, tramo 43.50, fin re-rotura) opuesta 31042.06 llega True
+  10-09 03:10 piso  31042.06 dom1+ndx_dom0+ndx_dom1     -> sostenido  giro de 15 pts                           prec  +2.06 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 91.94 (desde punta 94.00, tramo 91.94, fin fin de datos) opuesta 31083.50 llega True
+  10-09 03:21 techo 31083.50 dom0+dom1                  -> sostenido  giro de 15 pts                           prec  +0.25 | ESTRICTO sostenido  MUY TOL sostenido  rec 20.00 (desde punta 20.25, tramo 20.00, fin re-rotura) opuesta 31042.06 llega False
+  10-09 03:35 techo 31083.50 dom0+dom1                  -> rota       cierre mas alla de +5 con cuerpo 5.00    prec  +9.50 | ESTRICTO rota       MUY TOL rota       
+  TOLERANTE     llegadas 19 (base 19, censuradas 0) sostenidos 14 (73.7 %; falso romp. 4) rotas 5 indef 0 | exactos 10 | precision |med| 1.04 (signo 0.25) | recorrido medio 48.8 mediano 43.5 tramo 38.2 | llega opuesta 10/14
+  ESTRICTO      llegadas 20 (base 20, censuradas 0) sostenidos 14 (70.0 %; falso romp. 3) rotas 6 indef 0 | exactos 11 | precision |med| 1.04 (signo 0.25) | recorrido medio 47.5 mediano 40.5 tramo 38.2 | llega opuesta 7/14
+  MUY_TOLERANTE llegadas 18 (base 18, censuradas 0) sostenidos 13 (72.2 %; falso romp. 4) rotas 5 indef 0 | exactos 9 | precision |med| 0.75 (signo 0.25) | recorrido medio 45.5 mediano 43.5 tramo 37.5 | llega opuesta 9/13
+  COBERTURA giros zigzag 20: +-2: 4/33; +-4: 8/33; +-6: 10/33
+     22:00 max 31033.25 (izq 20.2 der 40.0) aprox 22:00 -> cubierto False (raya mas cercana 31030.44, a 2.81 pts)
+     22:03 min 30993.25 (izq 40.0 der 79.2) aprox 22:03 -> cubierto False (raya mas cercana 31022.97, a 29.72 pts)
+     22:36 max 31072.50 (izq 79.2 der 55.5) aprox 22:35 -> cubierto False (raya mas cercana 31012.99, a 59.51 pts)
+     23:07 min 31017.00 (izq 55.5 der 21.8) aprox 23:06 -> cubierto False (raya mas cercana 31037.43, a 20.43 pts)
+     23:10 max 31038.75 (izq 21.8 der 48.8) aprox 23:10 -> cubierto True (raya mas cercana 31037.43, a 1.32 pts)
+     23:30 min 30990.00 (izq 48.8 der 25.8) aprox 23:30 -> cubierto False (raya mas cercana 30993.56, a 3.56 pts)
+     23:32 max 31015.75 (izq 25.8 der 47.8) aprox 23:32 -> cubierto False (raya mas cercana 30995.63, a 20.12 pts)
+     23:51 min 30968.00 (izq 47.8 der 34.8) aprox 23:51 -> cubierto False (raya mas cercana 30895.41, a 72.59 pts)
+     00:01 max 31002.75 (izq 34.8 der 50.5) aprox 00:01 -> cubierto False (raya mas cercana 31067.30, a 64.55 pts)
+     00:03 min 30952.25 (izq 50.5 der 40.8) aprox 00:03 -> cubierto False (raya mas cercana 30943.03, a 9.22 pts)
+     00:08 max 30993.00 (izq 40.8 der 30.5) aprox 00:07 -> cubierto False (raya mas cercana 30918.14, a 74.86 pts)
+     00:09 min 30962.50 (izq 30.5 der 32.8) aprox 00:09 -> cubierto False (raya mas cercana 30925.58, a 36.92 pts)
+     00:22 max 30995.25 (izq 32.8 der 30.2) aprox 00:21 -> cubierto False (raya mas cercana 30917.72, a 77.53 pts)
+     00:26 min 30965.00 (izq 30.2 der 64.0) aprox 00:26 -> cubierto False (raya mas cercana 30917.72, a 47.28 pts)
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana 31083.50, a 54.50 pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana 31083.50, a 77.25 pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana 31042.06, a 8.06 pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana 31042.06, a 40.31 pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana 31042.06, a 14.31 pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana 30917.72, a 56.78 pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana 30917.72, a 77.28 pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana 30959.17, a 7.83 pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana 31083.50, a 66.75 pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana 30917.72, a 63.53 pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31083.50, a 3.25 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31042.06, a 3.94 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31083.50, a 5.75 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31042.06, a 18.69 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto True (raya mas cercana 31083.50, a 0.50 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto True (raya mas cercana 31041.83, a 1.83 pts)
+     03:21 max 31083.75 (izq 43.8 der 20.2) aprox 03:21 -> cubierto True (raya mas cercana 31083.50, a 0.25 pts)
+     03:33 min 31063.50 (izq 20.2 der 70.5) aprox 03:33 -> cubierto False (raya mas cercana 31083.50, a 20.00 pts)
+     04:14 max 31134.00 (izq 70.5 der 22.0) aprox 04:13 -> cubierto False (raya mas cercana 31083.50, a 50.50 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     19.0 | azar p5      5.0 p50     14.0 p95     27.0 | percentil 76.5 (n 500)
+     pct_sostenidos           real    73.68 | azar p5     20.0 p50    43.88 p95     70.0 | percentil 96.5 (n 500)
+     pct_exactos              real    52.63 | azar p5      0.0 p50     20.0 p95    42.86 | percentil 98.8 (n 500)
+     pct_rotas                real    26.32 | azar p5     30.0 p50    56.12 p95     80.0 | percentil 3.5 (n 500)
+     precision_mediana_abs    real     1.04 | azar p5     0.82 p50     2.36 p95     6.21 | percentil 8.5 (n 495)
+     recorrido_medio          real    48.79 | azar p5    28.88 p50    54.06 p95    96.13 | percentil 38.6 (n 495)
+     recorrido_mediano        real     43.5 | azar p5    21.92 p50    41.12 p95    92.76 | percentil 57.4 (n 495)
+     pct_llega_opuesta        real    71.43 | azar p5      0.0 p50     50.0 p95    100.0 | percentil 72.8 (n 483)
+     cobertura_pct            real    12.12 | azar p5      0.0 p50     3.03 p95    12.12 | percentil 95.4 (n 500)
+     corridas +-11/19/31 juntas: llegadas 109 sostenidos 36.7 % exactos 21.1 % recorrido medio 48.6 llega opuesta 52.0 % cobertura 4.0 %
+     por corrimiento: -31: 12 lleg, 42.0 % sost | -19: 20 lleg, 50.0 % sost | -11: 15 lleg, 13.0 % sost | +11: 15 lleg, 53.0 % sost | +19: 22 lleg, 32.0 % sost | +31: 25 lleg, 32.0 % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     19.0 | azar p5      8.0 p50     16.0 p95     25.0 | percentil 68.4 (n 500)
+     pct_sostenidos           real    73.68 | azar p5    35.71 p50    55.56 p95    76.47 | percentil 92.3 (n 500)
+     pct_exactos              real    52.63 | azar p5    18.75 p50    35.71 p95    50.13 | percentil 95.1 (n 500)
+     pct_rotas                real    26.32 | azar p5    23.53 p50    44.44 p95    64.29 | percentil 7.7 (n 500)
+     precision_mediana_abs    real     1.04 | azar p5     0.57 p50     1.32 p95     2.07 | percentil 34.2 (n 500)
+     recorrido_medio          real    48.79 | azar p5    33.55 p50    46.86 p95    65.62 | percentil 58.6 (n 500)
+     recorrido_mediano        real     43.5 | azar p5    21.18 p50     43.5 p95    82.48 | percentil 51.5 (n 500)
+     pct_llega_opuesta        real    71.43 | azar p5      0.0 p50     50.0 p95    82.27 | percentil 76.9 (n 495)
+     cobertura_pct            real    12.12 | azar p5     3.03 p50     6.06 p95    12.12 | percentil 88.1 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [B hasta 04:33] r20_zero_ndx (ndx_zero_vol) ventana CONGELADA 2026-10-09 00:35:00 -> 2026-10-09 08:30:00 | velas en la ventana 239 (2026-10-09 00:35:00 -> 2026-10-09 04:33:00) rango 30967.00-31134.00
+  10-09 01:35 techo 31000.56 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 14.75   prec +15.44 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:43 techo 31050.72 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 6.25    prec +12.28 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:58 techo 31064.95 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 5.50    prec +17.05 | ESTRICTO rota       MUY TOL rota       
+  10-09 02:01 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  -0.30 | ESTRICTO sostenido  MUY TOL (no llega) rec 21.80 (desde punta 21.80, tramo 21.80, fin re-rotura) opuesta - llega None
+  10-09 02:24 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +5.45 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 24.30 (desde punta 29.75, tramo 24.30, fin re-rotura) opuesta 31081.75 llega True
+  10-09 02:27 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +7.50 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 41.75 (desde punta 49.25, tramo 21.00, fin re-rotura) opuesta - llega None
+  10-09 02:43 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +2.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 41.75 (desde punta 44.00, tramo 41.75, fin re-rotura) opuesta 31064.95 llega True
+  10-09 03:03 piso  31064.95 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec  +8.95 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:09 piso  31050.71 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec +10.71 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:12 techo 31050.72 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec  +9.78 | ESTRICTO rota       MUY TOL (no llega) 
+  10-09 03:19 techo 31064.95 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 4.75    prec +10.55 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:21 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +2.00 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 18.25 (desde punta 20.25, tramo 16.00, fin re-rotura) opuesta 31064.95 llega True
+  10-09 03:27 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  -0.80 | ESTRICTO sostenido  MUY TOL sostenido  rec 69.05 (desde punta 69.05, tramo 15.80, fin fin de datos) opuesta - llega None
+  10-09 03:33 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +1.45 | ESTRICTO sostenido  MUY TOL sostenido  rec 69.05 (desde punta 70.50, tramo 69.05, fin fin de datos) opuesta 31081.75 llega True
+  10-09 03:35 techo 31081.75 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 5.00    prec +11.25 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:51 techo 31099.66 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 6.75    prec +13.34 | ESTRICTO rota       MUY TOL rota       
+  TOLERANTE     llegadas 16 (base 16, censuradas 0) sostenidos 7 (43.8 %; falso romp. 4) rotas 9 indef 0 | exactos 3 | precision |med| 2.0 (signo 2.0) | recorrido medio 40.8 mediano 41.7 tramo 30.0 | llega opuesta 4/4
+  ESTRICTO      llegadas 17 (base 17, censuradas 0) sostenidos 6 (35.3 %; falso romp. 3) rotas 11 indef 0 | exactos 3 | precision |med| 1.73 (signo 1.73) | recorrido medio 43.6 mediano 41.7 tramo 30.9 | llega opuesta 3/3
+  MUY_TOLERANTE llegadas 15 (base 15, censuradas 0) sostenidos 6 (40.0 %; falso romp. 4) rotas 9 indef 0 | exactos 2 | precision |med| 2.13 (signo 2.13) | recorrido medio 44.0 mediano 41.7 tramo 31.3 | llega opuesta 4/4
+  COBERTURA giros zigzag 20: +-2: 1/19; +-4: 3/19; +-6: 2/19
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana -, a - pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana -, a - pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana -, a - pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana -, a - pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana -, a - pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana -, a - pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana -, a - pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana -, a - pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana -, a - pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana -, a - pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31064.95, a 21.80 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31064.95, a 18.95 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31081.75, a 7.50 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31064.95, a 4.20 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto False (raya mas cercana 31081.75, a 2.25 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31050.72, a 10.72 pts)
+     03:21 max 31083.75 (izq 43.8 der 20.2) aprox 03:21 -> cubierto False (raya mas cercana 31081.75, a 2.00 pts)
+     03:33 min 31063.50 (izq 20.2 der 70.5) aprox 03:33 -> cubierto True (raya mas cercana 31064.95, a 1.45 pts)
+     04:14 max 31134.00 (izq 70.5 der 22.0) aprox 04:13 -> cubierto False (raya mas cercana 31113.95, a 20.05 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     16.0 | azar p5      5.0 p50     10.0 p95     16.0 | percentil 95.8 (n 500)
+     pct_sostenidos           real    43.75 | azar p5     12.5 p50     40.0 p95    66.67 | percentil 61.5 (n 500)
+     pct_exactos              real    18.75 | azar p5      0.0 p50     25.0 p95    46.15 | percentil 36.7 (n 500)
+     pct_rotas                real    56.25 | azar p5    33.33 p50     60.0 p95     87.5 | percentil 38.5 (n 500)
+     precision_mediana_abs    real      2.0 | azar p5     0.41 p50     1.77 p95     5.22 | percentil 63.7 (n 483)
+     recorrido_medio          real    40.85 | azar p5    31.17 p50    47.05 p95    76.79 | percentil 28.9 (n 483)
+     recorrido_mediano        real    41.75 | azar p5    26.72 p50    45.69 p95    76.79 | percentil 32.7 (n 483)
+     pct_llega_opuesta        real    100.0 | azar p5     50.0 p50    100.0 p95    100.0 | percentil 69.8 (n 291)
+     cobertura_pct            real     5.26 | azar p5      0.0 p50     5.26 p95    10.53 | percentil 59.2 (n 500)
+     corridas +-11/19/31 juntas: llegadas 35 sostenidos 41.2 % exactos 29.4 % recorrido medio 36.8 llega opuesta None % cobertura 2.6 %
+     por corrimiento: -31: 0 lleg, None % sost | -19: 5 lleg, 60.0 % sost | -11: 7 lleg, 57.0 % sost | +11: 17 lleg, 18.0 % sost | +19: 6 lleg, 80.0 % sost | +31: 0 lleg, None % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     16.0 | azar p5      6.0 p50     11.0 p95     16.0 | percentil 94.7 (n 500)
+     pct_sostenidos           real    43.75 | azar p5     37.5 p50     50.0 p95    71.43 | percentil 16.4 (n 500)
+     pct_exactos              real    18.75 | azar p5      0.0 p50    28.57 p95     50.0 | percentil 25.0 (n 500)
+     pct_rotas                real    56.25 | azar p5    28.57 p50     50.0 p95     62.5 | percentil 83.6 (n 500)
+     precision_mediana_abs    real      2.0 | azar p5     1.15 p50     1.87 p95     4.65 | percentil 69.6 (n 500)
+     recorrido_medio          real    40.85 | azar p5    34.48 p50    44.39 p95    47.05 | percentil 30.4 (n 500)
+     recorrido_mediano        real    41.75 | azar p5    38.97 p50    48.28 p95    48.48 | percentil 29.9 (n 500)
+     pct_llega_opuesta        real    100.0 | azar p5     50.0 p50    100.0 p95    100.0 | percentil 66.6 (n 365)
+     cobertura_pct            real     5.26 | azar p5      0.0 p50     5.26 p95    10.53 | percentil 49.7 (n 500)
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+ESTA NOCHE [B hasta 04:33] r20_zero_ndx (ndx_zero_vol) ventana COMPLETA 2026-10-08 22:00:00 -> 2026-10-09 13:30:00 | velas en la ventana 394 (2026-10-08 22:00:00 -> 2026-10-09 04:33:00) rango 30952.25-31134.00
+  10-09 01:35 techo 31000.56 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 14.75   prec +15.44 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:43 techo 31050.72 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 6.25    prec +12.28 | ESTRICTO rota       MUY TOL rota       
+  10-09 01:58 techo 31064.95 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 5.50    prec +17.05 | ESTRICTO rota       MUY TOL rota       
+  10-09 02:01 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  -0.30 | ESTRICTO sostenido  MUY TOL (no llega) rec 21.80 (desde punta 21.80, tramo 21.80, fin re-rotura) opuesta - llega None
+  10-09 02:24 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +5.45 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 24.30 (desde punta 29.75, tramo 24.30, fin re-rotura) opuesta 31081.75 llega True
+  10-09 02:27 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +7.50 FALSO ROMP. | ESTRICTO rota       MUY TOL sostenido  rec 41.75 (desde punta 49.25, tramo 21.00, fin re-rotura) opuesta - llega None
+  10-09 02:43 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +2.25 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 41.75 (desde punta 44.00, tramo 41.75, fin re-rotura) opuesta 31064.95 llega True
+  10-09 03:03 piso  31064.95 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec  +8.95 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:09 piso  31050.71 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec +10.71 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:12 techo 31050.72 ndx_zero_vol               -> rota       3 cierres seguidos mas alla              prec  +9.78 | ESTRICTO rota       MUY TOL (no llega) 
+  10-09 03:19 techo 31064.95 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 4.75    prec +10.55 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:21 techo 31081.75 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +2.00 FALSO ROMP. | ESTRICTO sostenido  MUY TOL sostenido  rec 18.25 (desde punta 20.25, tramo 16.00, fin re-rotura) opuesta 31064.95 llega True
+  10-09 03:27 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  -0.80 | ESTRICTO sostenido  MUY TOL sostenido  rec 69.05 (desde punta 69.05, tramo 15.80, fin fin de datos) opuesta - llega None
+  10-09 03:33 piso  31064.95 ndx_zero_vol               -> sostenido  giro de 15 pts                           prec  +1.45 | ESTRICTO sostenido  MUY TOL sostenido  rec 69.05 (desde punta 70.50, tramo 69.05, fin fin de datos) opuesta 31081.75 llega True
+  10-09 03:35 techo 31081.75 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 5.00    prec +11.25 | ESTRICTO rota       MUY TOL rota       
+  10-09 03:51 techo 31099.66 ndx_zero_vol               -> rota       cierre mas alla de +5 con cuerpo 6.75    prec +13.34 | ESTRICTO rota       MUY TOL rota       
+  TOLERANTE     llegadas 16 (base 16, censuradas 0) sostenidos 7 (43.8 %; falso romp. 4) rotas 9 indef 0 | exactos 3 | precision |med| 2.0 (signo 2.0) | recorrido medio 40.8 mediano 41.7 tramo 30.0 | llega opuesta 4/4
+  ESTRICTO      llegadas 17 (base 17, censuradas 0) sostenidos 6 (35.3 %; falso romp. 3) rotas 11 indef 0 | exactos 3 | precision |med| 1.73 (signo 1.73) | recorrido medio 43.6 mediano 41.7 tramo 30.9 | llega opuesta 3/3
+  MUY_TOLERANTE llegadas 15 (base 15, censuradas 0) sostenidos 6 (40.0 %; falso romp. 4) rotas 9 indef 0 | exactos 2 | precision |med| 2.13 (signo 2.13) | recorrido medio 44.0 mediano 41.7 tramo 31.3 | llega opuesta 4/4
+  COBERTURA giros zigzag 20: +-2: 1/33; +-4: 3/33; +-6: 2/33
+     22:00 max 31033.25 (izq 20.2 der 40.0) aprox 22:00 -> cubierto False (raya mas cercana -, a - pts)
+     22:03 min 30993.25 (izq 40.0 der 79.2) aprox 22:03 -> cubierto False (raya mas cercana -, a - pts)
+     22:36 max 31072.50 (izq 79.2 der 55.5) aprox 22:35 -> cubierto False (raya mas cercana -, a - pts)
+     23:07 min 31017.00 (izq 55.5 der 21.8) aprox 23:06 -> cubierto False (raya mas cercana -, a - pts)
+     23:10 max 31038.75 (izq 21.8 der 48.8) aprox 23:10 -> cubierto False (raya mas cercana -, a - pts)
+     23:30 min 30990.00 (izq 48.8 der 25.8) aprox 23:30 -> cubierto False (raya mas cercana -, a - pts)
+     23:32 max 31015.75 (izq 25.8 der 47.8) aprox 23:32 -> cubierto False (raya mas cercana -, a - pts)
+     23:51 min 30968.00 (izq 47.8 der 34.8) aprox 23:51 -> cubierto False (raya mas cercana -, a - pts)
+     00:01 max 31002.75 (izq 34.8 der 50.5) aprox 00:01 -> cubierto False (raya mas cercana -, a - pts)
+     00:03 min 30952.25 (izq 50.5 der 40.8) aprox 00:03 -> cubierto False (raya mas cercana -, a - pts)
+     00:08 max 30993.00 (izq 40.8 der 30.5) aprox 00:07 -> cubierto False (raya mas cercana -, a - pts)
+     00:09 min 30962.50 (izq 30.5 der 32.8) aprox 00:09 -> cubierto False (raya mas cercana -, a - pts)
+     00:22 max 30995.25 (izq 32.8 der 30.2) aprox 00:21 -> cubierto False (raya mas cercana -, a - pts)
+     00:26 min 30965.00 (izq 30.2 der 64.0) aprox 00:26 -> cubierto False (raya mas cercana -, a - pts)
+     00:35 max 31029.00 (izq 64.0 der 22.8) aprox 00:34 -> cubierto False (raya mas cercana -, a - pts)
+     00:39 min 31006.25 (izq 22.8 der 27.8) aprox 00:39 -> cubierto False (raya mas cercana -, a - pts)
+     00:45 max 31034.00 (izq 27.8 der 32.2) aprox 00:45 -> cubierto False (raya mas cercana -, a - pts)
+     00:51 min 31001.75 (izq 32.2 der 26.0) aprox 00:51 -> cubierto False (raya mas cercana -, a - pts)
+     00:56 max 31027.75 (izq 26.0 der 53.2) aprox 00:56 -> cubierto False (raya mas cercana -, a - pts)
+     01:12 min 30974.50 (izq 53.2 der 20.5) aprox 01:01 -> cubierto False (raya mas cercana -, a - pts)
+     01:15 max 30995.00 (izq 20.5 der 28.0) aprox 01:15 -> cubierto False (raya mas cercana -, a - pts)
+     01:18 min 30967.00 (izq 28.0 der 49.8) aprox 01:17 -> cubierto False (raya mas cercana -, a - pts)
+     01:27 max 31016.75 (izq 49.8 der 35.5) aprox 01:27 -> cubierto False (raya mas cercana -, a - pts)
+     01:32 min 30981.25 (izq 35.5 der 105.5) aprox 01:32 -> cubierto False (raya mas cercana -, a - pts)
+     02:03 max 31086.75 (izq 105.5 der 40.8) aprox 02:02 -> cubierto False (raya mas cercana 31064.95, a 21.80 pts)
+     02:16 min 31046.00 (izq 40.8 der 43.2) aprox 02:15 -> cubierto False (raya mas cercana 31064.95, a 18.95 pts)
+     02:28 max 31089.25 (izq 43.2 der 28.5) aprox 02:28 -> cubierto False (raya mas cercana 31081.75, a 7.50 pts)
+     02:39 min 31060.75 (izq 28.5 der 23.2) aprox 02:39 -> cubierto False (raya mas cercana 31064.95, a 4.20 pts)
+     03:01 max 31084.00 (izq 23.2 der 44.0) aprox 02:45 -> cubierto False (raya mas cercana 31081.75, a 2.25 pts)
+     03:11 min 31040.00 (izq 44.0 der 43.8) aprox 03:11 -> cubierto False (raya mas cercana 31050.72, a 10.72 pts)
+     03:21 max 31083.75 (izq 43.8 der 20.2) aprox 03:21 -> cubierto False (raya mas cercana 31081.75, a 2.00 pts)
+     03:33 min 31063.50 (izq 20.2 der 70.5) aprox 03:33 -> cubierto True (raya mas cercana 31064.95, a 1.45 pts)
+     04:14 max 31134.00 (izq 70.5 der 22.0) aprox 04:13 -> cubierto False (raya mas cercana 31113.95, a 20.05 pts)
+  PLACEBO TOLERANTE azar 'pool' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     16.0 | azar p5      5.0 p50     10.0 p95     16.0 | percentil 95.8 (n 500)
+     pct_sostenidos           real    43.75 | azar p5     12.5 p50     40.0 p95    66.67 | percentil 61.5 (n 500)
+     pct_exactos              real    18.75 | azar p5      0.0 p50     25.0 p95    46.15 | percentil 36.7 (n 500)
+     pct_rotas                real    56.25 | azar p5    33.33 p50     60.0 p95     87.5 | percentil 38.5 (n 500)
+     precision_mediana_abs    real      2.0 | azar p5     0.41 p50     1.77 p95     5.22 | percentil 63.7 (n 483)
+     recorrido_medio          real    40.85 | azar p5    31.17 p50    47.05 p95    76.79 | percentil 28.9 (n 483)
+     recorrido_mediano        real    41.75 | azar p5    26.72 p50    45.69 p95    76.79 | percentil 32.7 (n 483)
+     pct_llega_opuesta        real    100.0 | azar p5     50.0 p50    100.0 p95    100.0 | percentil 69.8 (n 291)
+     cobertura_pct            real     3.03 | azar p5      0.0 p50     3.03 p95     6.06 | percentil 59.2 (n 500)
+     corridas +-11/19/31 juntas: llegadas 35 sostenidos 41.2 % exactos 29.4 % recorrido medio 36.8 llega opuesta None % cobertura 1.5 %
+     por corrimiento: -31: 0 lleg, None % sost | -19: 5 lleg, 60.0 % sost | -11: 7 lleg, 57.0 % sost | +11: 17 lleg, 18.0 % sost | +19: 6 lleg, 80.0 % sost | +31: 0 lleg, None % sost
+  PLACEBO TOLERANTE azar 'propia' (500 juegos; UNA noche: muestra chica, leer como descripcion):
+     llegadas                 real     16.0 | azar p5      6.0 p50     11.0 p95     16.0 | percentil 94.7 (n 500)
+     pct_sostenidos           real    43.75 | azar p5     37.5 p50     50.0 p95    71.43 | percentil 16.4 (n 500)
+     pct_exactos              real    18.75 | azar p5      0.0 p50    28.57 p95     50.0 | percentil 25.0 (n 500)
+     pct_rotas                real    56.25 | azar p5    28.57 p50     50.0 p95     62.5 | percentil 83.6 (n 500)
+     precision_mediana_abs    real      2.0 | azar p5     1.15 p50     1.87 p95     4.65 | percentil 69.6 (n 500)
+     recorrido_medio          real    40.85 | azar p5    34.48 p50    44.39 p95    47.05 | percentil 30.4 (n 500)
+     recorrido_mediano        real    41.75 | azar p5    38.97 p50    48.28 p95    48.48 | percentil 29.9 (n 500)
+     pct_llega_opuesta        real    100.0 | azar p5     50.0 p50    100.0 p95    100.0 | percentil 66.6 (n 365)
+     cobertura_pct            real     3.03 | azar p5      0.0 p50     3.03 p95     6.06 | percentil 49.7 (n 500)

@@ -1,0 +1,60 @@
+
+== sin (ninguna) | azar 'pool' | noches 19
+   llegadas               real  306.00 | azar p50  239.00 p95  298.00 | percentil  96.6
+   pct_sostenidos         real   47.54 | azar p50   44.57 p95   49.82 | percentil  80.6
+   pct_exactos            real   25.57 | azar p50   23.84 p95   28.86 | percentil  71.0
+   precision_mediana_abs  real    1.78 | azar p50    1.86 p95    2.50 | percentil  35.8
+   recorrido_medio        real   67.68 | azar p50   63.56 p95   77.25 | percentil  67.4
+   pct_llega_opuesta      real   53.09 | azar p50   39.64 p95   58.21 | percentil  87.6
+   cobertura_pct          real    5.08 | azar p50    3.39 p95    4.95 | percentil  96.4
+   corridas juntas: sost 45.2 exactos 23.9 prec 1.87 rec 64.5 opuesta 41.8 cobertura 4.82
+   IC90 real: sost 42.9-52.6  opuesta 39.1-67.6
+
+== sin (ninguna) | azar 'propia' | noches 19
+   llegadas               real  306.00 | azar p50  230.00 p95  271.00 | percentil 100.0
+   pct_sostenidos         real   47.54 | azar p50   47.09 p95   50.89 | percentil  59.4
+   pct_exactos            real   25.57 | azar p50   25.24 p95   28.32 | percentil  57.8
+   precision_mediana_abs  real    1.78 | azar p50    1.80 p95    2.06 | percentil  45.7
+   recorrido_medio        real   67.68 | azar p50   71.30 p95   82.40 | percentil  29.6
+   pct_llega_opuesta      real   53.09 | azar p50   42.50 p95   53.98 | percentil  93.4
+   cobertura_pct          real    5.08 | azar p50    3.65 p95    4.82 | percentil  98.7
+
+== sin 2026-10-09 | azar 'pool' | noches 18
+   llegadas               real  296.00 | azar p50  231.00 p95  288.00 | percentil  96.8
+   pct_sostenidos         real   46.28 | azar p50   44.75 p95   50.00 | percentil  67.4
+   pct_exactos            real   24.66 | azar p50   23.99 p95   29.21 | percentil  58.6
+   precision_mediana_abs  real    1.80 | azar p50    1.85 p95    2.50 | percentil  39.8
+   recorrido_medio        real   69.08 | azar p50   64.28 p95   78.34 | percentil  70.8
+   pct_llega_opuesta      real   47.95 | azar p50   39.53 p95   58.09 | percentil  78.2
+   cobertura_pct          real    4.93 | azar p50    3.33 p95    4.79 | percentil  95.7
+   corridas juntas: sost 45.6 exactos 24.2 prec 1.86 rec 65.4 opuesta 41.5 cobertura 4.90
+   IC90 real: sost 41.8-50.8  opuesta 34.3-61.8
+
+== sin 2026-10-09 | azar 'propia' | noches 18
+   llegadas               real  296.00 | azar p50  221.00 p95  261.05 | percentil 100.0
+   pct_sostenidos         real   46.28 | azar p50   46.50 p95   50.01 | percentil  46.8
+   pct_exactos            real   24.66 | azar p50   25.17 p95   28.22 | percentil  38.2
+   precision_mediana_abs  real    1.80 | azar p50    1.80 p95    2.06 | percentil  51.2
+   recorrido_medio        real   69.08 | azar p50   72.86 p95   84.12 | percentil  31.0
+   pct_llega_opuesta      real   47.95 | azar p50   40.41 p95   51.56 | percentil  86.4
+   cobertura_pct          real    4.93 | azar p50    3.60 p95    4.66 | percentil  97.7
+
+== sin 2026-10-09+2026-10-05 | azar 'pool' | noches 17
+   llegadas               real  282.00 | azar p50  212.50 p95  268.00 | percentil  98.2
+   pct_sostenidos         real   44.68 | azar p50   44.19 p95   49.80 | percentil  55.2
+   pct_exactos            real   23.05 | azar p50   23.88 p95   29.08 | percentil  38.8
+   precision_mediana_abs  real    1.96 | azar p50    1.84 p95    2.49 | percentil  72.6
+   recorrido_medio        real   70.57 | azar p50   65.58 p95   79.36 | percentil  73.2
+   pct_llega_opuesta      real   50.00 | azar p50   38.78 p95   59.58 | percentil  81.8
+   cobertura_pct          real    4.96 | azar p50    3.35 p95    4.66 | percentil  97.2
+   corridas juntas: sost 45.4 exactos 24.5 prec 1.84 rec 65.4 opuesta 41.7 cobertura 5.10
+   IC90 real: sost 40.9-48.3  opuesta 36.8-64.5
+
+== sin 2026-10-09+2026-10-05 | azar 'propia' | noches 17
+   llegadas               real  282.00 | azar p50  213.00 p95  251.00 | percentil 100.0
+   pct_sostenidos         real   44.68 | azar p50   45.43 p95   48.93 | percentil  36.7
+   pct_exactos            real   23.05 | azar p50   23.93 p95   26.72 | percentil  26.4
+   precision_mediana_abs  real    1.96 | azar p50    1.83 p95    2.14 | percentil  75.3
+   recorrido_medio        real   70.57 | azar p50   74.23 p95   85.73 | percentil  33.0
+   pct_llega_opuesta      real   50.00 | azar p50   41.82 p95   54.10 | percentil  87.4
+   cobertura_pct          real    4.96 | azar p50    3.64 p95    4.81 | percentil  96.8

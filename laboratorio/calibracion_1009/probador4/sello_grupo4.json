@@ -1,0 +1,309 @@
+{
+ "que": "SELLO DEL GRUPO 4 (probador 4) de calibracion_1009: controles sin gamma C19..C24. Escrito ANTES de abrir PRUEBA.",
+ "hora_utc": "2026-10-09T05:04:13+00:00",
+ "hora_art": "2026-10-09 02:04:13 ART",
+ "finalistas": {
+  "noche": [],
+  "dia": []
+ },
+ "finalistas_nota": "ninguna: C19-C24 son CONTROLES (PREREGISTRO sec. 8.1, evaluar.CANDIDATAS rol 'control'): se informan, no compiten. La regla de seleccion aplicada a los 6 da 'ninguna' en las dos ventanas y ninguno seria elegible aunque no fuera control.",
+ "referencias": [],
+ "controles_que_se_miden_en_prueba": [
+  "C19_RED25",
+  "C20_RED50",
+  "C21_RED100",
+  "C22_GRILLA_QQQ_C41",
+  "C23_E_RANGO60",
+  "C24_MECHA_PREVIA"
+ ],
+ "parametros_congelados": {
+  "C19_RED25": {
+   "G": 25.0
+  },
+  "C20_RED50": {
+   "G": 50.0
+  },
+  "C21_RED100": {
+   "G": 100.0
+  },
+  "C22_GRILLA_QQQ_C41": {
+   "libro": "QQQ",
+   "conversion": "cuatro",
+   "horizonte": "Hoy (receta_2_0:67-70,107-120)",
+   "radio": null
+  },
+  "C23_E_RANGO60": {
+   "ventana_min": 60,
+   "min_velas": 5
+  },
+  "C24_MECHA_PREVIA": {
+   "umbral_pts": 20.0,
+   "memoria_min": 240,
+   "hueco_max_min": 30,
+   "reinicio": "por tramo continuo (como _pivotes)"
+  }
+ },
+ "parametros_libres": "ninguno (PREREGISTRO sec. 6 (3)): todo esta fijado en la sec. 7; no se eligio nada con el entrenamiento",
+ "prueba": {
+  "dias": [
+   "2026-10-01",
+   "2026-10-02",
+   "2026-10-05",
+   "2026-10-06",
+   "2026-10-07",
+   "2026-10-08"
+  ],
+  "n_azar": 2000,
+  "n_boot": 2000,
+  "modos": [
+   "tolerante",
+   "estricto",
+   "muy_tolerante"
+  ],
+  "marco_min": 1
+ },
+ "sha256_codigo": {
+  "candidatas.py": "1ebbea9f6294085e21bd1c87b0578c3ff016a86d1f2cdba929dfef73684031be",
+  "correr.py": "a8d31838ce55480984fdccfe76b48c88e37972aae523fdcf82df1854833f461c",
+  "arnes/evaluar.py": "1cd6083989f4ac7c870b96801a128cb8bae25f5c98efa023537d676cf44d991c",
+  "arnes/juez_operador_v1.py": "a20a62688e888da22c36d9200bca5f63f16949ca90837545b37847a16188d5bf",
+  "PREREGISTRO.md": "927522e3919b4bafbd582b4d6686ab46391efe3108530dda5099f379f751bbca"
+ },
+ "sha256_resultados_entrenamiento": {
+  "C19_RED25": "f46f7e1404538e4b1381f593c7264e915e02b118b795b859a09647ec557fe012",
+  "C20_RED50": "065e41c0fda4eb4a899624a2c2ec02c2b0dcded19b79b124d5fcb3178b952938",
+  "C21_RED100": "c1d69bc039d1bec36d90846da22fd3371cd90636a72c401e503084df3ef0da09",
+  "C22_GRILLA_QQQ_C41": "f6316dc3da30aff896c1b4c1986c2848d37cc7ab30abdc57a1dcfb0ee7ab297a",
+  "C23_E_RANGO60": "b2f6e631b35eac92afc8ba9453f8b61ecf8c2589c768831fe1860830e42245ca",
+  "C24_MECHA_PREVIA": "1e822e867493cecfbbebb517e84d00fb75c028a7ae784ad567a82968ce84da2c"
+ },
+ "seleccion_entrenamiento": {
+  "noche": {
+   "finalistas": [],
+   "tabla": [
+    {
+     "candidata": "C19_RED25",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -1.0603445858858995,
+     "p_azar": 0.35129740518962077,
+     "mitades": {
+      "primera": {
+       "base": 2925,
+       "ventaja_vs_corridos_pp": 0.40032147515942285
+      },
+      "segunda": {
+       "base": 717,
+       "ventaja_vs_corridos_pp": 1.2312720863173894
+      },
+      "cambia_de_signo": false
+     }
+    },
+    {
+     "candidata": "C20_RED50",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -1.3813902347027016,
+     "p_azar": 0.26147704590818366,
+     "mitades": {
+      "primera": {
+       "base": 1488,
+       "ventaja_vs_corridos_pp": 0.22275608186566842
+      },
+      "segunda": {
+       "base": 383,
+       "ventaja_vs_corridos_pp": 2.8484237985160945
+      },
+      "cambia_de_signo": false
+     }
+    },
+    {
+     "candidata": "C21_RED100",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -1.9548692151589817,
+     "p_azar": 0.2215568862275449,
+     "mitades": {
+      "primera": {
+       "base": 711,
+       "ventaja_vs_corridos_pp": 1.9063719600227245
+      },
+      "segunda": {
+       "base": 215,
+       "ventaja_vs_corridos_pp": -1.069132470831022
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C22_GRILLA_QQQ_C41",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.6825054796657137,
+     "p_azar": 0.3972055888223553,
+     "mitades": {
+      "primera": {
+       "base": 371,
+       "ventaja_vs_corridos_pp": -0.8341581030997318
+      },
+      "segunda": {
+       "base": 359,
+       "ventaja_vs_corridos_pp": 1.3004916805492854
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C23_E_RANGO60",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -1.8081163081541156,
+     "p_azar": 0.3912175648702595,
+     "mitades": {
+      "primera": {
+       "base": 1368,
+       "ventaja_vs_corridos_pp": 0.8208057064830143
+      },
+      "segunda": {
+       "base": 316,
+       "ventaja_vs_corridos_pp": -1.7950321805402396
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C24_MECHA_PREVIA",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.7222748787031557,
+     "p_azar": 0.7265469061876247,
+     "mitades": {
+      "primera": {
+       "base": 2552,
+       "ventaja_vs_corridos_pp": -1.5571223891516723
+      },
+      "segunda": {
+       "base": 640,
+       "ventaja_vs_corridos_pp": -0.23246951219512368
+      },
+      "cambia_de_signo": false
+     }
+    }
+   ]
+  },
+  "dia": {
+   "finalistas": [],
+   "tabla": [
+    {
+     "candidata": "C19_RED25",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -3.5183234369642444,
+     "p_azar": 0.8403193612774451,
+     "mitades": {
+      "primera": {
+       "base": 1885,
+       "ventaja_vs_corridos_pp": -2.5590883530508037
+      },
+      "segunda": {
+       "base": 543,
+       "ventaja_vs_corridos_pp": 0.7038716477670661
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C20_RED50",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -4.9847686064540655,
+     "p_azar": 0.8702594810379242,
+     "mitades": {
+      "primera": {
+       "base": 1058,
+       "ventaja_vs_corridos_pp": -3.106536736444866
+      },
+      "segunda": {
+       "base": 313,
+       "ventaja_vs_corridos_pp": 0.9287862324711895
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C21_RED100",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -3.6349619604285226,
+     "p_azar": 0.34530938123752497,
+     "mitades": {
+      "primera": {
+       "base": 558,
+       "ventaja_vs_corridos_pp": -1.5102198973166736
+      },
+      "segunda": {
+       "base": 158,
+       "ventaja_vs_corridos_pp": 4.378438690315875
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C22_GRILLA_QQQ_C41",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.4517475685595675,
+     "p_azar": 0.5948103792415169,
+     "mitades": {
+      "primera": {
+       "base": 288,
+       "ventaja_vs_corridos_pp": 4.796873932937238
+      },
+      "segunda": {
+       "base": 270,
+       "ventaja_vs_corridos_pp": -1.8739405147172192
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C23_E_RANGO60",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -3.210315250988186,
+     "p_azar": 0.7504990019960079,
+     "mitades": {
+      "primera": {
+       "base": 609,
+       "ventaja_vs_corridos_pp": -0.16148950318229538
+      },
+      "segunda": {
+       "base": 115,
+       "ventaja_vs_corridos_pp": 2.4626784352184856
+      },
+      "cambia_de_signo": true
+     }
+    },
+    {
+     "candidata": "C24_MECHA_PREVIA",
+     "rol": "control",
+     "elegible": false,
+     "ic90_inf_vs_corridos": -2.0208879709685608,
+     "p_azar": 0.4251497005988024,
+     "mitades": {
+      "primera": {
+       "base": 1659,
+       "ventaja_vs_corridos_pp": -0.6315414543262676
+      },
+      "segunda": {
+       "base": 479,
+       "ventaja_vs_corridos_pp": -0.05332093341416311
+      },
+      "cambia_de_signo": false
+     }
+    }
+   ]
+  }
+ },
+ "nota_sello": "El arnes pide un finalistas.json existente. El sello GLOBAL (arnes/finalistas.json, sec. 8.4) junta a los 4 grupos y no lo escribe este probador; este archivo es el sello del grupo 4 y es el que se pasa como sello= al abrir PRUEBA para los controles."
+}

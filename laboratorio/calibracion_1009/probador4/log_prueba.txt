@@ -1,0 +1,7 @@
+C19_RED25 -> C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\calibracion_1009\probador4\resultados\C19_RED25_PRUEBA.json (464.1 s)
+C20_RED50 -> C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\calibracion_1009\probador4\resultados\C20_RED50_PRUEBA.json (428.1 s)
+C21_RED100 -> C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\calibracion_1009\probador4\resultados\C21_RED100_PRUEBA.json (211.4 s)
+C22_GRILLA_QQQ_C41 -> C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\calibracion_1009\probador4\resultados\C22_GRILLA_QQQ_C41_PRUEBA.json (297.3 s)
+C23_E_RANGO60 -> C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\calibracion_1009\probador4\resultados\C23_E_RANGO60_PRUEBA.json (526.6 s)
+C24_MECHA_PREVIA -> C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\calibracion_1009\probador4\resultados\C24_MECHA_PREVIA_PRUEBA.json (643.9 s)
+listo en 665 s

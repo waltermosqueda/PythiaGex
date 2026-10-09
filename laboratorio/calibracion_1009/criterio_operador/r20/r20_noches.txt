@@ -1,0 +1,350 @@
+velas 25544: 2026-09-13 22:10:00 -> 2026-10-09 03:22:00 | sesiones 20: 2026-09-14, 2026-09-15, 2026-09-16, 2026-09-17, 2026-09-18, 2026-09-21, 2026-09-22, 2026-09-23, 2026-09-24, 2026-09-25, 2026-09-28, 2026-09-29, 2026-09-30, 2026-10-01, 2026-10-02, 2026-10-05, 2026-10-06, 2026-10-07, 2026-10-08, 2026-10-09
+AVISO: el dato mas nuevo es la vela 2026-10-09 03:22:00 UTC (velas_m1.csv); las cadenas de la 2.0 de noche son las del cierre del dia anterior.
+
+======================================================================================================================================================
+CONJUNTO r20_doms (dom0+dom1) | ventana CONGELADA | pistas 2925 | noches en la ventana 20 | 439 s
+  tolerante     llegadas  308 (techo 163 piso 145, censuradas 1) base  307 | sostenidos  147 =  47.9 % (falso romp. 69 = 47 % de ellos) | rotas  52.1 % | indef 0 | exactos 80 = 26.1 % | precision |mediana| 1.78 (con signo +1.63) | recorrido medio 67.3 mediano 39.0 tramo 51.2 | llega opuesta 43/83 = 51.8 % | noches con llegadas 20, niveles 55
+  estricto      llegadas  326 (techo 171 piso 155, censuradas 1) base  325 | sostenidos  115 =  35.4 % (falso romp. 34 = 30 % de ellos) | rotas  64.6 % | indef 0 | exactos 83 = 25.5 % | precision |mediana| 1.29 (con signo +0.87) | recorrido medio 56.5 mediano 36.0 tramo 48.7 | llega opuesta 24/63 = 38.1 % | noches con llegadas 20, niveles 55
+  muy_tolerante llegadas  281 (techo 152 piso 129, censuradas 1) base  280 | sostenidos  157 =  56.1 % (falso romp. 84 = 54 % de ellos) | rotas  43.9 % | indef 0 | exactos 75 = 26.8 % | precision |mediana| 2.25 (con signo +2.25) | recorrido medio 71.5 mediano 44.9 tramo 51.5 | llega opuesta 49/88 = 55.7 % | noches con llegadas 20, niveles 55
+  PLACEBO TOLERANTE (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real   308.00 | azar p5   183.95 p50   241.00 p95   298.00 | percentil  97.7
+     sostenidos                   real   147.00 | azar p5    80.00 p50   106.00 p95   136.00 | percentil  99.2
+     pct_sostenidos               real    47.88 | azar p5    38.64 p50    44.44 p95    50.51 | percentil  82.4
+     exactos                      real    80.00 | azar p5    41.00 p50    57.00 p95    75.00 | percentil  97.8
+     pct_exactos                  real    26.06 | azar p5    19.22 p50    24.09 p95    28.79 | percentil  78.6
+     pct_rotas                    real    52.12 | azar p5    49.49 p50    55.54 p95    61.36 | percentil  17.8
+     precision_mediana_abs        real     1.78 | azar p5     1.59 p50     1.87 p95     2.44 | percentil  28.2
+     recorrido_medio              real    67.29 | azar p5    52.00 p50    63.53 p95    76.31 | percentil  68.0
+     recorrido_mediano            real    39.01 | azar p5    30.18 p50    36.86 p95    48.53 | percentil  64.6
+     recorrido_tramo_medio        real    51.23 | azar p5    42.59 p50    49.60 p95    57.80 | percentil  62.0
+     recorrido_total              real  9891.25 | azar p5  4857.74 p50  6757.52 p95  8964.79 | percentil  99.0
+     pct_llega_opuesta            real    51.81 | azar p5    21.73 p50    39.39 p95    57.20 | percentil  85.8
+     pct_falso_entre_sostenidos   real    46.94 | azar p5    39.81 p50    47.93 p95    55.57 | percentil  40.6
+     cobertura_pct                real     5.19 | azar p5     2.20 p50     3.37 p95     4.80 | percentil  99.1
+     corridas +-11/19/31 juntas: llegadas 1917 sostenidos 45.1 % exactos 23.9 % precision |med| 1.87 recorrido medio 64.7 llega opuesta 40.7 % cobertura 4.8 %
+     por corrimiento: -31: 306 lleg 47 % sost | -19: 326 lleg 41 % sost | -11: 336 lleg 44 % sost | +11: 324 lleg 50 % sost | +19: 328 lleg 44 % sost | +31: 297 lleg 46 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 43.3-52.9; pct_exactos 22.4-30.3; pct_falso_entre_sostenidos 40.1-53.4; precision_mediana_abs 1.5-2.1; recorrido_medio 53.7-84.5; recorrido_mediano 31.1-43.9; pct_llega_opuesta 37.5-66.2; recorrido_total_por_noche 358.0-659.8; llegadas_por_noche 12.6-18.2
+  PLACEBO ESTRICTO (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real   326.00 | azar p5   192.95 p50   256.50 p95   314.10 | percentil  97.8
+     sostenidos                   real   115.00 | azar p5    57.00 p50    80.00 p95   101.00 | percentil  99.4
+     pct_sostenidos               real    35.38 | azar p5    26.43 p50    31.30 p95    36.61 | percentil  91.0
+     exactos                      real    83.00 | azar p5    43.95 p50    60.00 p95    79.00 | percentil  97.8
+     pct_exactos                  real    25.54 | azar p5    19.26 p50    23.71 p95    28.48 | percentil  74.8
+     pct_rotas                    real    64.62 | azar p5    63.39 p50    68.70 p95    73.57 | percentil   9.0
+     precision_mediana_abs        real     1.29 | azar p5     1.10 p50     1.33 p95     1.55 | percentil  35.6
+     recorrido_medio              real    56.51 | azar p5    46.82 p50    58.16 p95    72.14 | percentil  42.0
+     recorrido_mediano            real    35.99 | azar p5    26.96 p50    32.88 p95    42.95 | percentil  74.8
+     recorrido_tramo_medio        real    48.68 | azar p5    41.43 p50    49.74 p95    59.18 | percentil  44.0
+     recorrido_total              real  6498.40 | azar p5  3227.34 p50  4650.80 p95  6191.92 | percentil  97.2
+     pct_llega_opuesta            real    38.10 | azar p5    18.42 p50    37.12 p95    56.15 | percentil  52.8
+     pct_falso_entre_sostenidos   real    29.57 | azar p5    19.17 p50    26.45 p95    34.00 | percentil  74.8
+     cobertura_pct                real     5.19 | azar p5     2.20 p50     3.37 p95     4.80 | percentil  99.1
+     corridas +-11/19/31 juntas: llegadas 2029 sostenidos 31.1 % exactos 23.7 % precision |med| 1.31 recorrido medio 58.1 llega opuesta 35.1 % cobertura 4.8 %
+     por corrimiento: -31: 322 lleg 30 % sost | -19: 343 lleg 30 % sost | -11: 356 lleg 29 % sost | +11: 346 lleg 33 % sost | +19: 349 lleg 32 % sost | +31: 313 lleg 32 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 31.2-40.1; pct_exactos 22.0-29.8; pct_falso_entre_sostenidos 22.7-37.0; precision_mediana_abs 1.2-1.5; recorrido_medio 47.6-66.3; recorrido_mediano 29.0-39.0; pct_llega_opuesta 26.4-49.2; recorrido_total_por_noche 251.7-397.2; llegadas_por_noche 13.2-19.4
+  PLACEBO MUY_TOLERANTE (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real   281.00 | azar p5   167.90 p50   220.50 p95   271.05 | percentil  98.0
+     sostenidos                   real   157.00 | azar p5    87.00 p50   113.00 p95   143.00 | percentil  99.6
+     pct_sostenidos               real    56.07 | azar p5    46.29 p50    51.92 p95    57.92 | percentil  86.4
+     exactos                      real    75.00 | azar p5    37.00 p50    53.00 p95    69.00 | percentil  98.5
+     pct_exactos                  real    26.79 | azar p5    19.65 p50    24.12 p95    29.24 | percentil  81.6
+     pct_rotas                    real    43.93 | azar p5    42.08 p50    47.93 p95    53.71 | percentil  14.0
+     precision_mediana_abs        real     2.25 | azar p5     1.83 p50     2.39 p95     3.34 | percentil  39.8
+     recorrido_medio              real    71.54 | azar p5    55.19 p50    66.51 p95    80.21 | percentil  72.4
+     recorrido_mediano            real    44.85 | azar p5    32.40 p50    39.86 p95    57.52 | percentil  73.4
+     recorrido_tramo_medio        real    51.49 | azar p5    43.17 p50    49.80 p95    57.87 | percentil  65.6
+     recorrido_total              real 11231.08 | azar p5  5558.36 p50  7525.17 p95  9925.01 | percentil  99.2
+     pct_llega_opuesta            real    55.68 | azar p5    23.52 p50    41.30 p95    58.07 | percentil  91.8
+     pct_falso_entre_sostenidos   real    53.50 | azar p5    47.56 p50    54.87 p95    62.01 | percentil  37.6
+     cobertura_pct                real     5.19 | azar p5     2.20 p50     3.37 p95     4.80 | percentil  99.1
+     corridas +-11/19/31 juntas: llegadas 1755 sostenidos 52.7 % exactos 24.5 % precision |med| 2.59 recorrido medio 66.8 llega opuesta 43.3 % cobertura 4.8 %
+     por corrimiento: -31: 283 lleg 55 % sost | -19: 298 lleg 47 % sost | -11: 302 lleg 51 % sost | +11: 299 lleg 55 % sost | +19: 302 lleg 54 % sost | +31: 271 lleg 56 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 50.8-61.9; pct_exactos 23.3-30.7; pct_falso_entre_sostenidos 46.4-59.7; precision_mediana_abs 1.8-3.2; recorrido_medio 57.3-90.1; recorrido_mediano 39.8-58.3; pct_llega_opuesta 41.3-69.9; recorrido_total_por_noche 409.1-750.1; llegadas_por_noche 11.3-16.7
+  PLACEBO TOLERANTE con azar 'propia' (cada pista conserva su propia distancia, signo al azar): pct_sostenidos real 47.9 p50 47.6 pct 56; pct_exactos real 26.1 p50 25.9 pct 52; precision_mediana_abs real 1.8 p50 1.8 pct 45; recorrido_medio real 67.3 p50 70.9 pct 30; pct_llega_opuesta real 51.8 p50 41.2 pct 92; cobertura_pct real 5.2 p50 3.9 pct 99
+  COBERTURA de giros (zigzag 20): +-2: 40/771 = 5.2 %; +-4: 79/771 = 10.2 %; +-6: 126/771 = 16.3 %
+  chequeo: mi bucle por noche reproduce el placebo oficial: p50 pct_sostenidos mio 44.44 oficial 44.44
+  DIFERENCIA PAREADA POR NOCHE (TOLERANTE; bootstrap de noches, IC90):
+     real vs corridas: pct_sostenidos +2.7 (IC90 -2.0 a +8.1, P(<=0) 0.18); recorrido_medio +2.6 (IC90 -9.4 a +15.2, P(<=0) 0.40); pct_llega_opuesta +11.1 (IC90 -4.4 a +26.5, P(<=0) 0.12); pct_exactos +2.2 (IC90 -2.5 a +7.7, P(<=0) 0.23); cobertura_pct +4.4 (IC90 +3.2 a +5.6, P(<=0) 0.00)
+     real vs azar: pct_sostenidos +3.4 (IC90 -0.9 a +8.3, P(<=0) 0.09); recorrido_medio +3.5 (IC90 -7.0 a +14.8, P(<=0) 0.33); pct_llega_opuesta +11.8 (IC90 -2.0 a +25.5, P(<=0) 0.09); pct_exactos +2.1 (IC90 -1.4 a +6.2, P(<=0) 0.16); cobertura_pct +1.7 (IC90 +0.5 a +3.0, P(<=0) 0.01)
+  POR NOCHE (TOLERANTE): noche | lleg base sost% (azar p50, pctil | corridas) rotas falso exactos | prec|med| | rec medio (azar p50) | opuesta | giros cub (azar p50 | corr)
+     2026-09-14 |  17  17  52.9% ( 44.4,  68.0 |  42.2)   8  3  6 |  1.24 |   47.3 (  50.4) | 0/1 | 57  4 =   7.0% (  3.5 |   2.6)
+     2026-09-15 |  15  15  46.7% ( 42.9,  61.0 |  42.1)   8  3  4 |  1.12 |   81.8 (  68.9) | 3/3 | 32  4 =  12.5% (  3.1 |   3.1)
+     2026-09-16 |   4   4  50.0% ( 40.0,  76.0 |  41.8)   2  1  1 |  3.59 |  129.0 (  50.9) | 2/2 | 31  0 =   0.0% (  3.2 |   4.3)
+     2026-09-17 |   3   3  33.3% ( 39.1,  33.0 |  41.5)   2  0  1 |  1.78 |  222.0 (  52.0) | 1/1 | 28  1 =   3.6% (  3.6 |   2.4)
+     2026-09-18 |  14  14  35.7% ( 42.9,  33.0 |  45.2)   9  3  2 |  3.17 |   89.1 (  94.5) | 2/2 | 18  1 =   5.6% (  0.0 |   7.4)
+     2026-09-21 |  25  25  36.0% ( 42.9,  36.0 |  45.5)  16  5  5 |  1.95 |   21.7 (  64.2) | 0/6 | 42  2 =   4.8% (  2.4 |   8.3)
+     2026-09-22 |   7   7  42.9% ( 50.0,  39.0 |  47.5)   4  3  0 |  4.76 |   65.3 (  57.3) | 1/1 | 29  0 =   0.0% (  3.4 |   4.6)
+     2026-09-23 |  13  13  53.8% ( 43.8,  67.0 |  40.3)   6  4  3 |  2.31 |   84.3 (  57.4) | 1/1 | 18  0 =   0.0% (  5.6 |   8.3)
+     2026-09-24 |   2   2 100.0% ( 42.9,  80.0 |  30.8)   0  0  2 |  1.12 |   39.0 (  32.6) | 0/2 |  4  2 =  50.0% (  0.0 |   0.0)
+     2026-09-25 |  11  11  27.3% ( 41.2,  31.0 |  35.8)   8  3  1 |  2.97 |   23.3 (  55.1) | 0/0 | 37  0 =   0.0% (  2.7 |   3.2)
+     2026-09-28 |  26  26  53.8% ( 47.2,  72.0 |  55.8)  12  8  6 |  2.81 |   61.9 (  66.8) | 4/10 | 93  4 =   4.3% (  2.2 |   6.3)
+     2026-09-29 |  23  23  47.8% ( 42.9,  63.0 |  37.0)  12  7  4 |  3.51 |   52.8 (  59.0) | 2/10 | 47  3 =   6.4% (  2.1 |   2.5)
+     2026-09-30 |  26  26  38.5% ( 43.8,  35.0 |  47.7)  16  2  8 |  1.25 |   40.1 (  57.5) | 2/5 | 44  4 =   9.1% (  2.3 |   7.6)
+     2026-10-01 |  22  22  54.5% ( 44.4,  82.0 |  45.1)  10  7  5 |  3.85 |  168.3 ( 111.2) | 6/10 | 63  4 =   6.3% (  3.2 |   7.1)
+     2026-10-02 |  27  27  48.1% ( 50.0,  46.0 |  47.3)  14  5  8 |  1.56 |   69.6 (  48.5) | 7/9 | 56  5 =   8.9% (  3.6 |   4.2)
+     2026-10-05 |  14  14  78.6% ( 50.0,  95.0 |  49.5)   3  3  8 |  1.28 |   52.0 (  53.9) | 0/3 | 65  3 =   4.6% (  3.1 |   2.8)
+     2026-10-06 |  22  22  31.8% ( 47.1,  17.0 |  47.0)  15  2  5 |  1.47 |   51.7 (  47.6) | 3/5 | 29  1 =   3.4% (  3.4 |   5.2)
+     2026-10-07 |   8   8  37.5% ( 42.9,  41.0 |  48.1)   5  2  1 |  2.23 |   25.5 (  45.5) | 0/2 | 19  0 =   0.0% (  5.3 |   5.3)
+     2026-10-08 |  19  19  52.6% ( 45.0,  67.0 |  48.3)   9  5  5 |  2.04 |   70.6 (  66.0) | 1/2 | 43  1 =   2.3% (  2.3 |   4.7)
+     2026-10-09 |  10   9  88.9% ( 40.0,  90.0 |  30.6)   1  3  5 |  1.47 |   43.7 (  42.0) | 8/8 | 16  1 =   6.2% (  0.0 |   1.0)
+
+======================================================================================================================================================
+CONJUNTO r20_doms (dom0+dom1) | ventana COMPLETA | pistas 2925 | noches en la ventana 20 | 645 s
+  tolerante     llegadas  622 (techo 324 piso 298, censuradas 1) base  621 | sostenidos  289 =  46.5 % (falso romp. 135 = 47 % de ellos) | rotas  53.5 % | indef 0 | exactos 159 = 25.6 % | precision |mediana| 1.78 (con signo +1.59) | recorrido medio 65.3 mediano 37.2 tramo 50.2 | llega opuesta 81/170 = 47.6 % | noches con llegadas 20, niveles 246
+  estricto      llegadas  647 (techo 334 piso 313, censuradas 1) base  646 | sostenidos  220 =  34.1 % (falso romp. 63 = 29 % de ellos) | rotas  65.9 % | indef 0 | exactos 162 = 25.1 % | precision |mediana| 1.33 (con signo +0.59) | recorrido medio 55.2 mediano 33.6 tramo 49.1 | llega opuesta 50/128 = 39.1 % | noches con llegadas 20, niveles 247
+  muy_tolerante llegadas  575 (techo 304 piso 271, censuradas 1) base  574 | sostenidos  314 =  54.7 % (falso romp. 168 = 54 % de ellos) | rotas  45.3 % | indef 0 | exactos 150 = 26.1 % | precision |mediana| 2.28 (con signo +2.28) | recorrido medio 70.8 mediano 43.5 tramo 50.1 | llega opuesta 94/184 = 51.1 % | noches con llegadas 20, niveles 243
+  PLACEBO TOLERANTE (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real   622.00 | azar p5   445.00 p50   515.50 p95   581.05 | percentil  99.4
+     sostenidos                   real   289.00 | azar p5   201.00 p50   237.00 p95   269.00 | percentil  99.7
+     pct_sostenidos               real    46.54 | azar p5    42.56 p50    45.93 p95    49.71 | percentil  60.0
+     exactos                      real   159.00 | azar p5   100.00 p50   122.00 p95   145.05 | percentil  99.4
+     pct_exactos                  real    25.60 | azar p5    20.82 p50    23.72 p95    27.01 | percentil  82.4
+     pct_rotas                    real    53.46 | azar p5    50.28 p50    54.05 p95    57.44 | percentil  40.4
+     precision_mediana_abs        real     1.78 | azar p5     1.73 p50     1.93 p95     2.36 | percentil  11.6
+     recorrido_medio              real    65.32 | azar p5    59.40 p50    67.02 p95    76.12 | percentil  37.8
+     recorrido_mediano            real    37.19 | azar p5    33.25 p50    37.64 p95    45.66 | percentil  45.0
+     recorrido_tramo_medio        real    50.16 | azar p5    44.46 p50    50.29 p95    56.74 | percentil  48.0
+     recorrido_total              real 18876.06 | azar p5 12924.47 p50 15854.37 p95 18877.25 | percentil  95.0
+     pct_llega_opuesta            real    47.65 | azar p5    35.43 p50    45.29 p95    55.56 | percentil  65.0
+     pct_falso_entre_sostenidos   real    46.71 | azar p5    44.22 p50    49.57 p95    54.96 | percentil  18.4
+     cobertura_pct                real     4.65 | azar p5     2.97 p50     3.74 p95     4.52 | percentil  95.6
+     corridas +-11/19/31 juntas: llegadas 3609 sostenidos 46.4 % exactos 24.1 % precision |med| 1.91 recorrido medio 67.2 llega opuesta 41.1 % cobertura 4.6 %
+     por corrimiento: -31: 593 lleg 46 % sost | -19: 609 lleg 44 % sost | -11: 650 lleg 45 % sost | +11: 615 lleg 49 % sost | +19: 581 lleg 47 % sost | +31: 561 lleg 48 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 43.4-49.9; pct_exactos 22.9-28.6; pct_falso_entre_sostenidos 41.7-51.7; precision_mediana_abs 1.6-2.0; recorrido_medio 55.5-77.1; recorrido_mediano 31.4-43.5; pct_llega_opuesta 38.7-56.5; recorrido_total_por_noche 747.3-1173.5; llegadas_por_noche 26.4-36.0
+  PLACEBO ESTRICTO (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real   647.00 | azar p5   462.80 p50   540.00 p95   610.05 | percentil  99.2
+     sostenidos                   real   220.00 | azar p5   141.95 p50   170.00 p95   196.00 | percentil 100.0
+     pct_sostenidos               real    34.06 | azar p5    28.18 p50    31.38 p95    34.76 | percentil  89.4
+     exactos                      real   162.00 | azar p5   103.95 p50   127.00 p95   150.05 | percentil  98.9
+     pct_exactos                  real    25.08 | azar p5    20.59 p50    23.60 p95    26.65 | percentil  79.0
+     pct_rotas                    real    65.94 | azar p5    65.24 p50    68.60 p95    71.82 | percentil  10.8
+     precision_mediana_abs        real     1.33 | azar p5     1.18 p50     1.35 p95     1.51 | percentil  40.6
+     recorrido_medio              real    55.24 | azar p5    51.98 p50    59.93 p95    69.57 | percentil  19.2
+     recorrido_mediano            real    33.56 | azar p5    28.96 p50    33.15 p95    38.35 | percentil  57.4
+     recorrido_tramo_medio        real    49.09 | azar p5    43.52 p50    50.57 p95    57.63 | percentil  36.8
+     recorrido_total              real 12152.77 | azar p5  8091.78 p50 10149.36 p95 12242.73 | percentil  94.0
+     pct_llega_opuesta            real    39.06 | azar p5    31.48 p50    40.88 p95    51.89 | percentil  39.2
+     pct_falso_entre_sostenidos   real    28.64 | azar p5    21.95 p50    26.80 p95    32.19 | percentil  72.0
+     cobertura_pct                real     4.65 | azar p5     2.97 p50     3.74 p95     4.52 | percentil  95.6
+     corridas +-11/19/31 juntas: llegadas 3775 sostenidos 31.7 % exactos 24.1 % precision |med| 1.34 recorrido medio 61.6 llega opuesta 34.9 % cobertura 4.6 %
+     por corrimiento: -31: 622 lleg 30 % sost | -19: 634 lleg 32 % sost | -11: 682 lleg 29 % sost | +11: 645 lleg 33 % sost | +19: 606 lleg 35 % sost | +31: 586 lleg 31 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 30.8-37.5; pct_exactos 22.2-28.1; pct_falso_entre_sostenidos 23.1-35.2; precision_mediana_abs 1.2-1.5; recorrido_medio 49.1-62.2; recorrido_mediano 29.7-37.3; pct_llega_opuesta 31.8-45.4; recorrido_total_por_noche 505.7-719.4; llegadas_por_noche 27.3-37.5
+  PLACEBO MUY_TOLERANTE (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real   575.00 | azar p5   415.00 p50   483.50 p95   543.05 | percentil  98.9
+     sostenidos                   real   314.00 | azar p5   218.00 p50   255.00 p95   292.00 | percentil  99.8
+     pct_sostenidos               real    54.70 | azar p5    49.66 p50    53.21 p95    57.14 | percentil  76.0
+     exactos                      real   150.00 | azar p5    94.00 p50   115.00 p95   137.00 | percentil  99.2
+     pct_exactos                  real    26.13 | azar p5    21.14 p50    23.89 p95    27.24 | percentil  85.6
+     pct_rotas                    real    45.30 | azar p5    42.77 p50    46.74 p95    50.23 | percentil  25.4
+     precision_mediana_abs        real     2.28 | azar p5     1.99 p50     2.58 p95     3.21 | percentil  21.6
+     recorrido_medio              real    70.79 | azar p5    63.22 p50    70.91 p95    80.47 | percentil  48.8
+     recorrido_mediano            real    43.50 | azar p5    35.45 p50    40.53 p95    51.10 | percentil  73.2
+     recorrido_tramo_medio        real    50.15 | azar p5    44.98 p50    50.40 p95    56.58 | percentil  48.0
+     recorrido_total              real 22229.18 | azar p5 15057.97 p50 18131.82 p95 21373.54 | percentil  97.8
+     pct_llega_opuesta            real    51.09 | azar p5    37.28 p50    47.19 p95    56.63 | percentil  75.6
+     pct_falso_entre_sostenidos   real    53.50 | azar p5    51.11 p50    56.11 p95    60.93 | percentil  21.6
+     cobertura_pct                real     4.65 | azar p5     2.97 p50     3.74 p95     4.52 | percentil  95.6
+     corridas +-11/19/31 juntas: llegadas 3372 sostenidos 53.5 % exactos 24.7 % precision |med| 2.52 recorrido medio 70.3 llega opuesta 43.7 % cobertura 4.6 %
+     por corrimiento: -31: 561 lleg 53 % sost | -19: 571 lleg 52 % sost | -11: 598 lleg 52 % sost | +11: 574 lleg 54 % sost | +19: 548 lleg 55 % sost | +31: 520 lleg 56 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 50.9-58.7; pct_exactos 23.3-29.2; pct_falso_entre_sostenidos 47.9-59.3; precision_mediana_abs 1.8-3.2; recorrido_medio 60.6-83.8; recorrido_mediano 37.3-51.9; pct_llega_opuesta 41.8-60.1; recorrido_total_por_noche 883.3-1384.5; llegadas_por_noche 24.3-33.2
+  PLACEBO TOLERANTE con azar 'propia' (cada pista conserva su propia distancia, signo al azar): pct_sostenidos real 46.5 p50 46.7 pct 48; pct_exactos real 25.6 p50 25.5 pct 54; precision_mediana_abs real 1.8 p50 1.8 pct 32; recorrido_medio real 65.3 p50 73.1 pct 3; pct_llega_opuesta real 47.6 p50 42.7 pct 88; cobertura_pct real 4.6 p50 3.9 pct 96
+  COBERTURA de giros (zigzag 20): +-2: 72/1549 = 4.6 %; +-4: 142/1549 = 9.2 %; +-6: 223/1549 = 14.4 %
+  chequeo: mi bucle por noche reproduce el placebo oficial: p50 pct_sostenidos mio 45.93 oficial 45.93
+  DIFERENCIA PAREADA POR NOCHE (TOLERANTE; bootstrap de noches, IC90):
+     real vs corridas: pct_sostenidos +0.2 (IC90 -3.8 a +4.5, P(<=0) 0.48); recorrido_medio -1.9 (IC90 -9.3 a +6.3, P(<=0) 0.66); pct_llega_opuesta +6.6 (IC90 -2.0 a +15.7, P(<=0) 0.12); pct_exactos +1.5 (IC90 -2.3 a +5.3, P(<=0) 0.25); cobertura_pct +3.9 (IC90 +3.1 a +4.8, P(<=0) 0.00)
+     real vs azar: pct_sostenidos +0.6 (IC90 -2.5 a +4.2, P(<=0) 0.39); recorrido_medio -1.9 (IC90 -9.7 a +6.8, P(<=0) 0.66); pct_llega_opuesta +2.4 (IC90 -6.3 a +10.9, P(<=0) 0.33); pct_exactos +1.8 (IC90 -1.0 a +4.8, P(<=0) 0.15); cobertura_pct +0.9 (IC90 +0.1 a +1.8, P(<=0) 0.03)
+  POR NOCHE (TOLERANTE): noche | lleg base sost% (azar p50, pctil | corridas) rotas falso exactos | prec|med| | rec medio (azar p50) | opuesta | giros cub (azar p50 | corr)
+     2026-09-14 |  19  19  47.4% ( 42.9,  66.0 |  40.5)  10  3  6 |  1.24 |   47.3 (  55.0) | 0/1 | 91  4 =   4.4% (  3.3 |   2.4)
+     2026-09-15 |  36  36  52.8% ( 45.8,  72.0 |  44.3)  17  8 12 |  1.63 |   66.2 (  67.0) | 5/10 | 71  9 =  12.7% (  4.2 |   3.5)
+     2026-09-16 |  16  16  43.8% ( 42.9,  53.0 |  45.5)   9  3  5 |  0.94 |   82.4 (  54.5) | 3/6 | 64  2 =   3.1% (  3.1 |   4.2)
+     2026-09-17 |  21  21  52.4% ( 41.0,  88.0 |  39.7)  10  4  7 |  1.78 |   51.2 (  68.2) | 3/9 | 66  3 =   4.5% (  4.5 |   2.8)
+     2026-09-18 |  30  30  36.7% ( 45.6,  22.0 |  46.2)  19  6  5 |  3.17 |   69.4 (  72.1) | 5/6 | 47  2 =   4.3% (  4.3 |   5.3)
+     2026-09-21 |  36  36  36.1% ( 45.0,  25.0 |  48.6)  23  9  6 |  2.55 |   23.3 (  54.8) | 0/8 | 60  4 =   6.7% (  3.3 |   6.9)
+     2026-09-22 |  17  17  58.8% ( 52.3,  71.0 |  50.0)   7  6  4 |  2.33 |   96.5 (  61.1) | 5/5 | 86  3 =   3.5% (  3.5 |   3.1)
+     2026-09-23 |  15  15  60.0% ( 43.8,  89.0 |  38.4)   6  5  4 |  2.31 |   83.0 (  58.2) | 1/1 | 41  1 =   2.4% (  2.4 |   4.5)
+     2026-09-24 |  10  10  50.0% ( 53.8,  42.0 |  45.8)   5  0  5 |  1.01 |   58.1 (  36.3) | 2/4 | 18  4 =  22.2% (  0.0 |   6.5)
+     2026-09-25 |  20  20  55.0% ( 44.4,  84.0 |  44.2)   9  9  3 |  2.99 |   71.4 (  69.8) | 3/5 | 74  1 =   1.4% (  2.7 |   3.8)
+     2026-09-28 |  47  47  42.6% ( 50.0,  21.0 |  56.6)  27 13  7 |  3.43 |   55.8 (  70.4) | 5/14 | 147  5 =   3.4% (  3.4 |   6.5)
+     2026-09-29 |  41  41  43.9% ( 46.2,  39.0 |  42.4)  23  8 10 |  1.39 |   57.9 (  66.8) | 3/12 | 96  6 =   6.2% (  4.2 |   2.8)
+     2026-09-30 |  55  55  36.4% ( 44.8,  19.0 |  47.5)  35  6 14 |  1.38 |   71.5 (  73.9) | 6/11 | 93  5 =   5.4% (  3.2 |   6.5)
+     2026-10-01 |  45  45  51.1% ( 46.2,  73.0 |  45.9)  22 12 11 |  2.45 |  136.3 (  93.0) | 9/15 | 133  6 =   4.5% (  3.0 |   6.1)
+     2026-10-02 |  46  46  43.5% ( 47.2,  30.0 |  44.9)  26 10 10 |   2.0 |   71.6 (  61.1) | 10/12 | 117  6 =   5.1% (  4.3 |   4.3)
+     2026-10-05 |  28  28  57.1% ( 47.6,  83.0 |  52.6)  12  8  8 |  2.47 |   58.4 (  61.3) | 1/7 | 102  3 =   2.9% (  2.9 |   2.9)
+     2026-10-06 |  50  50  36.0% ( 45.1,  18.0 |  48.5)  32  8 10 |   1.8 |   37.7 (  50.7) | 5/14 | 61  1 =   1.6% (  3.3 |   7.1)
+     2026-10-07 |  24  24  45.8% ( 47.1,  46.0 |  51.2)  13  5  6 |  1.85 |   63.0 (  62.9) | 2/8 | 57  1 =   1.8% (  3.5 |   3.8)
+     2026-10-08 |  48  48  52.1% ( 47.1,  68.0 |  46.3)  23  8 17 |  1.38 |   46.6 (  69.9) | 3/9 | 95  4 =   4.2% (  3.2 |   5.3)
+     2026-10-09 |  18  17  76.5% ( 46.2,  94.0 |  34.5)   4  4  9 |  1.32 |   43.7 (  48.4) | 10/13 | 30  2 =   6.7% (  3.3 |   3.3)
+
+======================================================================================================================================================
+CONJUNTO r20_zero (zero_vol) | ventana CONGELADA | pistas 1522 | noches en la ventana 20 | 376 s
+  tolerante     llegadas   51 (techo 22 piso 29, censuradas 0) base   51 | sostenidos   25 =  49.0 % (falso romp. 17 = 68 % de ellos) | rotas  51.0 % | indef 0 | exactos 9 = 17.6 % | precision |mediana| 2.65 (con signo +2.65) | recorrido medio 91.7 mediano 85.1 tramo 70.4 | llega opuesta 0/0 = None % | noches con llegadas 10, niveles 15
+  estricto      llegadas   57 (techo 24 piso 33, censuradas 0) base   57 | sostenidos   16 =  28.1 % (falso romp. 7 = 44 % de ellos) | rotas  71.9 % | indef 0 | exactos 10 = 17.5 % | precision |mediana| 1.95 (con signo +1.77) | recorrido medio 68.2 mediano 61.1 tramo 61.0 | llega opuesta 0/0 = None % | noches con llegadas 10, niveles 15
+  muy_tolerante llegadas   49 (techo 21 piso 28, censuradas 0) base   49 | sostenidos   28 =  57.1 % (falso romp. 20 = 71 % de ellos) | rotas  42.9 % | indef 0 | exactos 9 = 18.4 % | precision |mediana| 3.21 (con signo +3.21) | recorrido medio 87.6 mediano 85.1 tramo 64.8 | llega opuesta 0/0 = None % | noches con llegadas 10, niveles 14
+  PLACEBO TOLERANTE (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real    51.00 | azar p5    29.95 p50    62.00 p95    97.00 | percentil  28.5
+     sostenidos                   real    25.00 | azar p5    13.00 p50    27.00 p95    43.00 | percentil  41.5
+     pct_sostenidos               real    49.02 | azar p5    34.21 p50    44.17 p95    54.55 | percentil  78.2
+     exactos                      real     9.00 | azar p5     6.00 p50    15.00 p95    25.00 | percentil  15.1
+     pct_exactos                  real    17.65 | azar p5    15.55 p50    23.66 p95    32.59 | percentil  10.3
+     pct_rotas                    real    50.98 | azar p5    45.45 p50    55.81 p95    65.79 | percentil  21.8
+     precision_mediana_abs        real     2.65 | azar p5     1.32 p50     1.87 p95     3.34 | percentil  86.0
+     recorrido_medio              real    91.69 | azar p5    42.12 p50    61.14 p95    94.37 | percentil  93.6
+     recorrido_mediano            real    85.06 | azar p5    26.24 p50    37.04 p95    75.60 | percentil  96.4
+     recorrido_tramo_medio        real    70.41 | azar p5    35.51 p50    48.33 p95    67.98 | percentil  95.8
+     recorrido_total              real  2292.32 | azar p5   754.21 p50  1655.68 p95  2941.99 | percentil  82.4
+     pct_llega_opuesta            real      nan | azar p5      nan p50      nan p95      nan | percentil   nan
+     pct_falso_entre_sostenidos   real    68.00 | azar p5    32.13 p50    47.62 p95    63.84 | percentil  99.0
+     cobertura_pct                real     0.78 | azar p5     0.26 p50     0.91 p95     1.69 | percentil  39.3
+     corridas +-11/19/31 juntas: llegadas 373 sostenidos 40.1 % exactos 23.9 % precision |med| 1.58 recorrido medio 63.0 llega opuesta None % cobertura 1.1 %
+     por corrimiento: -31: 74 lleg 40 % sost | -19: 58 lleg 50 % sost | -11: 51 lleg 43 % sost | +11: 62 lleg 35 % sost | +19: 60 lleg 35 % sost | +31: 68 lleg 38 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 37.5-61.9; pct_exactos 9.7-25.0; pct_falso_entre_sostenidos 50.0-83.3; precision_mediana_abs 1.9-5.6; recorrido_medio 76.5-107.8; recorrido_mediano 62.3-100.1; pct_llega_opuesta nan-nan; recorrido_total_por_noche 57.5-178.6; llegadas_por_noche 1.4-3.9
+  PLACEBO ESTRICTO (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real    57.00 | azar p5    32.00 p50    66.00 p95   102.00 | percentil  33.0
+     sostenidos                   real    16.00 | azar p5     9.00 p50    20.50 p95    33.00 | percentil  27.4
+     pct_sostenidos               real    28.07 | azar p5    22.22 p50    30.88 p95    40.62 | percentil  27.7
+     exactos                      real    10.00 | azar p5     6.00 p50    15.00 p95    25.00 | percentil  18.0
+     pct_exactos                  real    17.54 | azar p5    14.99 p50    23.31 p95    32.44 | percentil  11.7
+     pct_rotas                    real    71.93 | azar p5    59.38 p50    69.12 p95    77.78 | percentil  72.3
+     precision_mediana_abs        real     1.95 | azar p5     0.89 p50     1.34 p95     1.75 | percentil  98.4
+     recorrido_medio              real    68.16 | azar p5    36.93 p50    56.14 p95    90.24 | percentil  75.8
+     recorrido_mediano            real    61.05 | azar p5    23.42 p50    33.21 p95    63.10 | percentil  93.6
+     recorrido_tramo_medio        real    60.98 | azar p5    32.81 p50    48.10 p95    70.53 | percentil  86.2
+     recorrido_total              real  1090.50 | azar p5   461.42 p50  1142.59 p95  2106.93 | percentil  46.4
+     pct_llega_opuesta            real      nan | azar p5      nan p50      nan p95      nan | percentil   nan
+     pct_falso_entre_sostenidos   real    43.75 | azar p5    11.11 p50    26.67 p95    44.00 | percentil  94.5
+     cobertura_pct                real     0.78 | azar p5     0.26 p50     0.91 p95     1.69 | percentil  39.3
+     corridas +-11/19/31 juntas: llegadas 389 sostenidos 31.2 % exactos 24.0 % precision |med| 1.26 recorrido medio 66.2 llega opuesta None % cobertura 1.1 %
+     por corrimiento: -31: 81 lleg 24 % sost | -19: 59 lleg 39 % sost | -11: 52 lleg 35 % sost | +11: 65 lleg 32 % sost | +19: 63 lleg 25 % sost | +31: 69 lleg 35 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 17.3-39.6; pct_exactos 9.6-24.0; pct_falso_entre_sostenidos 18.2-66.7; precision_mediana_abs 1.1-2.2; recorrido_medio 59.0-75.2; recorrido_mediano 34.2-85.1; pct_llega_opuesta nan-nan; recorrido_total_por_noche 20.8-93.5; llegadas_por_noche 1.4-4.5
+  PLACEBO MUY_TOLERANTE (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real    49.00 | azar p5    27.95 p50    57.00 p95    88.05 | percentil  35.2
+     sostenidos                   real    28.00 | azar p5    13.95 p50    29.00 p95    46.00 | percentil  45.0
+     pct_sostenidos               real    57.14 | azar p5    41.16 p50    51.81 p95    62.07 | percentil  81.3
+     exactos                      real     9.00 | azar p5     6.00 p50    14.00 p95    22.00 | percentil  19.6
+     pct_exactos                  real    18.37 | azar p5    15.51 p50    24.14 p95    33.33 | percentil  14.4
+     pct_rotas                    real    42.86 | azar p5    37.93 p50    48.06 p95    58.82 | percentil  18.9
+     precision_mediana_abs        real     3.21 | azar p5     1.50 p50     2.46 p95     4.14 | percentil  77.8
+     recorrido_medio              real    87.59 | azar p5    44.53 p50    63.88 p95    96.86 | percentil  90.2
+     recorrido_mediano            real    85.06 | azar p5    27.02 p50    39.57 p95    77.05 | percentil  97.0
+     recorrido_tramo_medio        real    64.79 | azar p5    35.71 p50    48.47 p95    66.67 | percentil  92.4
+     recorrido_total              real  2452.56 | azar p5   824.60 p50  1844.61 p95  3033.91 | percentil  79.0
+     pct_llega_opuesta            real      nan | azar p5      nan p50      nan p95      nan | percentil   nan
+     pct_falso_entre_sostenidos   real    71.43 | azar p5    39.23 p50    55.00 p95    68.76 | percentil  96.8
+     cobertura_pct                real     0.78 | azar p5     0.26 p50     0.91 p95     1.69 | percentil  39.3
+     corridas +-11/19/31 juntas: llegadas 341 sostenidos 47.9 % exactos 23.8 % precision |med| 2.07 recorrido medio 67.6 llega opuesta None % cobertura 1.1 %
+     por corrimiento: -31: 70 lleg 46 % sost | -19: 53 lleg 51 % sost | -11: 48 lleg 52 % sost | +11: 59 lleg 51 % sost | +19: 49 lleg 45 % sost | +31: 62 lleg 44 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 48.1-68.6; pct_exactos 10.0-25.7; pct_falso_entre_sostenidos 55.6-85.3; precision_mediana_abs 2.2-6.4; recorrido_medio 69.3-106.4; recorrido_mediano 59.8-109.9; pct_llega_opuesta nan-nan; recorrido_total_por_noche 64.4-187.8; llegadas_por_noche 1.2-3.8
+  PLACEBO TOLERANTE con azar 'propia' (cada pista conserva su propia distancia, signo al azar): pct_sostenidos real 49.0 p50 44.7 pct 74; pct_exactos real 17.6 p50 21.4 pct 13; precision_mediana_abs real 2.7 p50 2.2 pct 80; recorrido_medio real 91.7 p50 71.9 pct 99; pct_llega_opuesta real nan p50 nan pct nan; cobertura_pct real 0.8 p50 0.8 pct 38
+  COBERTURA de giros (zigzag 20): +-2: 6/771 = 0.8 %; +-4: 14/771 = 1.8 %; +-6: 20/771 = 2.6 %
+  chequeo: mi bucle por noche reproduce el placebo oficial: p50 pct_sostenidos mio 44.17 oficial 44.17
+  DIFERENCIA PAREADA POR NOCHE (TOLERANTE; bootstrap de noches, IC90):
+     real vs corridas: pct_sostenidos +9.0 (IC90 -4.2 a +22.4, P(<=0) 0.14); recorrido_medio +28.7 (IC90 +15.2 a +39.9, P(<=0) 0.00); pct_llega_opuesta +nan (IC90 +nan a +nan, P(<=0) 0.00); pct_exactos -6.3 (IC90 -18.5 a +2.1, P(<=0) 0.88); cobertura_pct +0.6 (IC90 -0.1 a +1.2, P(<=0) 0.07)
+     real vs azar: pct_sostenidos +5.0 (IC90 -6.2 a +17.2, P(<=0) 0.23); recorrido_medio +29.0 (IC90 +15.2 a +42.6, P(<=0) 0.00); pct_llega_opuesta +nan (IC90 +nan a +nan, P(<=0) 0.00); pct_exactos -6.2 (IC90 -14.5 a +1.3, P(<=0) 0.92); cobertura_pct -0.1 (IC90 -0.9 a +0.6, P(<=0) 0.65)
+  POR NOCHE (TOLERANTE): noche | lleg base sost% (azar p50, pctil | corridas) rotas falso exactos | prec|med| | rec medio (azar p50) | opuesta | giros cub (azar p50 | corr)
+     2026-09-14 |   9   9  22.2% ( 45.5,  15.0 |  35.7)   7  0  2 |  1.77 |   51.9 (  51.9) | 0/0 | 57  2 =   3.5% (  0.0 |   3.8)
+     2026-09-15 |   0   0  None% ( 41.7,  None |  40.0)   0  0  0 |  None |   None (  60.9) | 0/0 | 32  0 =   0.0% (  0.0 |   0.5)
+     2026-09-16 |   4   4  75.0% ( 40.0,  87.0 |  32.6)   1  2  2 |  1.97 |   78.3 (  47.7) | 0/0 | 31  1 =   3.2% (  0.0 |   2.2)
+     2026-09-17 |   0   0  None% ( 40.0,  None |  None)   0  0  0 |  None |   None (  42.8) | 0/0 | 28  0 =   0.0% (  0.0 |   0.0)
+     2026-09-18 |   3   3  33.3% ( 50.0,  36.0 |  30.0)   2  1  0 |  5.29 |  207.2 ( 116.0) | 0/0 | 18  0 =   0.0% (  0.0 |   0.0)
+     2026-09-21 |   0   0  None% ( 50.0,  None |  None)   0  0  0 |  None |   None (  49.2) | 0/0 | 42  0 =   0.0% (  0.0 |   0.0)
+     2026-09-22 |   0   0  None% ( 42.9,  None |  None)   0  0  0 |  None |   None (  43.5) | 0/0 | 29  0 =   0.0% (  0.0 |   0.0)
+     2026-09-23 |   0   0  None% ( 41.2,  None |  None)   0  0  0 |  None |   None (  58.4) | 0/0 | 18  0 =   0.0% (  0.0 |   0.0)
+     2026-09-24 |   0   0  None% ( 40.0,  None |  None)   0  0  0 |  None |   None (  31.3) | 0/0 |  4  0 =   0.0% (  0.0 |   0.0)
+     2026-09-25 |   2   2  50.0% ( 50.0,  53.0 |  62.5)   1  1  0 |  9.09 |  121.9 (  58.7) | 0/0 | 37  0 =   0.0% (  0.0 |   0.9)
+     2026-09-28 |  11  11  54.5% ( 50.0,  59.0 |  35.6)   5  4  2 |  3.09 |  107.2 (  69.3) | 0/0 | 93  3 =   3.2% (  0.0 |   0.7)
+     2026-09-29 |   6   6  33.3% ( 40.0,  35.0 |  46.9)   4  0  2 |  0.69 |   85.1 (  52.2) | 0/0 | 47  0 =   0.0% (  0.0 |   2.1)
+     2026-09-30 |   0   0  None% ( 41.7,  None | 100.0)   0  0  0 |  None |   None (  51.3) | 0/0 | 44  0 =   0.0% (  0.0 |   0.0)
+     2026-10-01 |   0   0  None% ( 40.0,  None |  33.3)   0  0  0 |  None |   None (  96.5) | 0/0 | 63  0 =   0.0% (  0.0 |   0.3)
+     2026-10-02 |   0   0  None% ( 50.0,  None |  None)   0  0  0 |  None |   None (  44.9) | 0/0 | 56  0 =   0.0% (  0.0 |   0.0)
+     2026-10-05 |   6   6  83.3% ( 50.0,  92.0 |  33.3)   1  4  1 |  3.09 |   86.4 (  54.5) | 0/0 | 65  0 =   0.0% (  0.0 |   0.8)
+     2026-10-06 |   1   1 100.0% ( 44.4,  91.0 |  54.3)   0  1  0 | 10.23 |   77.3 (  44.8) | 0/0 | 29  0 =   0.0% (  0.0 |   5.2)
+     2026-10-07 |   0   0  None% ( 50.0,  None |  66.7)   0  0  0 |  None |   None (  67.0) | 0/0 | 19  0 =   0.0% (  0.0 |   0.9)
+     2026-10-08 |   2   2  50.0% ( 50.0,  56.0 |  34.8)   1  1  0 |  6.44 |  147.3 (  63.4) | 0/0 | 43  0 =   0.0% (  0.0 |   0.4)
+     2026-10-09 |   7   7  42.9% ( 33.3,  60.0 |  58.3)   4  3  0 |  5.91 |   51.7 (  40.1) | 0/0 | 16  0 =   0.0% (  0.0 |   6.2)
+
+======================================================================================================================================================
+CONJUNTO r20_zero (zero_vol) | ventana COMPLETA | pistas 1522 | noches en la ventana 20 | 318 s
+  tolerante     llegadas   94 (techo 50 piso 44, censuradas 0) base   94 | sostenidos   48 =  51.1 % (falso romp. 29 = 60 % de ellos) | rotas  48.9 % | indef 0 | exactos 21 = 22.3 % | precision |mediana| 2.58 (con signo +2.58) | recorrido medio 78.8 mediano 70.4 tramo 62.7 | llega opuesta 8/8 = 100.0 % | noches con llegadas 15, niveles 48
+  estricto      llegadas  101 (techo 52 piso 49, censuradas 0) base  101 | sostenidos   32 =  31.7 % (falso romp. 12 = 38 % de ellos) | rotas  68.3 % | indef 0 | exactos 22 = 21.8 % | precision |mediana| 1.66 (con signo +1.63) | recorrido medio 70.3 mediano 62.3 tramo 63.8 | llega opuesta 5/5 = 100.0 % | noches con llegadas 15, niveles 48
+  muy_tolerante llegadas   91 (techo 48 piso 43, censuradas 0) base   91 | sostenidos   55 =  60.4 % (falso romp. 36 = 65 % de ellos) | rotas  39.6 % | indef 0 | exactos 20 = 22.0 % | precision |mediana| 3.32 (con signo +3.32) | recorrido medio 74.9 mediano 63.5 tramo 58.0 | llega opuesta 8/8 = 100.0 % | noches con llegadas 15, niveles 47
+  PLACEBO TOLERANTE (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real    94.00 | azar p5   107.00 p50   147.00 p95   189.05 | percentil   1.4
+     sostenidos                   real    48.00 | azar p5    49.00 p50    67.00 p95    89.00 | percentil   4.2
+     pct_sostenidos               real    51.06 | azar p5    39.87 p50    46.43 p95    53.23 | percentil  88.4
+     exactos                      real    21.00 | azar p5    23.00 p50    36.00 p95    48.00 | percentil   2.1
+     pct_exactos                  real    22.34 | azar p5    18.79 p50    23.84 p95    28.97 | percentil  32.1
+     pct_rotas                    real    48.94 | azar p5    46.77 p50    53.57 p95    60.13 | percentil  11.6
+     precision_mediana_abs        real     2.58 | azar p5     1.59 p50     1.94 p95     2.71 | percentil  90.8
+     recorrido_medio              real    78.77 | azar p5    53.38 p50    67.13 p95    84.82 | percentil  86.2
+     recorrido_mediano            real    70.40 | azar p5    30.13 p50    37.99 p95    52.76 | percentil  99.6
+     recorrido_tramo_medio        real    62.71 | azar p5    39.96 p50    50.06 p95    63.88 | percentil  93.8
+     recorrido_total              real  3780.83 | azar p5  3058.72 p50  4655.91 p95  6155.86 | percentil  20.8
+     pct_llega_opuesta            real   100.00 | azar p5     0.00 p50    30.00 p95    66.67 | percentil  99.4
+     pct_falso_entre_sostenidos   real    60.42 | azar p5    40.67 p50    50.00 p95    58.67 | percentil  97.8
+     cobertura_pct                real     0.84 | azar p5     0.58 p50     1.03 p95     1.55 | percentil  23.9
+     corridas +-11/19/31 juntas: llegadas 565 sostenidos 41.5 % exactos 22.0 % precision |med| 1.84 recorrido medio 63.0 llega opuesta 92.9 % cobertura 0.8 %
+     por corrimiento: -31: 102 lleg 43 % sost | -19: 90 lleg 49 % sost | -11: 89 lleg 46 % sost | +11: 89 lleg 37 % sost | +19: 91 lleg 35 % sost | +31: 104 lleg 39 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 42.4-60.3; pct_exactos 17.0-29.7; pct_falso_entre_sostenidos 50.0-68.9; precision_mediana_abs 1.9-3.8; recorrido_medio 66.2-93.8; recorrido_mediano 39.4-95.7; pct_llega_opuesta 100.0-100.0; recorrido_total_por_noche 124.5-257.5; llegadas_por_noche 3.0-6.6
+  PLACEBO ESTRICTO (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real   101.00 | azar p5   110.00 p50   155.00 p95   200.05 | percentil   1.5
+     sostenidos                   real    32.00 | azar p5    33.00 p50    49.00 p95    64.00 | percentil   3.7
+     pct_sostenidos               real    31.68 | azar p5    25.87 p50    31.56 p95    37.50 | percentil  51.4
+     exactos                      real    22.00 | azar p5    24.00 p50    37.00 p95    49.00 | percentil   2.4
+     pct_exactos                  real    21.78 | azar p5    18.75 p50    23.68 p95    28.86 | percentil  28.4
+     pct_rotas                    real    68.32 | azar p5    62.50 p50    68.44 p95    74.13 | percentil  48.6
+     precision_mediana_abs        real     1.66 | azar p5     1.04 p50     1.35 p95     1.63 | percentil  96.0
+     recorrido_medio              real    70.29 | azar p5    45.54 p50    59.28 p95    76.24 | percentil  84.6
+     recorrido_mediano            real    62.29 | azar p5    26.16 p50    33.49 p95    45.39 | percentil  99.4
+     recorrido_tramo_medio        real    63.81 | azar p5    38.48 p50    49.75 p95    65.54 | percentil  93.6
+     recorrido_total              real  2249.28 | azar p5  1851.41 p50  2908.40 p95  4079.50 | percentil  17.2
+     pct_llega_opuesta            real   100.00 | azar p5     0.00 p50    25.00 p95    75.00 | percentil  98.3
+     pct_falso_entre_sostenidos   real    37.50 | azar p5    17.85 p50    27.03 p95    37.04 | percentil  95.6
+     cobertura_pct                real     0.84 | azar p5     0.58 p50     1.03 p95     1.55 | percentil  23.9
+     corridas +-11/19/31 juntas: llegadas 586 sostenidos 30.3 % exactos 22.1 % precision |med| 1.34 recorrido medio 62.6 llega opuesta 100.0 % cobertura 0.8 %
+     por corrimiento: -31: 110 lleg 26 % sost | -19: 92 lleg 37 % sost | -11: 93 lleg 33 % sost | +11: 92 lleg 30 % sost | +19: 94 lleg 27 % sost | +31: 105 lleg 30 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 24.6-40.9; pct_exactos 16.7-28.8; pct_falso_entre_sostenidos 25.0-48.8; precision_mediana_abs 1.5-2.0; recorrido_medio 62.0-79.8; recorrido_mediano 39.8-85.1; pct_llega_opuesta 100.0-100.0; recorrido_total_por_noche 68.3-161.5; llegadas_por_noche 3.1-7.1
+  PLACEBO MUY_TOLERANTE (azar 'pool', 500 juegos; percentil = % de juegos por debajo del real; precision y pct_rotas: bajo = mejor)
+     llegadas                     real    91.00 | azar p5   100.90 p50   138.00 p95   176.05 | percentil   1.5
+     sostenidos                   real    55.00 | azar p5    52.00 p50    74.00 p95    96.00 | percentil   7.1
+     pct_sostenidos               real    60.44 | azar p5    46.15 p50    53.64 p95    60.39 | percentil  95.1
+     exactos                      real    20.00 | azar p5    22.00 p50    33.00 p95    45.00 | percentil   2.4
+     pct_exactos                  real    21.98 | azar p5    18.97 p50    24.06 p95    29.58 | percentil  25.4
+     pct_rotas                    real    39.56 | azar p5    39.53 p50    46.33 p95    53.85 | percentil   5.5
+     precision_mediana_abs        real     3.32 | azar p5     1.83 p50     2.58 p95     3.64 | percentil  87.8
+     recorrido_medio              real    74.92 | azar p5    55.03 p50    70.95 p95    90.01 | percentil  65.0
+     recorrido_mediano            real    63.54 | azar p5    31.94 p50    41.12 p95    60.04 | percentil  97.0
+     recorrido_tramo_medio        real    58.01 | azar p5    40.40 p50    49.74 p95    62.02 | percentil  86.4
+     recorrido_total              real  4120.85 | azar p5  3432.64 p50  5271.05 p95  7173.20 | percentil  14.2
+     pct_llega_opuesta            real   100.00 | azar p5     0.00 p50    30.00 p95    66.67 | percentil  99.6
+     pct_falso_entre_sostenidos   real    65.45 | azar p5    47.87 p50    56.32 p95    64.30 | percentil  96.4
+     cobertura_pct                real     0.84 | azar p5     0.58 p50     1.03 p95     1.55 | percentil  23.9
+     corridas +-11/19/31 juntas: llegadas 525 sostenidos 47.9 % exactos 21.8 % precision |med| 2.39 recorrido medio 66.9 llega opuesta 93.8 % cobertura 0.8 %
+     por corrimiento: -31: 95 lleg 50 % sost | -19: 85 lleg 52 % sost | -11: 83 lleg 52 % sost | +11: 86 lleg 48 % sost | +19: 79 lleg 43 % sost | +31: 97 lleg 43 % sost
+     IC90 bootstrap por noche del real: pct_sostenidos 53.6-68.3; pct_exactos 16.5-30.0; pct_falso_entre_sostenidos 55.7-73.3; precision_mediana_abs 2.2-5.0; recorrido_medio 62.1-91.8; recorrido_mediano 39.4-93.7; pct_llega_opuesta 100.0-100.0; recorrido_total_por_noche 137.8-277.1; llegadas_por_noche 2.9-6.5
+  PLACEBO TOLERANTE con azar 'propia' (cada pista conserva su propia distancia, signo al azar): pct_sostenidos real 51.1 p50 44.2 pct 94; pct_exactos real 22.3 p50 23.7 pct 33; precision_mediana_abs real 2.6 p50 1.9 pct 93; recorrido_medio real 78.8 p50 67.0 pct 96; pct_llega_opuesta real 100.0 p50 80.0 pct 84; cobertura_pct real 0.8 p50 0.8 pct 59
+  COBERTURA de giros (zigzag 20): +-2: 13/1549 = 0.8 %; +-4: 26/1549 = 1.7 %; +-6: 34/1549 = 2.2 %
+  chequeo: mi bucle por noche reproduce el placebo oficial: p50 pct_sostenidos mio 46.43 oficial 46.43
+  DIFERENCIA PAREADA POR NOCHE (TOLERANTE; bootstrap de noches, IC90):
+     real vs corridas: pct_sostenidos +9.6 (IC90 +0.1 a +20.8, P(<=0) 0.05); recorrido_medio +15.7 (IC90 +3.2 a +30.2, P(<=0) 0.02); pct_llega_opuesta +7.1 (IC90 +0.0 a +20.0, P(<=0) 0.30); pct_exactos +0.4 (IC90 -6.1 a +8.5, P(<=0) 0.48); cobertura_pct +0.7 (IC90 +0.3 a +1.2, P(<=0) 0.00)
+     real vs azar: pct_sostenidos +5.0 (IC90 -3.5 a +14.3, P(<=0) 0.15); recorrido_medio +11.3 (IC90 -1.2 a +26.3, P(<=0) 0.07); pct_llega_opuesta +68.9 (IC90 +66.8 a +71.0, P(<=0) 0.00); pct_exactos -1.6 (IC90 -6.9 a +5.8, P(<=0) 0.68); cobertura_pct -0.2 (IC90 -0.7 a +0.3, P(<=0) 0.76)
+  POR NOCHE (TOLERANTE): noche | lleg base sost% (azar p50, pctil | corridas) rotas falso exactos | prec|med| | rec medio (azar p50) | opuesta | giros cub (azar p50 | corr)
+     2026-09-14 |   9   9  22.2% ( 46.4,  12.0 |  35.7)   7  0  2 |  1.77 |   51.9 (  54.2) | 0/0 | 91  2 =   2.2% (  1.1 |   2.4)
+     2026-09-15 |   0   0  None% ( 47.1,  None |  50.0)   0  0  0 |  None |   None (  59.3) | 0/0 | 71  0 =   0.0% (  0.0 |   0.2)
+     2026-09-16 |   6   6  83.3% ( 42.9,  89.0 |  36.2)   1  2  4 |  1.54 |   72.1 (  49.2) | 0/0 | 64  2 =   3.1% (  0.0 |   1.3)
+     2026-09-17 |   3   3  33.3% ( 38.5,  38.0 |  25.0)   2  0  1 |   0.7 |  114.8 (  57.2) | 0/0 | 66  0 =   0.0% (  1.5 |   0.0)
+     2026-09-18 |   3   3  33.3% ( 45.5,  32.0 |  23.1)   2  1  0 |  5.29 |  207.2 (  57.9) | 0/0 | 47  0 =   0.0% (  0.0 |   0.0)
+     2026-09-21 |   0   0  None% ( 50.0,  None |  None)   0  0  0 |  None |   None (  42.8) | 0/0 | 60  0 =   0.0% (  1.7 |   0.0)
+     2026-09-22 |   0   0  None% ( 50.0,  None |  None)   0  0  0 |  None |   None (  57.6) | 0/0 | 86  0 =   0.0% (  1.2 |   0.0)
+     2026-09-23 |   0   0  None% ( 42.9,  None |  None)   0  0  0 |  None |   None (  58.2) | 0/0 | 41  0 =   0.0% (  0.0 |   0.0)
+     2026-09-24 |   0   0  None% ( 66.7,  None |  None)   0  0  0 |  None |   None (  40.3) | 0/0 | 18  0 =   0.0% (  0.0 |   0.0)
+     2026-09-25 |   3   3  66.7% ( 42.9,  82.0 |  65.0)   1  2  0 |  8.15 |  124.6 (  59.8) | 1/1 | 74  0 =   0.0% (  0.0 |   0.7)
+     2026-09-28 |  11  11  54.5% ( 50.0,  56.0 |  35.6)   5  4  2 |  3.09 |  107.2 (  66.2) | 0/0 | 147  3 =   2.0% (  0.7 |   0.5)
+     2026-09-29 |  15  15  33.3% ( 50.0,  24.0 |  49.3)  10  3  3 |  1.78 |   80.4 (  61.7) | 1/1 | 96  0 =   0.0% (  1.0 |   1.9)
+     2026-09-30 |   4   4  50.0% ( 44.4,  62.0 |  46.2)   2  1  1 |  1.63 |   57.5 (  59.8) | 1/1 | 93  0 =   0.0% (  0.0 |   0.5)
+     2026-10-01 |   2   2  50.0% ( 47.8,  57.0 |  30.0)   1  1  0 |  3.82 |   35.7 (  77.5) | 0/0 | 133  0 =   0.0% (  0.8 |   0.3)
+     2026-10-02 |   5   5  40.0% ( 50.0,  29.0 |  40.0)   3  1  1 |  4.03 |   88.3 (  59.5) | 0/0 | 117  2 =   1.7% (  0.9 |   0.3)
+     2026-10-05 |   6   6  83.3% ( 50.0,  94.0 |  33.3)   1  4  1 |  3.09 |   86.4 (  59.9) | 0/0 | 102  0 =   0.0% (  1.0 |   0.5)
+     2026-10-06 |   2   2 100.0% ( 42.9,  96.0 |  50.0)   0  1  1 |  5.36 |   81.2 (  47.1) | 1/1 | 61  0 =   0.0% (  0.0 |   3.0)
+     2026-10-07 |   4   4  75.0% ( 50.0,  88.0 |  33.3)   1  1  2 |  1.66 |   44.7 (  66.0) | 1/1 | 57  2 =   3.5% (  1.8 |   0.6)
+     2026-10-08 |   2   2  50.0% ( 50.0,  54.0 |  34.8)   1  1  0 |  6.44 |  147.3 (  62.3) | 0/0 | 95  0 =   0.0% (  1.1 |   0.2)
+     2026-10-09 |  19  19  52.6% ( 46.2,  66.0 |  55.0)   9  7  3 |  3.84 |   49.7 (  45.3) | 3/3 | 30  2 =   6.7% (  0.0 |   5.6)

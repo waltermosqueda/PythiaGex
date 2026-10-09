@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Proyecto NUEVO y aparte (regla 18-09: produccion PythiaGexNiveles no se toca, y el clon PythiaGexDos tampoco se
+       ensucia con algo que esta en prueba). DLL propio, datos propios en %APPDATA%\ATAS\PythiaGex2\pauta. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>Pauta</AssemblyName>
+    <RootNamespace>Pauta</RootNamespace>
+    <Version>1.0.0</Version>
+    <Company>PythiaGex</Company>
+    <Product>Pauta (replica de la pauta, EN PRUEBA)</Product>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <DebugType>none</DebugType>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="PautaNucleo.cs" />
+    <Compile Include="Pauta.cs" />
+  </ItemGroup>
+
+  <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados. Copiarlos haria que el indicador use una
+       copia distinta de los mismos tipos y ATAS lo rechazaria. -->
+  <ItemGroup>
+    <Reference Include="ATAS.Indicators">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Indicators.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ATAS.DataFeedsCore">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.DataFeedsCore.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ATAS.Types">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Types.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Rendering">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Rendering.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Attributes">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Attributes.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Localization">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Localization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Utils.Common">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\Utils.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Core">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

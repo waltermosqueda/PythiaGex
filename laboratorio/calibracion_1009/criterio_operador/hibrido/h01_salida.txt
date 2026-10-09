@@ -1,0 +1,38 @@
+velas M1 MNQZ6: 2026-09-13 22:10:00 -> 2026-10-09 03:22:00 (25544)
+C8 reconstruida: 5618 puntos 2026-09-11 17:00:30 -> 2026-10-09 03:23:47
+paridad C8 reconstruida vs 4.1 real (muestras-QQQ, 2003 muestras): |dif| mediana 0.00001 p90 0.00073 max 0.01276 (en pts del strike 750: mediana 0.01 p90 0.55); solo con spot vivo (1797): mediana 0.00000 p90 0.00058
+bajadas QQQ cargadas (dedup por cadena_ts): 5383
+2026-09-11->2026-09-14 cadenas   41 | congelada 2026-09-13 22:10:02 -> 2026-09-14 09:29:07 (spot 714.89) | r41 41.5166 (C8 reconstruida (c08) al congelarse) C8 rec al congelar 41.5166 (dif +0.0 pts K750) | r20 - | escala viva 41.5144..41.5167 | minutos 920 libros {'vol': 920, 'OI': 0, '': 0}
+2026-09-14->2026-09-15 cadenas   70 | congelada 2026-09-15 01:22:24 -> 2026-09-15 09:21:57 (spot 709.61) | r41 41.5179 (reconstruida c02) C8 rec al congelar 41.5182 (dif +0.2 pts K750) | r20 41.5140 | escala viva 41.5140..41.5185 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-09-15->2026-09-16 cadenas   87 | congelada 2026-09-16 00:49:32 -> 2026-09-16 09:05:31 (spot 705.25) | r41 41.5113 (reconstruida c02) C8 rec al congelar 41.5122 (dif +0.6 pts K750) | r20 41.5261 | escala viva 41.5083..41.5129 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-09-16->2026-09-17 cadenas  417 | congelada 2026-09-17 00:25:52 -> 2026-09-17 09:16:29 (spot 709.46) | r41 41.5103 (reconstruida c02) C8 rec al congelar 41.5124 (dif +1.6 pts K750) | r20 41.2507 | escala viva 41.5103..41.5127 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-09-17->2026-09-18 cadenas   82 | congelada 2026-09-18 01:29:42 -> 2026-09-18 09:11:54 (spot 715.79) | r41 41.4913 (reconstruida c02) C8 rec al congelar 41.4913 (dif +0.0 pts K750) | r20 41.5275 | escala viva 41.4831..41.4962 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-09-18->2026-09-21 cadenas   80 | congelada 2026-09-20 22:20:15 -> 2026-09-21 08:50:24 (spot 722.05) | r41 41.4788 (reconstruida c02) C8 rec al congelar 41.4808 (dif +1.5 pts K750) | r20 41.5082 | escala viva 41.4808..41.5207 | minutos 920 libros {'vol': 920, 'OI': 0, '': 0}
+2026-09-21->2026-09-22 cadenas  438 | congelada 2026-09-22 00:26:09 -> 2026-09-22 09:01:15 (spot 742.99) | r41 41.5257 (reconstruida c02) C8 rec al congelar 41.5261 (dif +0.3 pts K750) | r20 41.4249 | escala viva 41.5206..41.5267 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-09-22->2026-09-23 cadenas  236 | congelada 2026-09-23 01:11:06 -> - (spot 748.32) | r41 41.5143 (reconstruida c02) C8 rec al congelar 41.5148 (dif +0.4 pts K750) | r20 41.4549 | escala viva 41.5147..41.5150 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-09-24->2026-09-25 cadenas  256 | congelada 2026-09-25 00:26:47 -> 2026-09-25 09:24:00 (spot 739.41) | r41 41.5065 (reconstruida c02) C8 rec al congelar 41.5050 (dif -1.1 pts K750) | r20 41.5179 | escala viva 41.4901..41.5067 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-09-25->2026-09-28 cadenas   64 | congelada 2026-09-27 22:23:32 -> 2026-09-28 09:03:43 (spot 745.40) | r41 41.4940 (reconstruida c02) C8 rec al congelar 41.4934 (dif -0.4 pts K750) | r20 41.4435 | escala viva 41.4878..41.4941 | minutos 919 libros {'vol': 919, 'OI': 0, '': 0}
+2026-09-28->2026-09-29 cadenas  409 | congelada 2026-09-29 00:27:10 -> 2026-09-29 08:37:07 (spot 737.05) | r41 41.4959 (reconstruida c02) C8 rec al congelar 41.4952 (dif -0.5 pts K750) | r20 41.4592 | escala viva 41.4882..41.4989 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-09-29->2026-09-30 cadenas  428 | congelada 2026-09-30 00:26:32 -> 2026-09-30 09:25:48 (spot 740.26) | r41 41.4891 (reconstruida c02) C8 rec al congelar 41.4873 (dif -1.4 pts K750) | r20 41.3770 | escala viva 41.4864..41.4893 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-09-30->2026-10-01 cadenas  433 | congelada 2026-10-01 00:26:15 -> 2026-10-01 09:05:53 (spot 742.80) | r41 41.4872 (reconstruida c02) C8 rec al congelar 41.4901 (dif +2.2 pts K750) | r20 41.3503 | escala viva 41.4729..41.4901 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-10-01->2026-10-02 cadenas  431 | congelada 2026-10-02 00:26:33 -> 2026-10-02 09:06:28 (spot 743.60) | r41 41.4731 (reconstruida c02) C8 rec al congelar 41.4731 (dif -0.0 pts K750) | r20 41.4319 | escala viva 41.4567..41.4735 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-10-02->2026-10-05 cadenas  110 | congelada 2026-10-03 00:26:48 -> 2026-10-05 09:05:32 (spot 749.55) | r41 41.4518 (real) C8 rec al congelar 41.4522 (dif +0.3 pts K750) | r20 41.4732 | escala viva 41.4419..41.4523 | minutos 919 libros {'vol': 919, 'OI': 0, '': 0}
+2026-10-05->2026-10-06 cadenas  451 | congelada 2026-10-06 00:26:25 -> 2026-10-06 09:16:22 (spot 756.43) | r41 41.4417 (real) C8 rec al congelar 41.4416 (dif -0.1 pts K750) | r20 41.4222 | escala viva 41.4390..41.4449 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-10-06->2026-10-07 cadenas  471 | congelada 2026-10-07 00:26:48 -> 2026-10-07 08:36:38 (spot 759.84) | r41 41.4419 (real) C8 rec al congelar 41.4419 (dif +0.0 pts K750) | r20 41.4485 | escala viva 41.4355..41.4420 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-10-07->2026-10-08 cadenas  460 | congelada 2026-10-08 00:26:31 -> 2026-10-08 08:51:29 (spot 758.56) | r41 41.4340 (real) C8 rec al congelar 41.4339 (dif -0.1 pts K750) | r20 41.3909 | escala viva 41.4264..41.4342 | minutos 930 libros {'vol': 930, 'OI': 0, '': 0}
+2026-10-08->2026-10-09 cadenas  419 | congelada 2026-10-09 00:30:57 -> - (spot 747.75) | r41 41.4352 (real) C8 rec al congelar 41.4331 (dif -1.5 pts K750) | r20 41.4447 | escala viva 41.4331..41.4332 | minutos 323 libros {'vol': 323, 'OI': 0, '': 0}
+VALIDACION seleccion (razon 2.0, parte congelada) contra niv20 dom0/dom1, niv20 en t+0: 8677 minutos, mismo par 8633 (99.5 %), al menos una igual 8633 (99.5 %)
+    distinto: (Timestamp('2026-09-15 00:35:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:36:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:37:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:38:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:39:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:40:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+VALIDACION seleccion (razon 2.0, parte congelada) contra niv20 dom0/dom1, niv20 en t+1: 8676 minutos, mismo par 8216 (94.7 %), al menos una igual 8635 (99.5 %)
+    distinto: (Timestamp('2026-09-15 00:35:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:36:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:37:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:38:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:39:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+    distinto: (Timestamp('2026-09-15 00:40:00'), [29431.7674, 29473.2791], [29433.426459604572, 29474.940460252816])
+escrito rayas_hibrido.pkl: h41 17021 minutos, h41c 17021, r20 8677

@@ -1,0 +1,108 @@
+2026-09-16 {"C05": {"minutos_C03": 1367, "minutos_C05": 1367, "misma_cantidad": 1.0, "cambios_C03": 138, "cambios_C05": 126, "diag": {"cambios": 138, "pozo_corto": 0}, "coinciden_con_C03": 0.07022677395757132}, "C06": {"minutos_C03": 1367, "minutos_C06": 1005, "subconjunto": true}}
+2026-09-22 {"C05": {"minutos_C03": 1378, "minutos_C05": 1378, "misma_cantidad": 1.0, "cambios_C03": 73, "cambios_C05": 67, "diag": {"cambios": 73, "pozo_corto": 0}, "coinciden_con_C03": 0.1748911465892598}, "C06": {"minutos_C03": 1378, "minutos_C06": 1377, "subconjunto": true}}
+2026-09-25 {"C05": {"minutos_C03": 1377, "minutos_C05": 1377, "misma_cantidad": 1.0, "cambios_C03": 97, "cambios_C05": 90, "diag": {"cambios": 98, "pozo_corto": 0}, "coinciden_con_C03": 0.2251270878721859}, "C06": {"minutos_C03": 1377, "minutos_C06": 1330, "subconjunto": true}}
+2026-09-29 {"C05": {"minutos_C03": 1378, "minutos_C05": 1378, "misma_cantidad": 1.0, "cambios_C03": 153, "cambios_C05": 144, "diag": {"cambios": 153, "pozo_corto": 0}, "coinciden_con_C03": 0.047895500725689405}, "C06": {"minutos_C03": 1378, "minutos_C06": 353, "subconjunto": true}}
+{
+ "C01": {
+  "n": 160,
+  "iguales": 160,
+  "ejemplos_distintos": []
+ },
+ "C03": {
+  "n": 160,
+  "iguales": 160,
+  "ejemplos_distintos": []
+ },
+ "C02": {
+  "n": 160,
+  "iguales": 160,
+  "ejemplos_distintos": []
+ }
+}
+{
+ "2026-09-16": {
+  "minutos_noche_con_ambas": 0,
+  "deriva_menos_cuatro_pts_MNQ": {
+   "mediana": null,
+   "p5": null,
+   "p95": null
+  },
+  "deriva_menos_dos_pts_MNQ": {
+   "mediana": null,
+   "p5": null,
+   "p95": null
+  },
+  "origenes": {
+   "sin": 935,
+   "cuatro": 385,
+   "deriva": 60
+  },
+  "ejemplo_noche": [
+   "sin rueda completa con >= 20 muestras",
+   "sin rueda completa con >= 20 muestras"
+  ]
+ },
+ "2026-09-22": {
+  "minutos_noche_con_ambas": 928,
+  "deriva_menos_cuatro_pts_MNQ": {
+   "mediana": -1.810660276702472,
+   "p5": -2.414552751637594,
+   "p95": 0.14036540742027925
+  },
+  "deriva_menos_dos_pts_MNQ": {
+   "mediana": 73.52752901698858,
+   "p5": -10.912855212427699,
+   "p95": 74.56909133068447
+  },
+  "origenes": {
+   "deriva": 995,
+   "cuatro": 385
+  },
+  "ejemplo_noche": [
+   "deriva rueda 2026-09-21 (304 muestras) 41.525829, 0.083 dias",
+   "deriva rueda 2026-09-21 (304 muestras) 41.525829, 0.728 dias"
+  ]
+ },
+ "2026-09-25": {
+  "minutos_noche_con_ambas": 928,
+  "deriva_menos_cuatro_pts_MNQ": {
+   "mediana": 0.11315302918898418,
+   "p5": -0.3307451010446599,
+   "p95": 0.8504006442422934
+  },
+  "deriva_menos_dos_pts_MNQ": {
+   "mediana": -8.47793600025185,
+   "p5": -9.289378592802999,
+   "p95": 273.5286304748318
+  },
+  "origenes": {
+   "deriva": 995,
+   "cuatro": 385
+  },
+  "ejemplo_noche": [
+   "deriva rueda 2026-09-24 (119 muestras) 41.507314, 0.083 dias",
+   "deriva rueda 2026-09-24 (119 muestras) 41.507314, 0.728 dias"
+  ]
+ },
+ "2026-09-29": {
+  "minutos_noche_con_ambas": 928,
+  "deriva_menos_cuatro_pts_MNQ": {
+   "mediana": -2.4395802828537043,
+   "p5": -4.167477017318981,
+   "p95": -2.0519695010470285
+  },
+  "deriva_menos_dos_pts_MNQ": {
+   "mediana": 24.262949128152716,
+   "p5": 7.910572232514797,
+   "p95": 108.38582479951378
+  },
+  "origenes": {
+   "deriva": 995,
+   "cuatro": 385
+  },
+  "ejemplo_noche": [
+   "deriva rueda 2026-09-28 (288 muestras) 41.493160, 0.083 dias",
+   "deriva rueda 2026-09-28 (288 muestras) 41.493160, 0.728 dias"
+  ]
+ }
+}

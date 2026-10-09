@@ -1,0 +1,144 @@
+
+CONGELADA ESTRICTO: h41 - 20dib  (noches 19; h41 gana en % sostenidos 9, empata 0, de 19 con llegadas en los dos)
+   pct_sostenidos         h41   32.57 | 20dib   34.98 | dif   -2.41  IC90 [-9.62, +5.54]
+   pct_exactos            h41   24.43 | 20dib   25.08 | dif   -0.65  IC90 [-6.77, +5.65]
+   precision_mediana_abs  h41    1.37 | 20dib    1.33 | dif   +0.04  IC90 [-0.28, +0.22]
+   recorrido_medio        h41   57.13 | 20dib   56.82 | dif   +0.31  IC90 [-12.80, +13.39]
+   pct_llega_opuesta      h41   30.95 | 20dib   39.34 | dif   -8.39  IC90 [-27.06, +9.50]
+   cobertura_pct          h41    4.17 | 20dib    4.95 | dif   -0.78  IC90 [-2.42, +1.28]
+
+CONGELADA ESTRICTO: h41c - 20dib  (noches 19; h41c gana en % sostenidos 8, empata 0, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   32.79 | 20dib   34.98 | dif   -2.20  IC90 [-9.21, +4.54]
+   pct_exactos            h41c   24.92 | 20dib   25.08 | dif   -0.16  IC90 [-6.42, +6.20]
+   precision_mediana_abs  h41c    1.46 | 20dib    1.33 | dif   +0.13  IC90 [-0.27, +0.39]
+   recorrido_medio        h41c   46.71 | 20dib   56.82 | dif  -10.11  IC90 [-18.43, -1.29]  <- no cruza 0
+   pct_llega_opuesta      h41c   38.30 | 20dib   39.34 | dif   -1.05  IC90 [-13.59, +12.83]
+   cobertura_pct          h41c    4.95 | 20dib    4.95 | dif   +0.00  IC90 [-2.14, +2.14]
+
+CONGELADA ESTRICTO: h41c - h41  (noches 19; h41c gana en % sostenidos 10, empata 1, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   32.79 | h41   32.57 | dif   +0.21  IC90 [-6.68, +6.27]
+   pct_exactos            h41c   24.92 | h41   24.43 | dif   +0.49  IC90 [-5.34, +5.52]
+   precision_mediana_abs  h41c    1.46 | h41    1.37 | dif   +0.09  IC90 [-0.20, +0.37]
+   recorrido_medio        h41c   46.71 | h41   57.13 | dif  -10.42  IC90 [-19.32, -1.32]  <- no cruza 0
+   pct_llega_opuesta      h41c   38.30 | h41   30.95 | dif   +7.35  IC90 [-13.14, +27.88]
+   cobertura_pct          h41c    4.95 | h41    4.17 | dif   +0.78  IC90 [-1.57, +3.07]
+
+CONGELADA TOLERANTE: h41 - 20dib  (noches 19; h41 gana en % sostenidos 10, empata 2, de 19 con llegadas en los dos)
+   pct_sostenidos         h41   45.30 | 20dib   47.54 | dif   -2.24  IC90 [-9.47, +5.31]
+   pct_exactos            h41   24.39 | 20dib   25.57 | dif   -1.18  IC90 [-7.08, +4.96]
+   precision_mediana_abs  h41    1.79 | 20dib    1.78 | dif   +0.01  IC90 [-0.34, +0.46]
+   recorrido_medio        h41   65.86 | 20dib   67.68 | dif   -1.81  IC90 [-15.52, +11.15]
+   pct_llega_opuesta      h41   38.89 | 20dib   53.09 | dif  -14.20  IC90 [-34.12, +4.02]
+   cobertura_pct          h41    4.17 | 20dib    4.95 | dif   -0.78  IC90 [-2.42, +1.28]
+
+CONGELADA TOLERANTE: h41c - 20dib  (noches 19; h41c gana en % sostenidos 10, empata 0, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   45.00 | 20dib   47.54 | dif   -2.54  IC90 [-9.90, +4.29]
+   pct_exactos            h41c   26.07 | 20dib   25.57 | dif   +0.50  IC90 [-5.96, +6.70]
+   precision_mediana_abs  h41c    1.74 | 20dib    1.78 | dif   -0.05  IC90 [-0.45, +0.26]
+   recorrido_medio        h41c   60.63 | 20dib   67.68 | dif   -7.05  IC90 [-21.91, +6.64]
+   pct_llega_opuesta      h41c   51.61 | 20dib   53.09 | dif   -1.47  IC90 [-15.75, +13.10]
+   cobertura_pct          h41c    4.95 | 20dib    4.95 | dif   +0.00  IC90 [-2.14, +2.14]
+
+CONGELADA TOLERANTE: h41c - h41  (noches 19; h41c gana en % sostenidos 10, empata 2, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   45.00 | h41   45.30 | dif   -0.30  IC90 [-7.26, +5.84]
+   pct_exactos            h41c   26.07 | h41   24.39 | dif   +1.68  IC90 [-4.30, +6.90]
+   precision_mediana_abs  h41c    1.74 | h41    1.79 | dif   -0.06  IC90 [-0.56, +0.33]
+   recorrido_medio        h41c   60.63 | h41   65.86 | dif   -5.24  IC90 [-13.77, +4.14]
+   pct_llega_opuesta      h41c   51.61 | h41   38.89 | dif  +12.72  IC90 [+2.83, +24.04]  <- no cruza 0
+   cobertura_pct          h41c    4.95 | h41    4.17 | dif   +0.78  IC90 [-1.57, +3.07]
+
+CONGELADA MUY_TOLERANTE: h41 - 20dib  (noches 19; h41 gana en % sostenidos 9, empata 2, de 19 con llegadas en los dos)
+   pct_sostenidos         h41   50.78 | 20dib   55.76 | dif   -4.98  IC90 [-11.62, +1.32]
+   pct_exactos            h41   24.42 | 20dib   26.26 | dif   -1.84  IC90 [-7.91, +4.29]
+   precision_mediana_abs  h41    2.38 | 20dib    2.26 | dif   +0.13  IC90 [-0.95, +1.00]
+   recorrido_medio        h41   64.82 | 20dib   71.96 | dif   -7.14  IC90 [-23.71, +7.31]
+   pct_llega_opuesta      h41   41.38 | 20dib   56.98 | dif  -15.60  IC90 [-33.95, +0.61]
+   cobertura_pct          h41    4.17 | 20dib    4.95 | dif   -0.78  IC90 [-2.42, +1.28]
+
+CONGELADA MUY_TOLERANTE: h41c - 20dib  (noches 19; h41c gana en % sostenidos 8, empata 0, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   50.58 | 20dib   55.76 | dif   -5.18  IC90 [-13.69, +2.44]
+   pct_exactos            h41c   26.25 | 20dib   26.26 | dif   -0.00  IC90 [-7.05, +6.53]
+   precision_mediana_abs  h41c    1.93 | 20dib    2.26 | dif   -0.33  IC90 [-1.35, +0.27]
+   recorrido_medio        h41c   59.70 | 20dib   71.96 | dif  -12.25  IC90 [-27.95, +2.46]
+   pct_llega_opuesta      h41c   46.15 | 20dib   56.98 | dif  -10.82  IC90 [-26.17, +3.39]
+   cobertura_pct          h41c    4.95 | 20dib    4.95 | dif   +0.00  IC90 [-2.14, +2.14]
+
+CONGELADA MUY_TOLERANTE: h41c - h41  (noches 19; h41c gana en % sostenidos 11, empata 2, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   50.58 | h41   50.78 | dif   -0.20  IC90 [-6.94, +5.16]
+   pct_exactos            h41c   26.25 | h41   24.42 | dif   +1.84  IC90 [-4.79, +7.56]
+   precision_mediana_abs  h41c    1.93 | h41    2.38 | dif   -0.46  IC90 [-1.31, +0.37]
+   recorrido_medio        h41c   59.70 | h41   64.82 | dif   -5.11  IC90 [-13.85, +4.34]
+   pct_llega_opuesta      h41c   46.15 | h41   41.38 | dif   +4.77  IC90 [-8.41, +21.32]
+   cobertura_pct          h41c    4.95 | h41    4.17 | dif   +0.78  IC90 [-1.57, +3.07]
+
+COMPLETA ESTRICTO: h41 - 20dib  (noches 19; h41 gana en % sostenidos 7, empata 0, de 19 con llegadas en los dos)
+   pct_sostenidos         h41   31.86 | 20dib   33.86 | dif   -2.00  IC90 [-7.39, +2.69]
+   pct_exactos            h41   24.63 | 20dib   24.72 | dif   -0.09  IC90 [-4.58, +3.98]
+   precision_mediana_abs  h41    1.33 | 20dib    1.41 | dif   -0.08  IC90 [-0.32, +0.15]
+   recorrido_medio        h41   58.48 | 20dib   55.17 | dif   +3.31  IC90 [-4.80, +11.25]
+   pct_llega_opuesta      h41   27.47 | 20dib   38.71 | dif  -11.24  IC90 [-20.32, -2.09]  <- no cruza 0
+   cobertura_pct          h41    3.85 | 20dib    4.44 | dif   -0.59  IC90 [-1.52, +0.44]
+
+COMPLETA ESTRICTO: h41c - 20dib  (noches 19; h41c gana en % sostenidos 6, empata 0, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   31.58 | 20dib   33.86 | dif   -2.28  IC90 [-7.83, +2.45]
+   pct_exactos            h41c   24.67 | 20dib   24.72 | dif   -0.05  IC90 [-5.13, +4.81]
+   precision_mediana_abs  h41c    1.41 | 20dib    1.41 | dif   -0.01  IC90 [-0.32, +0.29]
+   recorrido_medio        h41c   53.78 | 20dib   55.17 | dif   -1.39  IC90 [-9.92, +8.40]
+   pct_llega_opuesta      h41c   30.53 | 20dib   38.71 | dif   -8.18  IC90 [-18.68, +2.67]
+   cobertura_pct          h41c    4.25 | 20dib    4.44 | dif   -0.20  IC90 [-1.67, +1.27]
+
+COMPLETA ESTRICTO: h41c - h41  (noches 19; h41c gana en % sostenidos 10, empata 0, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   31.58 | h41   31.86 | dif   -0.28  IC90 [-3.64, +2.79]
+   pct_exactos            h41c   24.67 | h41   24.63 | dif   +0.04  IC90 [-2.75, +2.73]
+   precision_mediana_abs  h41c    1.41 | h41    1.33 | dif   +0.07  IC90 [-0.11, +0.25]
+   recorrido_medio        h41c   53.78 | h41   58.48 | dif   -4.70  IC90 [-10.15, +1.50]
+   pct_llega_opuesta      h41c   30.53 | h41   27.47 | dif   +3.05  IC90 [-7.02, +12.87]
+   cobertura_pct          h41c    4.25 | h41    3.85 | dif   +0.39  IC90 [-0.86, +1.68]
+
+COMPLETA TOLERANTE: h41 - 20dib  (noches 19; h41 gana en % sostenidos 10, empata 1, de 19 con llegadas en los dos)
+   pct_sostenidos         h41   47.21 | 20dib   46.48 | dif   +0.73  IC90 [-5.29, +5.93]
+   pct_exactos            h41   24.91 | 20dib   25.20 | dif   -0.29  IC90 [-4.58, +3.56]
+   precision_mediana_abs  h41    1.86 | 20dib    1.81 | dif   +0.05  IC90 [-0.24, +0.51]
+   recorrido_medio        h41   65.12 | 20dib   65.44 | dif   -0.32  IC90 [-6.15, +5.58]
+   pct_llega_opuesta      h41   36.92 | 20dib   47.59 | dif  -10.67  IC90 [-20.91, -0.49]  <- no cruza 0
+   cobertura_pct          h41    3.85 | 20dib    4.44 | dif   -0.59  IC90 [-1.52, +0.44]
+
+COMPLETA TOLERANTE: h41c - 20dib  (noches 19; h41c gana en % sostenidos 9, empata 0, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   46.49 | 20dib   46.48 | dif   +0.01  IC90 [-5.44, +4.67]
+   pct_exactos            h41c   25.44 | 20dib   25.20 | dif   +0.23  IC90 [-4.66, +4.91]
+   precision_mediana_abs  h41c    1.84 | 20dib    1.81 | dif   +0.03  IC90 [-0.31, +0.32]
+   recorrido_medio        h41c   64.15 | 20dib   65.44 | dif   -1.29  IC90 [-9.03, +7.47]
+   pct_llega_opuesta      h41c   43.80 | 20dib   47.59 | dif   -3.79  IC90 [-16.33, +8.25]
+   cobertura_pct          h41c    4.25 | 20dib    4.44 | dif   -0.20  IC90 [-1.67, +1.27]
+
+COMPLETA TOLERANTE: h41c - h41  (noches 19; h41c gana en % sostenidos 9, empata 1, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   46.49 | h41   47.21 | dif   -0.72  IC90 [-4.29, +2.83]
+   pct_exactos            h41c   25.44 | h41   24.91 | dif   +0.53  IC90 [-2.39, +3.25]
+   precision_mediana_abs  h41c    1.84 | h41    1.86 | dif   -0.02  IC90 [-0.40, +0.17]
+   recorrido_medio        h41c   64.15 | h41   65.12 | dif   -0.97  IC90 [-6.16, +5.70]
+   pct_llega_opuesta      h41c   43.80 | h41   36.92 | dif   +6.87  IC90 [+0.86, +13.62]  <- no cruza 0
+   cobertura_pct          h41c    4.25 | h41    3.85 | dif   +0.39  IC90 [-0.86, +1.68]
+
+COMPLETA MUY_TOLERANTE: h41 - 20dib  (noches 19; h41 gana en % sostenidos 8, empata 0, de 19 con llegadas en los dos)
+   pct_sostenidos         h41   53.54 | 20dib   54.59 | dif   -1.06  IC90 [-6.97, +4.08]
+   pct_exactos            h41   25.24 | 20dib   25.62 | dif   -0.38  IC90 [-4.72, +3.47]
+   precision_mediana_abs  h41    2.44 | 20dib    2.45 | dif   -0.02  IC90 [-0.82, +0.90]
+   recorrido_medio        h41   69.68 | 20dib   71.00 | dif   -1.32  IC90 [-9.05, +6.39]
+   pct_llega_opuesta      h41   40.74 | 20dib   51.11 | dif  -10.37  IC90 [-23.78, +1.92]
+   cobertura_pct          h41    3.85 | 20dib    4.44 | dif   -0.59  IC90 [-1.52, +0.44]
+
+COMPLETA MUY_TOLERANTE: h41c - 20dib  (noches 19; h41c gana en % sostenidos 10, empata 1, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   53.14 | 20dib   54.59 | dif   -1.45  IC90 [-8.41, +4.80]
+   pct_exactos            h41c   25.71 | 20dib   25.62 | dif   +0.10  IC90 [-5.21, +4.89]
+   precision_mediana_abs  h41c    2.11 | 20dib    2.45 | dif   -0.34  IC90 [-1.18, +0.54]
+   recorrido_medio        h41c   68.31 | 20dib   71.00 | dif   -2.68  IC90 [-11.53, +6.73]
+   pct_llega_opuesta      h41c   43.06 | 20dib   51.11 | dif   -8.06  IC90 [-21.90, +4.48]
+   cobertura_pct          h41c    4.25 | 20dib    4.44 | dif   -0.20  IC90 [-1.67, +1.27]
+
+COMPLETA MUY_TOLERANTE: h41c - h41  (noches 19; h41c gana en % sostenidos 8, empata 1, de 19 con llegadas en los dos)
+   pct_sostenidos         h41c   53.14 | h41   53.54 | dif   -0.39  IC90 [-3.56, +2.42]
+   pct_exactos            h41c   25.71 | h41   25.24 | dif   +0.48  IC90 [-2.74, +3.54]
+   precision_mediana_abs  h41c    2.11 | h41    2.44 | dif   -0.32  IC90 [-0.91, +0.24]
+   recorrido_medio        h41c   68.31 | h41   69.68 | dif   -1.37  IC90 [-6.47, +4.57]
+   pct_llega_opuesta      h41c   43.06 | h41   40.74 | dif   +2.31  IC90 [-4.80, +9.93]
+   cobertura_pct          h41c    4.25 | h41    3.85 | dif   +0.39  IC90 [-0.86, +1.68]

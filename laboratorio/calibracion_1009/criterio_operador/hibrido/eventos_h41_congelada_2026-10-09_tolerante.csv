@@ -1,0 +1,13 @@
+i,t_llegada,noche,pista,raya,tipo,resultado,censurada,motivo,t_decision,min_a_decision,pinchazo_max,precision,precision_abs,cierres_mas_alla,falso_rompimiento,recorrido,recorrido_desde_punta,recorrido_tramo,t_mfe,min_a_mfe,fin_recorrido,recorrido_censurado,t_rerotura,opuesta,dist_opuesta,llega_opuesta,t_llega_opuesta,nombres,etiquetas
+25386,2026-10-09 00:45:00,2026-10-09,302,31034.93,techo,sostenido,False,giro de 15 pts,2026-10-09 00:48:00,3,-0.93,-0.93,0.93,0,False,67.93,67.93,67.93,2026-10-09 01:18:00,33.00,re-rotura,False,2026-10-09 01:42:00,,,,,['dom1'],['QQQ749']
+25442,2026-10-09 01:41:00,2026-10-09,305,31034.93,techo,rota,False,cierre mas alla de +5 con cuerpo 5.00,2026-10-09 01:42:00,1,13.07,13.07,13.07,2,False,,,,,,,,,,,,,['dom1'],['QQQ749']
+25461,2026-10-09 02:00:00,2026-10-09,296,31076.37,techo,rota,False,cierre mas alla de +5 con cuerpo 13.25,2026-10-09 02:02:00,2,9.63,9.63,9.63,1,False,,,,,,,,,,,,,"['dom0', 'dom1']",['QQQ750']
+25466,2026-10-09 02:05:00,2026-10-09,296,31076.37,piso,rota,False,3 cierres seguidos mas alla,2026-10-09 02:09:00,4,12.87,12.87,12.87,3,False,,,,,,,,,,,,,"['dom0', 'dom1']",['QQQ750']
+25471,2026-10-09 02:10:00,2026-10-09,296,31076.37,techo,sostenido,False,giro de 15 pts,2026-10-09 02:14:00,4,6.38,6.38,6.38,1,True,30.37,36.75,30.37,2026-10-09 02:16:00,6.00,re-rotura,False,2026-10-09 02:28:00,31034.93,41.44,False,,"['dom0', 'dom1']",['QQQ750']
+25480,2026-10-09 02:19:00,2026-10-09,296,31076.37,techo,sostenido,False,giro de 15 pts,2026-10-09 02:25:00,6,0.88,0.88,0.88,0,False,16.87,17.75,16.87,2026-10-09 02:25:00,6.00,re-rotura,False,2026-10-09 02:28:00,31034.93,41.44,False,,"['dom0', 'dom1']",['QQQ750']
+25487,2026-10-09 02:26:00,2026-10-09,296,31076.37,techo,rota,False,cierre mas alla de +5 con cuerpo 5.50,2026-10-09 02:28:00,2,12.88,12.88,12.88,3,False,,,,,,,,,,,,,"['dom0', 'dom1']",['QQQ750']
+25503,2026-10-09 02:42:00,2026-10-09,296,31076.37,techo,rota,False,3 cierres seguidos mas alla,2026-10-09 02:45:00,3,6.13,6.13,6.13,3,False,,,,,,,,,,,,,"['dom0', 'dom1']",['QQQ750']
+25511,2026-10-09 02:50:00,2026-10-09,296,31076.37,piso,rota,False,3 cierres seguidos mas alla,2026-10-09 02:53:00,3,8.62,8.62,8.62,3,False,,,,,,,,,,,,,"['dom0', 'dom1']",['QQQ750']
+25515,2026-10-09 02:54:00,2026-10-09,296,31076.37,techo,rota,False,3 cierres seguidos mas alla,2026-10-09 02:57:00,3,6.88,6.88,6.88,3,False,,,,,,,,,,,,,"['dom0', 'dom1']",['QQQ750']
+25521,2026-10-09 03:00:00,2026-10-09,296,31076.37,piso,rota,False,cierre mas alla de +5 con cuerpo 8.50,2026-10-09 03:03:00,3,12.62,12.62,12.62,2,False,,,,,,,,,,,,,"['dom0', 'dom1']",['QQQ750']
+25541,2026-10-09 03:20:00,2026-10-09,296,31076.37,techo,indefinida,True,fin de datos,2026-10-09 03:22:00,2,7.38,7.38,7.38,1,False,,,,,,,,,,,,,"['dom0', 'dom1']",['QQQ750']

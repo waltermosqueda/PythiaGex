@@ -1,0 +1,49 @@
+{
+  "agente": "practicantes (foros, redes, documentacion de proveedores, scripts publicos)",
+  "fecha": "2026-10-09",
+  "nota": "Insumo para el banco de pruebas. Nada de esto esta medido con nuestros datos todavia. Las afirmaciones de practicantes son OPINION salvo donde se indica 'medido'.",
+  "vara_comun_osler": {
+    "origen": "Osler (2000), FRBNY Economic Policy Review, 'Support for Resistance' (verificado leyendo el PDF): toque = el precio cruza nivel +0,01 %; rebote = sigue del lado de origen a los 15 min; 10.000 juegos de niveles arbitrarios como placebo; significancia por meses con real > placebo.",
+    "adaptacion_MNQ": {
+      "toque_resistencia": "primera vela de 1 min de MNQ con high >= L - 3 pts, habiendo estado el precio >= 15 pts por debajo de L en los 30 min previos (espejo para soporte)",
+      "rebote_osler": "close de la vela t+15 min < L (sigue del lado de origen)",
+      "rebote_mecha": "max(high[t..t+15]) < L + 6 y close(t+15) <= L - 6",
+      "placebo": "mismo conjunto corrido +-1 y +-2 strikes de SU grilla (QQQ: +-41,4 pts NQ; NDX: +-10/25) + 10.000 juegos al azar emparejados por distancia al precio y clase de redondez",
+      "estadistico": "rebote_real - media_placebo; binomial de dias con real > placebo; bootstrap por dias",
+      "muestra_minima": ">= 15 strikes distintos tocados; mismo signo en las dos mitades",
+      "datos": "calibracion_1009/datos/QQQ y NDX (cadena por minuto desde 2026-09-11, ~20 ruedas) + velas MNQ 1m"
+    }
+  },
+  "formulas": [
+    {"id": "P1", "nombre": "Escaneo de fase de la grilla QQQ en NQ",
+     "definicion": "Para cada sesion y cada razon candidata r en [41,30; 41,60] paso 0,0005: extremos e = maximos/minimos de MNQ 1m en ventana +-10 min con retroceso >= 15 pts. phi = frac(e / r). D(r) = fraccion de extremos con min(phi, 1-phi) < 0,10 (= +-4,1 pts de un strike entero de QQQ x r). Nulo: 0,20; distribucion nula por r al azar (desplazamiento circular).",
+     "prediccion": "Practicantes: pico de D en la razon sincronizada (4.1 o settlement) significativamente > 0,20. Esceptico: D ~ 0,20 en todo r. Si el pico cae en la razon de la 2.0, el arrastre post-cierre tendria informacion (improbable)."},
+    {"id": "P2", "nombre": "Razon de settlement 16:00 (y version afin)",
+     "definicion": "R_set = VWAP(MNQ 15:59:30-16:00:00 ET) / cierre QQQ 16:00. L_K = K x R_set. Afin: L_K = (NDX_cierre/QQQ_cierre) x K + (NQ_set - NDX_cierre). Comparar con 4.1 (ConversionQqq.cs:3-5, mediana robusta de 24 muestras sincronizadas) y 2.0 (MNQ 16:14 / QQQ cierre).",
+     "prediccion": "R_set ~ razon 4.1 (+-0,003 = +-2 pts). La 2.0 = 4.1 + deriva del MNQ 16:00->16:14: su raya no deberia quedar sistematicamente mas cerca de las mechas nocturnas."},
+    {"id": "P3", "nombre": "Rey 0DTE al cierre (King node)",
+     "definicion": "K* = argmax_K |Gamma_BS(K) x (vol_call - vol_put) x 100 x S^2 x 0,01| del 0DTE de QQQ, fijado a las 14:00 y 15:00 ET, convertido con R. Medir |cierre 16:00 - L_K*| contra el strike vecino y contra strikes al azar a igual distancia.",
+     "prediccion": "Practicantes: el cierre cae mas cerca del rey que del placebo (iman al cierre). 20 ruedas = piloto, no prueba."},
+    {"id": "P4", "nombre": "Primer toque contra toques siguientes",
+     "definicion": "Rebote (vara Osler) en el PRIMER toque de cada dominante en la sesion vs 2do y siguientes, real menos placebo.",
+     "prediccion": "Practicantes: primer toque > siguientes y > placebo por >= 5 pp (tamano tipo Osler 4,6 pp)."},
+    {"id": "P5", "nombre": "Fuerza relativa a la liquidez",
+     "definicion": "S = |GEX_K| (M USD por 1 %) / volumen en M USD de NQ+MNQ de los 30 min previos. Quintiles de S; tendencia monotona del rebote real - placebo (el placebo hereda el S del nivel original).",
+     "prediccion": "Practicantes: crece con S. Osler: las 'fuerzas' publicadas no sirvieron -> plano."},
+    {"id": "P6", "nombre": "Penetracion segun signo del nodo",
+     "definicion": "En toques de dominantes con GEX > 0 vs < 0: O = maxima excursion mas alla de L antes de volver al lado de origen en 15 min. Rebote con tolerancia k x ATR(5 min, 14): k = 1 para positivos, k = 2 para negativos; comparar con k unico.",
+     "prediccion": "Practicantes: mediana O(neg) > O(pos); el k por signo mejora la ventaja sobre placebo."},
+    {"id": "P7", "nombre": "Regimen por gamma neta (no por zero interpolado)",
+     "definicion": "signo de sum_K GEX(K) en +-2 % del precio (OI + 0DTE por volumen), recalculado cada 15 min; rebote real - placebo condicionado al signo.",
+     "prediccion": "Practicantes y Barbon-Buraschi: ventaja > 0 con gamma neta positiva (paredes), <= 0 con negativa (rupturas)."},
+    {"id": "P8", "nombre": "Franja horaria",
+     "definicion": "La misma vara por ventanas NY: noche 18:00-09:30, apertura 09:30-10:30, media 10:30-14:00, tarde 14:00-15:30, cierre 15:30-16:00.",
+     "prediccion": "Practicantes: ventaja mayor en tarde/cierre para dominantes 0DTE por volumen; ~0 de noche (niveles = 'memoria')."},
+    {"id": "P9", "nombre": "Banda de movimiento esperado (no gamma)",
+     "definicion": "EM = 1,25 x straddle ATM 0DTE de QQQ a las 10:00 ET x R; B+- = precio 10:00 +- EM. Medir si el maximo/minimo de la sesion cae a +-0,1 EM de B+- mas que con bandas placebo 0,7/0,85/1,15/1,3 EM.",
+     "prediccion": "Practicantes: extremos cerca de B+-. Lo medido afuera (FlashAlpha, SPY n=193) es contencion del CIERRE 71 %, no de las mechas."},
+    {"id": "P10", "nombre": "Confluencia de libros",
+     "definicion": "Nivel confluente = dominante QQQ convertida y dominante NDX convertida (base) a <= 5 pts NQ, o mayor por OI y mayor por volumen en el mismo strike. Rebote real - placebo de confluentes vs no confluentes.",
+     "prediccion": "Practicantes: confluentes rebotan mas. Osler (medido en FX): el acuerdo entre firmas no agrego poder significativo."}
+  ]
+}
