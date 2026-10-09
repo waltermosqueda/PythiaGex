@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes de paridad del modulo Familia QQQ (B3c). Compila el modulo SOLO (sin ATAS): contratos + comun (B3a) + qqq + dobles de prueba.
+       Uso:  dotnet build -c Release -o bin/Release ; bin/Release/qqq_paridad.exe [dias] [opcion modo: paridad, corregida o ambos] [opcion detalle: N]
+       Lee SOLO archivos guardados (referencia, cadenas archivadas de %APPDATA%/ATAS, cinta y velas del laboratorio). Prioridad BelowNormal. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>ParidadQqq</RootNamespace>
+    <AssemblyName>qqq_paridad</AssemblyName>
+    <TieredPGO>true</TieredPGO>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../PythiaGexCuatro/_contratos/Contratos.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/Gamma.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/NumFam.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/Perfil.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/Seleccion.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/TiempoFam.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/ZeroEstandar.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/qqq/ConversionQqq.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/qqq/MinuteroQqq.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/qqq/SeriesQqq.cs" />
+    <Compile Include="CintaArchivoQqq.cs" />
+    <Compile Include="FuenteCboeArchivoQqq.cs" />
+    <Compile Include="ExtrasQqq.cs" />
+    <Compile Include="Programa.cs" />
+  </ItemGroup>
+</Project>

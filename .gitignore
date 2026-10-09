@@ -36,3 +36,65 @@ laboratorio/gatillo/__pycache__/
 atas/VerdesBanco/bin/
 atas/VerdesBanco/obj/
 laboratorio/gatillo/rev_cache/
+
+# laboratorio de la busqueda de estrategia (rondas 1-8, 21/22-09): trae las operaciones reales y el P&L del operador
+# (ronda8/operaciones.parquet, INFORME_FINAL.md) y cientos de MB de velas y caches. NO va al repo publico.
+# Si se quiere guardar en la nube, va al repo privado (PythiaGex-privado).
+laboratorio/dom/
+
+# directriz (23-09): velas de MNQ armadas desde la cinta y la cache de ATAS (cientos de MB, se regeneran con d_00/d_01/d_02)
+laboratorio/directriz/datos/
+laboratorio/directriz/velas/
+atas/*/arnes/bin/
+atas/*/arnes/obj/
+
+# --- respaldo 09-10 (v4 y demas indicadores) ---
+# Compilados y salidas de compilacion a cualquier profundidad de atas/. Los DLL que ya estaban versionados en bin/Release
+# (Niveles, Dos, Vwap, _test_flow) siguen versionados; los nuevos para restaurar van en atas/instalar/.
+atas/**/bin/
+atas/**/obj/
+atas/**/resultados/
+atas/**/tmp/
+# capturas de pantalla de ATAS: muestran el numero de cuenta (van al repo privado)
+atas/**/capturas/
+capturas/
+# copias del workspace de ATAS (.ws): traen la cuenta (van al repo privado)
+herramientas/respaldos_ws/
+*.ws
+
+# 3.7 (propuesta): las salidas del simulador pesan ~130 MB y se regeneran con Simulador37
+atas/_propuesta_3_7/Simulador37/salida*/
+
+# arneses de paridad de la 4.1: entran fuentes y referencias chicas; las entradas grandes (cadenas de CBOE, casos
+# generados) se regeneran o estan en el repo privado (proyecto/atas/_test_cuatro_paridad)
+atas/_test_cuatro_paridad/cboe/archivo/
+atas/_test_cuatro_paridad/cboe/crudos/
+atas/_test_cuatro_paridad/cboe/crudos_hilo/
+atas/_test_cuatro_paridad/ndx/entrada/
+atas/_test_cuatro_paridad/fam/datos/casos-reglas.json
+atas/_test_cuatro_paridad/adaptadores/ref_adaptadores.json
+atas/_test_cuatro_paridad/nq/casos_num.txt
+
+# NOMBRES DE TERCEROS (ver conocimiento/memorias/referencia-sin-nombre.md): estos archivos nombran al tablero de 'la
+# referencia' y NO van al repo publico. Viven completos en el repo privado (proyecto/...). Cuando el nombre se reemplace
+# por 'la referencia' en el codigo (y se recompile), sacar estas lineas y agregarlos.
+atas/PythiaGexCuatro/_modulos/familia/fam/CatalogoFamilia.cs
+atas/PythiaGexCuatro/_modulos/pantalla/FamiliaCuatroPantalla.cs
+atas/PythiaGexCuatro/_modulos/pantalla/SeriesPantalla.cs
+atas/PythiaGexCuatro/_visor_4_0_6/FamiliaCuatro.cs
+atas/_test_cuatro_paridad/tqqq/referencia/tqqq_vivo-*.json
+laboratorio/calibracion_1009/campeonato20/qqq20/q02_rayas_tqqq.py
+# replica exacta de un script de TradingView de un tercero (licencia propia del autor; procedencia fuera de los repos):
+# va al repo privado, no al publico
+atas/Directriz/
+
+# laboratorio de calibracion 09-10: entran informes, scripts y json/csv chicos (<= 1 MB); los datos, resultados,
+# logs y textos descargados de terceros (papers, white papers) no
+laboratorio/calibracion_1009/datos/
+laboratorio/calibracion_1009/**/datos/
+laboratorio/calibracion_1009/**/resultados/
+laboratorio/calibracion_1009/**/logs/
+laboratorio/calibracion_1009/**/fuentes_descargadas/
+laboratorio/calibracion_1009/**/*.parquet
+laboratorio/calibracion_1009/**/*.pkl
+laboratorio/calibracion_1009/criterio_operador/r20/r20_noches.json

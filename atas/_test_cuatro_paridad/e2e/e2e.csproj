@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Prueba de PUNTA A PUNTA de la 4.1 fuera de ATAS (08-10-2026): las PIEZAS REALES encadenadas como en HostFamilia (IntegracionFamilia.cs):
+       Contratos + AdaptadoresFamilia (CintaFamilia, LibroNqFamilia) + descargador CBOE (B2, con Bajar=false) + minuteros NQ/NDX/QQQ + motor fam
+       + TQQQ. Sin pantalla (necesita ATAS) y sin el clon de la 3.0 (necesita ATAS: sus estelas se siembran como copia, ver Program.cs).
+       Los .cs de produccion se COMPILAN desde su lugar, no se copian ni se tocan. Los dos dobles de abajo (ndx/DobleCboe, qqq/FuenteCboeArchivoQqq)
+       NO entran en la cadena: solo sirven para ATRIBUIR diferencias (que fotos tenia la referencia que la semilla no tiene).
+       Uso: dotnet build -c Release -o bin/Release ; dotnet bin/Release/e2e.dll <escenario> (ver correr.ps1) -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>e2e</AssemblyName>
+    <RootNamespace>E2E</RootNamespace>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../PythiaGexCuatro/_contratos/Contratos.cs" Link="m/Contratos.cs" />
+    <Compile Include="../../PythiaGexCuatro/AdaptadoresFamilia.cs" Link="m/AdaptadoresFamilia.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/cboe/*.cs" LinkBase="m/cboe" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/*.cs" LinkBase="m/comun" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/nq/*.cs" LinkBase="m/nq" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/ndx/*.cs" LinkBase="m/ndx" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/qqq/*.cs" LinkBase="m/qqq" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/fam/*.cs" LinkBase="m/fam" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/tqqq/*.cs" LinkBase="m/tqqq" />
+    <!-- 4.1.4 (revision 4.1.3): la Replica20, para el escenario ny-extras (el host como en produccion, con OpcionesMotorFamilia.Extras) -->
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/replica20/*.cs" LinkBase="m/replica20" />
+    <!-- solo atribucion (no entran en la cadena) -->
+    <Compile Include="../ndx/DobleCboe.cs" Link="atrib/DobleCboe.cs" />
+    <Compile Include="../qqq/FuenteCboeArchivoQqq.cs" Link="atrib/FuenteCboeArchivoQqq.cs" />
+    <Compile Include="HostE2E.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes de paridad del libro NQ de la Familia (B3a). Compila contratos + comun + nq + los dobles de prueba. Sin ATAS. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <OutputType>Exe</OutputType>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>ParidadNq</AssemblyName>
+    <RootNamespace>ParidadNq</RootNamespace>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\PythiaGexCuatro\_contratos\Contratos.cs" />
+    <Compile Include="..\..\PythiaGexCuatro\_modulos\familia\comun\*.cs" />
+    <Compile Include="..\..\PythiaGexCuatro\_modulos\familia\nq\*.cs" />
+    <Compile Include="CintaCsv.cs" />
+    <Compile Include="LibroNqViva3.cs" />
+    <Compile Include="Programa.cs" />
+  </ItemGroup>
+</Project>

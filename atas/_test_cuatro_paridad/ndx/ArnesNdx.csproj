@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes de paridad del modulo Familia NDX (B3b). Compila: el contrato + comun (B3a) + fam (B3d, por ITandaMinutero) + el modulo ndx + los dobles de prueba. Sin ATAS. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>ArnesNdx</RootNamespace>
+    <AssemblyName>ArnesNdx</AssemblyName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../PythiaGexCuatro/_contratos/Contratos.cs" Link="contrato/Contratos.cs" />
+    <!-- el codigo comun de B3a (cuenta y seleccion) y el motor de B3d (solo por ITandaMinutero, que el modulo implementa) -->
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/*.cs" LinkBase="comun" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/fam/*.cs" LinkBase="fam" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/ndx/*.cs" LinkBase="modulo" />
+    <Compile Include="DobleCinta.cs;DobleCboe.cs;Replay.cs;Program.cs" />
+  </ItemGroup>
+</Project>

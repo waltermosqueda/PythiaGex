@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- B4 (TQQQ): compila el modulo _modulos/tqqq SOLO con Contratos.cs (sin ATAS, sin otros modulos). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <OutputType>Library</OutputType>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AssemblyName>TqqqSolo</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\PythiaGexCuatro\_contratos\Contratos.cs" Link="Contratos.cs" />
+    <Compile Include="..\..\..\PythiaGexCuatro\_modulos\tqqq\*.cs" />
+  </ItemGroup>
+</Project>

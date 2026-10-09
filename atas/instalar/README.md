@@ -1,5 +1,8 @@
 # Recuperar los indicadores en una PC nueva (o en un ATAS recien instalado)
 
+> **PythiaGex 4 (Gamma Familia, la que se usa desde el 08-10):** seguir `RESTAURAR_PythiaGex4.md` en esta misma
+> carpeta. Lo de abajo es para los indicadores viejos (Gamma Hoy clasica y PythiaVwap).
+
 Todo el trabajo vive en dos lugares de la nube, y con eso alcanza para volver a
 tener los indicadores andando en unos minutos:
 

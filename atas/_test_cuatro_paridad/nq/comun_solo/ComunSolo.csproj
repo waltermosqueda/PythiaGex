@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Compila SOLO el codigo comun de la Familia (B3a) + los contratos: prueba de que comun/ no depende de nada mas. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <OutputType>Library</OutputType>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\PythiaGexCuatro\_contratos\Contratos.cs" />
+    <Compile Include="..\..\..\PythiaGexCuatro\_modulos\familia\comun\*.cs" />
+  </ItemGroup>
+</Project>

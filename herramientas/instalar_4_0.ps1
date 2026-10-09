@@ -1,0 +1,97 @@
+﻿# INSTALADOR DE LA 4.0 (copia de instalar_3_0.ps1 que SOLO copia PythiaGexCuatro.dll). Reinicia ATAS sin tocar credenciales: cierra guardando el workspace, relanza,
+# aprieta Connect (la clave recordada) y restaura la ventana. Imprime cada paso.
+# 09-10: -Dll <ruta> instala esa DLL en vez de la de bin/Release (p. ej. una copia compilada aparte).
+# 09-10: -SinDll reinicia sin copiar DLL; -AntesDeLanzar <script.py> corre ese script (python -I) con ATAS CERRADO (p. ej. editar el .ws).
+param([string]$Dll = "", [switch]$SinDll, [string]$AntesDeLanzar = "")
+$ErrorActionPreference = "SilentlyContinue"
+Add-Type -AssemblyName UIAutomationClient
+Add-Type -AssemblyName UIAutomationTypes
+Add-Type @"
+using System; using System.Runtime.InteropServices;
+public static class W3 {
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int n);
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern void keybd_event(byte k, byte s, uint f, UIntPtr e);
+}
+"@
+function Paso($m) { Write-Output ("{0}  {1}" -f (Get-Date -Format "HH:mm:ss"), $m) }
+function Invocar($nombre, $tipos) {
+    $root = [System.Windows.Automation.AutomationElement]::RootElement
+    $cond = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $nombre)
+    $els = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $cond)
+    foreach ($e in $els) {
+        $r = $e.Current.BoundingRectangle
+        if ($r.Width -le 0) { continue }
+        $ct = $e.Current.ControlType.ProgrammaticName
+        if ($tipos -and ($tipos -notcontains $ct)) { continue }
+        foreach ($t in @($e, [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($e))) {
+            try { $p = $t.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern); $p.Invoke(); return "INVOCADO $nombre ($ct)" } catch {}
+        }
+    }
+    return "NO ENCONTRADO $nombre (candidatos $($els.Count))"
+}
+
+$p = Get-Process OFT.Platform | Select-Object -First 1
+if ($p) {
+    Paso "cerrando ATAS (pid $($p.Id), '$($p.MainWindowTitle)')"
+    $p.CloseMainWindow() | Out-Null
+    $res = "NO ENCONTRADO"
+    for ($i = 0; $i -lt 20; $i++) {
+        Start-Sleep -Seconds 1
+        $res = Invocar "Save and close" @("ControlType.Button")
+        if ($res -like "INVOCADO*") { break }
+    }
+    Paso "dialogo de guardar: $res"
+    for ($i = 0; $i -lt 60; $i++) {
+        Start-Sleep -Seconds 1
+        if (-not (Get-Process OFT.Platform)) { break }
+    }
+    if (Get-Process OFT.Platform) { Paso "ATAS no murio en 60 s; lo mato"; Stop-Process -Name OFT.Platform -Force; Start-Sleep -Seconds 5 }
+    Paso "ATAS cerrado"
+} else { Paso "ATAS no corria" }
+
+# --- SOLO la 4.0 (08-10-2026): copia PythiaGexCuatro.dll; no toca la 3.0, la 2.0 ni la clasica
+$dll6 = Join-Path $PSScriptRoot "../atas/PythiaGexCuatro/bin/Release/PythiaGexCuatro.dll"
+if ($Dll -ne "") { $dll6 = $Dll }
+$dst6 = Join-Path $env:APPDATA "ATAS/Indicators/PythiaGexCuatro.dll"
+if ($SinDll) { Paso "sin DLL: no copio nada (-SinDll)" } elseif (Test-Path $dll6) { Copy-Item -Force $dll6 $dst6; Paso ("DLL 4.0 instalado: " + (Get-Item $dst6).LastWriteTime + " " + (Get-Item $dst6).Length + " bytes") } else { Paso "SIN DLL 4.0 en bin/Release: no se instalo nada" }
+if ($AntesDeLanzar -ne "") { $o = & python -I $AntesDeLanzar 2>&1 | Out-String; Paso ("antes de lanzar: " + $o.Trim()) }
+# 08-10: pausa para que Lucid/Rithmic suelte la sesion anterior (a las 18:16 un relanzamiento inmediato quedo trabado en el login de ordenes)
+Start-Sleep -Seconds 30
+Start-Process "C:\Program Files (x86)\ATAS Platform\OFT.Platform.exe"
+Paso "lanzado"
+for ($i = 0; $i -lt 60; $i++) {
+    Start-Sleep -Seconds 2
+    $p = Get-Process OFT.Platform | Select-Object -First 1
+    if ($p -and ($p.MainWindowTitle -eq "Authorization" -or $p.MainWindowTitle -like "ATAS*")) { break }
+}
+Paso "ventana: '$($p.MainWindowTitle)'"
+if ($p.MainWindowTitle -eq "Authorization") {
+    Start-Sleep -Seconds 2
+    $res = Invocar "Connect" $null
+    Paso "login: $res"
+    if ($res -notlike "INVOCADO*") {
+        # 8.0.15 (06-10): la ventana de login nueva no expone el boton Connect por UIA. Clic en un campo + Enter si funciona.
+        try { $ws = New-Object -ComObject WScript.Shell; $null = $ws.AppActivate($p.Id); Start-Sleep -Seconds 1; $ws.SendKeys("{ENTER}"); Paso "login: Enter enviado a la ventana de login" } catch { Paso "login: no pude mandar Enter: $_" }
+    }
+}
+for ($i = 0; $i -lt 60; $i++) {
+    Start-Sleep -Seconds 2
+    $p = Get-Process OFT.Platform | Select-Object -First 1
+    if ($p -and $p.MainWindowTitle -like "ATAS*") { break }
+}
+$p = Get-Process OFT.Platform | Select-Object -First 1
+# si sigue en Authorization, Connect otra vez (hasta 3), sin esperar minutos
+for ($k = 0; $k -lt 3 -and $p -and $p.MainWindowTitle -eq "Authorization"; $k++) {
+    Start-Sleep -Seconds 3
+    $res = Invocar "Connect" $null
+    Paso "login reintento $($k+1): $res"
+    if ($res -notlike "INVOCADO*") { try { $ws = New-Object -ComObject WScript.Shell; $null = $ws.AppActivate($p.Id); Start-Sleep -Seconds 1; $ws.SendKeys("{ENTER}"); Paso "login reintento $($k+1): Enter enviado" } catch {} }
+    for ($i = 0; $i -lt 30; $i++) { Start-Sleep -Seconds 2; $p = Get-Process OFT.Platform | Select-Object -First 1; if ($p -and $p.MainWindowTitle -like "ATAS*") { break } }
+}
+Paso "principal: '$($p.MainWindowTitle)'"
+if ($p -and $p.MainWindowHandle -ne 0) {
+    [W3]::ShowWindow($p.MainWindowHandle, 3) | Out-Null
+    [W3]::keybd_event(0x12,0,0,[UIntPtr]::Zero); [W3]::SetForegroundWindow($p.MainWindowHandle) | Out-Null; [W3]::keybd_event(0x12,0,2,[UIntPtr]::Zero)
+    Paso "ventana restaurada y al frente"
+}

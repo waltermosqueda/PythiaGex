@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes de paridad del modulo TQQQ (B4) de PythiaGex 4.1. Sin ATAS. dotnet run -c Release -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <OutputType>Exe</OutputType>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>ArnesTqqq</AssemblyName>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\PythiaGexCuatro\_contratos\Contratos.cs" Link="Contratos.cs" />
+    <Compile Include="..\..\PythiaGexCuatro\_modulos\tqqq\*.cs" />
+    <Compile Include="DoblesTq.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

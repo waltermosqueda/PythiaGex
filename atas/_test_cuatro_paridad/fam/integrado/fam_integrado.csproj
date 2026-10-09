@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Corrida INTEGRADA del motor fam (B3d) con los minuteros reales de B3a/B3b/B3c y sus dobles de archivo (solo lectura de lo archivado:
+       viva3 y estelas de PythiaGex3, cinta de profundidad/estado/cinta, cboe-local). Compara las 21 series calculadas, minuto a minuto,
+       contra atas/_test_cuatro_paridad/referencia/ref-<dia>.json. Los .cs de otros constructores se COMPILAN aca, no se copian ni se tocan.
+       Uso: dotnet build -c Release -o bin/Release ; dotnet bin/Release/fam_integrado.dll [2026-10-07] [2026-10-08] -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>fam_integrado</AssemblyName>
+    <RootNamespace>FamIntegrado</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../../PythiaGexCuatro/_contratos/Contratos.cs" Link="m/Contratos.cs" />
+    <Compile Include="../../../PythiaGexCuatro/_modulos/familia/comun/*.cs" LinkBase="m/comun" />
+    <Compile Include="../../../PythiaGexCuatro/_modulos/familia/nq/*.cs" LinkBase="m/nq" />
+    <Compile Include="../../../PythiaGexCuatro/_modulos/familia/ndx/*.cs" LinkBase="m/ndx" />
+    <Compile Include="../../../PythiaGexCuatro/_modulos/familia/qqq/*.cs" LinkBase="m/qqq" />
+    <Compile Include="../../../PythiaGexCuatro/_modulos/familia/fam/*.cs" LinkBase="m/fam" />
+    <Compile Include="../../nq/CintaCsv.cs;../../nq/LibroNqViva3.cs" LinkBase="dobles/nq" />
+    <Compile Include="../../ndx/DobleCinta.cs;../../ndx/DobleCboe.cs" LinkBase="dobles/ndx" />
+    <Compile Include="../../qqq/CintaArchivoQqq.cs;../../qqq/FuenteCboeArchivoQqq.cs" LinkBase="dobles/qqq" />
+    <Compile Include="Integrado.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes del modulo fam (B3d) de PythiaGex 4.1. Compila los MISMOS .cs del modulo (sin copias) mas los contratos; sin ATAS.
+       Uso: dotnet run -c Release (argumentos opcionales despues del doble guion: reglas tres historia motor invierno gm todo) -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>fam_test</AssemblyName>
+    <RootNamespace>FamTest</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <TieredPGO>true</TieredPGO>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../PythiaGexCuatro/_contratos/Contratos.cs" Link="modulo/Contratos.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/fam/*.cs" LinkBase="modulo/fam" />
+    <!-- 4.1.2 (B-tres, modo gm): el nucleo de la 3.0 TAL CUAL (sin ATAS) para rehacer las capas NDX/QQQ con datos reales -->
+    <Compile Include="../../PythiaGexCuatro/GammaHoyNucleo.cs" Link="modulo/tres/GammaHoyNucleo.cs" />
+    <Compile Include="../../PythiaGexCuatro/Feed.cs" Link="modulo/tres/Feed.cs" />
+    <Compile Include="../../PythiaGexCuatro/Black76.cs" Link="modulo/tres/Black76.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Gm.cs" />
+    <Compile Include="Dobles.cs" />
+  </ItemGroup>
+</Project>

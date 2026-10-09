@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes de la pantalla (B5). Compila el modulo pantalla CONTRA ATAS (referencias Private=false: no se copia nada de ATAS; en tiempo de
+       ejecucion se resuelven desde C:\Program Files (x86)\ATAS Platform, solo lectura) con un doble de la clase del indicador, y corre las
+       pruebas sobre una FotoFamilia doble. No toca ATAS ni %APPDATA% (salvo el log de la pantalla si se dispara un error).
+       Correr:  dotnet run -c Release   (desde esta carpeta). Codigo de salida 0 = todo verde. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>PruebaPantalla</AssemblyName>
+    <RootNamespace>PruebaPantalla</RootNamespace>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <TieredPGO>true</TieredPGO>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\_contratos\Contratos.cs" />
+    <Compile Include="..\SeriesPantalla.cs" />
+    <Compile Include="..\ArmadoPantalla.cs" />
+    <Compile Include="..\ContratosPantalla.cs" />
+    <Compile Include="..\PantallaFamilia.cs" />
+    <Compile Include="..\FamiliaCuatroPantalla.cs" />
+    <!-- solo lectura: el catalogo del motor (B3d) para comparar el respaldo campo por campo -->
+    <Compile Include="..\..\familia\fam\CatalogoFamilia.cs" />
+    <Compile Include="FamiliaCuatroDoble.cs" />
+    <Compile Include="Dobles.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="ATAS.Indicators"><HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Indicators.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="ATAS.DataFeedsCore"><HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.DataFeedsCore.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="ATAS.Types"><HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Types.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="OFT.Rendering"><HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Rendering.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="OFT.Attributes"><HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Attributes.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="OFT.Localization"><HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Localization.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Utils.Common"><HintPath>C:\Program Files (x86)\ATAS Platform\Utils.Common.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="OFT.Core"><HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Core.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

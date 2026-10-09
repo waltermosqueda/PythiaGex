@@ -1,0 +1,148 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>PythiaGexCuatro</AssemblyName>
+    <RootNamespace>PythiaGexCuatro</RootNamespace>
+    <Version>4.1.4</Version>
+    <!-- 4.1 (B1): AssemblyVersion FIJA en 4.0.0.0. El .ws del operador guarda el tipo como
+         "PythiaGexCuatro.FamiliaCuatro, PythiaGexCuatro, Version=4.0.0.0": asi el grafico del visor 4.0.6
+         carga la 4.1 sin volver a agregarla (SIN VERIFICAR en ATAS). La version real va en FileVersion/InformationalVersion. -->
+    <AssemblyVersion>4.0.0.0</AssemblyVersion>
+    <FileVersion>4.1.4.0</FileVersion>
+    <InformationalVersion>4.1.4</InformationalVersion>
+    <Company>PythiaGex</Company>
+    <Product>PythiaGex 4.0 - Gamma Familia</Product>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <!-- Lista explicita: lo que no esta aca no se compila. -->
+  <ItemGroup>
+    <Compile Include="Black76.cs" />
+    <Compile Include="CadenaApi.cs" />
+    <Compile Include="Centinela.cs" />
+    <Compile Include="Feed.cs" />
+    <Compile Include="GammaHoyNucleo.cs" />
+    <Compile Include="GammaHoyTres.cs" />
+    <Compile Include="GammaHoyTresMemoria.cs" />
+    <Compile Include="GammaHoyTresCapas.cs" />
+    <Compile Include="GammaHoyTresHisteresis.cs" />
+    <Compile Include="GammaHoyTresCaja.cs" />
+    <Compile Include="GammaHoyTresCinta.cs" />
+    <Compile Include="GammaHoyTresApoyo.cs" />
+    <Compile Include="GammaHoyTresRayas.cs" />
+    <Compile Include="GammaHoyTresRecuadro.cs" />
+    <Compile Include="GammaHoyTresFormula.cs" />
+    <Compile Include="GammaHoyTresMajorOi.cs" />
+    <Compile Include="GammaHoyTresAtravesadas.cs" />
+    <Compile Include="GammaHoyTresTunel.cs" />
+    <Compile Include="GammaHoyTresEstado.cs" />
+    <Compile Include="Registro.cs" />
+    <Compile Include="RelojNy.cs" />
+    <Compile Include="Viva3.cs" />
+    <!-- 4.1 (B1): contratos compartidos (namespace PythiaGexCuatro.Familia) y los adaptadores ICinta / ILibroNq sobre el clon. -->
+    <Compile Include="_contratos\Contratos.cs" />
+    <Compile Include="AdaptadoresFamilia.cs" />
+    <Compile Include="_modulos\cboe\BajadorCboe.cs" />
+    <Compile Include="_modulos\cboe\CboeArchivo.cs" />
+    <Compile Include="_modulos\cboe\CboeCadena.cs" />
+    <Compile Include="_modulos\cboe\CboeCrudo.cs" />
+    <Compile Include="_modulos\cboe\CboeUtil.cs" />
+    <Compile Include="_modulos\cboe\HttpCboe.cs" />
+    <Compile Include="_modulos\familia\comun\Gamma.cs" />
+    <Compile Include="_modulos\familia\comun\LibroMinutoArmado.cs" />
+    <Compile Include="_modulos\familia\comun\NumFam.cs" />
+    <Compile Include="_modulos\familia\comun\Perfil.cs" />
+    <Compile Include="_modulos\familia\comun\Seleccion.cs" />
+    <Compile Include="_modulos\familia\comun\TiempoFam.cs" />
+    <Compile Include="_modulos\familia\comun\ZeroEstandar.cs" />
+    <Compile Include="_modulos\familia\fam\AlmacenNiveles.cs" />
+    <Compile Include="_modulos\familia\fam\AlmacenTres.cs" />
+    <Compile Include="_modulos\familia\fam\CatalogoFamilia.cs" />
+    <Compile Include="_modulos\familia\fam\MotorFamilia.cs" />
+    <Compile Include="_modulos\familia\fam\ReglasFam.cs" />
+    <Compile Include="_modulos\familia\fam\SalidaFamilia.cs" />
+    <Compile Include="_modulos\familia\fam\SesionFamilia.cs" />
+    <Compile Include="_modulos\familia\ndx\CalendarioNdx.cs" />
+    <Compile Include="_modulos\familia\ndx\ConversionNdx.cs" />
+    <Compile Include="_modulos\familia\ndx\LibroMinuteroNdx.cs" />
+    <Compile Include="_modulos\familia\nq\FotoNq.cs" />
+    <Compile Include="_modulos\familia\nq\MinuteroNq.cs" />
+    <Compile Include="_modulos\familia\nq\OiNq.cs" />
+    <Compile Include="_modulos\familia\nq\SeriesNq.cs" />
+    <Compile Include="_modulos\familia\qqq\ConversionQqq.cs" />
+    <Compile Include="_modulos\familia\qqq\MinuteroQqq.cs" />
+    <Compile Include="_modulos\familia\qqq\SeriesQqq.cs" />
+    <!-- 4.1.3: las dominantes como la 2.0 (su formula y su conversion, todo adentro) y su seleccion sobre los libros QQQ/NDX de la 4.1. -->
+    <Compile Include="_modulos\familia\replica20\Replica20.cs" />
+    <!-- 4.1.2 (B-pos): cambios por nivel (volumen de 5/15/30 min y OI contra la publicacion anterior, con la gamma de ahora). -->
+    <Compile Include="_modulos\familia\posiciones\ClavesCambios.cs" />
+    <Compile Include="_modulos\familia\posiciones\RegimenesOi.cs" />
+    <Compile Include="_modulos\familia\posiciones\FotosCambios.cs" />
+    <Compile Include="_modulos\familia\posiciones\CambiosFamilia.cs" />
+    <Compile Include="_modulos\pantalla\ArmadoPantalla.cs" />
+    <Compile Include="_modulos\pantalla\ContratosPantalla.cs" />
+    <Compile Include="_modulos\pantalla\FamiliaCuatroPantalla.cs" />
+    <Compile Include="_modulos\pantalla\PantallaFamilia.cs" />
+    <Compile Include="_modulos\pantalla\SeriesPantalla.cs" />
+    <Compile Include="_modulos\tqqq\CalculoTqqq.cs" />
+    <Compile Include="_modulos\tqqq\TqqqArchivo.cs" />
+    <Compile Include="_modulos\tqqq\TqqqNoche.cs" />
+    <Compile Include="_modulos\tqqq\TqqqPerfil.cs" />
+    <Compile Include="_modulos\tqqq\TqqqSesion.cs" />
+    <Compile Include="_modulos\tqqq\TqqqUtil.cs" />
+    <Compile Include="IntegracionFamilia.cs" />
+  </ItemGroup>
+
+  <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados.
+       Copiarlos haria que el indicador use una copia distinta de los mismos
+       tipos y ATAS lo rechazaria al cargarlo. Igual que en 2.0, mas
+       OFT.Platform.Core (ahi vive OptionsSubscriptionService, la pieza publica
+       de la API de opciones de 8.0.15). -->
+  <ItemGroup>
+    <Reference Include="ATAS.Indicators">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Indicators.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ATAS.DataFeedsCore">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.DataFeedsCore.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ATAS.Types">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\ATAS.Types.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Rendering">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Rendering.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Attributes">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Attributes.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Localization">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Localization.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Utils.Common">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\Utils.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Core">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Platform.Core">
+      <HintPath>C:\Program Files (x86)\ATAS Platform\OFT.Platform.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

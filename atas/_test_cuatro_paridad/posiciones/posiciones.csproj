@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes de B-pos (PythiaGex 4.1.2, 08-10-2026): los cambios por nivel (_modulos/familia/posiciones) con los datos REALES de
+       %APPDATA%\ATAS\PythiaGex4 (SOLO LECTURA: se copian a una carpeta temporal y se leen de ahi). Compila los .cs de produccion desde su lugar:
+       contratos + adaptadores (LibroNqFamilia) + cboe (BajadorCboe con Bajar=false) + comun + fam (RegistroMinuto, AlmacenNiveles, SalidaFamilia,
+       ReglasFam.Fusion) + CalendarioNdx + ConversionQqq + TQQQ (TqqqPerfil/TqqqSesion/TqqqUtil) + posiciones. Sin ATAS.
+       Uso: dotnet build -c Release -o bin/Release ; bin/Release/posiciones.exe [carpeta temporal] -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>posiciones</AssemblyName>
+    <RootNamespace>PruebaPosiciones</RootNamespace>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <TieredPGO>true</TieredPGO>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../PythiaGexCuatro/_contratos/Contratos.cs" Link="m/Contratos.cs" />
+    <Compile Include="../../PythiaGexCuatro/AdaptadoresFamilia.cs" Link="m/AdaptadoresFamilia.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/cboe/*.cs" LinkBase="m/cboe" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/*.cs" LinkBase="m/comun" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/fam/*.cs" LinkBase="m/fam" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/ndx/CalendarioNdx.cs" Link="m/ndx/CalendarioNdx.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/qqq/ConversionQqq.cs" Link="m/qqq/ConversionQqq.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/tqqq/TqqqPerfil.cs" Link="m/tqqq/TqqqPerfil.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/tqqq/TqqqSesion.cs" Link="m/tqqq/TqqqSesion.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/tqqq/TqqqUtil.cs" Link="m/tqqq/TqqqUtil.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/posiciones/*.cs" LinkBase="m/posiciones" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>
