@@ -99,6 +99,7 @@ namespace PythiaGexCuatro.Familia
                 ArmadoPantalla.Armar(_d, foto, Cat(), _aj, v, DateTime.UtcNow, _medir);
                 PintarPrims(g, _d);
                 _pestana = _d.Pestana.IsEmpty ? null : new CajaRect(_d.Pestana);
+                _recuadro = _d.Recuadro2E.IsEmpty ? null : new CajaRect(_d.Recuadro2E);
 
                 if (_renders++ == 0)
                     BitacoraPantalla.Linea(VERSION + ": primer render area=" + area + " clip.derecha=" + xr + " instrumento=" + v.Instrumento
@@ -112,8 +113,11 @@ namespace PythiaGexCuatro.Familia
             finally { _gActual = null; }
         }
 
+        private CajaRect _recuadro;   // 4.1.6
         public bool Clic(int x, int y)
         {
+            var q = _recuadro;
+            if (q != null && q.R.Contains(x, y)) { try { ArmadoPantalla.Recuadro2EAbierto = !ArmadoPantalla.Recuadro2EAbierto; _g.Redibujar(); } catch (Exception e) { Error("Clic", e); } return true; }
             var r = _pestana;
             if (r == null || !r.R.Contains(x, y)) return false;
             try { _g.PanelAbierto = !_g.PanelAbierto; _g.Redibujar(); }

@@ -156,6 +156,7 @@ namespace PythiaGexCuatro.Familia
     {
         public readonly List<PrimPantalla> Prims = new List<PrimPantalla>(4096);
         public Rectangle Pestana = Rectangle.Empty;   // donde cae el clic que abre/cierra
+        public Rectangle Recuadro2E = Rectangle.Empty;   // 4.1.6: el titulo del recuadro desplegable (clic = abre/cierra)
         // diagnostico (arnes, log)
         public string Cartel = "", Titulo = "", EjeTitulo = "", EdadColumna = "";
         public Color ColorTitulo, ColorCartel;
@@ -176,7 +177,7 @@ namespace PythiaGexCuatro.Familia
 
         public void Limpiar()
         {
-            Prims.Clear(); Pestana = Rectangle.Empty; Cartel = ""; Titulo = ""; EjeTitulo = ""; EdadColumna = "";
+            Prims.Clear(); Pestana = Rectangle.Empty; Recuadro2E = Rectangle.Empty; Cartel = ""; Titulo = ""; EjeTitulo = ""; EdadColumna = "";
             ColorTitulo = Color.Empty; ColorCartel = Color.Empty; Etiquetas.Clear(); Rotulos.Clear(); Panel.Clear(); Marcas.Clear(); Rayitas = 0;
             RotulosTramos.Clear(); TramosNoPuestos.Clear(); TramosLargos = 0; TramosVigentes = 0; TramosGrupos = 0; TramosDescartados = 0; TramosRecortados = 0;
         }
@@ -234,6 +235,8 @@ namespace PythiaGexCuatro.Familia
         /// sin precio, con una barrita de peso LINEAL antes del texto (la de mayor |monto| visible = 100 %) y el cambio pegado al monto.</summary>
         public const bool ESTILO_2E = true;
         public const int BARRA_2E = 44;               // ancho del carril de la barrita (px)
+        /// <summary>4.1.6: el recuadro desplegable arranca CERRADO ("que no moleste"); el clic en su titulo lo abre/cierra.</summary>
+        public static volatile bool Recuadro2EAbierto = false;
         public const double MOTOR_PARADO_S = 150;     // el motor publica cada ~5 s: 150 s sin foto nueva = parado
         // 4.1.4 (pedido del operador 09-10: "la doble o triple raya no tiene rotulo/etiqueta y es importante"): rotulos de los tramos de historia
         public const double TRAMO_TOL = 0.5;          // mismo tramo: a <= 0,5 pt del ultimo precio del tramo
@@ -965,11 +968,25 @@ namespace PythiaGexCuatro.Familia
                     if (!nuevo) r.T1 = a0.Corto + "  " + precio + acomp;
                     else
                     {
-                        r.T1 = Unir(a0.LibroTxt, a0.RolTxt, aj.Montos ? a0.MontoTxt : "");
+                        string roles = a0.RolTxt, acomp2 = acomp;
+                        if (ESTILO_2E)
+                        {   // 4.1.6: los acompañantes del MISMO libro se suman como rol ("QQQ C/M+/D1"); los de otro libro quedan nombrados
+                            var extra = new List<string>(); var otros = new List<string>();
+                            foreach (var x in l)
+                            {
+                                if (ReferenceEquals(x, a0) || x.Partes == null || x.Partes.Length == 0 || !(EsSerie20(x.Partes[0].Serie) || EsClasica(x.Partes[0].Serie))) continue;
+                                if (x.LibroTxt == a0.LibroTxt || x.LibroTxt.StartsWith(a0.LibroTxt + " ", StringComparison.Ordinal))
+                                { if (x.RolTxt != "" && x.RolTxt != a0.RolTxt && !extra.Contains(x.RolTxt)) extra.Add(x.RolTxt); }
+                                else { string t = Unir(x.LibroTxt, x.RolTxt); if (t != "" && !otros.Contains(t) && otros.Count < 2) otros.Add(t); }
+                            }
+                            if (extra.Count > 0) roles = roles + "/" + string.Join("/", extra);
+                            acomp2 = otros.Count == 0 ? "" : " · " + string.Join(" · ", otros);
+                        }
+                        r.T1 = Unir(a0.LibroTxt, roles, aj.Montos ? (ESTILO_2E ? a0.MontoTxt.Replace("+", "") : a0.MontoTxt) : "");
                         if (aj.Cambios && a0.CambioTxt != "") { r.T2 = " " + a0.CambioTxt; r.ColCambio = ColorSentido(a0.CambioSentido); }
                         // 4.1.6 (estilo 2E elegido por el operador 09-10: "una sola columna a la derecha, sin el precio", con barrita LINEAL de peso):
                         // sin precio ni fuente (el precio se lee en el eje y en la raya; la fuente esta en el detalle); quedan los acompañantes.
-                        r.T3 = ESTILO_2E ? acomp : " " + precio + (a0.FuenteTxt != "" ? " " + a0.FuenteTxt : "") + acomp;
+                        r.T3 = ESTILO_2E ? acomp2 : " " + precio + (a0.FuenteTxt != "" ? " " + a0.FuenteTxt : "") + acomp;
                     }
                     r.Txt = r.T1 + r.T2 + r.T3;
                     int y = Y(a0.Precio);
@@ -1052,6 +1069,31 @@ namespace PythiaGexCuatro.Familia
                     Tramos(d, r, "↓ ", tamC, cw, r.Col, x, yB);
                     d.Etiquetas.Add((t, yB, r.Y)); d.Rotulos.Add(Diag(r, t, x, w, yB));
                     ocupado.Add(new Rectangle(x - 1, yB, w + 2, hC)); colIzq = Math.Min(colIzq, x - 1); yB -= hC;
+                }
+                // 4.1.6: el RECUADRO desplegable (maqueta 2E): titulo = leyenda de colores con ▸/▾ (clic = abre/cierra); abierto = los 5 montos
+                // mas grandes (de todas las etiquetas, visibles o no) con su cambio. Arriba a la izquierda, debajo de la pestaña.
+                if (ESTILO_2E && nuevo)
+                {
+                    int rx = area.Left + 6, ry = yCab + 2;   // debajo de la pestaña y de la leyenda/cartel de ATAS
+                    var libs = new List<(string L, Color C)>();
+                    foreach (var r in et) { string lb = r.Cab?.Libro ?? ""; if (lb != "" && !libs.Any(z => z.L == lb)) libs.Add((lb, r.Col)); }
+                    string tit = (Recuadro2EAbierto ? "▾ " : "▸ ");
+                    int wt = (int)Math.Ceiling(cw * tit.Length) + libs.Sum(z => 14 + (int)Math.Ceiling(cw * z.L.Length)) + 8;
+                    var top5 = et.Where(r => Fin(r.Cab?.Peso ?? double.NaN)).OrderByDescending(r => r.Cab.Peso).Take(5).ToList();
+                    int wb = Math.Max(wt, top5.Select(r => AnchoTexto(r.T1 + r.T2, r.T2 != "", tamC, cw, medir) + 12).DefaultIfEmpty(0).Max());
+                    d.Relleno(Color.FromArgb(225, ColFondo), new Rectangle(rx, ry, wb, hC));
+                    d.Borde(Color.FromArgb(120, ColTexto), 1f, new Rectangle(rx, ry, wb, hC));
+                    d.Texto(tit, tamC, Color.FromArgb(200, ColTexto), rx + 4, ry + 1);
+                    int lx = rx + 4 + (int)Math.Ceiling(cw * tit.Length);
+                    foreach (var z in libs) { d.Relleno(z.C, new Rectangle(lx, ry + hC / 2 - 4, 8, 8)); d.Texto(z.L, tamC, z.C, lx + 11, ry + 1); lx += 14 + (int)Math.Ceiling(cw * z.L.Length); }
+                    d.Recuadro2E = new Rectangle(rx, ry, wb, hC);
+                    if (Recuadro2EAbierto && top5.Count > 0)
+                    {
+                        int yy = ry + hC + 1;
+                        d.Relleno(Color.FromArgb(215, ColFondo), new Rectangle(rx, yy, wb, top5.Count * hC + 4));
+                        d.Borde(Color.FromArgb(90, ColTexto), 1f, new Rectangle(rx, yy, wb, top5.Count * hC + 4));
+                        foreach (var r in top5) { var q = new Rot { Txt = r.T1 + r.T2, T1 = r.T1, T2 = r.T2, T3 = "", ColCambio = r.ColCambio }; Tramos(d, q, "", tamC, cw, r.Col, rx + 5, yy + 2); yy += hC; }
+                    }
                 }
             }
 
