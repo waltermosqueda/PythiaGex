@@ -235,6 +235,7 @@ namespace PythiaGexCuatro.Familia
         /// sin precio, con una barrita de peso LINEAL antes del texto (la de mayor |monto| visible = 100 %) y el cambio pegado al monto.</summary>
         public const bool ESTILO_2E = true;
         public const int BARRA_2E = 44;               // ancho del carril de la barrita (px)
+        public const int RECUADRO_Y = 24;             // 4.1.6f: el recuadro, a esta distancia del borde de arriba (debajo del boton ▶| de ATAS)
         /// <summary>4.1.6: el recuadro desplegable arranca CERRADO ("que no moleste"); el clic en su titulo lo abre/cierra.</summary>
         public static volatile bool Recuadro2EAbierto = false;
         public const double MOTOR_PARADO_S = 150;     // el motor publica cada ~5 s: 150 s sin foto nueva = parado
@@ -996,7 +997,7 @@ namespace PythiaGexCuatro.Familia
                 }
                 int topCol = yCab;
                 // la edad va ANTES de los numeros: una linea arriba de la columna
-                if (!double.IsNaN(edadMax))
+                if (!double.IsNaN(edadMax) && !(ESTILO_2E && nuevo))   // 4.1.6f: en 2E la edad va minima en el renglon del recuadro
                 {
                     bool viejo = edadMax > VIEJO_S;
                     bool congelada = fuentes.Any(x => x != null && x.Congelada);
@@ -1018,7 +1019,17 @@ namespace PythiaGexCuatro.Familia
                     int wt = (int)Math.Ceiling(cw * tit.Length) + libs.Sum(z => 14 + (int)Math.Ceiling(cw * z.L.Length)) + 8;
                     var top5 = et.Where(r => Fin(r.Cab?.Peso ?? double.NaN)).OrderByDescending(r => r.Cab.Peso).Take(5).ToList();
                     int wb = Math.Max(wt, top5.Select(r => AnchoTexto(r.T1 + r.T2, r.T2 != "", tamC, cw, medir) + 12).DefaultIfEmpty(0).Max());
-                    int rx = xr - wb - 4, ry = topCol;
+                    int rx = xr - wb - 4, ry = area.Top + RECUADRO_Y;   // 4.1.6f: arriba de todo, apenas debajo del boton ▶| de ATAS
+                    if (!double.IsNaN(edadMax))
+                    {   // 4.1.6f (pedido del operador 09-10: "este mensaje nunca me sirvio, recortalo al minimo"): solo la edad, p. ej. "5,1 h";
+                        // en naranja si pasa de 30 min (protocolo: la edad va ANTES de los numeros). El detalle (congelada, fuentes) esta en la pestaña.
+                        bool viejo = edadMax > VIEJO_S;
+                        string tEd = Edad(edadMax);
+                        int wEd = medir(tEd, tamC).Width;
+                        Sombra(d, tamC, tEd, viejo ? ColNaranja : Color.FromArgb(170, ColTexto), rx - wEd - 8, ry + 1);
+                        d.EdadColumna = tEd;
+                        ocupado.Add(new Rectangle(rx - wEd - 9, ry, wEd + 8, hC)); colIzq = Math.Min(colIzq, rx - wEd - 9);
+                    }
                     d.Relleno(Color.FromArgb(225, ColFondo), new Rectangle(rx, ry, wb, hC));
                     d.Borde(Color.FromArgb(120, ColTexto), 1f, new Rectangle(rx, ry, wb, hC));
                     d.Texto(tit, tamC, Color.FromArgb(200, ColTexto), rx + 4, ry + 1);
@@ -1035,7 +1046,7 @@ namespace PythiaGexCuatro.Familia
                     }
                     // 4.1.6e (captura del operador 09-10: "choca, se superpone"): abierto, el recuadro RESERVA su alto: las etiquetas ↑ y la columna
                     // empiezan debajo, no encima
-                    topCol += hC + 2 + (Recuadro2EAbierto && top5.Count > 0 ? top5.Count * hC + 6 : 0);
+                    topCol = Math.Max(topCol, ry + hC + 4 + (Recuadro2EAbierto && top5.Count > 0 ? top5.Count * hC + 6 : 0));
                 }
                 var en = et.Where(r => r.Fuera == 0 && r.Y != int.MinValue).OrderBy(r => r.Y).ToList();
                 // 4.1.2 (principal, 09-10): las etiquetas fuera de pantalla (↑ arriba, ↓ abajo) tienen renglones PROPIOS. Antes la primera etiqueta
@@ -1110,7 +1121,8 @@ namespace PythiaGexCuatro.Familia
             string tPest = ""; Color cPest = Color.Empty; Size mp = Size.Empty;
             if (aj.Cabecera)
             {
-                tPest = "PythiaGex 4.0 " + (aj.PanelAbierto ? "▾" : "▸")
+                if (ESTILO_2E) tPest = "PythiaGex 4.0 " + (aj.PanelAbierto ? "▾" : "▸") + (motorParado ? " · MOTOR PARADO " + Edad(eg) : "");   // 4.1.6f: titulo minimo
+                else tPest = "PythiaGex 4.0 " + (aj.PanelAbierto ? "▾" : "▸")
                       + (motorParado ? " · EL MOTOR NO CALCULA HACE " + Edad(eg) : sinCalculo ? " · sin calcular todavia" : "")
                       + (!double.IsNaN(edadMax) ? (viejoTodo ? " · DATO DE HACE " : " · dato de hace ") + Edad(edadMax) : "")
                       + (aviso != "" ? " · " + Recortar(aviso, 90) : "")
