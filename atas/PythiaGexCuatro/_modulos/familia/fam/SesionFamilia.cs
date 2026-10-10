@@ -57,6 +57,12 @@ namespace PythiaGexCuatro.Familia
             {   // CME: 18:00 NY de la vispera -> 17:00 NY; el dia es la fecha NY de (t + 6 h)
                 var ny = UtcANy(ahoraUtc);
                 var d = ny.AddHours(6).Date;
+                // 4.1.5d (09-10-2026, pedido del operador: "quiero que la 4.0 se vuelva a ver, o sea que tenga memoria"): el fin de semana CME
+                // esta cerrado (viernes 17:00 NY -> domingo 18:00 NY). La cuenta de arriba daba una sesion de SABADO (o domingo) que nunca tiene
+                // datos, y tras reiniciar ATAS la 4.1 no dibujaba nada mientras la clasica y la 2.0 mostraban lo guardado. Ahora el fin de semana
+                // la sesion es la del VIERNES (la ultima con datos, leida del archivo); el domingo a las 18:00 NY empieza la del lunes como siempre.
+                if (d.DayOfWeek == DayOfWeek.Saturday) d = d.AddDays(-1);
+                else if (d.DayOfWeek == DayOfWeek.Sunday) d = d.AddDays(-2);
                 s.Dia = d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                 s.IniUtc = NyAUtc(d.AddDays(-1).AddHours(18));
                 s.FinUtc = NyAUtc(d.AddHours(17));

@@ -35,12 +35,11 @@ namespace PythiaGexCuatro
 
     public partial class FamiliaCuatro
     {
-        [Display(Name = "Rotulos: estilo", GroupName = "9.7 3.0 · Rayas una por una", Order = 49,
+        [Display(Name = "Rotulos: estilo", GroupName = "9.7 3.0 · Rayas una por una", Order = 1049,
                  Description = "3.5.7. Minimal (default, maqueta 1 elegida el 08-10): el nombre del nivel en su color, al lado de la ultima vela, sin caja y sin precio (el precio esta en el recuadro). Columna: los chips de la 3.5.5.")]
         public EstiloRotulos3 Rotulos3Estilo { get; set; } = EstiloRotulos3.Minimal;
 
-        [Display(Name = "Ver el recuadro del libro (plegable)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 10,
-                 Description = "3.6.2. Plegado por defecto: una pestañita 'LIBRO NQ ▸'; un clic lo abre y un clic en su titulo lo cierra (pedido 08-10: 'me molestaba para la lectura, algo mas chico o desplegable'). Adentro: niveles cercanos con GEX por volumen y por OI, muros, majors y neto.")]
+        [Display(Name = "↳ ver libro", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 91, Description = "Necesita la llave '3.0 libro▸' prendida. 3.6.2. Plegado por defecto: una pestañita 'LIBRO NQ ▸'; un clic lo abre y un clic en su titulo lo cierra (pedido 08-10: 'me molestaba para la lectura, algo mas chico o desplegable'). Adentro: niveles cercanos con GEX por volumen y por OI, muros, majors y neto.")]
         public bool RecuadroLibro3Ver { get; set; } = true;
 
         private bool _recuadroAbierto;
@@ -58,27 +57,27 @@ namespace PythiaGexCuatro
             return true;
         }
 
-        [Display(Name = "Esquina", GroupName = "9.8 3.0 · Recuadro del libro", Order = 11)]
+        [Display(Name = "Esquina", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1011)]
         public EsquinaRecuadro3 Recuadro3Esquina { get; set; } = EsquinaRecuadro3.ArribaIzquierda;
 
-        [Display(Name = "Separacion del borde de arriba (px)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 12, Description = "Para no tapar el renglon de precios de ATAS (O: H: L: C:).")]
+        [Display(Name = "Separacion del borde de arriba (px)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1012, Description = "Para no tapar el renglon de precios de ATAS (O: H: L: C:).")]
         [Range(0, 400)]
         public int Recuadro3MargenPx { get; set; } = 56;
 
-        [Display(Name = "Niveles por lado", GroupName = "9.8 3.0 · Recuadro del libro", Order = 13)]
+        [Display(Name = "Niveles por lado", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1013)]
         [Range(1, 6)]
         public int Recuadro3Niveles { get; set; } = 3;
 
-        [Display(Name = "Flechas: cambio en (min)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 14,
+        [Display(Name = "Flechas: cambio en (min)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1014,
                  Description = "↑ = el GEX se hizo mas positivo en estos minutos, ↓ = mas negativo, → = quieto (menos del 2 % del mayor del libro). Por OI solo se mueve por precio y volatilidad: el OI es de ayer.")]
         [Range(1, 30)]
         public int Recuadro3CambioMin { get; set; } = 5;
 
-        [Display(Name = "Muros: radio (pts)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 15, Description = "El muro de calls (puts) es el strike con mas GEX de calls (puts) a esta distancia del precio, como en la pagina Profundidad.")]
+        [Display(Name = "Muros: radio (pts)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1015, Description = "El muro de calls (puts) es el strike con mas GEX de calls (puts) a esta distancia del precio, como en la pagina Profundidad.")]
         [Range(20, 400)]
         public int Recuadro3RadioMuros { get; set; } = 100;
 
-        [Display(Name = "Tamaño (%)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 16)]
+        [Display(Name = "Tamaño (%)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1016)]
         [Range(50, 130)]
         public int Recuadro3TamPct { get; set; } = 85;
 

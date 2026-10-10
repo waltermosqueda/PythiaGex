@@ -23,24 +23,24 @@ namespace PythiaGexCuatro
     /// </summary>
     public partial class FamiliaCuatro
     {
-        [Display(Name = "Caja negra: grabar toques", GroupName = "9.4 3.0 · Caja negra", Order = 10,
+        [Display(Name = "Caja negra: grabar toques", GroupName = "9.4 3.0 · Caja negra", Order = 1010,
                  Description = "3.1.0. En cada toque de una dominante (y de sus placebos) graba opciones, cinta y libro en PythiaGex4\\caja\\caja-<raiz>-<dia>.jsonl, y el resultado a 5/15/30 min. No dibuja nada.")]
         public bool Caja4Activa { get; set; } = false;   // 4.1: apagada por defecto (nombre nuevo): es instrumental del laboratorio de la 3.0
 
-        [Display(Name = "Caja negra: niveles placebo (+-12,5 y +-25)", GroupName = "9.4 3.0 · Caja negra", Order = 20,
+        [Display(Name = "Caja negra: niveles placebo (+-12,5 y +-25)", GroupName = "9.4 3.0 · Caja negra", Order = 1020,
                  Description = "Graba tambien los toques a las dominantes de NQ corridas +-12,5 y +-25 pts. Es el control: sin el, el rebote medido no se puede comparar con nada.")]
         public bool Caja3Placebos { get; set; } = true;
 
-        [Display(Name = "Caja negra: capas NDX/QQQ y zero", GroupName = "9.4 3.0 · Caja negra", Order = 30,
+        [Display(Name = "Caja negra: capas NDX/QQQ y zero", GroupName = "9.4 3.0 · Caja negra", Order = 1030,
                  Description = "Graba tambien los toques a las dominantes de las capas (con la edad del dato) y al zero gamma de NQ.")]
         public bool Caja3Capas { get; set; } = true;
 
-        [Display(Name = "Caja negra: niveles del libro por lado", GroupName = "9.4 3.0 · Caja negra", Order = 40,
+        [Display(Name = "Caja negra: niveles del libro por lado", GroupName = "9.4 3.0 · Caja negra", Order = 1040,
                  Description = "Cuantos niveles de bid y de ask se guardan de la foto Level 2 en el instante del toque.")]
         [Range(1, 20)]
         public int Caja3Profundidad { get; set; } = 10;
 
-        [Display(Name = "Caja negra: lote grande (contratos)", GroupName = "9.4 3.0 · Caja negra", Order = 50,
+        [Display(Name = "Caja negra: lote grande (contratos)", GroupName = "9.4 3.0 · Caja negra", Order = 1050,
                  Description = "Una operacion agregada (CumulativeTrade) de este tamaño o mas cuenta como print grande en la cinta de los 60 s previos.")]
         [Range(1, 1000)]
         public int Caja3LoteGrande { get; set; } = 20;

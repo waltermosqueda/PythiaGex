@@ -35,16 +35,16 @@ namespace PythiaGexCuatro
     /// </summary>
     public partial class FamiliaCuatro
     {
-        [Display(Name = "Estado para Profundidad 3.0 (indicador.json)", GroupName = "9.5 3.0 · Profundidad", Order = 10,
+        [Display(Name = "Estado para Profundidad 3.0 (indicador.json)", GroupName = "9.5 3.0 · Profundidad", Order = 1010,
                  Description = "3.2.0/3.2.1. Escribe indicador.json (atomico) con el libro vivo del 0DTE por strike y por lado, las zonas y la foto de la cadena, para la pagina local Profundidad 3.0: en cada latido de 5 s y, ademas, por CAMBIO del libro o del precio (temporizador de 1 s). No dibuja nada.")]
         public bool Estado4Pulso { get; set; } = false;   // 4.1: nombre nuevo y apagado: nadie de afuera lee la 4.0
 
-        [Display(Name = "Pulso por cambio: segundos minimos entre escrituras (1-5)", GroupName = "9.5 3.0 · Profundidad", Order = 15,
+        [Display(Name = "Pulso por cambio: segundos minimos entre escrituras (1-5)", GroupName = "9.5 3.0 · Profundidad", Order = 1015,
                  Description = "3.2.1. El temporizador de 1 s escribe indicador.json solo si el libro (CadenaApi.Cambios) o el precio del grafico cambiaron desde la ultima escritura, y nunca mas seguido que esto. 1 = lo mas en tiempo real posible; 5 = solo el latido del Tick.")]
         [Range(1, 5)]
         public int Estado3PulsoSeg { get; set; } = 1;
 
-        [Display(Name = "Ruta del estado (indicador.json)", GroupName = "9.5 3.0 · Profundidad", Order = 20,
+        [Display(Name = "Ruta del estado (indicador.json)", GroupName = "9.5 3.0 · Profundidad", Order = 1020,
                  Description = "Archivo que se escribe. 4.1: default %APPDATA%\\ATAS\\PythiaGex4\\estado\\indicador.json (propio: la 3.0 escribe el de profundidad\\estado). La carpeta se crea si no existe.")]
         public string Estado4Ruta { get; set; } = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex4", "estado", "indicador.json");
 

@@ -454,6 +454,20 @@ namespace PythiaGexCuatro.Familia
 
         public DateTime UltimoTickUtc { get { lock (_llave) return _ultimoTick == long.MinValue ? DateTime.MinValue : AdaptadoresFamilia.DeMs(_ultimoTick); } }
 
+        /// <summary>4.1.5d (para la replica de la clasica, OpcionesClasicaNdx.VelaCompleta): la vela m2 del balde que contiene 'aperturaUtc' esta COMPLETA:
+        /// la cinta se escucho entera en el balde (ticks sin hueco) o hay una vela valida del grafico para el y el grafico ya paso de el. false = la vela
+        /// que da VelasM2 es la de ticks con un hueco (ultimo recurso de Elegir): su cierre puede no ser el real (el 09-10 a las 17:35 ART, sin las velas
+        /// del grafico, la base de la rueda de la clasica paso de 229,32 a 229,98 por eso). No es parte de ICinta (contrato): la pasa el integrador.</summary>
+        public bool VelaM2Completa(DateTime aperturaUtc)
+        {
+            long b = AdaptadoresFamilia.PisoDiv(AdaptadoresFamilia.Ms(aperturaUtc), VELA_MS) * VELA_MS;
+            lock (_llave)
+            {
+                if (Escuchado(b, b + VELA_MS)) return true;
+                return _velasGraf.ContainsKey(b) && !_grafInvalidas.Contains(b) && b + VELA_MS <= _grafMaxAp;
+            }
+        }
+
         /// <summary>Texto corto para el log y la pestaña.</summary>
         public string Estado
         {

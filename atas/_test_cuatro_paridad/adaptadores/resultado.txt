@@ -1,22 +1,22 @@
 arnes adaptadores B1 · referencia 2026-10-08 20:19:56
 1. RedondeoPy: 100483/100483 iguales a round(x,4) de Python (Math.Round de .NET erra 43569)
 2. ParsearViva3: 162 fotos comparadas campo por campo (24101 filas) + 11 lineas fuera de la sesion
-3. cinta 2026-10-07: 243407 vivos + 723298 relleno leidos en 257 ms (Python: 243407 vivos, 705598 relleno antes del primer vivo)
-   B (camino vivo: Tick + Relleno): 0.112 us por Tick; relleno entraron 705598
+3. cinta 2026-10-07: 243407 vivos + 723298 relleno leidos en 329 ms (Python: 243407 vivos, 705598 relleno antes del primer vivo)
+   B (camino vivo: Tick + Relleno): 0.109 us por Tick; relleno entraron 705598
    A (CargarCsv) sesion UTC fija: velas 686/686 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 0 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 596 (max 7.5 pts a las 16:02:58.345: 31325.75 vs 31333.25, tick del segundo anterior 31325.75), dif tick 596 [por diseño: casilla por segundo]
    B (Tick+Relleno) sesion UTC fija: velas 686/686 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 0 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 596 (max 7.5 pts a las 16:02:58.345: 31325.75 vs 31333.25, tick del segundo anterior 31325.75), dif tick 596 [por diseño: casilla por segundo]
    A (CargarCsv) sesion NY: velas 686/686 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 0 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 596 (max 7.5 pts a las 16:02:58.345: 31325.75 vs 31333.25, tick del segundo anterior 31325.75), dif tick 596 [por diseño: casilla por segundo]
    B (Tick+Relleno) sesion NY: velas 686/686 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 0 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 596 (max 7.5 pts a las 16:02:58.345: 31325.75 vs 31333.25, tick del segundo anterior 31325.75), dif tick 596 [por diseño: casilla por segundo]
-   cinta MNQZ6: ultimo tick hace 127034 s, vivos 243407, relleno 705598 (+17700 ya en vivo), velas ticks 687 / grafico 0, tramos 2, dias 2 (sin hilo)
+   cinta MNQZ6: ultimo tick hace 182668 s, vivos 243407, relleno 705598 (+17700 ya en vivo), velas ticks 687 / grafico 0, tramos 2, dias 2 (sin hilo)
 3b. cinta 2026-10-08: 2249969 vivos + 973541 relleno (Python: 2249969 vivos, 8314 relleno antes del primer vivo)
    A 2026-10-08 (CargarCsv): velas 672/672 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 3 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 674 (max 62 pts a las 16:17:16.545: 31188.75 vs 31250.75, tick del segundo anterior 31188.75), dif tick 674 [por diseño: casilla por segundo]
    B 2026-10-08 (Tick+Relleno): velas 672/672 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 3 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 674 (max 62 pts a las 16:17:16.545: 31188.75 vs 31250.75, tick del segundo anterior 31188.75), dif tick 674 [por diseño: casilla por segundo]
-   cinta MNQZ6: ultimo tick hace 40213 s, vivos 2249969, relleno 8314 (+965227 ya en vivo), velas ticks 673 / grafico 0, tramos 2, huecos de mas de 2 min sin ticks 2, dias 2 (sin hilo)
-4. persistencia: 2 archivos, 1.47 MB, escribir+leer 40 ms
+   cinta MNQZ6: ultimo tick hace 95847 s, vivos 2249969, relleno 8314 (+965227 ya en vivo), velas ticks 673 / grafico 0, tramos 2, huecos de mas de 2 min sin ticks 2, dias 2 (sin hilo)
+4. persistencia: 2 archivos, 1.47 MB, escribir+leer 43 ms
    C (de disco): velas 686/686 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 0 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 596 (max 7.5 pts a las 16:02:58.345: 31325.75 vs 31333.25, tick del segundo anterior 31325.75), dif tick 596 [por diseño: casilla por segundo]
 5. velas del grafico: respaldo m2, interpolacion, rechazo de marcos > 2 min y prioridad de los ticks escuchados
-6. ILibroNq: 1205 fotos de 1205 lineas (1205 aceptadas), dedup, orden y rango; libro NQ: 1205 fotos (vivas 0, archivo 1205), ultima 23:59:26Z hace 115848 s, 151 filas (sin sembrar)
-  log: adaptadores: libro NQ sembrado de C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\_test_cuatro_paridad\adaptadores\tmp\viva: 2 fotos de 2 lineas (30 h). libro NQ: 2 fotos (vivas 0, archivo 2), ultima 07:11:13Z hace 3541 s, 160 filas (sembrando)
-  log: adaptadores: cinta TESTZ6: ultimo tick hace 11 s, vivos 50, relleno 0, velas ticks 2 / grafico 0, tramos 1, dias 1 (historia: 0 archivos)
+6. ILibroNq: 1205 fotos de 1205 lineas (1205 aceptadas), dedup, orden y rango; libro NQ: 1205 fotos (vivas 0, archivo 1205), ultima 23:59:26Z hace 171481 s, 151 filas (sin sembrar)
+  log: adaptadores: libro NQ sembrado de C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\_test_cuatro_paridad\adaptadores\tmp\viva: 2 fotos de 2 lineas (30 h). libro NQ: 2 fotos (vivas 0, archivo 2), ultima 22:38:27Z hace 3540 s, 160 filas (sembrando)
+  log: adaptadores: cinta TESTZ6: ultimo tick hace 11 s, vivos 50, relleno 0, velas ticks 1 / grafico 0, tramos 1, dias 1 (historia: 0 archivos)
 7. ciclo de vida: siembra del libro, una cinta por instrumento, persistencia al soltar, re-arranque
-TODO OK · 1038 comprobaciones en 3.4 s
+TODO OK · 1038 comprobaciones en 3.7 s

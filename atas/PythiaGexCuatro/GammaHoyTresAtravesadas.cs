@@ -16,19 +16,18 @@ namespace PythiaGexCuatro
     /// </summary>
     public partial class FamiliaCuatro
     {
-        [Display(Name = "Atenuar rayas atravesadas por los cuerpos", GroupName = "9.3 3.0 · Pantalla", Order = 40,
-                 Description = "3.6.4, APAGADO desde la 3.6.7. Medido (laboratorio/tres/atravesadas.py, 22 sesiones, pre-registrado y verificado): las rayas atravesadas rinden IGUAL (F1) o MEJOR (F5: rebote 77 % vs 64 % de noche) que las no atravesadas, y el filtro llega tarde (en el caso 31.372 apaga el medio 16 min despues de empezar el serrucho). Solo limpieza visual, y esconde rayas que funcionan igual o mejor.")]
+        [Display(Name = "↳ atravesadas", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 100, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. 3.6.4, APAGADO desde la 3.6.7. Medido (laboratorio/tres/atravesadas.py, 22 sesiones, pre-registrado y verificado): las rayas atravesadas rinden IGUAL (F1) o MEJOR (F5: rebote 77 % vs 64 % de noche) que las no atravesadas, y el filtro llega tarde (en el caso 31.372 apaga el medio 16 min despues de empezar el serrucho). Solo limpieza visual, y esconde rayas que funcionan igual o mejor.")]
         public bool Atravesadas3AtenuarB { get; set; } = false;
 
-        [Display(Name = "Atravesadas: velas hacia atras (N)", GroupName = "9.3 3.0 · Pantalla", Order = 41)]
+        [Display(Name = "Atravesadas: velas hacia atras (N)", GroupName = "9.3 3.0 · Pantalla", Order = 1041)]
         [Range(5, 60)]
         public int Atravesadas3Velas { get; set; } = 20;
 
-        [Display(Name = "Atravesadas: cuerpos que la cruzan (K)", GroupName = "9.3 3.0 · Pantalla", Order = 42)]
+        [Display(Name = "Atravesadas: cuerpos que la cruzan (K)", GroupName = "9.3 3.0 · Pantalla", Order = 1042)]
         [Range(1, 10)]
         public int Atravesadas3Cuerpos { get; set; } = 3;
 
-        [Display(Name = "Atravesadas: opacidad (%)", GroupName = "9.3 3.0 · Pantalla", Order = 43, Description = "0 = no se dibujan.")]
+        [Display(Name = "Atravesadas: opacidad (%)", GroupName = "9.3 3.0 · Pantalla", Order = 1043, Description = "0 = no se dibujan.")]
         [Range(0, 100)]
         public int Atravesadas3AlfaPct { get; set; } = 20;
 

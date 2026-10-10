@@ -94,7 +94,7 @@ namespace PythiaGexCuatro
     public partial class FamiliaCuatro : Indicator
     {
         private const string LOG = "gammahoy";
-        private const string VERSION = "4.1.4";
+        private const string VERSION = "4.1.6";
         private const string MOTOR_TRES = "3.6.9";    // la version de la 3.0 que corre adentro (clonar_4_0.py)
         private const int MIN_STRIKES_UTILES = 8;     // strikes con IV en call y put para que la cuenta valga
 
@@ -146,149 +146,144 @@ namespace PythiaGexCuatro
         // ajustes (nombres NUEVOS, con "3": ATAS persiste por nombre)
         // ------------------------------------------------------------------
 
-        [Display(Name = "Raiz manual (vacio = del grafico)", GroupName = "9.1 3.0 · Libro", Order = 10,
+        [Display(Name = "Raiz manual (vacio = del grafico)", GroupName = "9.1 3.0 · Libro", Order = 1010,
                  Description = "NQ o ES. Vacio: se deduce del instrumento del grafico (MNQ -> NQ, MES -> ES, M2K -> RTY).")]
         public string Raiz3Manual { get; set; } = "";
 
-        [Display(Name = "Tope de contratos suscritos", GroupName = "9.1 3.0 · Libro", Order = 20,
+        [Display(Name = "Tope de contratos suscritos", GroupName = "9.1 3.0 · Libro", Order = 1020,
                  Description = "Suscripciones vivas por instancia por la API. El proveedor de ATAS corta en 512; 320 por defecto.")]
         [Range(20, 480)]
         public int Tope3Contratos { get; set; } = 320;
 
-        [Display(Name = "Ventana densa (%)", GroupName = "9.1 3.0 · Libro", Order = 30, Description = "Todos los strikes hasta este % del precio.")]
+        [Display(Name = "Ventana densa (%)", GroupName = "9.1 3.0 · Libro", Order = 1030, Description = "Todos los strikes hasta este % del precio.")]
         public decimal Ventana3DensaPct { get; set; } = 1.0m;
 
-        [Display(Name = "Ventana rala (%)", GroupName = "9.1 3.0 · Libro", Order = 40, Description = "Uno de cada dos strikes hasta este % del precio.")]
+        [Display(Name = "Ventana rala (%)", GroupName = "9.1 3.0 · Libro", Order = 1040, Description = "Uno de cada dos strikes hasta este % del precio.")]
         public decimal Ventana3RalaPct { get; set; } = 2.0m;
 
-        [Display(Name = "Vencimientos (fechas)", GroupName = "9.1 3.0 · Libro", Order = 50, Description = "Las fechas mas cercanas (0DTE y 1DTE). El viernes de la trimestral una fecha trae dos series.")]
+        [Display(Name = "Vencimientos (fechas)", GroupName = "9.1 3.0 · Libro", Order = 1050, Description = "Las fechas mas cercanas (0DTE y 1DTE). El viernes de la trimestral una fecha trae dos series.")]
         [Range(1, 4)]
         public int Vencimientos3 { get; set; } = 2;
 
-        [Display(Name = "Recentrar al alejarse (%)", GroupName = "9.1 3.0 · Libro", Order = 60, Description = "Rearma la ventana cuando el precio se fue mas que esto del centro (minimo 60 s entre rearmes).")]
+        [Display(Name = "Recentrar al alejarse (%)", GroupName = "9.1 3.0 · Libro", Order = 1060, Description = "Rearma la ventana cuando el precio se fue mas que esto del centro (minimo 60 s entre rearmes).")]
         public decimal Recentrar3Pct { get; set; } = 0.5m;
 
-        [Display(Name = "Regla de dominantes", GroupName = "9.2 3.0 · Lectura", Order = 10,
+        [Display(Name = "Regla de dominantes", GroupName = "9.2 3.0 · Lectura", Order = 1010,
                  Description = "Clasica = Gamma Hoy 1.11d (una por lado, empate 20 %, centroide 12 pts). DosMasGrandes = 2.0.5 (las dos barras mas largas en valor absoluto, strike exacto). Tres = la clasica con histeresis (F3 V22 del laboratorio, 06-10): cambia de raya 2,8 veces por hora contra 10 de la clasica y el precio la perfora 12,9 pts contra 22,7; ventaja sobre el placebo +7,1 pp con z 1,47 en confirmacion: SIN VALIDAR.")]
         public ReglaDominantes3 Regla3Dominantes { get; set; } = ReglaDominantes3.Tres;
 
-        [Display(Name = "Horizonte de vencimientos", GroupName = "9.2 3.0 · Lectura", Order = 20, Description = "Hoy = el 0DTE (el mas cercano). Es lo que se contrasta contra la clasica y la 2.0.")]
+        [Display(Name = "Horizonte de vencimientos", GroupName = "9.2 3.0 · Lectura", Order = 1020, Description = "Hoy = el 0DTE (el mas cercano). Es lo que se contrasta contra la clasica y la 2.0.")]
         public GammaHoyNucleo.HorizonteVenc Horizonte3 { get; set; } = GammaHoyNucleo.HorizonteVenc.Hoy;
 
-        [Display(Name = "Dominantes: radio maximo en puntos (0 = auto: 100 NQ / 25 ES)", GroupName = "9.2 3.0 · Lectura", Order = 30,
+        [Display(Name = "Dominantes: radio maximo en puntos (0 = auto: 100 NQ / 25 ES)", GroupName = "9.2 3.0 · Lectura", Order = 1030,
                  Description = "La dominante de cada lado se busca solo entre los strikes a menos de esta distancia del precio. 0 = 100 pts en NQ, 25 en ES, 20 en RTY.")]
         [Range(0, 2000)]
         public decimal Radio3DominantesPts { get; set; } = 0m;
 
-        [Display(Name = "Empate tecnico: gana la mas cercana (%)", GroupName = "9.2 3.0 · Lectura", Order = 40, Description = "Solo con la regla Clasica. 20 = como la 1.11d.")]
+        [Display(Name = "Empate tecnico: gana la mas cercana (%)", GroupName = "9.2 3.0 · Lectura", Order = 1040, Description = "Solo con la regla Clasica. 20 = como la 1.11d.")]
         [Range(0, 90)]
         public int Empate3Pct { get; set; } = 20;
 
-        [Display(Name = "Dominantes de noche", GroupName = "9.2 3.0 · Lectura", Order = 50,
+        [Display(Name = "Dominantes de noche", GroupName = "9.2 3.0 · Lectura", Order = 1050,
                  Description = "REGLA DEL OPERADOR (17-09): Volumen. Fuera de la rueda de NY las dominantes salen del volumen operado hoy, no del interes abierto. No cambiar sin aviso y captura antes/despues.")]
         public GammaHoyNucleo.NocheDominantes Noche3Dominantes { get; set; } = GammaHoyNucleo.NocheDominantes.Volumen;
 
-        [Display(Name = "Zero interpolado por strike (como la referencia)", GroupName = "9.2 3.0 · Lectura", Order = 60, Description = "Prendido: cambio de signo del perfil por strike, interpolado. Apagado: cruce repreciado en grilla.")]
+        [Display(Name = "Zero interpolado por strike (como la referencia)", GroupName = "9.2 3.0 · Lectura", Order = 1060, Description = "Prendido: cambio de signo del perfil por strike, interpolado. Apagado: cruce repreciado en grilla.")]
         public bool Zero3Interpolado { get; set; } = true;
 
-        [Display(Name = "Perfil visual", GroupName = "9.3 3.0 · Pantalla", Order = 5,
-                 Description = "Fija los defaults de las casillas de abajo sin tocarlas una por una. Limpio (default): D1, D2, zero, tunel, toques, rotulos y cabecera; majors solo en ES; sin barras. ConMajors: lo mismo + majors. Todo: + barras del perfil a la izquierda.")]
+        [Display(Name = "↳ perfil visual", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 48, Description = "Necesita la llave '3.0 NQ dom▸' prendida. Solo decide dos cosas cuando estan en 'Segun el perfil': '↳ ver majors' (NQ: Limpio = no; ConMajors y Todo = si; ES: siempre si) y '↳ barras perfil' (solo con Todo). Las demas 'ver' en 'Segun el perfil' quedan en Si con cualquier perfil.")]
         public PerfilVisual3 Perfil3Visual { get; set; } = PerfilVisual3.Limpio;
 
-        [Display(Name = "Estela de D1 y D2 (guion por vela)", GroupName = "9.3 3.0 · Pantalla", Order = 10)]
+        [Display(Name = "↳ ver estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 94, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸' o '3.0 capas▸' prendida. Vale para todas las que esten prendidas. La estela por vela (guiones o rombos) de D1/D2 de NQ, del 0Γ de NQ y de las capas. Segun el perfil = Si. No toca las F1-F8, los majors por OI ni el apoyo (tienen su estela propia).")]
         public Tri3 Ver3Estela { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "Zero gamma (punteado fino)", GroupName = "9.3 3.0 · Pantalla", Order = 20)]
+        [Display(Name = "↳ ver 0Γ raya", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 64, Description = "Necesita la llave '3.0 NQ 0Γ▸' prendida. Solo cambia algo con '↳ rayas largas' prendida (por defecto apagada). La raya punteada del zero de NQ que cruza el grafico (Segun el perfil = Si).")]
         public Tri3 Ver3Zero { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "Zero gamma: estela (guiones por vela)", GroupName = "9.3 3.0 · Pantalla", Order = 31,
-                 Description = "3.1.2 (pedido del operador): el zero gamma de cada vela cerrada queda como guion gris, igual que D1/D2, para ver donde estuvo el flip y si el precio reacciono ahi. Lo medido en el laboratorio: como nivel de rebote el zero rebota igual que su placebo y cambia 26-31 veces por hora; la caja negra lo graba como fam ZERO para medirlo con muestra nueva.")]
+        [Display(Name = "↳ ver 0Γ estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 63, Description = "Necesita la llave '3.0 NQ 0Γ▸' prendida. Tambien necesita '↳ NQ 0Γ' prendida y '↳ ver estela' en Si (el default). La estela del zero de NQ por vela cerrada: rombos verdes o guiones grises segun 'Zero gamma: estilo de la estela' (grupo 9.3). Segun el perfil = Si. 3.1.2 (pedido del operador): para ver donde estuvo el flip y si el precio reacciono ahi. Lo medido en el laboratorio: como nivel de rebote el zero rebota igual que su placebo y cambia 26-31 veces por hora; la caja negra lo graba como fam ZERO para medirlo con muestra nueva.")]
         public Tri3 Ver3EstelaZero { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "Zero gamma: estilo de la estela", GroupName = "9.3 3.0 · Pantalla", Order = 32,
+        [Display(Name = "Zero gamma: estilo de la estela", GroupName = "9.3 3.0 · Pantalla", Order = 1032,
                  Description = "3.2.4. RomboVerde = rombos por vela como los de la 2.0 (lo que el operador ve como zona; el zero por OI va mas chico y oscuro). GuionGris = guiones finos. Lo medido no cambia: el zero como nivel de rebote iguala a su placebo.")]
         public ZeroEstilo3 Zero3Estilo { get; set; } = ZeroEstilo3.RomboVerde;
 
-        [Display(Name = "Tunel entre D1 y D2", GroupName = "9.3 3.0 · Pantalla", Order = 30)]
+        [Display(Name = "↳ ver tunel", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 66, Description = "Necesita la llave '3.0 tunel▸' prendida. Segun el perfil = Si. Con No la llave no dibuja nada.")]
         public Tri3 Ver3Tunel { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "Marca de toque", GroupName = "9.3 3.0 · Pantalla", Order = 40)]
+        [Display(Name = "↳ toques", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 45, Description = "Necesita la llave '3.0 NQ dom▸' prendida. La marca de toque (un bloque de una vela de ancho) en la vela que llega a D1 o D2. Segun el perfil = Si.")]
         public Tri3 Ver3Toques { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "Majors (Major Positive verde / Major Negative rojo)", GroupName = "9.3 3.0 · Pantalla", Order = 50,
-                 Description = "Segun el perfil: apagados en NQ, prendidos en ES (perfil Limpio); prendidos en ConMajors y Todo. No se dibuja la raya si estan a mas del radio de dibujo: solo el rotulo.")]
+        [Display(Name = "↳ ver majors", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 49, Description = "Necesita la llave '3.0 NQ dom▸' prendida. Si los majors por volumen de NQ ('↳ NQ M+ vol' y '↳ NQ M− vol') se ven. Segun el perfil: no en NQ con Limpio (el default), si con ConMajors o Todo, y en ES siempre. El rotulo siempre; la raya ademas con '↳ rayas largas' y dentro del radio de dibujo. Tambien la usa el '3.0 libro▸'.")]
         public Tri3 Ver3Majors { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "Rotulos pegados al eje", GroupName = "9.3 3.0 · Pantalla", Order = 60)]
+        [Display(Name = "↳ ver rotulos", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 95, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. Los rotulos de la 3.0 (la columna de nombres al lado de las velas). Segun el perfil = Si.")]
         public Tri3 Ver3Rotulos { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "Cabecera (un renglon)", GroupName = "9.3 3.0 · Pantalla", Order = 70)]
+        [Display(Name = "↳ ver cabecera", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 93, Description = "Necesita la llave '3.0 cabecera▸' prendida. El renglon de la cabecera (Segun el perfil = Si). Con No queda solo el cartel de estado cuando hace falta.")]
         public Tri3 Ver3Cabecera { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "Barras del perfil (GEX por strike)", GroupName = "9.3 3.0 · Pantalla", Order = 80,
-                 Description = "Ninguna por defecto. Izquierda: ancho maximo 12 % del lienzo, alpha 50 %, sin pelotitas ni montos.")]
+        [Display(Name = "↳ barras perfil", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 52, Description = "Necesita la llave '3.0 NQ dom▸' prendida. Las barras del perfil de GEX a la izquierda. Ninguna por defecto; Izquierda: ancho maximo 12 % del lienzo, alpha 50 %, sin pelotitas ni montos. Segun el perfil = solo con '↳ perfil visual' en Todo.")]
         public BarrasLado3 Barras3Lado { get; set; } = BarrasLado3.SegunPerfil;
 
-        [Display(Name = "Radio de dibujo en puntos (0 = auto: 150 NQ / 40 ES)", GroupName = "9.3 3.0 · Pantalla", Order = 90,
+        [Display(Name = "Radio de dibujo en puntos (0 = auto: 150 NQ / 40 ES)", GroupName = "9.3 3.0 · Pantalla", Order = 1090,
                  Description = "Mas lejos que esto: la estela se atenua al 30 %, el tunel no se dibuja y los majors quedan solo como rotulo.")]
         [Range(0, 5000)]
         public decimal Radio3DibujoPts { get; set; } = 0m;
 
-        [Display(Name = "Zona de toque en puntos (0 = auto: 2,5 NQ / 0,75 ES)", GroupName = "9.3 3.0 · Pantalla", Order = 100,
+        [Display(Name = "Zona de toque en puntos (0 = auto: 2,5 NQ / 0,75 ES)", GroupName = "9.3 3.0 · Pantalla", Order = 1100,
                  Description = "La primera vela que ENTRA a esta distancia de D1/D2 lleva la marca (la anterior no estaba en la zona). Default = la TOL del pre-registro del laboratorio (laboratorio/tres/PRE_REGISTRO.md: NQ 2,5 / ES 0,75), NO un valor medido: la penetracion p75 medida en F3 es otra cosa (NQ vivo ~20 pts de noche, zona sugerida ~45).")]
         public decimal Zona3ToquePts { get; set; } = 0m;
 
-        [Display(Name = "Rearme del toque en puntos (0 = auto: 15 NQ / 4 ES)", GroupName = "9.3 3.0 · Pantalla", Order = 105,
+        [Display(Name = "Rearme del toque en puntos (0 = auto: 15 NQ / 4 ES)", GroupName = "9.3 3.0 · Pantalla", Order = 1105,
                  Description = "Un toque por dominante y por lado: despues de una marca no hay otra para ese lado hasta que una vela cierre a esta distancia del nivel (LEJOS del pre-registro: NQ 15, ES 4). Lo que el juez del laboratorio cuenta como 'toque'.")]
         [Range(0, 500)]
         public decimal Lejos3Pts { get; set; } = 0m;
 
-        [Display(Name = "Tope de rotulos", GroupName = "9.3 3.0 · Pantalla", Order = 110)]
+        [Display(Name = "Tope de rotulos", GroupName = "9.3 3.0 · Pantalla", Order = 1110)]
         [Range(1, 7)]
         public int Tope3Rotulos { get; set; } = 5;
 
-        [Display(Name = "Estela: velas hacia atras (0 = la sesion desde las 18:00 NY)", GroupName = "9.3 3.0 · Pantalla", Order = 120)]
+        [Display(Name = "Estela: velas hacia atras (0 = la sesion desde las 18:00 NY)", GroupName = "9.3 3.0 · Pantalla", Order = 1120)]
         [Range(0, 5000)]
         public int Estela3VelasAtras { get; set; } = 0;
 
-        [Display(Name = "Estela: mostrar la sesion anterior (atenuada)", GroupName = "9.3 3.0 · Pantalla", Order = 121,
-                 Description = "3.0.5: los guiones y toques de antes del inicio de sesion (18:00 NY) se dibujan al 45 % en vez de esconderse. Vale para NQ y para las capas.")]
+        [Display(Name = "↳ sesion ant.", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 99, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. 3.0.5: lo de antes del inicio de sesion (18:00 NY) se dibuja al 45 % en vez de esconderse: estelas, toques, rombos, majors por OI y F1-F8.")]
         public bool Estela3SesionAnterior { get; set; } = true;
 
-        [Display(Name = "Tunel: alpha (%)", GroupName = "9.3 3.0 · Pantalla", Order = 130)]
+        [Display(Name = "Tunel: alpha (%)", GroupName = "9.3 3.0 · Pantalla", Order = 1130)]
         [Range(2, 60)]
         public int Tunel3AlphaPct { get; set; } = 12;
 
-        [Display(Name = "Barras: ancho maximo (% del lienzo)", GroupName = "9.3 3.0 · Pantalla", Order = 140)]
+        [Display(Name = "Barras: ancho maximo (% del lienzo)", GroupName = "9.3 3.0 · Pantalla", Order = 1140)]
         [Range(3, 30)]
         public int Barras3AnchoPct { get; set; } = 12;
 
-        [Display(Name = "Barras: alpha (%)", GroupName = "9.3 3.0 · Pantalla", Order = 150)]
+        [Display(Name = "Barras: alpha (%)", GroupName = "9.3 3.0 · Pantalla", Order = 1150)]
         [Range(10, 100)]
         public int Barras3AlphaPct { get; set; } = 50;
 
-        [Display(Name = "Tamaño de letra", GroupName = "9.3 3.0 · Pantalla", Order = 160)]
+        [Display(Name = "Tamaño de letra", GroupName = "9.3 3.0 · Pantalla", Order = 1160)]
         [Range(6, 14)]
         public decimal Tam3Letra { get; set; } = 9m;
 
-        [Display(Name = "Margen inferior (px)", GroupName = "9.3 3.0 · Pantalla", Order = 170,
+        [Display(Name = "Margen inferior (px)", GroupName = "9.3 3.0 · Pantalla", Order = 1170,
                  Description = "ATAS entrega un ChartArea mas alto que lo visible: lo anclado abajo descuenta esto (medido: 48).")]
         [Range(0, 200)]
         public int Margen3Inferior { get; set; } = 48;
 
-        [Display(Name = "Guardar estela (jsonl)", GroupName = "9.4 3.0 · Archivo", Order = 10,
+        [Display(Name = "Guardar estela (jsonl)", GroupName = "9.4 3.0 · Archivo", Order = 1010,
                  Description = "%APPDATA%\\ATAS\\PythiaGex4\\estela\\estela-<raiz>-<dia UTC>.jsonl: una linea cuando cambian las dominantes o cada 60 s. Un solo escritor por raiz.")]
         public bool Guardar3Estela { get; set; } = true;
 
-        [Display(Name = "Guardar centinela (una linea por vela cerrada)", GroupName = "9.4 3.0 · Archivo", Order = 20,
+        [Display(Name = "Guardar centinela (una linea por vela cerrada)", GroupName = "9.4 3.0 · Archivo", Order = 1020,
                  Description = "%APPDATA%\\ATAS\\pythiagex4-centinela-hoy-<instrumento>-<marco>.jsonl, mismo formato que la 2.0. 4.1: apagado por defecto (nombre nuevo; la 3.0 sigue con el suyo).")]
         public bool Guardar4Centinela { get; set; } = false;
 
-        [Display(Name = "Guardar viva3 (foto de la cadena por minuto)", GroupName = "9.4 3.0 · Archivo", Order = 30,
+        [Display(Name = "Guardar viva3 (foto de la cadena por minuto)", GroupName = "9.4 3.0 · Archivo", Order = 1030,
                  Description = "%APPDATA%\\ATAS\\PythiaGex4\\viva\\viva3-<raiz>-<dia>.jsonl, mismo formato que la viva vieja. Un solo escritor por raiz (la sonda no duplica).")]
         public bool Guardar3Viva { get; set; } = true;
 
-        [Display(Name = "Rearmar la cadena ahora", GroupName = "9.5 3.0 · Accion", Order = 10, Description = "Cambialo a mano para forzar un rearme de la ventana de strikes.")]
+        [Display(Name = "Rearmar la cadena ahora", GroupName = "9.5 3.0 · Accion", Order = 1010, Description = "Cambialo a mano para forzar un rearme de la ventana de strikes.")]
         public bool Rearmar3Ahora
         {
             get => false;
@@ -301,28 +296,25 @@ namespace PythiaGexCuatro
         // OnRender no entra a Pintar. La CUENTA de la 3.0 (libro NQ, capas NDX/QQQ, regla Tres, estela) corre siempre: TRES_* sale de ahi.
         // ------------------------------------------------------------------
 
-        [Display(Name = "3.0: dominantes D1/D2 (estela, toques, majors, apoyo)", GroupName = "8. Lo propio de la 3.0 (apagado)", Order = 10,
-                 Description = "4.1: la estela de guiones de D1/D2 de NQ, las marcas de toque, los majors (vol y OI), el apoyo y sus rotulos, como los dibuja la 3.0. Apagado: no se dibuja (se calcula igual).")]
+        [Display(Name = "3.0 NQ dom▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 42, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. Lo de NQ que dibuja la 3.0: la estela de D1/D2, las marcas de toque, los majors por volumen y por OI, las barras del perfil y sus rotulos; ADEMAS los majors por OI de NDX y QQQ, el apoyo y los cruces del zero (asi esta en el codigo). Apagada: no se dibuja nada de eso (se calcula igual). Lo comun a varias llaves (ver estela, ver rotulos, rayas largas, sesion anterior, atravesadas) esta al final del grupo.")]
         public bool Tres41Dominantes { get; set; } = false;
 
-        [Display(Name = "3.0: tunel entre D1 y D2", GroupName = "8. Lo propio de la 3.0 (apagado)", Order = 20)]
+        [Display(Name = "3.0 tunel▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 65, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. La franja entre D1 y D2 de NQ de la 3.0, desde la ultima vela hasta el eje, si las dos estan dentro del radio de dibujo. 4.1.5d: se prende SOLA con esta llave (antes ademas hacia falta 'Tunel sombreado' de 9.7, que estaba apagado: no dibujaba nada).")]
         public bool Tres41Tunel { get; set; } = false;
 
-        [Display(Name = "3.0: zero gamma de NQ (raya, estela y rotulo)", GroupName = "8. Lo propio de la 3.0 (apagado)", Order = 30)]
+        [Display(Name = "3.0 NQ 0Γ▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 61, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. El zero gamma de NQ de la 3.0: su estela por vela, su raya larga y su rotulo. Apagada: no se dibuja (se calcula igual). Lo comun a varias llaves esta al final del grupo.")]
         public bool Tres41Zero { get; set; } = false;
 
-        [Display(Name = "3.0: capas NDX/QQQ (estela, rombos y rotulos)", GroupName = "8. Lo propio de la 3.0 (apagado)", Order = 40,
-                 Description = "4.1: el dibujo de las capas de la 3.0. Se CALCULAN igual (modo de la capa en Propia o Fusion): TRES_NDX y TRES_QQQ de la Familia salen de ahi.")]
+        [Display(Name = "3.0 capas▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 67, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. Las capas NDX y QQQ de la 3.0 (CBOE, 15 min tarde): D1-D3, el 0Γ con su techo/piso, la linea al eje y sus rotulos (con 'Capa NDX' y 'Capa QQQ' en Propia, grupo 9.3: el default). Se CALCULAN igual: TRES_NDX y TRES_QQQ de la Familia salen de ahi. Los majors por OI de NDX y QQQ NO van con esta llave: van con '3.0 NQ dom▸'. Lo comun a varias llaves esta al final del grupo.")]
         public bool Tres41Capas { get; set; } = false;
 
-        [Display(Name = "3.0: recuadro del libro (con su clic)", GroupName = "8. Lo propio de la 3.0 (apagado)", Order = 50,
-                 Description = "4.1: la pestañita 'LIBRO NQ' de la 3.0. Apagado tambien deja de tomar el clic (la pestaña de la 4.0 va en la misma esquina).")]
+        [Display(Name = "3.0 libro▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 90, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. La pestañita 'LIBRO NQ ▸' de la 3.0 (el recuadro del libro: niveles cercanos con GEX por volumen y por OI, muros, majors y neto). Apagada tampoco toma el clic (la pestaña de la 4.0 va en la misma esquina).")]
         public bool Tres41Recuadro { get; set; } = false;
 
-        [Display(Name = "3.0: cabecera y cartel de estado", GroupName = "8. Lo propio de la 3.0 (apagado)", Order = 60)]
+        [Display(Name = "3.0 cabecera▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 92, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. La cabecera de la 3.0: un renglon arriba a la izquierda con el estado del libro NQ y sus niveles, y el cartel de estado (LIBRO VIVO CAIDO, SIN CADENA, MERCADO CERRADO) cuando hace falta. La 4.0 tiene su propia pestaña con fuentes y edades.")]
         public bool Tres41Cabecera { get; set; } = false;
 
-        [Display(Name = "3.0: formulas F1..F8", GroupName = "8. Lo propio de la 3.0 (apagado)", Order = 70)]
+        [Display(Name = "3.0 F1-F8▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 81, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. Las formulas de dominantes de la 3.0 dibujadas a la vez para juzgarlas (F1..F8, cada una en su color, con su estela y un rotulo chico). Apagada: no se dibuja ninguna (se calculan igual). F7 son los majors por OI: '↳ NQ M+ OI' y siguientes, con '3.0 NQ dom▸'. Lo comun a varias llaves esta al final del grupo.")]
         public bool Tres41Formulas { get; set; } = false;
 
         /// <summary>4.1: hay algo de la 3.0 para dibujar.</summary>
@@ -363,6 +355,7 @@ namespace PythiaGexCuatro
                 SubscribeToTimer(_periodo, _tick);
                 EstadoPulsoArrancar();   // 3.2.1: el pulso por cambio (1 s) para Profundidad 3.0; solo escribe indicador.json
                 CintaArrancar();         // 3.4.0: la cinta en vivo (hilo escritor + reloj de 2 s); nunca tira
+                CasillasArrancar();      // 4.1.5c: casillas de dibujo -> redibujo inmediato (reloj de 250 ms) y latencia al log
                 try { Log(AjustesPantalla4Texto()); } catch { }   // 4.1 (B5): ajustes de la pantalla leidos del workspace
                 // GANCHO-4.1 familia: aca el integrador registra esta instancia en el host de la Familia (FamiliaHost.Registrar(this), perezoso:
                 // se concreta en el primer Tick con ChartInfo/InstrumentInfo, asi no arranca la instancia extra que ATAS crea al abrir los ajustes).
@@ -376,6 +369,7 @@ namespace PythiaGexCuatro
         {
             try { if (_tick != null) UnsubscribeFromTimer(_periodo, _tick); } catch { }
             EstadoPulsoParar();
+            CasillasParar();         // 4.1.5c
             CintaParar();            // 3.4.0: vacia la cola, cierra el archivo y suelta la raiz
             try { _cadena.Parar(); } catch (Exception e) { Registro.Excepcion(LOG, "OnDispose", e); }
             try { _centinela?.Volcar(true); } catch { }
@@ -801,6 +795,7 @@ namespace PythiaGexCuatro
             catch (Exception e) { Registro.Excepcion(LOG, "OnRender", e); }
             // 4.1 (integracion): el dibujo de la 4.0 (B5), SIEMPRE y DESPUES de lo de la 3.0: solo la FotoFamilia publicada (inmutable)
             try { _pantalla.Pintar(g, FamiliaFoto); } catch (Exception e) { Registro.Excepcion(LOG, "Pantalla", e); }
+            CasillasRender();        // 4.1.5c: anota cuanto tardo en verse un cambio de casilla
         }
 
         private void Pintar(RenderContext g)
@@ -879,7 +874,9 @@ namespace PythiaGexCuatro
 
             // ---- tunel entre D1 y D2 vigentes: desde la ultima vela hasta el eje, solo si las dos estan cerca
             int xUlt = int.MinValue; try { xUlt = cont.GetXByBar(Math.Max(0, CurrentBar - 1), false); } catch { }
-            if (Tres41Tunel && VerTunelEf && Tunel3Sombreado && Cerca(d1) && Cerca(d2) && xUlt != int.MinValue)   // 3.5.5
+            // 4.1.5d (revision 4.1.5c): sin "&& Tunel3Sombreado": la casilla de arriba "3.0 tunel D1-D2" prende el tunel sola (con el ajuste de la 3.0
+            // apagado, como en el .ws del operador, prenderla no dibujaba nada aunque el log anotara "primer render con el cambio")
+            if (Tres41Tunel && VerTunelEf && Cerca(d1) && Cerca(d2) && xUlt != int.MinValue)   // 3.5.5
             {
                 int y1 = Y(d1), y2 = Y(d2);
                 if (y1 != int.MinValue && y2 != int.MinValue)

@@ -58,7 +58,19 @@ namespace PruebaPosiciones
             var swTodo = Stopwatch.StartNew();
             string aqui = AppContext.BaseDirectory;
             string dirArnes = Path.GetFullPath(Path.Combine(aqui, "..", ".."));
-            string tmp = args.Length > 0 ? args[0] : Path.Combine(Path.GetTempPath(), "pg4_posiciones");
+            // 4.1.5 (09-10-2026): las pruebas de este arnes se escribieron y validaron con la NOCHE del 09-10 ("esta noche": la corrida verde de la 4.1.4 a
+            // las 05:16 ART, datos hasta ~08:15Z). El niv que copia es el VIVO de PythiaGex4\familia, que la 4.1 en ATAS sigue escribiendo: con la rueda
+            // del 09-10 adentro daban 5 fallas, todas en minutos de la rueda (09:09Z, 14:00Z, 17:18Z) que las pruebas no contemplan. Se corta en HASTA
+            // (default: el fin de la noche validada); "--hasta 2026-10-09T23:59Z" mira todo lo que haya. args[0] (sin "--") sigue siendo la carpeta temporal.
+            var hasta = new DateTime(2026, 10, 9, 8, 16, 0, DateTimeKind.Utc);
+            var argsLibres = new List<string>();
+            for (int ia = 0; ia < args.Length; ia++)
+            {
+                if (args[ia] == "--hasta" && ia + 1 < args.Length)
+                { hasta = DateTime.SpecifyKind(DateTime.ParseExact(args[++ia].TrimEnd('Z'), "yyyy-MM-ddTHH:mm", Inv), DateTimeKind.Utc); continue; }
+                argsLibres.Add(args[ia]);
+            }
+            string tmp = argsLibres.Count > 0 ? argsLibres[0] : Path.Combine(Path.GetTempPath(), "pg4_posiciones");
             string origen = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex4");
             string logs = Path.Combine(tmp, "logs");
             Directory.CreateDirectory(logs);
@@ -85,11 +97,11 @@ namespace PruebaPosiciones
             foreach (var l in File.ReadAllLines(Path.Combine(datos, "familia", "niv-2026-10-09-MNQZ6.jsonl")))
             {
                 var r = AlmacenNiveles.Parsear(l);
-                if (r != null && r.TieneLibros) minutos.Add(r);
+                if (r != null && r.TieneLibros && TiempoFam.DeClave(r.Clave) < hasta) minutos.Add(r);
             }
             minutos = minutos.OrderBy(r => r.Clave).ToList();
             var tFin = TiempoFam.DeClave(minutos[minutos.Count - 1].Clave).AddMinutes(1);
-            P("niv-2026-10-09-MNQZ6: " + minutos.Count + " minutos con libros, de " + H(TiempoFam.DeClave(minutos[0].Clave)) + " a " + H(TiempoFam.DeClave(minutos[minutos.Count - 1].Clave))
+            P("niv-2026-10-09-MNQZ6 (hasta " + H(hasta) + "): " + minutos.Count + " minutos con libros, de " + H(TiempoFam.DeClave(minutos[0].Clave)) + " a " + H(TiempoFam.DeClave(minutos[minutos.Count - 1].Clave))
               + " (con NQ: " + minutos.Count(m => m.MetaDe("NQ") != null) + ")");
 
             // ---------------------------------------------------------------- fuentes

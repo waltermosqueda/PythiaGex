@@ -30,6 +30,8 @@
 // Guardar3Estela = true y Capa3QQQ/Capa3NDX = Propia, sus defaults) en PythiaGex4\estela: nada de PythiaGex3.
 // 4.1.3 (09-10-2026): OpcionesMotorFamilia.Extras (IExtrasMinuto, la Replica20) agrega las series "como la 2.0" a cada minuto DESPUES de
 // ReglasFam.Minuto (las 21 no cambian); los minutos del archivo sin extras se completan en memoria al recorrerlos. Sin Extras = 4.1.2 exacto.
+// 4.1.5 (09-10-2026): el indicador pasa ExtrasCompuestos (Replica20 + ClasicaNdx, la R10 "Clasica NDX 0Γ"); IExtrasParciales (opcional) deja
+// completar en memoria un minuto del archivo que ya trae las R20 pero no la R10. Con la Replica20 sola, el motor es el de la 4.1.4.
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -73,6 +75,15 @@ namespace PythiaGexCuatro.Familia
         bool Rehacer(RegistroMinuto r, DateTime tUtc);
     }
 
+    /// <summary>4.1.5 (09-10-2026, opcional): un IExtrasMinuto que puede completar un minuto del archivo que YA trae algunas series extra (p. ej. uno
+    /// guardado por la 4.1.4 con las R20 pero sin la R10 "Clasica NDX 0Γ" de la 4.1.5). Sin esta interfaz el motor completa solo los minutos SIN
+    /// ninguna extra (la regla de la 4.1.3): con la Replica20 sola el motor queda exacto como en la 4.1.4.</summary>
+    public interface IExtrasParciales
+    {
+        /// <summary>true si al minuto le falta alguna serie que este proveedor sabe completar.</summary>
+        bool Falta(RegistroMinuto r);
+    }
+
     public sealed class OpcionesMotorFamilia
     {
         /// <summary>%APPDATA%\ATAS\PythiaGex4 (adentro: familia\ y estela\). null/"" = sin persistencia ni lectura de estelas de archivo.</summary>
@@ -101,7 +112,7 @@ namespace PythiaGexCuatro.Familia
 
     public sealed class MotorFamilia : IMotorFamilia
     {
-        public const string VERSION = "fam 4.1.4 (09-10-2026)";
+        public const string VERSION = "fam 4.1.5d (09-10-2026)";
         private readonly OpcionesMotorFamilia _op;
         private readonly object _paso = new object();
 
@@ -439,12 +450,13 @@ namespace PythiaGexCuatro.Familia
             return r;
         }
 
-        /// <summary>4.1.3: completa en memoria las series extra de un minuto cargado del archivo que no las tiene (una vez por minuto y corrida).</summary>
+        /// <summary>4.1.3: completa en memoria las series extra de un minuto cargado del archivo que no las tiene (una vez por minuto y corrida).
+        /// 4.1.5: tambien uno que trae ALGUNAS (las R20 de la 4.1.4) si el proveedor dice que le falta otra (IExtrasParciales: la R10 de la clasica).</summary>
         private bool CompletarExtras(long k)
         {
             var ex = _op.Extras; if (ex == null) return false;
             var r = _alm.Get(k);
-            if (r == null || r.ExtraIntentado || r.TieneExtra) return false;
+            if (r == null || r.ExtraIntentado || (r.TieneExtra && !(ex is IExtrasParciales pa && pa.Falta(r)))) return false;
             r.ExtraIntentado = true;
             try { return ex.Completar(r, SesionFamilia.DeClave(k)); }
             catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "Extras.Completar", e); r.Extra = null; r.ExtraStrikes = null; r.MetaExtra = Array.Empty<MetaLibro>(); return false; }
@@ -476,6 +488,9 @@ namespace PythiaGexCuatro.Familia
             if (Pendiente) avisos.Add("calculando la sesion: " + _alm.Cuantos + " minutos con libros, sigue en el proximo paso");
             if (!_listoFuentes) avisos.Add("esperando el historico de las fuentes (Rithmic / CBOE)");
             bool abierta = ahoraUtc >= _ses.IniUtc && ahoraUtc < _ses.FinUtc;
+            // 4.1.5d: fuera de la sesion (fin de semana: se muestra la del viernes) el dato es VIEJO y se dice antes que nada
+            if (ahoraUtc >= _ses.FinUtc)
+                avisos.Insert(0, "mercado cerrado: se muestra la sesion del " + _ses.Dia + " (cerro hace " + SalidaFamilia.Edad((ahoraUtc - _ses.FinUtc).TotalSeconds) + ")");
             if (ultimo == null) { if (abierta && _listoFuentes && !Pendiente) avisos.Add("sin libros todavia en esta sesion"); }
             else
             {

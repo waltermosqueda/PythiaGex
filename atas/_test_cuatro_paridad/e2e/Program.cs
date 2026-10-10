@@ -16,6 +16,7 @@
 //   ny-vivo       VIVO SIMULADO: la sesion 08-10 entra por CintaFamilia.Tick y LibroNqFamilia.AgregarLinea y el motor avanza minuto a minuto
 //   ny-extras     (4.1.4) como ny pero con la configuracion de PRODUCCION: el motor con la Replica20 (OpcionesMotorFamilia.Extras). Las 21 series, la
 //                 historia, los actuales y las fuentes (sin las claves R20_/DOMS_ ni las fuentes "2.0 ...") tienen que dar IDENTICOS a 'ny'.
+//                 4.1.5: con el compuesto Replica20 + ClasicaNdx (como produccion); tampoco se miran la R10 ni la fuente "Clasica NDX".
 // Uso: dotnet bin/Release/e2e.dll <escenario> [--raiz-tmp <dir>]
 using System;
 using System.Collections.Generic;
@@ -353,7 +354,7 @@ namespace E2E
                        + ", resondeos " + (host.Replica?.Resondeos ?? -1) + ", minutos rehechos " + host.Motor.MinutosRehechos);
                 P("    velas m2 por serie extra: " + string.Join(" | ", hx));
                 P("    actuales extra: " + string.Join(" | ", ax));
-                foreach (var fe in fotoExtras.Fuentes.Where(x => x.Libro.StartsWith("2.0 ", StringComparison.Ordinal))) P("    fuente " + fe.Libro + ": " + fe.Texto);
+                foreach (var fe in fotoExtras.Fuentes.Where(x => x.Libro.StartsWith("2.0 ", StringComparison.Ordinal) || x.Libro == "Clasica NDX")) P("    fuente " + fe.Libro + ": " + fe.Texto);
                 resumen["extras_minutos"] = conExtra;
             }
             if (esc == "ny-reinicio" || esc == "ny-recalculo" || esc == "ny-vivo" || esc == "ny-extras")
@@ -555,7 +556,7 @@ namespace E2E
             }
             c.HistoriaM2 = h;
             c.Actuales = f.Actuales.Where(a => CatalogoFamilia.IndiceExtra(a.Serie) < 0).ToList();
-            c.Fuentes = f.Fuentes.Where(x => !(x.Libro ?? "").StartsWith("2.0 ", StringComparison.Ordinal)).ToList();
+            c.Fuentes = f.Fuentes.Where(x => !(x.Libro ?? "").StartsWith("2.0 ", StringComparison.Ordinal) && (x.Libro ?? "") != "Clasica NDX").ToList();   // 4.1.5: + la de la clasica
             return c;
         }
 

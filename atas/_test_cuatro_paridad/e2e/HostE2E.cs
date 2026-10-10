@@ -12,6 +12,10 @@
 //   [E2E-8] 4.1.3: HostFamilia le pasa al motor la Replica20 (OpcionesMotorFamilia.Extras: las dominantes como la 2.0). Aca solo con extras = true
 //           (4.1.4, escenario ny-extras: la configuracion de produccion; sus comparaciones miran las 21 series sin las claves R20_/DOMS_ ni las
 //           fuentes "2.0 ..." y la foto tiene que dar IDENTICA a la de 'ny'). Los demas escenarios comparan contra la vista previa, que no las tiene.
+//           4.1.5: como HostFamilia, el compuesto Replica20 + ClasicaNdx (R10_NDX_zero "Clasica NDX 0Γ"); ny-extras tampoco mira la R10 ni la fuente
+//           "Clasica NDX" en la comparacion con 'ny' (las muestra aparte).
+//   [E2E-9] 4.1.5d: HostFamilia le pasa a ClasicaNdx CarpetaDatos (guarda las muestras de la base de la rueda en PythiaGex4\familia) y VelaCompleta
+//           (CintaFamilia.VelaM2Completa). Aca NO: la R10 no se compara en el e2e y la persistencia de esas muestras se prueba en el arnes clasica (§9).
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -46,6 +50,7 @@ namespace E2E
         public readonly CalculoTqqq Tqqq;
         public readonly MotorFamilia Motor;
         public readonly Replica20 Replica;                                                                                                      // [E2E-8] null sin extras
+        public readonly ClasicaNdx Clasica;                                                                                                     // [E2E-8] 4.1.5, null sin extras
         public readonly HttpProhibido Http = new HttpProhibido();
         private readonly string _carpetaFam, _logs;
         private readonly Func<DateTime> _reloj;
@@ -111,12 +116,15 @@ namespace E2E
 
             // [E2E-8] como HostFamilia: la Replica20 sobre la MISMA descarga de CBOE y la MISMA cinta (solo en el escenario ny-extras)
             if (extras) Replica = new Replica20(Cboe, cinta, new OpcionesReplica20 { Contrato = codigo ?? "", Log = s => Escribir("replica20", s) });
+            // 4.1.5: y la replica de la clasica, despues de la Replica20 (ExtrasCompuestos), como HostFamilia
+            if (extras) Clasica = new ClasicaNdx(Cboe, cinta, new OpcionesClasicaNdx { Contrato = codigo ?? "", Log = s => Escribir("clasica", s) });
+            IExtrasMinuto ex = extras ? new ExtrasCompuestos(Replica, Clasica) { Error = (donde, e) => Escribir("extras", "ERROR en " + donde + ": " + e.GetType().Name + ": " + e.Message) } : null;
             Motor = new MotorFamilia(new OpcionesMotorFamilia
             {
                 Carpeta = carpeta, Corregida = corregida, TqqqDeNoche = tqqqNoche,
                 FuentesListas = () => (cboe.Motor?.HistoriaCargada ?? false) && LibroSembrado(libro) && CintaConDatos(cinta),
                 RutaLog = Path.Combine(_logs, "pythiagex4-familia.log"),                                                               // [E2E-4]
-                Extras = Replica                                                                                                         // [E2E-8]
+                Extras = ex                                                                                                              // [E2E-8]
             });
             Motor.Configurar(cinta, libro, Cboe, new ILibroMinutero[] { MinNq, MinNdx, MinQqq }, Tqqq, codigo ?? "");
             Descripcion = "contrato " + (contrato == "" ? "(sin mes)" : contrato) + ", sesion " + (corregida ? "NY" : "UTC fija") + ", bajada " + (bajar ? "si" : "no") + " " + topeKBps + " KB/s";

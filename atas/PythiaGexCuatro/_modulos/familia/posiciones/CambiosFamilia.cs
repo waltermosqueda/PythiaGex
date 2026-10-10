@@ -23,6 +23,8 @@
 //     ventana agregada cuando las ventanas de los libros no coinciden (NQ en vivo contra CBOE de ~15 min antes): la nota dice cada una.
 // 4.1.3 (09-10-2026): DOMS_QQQ_vol / DOMS_NDX_vol (rol D1/D2, la seleccion de la 2.0 sobre el libro de la 4.1) llevan el cambio NETO del strike
 // (como M+/M-); las replicas de la 2.0 (R20_*) quedan NaN con nota (su S y su conversion son otras).
+// 4.1.5d (09-10-2026, revision 4.1.5b): las replicas de la clasica (R10_*) tambien quedan NaN con nota: su base (la de la rueda anterior) y su S no son
+// las del libro NDX de la 4.1 (antes D1/D2 de R10_NDX_dom mostraban el cambio de ese libro y D3 ninguno).
 // La llama HostFamilia en SU hilo despues de MotorFamilia.Avanzar: devuelve foto.Copia() con Actuales = copias anotadas de los niveles y
 // CambiosEstado. Nunca modifica lo que publico el motor. Recalcula solo con minuto nuevo o foto nueva (cache). Log una linea por minuto en
 // %APPDATA%\ATAS\pythiagex4-cambios.log. No es seguro entre hilos (un solo hilo: el del host).
@@ -116,7 +118,7 @@ namespace PythiaGexCuatro.Familia
 
     public sealed class CambiosFamilia
     {
-        public const string VERSION = "cambios 4.1.4 (09-10-2026)";
+        public const string VERSION = "cambios 4.1.5d (09-10-2026)";
         public static readonly string[] Libros = { "NQ", "NDX", "QQQ" };
         /// <summary>Hasta cuanto antes de (ahora - W) se busca la foto de "antes" para reconocer una cadena congelada.</summary>
         public const double MIRAR_ATRAS_CONGELADA_S = 7200;
@@ -488,7 +490,7 @@ namespace PythiaGexCuatro.Familia
                 case "muro P": return 'P';
                 case "M+": case "M-": case "dom": case "dom (razon)": return 'N';
                 // 4.1.3: la seleccion de la 2.0 sobre los libros de la 4.1 (DOMS_QQQ_vol / DOMS_NDX_vol): GEX NETO del strike, como M+/M-
-                case "D1": case "D2": return n.Tipo == "DOMS" && !EsReplica20(n) ? 'N' : '?';
+                case "D1": case "D2": return n.Tipo == "DOMS" && !EsReplica20(n) && !EsReplicaClasica(n) ? 'N' : '?';
                 default: return '?';
             }
         }
@@ -496,6 +498,10 @@ namespace PythiaGexCuatro.Familia
         /// <summary>4.1.3: las replicas de la 2.0 (R20_*): su S y su conversion no son las del libro de la 4.1, asi que no se anotan cambios.</summary>
         public static bool EsReplica20(NivelActual n) => n?.Serie != null && n.Serie.StartsWith("R20_", StringComparison.Ordinal);
         public const string NOTA_REPLICA20 = "replica de la 2.0: sin cambio por nivel (su conversion y su S no son las del libro de la 4.1)";
+        /// <summary>4.1.5d (revision 4.1.5b): las replicas de la clasica (R10_*): su base y su S (la de la rueda anterior) no son las del libro NDX de la 4.1
+        /// (difieren de 1 a 15 pts), asi que tampoco se anotan cambios (antes D1/D2 de R10_NDX_dom tomaban el del libro NDX de la 4.1 y D3 ninguno).</summary>
+        public static bool EsReplicaClasica(NivelActual n) => n?.Serie != null && n.Serie.StartsWith("R10_", StringComparison.Ordinal);
+        public const string NOTA_REPLICA_CLASICA = "replica de la clasica: sin cambio por nivel (su base y su S no son las del libro de la 4.1)";
 
         private NivelActual AnotarNivel(NivelActual n0, RegistroMinuto u)
         {
@@ -507,6 +513,7 @@ namespace PythiaGexCuatro.Familia
             n.CambioCobertura = Llenar(nv + 1, double.NaN);
             n.CambioOiDiaM = double.NaN; n.CambioOiDesdeUtc = default; n.CambioOiHastaUtc = default; n.CambioNota = "";
             if (EsReplica20(n)) { n.CambioNota = NOTA_REPLICA20; return n; }      // 4.1.3: NaN con nota
+            if (EsReplicaClasica(n)) { n.CambioNota = NOTA_REPLICA_CLASICA; return n; }   // 4.1.5d: la clasica igual que la 2.0
             char lado = LadoDe(n);
             if (lado == '?') return n;
             bool oi = n.Fuente == "oi";

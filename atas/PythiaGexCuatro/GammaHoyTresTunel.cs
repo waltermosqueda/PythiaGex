@@ -29,20 +29,20 @@ namespace PythiaGexCuatro
 
     public partial class FamiliaCuatro
     {
-        [Display(Name = "Tunel: con que se arma", GroupName = "9.2 3.0 · Lectura", Order = 23,
+        [Display(Name = "Tunel: con que se arma", GroupName = "9.2 3.0 · Lectura", Order = 1023,
                  Description = "3.3.3. Cruces = techo y piso en los cruces de signo de la gamma mas cercanos al ultimo cierre (las filas de la 2.0, p. ej. 31484 / 31456), con histeresis mientras el precio cierre adentro. Strikes = el strike con fuerza mas cercano por lado (3.3.2; medido de noche 65,9 % vs 62,1 / 59,2 de las filas). Lo medido para los cruces mas cercanos: 62,1 % (vol) y 59,2 % (OI) de noche, 20 sesiones.")]
         public TunelFuente3 Tunel3Fuente { get; set; } = TunelFuente3.Cruces;
 
-        [Display(Name = "Tunel: umbral de fuerza (% del mayor |gex| del radio)", GroupName = "9.2 3.0 · Lectura", Order = 24,
+        [Display(Name = "Tunel: umbral de fuerza (% del mayor |gex| del radio)", GroupName = "9.2 3.0 · Lectura", Order = 1024,
                  Description = "3.3.0. Solo con la regla Tunel. Un strike cuenta como pared si su |gex por volumen| es al menos este % del mayor del radio. 10 % = tunel angosto que cambia seguido; 50 % = solo las paredes grandes (parecido a la clasica).")]
         [Range(5, 90)]
         public int Tunel3UmbralPct { get; set; } = 25;
 
-        [Display(Name = "Tunel: histeresis (mantener el par mientras el precio siga adentro)", GroupName = "9.2 3.0 · Lectura", Order = 25,
+        [Display(Name = "Tunel: histeresis (mantener el par mientras el precio siga adentro)", GroupName = "9.2 3.0 · Lectura", Order = 1025,
                  Description = "3.3.0. Solo con la regla Tunel. Prendido: el techo y el piso no cambian mientras el ultimo cierre de vela siga entre los dos y los dos sigan con al menos la mitad del umbral. Apagado: se reeligen en cada cuenta.")]
         public bool Tunel3Histeresis { get; set; } = true;
 
-        [Display(Name = "Tunel de noche con la regla Tres", GroupName = "9.2 3.0 · Lectura", Order = 26,
+        [Display(Name = "Tunel de noche con la regla Tres", GroupName = "9.2 3.0 · Lectura", Order = 1026,
                  Description = "3.3.2. Con la regla Tres, fuera de la rueda de NY (antes de las 09:30 y desde las 16:00) las dominantes son el Tunel en vez de la clasica a secas. Medido con el criterio del operador (laboratorio/tres/criterio_operador.py, 20 sesiones, noche): 65,9 % de rebote en 587 toques contra 62,1 % y 59,2 % de las filas de la 2.0; rayas al azar 65 %. Apagado: la clasica a secas (63,3 %).")]
         public bool Tunel3DeNoche { get; set; } = true;
 

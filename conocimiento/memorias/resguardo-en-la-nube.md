@@ -54,3 +54,11 @@ harness bloqueo `respaldar_privado.ps1` (dos veces, tambien via Bash) y robocopy
 falla por la conversion de rutas de MSYS (`/E` -> `E:\`); el espejo se hizo con un script Python
 equivalente (copia por tamaño/fecha, borra lo que ya no esta, tope 90 MB) + git add/commit/push:
 commits 4685b60 y 4822b79 con el workspace guardado a las 16:17, la viva del dia y los DLL.
+
+**Respaldo del 09-10 (06:20-06:30 ART, push hecho por mí con permiso explícito "manda a mi git"):** público PythiaGex main
+<numero> (fuentes 4.1.4 SIN los 3 .cs que nombran a la referencia → el público solo NO compila; instructivo atas/instalar/
+RESTAURAR_PythiaGex4.md); privado PythiaGex-privado main 3a074ce (DLL 4.1.4 sha256 7db5f0f8…e262 = instalada, fuente completo,
+%APPDATA%\ATAS\PythiaGex4 entero, workspace con las casillas, capturas, memorias, tachar_publico.json). respaldar.py ahora EXIGE
+PythiaGex-privado/tachar_publico.json (patrones de terceros/personales fuera del código público) y aborta sin él; tacha el login de
+Rithmic (LT-…) y no publica las rondas 8/9 (USD reales). Inversiones\PythiaGex-respaldo al día (espejo liviano; -Completo suma ~6 GB:
+pendiente de su OK por cuota de Drive y por no saturar la red con Rithmic). Auditor + simulacro de restauración en verde.

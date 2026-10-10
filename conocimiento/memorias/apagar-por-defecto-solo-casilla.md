@@ -15,3 +15,7 @@ lo llama instalar_4_0.ps1 -SinDll -AntesDeLanzar; respalda el .ws en herramienta
 la casilla (SeriesPantalla.PrendidasPorDefecto / FamiliaCuatroPantalla), sin renombrar la propiedad ni tocar el cálculo. Apagadas así el
 09-10: MUROS_QQQ_vol, MUROS_QQQ_oi, MAJORS_QQQ_oi, DOMS_QQQ_vol, FAM_MUROS_oi (31.076, "superadas por la 2.0 QQQ 31.083") y
 ZEST_QQQ_vol (31.057). Ver [[pythiagex-4-0-familia]], [[dominantes-de-noche-por-volumen]] (avisar y captura antes/después).
+
+**Y al revés (09-10 ~16:00 ART, textual): "acordate que todo se pueda activar/desactivar a placer en pantalla".** Toda serie o
+elemento nuevo que se copie (de la 2.0, de la clásica, etc.) va con SU casilla propia en los ajustes del indicador, y cuando él pide
+copiar algo, la casilla nueva viene PRENDIDA (lo quiere ver ya); lo que pide sacar, apagado. Nunca elementos sin casilla.

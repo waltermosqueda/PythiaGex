@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes clasica (PythiaGex 4.1.5, 09-10-2026): la replica de la estela 'NDX 0Γ' de la clasica (R10_NDX_zero, ClasicaNdx.cs) contra lo que la clasica
+       hizo de verdad el 09-10 (los AUDIT capa=NDX de laboratorio/calibracion_1009/receta_clasica/paridad_clasica_ndx_minuto.csv y las lineas "base muestra"
+       de su log), con las cadenas y la cinta REALES de %APPDATA%\ATAS\PythiaGex4 (SOLO LECTURA: se copian a %TEMP%\pg4_clasica y se leen de ahi).
+       Ademas: el motor con el compuesto (Replica20 + ClasicaNdx) contra la Replica20 sola (las 21 series y las R20 identicas), persistencia, completado
+       de un archivo de la 4.1.4, rehecho cuando la cinta trae el dia anterior tarde, y la etiqueta. Compila los .cs de produccion desde su lugar.
+       Uso: dotnet build -c Release -o bin/Release ; bin/Release/clasica.exe -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>clasica</AssemblyName>
+    <RootNamespace>PruebaClasica</RootNamespace>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <TieredPGO>true</TieredPGO>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../PythiaGexCuatro/_contratos/Contratos.cs" Link="m/Contratos.cs" />
+    <Compile Include="../../PythiaGexCuatro/AdaptadoresFamilia.cs" Link="m/AdaptadoresFamilia.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/cboe/*.cs" LinkBase="m/cboe" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/comun/*.cs" LinkBase="m/comun" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/fam/*.cs" LinkBase="m/fam" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/ndx/*.cs" LinkBase="m/ndx" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/qqq/*.cs" LinkBase="m/qqq" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/replica20/*.cs" LinkBase="m/replica20" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/clasica/*.cs" LinkBase="m/clasica" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/posiciones/*.cs" LinkBase="m/posiciones" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/tqqq/TqqqPerfil.cs" Link="m/tqqq/TqqqPerfil.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/tqqq/TqqqSesion.cs" Link="m/tqqq/TqqqSesion.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/tqqq/TqqqUtil.cs" Link="m/tqqq/TqqqUtil.cs" />
+    <!-- la etiqueta: el armado de la pantalla no usa ATAS (solo System.Drawing de .NET) -->
+    <Compile Include="../../PythiaGexCuatro/_modulos/pantalla/ArmadoPantalla.cs" Link="m/pantalla/ArmadoPantalla.cs" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/pantalla/SeriesPantalla.cs" Link="m/pantalla/SeriesPantalla.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

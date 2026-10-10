@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes ws_compat (PythiaGex 4.1.5c, 09-10-2026): compatibilidad del workspace (.ws) de ATAS, que guarda cada ajuste del indicador POR NOMBRE.
+       Compara por reflexion la clase FamiliaCuatro de la DLL nueva (atas/PythiaGexCuatro/bin/Release/PythiaGexCuatro.dll) contra la 4.1.5
+       (referencia/PythiaGexCuatro-4.1.5.dll, sha256 fijo): la lista completa de propiedades publicas (nombre, tipo, lectura/escritura, atributos, default
+       de una instancia recien creada) y que los cambios de Display sean exactamente los de herramientas/grupo_arriba_415c.py.
+       No referencia ATAS al compilar: las dos DLL se cargan desde la memoria en contextos aparte y las de ATAS se resuelven de
+       C:\Program Files (x86)\ATAS Platform (solo lectura). No toca ATAS, ni el .ws, ni %APPDATA%.
+       Uso: dotnet build -c Release -o bin/Release ; bin/Release/ws_compat.exe -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>false</UseWindowsForms>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>ws_compat</AssemblyName>
+    <RootNamespace>WsCompat</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

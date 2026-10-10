@@ -116,3 +116,7 @@
 - [OBJETIVO de las dominantes (09-10)](objetivo-dominantes-extremo-que-aguanta.md) — raya en la punta del extremo, que la prueben y no la rompan, giro con maximo recorrido a la otra dominante; NO % de rebotes tras toques.
 - [Investigacion formula de extremos (09-10)](investigacion-formula-extremos-1009.md) — web + 19 noches pre-registrado: nada gira en la raya mas que el azar; conversion 4.1 correcta; faltan ~40-60 noches para 4-6 pp.
 - [Apagar por defecto = solo la casilla (09-10)](apagar-por-defecto-solo-casilla.md) — destildar en su .ws y el default; nunca sacar la serie del codigo (estamos investigando).
+- [Avisar PC al limite (09-10)](avisar-pc-al-limite.md) — si CPU >85 % o RAM libre <2 GB, avisarle que programas SUYOS cerrar; mis tareas son prioridad 1; nunca cerrarlos yo.
+- [Agentes con esfuerzo maximo (09-10)](agentes-esfuerzo-maximo.md) — siempre effort 'max' en constructores, revisores, verificadores e investigadores.
+- [Orden de los grupos en los ajustes de ATAS (09-10)](atas-orden-grupos-ajustes.md) — por el MENOR Order de sus casillas; negativos al final; grupo_arriba_415c.py; cambios en vivo sin Apply.
+- [Respaldar al terminar cada tanda (09-10)](respaldar-al-terminar.md) — estable = instalada+verificada+verde y sin agentes editando: push publico + privado + espejo Inversiones (Drive).

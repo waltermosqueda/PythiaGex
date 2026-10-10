@@ -1,26 +1,26 @@
-﻿=== correr_todo 2026-10-09 05:10:05 ===
+﻿=== correr_todo 2026-10-09 20:37:20 ===
 --- build PythiaGexCuatro (la DLL)
 Build succeeded
 
-exit=0  (3 s)
+exit=0  (2 s)
 --- adaptadores (B1)
    A 2026-10-08 (CargarCsv): velas 672/672 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 3 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 674 (max 62 pts a las 16:17:16.545: 31188.75 vs 31250.75, tick del segundo anterior 31188.75), dif tick 674 [por diseÃ±o: casilla por segundo]
    B 2026-10-08 (Tick+Relleno): velas 672/672 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 3 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 674 (max 62 pts a las 16:17:16.545: 31188.75 vs 31250.75, tick del segundo anterior 31188.75), dif tick 674 [por diseÃ±o: casilla por segundo]
-   cinta MNQZ6: ultimo tick hace 40213 s, vivos 2249969, relleno 8314 (+965227 ya en vivo), velas ticks 673 / grafico 0, tramos 2, huecos de mas de 2 min sin ticks 2, dias 2 (sin hilo)
-4. persistencia: 2 archivos, 1.47 MB, escribir+leer 40 ms
+   cinta MNQZ6: ultimo tick hace 95847 s, vivos 2249969, relleno 8314 (+965227 ya en vivo), velas ticks 673 / grafico 0, tramos 2, huecos de mas de 2 min sin ticks 2, dias 2 (sin hilo)
+4. persistencia: 2 archivos, 1.47 MB, escribir+leer 43 ms
    C (de disco): velas 686/686 (dif 0), cierres 1380 (dif 0, NaN en Python 2), Precio 2238 enteros (dif 0, 0 por vela), PrecioSoloTick (dif 0); fraccionarios 1351: dif Precio 596 (max 7.5 pts a las 16:02:58.345: 31325.75 vs 31333.25, tick del segundo anterior 31325.75), dif tick 596 [por diseÃ±o: casilla por segundo]
 5. velas del grafico: respaldo m2, interpolacion, rechazo de marcos > 2 min y prioridad de los ticks escuchados
-6. ILibroNq: 1205 fotos de 1205 lineas (1205 aceptadas), dedup, orden y rango; libro NQ: 1205 fotos (vivas 0, archivo 1205), ultima 23:59:26Z hace 115848 s, 151 filas (sin sembrar)
-  log: adaptadores: libro NQ sembrado de C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\_test_cuatro_paridad\adaptadores\tmp\viva: 2 fotos de 2 lineas (30 h). libro NQ: 2 fotos (vivas 0, archivo 2), ultima 07:11:13Z hace 3541 s, 160 filas (sembrando)
-  log: adaptadores: cinta TESTZ6: ultimo tick hace 11 s, vivos 50, relleno 0, velas ticks 2 / grafico 0, tramos 1, dias 1 (historia: 0 archivos)
+6. ILibroNq: 1205 fotos de 1205 lineas (1205 aceptadas), dedup, orden y rango; libro NQ: 1205 fotos (vivas 0, archivo 1205), ultima 23:59:26Z hace 171481 s, 151 filas (sin sembrar)
+  log: adaptadores: libro NQ sembrado de C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\atas\_test_cuatro_paridad\adaptadores\tmp\viva: 2 fotos de 2 lineas (30 h). libro NQ: 2 fotos (vivas 0, archivo 2), ultima 22:38:27Z hace 3540 s, 160 filas (sembrando)
+  log: adaptadores: cinta TESTZ6: ultimo tick hace 11 s, vivos 50, relleno 0, velas ticks 1 / grafico 0, tramos 1, dias 1 (historia: 0 archivos)
 7. ciclo de vida: siembra del libro, una cinta por instrumento, persistencia al soltar, re-arranque
-TODO OK Â· 1038 comprobaciones en 3.4 s
+TODO OK Â· 1038 comprobaciones en 3.7 s
 
-exit=0  (5 s)
+exit=0  (6 s)
 --- cboe (B2)
   OK   el registro releido trae el texto de ultima-NQ.json
   OK   fotos viejas livianas (sin filas, con OI total); la ultima anterior al corte conserva filas
-   estado apagado: NDX dato hace 83 h 56 min (VIEJO), descarga apagada · QQQ dato hace 83 h 56 min (VIEJO), descarga apagada · TQQQ dato hace 84 h 11 min (VIEJO), descarga apagada
+   estado apagado: NDX dato hace 123 h 23 min (VIEJO), descarga apagada · QQQ dato hace 123 h 23 min (VIEJO), descarga apagada · TQQQ dato hace 123 h 38 min (VIEJO), descarga apagada
   OK   con Bajar=false el estado dice 'descarga apagada'
    archivos: cadena-NQ-2026-10-09.jsonl.gz, cadena-NQ.ultimo, cadena-QQQ-2026-10-09.jsonl.gz, cadena-QQQ.ultimo, cadena-TQQQ-2026-10-09.jsonl.gz, cadena-TQQQ.ultimo, cierres.json, ultima-NQ.json, ultima-QQQ.json, ultima-TQQQ.json
   OK   ultima-NQ.json, cadena-NQ.ultimo y cadena-NQ-<dia>.jsonl.gz
@@ -30,7 +30,7 @@ TODAS LAS PRUEBAS OK
 
 
 
-exit=0  (54 s)
+exit=0  (55 s)
 --- nq (B3a)
   serie            ref    mio  ambos solo_ref solo_mio etiq precio monto  max|dp|
   MUROS_NQ_vol     1316   1316   1316        0        0    0      0     0  0.0000 OK
@@ -40,25 +40,25 @@ exit=0  (54 s)
   ZEST_NQ_vol      1232   1232   1232        0        0    0      0     0  0.0000 OK
   ZEST_NQ_oi        988    988    988        0        0    0      0     0  0.0000 OK
   ZTP_NQ_vol       1144   1144   1144        0        0    0      0     0  0.0000 OK
-  total 3.3 s
+  total 4.0 s
 
 RESULTADO: PARIDAD EXACTA en las series de NQ
 
-exit=0  (9 s)
+exit=0  (10 s)
 --- ndx (B3b)
   [corregido] MAJORS_NDX_oi    1378  1378   1378         0        0         0         0          0   0.0050          0     0.00  OK
   [corregido] ZEST_NDX_vol     1355  1355   1355         0        0         0         0          0   0.0050          0     0.00  OK
   [corregido] ZTP_NDX_vol      1224  1224   1224         0        0         0         0          0   0.0050          0     0.00  OK
-  tiempo: total 1.65 s, por minuto mediana 0.04 ms, p99 5.99 ms, max 44 ms (incluye rehacer C7: 1 vez/veces, 2360 fotos)
+  tiempo: total 1.74 s, por minuto mediana 0.04 ms, p99 6.54 ms, max 27 ms (incluye rehacer C7: 1 vez/veces, 2360 fotos)
   reinicio con muestras guardadas (muestras-NDX-2026-10-02.jsonl, muestras-NDX-2026-10-05.jsonl, muestras-NDX-2026-10-06.jsonl, muestras-NDX-2026-10-07.jsonl, muestras-NDX-2026-10-08.jsonl) y SIN la cinta de los dias previos: 0 minutos distintos (sin las muestras: 955 minutos distintos, para ver que la prueba muerde)
-  replay minuto a minuto con reinicios 03:00 y 15:00 UTC (480 veces rehecho C7, 2 calentamientos de la cache del zero (120 minutos rehechos al reiniciar), 15.6 s): 0 minutos distintos de la corrida historica
+  replay minuto a minuto con reinicios 03:00 y 15:00 UTC (480 veces rehecho C7, 2 calentamientos de la cache del zero (120 minutos rehechos al reiniciar), 16.6 s): 0 minutos distintos de la corrida historica
   protocolo del motor (NuevaTanda): en vivo (tanda por minuto) contra cache por minuto: 0 minutos distintos; puesta al dia de a 240 con reinicio a las 15:00 contra el historico: 0 minutos distintos
 
   horario de invierno (prueba G, fechas sinteticas): 32 de 32 bien
 
 RESULTADO: PARIDAD OK
 
-exit=0  (77 s)
+exit=0  (79 s)
 --- qqq (B3c)
   OK  MAJORS_QQQ_vol  ref 1378 | C# 1378 | ambos 1378 | solo ref 0 | solo C# 0 | etiquetas 0 | precio>0,01 0 (max |dp| redondeado 0) | monto 0 (max 0)
   OK  MAJORS_QQQ_oi   ref 1378 | C# 1378 | ambos 1378 | solo ref 0 | solo C# 0 | etiquetas 0 | precio>0,01 0 (max |dp| redondeado 0) | monto 0 (max 0)
@@ -69,10 +69,10 @@ exit=0  (77 s)
   OK  VIVO (fotos de a una, cinta hasta t+6 s, generado con +400 ms como UtcNow): 1380 de 1380 minutos identicos al bit
   OK  REINICIO sin cinta previa + 2118 muestras persistidas: 1380 de 1380 minutos identicos
       (informativo) REINICIO sin cinta previa y SIN muestras: 84 de 1380 minutos distintos (primera 22:02Z) -> el motor tiene que persistir las muestras
-  (5472 ms en total)
+  (5491 ms en total)
 RESULTADO: PARIDAD OK
 
-exit=0  (24 s)
+exit=0  (25 s)
 --- fam (B3d)
     ej. NDX 2026-10-09T01:15:09Z D2 30943.10 K 30700: gm -355.42 (g 355) vs MAJORS_NDX_vol D2 -358.3
     ej. NDX 2026-10-09T01:16:14Z D1 30943.10 K 30700: gm -357.87 (g 358) vs MAJORS_NDX_vol D2 -358.3
@@ -84,9 +84,9 @@ exit=0  (24 s)
   nq 2026-10-08 rueda: 3540 pares (linea de la estela 3.0, strike de MAJORS_NQ_vol de la referencia); |g| x FactorMonto3(NQ) / |MAJORS|: mediana 1.0029, p05 0.871, p95 1.109 (sin el x0,2 la mediana seria 5.014)
   nq: 1 chequeos ok, 0 fallas
 
-RESULTADO: VERDE (0 fallas) en 4.0 s
+RESULTADO: VERDE (0 fallas) en 4.1 s
 
-exit=0  (7 s)
+exit=0  (6 s)
 --- fam integrado
   ZEST_NQ_vol          1232        0          0         0        0          0
   ZEST_NQ_oi            988        0          0         0        0          0
@@ -100,7 +100,7 @@ exit=0  (7 s)
 
 RESULTADO: VERDE (las 21 series iguales a la referencia)
 
-exit=0  (24 s)
+exit=0  (23 s)
 --- tqqq (B4)
   D2 rueda 08-10: velas en modo rueda contra la referencia: 903 iguales, 0 distintas  OK
   [OK] modo C en la noche despues de las 01:36 UTC
@@ -112,13 +112,13 @@ exit=0  (24 s)
   [OK] 08-10: P0' implicito ~ 80,2186 (spec)
   [OK] tqqq-cierres.json escrito con el ancla del 07-10
 
-TOTAL: OK, 0 diferencias (8.8 s)
+TOTAL: OK, 0 diferencias (9.0 s)
 
-exit=0  (10 s)
+exit=0  (11 s)
 --- posiciones (B-pos 4.1.2)
-   NQ ventana 5 min: dato 10-09 08:07:24Z -> 10-09 08:12:39Z (315 s; sellos 10-09 08:07:24Z -> 10-09 08:12:39Z), 307 de 308 claves comparadas, 22 con volumen nuevo, 0 bajaron
-   NQ ventana 15 min: dato 10-09 07:56:59Z -> 10-09 08:12:39Z (940 s; sellos 10-09 07:56:59Z -> 10-09 08:12:39Z), 307 de 308 claves comparadas, 43 con volumen nuevo, 0 bajaron
-   NQ ventana 30 min: dato 10-09 07:42:34Z -> 10-09 08:12:39Z (1805 s; sellos 10-09 07:42:34Z -> 10-09 08:12:39Z), 307 de 308 claves comparadas, 58 con volumen nuevo, 0 bajaron
+   NQ ventana 5 min: dato 10-09 08:09:29Z -> 10-09 08:14:49Z (320 s; sellos 10-09 08:09:29Z -> 10-09 08:14:49Z), 301 de 301 claves comparadas, 20 con volumen nuevo, 0 bajaron
+   NQ ventana 15 min: dato 10-09 07:59:04Z -> 10-09 08:14:49Z (945 s; sellos 10-09 07:59:04Z -> 10-09 08:14:49Z), 301 de 301 claves comparadas, 47 con volumen nuevo, 0 bajaron
+   NQ ventana 30 min: dato 10-09 07:44:34Z -> 10-09 08:14:49Z (1815 s; sellos 10-09 07:44:34Z -> 10-09 08:14:49Z), 301 de 301 claves comparadas, 60 con volumen nuevo, 0 bajaron
    NDX ventana 5 min: dato 10-08 20:14:53Z -> 10-08 20:14:53Z (0 s; sellos 10-09 08:02:19Z -> 10-09 08:08:15Z) congelada, 1393 de 1393 claves comparadas, 0 con volumen nuevo, 0 bajaron
    NDX ventana 15 min: dato 10-08 20:14:53Z -> 10-08 20:14:53Z (0 s; sellos 10-09 07:52:19Z -> 10-09 08:08:15Z) congelada, 1393 de 1393 claves comparadas, 0 con volumen nuevo, 0 bajaron
    NDX ventana 30 min: dato 10-08 20:14:53Z -> 10-08 20:14:53Z (0 s; sellos 10-09 07:33:43Z -> 10-09 08:08:15Z) congelada, 1393 de 1393 claves comparadas, 0 con volumen nuevo, 0 bajaron
@@ -126,9 +126,9 @@ exit=0  (10 s)
    QQQ ventana 15 min: dato 10-08 20:14:59Z -> 10-08 20:14:59Z (0 s; sellos 10-09 03:57:45Z -> 10-09 04:59:09Z) congelada, 744 de 744 claves comparadas, 0 con volumen nuevo, 0 bajaron
    QQQ ventana 30 min: dato 10-08 20:14:59Z -> 10-08 20:14:59Z (0 s; sellos 10-09 03:57:45Z -> 10-09 04:59:09Z) congelada, 744 de 744 claves comparadas, 0 con volumen nuevo, 0 bajaron
 
-=== 33 de 33 pruebas en verde (0 fallas) en 13.0 s
+=== 33 de 33 pruebas en verde (0 fallas) en 13.8 s
 
-exit=0  (16 s)
+exit=0  (15 s)
 --- replica20 (4.1.3)
     rotulo 'NDX cruce 31.098,58' (ZTP_NDX_vol, 1 tramos) raya 02:00Z -> 03:07Z (68 velas)
     rotulo '2.0 QQQ 31.083,50' (R20_QQQ_vol, 1 tramos) raya 00:20Z -> 01:13Z (54 velas)
@@ -140,35 +140,77 @@ exit=0  (16 s)
   OK   T1 la doble/triple raya de 31.040/31.041: 'NDX muro V/OI · NDX major V · 2.0 NDX 31.040' al final de los muros (vela 303) y el 2.0 NDX (31.041,83), que termino antes, con SU rotulo en su final (vela 45): '2.0 QQQ · 2.0 NDX 31.042'
   OK   T2 la raya roja de 31.064 (NDX cruce) lleva rotulo: 'NDX cruce 31.063,86'
 
-=== 28 OK, 0 MAL en 6.1 s
+=== 28 OK, 0 MAL en 7.5 s
 
 exit=0  (9 s)
+--- clasica (4.1.5)
+  G3c (informativo) con la cinta del arnes (ticks, sin velas del grafico) y CintaFamilia.VelaM2Completa: 8 provisionales; del 09-10: 8 (velas 16:48 19:31 19:32 19:33 19:43 19:50 19:51 19:53), 7 entre las ultimas 24 del dia (19:47:37 19:48:37 19:49:37 19:59:37 20:06:38 20:07:38 20:09:38)
+  G3d (MEDIDO) las provisionales del 09-10 con el cierre de 2 min del GRAFICO (el de 1 min de su minuto impar, del log de la clasica): 3 cambian de cierre (19:47:37 31117.25->31117.00, 20:06:38 31095.75->31092.75, 20:07:38 31095.75->31092.75), 1 sin ese cierre en el log; la regla del dia da 229.32 (con los de la cinta de ticks: 229.98; la 4.1.5c en ATAS con las velas del grafico: 229,32 de 17:12 a 17:35 ART y desde las 18:08)
+  OK   G3d el escalon 229,32 / 229,98 de la rueda del 09-10 (revision 4.1.5b/c) sale ENTERO de las velas de 2 min con un hueco de ticks: con los cierres del grafico en esas provisionales la regla da 229.32 (lo que tenia la 4.1.5c en ATAS con las velas del grafico) y con los de la cinta de ticks 229.98
+  G4 cadena solo de calls: zero NaN, 3 dominantes (vol), base 230.00 CRUDA 10 ticks | base clasica 230.00 = CRUDA 10 ticks (sin base de la rueda en las cadenas de la 4.1) · ahora: sin dato · zero sin cruce en +-3 %
+  OK   G4 sin cruce del zero las D1-D3 se calculan igual (antes Zero devolvia null y no habia ninguna): 0Γ sin nivel, meta y D1-D3 con nivel, texto 'zero sin cruce'
+  OK   G5 ese minuto se guarda con las D1-D3 y la meta y sin el 0Γ, y Falta no lo pide de nuevo (uno sin nada, si)
+  G6 cadena sin volumen: 3 dominantes (OI) | base clasica 230.00 = CRUDA 10 ticks (sin base de la rueda en las cadenas de la 4.1) · ahora: sin dato · zero sin cruce en +-3 % · dominantes por OI (ningun strike del radio con volumen)
+  OK   G6 sin volumen en el radio las D1-D3 salen del OI y el texto de la fuente lo dice ('dominantes por OI'): la etiqueta lleva OI (pantalla C119)
+  OK   G7 el archivo: una linea por sello (la repetida no), ida y vuelta exacta, la linea rota se ignora (y se cuenta), otro marco u otro retraso no la usa: {"ts":"2026-10-09 19:40:37","generado":"2026-10-09T19:41:02.123Z","vela":"2026-10-09 19:24:37","vela_min":2,"retraso_s":960,"spot":30900.62,"precio":31130.5,"muestra":229.88000000000102,"version":"clasica 4.1.5d (09-10-2026)"}
+
+=== 44 OK, 0 MAL en 16.2 s
+
+exit=0  (18 s)
+--- clasica_dom (4.1.5b)
+  OK   C4 un solo lado (todo abajo, puts): D1 el elegido de abajo, D2 y D3 relleno: libro vol, -40:abajo -70:relleno -10:relleno (C# = port: si)
+  OK   C5 empate del 20 %: arriba gana la MAS CERCANA (85 % del mayor); abajo la de 75 % queda afuera y gana la mayor: libro vol, +20:arriba -50:abajo +50:relleno (C# = port: si)
+  OK   C6 el strike justo en el precio va ABAJO (Fut <= fut) y gana por distancia 0: libro vol, +30:arriba +0:abajo -30:relleno (C# = port: si)
+  OK   C7 el tope del radio (min(2 %, 100 pts)): +-100 entran, +-105 no; el centroide usa el perfil ENTERO (+105 a 5 pts de +100 lo corre): libro vol, +100:arriba -100:abajo; D1 en 104.17 (el +105, fuera del radio, la corre desde +100) (C# = port: si)
+  OK   C8 dos strikes: dos dominantes, sin D3: libro vol, +30:arriba -30:abajo (C# = port: si)
+  OK   C9 centroide de +-12 pts: vecinos a 10 pts entran (pesan), el de 15 no; el ganador en +40: libro vol, +40:arriba -60:abajo +55:relleno; D1 en 37.78 (centroide de +30/+40/+50, sin el +55) (C# = port: si)
+  OK   C10 volumen que se cancela (calls = puts, misma IV): GEX por volumen 0 en todo el radio -> OI: libro OI, +25:arriba -25:abajo (C# = port: si)
+  OK   C11 horizonte Hoy: el vencimiento de 3,25 dias (volumen enorme) no entra; el de 0,9 si: libro vol, +20:arriba -20:abajo (C# = port: si)
+  OK   C12 envejecida 2 h: el vencimiento de 0,05 dias ya vencio (sale) y el de 1,05 pasa a ser el mas cercano: libro vol, +40:arriba -40:abajo (C# = port: si)
+
+=== 23 OK, 0 MAL en 10.6 s
+
+exit=0  (12 s)
 --- pantalla (B5)
 E. rendimiento (hilo de dibujo)
-     2000 velas visibles x 33 series x 2 niveles = 132000 rayitas: 12.75 ms por render (armado + pintado al doble)
-  ok   E1 132.000 rayitas armadas (4.1.3: 33 series)
-     niveles quietos: sin rotulos de tramos 7.45 ms por render; con rotulos 12.75 ms (0 rotulos en el ultimo render sin ellos: debe ser 0)
-  ok   E1b niveles quietos, todas las series, 2000 velas: < 60 ms por render: 12.7 ms
-     E2 peor caso de los rotulos (33 series x 2 niveles que saltan cada 16 velas, 2000 velas): 8200 tramos largos (8000 recortados), 14 rotulos: con rotulos 14.96 ms, sin 7.41 ms por render
-  ok   E2 peor caso de los rotulos (8200 tramos): < 60 ms por render: 15.0 ms (sin rotulos 7.4)
-     caso normal (200 velas, 6 series): 0.414 ms por render
-  ok   E3 caso normal < 5 ms por render: 0.41 ms
+     2000 velas visibles x 35 series x 2 niveles = 140000 rayitas: 14.03 ms por render (armado + pintado al doble)
+  ok   E1 140.000 rayitas armadas (35 series; 4.1.5b: 35)
+     niveles quietos: sin rotulos de tramos 8.90 ms por render; con rotulos 14.03 ms (0 rotulos en el ultimo render sin ellos: debe ser 0)
+  ok   E1b niveles quietos, todas las series, 2000 velas: < 60 ms por render: 14.0 ms
+     E2 peor caso de los rotulos (33 series x 2 niveles que saltan cada 16 velas, 2000 velas): 8688 tramos largos (8488 recortados), 14 rotulos: con rotulos 18.97 ms, sin 7.59 ms por render
+  ok   E2 peor caso de los rotulos (8688 tramos): < 60 ms por render: 19.0 ms (sin rotulos 7.6)
+     caso normal (200 velas, 8 series): 0.564 ms por render
+  ok   E3 caso normal < 5 ms por render: 0.56 ms
 
-RESULTADO: 197 ok, 0 mal
+RESULTADO: 221 ok, 0 mal
 
-exit=0  (4 s)
+exit=0  (5 s)
+--- ws_compat (4.1.5c/e)
+
+== 3. [Display]: solo lo que cambio grupo_arriba_415e.py (4.1.5c: grupo_arriba_415c.py)
+  LISTA de C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\herramientas\grupo_arriba_415e.py: 101 casillas al grupo '0. PRENDER / APAGAR (todo lo que se dibuja)'
+  OK   W6 los cambios de [Display] de la 4.1.5 a la nueva son exactamente los del script: 100 casillas movidas al grupo de arriba y 1 nueva ya en el (nombre corto, Order = indice), 83 ajustes con el Order + 1000, 0 iguales; distintos de lo esperado 0
+  (informativo) descripciones que cambiaron: 101 (Atravesadas3AtenuarB, Barras3Lado, Cabecera4, Cambio41Rotulos, Capa3LineaActual, Capa3ZeroRombos, Cruces3SinCortes, Eje4Libro, Estela3SesionAnterior, Estela4, Formula3F1, Formula3F2b, ...)
+
+== 4. 4.1.5e: el script manda y cada casilla dice que llave necesita
+  OK   W7 python -I grupo_arriba_415e.py --verificar: 'sin cambios: el codigo ya coincide con la LISTA (idempotente)' (el codigo ya es el de la LISTA; una segunda pasada no cambia nada)
+  OK   W8 las 101 del grupo empiezan su descripcion diciendo que llave necesitan: 9 llaves ('Llave:'), 55 '↳' ('Necesita ...'), 37 sin llave ('No necesita ninguna llave')
+
+=== 11 OK, 0 MAL en 1.1 s
+
+exit=0  (3 s)
 --- punta a punta (e2e)
   pythiagex4-familia.log: sin ERROR
   pythiagex4-integracion.log: sin ERROR
-  cboe.log: 2026-10-09T08:15:52Z  historia NDX: 8 archivo(s), 2737 fotos (842 con filas; 18 lineas sin filas o ilegibles salteadas, como foto_cboe_de_json), de 2026-10-01T00:01:10+00:00 a 2026-10-09T08:10:53+00:00, ultimo sello 2026-10-09 08:08:15
-  cboe.log: 2026-10-09T08:15:53Z  historia QQQ: 8 archivo(s), 2547 fotos (802 con filas; 11 lineas sin filas o ilegibles salteadas, como foto_cboe_de_json), de 2026-10-01T00:01:14+00:00 a 2026-10-09T05:01:10+00:00, ultimo sello 2026-10-09 04:59:09
-  cboe.log: 2026-10-09T08:15:54Z  historia TQQQ: 8 archivo(s), 2417 fotos (774 con filas; 10 lineas sin filas o ilegibles salteadas, como foto_cboe_de_json), de 2026-10-01T00:01:21+00:00 a 2026-10-09T03:46:03+00:00, ultimo sello 2026-10-09 03:44:56
+  cboe.log: 2026-10-09T23:43:56Z  historia NDX: 8 archivo(s), 2737 fotos (842 con filas; 18 lineas sin filas o ilegibles salteadas, como foto_cboe_de_json), de 2026-10-01T00:01:10+00:00 a 2026-10-09T23:41:48+00:00, ultimo sello 2026-10-09 23:40:47
+  cboe.log: 2026-10-09T23:43:57Z  historia QQQ: 8 archivo(s), 2547 fotos (802 con filas; 11 lineas sin filas o ilegibles salteadas, como foto_cboe_de_json), de 2026-10-01T00:01:14+00:00 a 2026-10-09T23:41:52+00:00, ultimo sello 2026-10-09 23:41:05
+  cboe.log: 2026-10-09T23:43:57Z  historia TQQQ: 8 archivo(s), 2417 fotos (774 con filas; 10 lineas sin filas o ilegibles salteadas, como foto_cboe_de_json), de 2026-10-01T00:01:21+00:00 a 2026-10-09T23:41:59+00:00, ultimo sello 2026-10-09 23:40:59
 
 == RESUMEN 'ny-extras'
-  tiempos: semilla+carga cinta 2.2 s, libro NQ 2.1 s, historia CBOE 3.6 s, sesion completa 8.8 s desde el host
-  memoria: pico working set 237 MB; heap retenido con todo vivo (tras GC) 89 MB; privada 162 MB
+  tiempos: semilla+carga cinta 2.3 s, libro NQ 2.1 s, historia CBOE 3.8 s, sesion completa 10.0 s desde el host
+  memoria: pico working set 234 MB; heap retenido con todo vivo (tras GC) 90 MB; privada 184 MB
   velas m2 de la cinta IGUALES | minutos (21 series) 7604 series-minuto distintas | historia de la foto con diferencias | actuales con diferencias | TQQQ con diferencias
    salida: resultados\e2e-ny-extras.txt (codigo 0)
 
-exit=0  (112 s)
-=== fin 05:16:00 ===
+exit=0  (126 s)
+=== fin 20:44:04 ===

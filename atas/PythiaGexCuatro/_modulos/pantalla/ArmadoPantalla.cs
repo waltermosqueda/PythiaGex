@@ -43,6 +43,16 @@
 //     juntar/agrupar con los TRAMO_CAND no vigentes mas largos; (3) un tramo rotulable dura ademas 8 velas m2 (~15 min: en graficos de segundos
 //     los escalones de 2 min no se rotulan); (4) los rotulos no van en la franja de MargenSup4; (5) los acompañantes de la etiqueta van DESPUES
 //     del precio y la fuente de la cabeza ("QQQ P −2,19B 31.076 OI · QQQ dom D1").
+// 4.1.5 (09-10-2026): la replica de la clasica (R10_NDX_zero "Clasica NDX 0Γ", tipo ZEST, rol Z, sin monto): la etiqueta es "Clasica NDX 0Γ 31.068,21 V"
+//   (el nombre corto ya dice que es el zero: sin repetir "0G"); su rotulo de tramo, "Clasica NDX 0Γ 31.068,21"; en un grupo va nombrada como las de la
+//   2.0 si no es la cabeza; el detalle dice la base usada y de cuando es ("base clasica 243,06 de la rueda del 08-10, congelada") junto a la base de
+//   ahora (la sincronizada de la 4.1) y la diferencia, y en naranja si la base es un respaldo (CRUDA o TEORICA); la fuente "Clasica NDX" (su base y su
+//   origen) va en la pestaña si la serie esta prendida.
+// 4.1.5d (09-10-2026, revision de la 4.1.5b/c): (1) debajo de la fuente "Clasica NDX" va la salvedad AVISO_CLASICA (si la clasica pierde Rithmic re-mide
+//   su base en la rueda y la replica deja de coincidir; medido el 09-10: ~13 pts de 16:48 a 17:11 ART); (2) las D1-D3 de la clasica (R10_*) no llevan
+//   cambio ▲▼ (TieneLado, igual que las R20_: su base y su S no son las del libro de la 4.1; antes D1/D2 lo tomaban del libro NDX de la 4.1 y D3 no);
+//   (3) el detalle de R10_NDX_dom dice "(strike NDX 30.900, centroide ±12)" (antes "(en el indice NDX ...)", que es la leyenda del zero); (4) si la
+//   fuente "Clasica NDX" dice "dominantes por OI", la etiqueta de R10_NDX_dom lleva OI en vez de V.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -220,6 +230,10 @@ namespace PythiaGexCuatro.Familia
         public static readonly CultureInfo Es = CultureInfo.GetCultureInfo("es-AR");
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
         public const double VIEJO_S = 1800;           // protocolo: con mas de 30 min la edad va ANTES del numero
+        /// <summary>4.1.6: estilo de etiqueta 2E (elegido por el operador 09-10 entre 21 maquetas: _previews_etiquetas): una columna a la derecha,
+        /// sin precio, con una barrita de peso LINEAL antes del texto (la de mayor |monto| visible = 100 %) y el cambio pegado al monto.</summary>
+        public const bool ESTILO_2E = true;
+        public const int BARRA_2E = 44;               // ancho del carril de la barrita (px)
         public const double MOTOR_PARADO_S = 150;     // el motor publica cada ~5 s: 150 s sin foto nueva = parado
         // 4.1.4 (pedido del operador 09-10: "la doble o triple raya no tiene rotulo/etiqueta y es importante"): rotulos de los tramos de historia
         public const double TRAMO_TOL = 0.5;          // mismo tramo: a <= 0,5 pt del ultimo precio del tramo
@@ -303,6 +317,14 @@ namespace PythiaGexCuatro.Familia
         }
 
         private static bool Fin(double x) => !double.IsNaN(x) && !double.IsInfinity(x);
+        /// <summary>4.1.6: el monto CON SIGNO de la parte de mayor |monto| de la cabeza del grupo (NaN si no tiene monto).</summary>
+        private static double PesoFirmado(Item c)
+        {
+            if (c?.Partes == null) return double.NaN;
+            double best = double.NaN;
+            foreach (var p in c.Partes) if (p != null && Fin(p.GexM) && (double.IsNaN(best) || Math.Abs(p.GexM) > Math.Abs(best))) best = p.GexM;
+            return best;
+        }
 
         // ------------------------------------------------------------------ 4.1.2: montos y cambios
         /// <summary>4.1.2: el monto de la etiqueta (M USD de cobertura por 1 %, calls +, puts −). NaN/Inf -> ""; |m| &lt; 0,05 -> "0M";
@@ -367,7 +389,8 @@ namespace PythiaGexCuatro.Familia
                 case "muro C": case "muro P": case "M+": case "M-": case "dom": case "dom (razon)": return true;
                 // 4.1.3: la seleccion de la 2.0 sobre los libros de la 4.1 (DOMS_QQQ_vol / DOMS_NDX_vol) lleva el cambio neto; las replicas de la
                 // 2.0 (R20_*) no (CambiosFamilia las deja NaN con nota: su conversion no es la del libro de la 4.1)
-                case "D1": case "D2": return a.Tipo == "DOMS" && !EsReplica20(a.Serie);
+                // 4.1.5d: las de la clasica (R10_*) tampoco (su base y su S no son las del libro NDX de la 4.1; antes D1/D2 tenian flecha y D3 no)
+                case "D1": case "D2": return a.Tipo == "DOMS" && !EsReplica20(a.Serie) && !EsClasica(a.Serie);
                 default: return false;
             }
         }
@@ -396,6 +419,14 @@ namespace PythiaGexCuatro.Familia
                 }
                 case "DOMS_QQQ_vol": { var f = Fuente(fuentes, "QQQ"); return f == null || !Fin(f.ConvValor) ? "" : " (razon sincronizada " + f.ConvValor.ToString("0.0000", Es) + ")"; }
                 case "DOMS_NDX_vol": { var f = Fuente(fuentes, "NDX"); return f == null || !Fin(f.ConvValor) ? "" : " (base sincronizada " + f.ConvValor.ToString("0.00", Es) + ")"; }
+                case "R10_NDX_zero":
+                case "R10_NDX_dom":                                  // 4.1.5b: la misma base que el 0Γ
+                {   // 4.1.5: la base usada, de cuando es, y la de ahora (la sincronizada de la 4.1) con la diferencia: lo que corre a la raya
+                    var f = Fuente(fuentes, "Clasica NDX"); if (f == null || !Fin(f.ConvValor)) return " (base clasica sin dato)";
+                    var (oTxt, _, ah, _) = OrigenClasica(f.Texto);
+                    string dif = Fin(ah) ? "; base de ahora " + ah.ToString("0.00", Es) + " (sincronizada): " + (f.ConvValor - ah >= 0 ? "+" : MENOS) + Math.Abs(f.ConvValor - ah).ToString("0.00", Es) + " pts" : "";
+                    return " (base clasica " + f.ConvValor.ToString("0.00", Es) + " " + oTxt + dif + ")";
+                }
                 default: return "";
             }
         }
@@ -437,6 +468,40 @@ namespace PythiaGexCuatro.Familia
         /// <summary>4.1.4: las series "como la 2.0" (R20_* y DOMS_*; no T_DOMS_vol).</summary>
         public static bool EsSerie20(string serie) => serie != null && (serie.StartsWith("R20_", StringComparison.Ordinal) || serie.StartsWith("DOMS_", StringComparison.Ordinal));
 
+        /// <summary>4.1.5: la replica de la clasica (R10_NDX_zero "Clasica NDX 0Γ"): su nombre corto ya dice el rol (el zero), no se repite.</summary>
+        public static bool EsClasica(string serie) => serie != null && serie.StartsWith("R10_", StringComparison.Ordinal);
+
+        /// <summary>4.1.5d (revision 4.1.5b/c): la salvedad de la replica de la clasica, debajo de su fuente en la pestaña. MEDIDO el 09-10: tras los
+        /// reinicios de ATAS la clasica cayo a CBOE y re-midio su base en la rueda (229,88 -> 230,16) mientras la replica seguia con la del 08-10
+        /// (243,06): de 19:48 a 20:11 UTC (16:48-17:11 ART) el 0Γ y las D1-D3 quedaron ~13 pts corridos de los de la clasica.</summary>
+        public const string AVISO_CLASICA = "    Clasica NDX: copia a la clasica cuando dibuja con la base de la rueda anterior; si la clasica pierde Rithmic (p. ej. al reiniciar ATAS) "
+                                          + "re-mide su base en la rueda y esta replica deja de coincidir (09-10 16:48-17:11 ART: ~13 pts)";
+
+        private static readonly Regex ReRuedaClasica = new Regex(@"= de la rueda (\d{4})-(\d{2})-(\d{2})", RegexOptions.Compiled);
+        private static readonly Regex ReAhoraClasica = new Regex(@"4\.1 sincronizada (-?\d+(?:\.\d+)?)", RegexOptions.Compiled);
+        private static readonly Regex ReHoyClasica = new Regex(@"rueda de hoy (-?\d+(?:\.\d+)?) \((\d+) muestras\)", RegexOptions.Compiled);
+
+        /// <summary>4.1.5: de donde salio la base de la replica de la clasica, leido del texto de su fuente ("Clasica NDX", ClasicaNdx.Texto:
+        /// "base clasica X = ORIGEN (...) · ahora: 4.1 sincronizada Y; regla de la clasica con la rueda de hoy Z (n muestras) · zero en el indice W").
+        /// Normal = la base de la rueda (la de la clasica); si no (CRUDA, TEORICA, sin cota) es un respaldo y el detalle lo dice en naranja.
+        /// Ahora = la base sincronizada de la 4.1 del mismo minuto (NaN si no esta); Hoy = la regla de la clasica con la rueda de hoy (NaN si no hay).</summary>
+        public static (string Txt, bool Normal, double Ahora, double Hoy) OrigenClasica(string texto)
+        {
+            texto = texto ?? "";
+            double ahora = double.NaN, hoy = double.NaN;
+            var ma = ReAhoraClasica.Match(texto); if (ma.Success && !double.TryParse(ma.Groups[1].Value, NumberStyles.Float, Inv, out ahora)) ahora = double.NaN;
+            var mh = ReHoyClasica.Match(texto); if (mh.Success && !double.TryParse(mh.Groups[1].Value, NumberStyles.Float, Inv, out hoy)) hoy = double.NaN;
+            var mr = ReRuedaClasica.Match(texto);
+            if (mr.Success)
+                return ("de la rueda del " + mr.Groups[3].Value + "-" + mr.Groups[2].Value + (texto.IndexOf("congelada", StringComparison.Ordinal) >= 0 ? ", congelada" : ""), true, ahora, hoy);
+            bool vencio = texto.IndexOf("vencio a las 24 h", StringComparison.Ordinal) >= 0, cota = texto.IndexOf("no paso la cota del carry", StringComparison.Ordinal) >= 0;
+            string porque = vencio ? "la de la rueda vencio a las 24 h" : cota ? "la de la rueda no paso la cota del carry" : "sin base de la rueda";
+            if (texto.IndexOf("= TEORICA", StringComparison.Ordinal) >= 0) return ("TEORICA: el carry (" + porque + " y la cruda no paso la cota)", false, ahora, hoy);
+            if (texto.IndexOf("(sin cota)", StringComparison.Ordinal) >= 0) return ("cruda de forwards SIN cota (" + porque + ")", false, ahora, hoy);
+            if (texto.IndexOf("= CRUDA", StringComparison.Ordinal) >= 0) return ("CRUDA de forwards de la cadena (" + porque + ")", false, ahora, hoy);
+            return ("origen sin dato", false, ahora, hoy);
+        }
+
         /// <summary>4.1.4: nombre corto de una serie para los rotulos de tramos: base ("NDX muro", "NDX cruce", "2.0 NDX", "QQQ dom", "3.0 NDX", "FAM muro",
         /// "TQQQ muro") y fuente ("V"/"OI" solo si el catalogo tiene la misma serie por volumen y por OI; si no, ""). Ej.: MUROS_NDX_vol -> ("NDX muro","V").</summary>
         public static (string Base, string Suf) NombreDeTramo(SerieInfo s, IReadOnlyList<SerieInfo> lista)
@@ -445,7 +510,7 @@ namespace PythiaGexCuatro.Familia
             string lib = s.Libro == "familia" ? "FAM" : (s.Libro ?? "");
             string corto = string.IsNullOrEmpty(s.Corto) ? (s.Id ?? "") : s.Corto;
             string bas;
-            if (EsSerie20(s.Id) || s.Tipo == "TRES" || s.Tipo == "CONF") bas = corto;
+            if (EsSerie20(s.Id) || EsClasica(s.Id) || s.Tipo == "TRES" || s.Tipo == "CONF") bas = corto;     // 4.1.5: + la clasica
             else
                 switch (s.Tipo)
                 {
@@ -551,7 +616,7 @@ namespace PythiaGexCuatro.Familia
             var vistos = new List<string>(2);
             foreach (var x in grupo)
             {
-                if (ReferenceEquals(x, cab) || x.Partes == null || x.Partes.Length == 0 || !EsSerie20(x.Partes[0].Serie)) continue;
+                if (ReferenceEquals(x, cab) || x.Partes == null || x.Partes.Length == 0 || !(EsSerie20(x.Partes[0].Serie) || EsClasica(x.Partes[0].Serie))) continue;   // 4.1.5: + la clasica
                 string t = Unir(x.LibroTxt, x.RolTxt);
                 if (t == "" || vistos.Contains(t)) continue;
                 vistos.Add(t);
@@ -830,16 +895,20 @@ namespace PythiaGexCuatro.Familia
                 cat.PorId.TryGetValue(a.Serie, out var s);
                 var col = s != null && cat.Colores.TryGetValue(s.Id, out var cc) ? cc : ColTexto;
                 double e = a.DatoUtc == DateTime.MinValue ? double.NaN : (ahora - a.DatoUtc).TotalSeconds;
-                string fu = a.Fuente == "3.0" ? "" : (a.Fuente == "oi" ? "·OI" : "·vol");
+                // 4.1.5d (revision 4.1.5b): las D1-D3 de la clasica salen del interes abierto si ningun strike del radio tiene volumen (como la clasica,
+                // que rotula "NDX D1·OI"): la fuente "Clasica NDX" lo marca (ResultadoClasica.MARCA_DOM_OI) y la etiqueta dice OI en vez de V
+                string fuA = a.Serie == "R10_NDX_dom" && (Fuente(fuentes, "Clasica NDX")?.Texto ?? "").IndexOf("dominantes por OI", StringComparison.Ordinal) >= 0 ? "oi" : a.Fuente;
+                string fu = fuA == "3.0" ? "" : (fuA == "oi" ? "·OI" : "·vol");
                 string corto0 = s?.Corto ?? "";
                 bool esConf = s != null && s.Tipo == "CONF";
                 string libro = a.Libro == "TQQQ" ? (double.IsNaN(a.Strike) ? "TQQQ" : "TQQQ " + StrikeTqqq(a.Strike))
                              : s != null && s.Tipo == "TRES" ? (corto0 == "" ? "3.0" : corto0)
                              : esConf ? "CONF"
                              : (corto0 == "" ? a.Libro : corto0);
-                string nom = esConf ? "CONF" + fu : libro + " " + rol + fu;
-                string rolCorto = rol.Replace("muro C/muro P", "C/P").Replace("muro P/muro C", "C/P").Replace("muro C", "C").Replace("muro P", "P").Replace(" est.", "");
-                string corto = esConf ? "CONF" : libro + " " + rolCorto + (a.Fuente == "3.0" ? "" : (a.Fuente == "oi" ? " OI" : " v"));
+                bool clasica = a.Serie == "R10_NDX_zero";          // 4.1.5: "Clasica NDX 0Γ" ya dice que es el zero: sin rol (4.1.5b: las D1-D3 de la clasica SI llevan rol)
+                string nom = esConf ? "CONF" + fu : clasica ? libro + fu : libro + " " + rol + fu;
+                string rolCorto = clasica ? "" : rol.Replace("muro C/muro P", "C/P").Replace("muro P/muro C", "C/P").Replace("muro C", "C").Replace("muro P", "P").Replace(" est.", "");
+                string corto = esConf ? "CONF" : libro + (clasica ? "" : " " + rolCorto) + (fuA == "3.0" ? "" : (fuA == "oi" ? " OI" : " v"));
                 if (a.OiViejo) { nom += " (OI 2s)"; corto += "*"; }
                 double banda = a.Banda > 0 ? a.Banda : 0;
                 // 4.1.2: las piezas de la etiqueta nueva (LIBRO ROL MONTO [CAMBIO] PRECIO FUENTE)
@@ -863,7 +932,7 @@ namespace PythiaGexCuatro.Familia
                 items.Add(new Item { Precio = a.Precio, Nom = nom, Corto = corto, E = e, Col = col, Banda = banda > 0 ? "±" + banda.ToString("0.#", Es) : "",
                                      Strike = a.Strike, Libro = a.Libro ?? "", Peso = peso, Partes = partes,
                                      LibroTxt = libro ?? "", RolTxt = esConf ? "" : rolCorto.Replace("cruce arriba", "cruce↑").Replace("cruce abajo", "cruce↓"),
-                                     FuenteTxt = (a.Fuente == "3.0" ? "" : (a.Fuente == "oi" ? "OI" : "V")) + (a.OiViejo ? "*" : ""),
+                                     FuenteTxt = (fuA == "3.0" ? "" : (fuA == "oi" ? "OI" : "V")) + (a.OiViejo ? "*" : ""),
                                      MontoTxt = monto, CambioTxt = cambio, CambioSentido = sentido });
             }
             var grupos = new List<List<Item>>();
@@ -898,7 +967,9 @@ namespace PythiaGexCuatro.Familia
                     {
                         r.T1 = Unir(a0.LibroTxt, a0.RolTxt, aj.Montos ? a0.MontoTxt : "");
                         if (aj.Cambios && a0.CambioTxt != "") { r.T2 = " " + a0.CambioTxt; r.ColCambio = ColorSentido(a0.CambioSentido); }
-                        r.T3 = " " + precio + (a0.FuenteTxt != "" ? " " + a0.FuenteTxt : "") + acomp;
+                        // 4.1.6 (estilo 2E elegido por el operador 09-10: "una sola columna a la derecha, sin el precio", con barrita LINEAL de peso):
+                        // sin precio ni fuente (el precio se lee en el eje y en la raya; la fuente esta en el detalle); quedan los acompañantes.
+                        r.T3 = ESTILO_2E ? acomp : " " + precio + (a0.FuenteTxt != "" ? " " + a0.FuenteTxt : "") + acomp;
                     }
                     r.Txt = r.T1 + r.T2 + r.T3;
                     int y = Y(a0.Precio);
@@ -928,7 +999,31 @@ namespace PythiaGexCuatro.Familia
                 for (int i2 = 0; i2 < en.Count; i2++) { var r = en[i2]; r.Yl = Math.Max(r.Y, ultimo + hC); ultimo = r.Yl; }
                 int lim = nAba > 0 ? area.Bottom - 2 - nAba * hC - (hC - hC / 2) : area.Bottom - hC;   // y con ↓ abajo, la caja termina arriba de ellas (hC impar: la caja va de Yl-hC/2 a Yl-hC/2+hC)
                 for (int i2 = en.Count - 1; i2 >= 0; i2--) { var r = en[i2]; if (r.Yl > lim) r.Yl = lim; lim = r.Yl - hC; }
-                foreach (var r in en)
+                // 4.1.6 estilo 2E: barrita de peso LINEAL (|monto| / el mayor |monto| de las etiquetas visibles = 100 %, minimo 2 px), verde si el
+                // monto es positivo y roja si es negativo; sin caja; el texto en el color de la serie con sombra; el cambio pegado al monto.
+                double maxPeso = ESTILO_2E && nuevo ? en.Select(r => r.Cab?.Peso ?? double.NaN).Where(Fin).DefaultIfEmpty(double.NaN).Max() : double.NaN;
+                foreach (var r in (ESTILO_2E && nuevo) ? en : new List<Rot>())
+                {
+                    int bw = BARRA_2E, tw = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir), w = bw + 6 + tw, x0 = xr - w - 4, yb = r.Yl - hC / 2;
+                    int bh = Math.Max(4, hC - 8), by = r.Yl - bh / 2;
+                    d.Relleno(Color.FromArgb(150, 40, 46, 58), new Rectangle(x0, by, bw, bh));                                   // el carril (100 %)
+                    double pf = PesoFirmado(r.Cab);
+                    if (Fin(pf) && Fin(maxPeso) && maxPeso > 0)
+                    {
+                        int fw = Math.Max(2, Math.Min(bw, (int)Math.Round(bw * Math.Abs(pf) / maxPeso)));                         // LINEAL: proporcion exacta
+                        d.Relleno(pf < 0 ? Color.FromArgb(230, 239, 83, 80) : Color.FromArgb(230, 38, 166, 154), new Rectangle(x0 + bw - fw, by, fw, bh));
+                    }
+                    int xt = x0 + bw + 6;
+                    var sombra = new Rot { Txt = r.Txt, T1 = r.T1, T2 = r.T2, T3 = r.T3, ColCambio = Color.FromArgb(200, ColFondo) };
+                    Tramos(d, sombra, "", tamC, cw, Color.FromArgb(200, ColFondo), xt + 1, yb + 2);                               // sombra
+                    Tramos(d, r, "", tamC, cw, r.Col, xt, yb + 1);
+                    if (r.Y != int.MinValue && Math.Abs(r.Yl - r.Y) > 1) d.Linea(Color.FromArgb(160, r.Col), 1f, x0 - 8, r.Y, x0 - 2, r.Yl);   // si la etiqueta se corrio, una linea a su raya
+                    else if (r.Y != int.MinValue) d.Linea(Color.FromArgb(220, r.Col), 2f, x0 - 6, r.Y, x0 - 1, r.Y);
+                    d.Etiquetas.Add((r.Txt, r.Yl, r.Y));
+                    d.Rotulos.Add(Diag(r, r.Txt, x0, w, r.Yl));
+                    ocupado.Add(new Rectangle(x0 - 9, yb, w + 9, hC)); colIzq = Math.Min(colIzq, x0 - 9);
+                }
+                foreach (var r in (ESTILO_2E && nuevo) ? new List<Rot>() : en)
                 {
                     int w = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir) + 10, x0 = xr - w - 2, yb = r.Yl - hC / 2;
                     d.Relleno(Color.FromArgb(225, ColFondo), new Rectangle(x0, yb, w, hC));
@@ -1037,6 +1132,17 @@ namespace PythiaGexCuatro.Familia
                                 lineas.Add((t, vv ? ColNaranja : Color.FromArgb(180, ColTexto)));
                                 break;
                             }
+                            case "Clasica NDX":
+                            {   // 4.1.5: la base de la replica de la clasica (de cuando es y la de ahora), solo si su serie esta prendida
+                                if (!vis.Any(s => EsClasica(s.Id))) continue;
+                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro + " (replica, CBOE)" + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
+                                         + (fu.Congelada ? " · cadena congelada" : "") + (string.IsNullOrEmpty(fu.Texto) ? "" : " · " + fu.Texto);
+                                lineas.Add((t, vv ? ColNaranja : Color.FromArgb(180, ColTexto)));
+                                // 4.1.5d (revision 4.1.5b/c, MEDIDO el 09-10): la replica supone a la clasica dibujando con la base de la rueda ANTERIOR (su primaria
+                                // en Rithmic); si la clasica la pierde (p. ej. al reiniciar ATAS) vuelve a medir su base en la rueda y la replica deja de coincidir
+                                lineas.Add((AVISO_CLASICA, Color.FromArgb(160, ColTexto)));
+                                break;
+                            }
                             case "cinta":
                                 lineas.Add(("cinta MNQ: ultimo tick hace " + Edad(e), !double.IsNaN(e) && e > 120 ? ColNaranja : Color.FromArgb(160, ColTexto)));
                                 break;
@@ -1078,7 +1184,13 @@ namespace PythiaGexCuatro.Familia
                                                                    + (l.Count > 1 && x.Banda != "" ? " " + x.Banda : "")).Distinct());
                         string precios = string.Join("/", l.Select(x => x.Banda != "" ? P(Math.Round(x.Precio)) : P(x.Precio)).Distinct());
                         string k = "";
-                        if (l.Count == 1 && a0.Libro != "TQQQ" && a0.Libro != "familia" && !double.IsNaN(a0.Strike)) k = " (strike " + a0.Libro + " " + Strike(a0.Strike) + ")";
+                        if (l.Count == 1 && a0.Libro != "TQQQ" && a0.Libro != "familia" && !double.IsNaN(a0.Strike))
+                        {
+                            string sx0 = a0.Partes != null && a0.Partes.Length > 0 ? a0.Partes[0].Serie : null;
+                            k = sx0 == "R10_NDX_zero" ? " (en el indice " + a0.Libro + " " + Strike(a0.Strike) + ")"           // 4.1.5: un zero no es un strike
+                              : sx0 == "R10_NDX_dom" ? " (strike " + a0.Libro + " " + Strike(a0.Strike) + ", centroide ±12)"   // 4.1.5d: el STRIKE ganador; la raya va en el centroide (DominantesClasica.CENTROIDE)
+                              : " (strike " + a0.Libro + " " + Strike(a0.Strike) + ")";
+                        }
                         // revision 4.1.2: el PRECIO va primero (despues de la edad si es vieja): con los montos el renglon de un grupo pasa de
                         // 130 letras y al final el precio quedaba fuera de la vista
                         lineas.Add(((viejo ? "[" + Edad(e) + "] " : "") + precios + (l.Count == 1 && a0.Banda != "" ? " " + a0.Banda : "") + "  " + noms + k
@@ -1092,6 +1204,16 @@ namespace PythiaGexCuatro.Familia
                             if (f20 == null || !Fin(f20.ConvValor)) continue;
                             var (oTxt, normal) = OrigenConv20(sx, f20.Texto);
                             if (!normal) lineas.Add(("    " + lb20 + ": conversion de RESPALDO de la 2.0 (" + oTxt + "): la raya puede quedar corrida", ColNaranja));
+                        }
+                        // 4.1.5: la replica de la clasica con una base de RESPALDO (la de la rueda vencio: CRUDA de cada cadena o el carry) lo dice en naranja
+                        if (l.Any(x => x.Partes != null && x.Partes.Length > 0 && EsClasica(x.Partes[0].Serie)))
+                        {
+                            var fc = Fuente(fuentes, "Clasica NDX");
+                            if (fc != null && Fin(fc.ConvValor))
+                            {
+                                var (oTxtC, normalC, _, _) = OrigenClasica(fc.Texto);
+                                if (!normalC) lineas.Add(("    Clasica NDX: base de RESPALDO de la clasica (" + oTxtC + "): la raya salta con cada cadena", ColNaranja));
+                            }
                         }
                         // 4.1.2: debajo, el cambio de cada nivel con su ventana real o las fechas de las dos publicaciones de OI, la cobertura y la nota
                         foreach (var x in l)

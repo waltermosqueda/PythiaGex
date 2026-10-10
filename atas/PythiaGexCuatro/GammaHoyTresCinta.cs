@@ -45,24 +45,24 @@ namespace PythiaGexCuatro
     /// </summary>
     public partial class FamiliaCuatro
     {
-        [Display(Name = "Cinta: exportar operaciones en vivo", GroupName = "9.6 3.0 · Cinta", Order = 10,
+        [Display(Name = "Cinta: exportar operaciones en vivo", GroupName = "9.6 3.0 · Cinta", Order = 1010,
                  Description = "3.4.0. Anexa cada operacion (y cada actualizacion de su volumen) a cinta-<raiz>-<dia de la sesion>.csv: t (ms UTC), precio, dv, lado, id. Para velas de 30 s / 1 min / a eleccion en Profundidad 3.0. No dibuja nada. 4.1: APAGADO por defecto (nombre nuevo): la Familia guarda su propia cinta compacta (precio por segundo + velas de 2 min) en PythiaGex4/cinta/seg-*.bin; el CSV entero (~75 MB por dia) solo si se prende aca.")]
         public bool Cinta4Exportar { get; set; } = false;
 
-        [Display(Name = "Cinta: escribir apenas llega cada operacion", GroupName = "9.6 3.0 · Cinta", Order = 15,
+        [Display(Name = "Cinta: escribir apenas llega cada operacion", GroupName = "9.6 3.0 · Cinta", Order = 1015,
                  Description = "3.4.1. El hilo de ATAS despierta al escritor cuando la cola estaba vacia (~3 us): la operacion llega al archivo en menos de 1 ms en vez de esperar la tanda (~31 ms). Apagado: tandas cada 'milisegundos entre escrituras'.")]
         public bool Cinta3Despertar { get; set; } = true;
 
-        [Display(Name = "Cinta: milisegundos entre escrituras (5-1000)", GroupName = "9.6 3.0 · Cinta", Order = 20,
+        [Display(Name = "Cinta: milisegundos entre escrituras (5-1000)", GroupName = "9.6 3.0 · Cinta", Order = 1020,
                  Description = "Espera maxima del escritor cuando nadie lo despierta (o con 'escribir apenas llega' apagado). Windows redondea a su reloj de 15,6 ms: 25 queda en ~31 ms reales.")]
         [Range(5, 1000)]
         public int Cinta3FlushMs { get; set; } = 25;
 
-        [Display(Name = "Cinta: carpeta", GroupName = "9.6 3.0 · Cinta", Order = 30,
+        [Display(Name = "Cinta: carpeta", GroupName = "9.6 3.0 · Cinta", Order = 1030,
                  Description = "Donde se escriben cinta-<raiz>-<dia>.csv y el relleno. Se crea si no existe.")]
         public string Cinta4Carpeta { get; set; } = System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex4", "cinta");   // 4.1: carpeta propia (la 3.0 escribe en profundidad\estado\cinta)
 
-        [Display(Name = "Cinta: rellenar la sesion al arrancar", GroupName = "9.6 3.0 · Cinta", Order = 40,
+        [Display(Name = "Cinta: rellenar la sesion al arrancar", GroupName = "9.6 3.0 · Cinta", Order = 1040,
                  Description = "Cuando ya llegan operaciones en vivo y pasaron 60 s del arranque, pide a ATAS la cinta desde las 22:00 UTC hasta ahora y la escribe en cinta-<raiz>-<dia>-relleno.csv (+ .listo). Solo si no hay un relleno que cubra la sesion; se vuelve a pedir si el vivo tuvo un hueco de mas de 60 s (reinicio de ATAS o corte) que el relleno no cubre. Espera a que no haya posicion abierta ni ordenes activas (bajar la sesion carga a ATAS ~45 s). 4.1: APAGADO por defecto (nombre nuevo; si la 3.0 corre al lado, ella ya lo pide y cada pedido carga a ATAS). Necesita 'exportar' prendido. Si se pide, el relleno TAMBIEN entra a la cinta de la Familia (solo antes del primer tick vivo, como la vista previa).")]
         public bool Cinta4Rellenar { get; set; } = false;
 

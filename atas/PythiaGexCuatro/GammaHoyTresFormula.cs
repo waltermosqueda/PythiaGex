@@ -34,27 +34,26 @@ namespace PythiaGexCuatro
 
     public partial class FamiliaCuatro
     {
-        [Display(Name = "Dominantes: formula (donde corre el tunel)", GroupName = "9.2 3.0 · Lectura", Order = 22,
+        [Display(Name = "Dominantes: formula (donde corre el tunel)", GroupName = "9.2 3.0 · Lectura", Order = 1022,
                  Description = "3.6.0. Con que se eligen D1 y D2 donde corre el tunel (de noche con la regla Tres). Cruces = lo de antes (se pega al precio). Las demas eligen strikes con gamma grande (como la clasica y la 2.0). Lo medido esta en laboratorio/tres/resultados/extremos_*.md.")]
         public FormulaDoms3 Doms3Formula { get; set; } = FormulaDoms3.Cruces;
 
-        [Display(Name = "Dominantes: mantener si sigue siendo >= (% del mejor)", GroupName = "9.2 3.0 · Lectura", Order = 27,
+        [Display(Name = "Dominantes: mantener si sigue siendo >= (% del mejor)", GroupName = "9.2 3.0 · Lectura", Order = 1027,
                  Description = "3.6.0. Anti-parpadeo de la formula elegida: la dominante se mantiene mientras su fuerza siga siendo al menos este % de la mejor de su lado. 100 = se reelige siempre.")]
         [Range(50, 100)]
         public int Doms3MantenerPct { get; set; } = 80;
 
         // ---- 3.6.1: las formulas a la vez, para juzgarlas a ojo
-        [Display(Name = "Ver las formulas a juzgar (F1..F8)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 1,
-                 Description = "3.6.1. Cada formula de dominantes dibujada a la vez, con su color, su estela por vela y un rotulo chico. F7 (majors por OI) se prende en '7. Rayas una por una'.")]
+        [Display(Name = "↳ F1-F8 ver▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 82, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Sub-llave: sin ella no se dibuja ninguna de las F1-F8 de abajo. 3.6.1. Cada formula de dominantes dibujada a la vez, con su color, su estela por vela y un rotulo chico. F7 son los majors por OI ('↳ NQ M+ OI' y siguientes, con la llave '3.0 NQ dom▸').")]
         public bool Formulas3Ver { get; set; } = true;
-        [Display(Name = "F1 cruce de signo mas cercano (blanco)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 11)] public bool Formula3F1 { get; set; } = true;
-        [Display(Name = "F2 una por lado por volumen (naranja)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 12)] public bool Formula3F2b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
-        [Display(Name = "F3 una por lado por OI (magenta)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 13)] public bool Formula3F3b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
-        [Display(Name = "F4 una por lado vol + OI (violeta)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 14)] public bool Formula3F4b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
-        [Display(Name = "F5 muros de calls y puts por volumen (lima)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 15)] public bool Formula3F5 { get; set; } = true;
-        [Display(Name = "F6 muros de calls y puts por OI (rosa)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 16)] public bool Formula3F6b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
-        [Display(Name = "F8 las dos mas grandes por volumen, como la 2.0 (celeste)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 18)] public bool Formula3F8b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
-        [Display(Name = "Formulas: hasta cuantos pts del precio", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 20)]
+        [Display(Name = "↳ F1 cruce", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 83, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F1 Cruces de signo (3.3.3): el cruce mas cercano por lado. Se pega al precio. Color gris claro.")] public bool Formula3F1 { get; set; } = true;
+        [Display(Name = "↳ F2 lado vol", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 84, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F2 Una por lado por volumen: el strike con mas |GEX vol| arriba y abajo del precio en el radio (como la clasica). Color naranja.")] public bool Formula3F2b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
+        [Display(Name = "↳ F3 lado OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 85, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F3 Una por lado por OI: el strike con mas |GEX OI| arriba y abajo del precio en el radio. Color violeta.")] public bool Formula3F3b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
+        [Display(Name = "↳ F4 lado v+OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 86, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F4 Una por lado, volumen + OI: el strike con mas |GEX vol| + |GEX OI| arriba y abajo. Color lila.")] public bool Formula3F4b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
+        [Display(Name = "↳ F5 muros vol", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 87, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F5 Muros por volumen: el mayor GEX de calls y el mayor de puts a +-100 pts (como la pagina). Color verde lima.")] public bool Formula3F5 { get; set; } = true;
+        [Display(Name = "↳ F6 muros OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 88, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F6 Muros por OI: el mayor GEX de calls y el mayor de puts por interes abierto a +-100 pts. Color rosa.")] public bool Formula3F6b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
+        [Display(Name = "↳ F8 como 2.0", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 89, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F8 Las dos mas grandes por volumen (como la 2.0), sin importar el lado. Color celeste.")] public bool Formula3F8b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
+        [Display(Name = "Formulas: hasta cuantos pts del precio", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 1020)]
         [Range(20, 400)]
         public int Formulas3RadioPts { get; set; } = 150;
 

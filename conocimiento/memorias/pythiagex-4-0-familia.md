@@ -54,3 +54,31 @@ solo CME; IB pide OPRA pago). La clase principal es PythiaGexCuatro.FamiliaCuatr
 - **4.1.4 (instalada 09-10 05:16):** rótulos al final de cada tramo de historia (Tramos41Rotulos; tope 14, juntan series a ≤1,5 pt; la
   triple raya 'NDX muro V/OI · NDX major V · 2.0 NDX 31.040'), defaults apagados (QQQ muros/majors OI, FAM OI, QQQ dom, QQQ 0G; solo
   la casilla), color 2.0 QQQ #CC8800, réplica con precio del instante y razón recalculada si faltaba la cinta. Su .ws: 9 prendidas.
+- **4.1.5 (instalada 09-10 16:33):** R10_NDX_zero "Clasica NDX 0Γ" (_modulos/familia/clasica/ClasicaNdx.cs): zero de NDX por volumen
+  como la clasica (grilla de 61 precios ±3 %, primer cruce) + SU base "de la rueda" replicada adentro (regla MedirBaseRueda sobre
+  cadenas y cinta de la 4.1, congelada durante la rueda: hoy 243,06 del 08-10). En vivo 16:34: 31.086,72 contra 31.086,69 del AUDIT
+  de la clasica (misma cadena). Desde las 20:11 UTC usa la rueda del dia (229,4); la clasica a las 24 h pasa a la CRUDA: de noche difieren.
+- **4.1.5b (instalada 09-10 16:51, la hice yo directo por apuro del operador):** R10_NDX_dom "Clasica NDX" D1-D3 (DominantesClasica en
+  ClasicaNdx.cs: radio min(2 %,100), una por lado con empate 20 %, D3 relleno, centroide ±12) con la misma base; casilla S_R10_NDX_dom
+  prendida, grupo "4c. Como la clasica". Cotejo contra el port Python verificado (laboratorio/.../extraer_dominantes_clasica.py,
+  scratchpad cotejo_dom.py): 4 de 4 minutos iguales al centavo y al M. En el .ws: Tres41Dominantes=true (NQ D1/D2 de la 3.0 interna),
+  Regla3Dominantes=clasica, Rayas3Independientes=false (centroide como la clasica: D1 31.122,5 en vez de 31.120). Scripts .ws en
+  herramientas/ws_prender_tres41_dominantes_0910.py, ws_regla3_clasica_0910.py, ws_rayas3_centroide_0910.py (respaldos en respaldos_ws).
+- **Trampa 09-10:** cada reinicio de ATAS le tira a la CLASICA su cadena de Rithmic unos minutos ("solo 15 de 320 con las dos puntas"):
+  cae al libro de CBOE NDX y, con primaria de indice, MIDE la base de la rueda: tras los reinicios de las 16:4x paso de 243,06 a 229,88 y su
+  "NDX D1" bajo de 31.141 a 31.128. Avisarle al operador antes de comparar contra la clasica despues de un reinicio.
+- **Casillas (prueba 09-10 17:04, mercado abierto):** destildar/tildar en el dialogo de ajustes aplica EN VIVO sin Apply y se ve en < 1 s
+  (Clasica NDX D1-D3 y 3.0 dominantes). El buscador del panel de ajustes filtra por nombre. La columna de nombres es angosta (~12
+  caracteres visibles): nombres cortos con lo que distingue al principio. Falta medir sin ticks (pausa 18-19 ART). 4.1.5c (workflow
+  whfr801er): grupo de arriba con todas las casillas de dibujo + redibujo inmediato + latencia en el log.
+- **4.1.5c/4.1.5d (instalada 09-10 19:16, verificada: correr_todo 16/16, ws_compat sin propiedades cambiadas):** grupo de arriba
+  "0. PRENDER / APAGAR" (101 entradas), reloj de 250 ms que redibuja y loguea la latencia (pythiagex4-pantalla.log 'casilla X ...
+  detectada' / 'primer render (N ms)'; medido 12-22 ms con ticks, hasta 1,5 s en la pausa); muestras de la base de la clasica
+  guardadas por dia (muestras-clasica-NDX-<dia>.jsonl). **Fin de semana (4.1.5d):** SesionFamilia.De daba una sesion de SABADO vacia
+  y tras reiniciar ATAS la 4.1 no dibujaba nada ("no tiene memoria"); ahora sabado/domingo usan la sesion del VIERNES (archivo) con
+  aviso "mercado cerrado: se muestra la sesion del ...". El domingo 18:00 NY empieza la del lunes.
+- **Pedido del operador (09-10 19:2x): NO mas copias de la clasica** ("eso ya lo tenemos y carga cuando yo quiera"): el port 4.1.6 de
+  las dominantes NQ/R1/R/pesadas (laboratorio/calibracion_1009/port_dominantes_clasica, paridad 927/927) quedo SIN integrar a proposito.
+  Medido con la vara de 20 pts (15-18 sesiones): ninguna dominante de la clasica le gana al azar; NDX D1 de dia peor que el azar.
+- **Trampa:** las casillas de la 3.0 (Raya3*, capas, formulas, recuadro, apoyo) no dibujan sin su llave Tres41*; 4.1.5e (workflow
+  wkb0f7pma) las pone debajo de su llave con "↳".

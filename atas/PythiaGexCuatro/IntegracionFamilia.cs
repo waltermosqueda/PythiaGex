@@ -8,6 +8,10 @@
 // esa copia. PublicarConAviso usa FotoFamilia.Copia() (antes copiaba campo por campo y perdia los campos nuevos).
 // 4.1.3 (09-10-2026): el motor recibe la Replica20 (OpcionesMotorFamilia.Extras): las dominantes como la 2.0 (su formula y su conversion) y su
 // seleccion sobre los libros QQQ/NDX de la 4.1, sobre la misma descarga de CBOE y la misma cinta. Log: pythiagex4-integracion.log ("replica20").
+// 4.1.5 (09-10-2026): ademas la replica de la clasica (ClasicaNdx: R10_NDX_zero "Clasica NDX 0Γ", el zero de NDX con la base de la rueda anterior),
+// sobre la misma descarga y la misma cinta; el motor recibe las dos juntas (ExtrasCompuestos: primero la Replica20, despues la clasica). Log "clasica".
+// 4.1.5d (09-10-2026): la clasica guarda las muestras de su base de la rueda en PythiaGex4\familia\muestras-clasica-NDX-<dia>.jsonl (CarpetaDatos) y
+// recibe de la cinta si la vela de cada muestra esta completa (CintaFamilia.VelaM2Completa): la rueda cerrada no cambia segun como arranque la cinta.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -26,20 +30,20 @@ namespace PythiaGexCuatro
     public partial class FamiliaCuatro
     {
         // ------------------------------------------------------------------ ajustes de datos (nombres NUEVOS: no hay valores guardados)
-        [Display(Name = "Sesion y ventanas en hora de Nueva York", GroupName = "7. Datos", Order = 10,
+        [Display(Name = "Sesion y ventanas en hora de Nueva York", GroupName = "7. Datos", Order = 1010,
                  Description = "Corregida (recomendado): la sesion va de 18:00 NY a 17:00 NY y no se rompe con el cambio de hora del 01-11. Apagado = paridad exacta con la vista previa (22:00-21:00 UTC fijo).")]
         public bool Familia41Corregida { get; set; } = true;
 
-        [Display(Name = "Bajar las cadenas de CBOE (NDX, QQQ, TQQQ)", GroupName = "7. Datos", Order = 20,
+        [Display(Name = "Bajar las cadenas de CBOE (NDX, QQQ, TQQQ)", GroupName = "7. Datos", Order = 1020,
                  Description = "El propio indicador baja la cadena publica de CBOE (15 min de atraso), comprimida, de a un ticker, sin rafagas: cada 75 s en la rueda y cada 300 s fuera. Apagado = usa solo lo ya guardado en PythiaGex4\\cboe.")]
         public bool Cboe41Bajar { get; set; } = true;
 
-        [Display(Name = "Tope de la bajada (KB/s)", GroupName = "7. Datos", Order = 30,
+        [Display(Name = "Tope de la bajada (KB/s)", GroupName = "7. Datos", Order = 1030,
                  Description = "Limite de velocidad de la bajada de CBOE para no competir con Rithmic (la pausa entre trozos se calcula con esto).")]
         [Range(16, 20000)]
         public int Cboe41TopeKBps { get; set; } = 1250;
 
-        [Display(Name = "TQQQ de noche (anclaje al cierre, SIN VALIDAR)", GroupName = "7. Datos", Order = 40,
+        [Display(Name = "TQQQ de noche (anclaje al cierre, SIN VALIDAR)", GroupName = "7. Datos", Order = 1040,
                  Description = "De noche la cadena de TQQQ esta congelada: con esto se dibuja reanclando la conversion x3 al cierre de hoy. Sin validar: apagado por defecto.")]
         public bool Tqqq41AnclaNoche { get; set; } = false;
 
@@ -139,6 +143,7 @@ namespace PythiaGexCuatro
             private readonly MotorFamilia _motor;
             private readonly CambiosFamilia _cambios;          // 4.1.2: cambios por nivel (solo en el hilo del host)
             private readonly Replica20 _replica20;             // 4.1.3: las dominantes como la 2.0 (las calcula el motor, en su hilo)
+            private readonly ClasicaNdx _clasica;              // 4.1.5: la estela 'NDX 0Γ' de la clasica (la calcula el motor, en su hilo)
             private readonly string _carpetaFam;
             private Thread _hilo; private volatile bool _parar;
             private readonly AutoResetEvent _despertar = new AutoResetEvent(false);
@@ -193,11 +198,22 @@ namespace PythiaGexCuatro
                 // 4.1.3: las dominantes como la 2.0 (R20_QQQ_vol, R20_NDX_vol, DOMS_QQQ_vol, DOMS_NDX_vol), calculadas adentro sobre la MISMA
                 // descarga de CBOE y la MISMA cinta; el motor las agrega despues de la cuenta de la vista previa (las 21 series no cambian)
                 _replica20 = new Replica20(_cboe, cinta, new OpcionesReplica20 { Contrato = codigo ?? "", Log = s => Escribir("replica20", s) });
+                // 4.1.5: la replica de la clasica (zero de NDX por volumen con SU base de la rueda anterior, medida con su regla sobre las cadenas y la cinta
+                // de la 4.1: nada de la clasica). Va DESPUES de la Replica20 (que reemplaza las extras al guardar; la clasica agrega la suya)
+                // 4.1.5d: las muestras de la base de la rueda se guardan en PythiaGex4\familia (la rueda cerrada no cambia al reiniciar) y la cinta dice si
+                // la vela de cada muestra esta completa (una vela de ticks con un hueco, sin la del grafico, queda provisional y no se guarda)
+                var cintaF = cinta as CintaFamilia;
+                _clasica = new ClasicaNdx(_cboe, cinta, new OpcionesClasicaNdx
+                {
+                    Contrato = codigo ?? "", Log = s => Escribir("clasica", s), CarpetaDatos = carpeta,
+                    VelaCompleta = cintaF == null ? (Func<DateTime, bool>)null : t => cintaF.VelaM2Completa(t)
+                });
+                var extras = new ExtrasCompuestos(_replica20, _clasica) { Error = (donde, e) => Escribir("extras", "ERROR en " + donde + ": " + e.GetType().Name + ": " + e.Message) };
                 _motor = new MotorFamilia(new OpcionesMotorFamilia
                 {
                     Carpeta = carpeta, Corregida = corregida, TqqqDeNoche = tqqqNoche,
                     FuentesListas = () => (cboe.Motor?.HistoriaCargada ?? false) && LibroSembrado(libro) && CintaConDatos(cinta),
-                    Extras = _replica20
+                    Extras = extras
                 });
                 _motor.Configurar(cinta, libro, _cboe, new ILibroMinutero[] { _minNq, _minNdx, _minQqq }, _tqqq, codigo ?? "");
                 // 4.1.2: mismo modo que los minuteros; el OI del dia espera a que las fuentes tengan su historico en memoria

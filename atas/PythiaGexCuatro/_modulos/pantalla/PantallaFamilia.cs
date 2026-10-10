@@ -17,7 +17,7 @@ namespace PythiaGexCuatro.Familia
 {
     public sealed class PantallaFamilia : IPantallaFamilia
     {
-        public const string VERSION = "pantalla 4.1.4 (09-10-2026, rotulos de los tramos de historia)";
+        public const string VERSION = "pantalla 4.1.5d (09-10-2026, rotulos de los tramos de historia y la clasica NDX 0Γ y D1-D3)";
         private const long M2 = 120_000;
         private const int TOPE_VELAS = 20000;      // con el grafico muy alejado no se recorren mas velas que esto (la 4.0.6 no tenia tope)
 

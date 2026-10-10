@@ -13,6 +13,21 @@
 //   T. (4.1.4) Rotulos de los tramos de historia: deteccion (mismo precio, huecos de hasta 3 velas, >= 15 velas), el vigente no, juntar, absorber
 //      (la misma raya que sigue), sin choques ni sobre la columna/pestaña, tope 14, apagado, nombres; y la historia REAL de esta noche (T12).
 //   R. (4.1.4) Arreglos de la revision de la 4.1.3: series 2.0 tapadas en un grupo, origen real de la conversion de las replicas, color de "2.0 QQQ".
+//   4.1.5b (09-10-2026): la casilla NUEVA S_R10_NDX_dom ("Clasica NDX D1-D3", prendida: 8 por defecto, 35 series) y su etiqueta (C110+: rol D1-D3,
+//      monto y la base de la clasica en el detalle).
+//   4.1.5c (09-10-2026): el grupo de arriba. herramientas/grupo_arriba_415c.py movio las 70 casillas de dibujo a "0. PRENDER / APAGAR (todo lo que se
+//      dibuja)" con Order 0..69 y nombre corto, y corrio +1000 el Order de los demas [Display] de la clase. Las expectativas de Display (A4, A8, A13,
+//      A16, A17, A20, A21) salen de la LISTA de ese script; A22 lo mide sobre la clase REAL (bin/Release/PythiaGexCuatro.dll, todas sus partes): cada
+//      casilla de la LISTA en el grupo con su Order y su nombre, y ningun otro [Display] de la clase con Order menor que 1000. Nombres de propiedad,
+//      tipos y defaults: los de siempre (el .ws guarda por nombre).
+//   4.1.5d (09-10-2026, revision de la 4.1.5b/c): la LISTA pasa a 101 (+20 bool de dibujo de la 3.0 que habian quedado en 9.x y +11 listas/enum:
+//      perfil y "ver" de la 3.0, barras y el doble eje); A22 acepta bool o enum y el reloj mira las dos; A13/A17 con los Order nuevos (97/98/99);
+//      C115 el color nuevo #b8f8d8; C116-C121: las D1-D3 de la clasica sin cambio ▲▼, su detalle con el STRIKE y el centroide, la salvedad de la
+//      pestaña, la etiqueta OI, las descripciones con la salvedad, y el tunel que se prende solo (fuente).
+//   4.1.5e (09-10-2026): el grupo de arriba con la JERARQUIA de llaves (herramientas/grupo_arriba_415e.py, la fuente de verdad): A13/A17 con los Order
+//      y nombres nuevos (39/40 '↳ montos' / '↳ cambios ▲▼' debajo de 'Etiquetas▸', 37 '↳ rot. tramos' debajo de 'Estela▸'); A23 en la clase real: cada
+//      llave (▸) antes de sus '↳', la primera frase de cada descripcion nombra su llave, lo que no necesita llave va arriba de la 3.0 (A23a); el
+//      codigo de dibujo de la 3.0 pide esas mismas llaves (A23f, leido del fuente); y las llaves entran enteras en la columna del dialogo (A23g, WPF).
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -78,6 +93,8 @@ namespace PruebaPantalla
             try { PruebaMontos(); } catch (Exception e) { Ok(false, "C53+. montos y cambios: excepcion", e.ToString()); }
             try { PruebaFueraDePantalla(); } catch (Exception e) { Ok(false, "C80. fuera de pantalla: excepcion", e.ToString()); }
             try { PruebaReplica20(); } catch (Exception e) { Ok(false, "C90. dominantes como la 2.0: excepcion", e.ToString()); }
+            try { PruebaClasicaDom(); } catch (Exception e) { Ok(false, "C110. dominantes de la clasica (4.1.5b): excepcion", e.ToString()); }
+            try { PruebaClasica415d(); } catch (Exception e) { Ok(false, "C116. revision de la 4.1.5b/c (4.1.5d): excepcion", e.ToString()); }
             try { PruebaTramos(); } catch (Exception e) { Ok(false, "T. rotulos de los tramos de historia: excepcion", e.ToString()); }
             try { PruebaRevision413(); } catch (Exception e) { Ok(false, "R. revision 4.1.3: excepcion", e.ToString()); }
             try { PruebaPintado(); } catch (Exception e) { Ok(false, "D. pintado: excepcion", e.ToString()); }
@@ -93,6 +110,39 @@ namespace PruebaPantalla
             var d = new DirectoryInfo(AppContext.BaseDirectory);
             while (d != null && !File.Exists(Path.Combine(d.FullName, "PythiaGexCuatro.csproj"))) d = d.Parent;
             return d?.FullName;
+        }
+
+        /// <summary>4.1.5c: la LISTA y el GRUPO de herramientas/grupo_arriba_415c.py (la fuente de verdad del grupo de arriba): (propiedad, nombre corto)
+        /// en el orden del script; el indice es el Order. 4.1.5e: la fuente de verdad pasa a herramientas/grupo_arriba_415e.py (la misma LISTA con la
+        /// jerarquia de llaves; el 415c solo corre el nuevo).</summary>
+        static (string Grupo, List<(string Prop, string Nombre)> Lista, string Ruta) GrupoArriba415c(string raiz)
+        {
+            var ruta = Path.GetFullPath(Path.Combine(raiz, "..", "..", "herramientas", "grupo_arriba_415e.py"));
+            var s = File.ReadAllText(ruta, System.Text.Encoding.UTF8);
+            string grupo = Regex.Match(s, "^GRUPO = \"([^\"]+)\"", RegexOptions.Multiline).Groups[1].Value;
+            int i = s.IndexOf("LISTA = [", StringComparison.Ordinal), j = i < 0 ? -1 : s.IndexOf("\n]", i, StringComparison.Ordinal);
+            var lista = new List<(string, string)>();
+            if (i >= 0 && j > i)
+                foreach (Match m in Regex.Matches(s.Substring(i, j - i), "\\(\"(\\w+)\",\\s*\"([^\"]*)\"\\)")) lista.Add((m.Groups[1].Value, m.Groups[2].Value));
+            return (grupo, lista, ruta);
+        }
+
+        /// <summary>4.1.5c: la clase REAL del indicador (todas sus partes: la 3.0, la integracion y la pantalla) de bin/Release/PythiaGexCuatro.dll, cargada
+        /// desde la memoria en un contexto aparte (no bloquea el archivo; las DLL de ATAS las resuelve el contexto por defecto). Solo reflexion: no se crea
+        /// ninguna instancia.</summary>
+        static Type ClaseReal(string raiz, out string ruta, out string porQue)
+        {
+            ruta = Path.Combine(raiz, "bin", "Release", "PythiaGexCuatro.dll"); porQue = "";
+            try
+            {
+                if (!File.Exists(ruta)) { porQue = "no existe"; return null; }
+                var alc = new AssemblyLoadContext("pythiagex4-real", isCollectible: true);
+                var asm = alc.LoadFromStream(new MemoryStream(File.ReadAllBytes(ruta)));
+                var t = asm.GetType("PythiaGexCuatro.FamiliaCuatro", false);
+                if (t == null) porQue = "sin el tipo PythiaGexCuatro.FamiliaCuatro";
+                return t;
+            }
+            catch (Exception e) { porQue = e.GetType().Name + ": " + e.Message; return null; }
         }
 
         // ------------------------------------------------------------------ A
@@ -114,6 +164,16 @@ namespace PruebaPantalla
             var misDef = re.Matches(mio).Cast<Match>().ToDictionary(m => m.Groups["p"].Value, m => m.Groups["d"].Value.Trim());
             // 4.1.4 (pedido del operador 09-10): estos defaults del visor 4.0.6 (true) pasan a false SIN renombrar (su .ws ya los tiene en false)
             var cambiados414 = new[] { "S_MAJORS_QQQ_oi", "S_MUROS_QQQ_oi", "S_FAM_MUROS_oi", "S_ZEST_QQQ_vol" };   // + QQQ 0G (pedido del operador 09-10 ~03:05)
+            // 4.1.5c (pedido del operador 09-10): el Display de cada casilla de dibujo es el de la LISTA de herramientas/grupo_arriba_415c.py (grupo de arriba,
+            // Order = su indice, nombre corto) y el de los demas ajustes es el de antes con el Order corrido +1000 (si era menor que 1000). Nombre, tipo y
+            // default de la propiedad NO cambian.
+            var (grupoArriba, listaArriba, rutaArriba) = GrupoArriba415c(raiz);
+            var idxArriba = new Dictionary<string, (string Nombre, int Orden)>();
+            for (int k = 0; k < listaArriba.Count; k++) idxArriba[listaArriba[k].Prop] = (listaArriba[k].Nombre, k);
+            Console.WriteLine("     grupo de arriba (4.1.5c): '" + grupoArriba + "', " + listaArriba.Count + " casillas en la LISTA de " + rutaArriba);
+            Ok(grupoArriba == "0. PRENDER / APAGAR (todo lo que se dibuja)" && listaArriba.Count == 101 && idxArriba.Count == 101,
+               "A21a la LISTA de grupo_arriba_415e.py: el grupo '0. PRENDER / APAGAR (todo lo que se dibuja)' y 101 casillas distintas (4.1.5c: 70; 4.1.5d: + 20 bool de dibujo de la 3.0 y 11 listas; 4.1.5e: las mismas 101 con la jerarquia de llaves) (" + listaArriba.Count + ")");
+            (string N, string G, int O) Esperado415c(string p, string n, string g, int o) => idxArriba.TryGetValue(p, out var v) ? (v.Nombre, grupoArriba, v.Orden) : (n, g, o < 1000 ? o + 1000 : o);
             int iguales = 0;
             foreach (var m in vis)
             {
@@ -131,8 +191,10 @@ namespace PruebaPantalla
                     continue;
                 }
                 var da = pi.GetCustomAttribute<DisplayAttribute>();
-                bool okDisp = da != null && da.Name == m.Groups["n"].Value && da.GroupName == m.Groups["g"].Value && da.Order.ToString() == m.Groups["o"].Value;
-                if (!okDisp) { Ok(false, "A4 Display de " + p, (da == null ? "sin Display" : da.Name + "|" + da.GroupName + "|" + da.Order) + " vs " + m.Groups["n"].Value + "|" + m.Groups["g"].Value + "|" + m.Groups["o"].Value); continue; }
+                // 4.1.5c: el Display esperado es el de la 4.0.6 transformado por grupo_arriba_415c.py (grupo de arriba o Order + 1000)
+                var (en, eg, eo) = Esperado415c(p, m.Groups["n"].Value, m.Groups["g"].Value, int.Parse(m.Groups["o"].Value, CultureInfo.InvariantCulture));
+                bool okDisp = da != null && da.Name == en && da.GroupName == eg && da.GetOrder() == eo;
+                if (!okDisp) { Ok(false, "A4 Display de " + p, (da == null ? "sin Display" : da.Name + "|" + da.GroupName + "|" + da.GetOrder()) + " vs " + en + "|" + eg + "|" + eo + " (4.0.6: " + m.Groups["n"].Value + "|" + m.Groups["g"].Value + "|" + m.Groups["o"].Value + ")"); continue; }
                 if (p == "Recuadro4Abierto") { iguales++; continue; }            // respaldado por el campo de estado (arranca cerrado), igual que la 4.0.6
                 string mioD = misDef.TryGetValue(p, out var x) ? x : "?";
                 string esperado = cambiados414.Contains(p) ? "false" : dflt;           // 4.1.4: los tres apagados a pedido
@@ -141,23 +203,54 @@ namespace PruebaPantalla
                 if (!okDef) { Ok(false, "A5 default de " + p, mioD + " vs " + esperado + (esperado != dflt ? " (4.0.6: " + dflt + ")" : "")); continue; }
                 iguales++;
             }
-            Ok(iguales == vis.Count - 1, "A6 " + iguales + " de " + (vis.Count - 1) + " ajustes con el mismo nombre, tipo, Display y default que la 4.0.6 (4.1.4: salvo los defaults de "
-               + string.Join(", ", cambiados414) + ", apagados a pedido sin renombrar)");
+            Ok(iguales == vis.Count - 1, "A6 " + iguales + " de " + (vis.Count - 1) + " ajustes con el mismo nombre, tipo y default que la 4.0.6 y su Display de la 4.1.5c (el del grupo de arriba, o el de la 4.0.6 con el Order + 1000)"
+               + " (4.1.4: salvo los defaults de " + string.Join(", ", cambiados414) + ", apagados a pedido sin renombrar)");
             var esperadas = new HashSet<string>(vis.Select(m => m.Groups["p"].Value));
             var blanca412 = new[] { "Monto41Rotulos", "Cambio41Rotulos", "Cambio41Ventana" };     // 4.1.2: los unicos ajustes nuevos (nombres que ningun .ws tiene)
             var blanca413 = new[] { "S_R20_QQQ_vol", "S_R20_NDX_vol", "S_DOMS_QQQ_vol", "S_DOMS_NDX_vol" };   // 4.1.3: las 4 casillas de las dominantes como la 2.0
             var blanca414 = new[] { "Tramos41Rotulos" };                                                      // 4.1.4: los rotulos de los tramos de historia
+            var blanca415 = new[] { "S_R10_NDX_zero" };                                                       // 4.1.5: la casilla de la clasica (Clasica NDX 0Γ)
+            var blanca415b = new[] { "S_R10_NDX_dom" };                                                       // 4.1.5b: las dominantes de la clasica (Clasica NDX D1-D3)
             var nuevas = tipo.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                              .Where(p => p.CanWrite && p.GetCustomAttribute<DisplayAttribute>() != null && !esperadas.Contains(p.Name)).Select(p => p.Name).ToList();
-            Ok(nuevas.OrderBy(x => x).SequenceEqual(blanca412.Concat(blanca413).Concat(blanca414).OrderBy(x => x)), "A7 la pantalla agrega a ATAS solo los 3 ajustes de la 4.1.2 (" + string.Join(", ", blanca412)
-               + "), las 4 casillas de la 4.1.3 (" + string.Join(", ", blanca413) + ") y el ajuste de la 4.1.4 (" + string.Join(", ", blanca414) + ")", string.Join(",", nuevas));
-            // A17 (4.1.4) el ajuste nuevo: grupo "6. Pantalla", orden 28 (entre Cambio41Ventana y Cabecera4), bool, prendido, con descripcion
+            Ok(nuevas.OrderBy(x => x).SequenceEqual(blanca412.Concat(blanca413).Concat(blanca414).Concat(blanca415).Concat(blanca415b).OrderBy(x => x)), "A7 la pantalla agrega a ATAS solo los 3 ajustes de la 4.1.2 (" + string.Join(", ", blanca412)
+               + "), las 4 casillas de la 4.1.3 (" + string.Join(", ", blanca413) + "), el ajuste de la 4.1.4 (" + string.Join(", ", blanca414) + "), la casilla de la 4.1.5 (" + string.Join(", ", blanca415)
+               + ") y la de la 4.1.5b (" + string.Join(", ", blanca415b) + ")", string.Join(",", nuevas));
+            // la casilla con el Display del grupo de arriba (4.1.5c): nombre corto, grupo y Order de la LISTA
+            bool EnArriba(DisplayAttribute da, string pn) => da != null && idxArriba.TryGetValue(pn, out var v) && da.GroupName == grupoArriba && da.GetOrder() == v.Orden && da.Name == v.Nombre;
+            string Disp(DisplayAttribute da) => da == null ? "sin Display" : da.Name + "|" + da.GroupName + "|" + da.GetOrder();
+            // A20 (4.1.5) la casilla nueva de la clasica: bool, PRENDIDA (pedido del operador), con descripcion; 4.1.5c: en el grupo de arriba ("Clas NDX 0Γ", Order 27)
+            {
+                var pi = tipo.GetProperty("S_R10_NDX_zero", BindingFlags.Public | BindingFlags.Instance); var da = pi?.GetCustomAttribute<DisplayAttribute>();
+                bool ok = pi != null && pi.PropertyType == typeof(bool) && pi.CanRead && pi.CanWrite && EnArriba(da, "S_R10_NDX_zero") && da.Name == "Clas NDX 0Γ" && da.GetOrder() == 27
+                          && !string.IsNullOrEmpty(da.Description) && da.Description.Contains("NDX 0Γ") && misDef.TryGetValue("S_R10_NDX_zero", out var df) && df == "true";
+                if (ok && inst != null) ok &= Convert.ToString(pi.GetValue(inst), CultureInfo.InvariantCulture) == "True";
+                Ok(ok, "A20 S_R10_NDX_zero (bool, true, con descripcion; 4.1.5c: 'Clas NDX 0Γ', grupo de arriba, Order 27): nombre NUEVO, ningun .ws lo tiene", Disp(da));
+            }
+            // A21 (4.1.5b) la casilla nueva de las dominantes de la clasica: bool, PRENDIDA (pedido del operador), con descripcion; 4.1.5c: "Clas NDX D1-D3", Order 26
+            {
+                var pi = tipo.GetProperty("S_R10_NDX_dom", BindingFlags.Public | BindingFlags.Instance); var da = pi?.GetCustomAttribute<DisplayAttribute>();
+                bool ok = pi != null && pi.PropertyType == typeof(bool) && pi.CanRead && pi.CanWrite && EnArriba(da, "S_R10_NDX_dom") && da.Name == "Clas NDX D1-D3" && da.GetOrder() == 26
+                          && !string.IsNullOrEmpty(da.Description) && da.Description.Contains("D1/D2/D3") && misDef.TryGetValue("S_R10_NDX_dom", out var df) && df == "true";
+                if (ok && inst != null) ok &= Convert.ToString(pi.GetValue(inst), CultureInfo.InvariantCulture) == "True";
+                bool vivo = true;
+                if (inst is FamiliaCuatro fc0)
+                {   // la casilla manda: SerieVisible4 la sigue
+                    var a0 = new AjustesPantalla(); ((IGraficoPantalla)fc0).Ajustes(a0); bool on = a0.Visible("R10_NDX_dom");
+                    fc0.S_R10_NDX_dom = false; ((IGraficoPantalla)fc0).Ajustes(a0); bool off = !a0.Visible("R10_NDX_dom");
+                    fc0.S_R10_NDX_dom = true; vivo = on && off;
+                }
+                Ok(ok && vivo, "A21 S_R10_NDX_dom (4.1.5b; bool, true, con descripcion; 'Clas NDX D1-D3', grupo de arriba, Order 26): nombre NUEVO, ningun .ws lo tiene; la casilla prende y apaga R10_NDX_dom", Disp(da));
+            }
+            // A17 (4.1.4) el ajuste nuevo: bool, prendido, con descripcion; 4.1.5c: "Rotulos de tramos" en el grupo de arriba, Order 68 (4.1.5d: 99);
+            // 4.1.5e: "↳ rot. tramos", Order 37, debajo de su llave "Estela▸" (sin las rayitas no hay tramos: ArmadoPantalla los sigue adentro de aj.Estela)
             {
                 var pi = tipo.GetProperty("Tramos41Rotulos", BindingFlags.Public | BindingFlags.Instance); var da = pi?.GetCustomAttribute<DisplayAttribute>();
-                bool ok = pi != null && pi.PropertyType == typeof(bool) && pi.CanRead && pi.CanWrite && da != null && da.Name == "Rotulos de los tramos de historia" && da.GroupName == "6. Pantalla"
-                          && da.Order == 28 && !string.IsNullOrEmpty(da.Description) && misDef.TryGetValue("Tramos41Rotulos", out var df) && df == "true";
+                bool ok = pi != null && pi.PropertyType == typeof(bool) && pi.CanRead && pi.CanWrite && EnArriba(da, "Tramos41Rotulos") && da.Name == "↳ rot. tramos" && da.GetOrder() == 37
+                          && !string.IsNullOrEmpty(da.Description) && da.Description.StartsWith("Necesita la llave 'Estela▸' prendida.", StringComparison.Ordinal)
+                          && misDef.TryGetValue("Tramos41Rotulos", out var df) && df == "true";
                 if (ok && inst != null) ok &= Convert.ToString(pi.GetValue(inst), CultureInfo.InvariantCulture) == "True";
-                Ok(ok, "A17 Tramos41Rotulos (bool, true, 'Rotulos de los tramos de historia', '6. Pantalla', orden 28, con descripcion): nombre NUEVO, ningun .ws lo tiene");
+                Ok(ok, "A17 Tramos41Rotulos (bool, true; 4.1.5e: '↳ rot. tramos', Order 37, 'Necesita la llave 'Estela▸' prendida.'): nombre NUEVO, ningun .ws lo tiene", Disp(da));
             }
             // A18 (4.1.4) las 5 casillas que pidio apagar el operador ("suman ruido al ser ya superadas por la formula de la 2.0 qqq"): default false en el codigo
             {
@@ -166,54 +259,69 @@ namespace PruebaPantalla
                 Ok(mal.Count == 0 && apagar.All(pn => SeriesPantalla.Casillas.Any(c => c.Propiedad == pn && !c.Default)),
                    "A18 apagadas por defecto (codigo, instancia y SeriesPantalla): " + string.Join(", ", apagar) + " (S_MUROS_QQQ_vol ya lo estaba)", string.Join(",", mal));
             }
-            // A13 los tres ajustes nuevos: grupo "6. Pantalla", orden 22/24/26 (entre Rotulos4 y Cabecera4), tipo y default
+            // A13 los tres ajustes nuevos de la 4.1.2, tipo y default. Grupo/orden: 4.1.2 "6. Pantalla" 22/24/26; 4.1.5c las dos casillas (Monto41Rotulos,
+            // Cambio41Rotulos) en el grupo de arriba (Order 66/67; 4.1.5d: 97/98, "Montos en etiquetas" / "Cambios ▲▼ etiquetas"; 4.1.5e: 39/40, "↳ montos" /
+            // "↳ cambios ▲▼" debajo de su llave "Etiquetas▸": solo cambian la etiqueta) y la ventana sigue en "6. Pantalla" (26 + 1000)
             {
-                var esp = new (string P, Type T, int O, string Def)[] { ("Monto41Rotulos", typeof(bool), 22, "true"), ("Cambio41Rotulos", typeof(bool), 24, "true"),
-                                                                        ("Cambio41Ventana", typeof(VentanaCambio41), 26, "VentanaCambio41.M15") };
+                var esp = new (string P, Type T, string G, int O, string N, string Def)[] { ("Monto41Rotulos", typeof(bool), grupoArriba, 39, "↳ montos", "true"),
+                                                                                        ("Cambio41Rotulos", typeof(bool), grupoArriba, 40, "↳ cambios ▲▼", "true"),
+                                                                                        ("Cambio41Ventana", typeof(VentanaCambio41), "6. Pantalla", 1026, "Ventana del cambio por volumen", "VentanaCambio41.M15") };
                 int okN = 0; var mal = new List<string>();
-                foreach (var (pn, tt, oo, dd) in esp)
+                foreach (var (pn, tt, gg, oo, nn, dd) in esp)
                 {
                     var pi = tipo.GetProperty(pn, BindingFlags.Public | BindingFlags.Instance); var da = pi?.GetCustomAttribute<DisplayAttribute>();
-                    bool ok = pi != null && pi.PropertyType == tt && pi.CanRead && pi.CanWrite && da != null && da.GroupName == "6. Pantalla" && da.Order == oo
-                              && !string.IsNullOrEmpty(da.Name) && !string.IsNullOrEmpty(da.Description) && misDef.TryGetValue(pn, out var df) && df == dd;
+                    bool ok = pi != null && pi.PropertyType == tt && pi.CanRead && pi.CanWrite && da != null && da.GroupName == gg && da.GetOrder() == oo && da.Name == nn
+                              && (gg != grupoArriba || EnArriba(da, pn)) && !string.IsNullOrEmpty(da.Description) && misDef.TryGetValue(pn, out var df) && df == dd;
                     if (ok && inst != null) ok &= Convert.ToString(pi.GetValue(inst), CultureInfo.InvariantCulture) == dd.Replace("VentanaCambio41.", "").Replace("true", "True");
-                    if (ok) okN++; else mal.Add(pn);
+                    if (ok) okN++; else mal.Add(pn + " (" + Disp(da) + ")");
                 }
-                Ok(okN == 3, "A13 Monto41Rotulos (bool, true, 22), Cambio41Rotulos (bool, true, 24), Cambio41Ventana (VentanaCambio41, M15, 26) en '6. Pantalla'",
+                Ok(okN == 3, "A13 Monto41Rotulos (bool, true) y Cambio41Rotulos (bool, true) en el grupo de arriba (4.1.5c: Order 66/67; 4.1.5d: 97/98; 4.1.5e: 39/40 '↳ montos' / '↳ cambios ▲▼'), Cambio41Ventana (VentanaCambio41, M15) en '6. Pantalla' (Order 1026)",
                    string.Join(",", mal));
                 Ok(Enum.GetNames(typeof(VentanaCambio41)).SequenceEqual(new[] { "M5", "M15", "M30" }) && CambiosVentanas.Min.SequenceEqual(new[] { 5, 15, 30 }),
                    "A14 VentanaCambio41 { M5, M15, M30 } = CambiosVentanas.Min { 5, 15, 30 } del contrato");
             }
-            // casillas de SeriesPantalla = propiedades S_*
-            int okC = 0;
+            // casillas de SeriesPantalla = propiedades S_* (default de la casilla = el de la propiedad). 4.1.5c: el Display de cada S_* es el de la LISTA del
+            // grupo de arriba (antes: Nombre/Grupo/Orden de la casilla). SeriesPantalla.Casilla.Nombre/Grupo/Orden quedaron con los de antes: el producto no
+            // los usa (solo Id y Default: FamiliaCuatroPantalla.Ajustes y PantallaFamilia.Resumen); se informa, no se exige.
+            int okC = 0, viejosMeta = 0;
             foreach (var c in SeriesPantalla.Casillas)
             {
                 var pi = tipo.GetProperty(c.Propiedad); var da = pi?.GetCustomAttribute<DisplayAttribute>();
                 var mm = vis.FirstOrDefault(v => v.Groups["p"].Value == c.Propiedad);
                 // 4.1.3: las casillas nuevas no estan en el visor 4.0.6: su default es el del codigo de la 4.1.3 (y el de la instancia, si se pudo crear)
-                string dflt = mm != null ? mm.Groups["d"].Value.Trim() : (blanca413.Contains(c.Propiedad) && misDef.TryGetValue(c.Propiedad, out var d413) ? d413 : "?");
+                string dflt = mm != null ? mm.Groups["d"].Value.Trim()
+                            : ((blanca413.Contains(c.Propiedad) || blanca415.Contains(c.Propiedad) || blanca415b.Contains(c.Propiedad)) && misDef.TryGetValue(c.Propiedad, out var d413) ? d413 : "?");
                 if (cambiados414.Contains(c.Propiedad)) dflt = "false";                    // 4.1.4: apagadas a pedido
                 bool okVivo = inst == null || pi == null || Convert.ToString(pi.GetValue(inst), CultureInfo.InvariantCulture) == (c.Default ? "True" : "False");
-                if (pi != null && da != null && da.Name == c.Nombre && da.GroupName == c.Grupo && da.Order == c.Orden && dflt == (c.Default ? "true" : "false") && okVivo) okC++;
-                else Ok(false, "A8 casilla " + c.Id + " = su propiedad");
+                if (pi != null && pi.PropertyType == typeof(bool) && EnArriba(da, c.Propiedad) && dflt == (c.Default ? "true" : "false") && okVivo) okC++;
+                else Ok(false, "A8 casilla " + c.Id + " = su propiedad", Disp(da) + " default " + dflt + " (casilla " + c.Default + ")");
+                if (da != null && (da.Name != c.Nombre || da.GroupName != c.Grupo || da.GetOrder() != c.Orden)) viejosMeta++;
             }
-            Ok(okC == 33 && SeriesPantalla.Casillas.Count == 33, "A8 las 33 casillas de SeriesPantalla (29 + 4 de la 4.1.3) coinciden con sus propiedades S_* (nombre, grupo, orden, default)");
-            Ok(SeriesPantalla.Casillas.Where(c => c.Default).Select(c => c.Id).OrderBy(x => x).SequenceEqual(SeriesPantalla.PrendidasPorDefecto.OrderBy(x => x)) && SeriesPantalla.PrendidasPorDefecto.Length == 6
-               && SeriesPantalla.PrendidasPorDefecto.OrderBy(x => x).SequenceEqual(new[] { "MUROS_NQ_oi", "MUROS_NDX_vol", "TRES_NDX", "T_MUROS_oi", "R20_QQQ_vol", "R20_NDX_vol" }.OrderBy(x => x)),
-               "A9 prendidas por defecto (4.1.4: sin QQQ majors OI, QQQ muros OI, FAM muros OI, QQQ dom ni QQQ 0G): " + string.Join(", ", SeriesPantalla.PrendidasPorDefecto));
-            // A16 (4.1.3) las 4 casillas nuevas: grupo "4b. Dominantes como la 2.0", orden 10/20/30/40, con descripcion; NDX dom apagada (sin medir)
+            Ok(okC == 35 && SeriesPantalla.Casillas.Count == 35, "A8 las 35 casillas de SeriesPantalla (29 + 4 de la 4.1.3 + 1 de la 4.1.5 + 1 de la 4.1.5b) coinciden con sus propiedades S_* (bool, default; "
+               + "4.1.5c: Display = nombre corto, grupo de arriba y Order de la LISTA)");
+            Console.WriteLine("     (informativo) SeriesPantalla.Casillas con Nombre/Grupo/Orden de antes de la 4.1.5c (el producto no los usa: solo Id y Default): " + viejosMeta + " de " + SeriesPantalla.Casillas.Count);
+            var prendidas415b = new[] { "MUROS_NQ_oi", "MUROS_NDX_vol", "TRES_NDX", "T_MUROS_oi", "R20_QQQ_vol", "R20_NDX_vol", "R10_NDX_zero", "R10_NDX_dom" };
+            Ok(SeriesPantalla.Casillas.Where(c => c.Default).Select(c => c.Id).OrderBy(x => x).SequenceEqual(SeriesPantalla.PrendidasPorDefecto.OrderBy(x => x)) && SeriesPantalla.PrendidasPorDefecto.Length == 8
+               && SeriesPantalla.PrendidasPorDefecto.OrderBy(x => x).SequenceEqual(prendidas415b.OrderBy(x => x)),
+               "A9 prendidas por defecto (4.1.4: sin QQQ majors OI, QQQ muros OI, FAM muros OI, QQQ dom ni QQQ 0G; 4.1.5: + Clasica NDX 0Γ; 4.1.5b: + Clasica NDX D1-D3): " + string.Join(", ", SeriesPantalla.PrendidasPorDefecto));
+            // A16 (4.1.3) las 4 casillas: con descripcion; 2.0 QQQ y 2.0 NDX prendidas, NDX dom apagada (sin medir), QQQ dom apagada desde la 4.1.4. Grupo/orden:
+            // 4.1.3 "4b. Dominantes como la 2.0" 10/20/30/40; 4.1.5c el grupo de arriba, Order 28/29/30/31 ("2.0 QQQ D1-D2", "2.0 NDX D1-D2", "QQQ dom sel2.0", "NDX dom sel2.0")
             {
-                var esp = new (string P, int O, bool Def)[] { ("S_R20_QQQ_vol", 10, true), ("S_R20_NDX_vol", 20, true), ("S_DOMS_QQQ_vol", 30, false), ("S_DOMS_NDX_vol", 40, false) };
+                var esp = new (string P, int O, string N, bool Def)[] { ("S_R20_QQQ_vol", 28, "2.0 QQQ D1-D2", true), ("S_R20_NDX_vol", 29, "2.0 NDX D1-D2", true),
+                                                                        ("S_DOMS_QQQ_vol", 30, "QQQ dom sel2.0", false), ("S_DOMS_NDX_vol", 31, "NDX dom sel2.0", false) };
                 int okN = 0; var mal = new List<string>();
-                foreach (var (pn, oo, dd) in esp)
+                foreach (var (pn, oo, nn, dd) in esp)
                 {
                     var pi = tipo.GetProperty(pn, BindingFlags.Public | BindingFlags.Instance); var da = pi?.GetCustomAttribute<DisplayAttribute>();
-                    bool ok = pi != null && pi.PropertyType == typeof(bool) && da != null && da.GroupName == SeriesPantalla.GRUPO_20 && da.GroupName == "4b. Dominantes como la 2.0" && da.Order == oo
+                    bool ok = pi != null && pi.PropertyType == typeof(bool) && EnArriba(da, pn) && da.GetOrder() == oo && da.Name == nn
                               && !string.IsNullOrEmpty(da.Description) && misDef.TryGetValue(pn, out var df) && df == (dd ? "true" : "false");
-                    if (ok) okN++; else mal.Add(pn);
+                    if (ok) okN++; else mal.Add(pn + " (" + Disp(da) + ")");
                 }
-                Ok(okN == 4, "A16 las 4 casillas de la 4.1.3 en '4b. Dominantes como la 2.0' (orden 10/20/30/40, con descripcion; 2.0 QQQ y 2.0 NDX prendidas; QQQ dom apagada desde la 4.1.4; NDX dom apagada)", string.Join(",", mal));
+                Ok(okN == 4, "A16 las 4 casillas de la 4.1.3 (con descripcion; 2.0 QQQ y 2.0 NDX prendidas; QQQ dom apagada desde la 4.1.4; NDX dom apagada); 4.1.5c: en el grupo de arriba, Order 28-31", string.Join(",", mal));
             }
+            // A22 (4.1.5c) el grupo de arriba en la clase REAL (todas sus partes): cada casilla de la LISTA en el grupo con su Order y su nombre, y ningun otro
+            // [Display] de la clase con Order menor que 1000 (ATAS ordena los grupos por el menor Order de sus casillas: asi '0.' queda primero)
+            PruebaGrupoArriba(raiz, grupoArriba, listaArriba);
             if (inst is FamiliaCuatro fc)
             {
                 var a = new AjustesPantalla(); ((IGraficoPantalla)fc).Ajustes(a);
@@ -235,12 +343,188 @@ namespace PruebaPantalla
             }
         }
 
+        /// <summary>A22 (4.1.5c): sobre la clase REAL (bin/Release/PythiaGexCuatro.dll, todas las partes de FamiliaCuatro, solo reflexion).</summary>
+        static void PruebaGrupoArriba(string raiz, string grupo, List<(string Prop, string Nombre)> lista)
+        {
+            var t = ClaseReal(raiz, out var ruta, out var porQue);
+            Ok(t != null, "A22a la clase real del indicador se lee por reflexion de " + ruta + " (" + (t != null ? File.GetLastWriteTime(ruta).ToString("dd-MM HH:mm:ss", CultureInfo.InvariantCulture) + ", "
+               + new FileInfo(ruta).Length + " bytes" : porQue) + ")");
+            if (t == null) return;
+            var props = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+            var conD = props.Select(p => (P: p, D: p.GetCustomAttribute<DisplayAttribute>())).Where(x => x.D != null).ToList();
+            // (1) cada casilla de la LISTA: bool de lectura y escritura, en el grupo, Order = su indice, nombre = el de la LISTA
+            var mal = new List<string>();
+            for (int i = 0; i < lista.Count; i++)
+            {
+                var (pn, nom) = lista[i];
+                var pi = props.FirstOrDefault(p => p.Name == pn); var da = pi?.GetCustomAttribute<DisplayAttribute>();
+                if (pi == null) { mal.Add(pn + " no existe"); continue; }
+                if (!(pi.PropertyType == typeof(bool) || pi.PropertyType.IsEnum) || !pi.CanRead || !pi.CanWrite) mal.Add(pn + " no es bool ni enum get/set");   // 4.1.5d: + enum
+                if (da == null || da.GroupName != grupo || da.GetOrder() != i || da.Name != nom) mal.Add(pn + " " + (da == null ? "sin Display" : da.Name + "|" + da.GroupName + "|" + da.GetOrder()) + " vs " + nom + "|" + i);
+            }
+            Ok(mal.Count == 0 && lista.Count == 101, "A22b las " + lista.Count + " casillas de grupo_arriba_415e.py estan en '" + grupo + "' con Order 0.." + (lista.Count - 1) + " en el orden del script y su nombre corto (clase real)",
+               string.Join("; ", mal.Take(8)));
+            // (2) nadie mas en el grupo, y ningun otro [Display] de la clase con Order menor que 1000 (ni sin Order)
+            var enLista = new HashSet<string>(lista.Select(x => x.Prop));
+            var intrusos = conD.Where(x => x.D.GroupName == grupo && !enLista.Contains(x.P.Name)).Select(x => x.P.Name).ToList();
+            var bajos = conD.Where(x => !enLista.Contains(x.P.Name) && (x.D.GetOrder() ?? int.MinValue) < 1000).Select(x => x.P.Name + "=" + (x.D.GetOrder()?.ToString(CultureInfo.InvariantCulture) ?? "sin Order")).ToList();
+            Ok(intrusos.Count == 0 && bajos.Count == 0, "A22c ningun otro [Display] de la clase en el grupo de arriba (" + intrusos.Count + ") ni con Order menor que 1000 (" + bajos.Count + " de "
+               + (conD.Count - enLista.Count) + " ajustes fuera del grupo)", string.Join(", ", intrusos.Concat(bajos).Take(10)));
+            // (3) lo que ve el reloj de la 4.1.5c (GammaHoyTresCasillas.CasillasArmar: bool del grupo GRUPO_CASILLAS por Order) es la LISTA en su orden
+            var cte = t.GetField("GRUPO_CASILLAS", BindingFlags.Public | BindingFlags.Static)?.GetRawConstantValue() as string;
+            var reloj = props.Where(p => (p.PropertyType == typeof(bool) || p.PropertyType.IsEnum) && p.CanRead && p.GetCustomAttribute<DisplayAttribute>()?.GroupName == cte)   // 4.1.5d: + enum
+                             .OrderBy(p => p.GetCustomAttribute<DisplayAttribute>().GetOrder() ?? 0).Select(p => p.Name).ToList();
+            Ok(cte == grupo && reloj.SequenceEqual(lista.Select(x => x.Prop)), "A22d GRUPO_CASILLAS de la clase = el grupo del script, y las casillas que mira el reloj de 250 ms son las " + reloj.Count + " de la LISTA en su orden");
+            PruebaJerarquia(t, raiz, grupo);   // 4.1.5e
+            // (informativo) el orden de los grupos como los ordena ATAS (por el menor Order de cada grupo) y los ajustes del Indicator de ATAS (heredados)
+            var grupos = conD.GroupBy(x => x.D.GroupName ?? "").Select(g => (G: g.Key, Min: g.Min(x => x.D.GetOrder() ?? int.MaxValue), N: g.Count())).OrderBy(g => g.Min).ToList();
+            Console.WriteLine("     (informativo) grupos de la clase por su menor Order: " + string.Join(" | ", grupos.Take(6).Select(g => g.G + " (" + g.Min + ", " + g.N + ")")) + (grupos.Count > 6 ? " | ... (" + grupos.Count + " grupos)" : ""));
+            var heredadas = t.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.DeclaringType != t).Select(p => (P: p, D: p.GetCustomAttribute<DisplayAttribute>())).Where(x => x.D != null).ToList();
+            var hBajas = heredadas.Where(x => (x.D.GetOrder() ?? int.MaxValue) < 70).Select(x => x.P.Name + "=" + x.D.GetOrder() + " (" + x.D.GroupName + ")").ToList();
+            Console.WriteLine("     (informativo) ajustes heredados del Indicator de ATAS con Display: " + heredadas.Count + "; con Order < 70: " + (hBajas.Count == 0 ? "ninguno" : string.Join(", ", hBajas.Take(8))));
+        }
+
+        /// <summary>A23 (4.1.5e, pedido del operador: "pierdo mucho tiempo y tengo que estar buscando que es cada cosa ... adivinando para ver si
+        /// aparecen/desaparecen las dominantes especificas que quiero"; medido por el verificador: 8 de 28 casillas prendidas no dibujaban por una llave
+        /// Tres41* apagada). Sobre la clase REAL: (a) una LLAVE termina en ▸ (sin flecha), su descripcion empieza con "Llave:" y va inmediatamente antes
+        /// de un dependiente '↳ ...'; la primera frase de cada dependiente nombra la llave mas cercana arriba ("Necesita la llave 'X' prendida.") o, lo
+        /// comun a varias, "Necesita alguna de las llaves ... prendida."; lo que no necesita llave dice "No necesita ninguna llave" y va arriba de la 3.0.
+        /// (f) el codigo de dibujo (GammaHoyTres*.cs) sigue pidiendo esas llaves: cada condicion leida del fuente y la llave que dice la descripcion de
+        /// cada casilla que cuelga de ella. (g) las llaves entran enteras en la columna del dialogo (Segoe UI 12 medido con WPF y calibrado con la captura
+        /// 2026-10-09 17:29: entran 'NDX majors OI' y 'NDX 0Γ est vol', se cortan 'NDX muros vol' y 'NDX majors vol').</summary>
+        static void PruebaJerarquia(Type t, string raiz, string grupo)
+        {
+            var filas = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                         .Select(p => (P: p, D: p.GetCustomAttribute<DisplayAttribute>())).Where(x => x.D != null && x.D.GroupName == grupo)
+                         .OrderBy(x => x.D.GetOrder() ?? 0).ToList();
+            string Nom(int i) => filas[i].D.Name ?? "";
+            bool EsLlave(string n) => n.EndsWith("▸", StringComparison.Ordinal) && !n.StartsWith("↳", StringComparison.Ordinal);
+            bool EsDep(string n) => n.StartsWith("↳ ", StringComparison.Ordinal);
+            var porNombre = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var x in filas) porNombre[x.D.Name ?? ""] = x.P.Name;
+            var re1 = new Regex(@"^Necesita la llave '([^']+)' prendida\.");
+            var reN = new Regex(@"^Necesita alguna de las llaves (.+?) prendida\.");
+            var mal = new List<string>(); int llaves = 0, deps = 0, comunes = 0, libres = 0;
+            int primeraTres = filas.FindIndex(x => x.P.Name.StartsWith("Tres41", StringComparison.Ordinal));
+            var llaveDe = new Dictionary<string, string>(StringComparer.Ordinal);            // propiedad -> propiedad de su llave (los de una sola)
+            var algunaDe = new Dictionary<string, List<string>>(StringComparer.Ordinal);     // propiedad -> propiedades de sus llaves (los comunes)
+            for (int i = 0; i < filas.Count; i++)
+            {
+                string n = Nom(i), d = filas[i].D.Description ?? "", p = filas[i].P.Name;
+                if (EsLlave(n))
+                {
+                    llaves++;
+                    if (!d.StartsWith("Llave: ", StringComparison.Ordinal)) mal.Add(p + " (" + n + "): llave sin 'Llave:' al principio de la descripcion");
+                    if (i + 1 >= filas.Count || !EsDep(Nom(i + 1))) mal.Add(p + " (" + n + "): llave sin un ↳ inmediatamente despues");
+                    continue;
+                }
+                if (EsDep(n))
+                {
+                    int j = i - 1; while (j >= 0 && EsDep(Nom(j))) j--;                     // la fila sin flecha mas cercana arriba
+                    string arriba = j >= 0 ? Nom(j) : "";
+                    var m1 = re1.Match(d); var mN = reN.Match(d);
+                    if (m1.Success)
+                    {
+                        deps++;
+                        if (m1.Groups[1].Value != arriba || !EsLlave(arriba)) mal.Add(p + " (" + n + "): dice '" + m1.Groups[1].Value + "' y la llave de arriba es '" + arriba + "'");
+                        if (porNombre.TryGetValue(m1.Groups[1].Value, out var kp)) llaveDe[p] = kp;
+                    }
+                    else if (mN.Success)
+                    {
+                        comunes++;
+                        var ks = Regex.Matches(mN.Groups[1].Value, "'([^']+)'").Cast<Match>().Select(x => x.Groups[1].Value).ToList();
+                        if (ks.Count < 2 || ks.Any(k => !EsLlave(k) || !porNombre.ContainsKey(k))) mal.Add(p + " (" + n + "): 'alguna de las llaves' con una que no es llave del grupo");
+                        else algunaDe[p] = ks.Select(k => porNombre[k]).ToList();
+                    }
+                    else mal.Add(p + " (" + n + "): un ↳ sin 'Necesita la llave ...' al principio de la descripcion");
+                    if (n.EndsWith("▸", StringComparison.Ordinal) && !d.Contains(" Sub-llave: ")) mal.Add(p + " (" + n + "): sub-llave (↳ ... ▸) sin 'Sub-llave:'");
+                    continue;
+                }
+                libres++;
+                if (!d.StartsWith("No necesita ninguna llave", StringComparison.Ordinal)) mal.Add(p + " (" + n + "): sin flecha ni ▸ y sin 'No necesita ninguna llave'");
+                if (primeraTres >= 0 && i > primeraTres) mal.Add(p + " (" + n + "): lo que no necesita llave va arriba de la 3.0");
+            }
+            var tres41 = filas.Where(x => x.P.Name.StartsWith("Tres41", StringComparison.Ordinal)).ToList();
+            Ok(mal.Count == 0 && tres41.Count == 7 && tres41.All(x => EsLlave(x.D.Name)) && llaves == 9 && deps + comunes + libres + llaves == filas.Count,
+               "A23a jerarquia del grupo de arriba (clase real): " + llaves + " llaves (las 7 Tres41* + 'Estela▸' y 'Etiquetas▸'), cada una con su ↳ inmediatamente despues; "
+               + deps + " dependientes cuya primera frase nombra la llave de arriba; " + comunes + " comunes a varias llaves de la 3.0; " + libres + " sin llave, todos arriba de la 3.0",
+               string.Join("; ", mal.Take(8)));
+            Console.WriteLine("     (informativo) llaves: " + string.Join(" | ", filas.Where(x => EsLlave(x.D.Name)).Select(x => x.D.Name + " = " + x.P.Name + " (" + filas.Count(y => llaveDe.TryGetValue(y.P.Name, out var k) && k == x.P.Name) + " ↳)")));
+
+            // (f) el codigo de dibujo sigue diciendo lo mismo: la condicion en el fuente y la llave que dice cada casilla que cuelga de ella
+            string src = "";
+            try { src = string.Join("\n", Directory.GetFiles(raiz, "GammaHoyTres*.cs").OrderBy(x => x).Select(File.ReadAllText)); } catch { }
+            var reglas = new (string Codigo, string Llave, string[] Props)[]
+            {
+                ("if (i < 2 ? !Tres41Dominantes : !Tres41Zero) continue;", "Tres41Dominantes", new[] { "Raya3NqD1", "Raya3NqD2" }),
+                ("if (Tres41Dominantes && VerToquesEf", "Tres41Dominantes", new[] { "Ver3Toques" }),
+                ("bool majors = Tres41Dominantes && VerMajorsEf(raiz);", "Tres41Dominantes", new[] { "Raya3NqMas", "Raya3NqMenos", "Ver3Majors", "Perfil3Visual" }),
+                ("if (Tres41Dominantes && BarrasIzqEf", "Tres41Dominantes", new[] { "Barras3Lado" }),
+                ("if (Tres41Dominantes) PintarMajorOi(", "Tres41Dominantes", new[] { "Raya3NqMasOi", "Raya3NqMenosOi", "Raya3NdxMasOi", "Raya3NdxMenosOi", "Raya3QqqMasOi", "Raya3QqqMenosOi" }),
+                ("if (Tres41Dominantes) PintarApoyo(", "Tres41Dominantes", new[] { "Ver3Apoyo", "Ver3EstelaZeroOi", "Zero3TodosLosCruces", "Cruces3SinCortes" }),
+                ("if ((todos || Tres41Zero) && Raya3NqZero", "Tres41Zero", new[] { "Raya3NqZero", "Ver3EstelaZero", "Ver3Zero" }),
+                ("if (Tres41Tunel && VerTunelEf", "Tres41Tunel", new[] { "Ver3Tunel" }),
+                ("var extra = Tres41Capas ? PintarCapas(", "Tres41Capas", new[] { "Raya3NdxD1", "Raya3NdxD2", "Raya3NdxD3", "Raya3QqqD1", "Raya3QqqD2", "Raya3QqqD3", "Capa3ZeroRombos",
+                                                                                "Raya3NdxZeroB", "Raya3NdxZeroEnfasis", "Raya3NdxZeroCerco", "Raya3QqqZero", "Raya3QqqZeroEnfasis", "Capa3LineaActual" }),
+                ("if (Tres41Formulas) PintarFormulas(", "Tres41Formulas", new[] { "Formulas3Ver", "Formula3F1", "Formula3F2b", "Formula3F3b", "Formula3F4b", "Formula3F5", "Formula3F6b", "Formula3F8b" }),
+                ("bool recuadro = RecuadroLibro3Ver && Tres41Recuadro;", "Tres41Recuadro", new[] { "RecuadroLibro3Ver" }),
+                ("if (Tres41Cabecera) Cabecera(g, f, area, raiz, L, fut, strikes, foto, cuenta, VerCabeceraEf);", "Tres41Cabecera", new[] { "Ver3Cabecera" }),
+            };
+            var comun = new (string Codigo, string[] Llaves, string[] Props)[]
+            {
+                ("if (VerRotulosEf && (Tres41Dominantes || Tres41Zero || Tres41Capas || Tres41Formulas)) Rotulos(", new[] { "Tres41Dominantes", "Tres41Zero", "Tres41Capas", "Tres41Formulas" },
+                 new[] { "Ver3Rotulos", "Rotulos3Cortos", "Rotulos3Conectores" }),
+                // la estela de NQ (D1/D2 con Tres41Dominantes, el zero con Tres41Zero) y la de las capas (dentro de PintarCapas)
+                ("if ((Tres41Dominantes || Tres41Zero) && (VerEstelaEf || VerToquesEf) && hasta >= desde)", new[] { "Tres41Dominantes", "Tres41Zero", "Tres41Capas" }, new[] { "Ver3Estela" }),
+                ("if (VerEstelaEf && hasta >= desde && est.Count > 0)", new[] { "Tres41Dominantes", "Tres41Zero", "Tres41Capas" }, new[] { "Ver3Estela" }),
+                // las rayas largas: zero de NQ, majors de NQ (y apoyo/cruces OI) y la linea de las capas; las F1-F8 no tienen
+                ("if (Tres41Zero && VerZeroEf && Rayas3Largas && Raya3NqZero", new[] { "Tres41Dominantes", "Tres41Zero", "Tres41Capas" }, new[] { "Rayas3Largas" }),
+                ("if (Rayas3Largas && Capa3LineaActual", new[] { "Tres41Dominantes", "Tres41Zero", "Tres41Capas" }, new[] { "Rayas3Largas" }),
+                // atenuar y sesion anterior: tambien en las F1-F8 (PintarFormulas)
+                ("PrepararAtravesadas(desde, hasta);", new[] { "Tres41Dominantes", "Tres41Zero", "Tres41Capas", "Tres41Formulas" }, new[] { "Atravesadas3AtenuarB" }),
+                ("bool previa = b < inicio; if (previa && !Estela3SesionAnterior) continue;", new[] { "Tres41Dominantes", "Tres41Zero", "Tres41Capas", "Tres41Formulas" }, new[] { "Estela3SesionAnterior" }),
+            };
+            var malF = new List<string>(); int okF = 0;
+            foreach (var (codigo, llave, props) in reglas)
+            {
+                if (!src.Contains(codigo)) { malF.Add("no esta en el fuente: " + codigo); continue; }
+                foreach (var p in props)
+                    if (llaveDe.TryGetValue(p, out var k) && k == llave) okF++; else malF.Add(p + ": su descripcion dice " + (llaveDe.TryGetValue(p, out var k2) ? k2 : "?") + " y el codigo pide " + llave);
+            }
+            foreach (var (codigo, ks, props) in comun)
+            {
+                if (!src.Contains(codigo)) { malF.Add("no esta en el fuente: " + codigo); continue; }
+                foreach (var p in props)
+                    if (algunaDe.TryGetValue(p, out var l) && l.OrderBy(x => x).SequenceEqual(ks.OrderBy(x => x))) okF++; else malF.Add(p + ": 'alguna de las llaves' distinta de " + string.Join("/", ks));
+            }
+            Ok(malF.Count == 0 && okF == reglas.Sum(r => r.Props.Length) + comun.Sum(r => r.Props.Length),
+               "A23f el codigo de dibujo de la 3.0 pide las llaves que dicen las descripciones: " + okF + " casillas en " + (reglas.Length + comun.Length) + " condiciones leidas del fuente (PintarCapas, PintarMajorOi, PintarApoyo, PintarFormulas, Rotulos, recuadro, cabecera, tunel, estela, majors, toques, barras)",
+               string.Join("; ", malF.Take(8)));
+
+            // (g) las llaves entran enteras en la columna (si se cortan, el ▸ no se ve y no se sabe que es una llave)
+            try
+            {
+                var tf = new System.Windows.Media.Typeface("Segoe UI");
+                double W(string s) => new System.Windows.Media.FormattedText(s, CultureInfo.InvariantCulture, System.Windows.FlowDirection.LeftToRight, tf, 12.0,
+                                                                             System.Windows.Media.Brushes.Black, 1.0).WidthIncludingTrailingWhitespace;
+                double entra = new[] { "NQ majors vol", "NDX majors OI", "NDX 0Γ est vol", "NDX muros OI" }.Max(W), corta = new[] { "NDX muros vol", "NDX majors vol" }.Min(W);
+                var conLlave = filas.Where(x => (x.D.Name ?? "").EndsWith("▸", StringComparison.Ordinal)).Select(x => (N: x.D.Name, A: W(x.D.Name))).ToList();
+                var cortados = filas.Where(x => EsDep(x.D.Name ?? "") && W(x.D.Name) > entra).Select(x => x.D.Name + " " + W(x.D.Name).ToString("0.0", CultureInfo.InvariantCulture)).ToList();
+                Ok(entra < corta && conLlave.Count == 11 && conLlave.All(x => x.A <= entra),
+                   "A23g las 11 llaves y sub-llaves (▸) entran enteras en la columna del dialogo (Segoe UI 12 con WPF: entran hasta " + entra.ToString("0.0", CultureInfo.InvariantCulture) + ", se cortan desde "
+                   + corta.ToString("0.0", CultureInfo.InvariantCulture) + "; la mas ancha: " + string.Join("", conLlave.OrderByDescending(x => x.A).Take(1).Select(x => x.N + " " + x.A.ToString("0.0", CultureInfo.InvariantCulture))) + ")",
+                   string.Join("; ", conLlave.Where(x => x.A > entra).Select(x => x.N + " " + x.A.ToString("0.0", CultureInfo.InvariantCulture))));
+                Console.WriteLine("     (informativo) ↳ que no entran enteros (se ve el principio): " + (cortados.Count == 0 ? "ninguno" : string.Join(", ", cortados)));
+            }
+            catch (Exception e) { Ok(false, "A23g medir los nombres con WPF", e.GetType().Name + ": " + e.Message); }
+        }
+
         // ------------------------------------------------------------------ B
         static void PruebaCatalogo()
         {
             Console.WriteLine("B. catalogo de respaldo contra CatalogoFamilia (B3d)");
             var mot = CatalogoFamilia.Series; var res = SeriesPantalla.Respaldo;
-            Ok(mot.Count == 33 && res.Count == 33, "B1 33 series en los dos (29 + 4 de la 4.1.3) (" + mot.Count + "/" + res.Count + ")");
+            Ok(mot.Count == 35 && res.Count == 35, "B1 35 series en los dos (29 + 4 de la 4.1.3 + 1 de la 4.1.5 + 1 de la 4.1.5b) (" + mot.Count + "/" + res.Count + ")");
             int igual = 0;
             for (int i = 0; i < Math.Min(mot.Count, res.Count); i++)
             {
@@ -248,11 +532,11 @@ namespace PruebaPantalla
                 bool ok = a.Id == b.Id && a.Corto == b.Corto && a.Libro == b.Libro && a.Fuente == b.Fuente && a.Tipo == b.Tipo && a.Grupo == b.Grupo && a.ColorHex == b.ColorHex && a.Banda == b.Banda;
                 if (ok) igual++; else Ok(false, "B2 serie " + i + " " + a.Id + " vs " + b.Id);
             }
-            Ok(igual == 33, "B2 mismo orden y mismos id/corto/libro/fuente/tipo/grupo/color/banda en las 33");
+            Ok(igual == 35, "B2 mismo orden y mismos id/corto/libro/fuente/tipo/grupo/color/banda en las 35");
             Ok(SeriesPantalla.Casillas.Select(c => c.Id).OrderBy(x => x).SequenceEqual(mot.Select(s => s.Id).OrderBy(x => x)), "B3 una casilla por serie del catalogo del motor");
             Ok(CatalogoFamilia.PrendidasPorDefecto.OrderBy(x => x).SequenceEqual(SeriesPantalla.PrendidasPorDefecto.OrderBy(x => x)), "B4 mismos defaults que CatalogoFamilia.PrendidasPorDefecto");
             var cp = new CatalogoPantalla(new[] { new SerieInfo { Id = "MUROS_NQ_vol", ColorHex = "#010203", Corto = "NQ*", Libro = "NQ", Tipo = "MUROS" } });
-            Ok(cp.Lista.Count == 33 && cp.PorId["MUROS_NQ_vol"].Corto == "NQ*" && cp.Colores["MUROS_NQ_vol"] == Color.FromArgb(1, 2, 3) && cp.DelMotor,
+            Ok(cp.Lista.Count == 35 && cp.PorId["MUROS_NQ_vol"].Corto == "NQ*" && cp.Colores["MUROS_NQ_vol"] == Color.FromArgb(1, 2, 3) && cp.DelMotor,
                "B5 el catalogo del motor manda y el respaldo completa lo que falte");
             Ok(SeriesPantalla.ColorDe("zz") == Color.FromArgb(200, 200, 200) && SeriesPantalla.ColorDe(null) == Color.FromArgb(200, 200, 200), "B6 color ilegible -> gris, sin tirar");
         }
@@ -455,6 +739,120 @@ namespace PruebaPantalla
                 Ok(choques.Count == 0 && arr == Math.Min(2, nArr + baseArr) && aba == Math.Min(2, nAba + baseAba) && d.Rotulos.Any(r => r.Fuera == 0 && r.Serie == "MAJORS_NDX_vol"),
                    "C80 " + nArr + " arriba / " + nAba + " abajo fuera de pantalla: " + arr + " ↑ y " + aba + " ↓ en renglones propios, ninguna se pisa con una visible", string.Join("; ", choques));
             }
+        }
+
+        // ------------------------------------------------------------------ C110+ (4.1.5b): las dominantes de la clasica
+        /// <summary>4.1.5b: R10_NDX_dom "Clasica NDX" D1-D3 (rol en la etiqueta, monto del strike ganador) con la base de la clasica en el detalle, sobre los
+        /// numeros REALES del minuto 19:52Z del 09-10 (niv-2026-10-09-MNQZ6.jsonl: D1 31.090,09 −5.550,9 M, D2 31.085,07 −4.572,5 M, D3 31.068,94 −3.018,2 M;
+        /// el 0Γ 31.096,72; base 243,06 de la rueda del 08-10 congelada, la sincronizada 229,57).</summary>
+        static void PruebaClasicaDom()
+        {
+            Console.WriteLine("C110+. 4.1.5b: las dominantes de la clasica (pedido del operador 09-10: 'replicar la clasica su formula ... todo se pueda activar desactivar')");
+            var ahora = new DateTime(2026, 10, 9, 19, 53, 0, DateTimeKind.Utc);
+            DateTime cb = new DateTime(2026, 10, 9, 19, 35, 35, DateTimeKind.Utc);
+            const string M = "−";
+            var f0 = FotosDoble.Normal(ahora);
+            var extra = new[]
+            {
+                FotosDoble.ComoCambios(A("R10_NDX_dom", "NDX", "vol", "DOMS", "D1", 31090.09, 30850, 0, cb, gexM: -5550.9)),
+                FotosDoble.ComoCambios(A("R10_NDX_dom", "NDX", "vol", "DOMS", "D2", 31085.07, 30840, 0, cb, gexM: -4572.5)),
+                FotosDoble.ComoCambios(A("R10_NDX_dom", "NDX", "vol", "DOMS", "D3", 31068.94, 30825, 0, cb, gexM: -3018.2)),
+                FotosDoble.ComoCambios(A("R10_NDX_zero", "NDX", "vol", "ZEST", "0G est.", 31096.72, 30853.66, 0, cb)),
+            };
+            var fu = f0.Fuentes.Concat(new[]
+            {
+                new FuenteEstado { Libro = "Clasica NDX", ConvValor = 243.0600000000013, DatoUtc = cb,
+                                   Texto = "base clasica 243.06 = de la rueda 2026-10-08 (21 buenas de 24, 280 muestras, adoptada 20:10:52Z, hace 1421 min), congelada en la rueda de hoy · ahora: 4.1 sincronizada 229.57; regla de la clasica con la rueda de hoy 229.40 (270 muestras) · zero en el indice 30853.66" },
+            }).ToList();
+            var f = FotosDoble.Copia(FotosDoble.Mas(f0, extra), x => x.Fuentes = fu);
+            var gr = new GraficoDoble(ahora) { Alto = 31120, Bajo = 30900 };
+            gr.A.Visibles.Clear(); foreach (var id in SeriesPantalla.PrendidasPorDefecto) gr.A.Visibles.Add(id);   // los defaults de la 4.1.5b (con R10_NDX_dom)
+            var d = Armar(f, gr);
+            var txt = d.Etiquetas.Select(e => e.Txt).ToList();
+            Console.WriteLine("     etiquetas: " + string.Join(" | ", txt));
+            string[] esp = { "Clasica NDX D1 " + M + "5,55B 31.090,09 V", "Clasica NDX D2 " + M + "4,57B 31.085,07 V", "Clasica NDX D3 " + M + "3,02B 31.068,94 V" };
+            Ok(esp.All(e => txt.Contains(e)), "C110 las dominantes de la clasica con su ROL (D1-D3), el monto del strike ganador y V: '" + string.Join("', '", esp) + "'", string.Join(" | ", txt.Where(x => x.Contains("Clasica"))));
+            Ok(txt.Contains("Clasica NDX 0Γ 31.096,72 V") && !txt.Any(x => x.StartsWith("Clasica NDX 0Γ D", StringComparison.Ordinal)),
+               "C111 el 0Γ de la clasica sigue sin rol ni monto ('Clasica NDX 0Γ 31.096,72 V'): el rol solo lo llevan las D1-D3");
+            gr.A.Visibles.Remove("R10_NDX_dom");
+            var dOff = Armar(f, gr);
+            Ok(!dOff.Etiquetas.Any(e => e.Txt.StartsWith("Clasica NDX D", StringComparison.Ordinal)) && dOff.Etiquetas.Any(e => e.Txt == "Clasica NDX 0Γ 31.096,72 V"),
+               "C112 con S_R10_NDX_dom apagada no hay etiqueta D1-D3 de la clasica y el 0Γ sigue (cada casilla apaga lo suyo)");
+            gr.A.Visibles.Add("R10_NDX_dom"); gr.A.Visibles.Remove("R10_NDX_zero");
+            gr.Abierto = true; var dp = Armar(f, gr); gr.Abierto = false;
+            foreach (var l in dp.Panel.Where(l => l.Contains("Clasica"))) Console.WriteLine("       " + l);
+            Ok(dp.Panel.Any(l => l.Contains("Clasica NDX D1·vol " + M + "5,55B (base clasica 243,06 de la rueda del 08-10, congelada; base de ahora 229,57 (sincronizada): +13,49 pts)")),
+               "C113 el detalle de la D1 de la clasica dice la base usada, de cuando es y la de ahora con la diferencia (la misma base que el 0Γ)");
+            Ok(dp.Panel.Any(l => l.Contains("Clasica NDX (replica, CBOE)") && l.Contains("base clasica 243.06 = de la rueda 2026-10-08")) && !dp.Etiquetas.Any(e => e.Txt.StartsWith("Clasica NDX 0Γ", StringComparison.Ordinal)),
+               "C114 con solo las D1-D3 prendidas (0Γ apagado) la pestaña igual dice la fuente 'Clasica NDX (replica, CBOE)' con su base");
+            var cp = new CatalogoPantalla(CatalogoFamilia.Series);
+            Ok(cp.PorId.TryGetValue("R10_NDX_dom", out var s) && s.Corto == "Clasica NDX" && s.Libro == "NDX" && s.Fuente == "vol" && s.Tipo == "DOMS" && cp.Colores["R10_NDX_dom"] == SeriesPantalla.ColorDe("#b8f8d8"),
+               "C115 catalogo: R10_NDX_dom = 'Clasica NDX', NDX, vol, DOMS, #b8f8d8 (4.1.5d: el #9dffd2 quedaba a CIEDE2000 11,4 del 2.0 NDX)");
+        }
+
+        // ------------------------------------------------------------------ C116+ (4.1.5d): revision de la 4.1.5b/c
+        /// <summary>4.1.5d: (1) las D1-D3 de la clasica no llevan cambio ▲▼ aunque venga un valor (TieneLado false, como las R20); (2) el detalle de
+        /// R10_NDX_dom dice el STRIKE y el centroide, el del 0Γ "en el indice"; (3) la salvedad debajo de la fuente "Clasica NDX"; (4) con "dominantes
+        /// por OI" en la fuente la etiqueta lleva OI; (5) las descripciones de las dos casillas con la salvedad; (6) el tunel se prende solo (fuente).
+        /// Mismos numeros reales que C110 (19:52Z del 09-10).</summary>
+        static void PruebaClasica415d()
+        {
+            Console.WriteLine("C116+. 4.1.5d: revision de la 4.1.5b/c (dominantes de la clasica sin cambio, detalle con el strike, salvedad, OI, tunel)");
+            var ahora = new DateTime(2026, 10, 9, 19, 53, 0, DateTimeKind.Utc);
+            DateTime cb = new DateTime(2026, 10, 9, 19, 35, 35, DateTimeKind.Utc);
+            const string M = "−";
+            var f0 = FotosDoble.Normal(ahora);
+            var d1 = FotosDoble.ComoCambios(A("R10_NDX_dom", "NDX", "vol", "DOMS", "D1", 31090.09, 30850, 0, cb, gexM: -5550.9));
+            d1.CambioVolM = new[] { 5.0, 5.0, 5.0 };                                       // aunque viniera un cambio (antes lo tomaba del libro NDX de la 4.1)
+            var d2 = FotosDoble.ComoCambios(A("R10_NDX_dom", "NDX", "vol", "DOMS", "D2", 31085.07, 30840, 0, cb, gexM: -4572.5));
+            d2.CambioVolM = new[] { -3.0, -3.0, -3.0 };
+            var d3 = FotosDoble.ComoCambios(A("R10_NDX_dom", "NDX", "vol", "DOMS", "D3", 31068.94, 30825, 0, cb, gexM: -3018.2));
+            var z = FotosDoble.ComoCambios(A("R10_NDX_zero", "NDX", "vol", "ZEST", "0G est.", 31096.72, 30853.66, 0, cb));
+            string textoBase = "base clasica 243.06 = de la rueda 2026-10-08 (21 buenas de 24, 280 muestras, vela de 2 min, adoptada 20:10:52Z, hace 1421 min), congelada en la rueda de hoy · ahora: 4.1 sincronizada 229.57; regla de la clasica con la rueda de hoy 229.40 (270 muestras) · zero en el indice 30853.66";
+            FotoFamilia Foto(string texto) => FotosDoble.Copia(FotosDoble.Mas(f0, new[] { d1, d2, d3, z }), x => x.Fuentes = f0.Fuentes.Concat(new[]
+                { new FuenteEstado { Libro = "Clasica NDX", ConvValor = 243.0600000000013, DatoUtc = cb, Texto = texto } }).ToList());
+            var f = Foto(textoBase);
+            var gr = new GraficoDoble(ahora) { Alto = 31120, Bajo = 30900 };
+            gr.A.Visibles.Clear(); foreach (var id in SeriesPantalla.PrendidasPorDefecto) gr.A.Visibles.Add(id);
+            var d = Armar(f, gr);
+            var txt = d.Etiquetas.Select(e => e.Txt).ToList();
+            Console.WriteLine("     etiquetas: " + string.Join(" | ", txt.Where(x => x.Contains("Clasica"))));
+            Ok(txt.Contains("Clasica NDX D1 " + M + "5,55B 31.090,09 V") && txt.Contains("Clasica NDX D2 " + M + "4,57B 31.085,07 V") && !txt.Any(x => x.StartsWith("Clasica NDX D", StringComparison.Ordinal) && (x.Contains("▲") || x.Contains("▼"))),
+               "C116 las D1-D3 de la clasica sin cambio ▲▼ aunque el nivel traiga un cambio por volumen (como las R20: su base y su S no son las del libro de la 4.1)");
+            Ok(!ArmadoPantalla.TieneLado(d1) && !ArmadoPantalla.TieneLado(d2) && !ArmadoPantalla.TieneLado(d3) && ArmadoPantalla.TieneLado(A("DOMS_NDX_vol", "NDX", "vol", "DOMS", "D1", 1, 1, 0, cb)),
+               "C116b TieneLado: R10_NDX_dom D1/D2/D3 no; DOMS_NDX_vol D1 si (la seleccion de la 2.0 sobre la 4.1 sigue con su cambio)");
+            gr.Abierto = true; var dp = Armar(f, gr); gr.Abierto = false;
+            foreach (var l in dp.Panel.Where(l => l.Contains("Clasica"))) Console.WriteLine("       " + l);
+            // la pestaña parte los renglones en el ancho visible (Partir: la continuacion con sangria): se comparan los renglones juntados y sin espacios repetidos
+            string Junto(IEnumerable<string> ls) => System.Text.RegularExpressions.Regex.Replace(string.Join(" ", ls), " +", " ");
+            string panel = Junto(dp.Panel);
+            int iD1 = panel.IndexOf("Clasica NDX D1·vol " + M + "5,55B (base clasica 243,06", StringComparison.Ordinal);
+            string trasD1 = iD1 < 0 ? "" : panel.Substring(iD1, Math.Min(260, panel.Length - iD1));
+            int iK = trasD1.IndexOf("(strike NDX 30.850, centroide ±12)", StringComparison.Ordinal), iI = trasD1.IndexOf("en el indice", StringComparison.Ordinal);
+            Ok(iD1 >= 0 && iK > 0 && (iI < 0 || iI > iK),
+               "C117 el detalle de la D1 de la clasica dice el STRIKE ganador y que la raya va en el centroide: '(strike NDX 30.850, centroide ±12)' (antes: 'en el indice NDX 30.850')");
+            Ok(dp.Panel.Any(l => l.Contains("Clasica NDX 0Γ·vol") && l.Contains("(en el indice NDX 30.853,66)")),
+               "C117b el del 0Γ sigue 'en el indice NDX 30.853,66' (un zero no es un strike)");
+            Ok(panel.Contains("zero en el indice 30853.66 " + Junto(new[] { ArmadoPantalla.AVISO_CLASICA.Trim() })) && ArmadoPantalla.AVISO_CLASICA.Contains("re-mide su base") && ArmadoPantalla.AVISO_CLASICA.Contains("~13 pts"),
+               "C118 debajo de la fuente 'Clasica NDX (replica, CBOE)' va la salvedad medida: '" + ArmadoPantalla.AVISO_CLASICA.Trim() + "'");
+            var fo = Foto(textoBase + " · dominantes por OI (ningun strike del radio con volumen)");
+            var dOi = Armar(fo, gr);
+            var tOi = dOi.Etiquetas.Select(e => e.Txt).ToList();
+            Ok(tOi.Contains("Clasica NDX D1 " + M + "5,55B 31.090,09 OI") && tOi.Contains("Clasica NDX 0Γ 31.096,72 V"),
+               "C119 con 'dominantes por OI' en la fuente las D1-D3 de la clasica dicen OI (como la clasica: 'NDX D1·OI') y el 0Γ sigue V", string.Join(" | ", tOi.Where(x => x.Contains("Clasica"))));
+            var tipo = typeof(FamiliaCuatro);
+            string Desc(string p) => tipo.GetProperty(p, BindingFlags.Public | BindingFlags.Instance)?.GetCustomAttribute<DisplayAttribute>()?.Description ?? "";
+            Ok(Desc("S_R10_NDX_zero").Contains("SALVEDAD") && Desc("S_R10_NDX_zero").Contains("re-mide su base") && Desc("S_R10_NDX_dom").Contains("SALVEDAD") && Desc("S_R10_NDX_dom").Contains("re-mide su base")
+               && Desc("S_R10_NDX_dom").Contains("D1/D2/D3") && Desc("S_R10_NDX_zero").Contains("NDX 0Γ") && Desc("S_R10_NDX_dom").Contains("sin cambio"),
+               "C120 las descripciones de 'Clas NDX 0Γ' y 'Clas NDX D1-D3' dicen la salvedad medida (si la clasica pierde Rithmic re-mide su base y la replica deja de coincidir)");
+            // el tunel: GammaHoyTres.cs no compila aca (ATAS); la condicion se lee del fuente y la descripcion de la clase REAL (bin/Release)
+            var raiz = RaizProyecto();
+            var src = raiz == null ? "" : File.ReadAllText(Path.Combine(raiz, "GammaHoyTres.cs"));
+            var linea = src.Split('\n').FirstOrDefault(l => l.Contains("if (Tres41Tunel && VerTunelEf")) ?? "";
+            var real = raiz == null ? null : ClaseReal(raiz, out _, out _);
+            string dTun = real?.GetProperty("Tres41Tunel", BindingFlags.Public | BindingFlags.Instance)?.GetCustomAttribute<DisplayAttribute>()?.Description ?? "";
+            Ok(linea != "" && !linea.Contains("Tunel3Sombreado") && dTun.Contains("se prende SOLA"),
+               "C121 '3.0 tunel D1-D2' prende el tunel sola (la condicion del dibujo ya no pide 'Tunel sombreado' de 9.7, que el .ws del operador tiene en False) y su descripcion lo dice", linea.Trim());
         }
 
         // ------------------------------------------------------------------ C90+ (4.1.3): las dominantes como la 2.0
@@ -1116,7 +1514,7 @@ namespace PruebaPantalla
                    "T9 Tramos41Rotulos apagado: ningun rotulo y el resto del dibujo identico (mismas rayitas y textos; solo faltan la caja, la sombra y los 2 tramos del rotulo); sin estela tampoco");
             }
 
-            // T10 nombres cortos de las 33 series
+            // T10 nombres cortos de las series del catalogo (4.1.5b: 35)
             {
                 var cp = new CatalogoPantalla(CatalogoFamilia.Series);
                 Console.WriteLine("     T10 nombres: " + string.Join(" | ", cp.Lista.Select(s => s.Id + "=" + (cp.NombreTramo[s.Id].Base + " " + cp.NombreTramo[s.Id].Suf).Trim())));
@@ -1125,6 +1523,8 @@ namespace PruebaPantalla
                     ["MUROS_NDX_vol"] = "NDX muro V", ["MUROS_NDX_oi"] = "NDX muro OI", ["ZTP_NDX_vol"] = "NDX cruce", ["R20_NDX_vol"] = "2.0 NDX", ["R20_QQQ_vol"] = "2.0 QQQ", ["DOMS_QQQ_vol"] = "QQQ dom",
                     ["FAM_MUROS_oi"] = "FAM muro OI", ["TRES_NDX"] = "3.0 NDX", ["T_MUROS_oi"] = "TQQQ muro OI", ["ZEST_NQ_oi"] = "NQ 0G OI", ["ZEST_QQQ_vol"] = "QQQ 0G", ["CONF_vol"] = "CONF",
                     ["T_ZERO_oi"] = "TQQQ 0G", ["T_DOMS_raz"] = "TQQQ razon", ["MAJORS_QQQ_vol"] = "QQQ major V", ["MAJORS_NQ_oi"] = "NQ major OI", ["T_DOMS_vol"] = "TQQQ dom",
+                    ["R10_NDX_zero"] = "Clasica NDX 0Γ",                                                                                       // 4.1.5
+                    ["R10_NDX_dom"] = "Clasica NDX",                                                                                           // 4.1.5b: el corto (como "2.0 NDX")
                 };
                 var mal = esp.Where(kv => (cp.NombreTramo[kv.Key].Base + " " + cp.NombreTramo[kv.Key].Suf).Trim() != kv.Value).Select(kv => kv.Key).ToList();
                 Ok(mal.Count == 0 && cp.Lista.All(s => cp.NombreTramo[s.Id].Base != ""), "T10 nombre corto de cada serie (V/OI solo si la serie existe por volumen y por OI)", string.Join(",", mal));
@@ -1676,7 +2076,7 @@ namespace PruebaPantalla
             for (int k = 0; k < n; k++) p.Pintar(g, f);
             double ms = sw.Elapsed.TotalMilliseconds / n;
             Console.WriteLine("     2000 velas visibles x " + SeriesPantalla.Casillas.Count + " series x 2 niveles = " + p.UltimoDibujo.Rayitas + " rayitas: " + ms.ToString("0.00", CultureInfo.InvariantCulture) + " ms por render (armado + pintado al doble)");
-            Ok(p.UltimoDibujo.Rayitas == 2000 * 2 * SeriesPantalla.Casillas.Count, "E1 " + (2000 * 2 * SeriesPantalla.Casillas.Count).ToString("#,##0", ArmadoPantalla.Es) + " rayitas armadas (4.1.3: 33 series)");
+            Ok(p.UltimoDibujo.Rayitas == 2000 * 2 * SeriesPantalla.Casillas.Count, "E1 " + (2000 * 2 * SeriesPantalla.Casillas.Count).ToString("#,##0", ArmadoPantalla.Es) + " rayitas armadas (" + SeriesPantalla.Casillas.Count + " series; 4.1.5b: 35)");
             // 4.1.4: lo mismo sin los rotulos de tramos. OJO (revision 4.1.4): con niveles QUIETOS los tramos siguen por el atajo y hay 66: NO es el peor caso
             // de los rotulos (ese es E2)
             gr.A.Tramos = false;

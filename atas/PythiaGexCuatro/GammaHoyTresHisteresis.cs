@@ -273,17 +273,17 @@ namespace PythiaGexCuatro
 
     public partial class FamiliaCuatro
     {
-        [Display(Name = "Histeresis: la retadora supera a la vigente por (%)", GroupName = "9.2 3.0 · Lectura", Order = 12,
+        [Display(Name = "Histeresis: la retadora supera a la vigente por (%)", GroupName = "9.2 3.0 · Lectura", Order = 1012,
                  Description = "Solo con la regla Tres. 25 con 5 min = V22 del laboratorio (confirmacion +7,1 pp, z 1,47: sin validar). 50 con 10 min y centroide 0 = V14 (indistinguible en confirmacion).")]
         [Range(0, 500)]
         public decimal Histeresis3Pct { get; set; } = 25m;
 
-        [Display(Name = "Histeresis: minutos seguidos", GroupName = "9.2 3.0 · Lectura", Order = 13,
+        [Display(Name = "Histeresis: minutos seguidos", GroupName = "9.2 3.0 · Lectura", Order = 1013,
                  Description = "Solo con la regla Tres. Cuantos minutos seguidos tiene que ganar la retadora para reemplazar a la vigente mas debil.")]
         [Range(1, 120)]
         public int Histeresis3Min { get; set; } = 5;
 
-        [Display(Name = "Histeresis: centroide (pts, 0 = strike exacto)", GroupName = "9.2 3.0 · Lectura", Order = 14,
+        [Display(Name = "Histeresis: centroide (pts, 0 = strike exacto)", GroupName = "9.2 3.0 · Lectura", Order = 1014,
                  Description = "Solo con la regla Tres. La raya va al promedio de los strikes a menos de esta distancia del elegido, pesado por fuerza. 6 = V22.")]
         [Range(0, 50)]
         public decimal Histeresis3CentroidePts { get; set; } = 6m;

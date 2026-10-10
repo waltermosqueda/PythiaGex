@@ -30,6 +30,7 @@
     <Compile Include="../../PythiaGexCuatro/_modulos/tqqq/*.cs" LinkBase="m/tqqq" />
     <!-- 4.1.4 (revision 4.1.3): la Replica20, para el escenario ny-extras (el host como en produccion, con OpcionesMotorFamilia.Extras) -->
     <Compile Include="../../PythiaGexCuatro/_modulos/familia/replica20/*.cs" LinkBase="m/replica20" />
+    <Compile Include="../../PythiaGexCuatro/_modulos/familia/clasica/*.cs" LinkBase="m/clasica" />
     <!-- solo atribucion (no entran en la cadena) -->
     <Compile Include="../ndx/DobleCboe.cs" Link="atrib/DobleCboe.cs" />
     <Compile Include="../qqq/FuenteCboeArchivoQqq.cs" Link="atrib/FuenteCboeArchivoQqq.cs" />

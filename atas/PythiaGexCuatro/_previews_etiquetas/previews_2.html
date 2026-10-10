@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Etiquetas 4.1: la 2</title>
+<style>
+:root{--fondo:#0f1218;--panel:#151a22;--texto:#d7dde8;--tenue:#7d8796;--borde:#262d3a;--vela-sube:#26a69a;--vela-baja:#ef5350;--precio:#e8eef7}
+body{margin:0;background:var(--fondo);color:var(--texto);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+header{padding:16px 16px 4px;max-width:1100px;margin:auto}
+h1{font-size:20px;margin:0 0 6px}
+.nota{color:var(--tenue);font-size:12.5px}
+.grid{display:grid;grid-template-columns:1fr;gap:18px;padding:12px 16px 40px;max-width:1100px;margin:auto}
+.card{background:var(--panel);border:1px solid var(--borde);border-radius:10px;padding:10px 12px}
+.card h2{font-size:15px;margin:2px 0 2px}
+.card p{margin:0 0 6px;color:var(--tenue);font-size:12.5px}
+svg{width:100%;height:auto;display:block;background:#0b0e13;border-radius:6px}
+text{font-family:Consolas,Menlo,monospace}
+</style></head><body>
+<header>
+<h1>La 2, en 9 versiones + el recuadro desplegable</h1>
+<div class="nota" id="fuente"></div>
+</header>
+<div class="grid" id="grid"></div>
+<script>
+const D = {"minuto": "2026-10-09 20:59Z (17:59 ART, ultimo minuto de la sesion)", "comparado": "20:44Z (cambio en 15 min)", "fut": 31132, "niveles": [{"serie": "MUROS_NQ_vol", "precio": 31100, "etq": "D1", "gexM": 108.3, "strike": 31100, "d15": 0.0}, {"serie": "MUROS_NQ_vol", "precio": 31100, "etq": "D2", "gexM": -63.8, "strike": 31100, "d15": -7.2}, {"serie": "MUROS_NQ_oi", "precio": 31200, "etq": "D1", "gexM": 15, "strike": 31200, "d15": 0.3}, {"serie": "MUROS_NQ_oi", "precio": 31100, "etq": "D2", "gexM": -9.5, "strike": 31100, "d15": 0.0}, {"serie": "MAJORS_NQ_vol", "precio": 31100, "etq": "D1", "gexM": 44.5, "strike": 31100, "d15": -7.2}, {"serie": "MAJORS_NQ_vol", "precio": 31090, "etq": "D2", "gexM": -21.1, "strike": 31090, "d15": 0.1}, {"serie": "ZEST_NQ_vol", "precio": 31054.45, "etq": "Z", "gexM": null, "strike": 31054.45, "d15": null}, {"serie": "MUROS_NDX_vol", "precio": 31128.36, "etq": "D1", "gexM": 171.3, "strike": 30900, "d15": 0.1}, {"serie": "MUROS_NDX_vol", "precio": 31088.36, "etq": "D2", "gexM": -107.5, "strike": 30860, "d15": 1.0}, {"serie": "MUROS_NDX_oi", "precio": 31228.36, "etq": "D1", "gexM": 97.4, "strike": 31000, "d15": null}, {"serie": "MUROS_NDX_oi", "precio": 31228.36, "etq": "D2", "gexM": -41.1, "strike": 31000, "d15": null}, {"serie": "MAJORS_NDX_vol", "precio": 31128.36, "etq": "D1", "gexM": 116.2, "strike": 30900, "d15": 0.1}, {"serie": "MAJORS_NDX_vol", "precio": 31058.36, "etq": "D2", "gexM": -61, "strike": 30830, "d15": 1}, {"serie": "ZEST_NDX_vol", "precio": 31064.11, "etq": "Z", "gexM": null, "strike": 30835.75, "d15": null}, {"serie": "MUROS_QQQ_vol", "precio": 31102.78, "etq": "D1", "gexM": 1873, "strike": 751, "d15": -10.7}, {"serie": "MUROS_QQQ_vol", "precio": 31061.37, "etq": "D2", "gexM": -1470.3, "strike": 750, "d15": 22.4}, {"serie": "MUROS_QQQ_oi", "precio": 31144.2, "etq": "D1", "gexM": 125.4, "strike": 752, "d15": 0.5}, {"serie": "MUROS_QQQ_oi", "precio": 31061.37, "etq": "D2", "gexM": -89, "strike": 750, "d15": 1.4}, {"serie": "MAJORS_QQQ_vol", "precio": 31144.2, "etq": "D1", "gexM": 1309.8, "strike": 752, "d15": 5.8}, {"serie": "MAJORS_QQQ_oi", "precio": 31144.2, "etq": "D1", "gexM": 70.9, "strike": 752, "d15": 0.3}, {"serie": "DOMS_QQQ_vol", "precio": 31144.2, "etq": "D1", "gexM": 1309.8, "strike": 752, "d15": 5.8}, {"serie": "DOMS_QQQ_vol", "precio": 31102.78, "etq": "D2", "gexM": 731.4, "strike": 751, "d15": -4.3}, {"serie": "T_MUROS_vol", "precio": 31203, "etq": "D1", "gexM": 12, "strike": 82, "d15": null, "nota": "de la pantalla 19:18-20:00"}, {"serie": "T_MUROS_vol", "precio": 30948, "etq": "D2", "gexM": -8.9, "strike": 80, "d15": null, "nota": "de la pantalla 19:18"}, {"serie": "T_DOMS_vol", "precio": 31075, "etq": "D1", "gexM": null, "strike": null, "d15": null, "nota": "rotulo de tramo en pantalla"}], "precio": [{"t": "18:09", "f": 31098.5}, {"t": "18:10", "f": 31101.25}, {"t": "18:11", "f": 31101.25}, {"t": "18:12", "f": 31104.25}, {"t": "18:13", "f": 31104.25}, {"t": "18:14", "f": 31103.5}, {"t": "18:15", "f": 31103.5}, {"t": "18:16", "f": 31104.75}, {"t": "18:17", "f": 31104.75}, {"t": "18:18", "f": 31101}, {"t": "18:19", "f": 31101}, {"t": "18:20", "f": 31104.75}, {"t": "18:21", "f": 31104.75}, {"t": "18:22", "f": 31112.25}, {"t": "18:23", "f": 31112.25}, {"t": "18:24", "f": 31122}, {"t": "18:25", "f": 31122}, {"t": "18:26", "f": 31120.25}, {"t": "18:27", "f": 31120.25}, {"t": "18:28", "f": 31119.75}, {"t": "18:29", "f": 31119.75}, {"t": "18:30", "f": 31112.5}, {"t": "18:31", "f": 31112.5}, {"t": "18:32", "f": 31107}, {"t": "18:33", "f": 31107}, {"t": "18:34", "f": 31103.25}, {"t": "18:35", "f": 31103.25}, {"t": "18:36", "f": 31103.5}, {"t": "18:37", "f": 31103.5}, {"t": "18:38", "f": 31106.5}, {"t": "18:39", "f": 31106.5}, {"t": "18:40", "f": 31107.25}, {"t": "18:41", "f": 31107.25}, {"t": "18:42", "f": 31107}, {"t": "18:43", "f": 31107}, {"t": "18:44", "f": 31100.25}, {"t": "18:45", "f": 31100.25}, {"t": "18:46", "f": 31105.5}, {"t": "18:47", "f": 31105.5}, {"t": "18:48", "f": 31114.75}, {"t": "18:49", "f": 31114.75}, {"t": "18:50", "f": 31123.25}, {"t": "18:51", "f": 31123.25}, {"t": "18:52", "f": 31129.25}, {"t": "18:53", "f": 31129.25}, {"t": "18:54", "f": 31116.5}, {"t": "18:55", "f": 31116.5}, {"t": "18:56", "f": 31106}, {"t": "18:57", "f": 31106}, {"t": "18:58", "f": 31114.75}, {"t": "18:59", "f": 31114.75}, {"t": "19:00", "f": 31113.25}, {"t": "19:01", "f": 31113.25}, {"t": "19:02", "f": 31112.5}, {"t": "19:03", "f": 31112.5}, {"t": "19:04", "f": 31109.25}, {"t": "19:05", "f": 31109.25}, {"t": "19:06", "f": 31103.25}, {"t": "19:07", "f": 31103.25}, {"t": "19:08", "f": 31111.5}, {"t": "19:09", "f": 31111.5}, {"t": "19:10", "f": 31112}, {"t": "19:11", "f": 31112}, {"t": "19:12", "f": 31116}, {"t": "19:13", "f": 31116}, {"t": "19:14", "f": 31120}, {"t": "19:15", "f": 31120}, {"t": "19:16", "f": 31123.75}, {"t": "19:17", "f": 31123.75}, {"t": "19:18", "f": 31120}, {"t": "19:19", "f": 31120}, {"t": "19:20", "f": 31124.5}, {"t": "19:21", "f": 31124.5}, {"t": "19:22", "f": 31132.25}, {"t": "19:23", "f": 31132.25}, {"t": "19:24", "f": 31130.25}, {"t": "19:25", "f": 31130.25}, {"t": "19:26", "f": 31131.25}, {"t": "19:27", "f": 31131.25}, {"t": "19:28", "f": 31129.5}, {"t": "19:29", "f": 31129.5}, {"t": "19:30", "f": 31117.5}, {"t": "19:31", "f": 31117.5}, {"t": "19:32", "f": 31117}, {"t": "19:33", "f": 31117}, {"t": "19:34", "f": 31118}, {"t": "19:35", "f": 31118}, {"t": "19:36", "f": 31100.25}, {"t": "19:37", "f": 31100.25}, {"t": "19:38", "f": 31098.25}, {"t": "19:39", "f": 31098.25}, {"t": "19:40", "f": 31092.25}, {"t": "19:41", "f": 31092.25}, {"t": "19:42", "f": 31095.75}, {"t": "19:43", "f": 31095.75}, {"t": "19:44", "f": 31095.75}, {"t": "19:45", "f": 31095.75}, {"t": "19:46", "f": 31094.5}, {"t": "19:47", "f": 31094.5}, {"t": "19:48", "f": 31098}, {"t": "19:49", "f": 31098}, {"t": "19:50", "f": 31097.75}, {"t": "19:51", "f": 31097.75}, {"t": "19:52", "f": 31092.75}, {"t": "19:53", "f": 31092.75}, {"t": "19:54", "f": 31100.25}, {"t": "19:55", "f": 31100.25}, {"t": "19:56", "f": 31118}, {"t": "19:57", "f": 31118}, {"t": "19:58", "f": 31117}, {"t": "19:59", "f": 31117}, {"t": "20:00", "f": 31112.25}, {"t": "20:01", "f": 31112.25}, {"t": "20:02", "f": 31109.25}, {"t": "20:03", "f": 31109.25}, {"t": "20:04", "f": 31112.5}, {"t": "20:05", "f": 31112.5}, {"t": "20:06", "f": 31111.25}, {"t": "20:07", "f": 31111.25}, {"t": "20:08", "f": 31113.75}, {"t": "20:09", "f": 31113.75}, {"t": "20:10", "f": 31110}, {"t": "20:11", "f": 31110}, {"t": "20:12", "f": 31113.25}, {"t": "20:13", "f": 31113.25}, {"t": "20:14", "f": 31116.75}, {"t": "20:15", "f": 31116.75}, {"t": "20:16", "f": 31112.25}, {"t": "20:17", "f": 31112.25}, {"t": "20:18", "f": 31110.5}, {"t": "20:19", "f": 31110.5}, {"t": "20:20", "f": 31112.5}, {"t": "20:21", "f": 31112.5}, {"t": "20:22", "f": 31119.75}, {"t": "20:23", "f": 31119.75}, {"t": "20:24", "f": 31117.25}, {"t": "20:25", "f": 31117.25}, {"t": "20:26", "f": 31117}, {"t": "20:27", "f": 31117}, {"t": "20:28", "f": 31116.25}, {"t": "20:29", "f": 31116.25}, {"t": "20:30", "f": 31119}, {"t": "20:31", "f": 31119}, {"t": "20:32", "f": 31113.75}, {"t": "20:33", "f": 31113.75}, {"t": "20:34", "f": 31114}, {"t": "20:35", "f": 31114}, {"t": "20:36", "f": 31114.75}, {"t": "20:37", "f": 31114.75}, {"t": "20:38", "f": 31114.75}, {"t": "20:39", "f": 31114.75}, {"t": "20:40", "f": 31117.5}, {"t": "20:41", "f": 31117.5}, {"t": "20:42", "f": 31119.75}, {"t": "20:43", "f": 31119.75}, {"t": "20:44", "f": 31117.75}, {"t": "20:45", "f": 31117.75}, {"t": "20:46", "f": 31121.75}, {"t": "20:47", "f": 31121.75}, {"t": "20:48", "f": 31127.75}, {"t": "20:49", "f": 31127.75}, {"t": "20:50", "f": 31133}, {"t": "20:51", "f": 31133}, {"t": "20:52", "f": 31134.5}, {"t": "20:53", "f": 31134.5}, {"t": "20:54", "f": 31129.25}, {"t": "20:55", "f": 31129.25}, {"t": "20:56", "f": 31127.5}, {"t": "20:57", "f": 31127.5}, {"t": "20:58", "f": 31132}, {"t": "20:59", "f": 31132}], "conv": [{"l": "NQ", "c": 0, "s": 31132, "d": "2026-10-09T20:58:40.0000000Z", "o": 1, "z": 0, "t": "mismo contrato (corrimiento 0)"}, {"l": "NDX", "c": 228.36081860256874, "s": 30903.63918139743, "d": "2026-10-09T20:14:55.0000000Z", "o": 1, "z": 1, "t": "base 228.36 (mediana de la rueda 2026-10-09 sincronizada, 296 muestras: 228.50, menos el carry)"}, {"l": "QQQ", "c": 41.41515337923352, "s": 751.7055343228616, "d": "2026-10-09T20:14:59.0000000Z", "o": 1, "z": 1, "t": "razon 41.4152 (mediana de 24 muestras sincronizadas)"}]};
+const COL = {MUROS_NQ_vol:'#4db5e4',MUROS_NQ_oi:'#9a98d6',MAJORS_NQ_vol:'#6cc3ff',ZEST_NQ_vol:'#c9d4e3',MUROS_NDX_vol:'#2fb3a8',MUROS_NDX_oi:'#8de031',
+  MAJORS_NDX_vol:'#4fd1c5',ZEST_NDX_vol:'#7dd3fc',MUROS_QQQ_vol:'#dabe6f',MUROS_QQQ_oi:'#ff9f43',MAJORS_QQQ_vol:'#f6c177',MAJORS_QQQ_oi:'#e2b872',
+  DOMS_QQQ_vol:'#5b8cff',T_MUROS_vol:'#26c6da',T_DOMS_vol:'#ffd54f'};
+const LIBCOL = {NQ:'#5ab8f0',NDX:'#3fd0b8',QQQ:'#f2b45c',TQQQ:'#d58cf0'};
+const W=1060,H=470, X0=200, X1=760, YT=18, YB=H-22, PMIN=31035, PMAX=31215;
+const y = p => YT + (PMAX-p)/(PMAX-PMIN)*(YB-YT);
+const fut = D.fut;
+document.getElementById('fuente').textContent = 'Datos reales: PythiaGex 4.1, sesion del 09-10, minuto ' + D.minuto + '; cambio contra ' + D.comparado +
+  '. El mercado esta cerrado: dato de la sesion del viernes. Las velas son aproximadas, armadas con el precio de cada minuto; las rayas y los montos son los de la 4.1. Las 3 de TQQQ salen de tu pantalla (19:18-20:00).';
+
+// ---------- niveles normalizados
+function libroDe(s){ return s.includes('_NDX')?'NDX': s.startsWith('T_')?'TQQQ': s.includes('_QQQ')?'QQQ':'NQ'; }
+function rolDe(s,e){ if(s.startsWith('MUROS')||s==='T_MUROS_vol') return e==='D1'?'C':'P'; if(s.startsWith('MAJORS')) return e==='D1'?'M+':'M−';
+  if(s.startsWith('ZEST')) return '0Γ'; if(s.startsWith('DOMS')||s==='T_DOMS_vol') return e==='D1'?'D1':'D2'; return e; }
+function fuenteDe(s){ return s.endsWith('_oi')?'OI':'V'; }
+const N = D.niveles.map(n=>({serie:n.serie, libro:libroDe(n.serie), rol:rolDe(n.serie,n.etq), fuente:fuenteDe(n.serie), precio:n.precio, m:n.gexM, d:n.d15, color:COL[n.serie]||'#aaa'}));
+// agrupar: mismo libro y mismo precio (0,5 pt) -> una entrada con varios roles
+function agrupar(lista, tol){ const out=[]; for(const n of [...lista].sort((a,b)=>b.precio-a.precio)){ const g=out.find(o=>o.libro===n.libro && Math.abs(o.precio-n.precio)<=tol);
+  if(g){ g.items.push(n); } else out.push({libro:n.libro, precio:n.precio, items:[n]}); } return out; }
+const G = agrupar(N, 0.6);
+
+// ---------- formato
+const fmtP = p => Math.round(p).toLocaleString('es-AR');
+function fmtM(m){ if(m==null||isNaN(m)) return ''; const a=Math.abs(m), s=m<0?'−':'+'; if(a>=1000) return s+(a/1000).toLocaleString('es-AR',{maximumFractionDigits:2,minimumFractionDigits:2})+'B';
+  return s+Math.round(a).toLocaleString('es-AR')+'M'; }
+function fmtD(d){ if(d==null||isNaN(d)) return ''; if(Math.abs(d)<0.5) return '='; const a=Math.abs(d); const v=a>=1000?(a/1000).toLocaleString('es-AR',{maximumFractionDigits:1})+'B':(a<10?a.toLocaleString('es-AR',{maximumFractionDigits:1}):Math.round(a).toLocaleString('es-AR'))+'M';
+  return (d>0?'▲':'▼')+v; }
+const rolesTxt = g => [...new Set(g.items.map(i=>i.rol))].join('/');
+const fuentesTxt = g => [...new Set(g.items.map(i=>i.fuente))].join('/');
+const mayor = g => g.items.filter(i=>i.m!=null).sort((a,b)=>Math.abs(b.m)-Math.abs(a.m))[0];
+const montosTxt = g => { const i=mayor(g); return i?fmtM(i.m):''; };   // minimalista: solo el monto mas grande del grupo
+const deltaTxt = g => { const i=mayor(g); return i?fmtD(i.d):''; };
+const dColor = t => t.startsWith('▲')?'#4ade80': t.startsWith('▼')?'#f87171':'#9aa4b2';
+
+// ---------- dibujo base
+function svgBase(){ let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  for(let p=31040;p<=31210;p+=20){ s+=`<line x1="${X0}" x2="${X1}" y1="${y(p)}" y2="${y(p)}" stroke="#1a2029"/>`; }
+  const P=D.precio, n=P.length, dx=(X1-X0-10)/n;
+  for(let i=0;i<n;i++){ const o=i?P[i-1].f:P[i].f, c=P[i].f, hi=Math.max(o,c)+0.75+(i%3)*0.5, lo=Math.min(o,c)-0.75-((i+1)%3)*0.5, x=X0+5+i*dx;
+    const col=c>=o?'var(--vela-sube)':'var(--vela-baja)';
+    s+=`<line x1="${x+dx/2}" x2="${x+dx/2}" y1="${y(hi)}" y2="${y(lo)}" stroke="${col}" stroke-width="1"/>`;
+    s+=`<rect x="${x+0.4}" y="${y(Math.max(o,c))}" width="${Math.max(1,dx-0.8)}" height="${Math.max(1,Math.abs(y(o)-y(c)))}" fill="${col}"/>`; }
+  s+=`<line x1="${X0}" x2="${X1}" y1="${y(fut)}" y2="${y(fut)}" stroke="#e8eef7" stroke-dasharray="2,3" stroke-width="0.8"/>`;
+  s+=`<rect x="${X1+2}" y="${y(fut)-8}" width="60" height="16" rx="3" fill="#e8eef7"/><text x="${X1+32}" y="${y(fut)+4}" text-anchor="middle" font-size="11" fill="#0b0e13">${fmtP(fut)}</text>`;
+  return s; }
+function lineas(s, grupos, opts={}){ for(const g of grupos){ if(g.precio<PMIN||g.precio>PMAX) continue; const i=mayor(g)||g.items[0];
+  const w = opts.peso? (1+Math.min(4,Math.log10(1+Math.abs(i.m||1))*1.2)) : 1.3;
+  s+=`<line x1="${X0}" x2="${X1}" y1="${y(g.precio)}" y2="${y(g.precio)}" stroke="${LIBCOL[g.libro]}" stroke-width="${w}" stroke-opacity="${opts.op||0.85}"/>`; } return s; }
+// separa etiquetas para que no se pisen (de arriba hacia abajo, minimo 'h' px)
+function separar(items,h){ const a=[...items].sort((p,q)=>p.yy-q.yy); for(let i=1;i<a.length;i++) if(a[i].yy-a[i-1].yy<h) a[i].yy=a[i-1].yy+h;
+  const exceso=a.length? a[a.length-1].yy-(YB-4):0; if(exceso>0) for(const it of a) it.yy-=exceso; for(let i=a.length-2;i>=0;i--) if(a[i+1].yy-a[i].yy<h) a[i].yy=a[i+1].yy-h; return a; }
+function caja(s,x,yy,txt,col,anc='start',fs=11.5,fondo='#0b0e13'){ const w=txt.length*fs*0.6+8; const xx= anc==='end'? x-w : anc==='middle'? x-w/2 : x;
+  return s+`<rect x="${xx}" y="${yy-fs*0.85}" width="${w}" height="${fs*1.25}" rx="3" fill="${fondo}" stroke="${col}" stroke-width="0.9"/>`+
+    `<text x="${xx+4}" y="${yy+fs*0.25}" font-size="${fs}" fill="${col}">${txt}</text>`; }
+function txt(s,x,yy,t,col,anc='start',fs=11.5,peso='normal'){ return s+`<text x="${x}" y="${yy+fs*0.32}" font-size="${fs}" fill="${col}" text-anchor="${anc}" font-weight="${peso}">${t}</text>`; }
+function conector(s,x1,y1,x2,y2,col){ return s+`<path d="M${x1},${y1} L${x2},${y2}" stroke="${col}" stroke-width="0.7" stroke-opacity="0.7" fill="none"/>`; }
+function fueraDeRango(s, grupos){ const arr=grupos.filter(g=>g.precio>PMAX), ab=grupos.filter(g=>g.precio<PMIN);
+  if(arr.length) s=txt(s,X1-4,YT+4,'↑ '+arr.map(g=>g.libro+' '+rolesTxt(g)+' '+fmtP(g.precio)).join(' · '),'#9aa4b2','end',10.5);
+  if(ab.length) s=txt(s,X1-4,YB-2,'↓ '+ab.map(g=>g.libro+' '+rolesTxt(g)+' '+fmtP(g.precio)).join(' · '),'#9aa4b2','end',10.5); return s; }
+const enRango = gs => gs.filter(g=>g.precio>=PMIN&&g.precio<=PMAX);
+
+// ---------- las variantes (todas de la familia de la 2: una columna a la derecha, sin precio) + el recuadro desplegable
+const V = [];
+const XL = X1+70;                                   // donde arranca la columna de etiquetas
+const dSolo = d => (d && d!=='=') ? d : '';         // si no cambio, no se escribe nada
+const enR = () => enRango(G);
+function base2(op){ return lineas(svgBase(),G,{op:op||0.85}); }
+
+// El recuadro: titulo con la leyenda de colores (clic = abre/cierra) y, abierto, los 5 montos mas grandes con su cambio.
+function recuadro(s, abierta){
+  const top=G.filter(g=>mayor(g)).sort((a,b)=>Math.abs(mayor(b).m)-Math.abs(mayor(a).m)).slice(0,5);
+  const x=X0+6, y0=YT-2, w=208;
+  let g=`<g class="caja" data-abierta="${abierta?1:0}">`;
+  g+=`<g class="cab"><rect x="${x}" y="${y0}" width="${w}" height="16" rx="4" fill="#0b0e13" fill-opacity="0.92" stroke="#2a3240"/>`;
+  g+=`<text class="flecha" x="${x+6}" y="${y0+11.5}" font-size="10" fill="#9aa4b2">${abierta?'▾':'▸'}</text>`;
+  let lx=x+18; for(const L of ['NQ','NDX','QQQ','TQQQ']){ g+=`<rect x="${lx}" y="${y0+4}" width="8" height="8" rx="1.5" fill="${LIBCOL[L]}"/><text x="${lx+11}" y="${y0+11.5}" font-size="9.5" fill="${LIBCOL[L]}">${L}</text>`; lx+= L.length*6+20; }
+  g+=`</g><g class="cuerpo" style="display:${abierta?'inline':'none'}"><rect x="${x}" y="${y0+17}" width="${w}" height="${top.length*14+6}" rx="4" fill="#0b0e13" fill-opacity="0.88" stroke="#2a3240"/>`;
+  let yy=y0+29; for(const t of top){ const i=mayor(t), dt=dSolo(deltaTxt(t));
+    g+=`<text x="${x+6}" y="${yy}" font-size="10.5" fill="${LIBCOL[t.libro]}">${t.libro} ${rolesTxt(t)} ${fmtM(i.m)}</text>`;
+    if(dt) g+=`<text x="${x+w-6}" y="${yy}" font-size="10.5" fill="${dColor(dt)}" text-anchor="end">${dt}</text>`; yy+=14; }
+  return s+g+`</g></g>`;
+}
+
+V.push({t:'2A. Limpia: punto de color, sin conectores', d:'Un punto del color del libro, el LIBRO en negrita, el rol y el monto en gris claro y el cambio chico al final, solo si hubo cambio. Recuadro ABIERTO (clic en su titulo para cerrarlo).',
+  f(){ let s=base2(); for(const it of separar(enR().map(g=>({g,yy:y(g.precio)})),15)){ const g=it.g, dt=dSolo(deltaTxt(g)), c=LIBCOL[g.libro];
+      s+=`<circle cx="${XL}" cy="${it.yy}" r="3.2" fill="${c}"/>`; s=txt(s,XL+8,it.yy,g.libro,c,'start',11,'bold'); s=txt(s,XL+8+g.libro.length*6.9+5,it.yy,rolesTxt(g)+'  '+montosTxt(g).replace('+',''),'#cfd6e2','start',11);
+      if(dt) s=txt(s,W-8,it.yy,dt,dColor(dt),'end',10); }
+    return recuadro(fueraDeRango(s,G),true)+'</svg>'; }});
+V.push({t:'2B. Pastillas de color', d:'Cada etiqueta es una pastilla con el color del libro de fondo, suave, y texto blanco. El cambio va en una pastilla chica verde o roja. Recuadro CERRADO.',
+  f(){ let s=base2(0.7); for(const it of separar(enR().map(g=>({g,yy:y(g.precio)})),16)){ const g=it.g, dt=dSolo(deltaTxt(g)), c=LIBCOL[g.libro], t=g.libro+' '+rolesTxt(g)+' '+montosTxt(g).replace('+',''), w=t.length*6.6+12;
+      s+=`<rect x="${XL}" y="${it.yy-7.5}" width="${w}" height="15" rx="7.5" fill="${c}" fill-opacity="0.28" stroke="${c}" stroke-width="0.8"/>`; s=txt(s,XL+6,it.yy,t,'#f2f5fa','start',10.8);
+      if(dt){ const w2=dt.length*6.4+10; s+=`<rect x="${XL+w+5}" y="${it.yy-7}" width="${w2}" height="14" rx="7" fill="${dColor(dt)}" fill-opacity="0.2"/>`; s=txt(s,XL+w+10,it.yy,dt,dColor(dt),'start',10); } }
+    return recuadro(fueraDeRango(s,G),false)+'</svg>'; }});
+V.push({t:'2C. El monto primero, numeros alineados', d:'Los montos en columna, alineados (se comparan de un vistazo: verde positivo, rojo negativo) y despues LIBRO ROL. Recuadro ABIERTO.',
+  f(){ let s=base2(); for(const it of separar(enR().map(g=>({g,yy:y(g.precio)})),15)){ const g=it.g, dt=dSolo(deltaTxt(g)), c=LIBCOL[g.libro], i=mayor(g);
+      s=txt(s,XL+58,it.yy,i?fmtM(i.m):'·',i&&i.m<0?'#f39b9b':'#9fe0b0','end',11,'bold'); s=txt(s,XL+66,it.yy,g.libro+' '+rolesTxt(g),c,'start',11); if(dt) s=txt(s,W-8,it.yy,dt,dColor(dt),'end',10); }
+    return recuadro(fueraDeRango(s,G),true)+'</svg>'; }});
+V.push({t:'2D. Ultra minima: rol y monto en el color del libro', d:'Sin el nombre del libro: lo dice el color, y la leyenda esta en el titulo del recuadro. Solo C/P/M+/0Γ y el monto; el cambio como flecha sola. Recuadro CERRADO.',
+  f(){ let s=base2(); for(const it of separar(enR().map(g=>({g,yy:y(g.precio)})),14)){ const g=it.g, dt=dSolo(deltaTxt(g)), c=LIBCOL[g.libro]; s=txt(s,XL,it.yy,rolesTxt(g)+' '+montosTxt(g).replace('+',''),c,'start',11.5,'bold');
+      if(dt) s=txt(s,XL+150,it.yy,dt[0],dColor(dt),'start',12); }
+    return recuadro(fueraDeRango(s,G),false)+'</svg>'; }});
+V.push({t:'2E. Con barrita de peso', d:'Una barrita fina antes del texto: el largo dice cuanto pesa (escala logaritmica), verde si es positivo y roja si es negativo. Recuadro ABIERTO.',
+  f(){ let s=base2(); const R=enR().filter(g=>mayor(g)); const mx=Math.max(...R.map(g=>Math.log10(1+Math.abs(mayor(g).m))));
+    for(const it of separar(enR().map(g=>({g,yy:y(g.precio)})),15)){ const g=it.g, dt=dSolo(deltaTxt(g)), c=LIBCOL[g.libro], i=mayor(g);
+      if(i){ const w=6+40*Math.log10(1+Math.abs(i.m))/mx; s+=`<rect x="${XL+46-w}" y="${it.yy-3}" width="${w}" height="6" rx="2" fill="${i.m<0?'#ef5350':'#26a69a'}" fill-opacity="0.85"/>`; }
+      s=txt(s,XL+52,it.yy,g.libro+' '+rolesTxt(g)+' '+montosTxt(g).replace('+',''),c,'start',10.8); if(dt) s=txt(s,W-8,it.yy,dt,dColor(dt),'end',10); }
+    return recuadro(fueraDeRango(s,G),true)+'</svg>'; }});
+V.push({t:'2F. Jerarquia: las 4 que mas pesan grandes, el resto chico y gris', d:'De un golpe de vista se ven las 4 que mas pesan; las demas quedan en gris como referencia. Recuadro CERRADO.',
+  f(){ let s=base2(); const top=new Set(enR().filter(g=>mayor(g)).sort((a,b)=>Math.abs(mayor(b).m)-Math.abs(mayor(a).m)).slice(0,4));
+    for(const it of separar(enR().map(g=>({g,yy:y(g.precio)})),15)){ const g=it.g, dt=dSolo(deltaTxt(g)), c=LIBCOL[g.libro], big=top.has(g);
+      s=txt(s,XL,it.yy,g.libro+' '+rolesTxt(g)+' '+montosTxt(g).replace('+',''),big?c:'#6f7a89','start',big?12.5:10,big?'bold':'normal'); if(dt&&big) s=txt(s,W-8,it.yy,dt,dColor(dt),'end',11,'bold'); }
+    return recuadro(fueraDeRango(s,G),false)+'</svg>'; }});
+V.push({t:'2G. Con la distancia chiquita en gris', d:'Igual que la 2, mas los puntos que faltan para llegar, en gris al final: sirve para ver si hay 20 pts de recorrido. Recuadro ABIERTO.',
+  f(){ let s=base2(); for(const it of separar(enR().map(g=>({g,yy:y(g.precio)})),15)){ const g=it.g, dt=dSolo(deltaTxt(g)), c=LIBCOL[g.libro], dist=Math.round(g.precio-fut);
+      s=txt(s,XL,it.yy,g.libro+' '+rolesTxt(g)+' '+montosTxt(g).replace('+',''),c,'start',11); if(dt) s=txt(s,XL+178,it.yy,dt,dColor(dt),'start',10);
+      s=txt(s,W-8,it.yy,(dist>0?'+':dist<0?'−':'')+Math.abs(dist),'#6f7a89','end',10); }
+    return recuadro(fueraDeRango(s,G),true)+'</svg>'; }});
+V.push({t:'2H. Pegada al eje, sin cajas, letra fina', d:'La etiqueta arranca pegada al borde del grafico, sin cajas: lo mas parecido a como dibujan los profesionales. Recuadro CERRADO.',
+  f(){ let s=base2(); for(const it of separar(enR().map(g=>({g,yy:y(g.precio)})),13)){ const g=it.g, dt=dSolo(deltaTxt(g)), c=LIBCOL[g.libro];
+      if(Math.abs(it.yy-y(g.precio))>1) s=conector(s,X1,y(g.precio),X1+64,it.yy,c); s=txt(s,X1+66,it.yy,g.libro+' '+rolesTxt(g)+' '+montosTxt(g).replace('+','')+(dt?' '+dt:''),c,'start',10); }
+    return recuadro(fueraDeRango(s,G),false)+'</svg>'; }});
+V.push({t:'2I. Separadas por lado: arriba del precio en una columna, abajo en otra', d:'Las que estan ARRIBA del precio a un costado y las de ABAJO al otro: se ve el lado de un vistazo. Recuadro ABIERTO.',
+  f(){ let s=base2(); const arr=enR().filter(g=>g.precio>fut), ab=enR().filter(g=>g.precio<=fut);
+    s=txt(s,XL,YT-4,'arriba','#9aa4b2','start',9.5,'bold'); s=txt(s,XL+128,YT-4,'abajo','#9aa4b2','start',9.5,'bold');
+    for(const it of separar(arr.map(g=>({g,yy:y(g.precio)})),14)){ const g=it.g, dt=dSolo(deltaTxt(g)); s=txt(s,XL,it.yy,g.libro+' '+rolesTxt(g)+' '+montosTxt(g).replace('+','')+(dt?' '+dt:''),LIBCOL[g.libro],'start',10); }
+    for(const it of separar(ab.map(g=>({g,yy:y(g.precio)})),14)){ const g=it.g, dt=dSolo(deltaTxt(g)); s=txt(s,XL+128,it.yy,g.libro+' '+rolesTxt(g)+' '+montosTxt(g).replace('+','')+(dt?' '+dt:''),LIBCOL[g.libro],'start',10); }
+    return recuadro(fueraDeRango(s,G),true)+'</svg>'; }});
+const grid=document.getElementById('grid');
+for(const v of V){ const c=document.createElement('div'); c.className='card'; c.innerHTML=`<h2>${v.t}</h2><p>${v.d}</p>`+v.f(); grid.appendChild(c); }
+document.querySelectorAll('g.caja').forEach(g=>{ const cab=g.querySelector('.cab'); cab.style.cursor='pointer';
+  cab.addEventListener('click',()=>{ const ab=g.getAttribute('data-abierta')==='1'; g.setAttribute('data-abierta',ab?'0':'1');
+    g.querySelector('.cuerpo').style.display=ab?'none':'inline'; g.querySelector('.flecha').textContent=ab?'▸':'▾'; }); });
+</script></body></html>

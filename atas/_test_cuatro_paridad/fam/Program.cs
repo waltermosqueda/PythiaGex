@@ -8,7 +8,12 @@
 //   invierno  la sesion en hora NY (corregida) contra la de paridad, del lado de verano y de invierno (01-11).
 //   gm        4.1.2 (B-tres): el monto con signo de las rayas 3.0 ("gm" de la estela): unidad, lectura, capas NDX/QQQ rehechas con el nucleo
 //             sobre datos reales (datos/gm) contra MAJORS_*_vol, y el factor NQ x0,2 con la estela real de la rueda (Gm.cs).
-// Uso: dotnet run -c Release -- [reglas|tres|historia|motor|invierno|gm|todo]   Salida: resultados/paridad-fam.txt; codigo 0 = todo verde.
+//   finde     4.1.5d/e (09-10-2026, pedido del operador: "quiero que la 4.0 se vuelva a ver, o sea que tenga memoria"): SesionFamilia.De el fin de
+//             semana en modo NY (Familia41Corregida): del viernes 17:00 NY al domingo 17:59 NY la sesion es la del VIERNES (antes: la del sabado o
+//             el domingo, sin datos); el domingo 18:00 NY empieza la del lunes; el cambio de horario 31-10/01-11; el modo UTC (paridad) SIN cambios
+//             (dia = fecha(t + 2 h), como la vista previa). Y el motor: con ahora >= FinUtc el aviso de la foto EMPIEZA con "mercado cerrado: se
+//             muestra la sesion del ...", el sabado reabre la sesion del viernes desde el archivo (memoria) y el domingo 18:00 NY pasa a la del lunes.
+// Uso: dotnet run -c Release -- [reglas|tres|historia|motor|invierno|finde|gm|todo]   Salida: resultados/paridad-fam.txt; codigo 0 = todo verde.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,6 +56,7 @@ namespace FamTest
                 if (todo || que.Contains("historia")) Historia();
                 if (todo || que.Contains("motor")) Motor();
                 if (todo || que.Contains("invierno")) Invierno();
+                if (todo || que.Contains("finde")) Finde();
                 if (todo || que.Contains("gm")) Gm();
                 P();
                 P(_fallas == 0 ? "RESULTADO: VERDE (0 fallas) en " + sw.Elapsed.TotalSeconds.ToString("0.0", Inv) + " s"
@@ -471,6 +477,137 @@ namespace FamTest
             var a2 = SesionFamilia.De(SesionFamilia.NyAUtc(new DateTime(2026, 11, 2, 18, 0, 0)), true);
             P("  17:30 NY del 02-11 -> sesion " + a1.Dia + "; 18:00 NY -> " + a2.Dia);
             if (a1.Dia != "2026-11-02" || a2.Dia != "2026-11-03") Falla("cambio de sesion a las 18:00 NY");
+        }
+
+        // ================================================================== fin de semana (4.1.5d) y el aviso del motor
+        /// <summary>4.1.5d (pedido del operador 09-10: "quiero que la 4.0 se vuelva a ver, o sea que tenga memoria"). CME cierra del viernes 17:00 NY
+        /// al domingo 18:00 NY: en modo NY la sesion de ese rato es la del VIERNES (antes: la del sabado o el domingo, que nunca tienen datos: tras
+        /// reiniciar ATAS la 4.1 no dibujaba nada). El modo UTC (paridad con la vista previa) NO cambia. Y el motor: con ahora >= FinUtc el aviso de
+        /// la foto EMPIEZA con "mercado cerrado: se muestra la sesion del ..." (el dato es viejo: se dice antes que nada, protocolo).</summary>
+        static void Finde()
+        {
+            P(); P("== finde (4.1.5d): la sesion del fin de semana en hora NY, el modo UTC sin cambios y el aviso 'mercado cerrado' del motor ==");
+            string[] DIA = { "dom", "lun", "mar", "mie", "jue", "vie", "sab" };
+            string Z(DateTime u) => u.ToString("yyyy-MM-dd HH:mm", Inv) + "Z";
+            string N(DateTime ny) => DIA[(int)ny.DayOfWeek] + " " + ny.ToString("dd-MM HH:mm", Inv);
+            int okNy = 0, okUtc = 0, okMotor = 0;
+
+            // (a) modo NY (Familia41Corregida = true, el del indicador)
+            void Ny(string que, DateTime ny, string dia, bool abierta, string ini = null, string fin = null, string rueda = null)
+            {
+                var t = SesionFamilia.NyAUtc(ny);
+                var s = SesionFamilia.De(t, true);
+                bool ab = t >= s.IniUtc && t < s.FinUtc;
+                string antes = SesionFamilia.UtcANy(t).AddHours(6).Date.ToString("yyyy-MM-dd", Inv);   // la cuenta de antes de la 4.1.5d (sin el fin de semana)
+                bool bien = s.Dia == dia && ab == abierta && (ini == null || Z(s.IniUtc) == ini) && (fin == null || Z(s.FinUtc) == fin) && (rueda == null || Z(s.RuedaIniUtc) == rueda);
+                P("  " + (bien ? "ok    " : "FALLA ") + ("NY " + que).PadRight(48) + N(ny) + " NY = " + Z(t) + " -> " + s + (ab ? " ABIERTA" : " cerrada") + " rueda " + Z(s.RuedaIniUtc)
+                  + (antes != s.Dia ? " (antes de la 4.1.5d: sesion " + antes + ", sin datos)" : ""));
+                if (bien) okNy++; else Falla("finde NY " + que + ": esperado " + dia + (abierta ? " abierta" : " cerrada") + (ini != null ? " [" + ini + ", " + fin + ") rueda " + rueda : ""));
+            }
+            Ny("viernes 16:59 (abierta)", new DateTime(2026, 10, 9, 16, 59, 0), "2026-10-09", true, "2026-10-08 22:00Z", "2026-10-09 21:00Z", "2026-10-09 13:30Z");
+            Ny("viernes 17:00 (cierra)", new DateTime(2026, 10, 9, 17, 0, 0), "2026-10-09", false, "2026-10-08 22:00Z", "2026-10-09 21:00Z");
+            Ny("viernes 18:05", new DateTime(2026, 10, 9, 18, 5, 0), "2026-10-09", false, "2026-10-08 22:00Z", "2026-10-09 21:00Z");
+            Ny("sabado 12:00", new DateTime(2026, 10, 10, 12, 0, 0), "2026-10-09", false, "2026-10-08 22:00Z", "2026-10-09 21:00Z");
+            Ny("domingo 17:59", new DateTime(2026, 10, 11, 17, 59, 0), "2026-10-09", false, "2026-10-08 22:00Z", "2026-10-09 21:00Z");
+            Ny("domingo 18:00 (abre la del lunes)", new DateTime(2026, 10, 11, 18, 0, 0), "2026-10-12", true, "2026-10-11 22:00Z", "2026-10-12 21:00Z", "2026-10-12 13:30Z");
+            // el cambio de horario: el domingo 01-11 a las 2:00 NY vuelve el de invierno (EST, UTC-5): el viernes 30-10 cierra 21:00Z, el lunes abre 23:00Z
+            Ny("sabado 31-10 12:00 (EDT)", new DateTime(2026, 10, 31, 12, 0, 0), "2026-10-30", false, "2026-10-29 22:00Z", "2026-10-30 21:00Z", "2026-10-30 13:30Z");
+            Ny("domingo 01-11 17:59 (EST)", new DateTime(2026, 11, 1, 17, 59, 0), "2026-10-30", false, "2026-10-29 22:00Z", "2026-10-30 21:00Z");
+            Ny("domingo 01-11 18:00 (EST, abre la del lunes)", new DateTime(2026, 11, 1, 18, 0, 0), "2026-11-02", true, "2026-11-01 23:00Z", "2026-11-02 22:00Z", "2026-11-02 14:30Z");
+            // control: entre semana nada cambia (la pausa de 17:00 a 18:00 NY sigue en la sesion que cerro; 18:00 NY ya es la siguiente)
+            Ny("jueves 17:30 (pausa de cada dia)", new DateTime(2026, 10, 8, 17, 30, 0), "2026-10-08", false, "2026-10-07 22:00Z", "2026-10-08 21:00Z");
+            Ny("jueves 18:00", new DateTime(2026, 10, 8, 18, 0, 0), "2026-10-09", true, "2026-10-08 22:00Z", "2026-10-09 21:00Z");
+
+            // (b) modo UTC (paridad con la vista previa): SIN cambios, dia = fecha(t + 2 h) en UTC fijo (el sabado y el domingo tienen su sesion)
+            void Utc(string que, DateTime ny, string dia)
+            {
+                var t = SesionFamilia.NyAUtc(ny);
+                var s = SesionFamilia.De(t, false);
+                var d = t.AddHours(2).Date;
+                bool bien = s.Dia == dia && s.Dia == d.ToString("yyyy-MM-dd", Inv) && s.IniUtc == DateTime.SpecifyKind(d.AddHours(-2), DateTimeKind.Utc)
+                            && s.FinUtc == DateTime.SpecifyKind(d.AddHours(21), DateTimeKind.Utc) && s.SiguienteIniUtc == DateTime.SpecifyKind(d.AddHours(22), DateTimeKind.Utc)
+                            && s.RuedaIniUtc == DateTime.SpecifyKind(d.AddHours(13).AddMinutes(30), DateTimeKind.Utc);
+                P("  " + (bien ? "ok    " : "FALLA ") + ("UTC " + que).PadRight(48) + N(ny) + " NY = " + Z(t) + " -> " + s);
+                if (bien) okUtc++; else Falla("finde UTC " + que + ": esperado " + dia + " = fecha(t + 2 h)");
+            }
+            Utc("viernes 16:59", new DateTime(2026, 10, 9, 16, 59, 0), "2026-10-09");
+            Utc("viernes 17:00", new DateTime(2026, 10, 9, 17, 0, 0), "2026-10-09");
+            Utc("viernes 18:05", new DateTime(2026, 10, 9, 18, 5, 0), "2026-10-10");
+            Utc("sabado 12:00", new DateTime(2026, 10, 10, 12, 0, 0), "2026-10-10");
+            Utc("domingo 17:59", new DateTime(2026, 10, 11, 17, 59, 0), "2026-10-11");
+            Utc("domingo 18:00", new DateTime(2026, 10, 11, 18, 0, 0), "2026-10-12");
+            Utc("sabado 31-10 12:00 (EDT)", new DateTime(2026, 10, 31, 12, 0, 0), "2026-10-31");
+            Utc("domingo 01-11 17:59 (EST: corre una hora)", new DateTime(2026, 11, 1, 17, 59, 0), "2026-11-02");
+            Utc("domingo 01-11 18:00 (EST)", new DateTime(2026, 11, 1, 18, 0, 0), "2026-11-02");
+
+            // (c) el motor en modo NY con los dobles (casos sinteticos como minutos) sobre la sesion del viernes 09-10
+            var casos = Casos(); if (casos.Count == 0) return;
+            var ses = SesionFamilia.DelDia("2026-10-09", true);
+            long ini = ses.IniClave, total = ses.FinClave - ses.IniClave;
+            var tmp = Path.Combine(RES, "finde_tmp"); var tmp2 = Path.Combine(RES, "finde_tmp2");
+            foreach (var d in new[] { tmp, tmp2 }) { try { if (Directory.Exists(d)) Directory.Delete(d, true); } catch { } Directory.CreateDirectory(Path.Combine(d, "estela")); }
+            var cinta = new CintaFalsa(casos, ini); var fuente = new FuenteFalsa(); var tq = new TqqqFalso { RuedaIni = ses.RuedaIniUtc };
+            OpcionesMotorFamilia Op(string carpeta, int presupuesto) => new OpcionesMotorFamilia { Carpeta = carpeta, Corregida = true, Persistir = true, PresupuestoMs = presupuesto, EsperaArranqueS = 0, RutaLog = Path.Combine(carpeta, "pythiagex4-familia.log") };
+            MotorFamilia Nuevo(OpcionesMotorFamilia op)
+            {
+                var m = new MotorFamilia(op);
+                m.Configurar(cinta, fuente, fuente, CatalogoFamilia.Libros.Select(lb => (ILibroMinutero)new MinuteroFalso(lb, casos, ini)).ToList(), tq, "MNQZ6");
+                return m;
+            }
+            DateTime Poner(DateTime ny) { var t = SesionFamilia.NyAUtc(ny); cinta.Ahora = t; tq.Ahora = t; return t; }
+            FotoFamilia Paso(MotorFamilia m, DateTime ny) { var t = Poner(ny); m.Avanzar(t); for (int v = 0; m.Pendiente && v < 200; v++) m.Avanzar(t); return m.Foto; }
+            const string AVISO = "mercado cerrado: se muestra la sesion del ";
+            void Ver(bool c, string que, string det)
+            {
+                P("  " + (c ? "ok    " : "FALLA ") + que + (det == "" ? "" : " | " + det));
+                if (c) okMotor++; else Falla("finde motor: " + que);
+            }
+            string Av(FotoFamilia f) => "aviso '" + (f?.Aviso ?? "") + "'";
+
+            // 1) viernes 16:59:30 NY, mercado abierto: se calcula la sesion entera y va al archivo; sin el aviso
+            var m1 = Nuevo(Op(tmp, 600_000));
+            var f1 = Paso(m1, new DateTime(2026, 10, 9, 16, 59, 30));
+            int calc1 = m1.Almacen.Todos.Count();
+            Ver(f1.Sesion == "2026-10-09" && calc1 == total && !(f1.Aviso ?? "").Contains("mercado cerrado"),
+                "M1 viernes 16:59:30 NY (abierta): sesion " + f1.Sesion + ", " + calc1 + " de " + total + " minutos, sin 'mercado cerrado'", Av(f1));
+            // 2) viernes 17:30 NY (cerro hace 30 min): la misma sesion y el aviso PRIMERO
+            var f2 = Paso(m1, new DateTime(2026, 10, 9, 17, 30, 0));
+            Ver(f2.Sesion == "2026-10-09" && (f2.Aviso ?? "").StartsWith(AVISO + "2026-10-09 (cerro hace 30 min)", StringComparison.Ordinal),
+                "M2 viernes 17:30 NY: el aviso empieza con '" + AVISO + "2026-10-09 (cerro hace 30 min)'", Av(f2));
+            // 3) sabado 12:00 NY con un motor NUEVO (ATAS reiniciado): reabre la sesion del viernes DESDE EL ARCHIVO (memoria), no recalcula nada
+            var m2 = Nuevo(Op(tmp, 600_000));
+            var f3 = Paso(m2, new DateTime(2026, 10, 10, 12, 0, 0));
+            int igualH = 0, distH = 0;
+            foreach (var kv in f1.HistoriaM2)
+            {
+                if (!f3.HistoriaM2.TryGetValue(kv.Key, out var e3)) { distH++; continue; }
+                foreach (var s1 in kv.Value.Where(x => !x.Key.StartsWith("T_", StringComparison.Ordinal)))   // TQQQ falso depende de la hora de la llamada
+                    if (e3.TryGetValue(s1.Key, out var v3) && v3.SequenceEqual(s1.Value)) igualH++; else distH++;
+            }
+            Ver(f3.Sesion == "2026-10-09" && m2.Almacen.Cargados == total && m2.MinutosCalculados == 0 && f3.HistoriaM2.Count > 0 && f3.Actuales.Count > 0 && distH == 0 && igualH > 0
+                && (f3.Aviso ?? "").StartsWith(AVISO + "2026-10-09 (cerro hace ", StringComparison.Ordinal),
+                "M3 sabado 12:00 NY, motor nuevo: sesion " + f3.Sesion + " con " + m2.Almacen.Cargados + " minutos del archivo, " + m2.MinutosCalculados + " recalculados, historia "
+                + f3.HistoriaM2.Count + " velas m2 (series de la cuenta iguales a las del viernes: " + igualH + ", distintas " + distH + "), actuales " + f3.Actuales.Count + ", aviso primero", Av(f3));
+            // 3b) sabado con el motor a medio calcular (carpeta vacia, presupuesto 1 ms): el aviso sigue PRIMERO, antes de 'calculando la sesion'
+            var m3 = Nuevo(Op(tmp2, 1));
+            var t3b = Poner(new DateTime(2026, 10, 10, 12, 0, 0)); m3.Avanzar(t3b);
+            var f3b = m3.Foto;
+            Ver(m3.Pendiente && (f3b.Aviso ?? "").StartsWith(AVISO + "2026-10-09", StringComparison.Ordinal) && (f3b.Aviso ?? "").Contains(" · calculando la sesion"),
+                "M3b sabado, motor a medio calcular (" + m3.Almacen.Todos.Count() + " de " + total + " minutos): 'mercado cerrado' va antes que 'calculando la sesion'", Av(f3b));
+            // 4) domingo 17:59 NY: sigue la del viernes con el aviso
+            var f4 = Paso(m2, new DateTime(2026, 10, 11, 17, 59, 0));
+            Ver(f4.Sesion == "2026-10-09" && (f4.Aviso ?? "").StartsWith(AVISO + "2026-10-09 (cerro hace ", StringComparison.Ordinal) && m2.MinutosCalculados == 0,
+                "M4 domingo 17:59 NY: sigue la sesion del viernes, aviso primero", Av(f4));
+            // 5) domingo 18:00:10 NY: empieza la del lunes 12-10 (sin 'mercado cerrado')
+            var f5 = Paso(m2, new DateTime(2026, 10, 11, 18, 0, 10));
+            Ver(f5.Sesion == "2026-10-12" && m2.Sesion?.Dia == "2026-10-12" && !(f5.Aviso ?? "").Contains("mercado cerrado"),
+                "M5 domingo 18:00:10 NY: sesion " + f5.Sesion + " (la del lunes), sin 'mercado cerrado'", Av(f5));
+            // 6) ningun archivo de una sesion de sabado o domingo (antes de la 4.1.5d el sabado abria la 2026-10-10)
+            var niv = Directory.Exists(Path.Combine(tmp, "familia")) ? Directory.GetFiles(Path.Combine(tmp, "familia"), "niv-*.jsonl").Select(Path.GetFileName).OrderBy(x => x).ToList() : new List<string>();
+            Ver(niv.Contains("niv-2026-10-09-MNQZ6.jsonl") && !niv.Any(x => x.Contains("2026-10-10") || x.Contains("2026-10-11")),
+                "M6 archivos de la carpeta: " + string.Join(", ", niv) + " (ninguno del sabado ni del domingo)", "");
+            foreach (var d in new[] { tmp, tmp2 }) { try { Directory.Delete(d, true); } catch { } }
+            P("  finde: NY " + okNy + " de 11 bien, UTC " + okUtc + " de 9 bien, motor " + okMotor + " de 7 bien");
         }
     }
 }

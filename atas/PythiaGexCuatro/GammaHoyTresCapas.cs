@@ -50,47 +50,45 @@ namespace PythiaGexCuatro
     /// </summary>
     public partial class FamiliaCuatro
     {
-        [Display(Name = "Capa QQQ (CBOE, 15 min tarde, por razon NQ/QQQ)", GroupName = "9.3 3.0 · Pantalla", Order = 60,
+        [Display(Name = "Capa QQQ (CBOE, 15 min tarde, por razon NQ/QQQ)", GroupName = "9.3 3.0 · Pantalla", Order = 1060,
                  Description = "No: no se baja ni se dibuja. Fusion: cuando un nivel de QQQ coincide a 'fusion (pts)' con D1/D2 de NQ, el rotulo de NQ suma la sigla. Propia: estela de guiones azules por vela y rotulos QQQ D1/D2 con la edad del dato. Medido en el laboratorio (diseño): QQQ por CBOE no le gana al placebo; esta capa es para juzgarla a la vista.")]
         public CapaModo3 Capa3QQQ { get; set; } = CapaModo3.Propia;
 
-        [Display(Name = "Capa NDX (CBOE, 15 min tarde, por base aditiva)", GroupName = "9.3 3.0 · Pantalla", Order = 61,
+        [Display(Name = "Capa NDX (CBOE, 15 min tarde, por base aditiva)", GroupName = "9.3 3.0 · Pantalla", Order = 1061,
                  Description = "Igual que QQQ pero con el libro de NDX (cadena 'NQ' de la nube) llevado a MNQ sumando la base medida con la vela alineada. Gris. Medido en diseño: -2,2 pp contra placebo.")]
         public CapaModo3 Capa3NDX { get; set; } = CapaModo3.Propia;
 
-        [Display(Name = "Capas: fusion con NQ (pts)", GroupName = "9.3 3.0 · Pantalla", Order = 62,
+        [Display(Name = "Capas: fusion con NQ (pts)", GroupName = "9.3 3.0 · Pantalla", Order = 1062,
                  Description = "Distancia maxima para que un nivel de capa 'coincida' con D1/D2 de NQ y le sume su sigla al rotulo (NQ·QQQ D1). Vale en modo Fusion y tambien en Propia.")]
         [Range(0.25, 50)]
         public decimal Capa3FusionPts { get; set; } = 5m;
 
-        [Display(Name = "Capas: zero gamma como rombos por vela", GroupName = "9.3 3.0 · Pantalla", Order = 63,
-                 Description = "3.3.1 (pedido 07-10): el zero gamma de NDX y QQQ como rombos por vela del color de la capa, mas su rotulo. Es la fila de 31485 de la 2.0 (misma formula: cruce de signo mas cercano al precio; la base de NDX aca es la mediana de la rueda, la 2.0 usa la cruda de ticks, ~3,6 pts). Con GuionGris queda la estela de 1 px.")]
+        [Display(Name = "↳ capas 0Γ▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 74, Description = "Necesita la llave '3.0 capas▸' prendida. Sub-llave: sin ella no se dibuja ningun 0Γ de las capas ('↳ NDX 0Γ', '↳ NDX 0Γ enf.', '↳ NDX techo/piso', '↳ QQQ 0Γ' y '↳ QQQ 0Γ enf.', abajo). 3.3.1 (pedido 07-10): el zero gamma de NDX y QQQ como rombos por vela del color de la capa, mas su rotulo. Es la fila de 31485 de la 2.0 (misma formula: cruce de signo mas cercano al precio; la base de NDX aca es la mediana de la rueda, la 2.0 usa la cruda de ticks, ~3,6 pts). Con GuionGris queda la estela de 1 px.")]
         public bool Capa3ZeroRombos { get; set; } = true;
 
-        [Display(Name = "Capas: tamaño de letra (% del de NQ)", GroupName = "9.3 3.0 · Pantalla", Order = 64,
+        [Display(Name = "Capas: tamaño de letra (% del de NQ)", GroupName = "9.3 3.0 · Pantalla", Order = 1064,
                  Description = "Los rotulos de QQQ y NDX van con letra mas chica que los de NQ (pedido 06-10). 100 = igual tamaño.")]
         [Range(50, 100)]
         public int Capa3LetraPct { get; set; } = 75;
 
-        [Display(Name = "Capas: cuantas dominantes (2 o 3)", GroupName = "9.3 3.0 · Pantalla", Order = 65,
+        [Display(Name = "Capas: cuantas dominantes (2 o 3)", GroupName = "9.3 3.0 · Pantalla", Order = 1065,
                  Description = "La clasica dibuja tres por capa (D1, D2, D3). 3.0.5: default 3 por pedido del operador (06-10). La estela guardada sigue con D1/D2.")]
         [Range(2, 3)]
         public int Capa3Cuantas { get; set; } = 3;
 
-        [Display(Name = "Capas: linea del nivel actual hasta el eje", GroupName = "9.3 3.0 · Pantalla", Order = 66,
-                 Description = "Cada dominante de capa dentro del radio de dibujo lleva una linea fina de 1 px desde la ultima vela hasta el eje, en su color (3.0.5). Sin esto solo se ve el chip.")]
+        [Display(Name = "↳ linea al eje", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 80, Description = "Necesita la llave '3.0 capas▸' prendida. Solo cambia algo con '↳ rayas largas' prendida (por defecto apagada). Cada dominante de capa dentro del radio de dibujo lleva una linea fina de 1 px desde la ultima vela hasta el eje, en su color (3.0.5). Sin esto solo se ve el chip.")]
         public bool Capa3LineaActual { get; set; } = true;
 
-        [Display(Name = "Capas: regla de dominantes", GroupName = "9.3 3.0 · Pantalla", Order = 67,
+        [Display(Name = "Capas: regla de dominantes", GroupName = "9.3 3.0 · Pantalla", Order = 1067,
                  Description = "3.0.6: Clasica = una por lado + empate 20 % + centroide 12 pts, lo que dibuja la clasica en sus capas (el 06-10 puso NDX D1 en 31.511 y la zona se respeto). ComoPrimaria = la regla de NQ sin histeresis.")]
         public CapaRegla3 Capa3Regla { get; set; } = CapaRegla3.Clasica;
 
-        [Display(Name = "Capas: radio de dibujo (pts, 0 = el de NQ)", GroupName = "9.3 3.0 · Pantalla", Order = 68,
+        [Display(Name = "Capas: radio de dibujo (pts, 0 = el de NQ)", GroupName = "9.3 3.0 · Pantalla", Order = 1068,
                  Description = "3.0.7: los guiones y la linea de una capa se dibujan solo a esta distancia del precio (60 por defecto); mas lejos queda el rotulo con su precio y la estela muy tenue. Los niveles lejanos de las capas son reales (p. ej. el muro de calls 762 de QQQ, +83 pts) pero el laboratorio midio que rara vez se tocan.")]
         [Range(0, 500)]
         public decimal Capa3RadioDibujoPts { get; set; } = 60m;
 
-        [Display(Name = "Base de NDX: de donde sale", GroupName = "9.3 3.0 · Pantalla", Order = 95,
+        [Display(Name = "Base de NDX: de donde sale", GroupName = "9.3 3.0 · Pantalla", Order = 1095,
                  Description = "3.6.5 (08-10). Forwards = la base que mide el bajador de CBOE con la recta de forwards de la misma cadena (contado + carry; la que usa la 2.0: 238,36 esa noche). Rueda = la mediana de 24 muestras vela-contra-spot con el atraso de 16 min (248,15 esa noche, fuera de rango). Medido al cierre del 07-10 (futuro a las 16:00:00 NY contra el NDX congelado): 236-242.")]
         public BaseNdx3 Capa3BaseNdx { get; set; } = BaseNdx3.Forwards;
 

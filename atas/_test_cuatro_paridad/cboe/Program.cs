@@ -341,8 +341,11 @@ public static class Program
         Ver(m3.UltimoRegistro("NDX")?.Texto != null, "el registro releido trae el texto de ultima-NQ.json");
         // poda de filas: con HorasConFilas chico las viejas quedan livianas
         m3.Parar();
-        // el corte tambien guarda con filas la rueda habil anterior: para ver fotos livianas se corre el reloj 3 dias
-        var opc4 = Clonar(opc3); opc4.HorasConFilas = 0.0001; var dentroDe3 = DateTime.UtcNow.AddDays(3); opc4.AhoraUtc = () => dentroDe3;
+        // el corte tambien guarda con filas la rueda habil anterior: para ver fotos livianas se corre el reloj.
+        // 4.1.5 (09-10-2026): 4 dias y no 3. Con 3, un VIERNES despues de las 09:00 NY el reloj cae el lunes, su "rueda habil anterior" es HOY (corte el
+        // viernes 09:00 NY) y las fotos recien bajadas quedan con filas: la prueba fallaba segun la hora (medido 09-10 16:4x ART; a las 05:16 ART pasaba).
+        // Con 4 dias, cualquier dia de la semana, la rueda habil anterior es POSTERIOR a hoy, y el archivo de hoy sigue dentro de DiasHistoria (7).
+        var opc4 = Clonar(opc3); opc4.HorasConFilas = 0.0001; var dentroDe3 = DateTime.UtcNow.AddDays(4); opc4.AhoraUtc = () => dentroDe3;
         opc4.Log = Path.Combine(trabajo, "pythiagex4-cboe-3.log"); opc4.Bajar = false;
         var m4 = new BajadorCboe(opc4); m4.Arrancar();
         Esperar(() => m4.HistoriaCargada, 20);
