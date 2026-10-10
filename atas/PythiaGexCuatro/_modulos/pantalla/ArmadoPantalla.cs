@@ -1007,6 +1007,34 @@ namespace PythiaGexCuatro.Familia
                     ocupado.Add(new Rectangle(xr - wEd - 7, topCol, wEd + 8, hC)); colIzq = Math.Min(colIzq, xr - wEd - 7);
                     topCol += hC;
                 }
+                // 4.1.6d: el RECUADRO desplegable arriba a la DERECHA (pedido del operador 09-10: "el recuadro choca, ponelo arriba a la derecha donde
+                // no moleste y se lea"): su titulo ocupa un renglon PROPIO de la columna (la columna arranca debajo); abierto, los 5 montos mas
+                // grandes se dibujan debajo con fondo opaco (lo abre el operador con un clic: tapa a proposito).
+                if (ESTILO_2E && nuevo)
+                {
+                    var libs = new List<(string L, Color C)>();
+                    foreach (var r in et) { string lb = r.Cab?.Libro ?? ""; if (lb != "" && !libs.Any(z => z.L == lb)) libs.Add((lb, r.Col)); }
+                    string tit = (Recuadro2EAbierto ? "▾ " : "▸ ");
+                    int wt = (int)Math.Ceiling(cw * tit.Length) + libs.Sum(z => 14 + (int)Math.Ceiling(cw * z.L.Length)) + 8;
+                    var top5 = et.Where(r => Fin(r.Cab?.Peso ?? double.NaN)).OrderByDescending(r => r.Cab.Peso).Take(5).ToList();
+                    int wb = Math.Max(wt, top5.Select(r => AnchoTexto(r.T1 + r.T2, r.T2 != "", tamC, cw, medir) + 12).DefaultIfEmpty(0).Max());
+                    int rx = xr - wb - 4, ry = topCol;
+                    d.Relleno(Color.FromArgb(225, ColFondo), new Rectangle(rx, ry, wb, hC));
+                    d.Borde(Color.FromArgb(120, ColTexto), 1f, new Rectangle(rx, ry, wb, hC));
+                    d.Texto(tit, tamC, Color.FromArgb(200, ColTexto), rx + 4, ry + 1);
+                    int lx = rx + 4 + (int)Math.Ceiling(cw * tit.Length);
+                    foreach (var z in libs) { d.Relleno(z.C, new Rectangle(lx, ry + hC / 2 - 4, 8, 8)); d.Texto(z.L, tamC, z.C, lx + 11, ry + 1); lx += 14 + (int)Math.Ceiling(cw * z.L.Length); }
+                    d.Recuadro2E = new Rectangle(rx, ry, wb, hC);
+                    ocupado.Add(new Rectangle(rx, ry, wb, hC)); colIzq = Math.Min(colIzq, rx);
+                    if (Recuadro2EAbierto && top5.Count > 0)
+                    {
+                        int yy = ry + hC + 1;
+                        d.Relleno(Color.FromArgb(240, ColFondo), new Rectangle(rx, yy, wb, top5.Count * hC + 4));
+                        d.Borde(Color.FromArgb(90, ColTexto), 1f, new Rectangle(rx, yy, wb, top5.Count * hC + 4));
+                        foreach (var r in top5) { var q = new Rot { Txt = r.T1 + r.T2, T1 = r.T1, T2 = r.T2, T3 = "", ColCambio = r.ColCambio }; Tramos(d, q, "", tamC, cw, r.Col, rx + 5, yy + 2); yy += hC; }
+                    }
+                    topCol += hC + 2;
+                }
                 var en = et.Where(r => r.Fuera == 0 && r.Y != int.MinValue).OrderBy(r => r.Y).ToList();
                 // 4.1.2 (principal, 09-10): las etiquetas fuera de pantalla (↑ arriba, ↓ abajo) tienen renglones PROPIOS. Antes la primera etiqueta
                 // visible caia en el mismo renglon que la primera ↑ y se tapaban (captura del operador 09-10 00:11: "NDX M+" encima de "NDX C").
@@ -1034,8 +1062,7 @@ namespace PythiaGexCuatro.Familia
                     var sombra = new Rot { Txt = r.Txt, T1 = r.T1, T2 = r.T2, T3 = r.T3, ColCambio = Color.FromArgb(200, ColFondo) };
                     Tramos(d, sombra, "", tamC, cw, Color.FromArgb(200, ColFondo), xt + 1, yb + 2);                               // sombra
                     Tramos(d, r, "", tamC, cw, r.Col, xt, yb + 1);
-                    if (r.Y != int.MinValue && Math.Abs(r.Yl - r.Y) > 1) d.Linea(Color.FromArgb(160, r.Col), 1f, x0 - 8, r.Y, x0 - 2, r.Yl);   // si la etiqueta se corrio, una linea a su raya
-                    else if (r.Y != int.MinValue) d.Linea(Color.FromArgb(220, r.Col), 2f, x0 - 6, r.Y, x0 - 1, r.Y);
+                    // 4.1.6d (pedido del operador 09-10): sin los palitos que unian la etiqueta con su raya
                     d.Etiquetas.Add((r.Txt, r.Yl, r.Y));
                     d.Rotulos.Add(Diag(r, r.Txt, x0, w, r.Yl));
                     ocupado.Add(new Rectangle(x0 - 9, yb, w + 9, hC)); colIzq = Math.Min(colIzq, x0 - 9);
@@ -1069,31 +1096,6 @@ namespace PythiaGexCuatro.Familia
                     Tramos(d, r, "↓ ", tamC, cw, r.Col, x, yB);
                     d.Etiquetas.Add((t, yB, r.Y)); d.Rotulos.Add(Diag(r, t, x, w, yB));
                     ocupado.Add(new Rectangle(x - 1, yB, w + 2, hC)); colIzq = Math.Min(colIzq, x - 1); yB -= hC;
-                }
-                // 4.1.6: el RECUADRO desplegable (maqueta 2E): titulo = leyenda de colores con ▸/▾ (clic = abre/cierra); abierto = los 5 montos
-                // mas grandes (de todas las etiquetas, visibles o no) con su cambio. Arriba a la izquierda, debajo de la pestaña.
-                if (ESTILO_2E && nuevo)
-                {
-                    int rx = area.Left + 6, ry = yCab + 2;   // debajo de la pestaña y de la leyenda/cartel de ATAS
-                    var libs = new List<(string L, Color C)>();
-                    foreach (var r in et) { string lb = r.Cab?.Libro ?? ""; if (lb != "" && !libs.Any(z => z.L == lb)) libs.Add((lb, r.Col)); }
-                    string tit = (Recuadro2EAbierto ? "▾ " : "▸ ");
-                    int wt = (int)Math.Ceiling(cw * tit.Length) + libs.Sum(z => 14 + (int)Math.Ceiling(cw * z.L.Length)) + 8;
-                    var top5 = et.Where(r => Fin(r.Cab?.Peso ?? double.NaN)).OrderByDescending(r => r.Cab.Peso).Take(5).ToList();
-                    int wb = Math.Max(wt, top5.Select(r => AnchoTexto(r.T1 + r.T2, r.T2 != "", tamC, cw, medir) + 12).DefaultIfEmpty(0).Max());
-                    d.Relleno(Color.FromArgb(225, ColFondo), new Rectangle(rx, ry, wb, hC));
-                    d.Borde(Color.FromArgb(120, ColTexto), 1f, new Rectangle(rx, ry, wb, hC));
-                    d.Texto(tit, tamC, Color.FromArgb(200, ColTexto), rx + 4, ry + 1);
-                    int lx = rx + 4 + (int)Math.Ceiling(cw * tit.Length);
-                    foreach (var z in libs) { d.Relleno(z.C, new Rectangle(lx, ry + hC / 2 - 4, 8, 8)); d.Texto(z.L, tamC, z.C, lx + 11, ry + 1); lx += 14 + (int)Math.Ceiling(cw * z.L.Length); }
-                    d.Recuadro2E = new Rectangle(rx, ry, wb, hC);
-                    if (Recuadro2EAbierto && top5.Count > 0)
-                    {
-                        int yy = ry + hC + 1;
-                        d.Relleno(Color.FromArgb(215, ColFondo), new Rectangle(rx, yy, wb, top5.Count * hC + 4));
-                        d.Borde(Color.FromArgb(90, ColTexto), 1f, new Rectangle(rx, yy, wb, top5.Count * hC + 4));
-                        foreach (var r in top5) { var q = new Rot { Txt = r.T1 + r.T2, T1 = r.T1, T2 = r.T2, T3 = "", ColCambio = r.ColCambio }; Tramos(d, q, "", tamC, cw, r.Col, rx + 5, yy + 2); yy += hC; }
-                    }
                 }
             }
 

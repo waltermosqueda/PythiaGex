@@ -1,4 +1,6 @@
-# Etiquetas 2E: lo que falta para que la 4.1 quede igual a la maqueta (09-10-2026 21:20 ART)
+# Etiquetas 2E: lo que falta (actualizado 21:25: 1, 2, 3, 5 y 6 HECHOS en la 4.1.6c; queda 4 y probar el clic del recuadro)
+
+# (original) para que la 4.1 quede igual a la maqueta (09-10-2026 21:20 ART)
 
 El operador eligio la **2E LINEAL** (previews_2e.html, primera tarjeta). La 4.1.6 instalada tiene solo la barrita lineal.
 Falta, en este orden, y comparar LADO A LADO contra la maqueta antes de entregar (captura + numeros):
