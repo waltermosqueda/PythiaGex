@@ -75,7 +75,7 @@ function svgBase(){ let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org
     s+=`<line x1="${x+dx/2}" x2="${x+dx/2}" y1="${y(hi)}" y2="${y(lo)}" stroke="${col}" stroke-width="1"/>`;
     s+=`<rect x="${x+0.4}" y="${y(Math.max(o,c))}" width="${Math.max(1,dx-0.8)}" height="${Math.max(1,Math.abs(y(o)-y(c)))}" fill="${col}"/>`; }
   s+=`<line x1="${X0}" x2="${X1}" y1="${y(fut)}" y2="${y(fut)}" stroke="#e8eef7" stroke-dasharray="2,3" stroke-width="0.8"/>`;
-  s+=`<rect x="${X1+2}" y="${y(fut)-8}" width="60" height="16" rx="3" fill="#e8eef7"/><text x="${X1+32}" y="${y(fut)+4}" text-anchor="middle" font-size="11" fill="#0b0e13">${fmtP(fut)}</text>`;
+  // 09-10 (pedido del operador): sin la cajita del precio; el espacio queda (el precio ya lo muestra ATAS en su eje)
   return s; }
 function lineas(s, grupos, opts={}){ for(const g of grupos){ if(g.precio<PMIN||g.precio>PMAX) continue; const i=mayor(g)||g.items[0];
   const w = opts.peso? (1+Math.min(4,Math.log10(1+Math.abs(i.m||1))*1.2)) : 1.3;
