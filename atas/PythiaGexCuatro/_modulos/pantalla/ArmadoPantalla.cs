@@ -1033,7 +1033,9 @@ namespace PythiaGexCuatro.Familia
                         d.Borde(Color.FromArgb(90, ColTexto), 1f, new Rectangle(rx, yy, wb, top5.Count * hC + 4));
                         foreach (var r in top5) { var q = new Rot { Txt = r.T1 + r.T2, T1 = r.T1, T2 = r.T2, T3 = "", ColCambio = r.ColCambio }; Tramos(d, q, "", tamC, cw, r.Col, rx + 5, yy + 2); yy += hC; }
                     }
-                    topCol += hC + 2;
+                    // 4.1.6e (captura del operador 09-10: "choca, se superpone"): abierto, el recuadro RESERVA su alto: las etiquetas ↑ y la columna
+                    // empiezan debajo, no encima
+                    topCol += hC + 2 + (Recuadro2EAbierto && top5.Count > 0 ? top5.Count * hC + 6 : 0);
                 }
                 var en = et.Where(r => r.Fuera == 0 && r.Y != int.MinValue).OrderBy(r => r.Y).ToList();
                 // 4.1.2 (principal, 09-10): las etiquetas fuera de pantalla (↑ arriba, ↓ abajo) tienen renglones PROPIOS. Antes la primera etiqueta

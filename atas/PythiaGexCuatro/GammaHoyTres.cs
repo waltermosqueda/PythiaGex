@@ -94,7 +94,7 @@ namespace PythiaGexCuatro
     public partial class FamiliaCuatro : Indicator
     {
         private const string LOG = "gammahoy";
-        private const string VERSION = "4.1.6d";
+        private const string VERSION = "4.1.6e";
         private const string MOTOR_TRES = "3.6.9";    // la version de la 3.0 que corre adentro (clonar_4_0.py)
         private const int MIN_STRIKES_UTILES = 8;     // strikes con IV en call y put para que la cuenta valga
 
