@@ -213,9 +213,47 @@ namespace PythiaGexCuatro.Familia
             _siguiente = s.IniClave; _finTanda = long.MinValue;
             _tq.Clear(); _tqVersionCboe = -1; _tqPasadaUtc = DateTime.MinValue; _tqVersionS = long.MinValue;
             _hist = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty;
+            string previas = "";
+            try { _hist = HistoriaPrevia(s, out previas); } catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "HistoriaPrevia", e); }   // 4.1.6g: memoria de 2 sesiones
             _listoFuentes = false;
             _genExtras = (_op.Extras as IExtrasRehacer)?.Generacion ?? 0;          // 4.1.4: lo que cambie desde ahora se rehace
-            BitacoraFam.Linea(_op.RutaLog, "sesion", "sesion " + s + ": " + cargados + " minutos de " + (_alm.Ruta ?? "(sin archivo)") + ", " + lt + " lineas de estela");
+            BitacoraFam.Linea(_op.RutaLog, "sesion", "sesion " + s + ": " + cargados + " minutos de " + (_alm.Ruta ?? "(sin archivo)") + ", " + lt + " lineas de estela"
+                              + " | historia previa: " + (previas == "" ? "ninguna" : previas));
+        }
+
+        /// <summary>4.1.6g (pedido del operador 11-10: "por que no cargo las dominantes del jueves y viernes, solo las de ahora ... quiero que minimo
+        /// siempre cargue hasta dos dias antes"): la historia por vela m2 de las SESIONES_PREVIAS sesiones anteriores que tengan archivo (se buscan hasta
+        /// 10 dias atras: el fin de semana no tiene archivo), leida del disco (niv + estelas de la 3.0), sin TQQQ y sin recalcular nada. Va debajo de la
+        /// de la sesion en curso (sus velas son anteriores a su apertura): la pantalla la dibuja sobre las velas viejas del grafico.</summary>
+        public const int SESIONES_PREVIAS = 2;
+        private ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>> HistoriaPrevia(SesionFamilia s, out string txt)
+        {
+            txt = "";
+            var b = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty.ToBuilder();
+            if (!_op.Persistir || CarpetaFamilia == null) return b.ToImmutable();
+            var d0 = DateTime.ParseExact(s.Dia, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            int n = 0; var partes = new List<string>();
+            for (int k = 1; k <= 10 && n < SESIONES_PREVIAS; k++)
+            {
+                string dia = d0.AddDays(-k).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                var alm = new AlmacenNiveles(CarpetaFamilia, dia, _contrato, s.Corregida);
+                if (alm.Ruta == null || !File.Exists(alm.Ruta)) continue;
+                int c = 0; try { c = alm.Cargar(); } catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "HistoriaPrevia.Cargar " + dia, e); continue; }
+                if (c <= 0) continue;
+                var sp = SesionFamilia.DelDia(dia, s.Corregida);
+                var tres = new AlmacenTres(sp.IniUtc, sp.FinUtc);
+                try { tres.LeerArchivos(CarpetaEstela, dia); } catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "HistoriaPrevia.Estelas " + dia, e); }
+                long ini = Ms(sp.IniUtc) / 120000L * 120000L, fin = Math.Min(Ms(sp.SiguienteIniUtc), Ms(s.IniUtc)) - 120000L;
+                int velas = 0;
+                for (long T = ini; T <= fin; T += 120000L)
+                {
+                    var e = SalidaFamilia.Entrada(T, alm.Get, tres, null);
+                    if (e != null) { b[T] = e; velas++; }
+                }
+                n++; partes.Add(dia + " (" + c + " min, " + velas + " velas m2)");
+            }
+            txt = string.Join(", ", partes);
+            return b.ToImmutable();
         }
 
         // ------------------------------------------------------------------ el paso
