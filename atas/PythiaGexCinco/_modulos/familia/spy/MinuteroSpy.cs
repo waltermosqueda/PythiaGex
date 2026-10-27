@@ -8,6 +8,17 @@
 //   OiOk = oi_fresco (solo marca "(OI 2s)", no apaga nada: oi_vale(SPY) = True en la primaria).
 // Usa el codigo comun de B3a (FilasHoy, PerfilLado, ZeroEstandarFam, CacheZero, NumFam, TiempoFam). Sin ATAS, sin E/S.
 // Hilo: uno solo (el del motor). Minuto se llama en orden creciente de minuto (contrato ILibroMinutero).
+//
+// 5.0 (27-10-2026, P3): SPY en un grafico de MES. Lo que cambia y por que (MEDICIONES_ES.md §2-3):
+//   * MULT 100 (opciones de SPY: 100 acciones; en la familia monto x 100/100 = 1, igual que QQQ). Strikes de SPY cada 1 USD cerca del dinero
+//     (hasta +46/-44 USD en los diarios), o sea ~10,08 pts de ES por strike con la razon de 10,08: un nivel de SPY cae en K x razon, que NO
+//     es un multiplo de 5 de ES (la confluencia con ES/SPX la decide ReglasFam.CONF_PTS = 3).
+//   * zero estandar con ZeroEstandarFam.SPY (paso 0,05 USD = 0,5 pt de ES; +-7,5 USD = +-75 pts; centro de la clave de la cache 1 USD = su
+//     CentroPaso, ya no escrito a mano). El radio de seleccion (20 pts de ES) lo pone SeleccionFam.RadioDe("SPY") en las series.
+//   * conversion: la C8 de ConversionSpy con las horas [04:00, 20:00) NY, la cota [9,95, 10,25] y el reinicio del ex-dividendo de SPY. Si el
+//     corte del ex-dividendo (04:00 NY de ese dia) ya paso a la hora del minuto pero la foto vigente es de antes, su razon todavia trae el
+//     dividendo adentro: no hay libro SPY ese minuto. Hasta juntar 5 muestras nuevas tampoco. MotivoSinLibro dice por que, con numeros.
+//   * el texto de la conversion dice la razon, cuantas muestras, la ventana horaria y, si la ventana se reinicio por el ex-dividendo, desde cuando.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -41,6 +52,9 @@ namespace PythiaGexCinco.Familia.Spy
         /// <summary>Si la cinta todavia no llego a ts - 900 s, la foto espera (para no perder la muestra). Pasado este tiempo desde su
         /// 'generado' se procesa igual (cinta caida: sin muestra, la razon se hereda de las ultimas 24, como el Python).</summary>
         public double EsperaCintaMaxS = 1200;
+
+        /// <summary>5.0: por que el ultimo Minuto devolvio null ("" si devolvio libro). Para la pestaña y el log.</summary>
+        public string UltimoMotivo { get; private set; } = "";
 
         /// <param name="desdeUtc">desde cuando pedir fotos a la fuente (la vista previa: 6 dias de calendario antes de la sesion, 22:00 UTC).</param>
         public MinuteroSpy(IFuenteCboe cboe, ICinta cinta, OpcionesSpy op = null, DateTime? desdeUtc = null)
@@ -120,31 +134,70 @@ namespace PythiaGexCinco.Familia.Spy
             return k >= 0 ? _fotos[k] : null;
         }
 
+        /// <summary>5.0: el ex-dividendo que la foto todavia no tiene en cuenta a la hora t (su corte ya paso a t, la razon de la foto es de antes);
+        /// MinValue si ninguno.</summary>
+        private DateTime CortePendiente(FotoSpy f, DateTime tUtc)
+        {
+            if (!_op.ReinicioExDividendo || f == null) return DateTime.MinValue;
+            var c = ExDividendoSpy.UltimoCorte(tUtc);
+            return c > f.ExDivUtc ? c : DateTime.MinValue;
+        }
+
+        /// <summary>5.0: el reinicio del ex-dividendo pesa en esta razon (corte de hace menos de 24 h y la ventana todavia sin llenar de muestras nuevas).</summary>
+        private static bool ExDivReciente(FotoSpy f, DateTime tUtc) =>
+            f != null && f.ExDivUtc != DateTime.MinValue && (tUtc - f.ExDivUtc).TotalHours < 24 && f.MuestrasDesdeExDiv < ConversionSpy.VENTANA;
+
+        /// <summary>5.0: por que no hay libro SPY en el minuto t (con numeros); "" si lo hay o si no se sabe. No arma nada: solo mira el estado.</summary>
+        public string MotivoSinLibro(DateTime tUtc)
+        {
+            var inv = CultureInfo.InvariantCulture;
+            var t = HoraSpy.Utc(tUtc);
+            var f = FotoEn(t);
+            if (f == null) return "SPY: sin cadena de CBOE todavia";
+            if (f.Foto == null) return "SPY: la cadena vigente ya no tiene filas en memoria (de mas de " + PODA_H.ToString("0", inv) + " h)";
+            if (t >= f.VigenteHastaUtc) return "SPY: la ultima cadena (" + f.GeneradoUtc.ToString("MM-dd HH:mm", inv) + "Z) vencio a las " + f.VigenteHastaUtc.ToString("HH:mm", inv) + "Z (C9: 25 min)";
+            var cp = CortePendiente(f, t);
+            if (cp != DateTime.MinValue)
+                return "SPY: ex-dividendo de SPY del " + ExDividendoSpy.Dia(cp) + ": la razon se reinicia a las 04:00 NY y la cadena vigente es de antes (" + f.GeneradoUtc.ToString("HH:mm", inv) + "Z): SPY no se dibuja hasta juntar " + ConversionSpy.MIN_N + " muestras nuevas";
+            if (double.IsNaN(f.Razon))
+            {
+                if (f.ExDivUtc != DateTime.MinValue && (t - f.ExDivUtc).TotalHours < 24 && f.MuestrasDesdeExDiv < ConversionSpy.MIN_N)
+                    return "SPY: ex-dividendo de SPY del " + ExDividendoSpy.Dia(f.ExDivUtc) + ": razon recien reiniciada a las 04:00 NY, " + f.MuestrasDesdeExDiv + " de " + ConversionSpy.MIN_N
+                           + " muestras nuevas: SPY no se dibuja hasta juntar " + ConversionSpy.MIN_N;
+                return "SPY: sin razon ES/SPY: " + f.RazonN + " de " + ConversionSpy.MIN_N + " muestras sincronizadas (MES de ts - 900 s / spot de SPY, 04:00-20:00 NY)"
+                       + (string.IsNullOrEmpty(f.Descarte) ? "" : "; la ultima foto no dio muestra: " + f.Descarte);
+            }
+            if (!string.Equals(f.RazonContrato, _op.ContratoDe(t) ?? "", StringComparison.Ordinal))
+                return "SPY: la razon es del contrato " + f.RazonContrato + " y el grafico esta en " + (_op.ContratoDe(t) ?? "?") + " (roll): se rehace con muestras nuevas";
+            return "";
+        }
+
         public LibroMinuto Minuto(long clave, DateTime tUtc, double futMnq)
         {
             var t = HoraSpy.Utc(tUtc);
             Sincronizar(t);
-            if (double.IsNaN(futMnq)) return null;
+            if (double.IsNaN(futMnq)) { UltimoMotivo = "SPY: sin precio del MES en el minuto"; return null; }
             int k = NumFam.UltimoMenorIgual(_genMs, TiempoFam.Ms(t));
-            if (k < 0) return null;
+            if (k < 0) { UltimoMotivo = "SPY: sin cadena de CBOE todavia"; return null; }
             var f = _fotos[k];
             Podar(k, t);
-            if (f.Foto == null) return null;
-            if (t >= f.VigenteHastaUtc) return null;                               // C9
+            if (f.Foto == null || t >= f.VigenteHastaUtc) { UltimoMotivo = MotivoSinLibro(t); return null; }   // C9
+            if (CortePendiente(f, t) != DateTime.MinValue) { UltimoMotivo = MotivoSinLibro(t); return null; }   // 5.0: ex-dividendo
             double rz = f.Razon;
-            if (double.IsNaN(rz) || !string.Equals(f.RazonContrato, _op.ContratoDe(t) ?? "", StringComparison.Ordinal)) return null;   // C8 + roll
+            if (double.IsNaN(rz) || !string.Equals(f.RazonContrato, _op.ContratoDe(t) ?? "", StringComparison.Ordinal)) { UltimoMotivo = MotivoSinLibro(t); return null; }   // C8 + roll
+            UltimoMotivo = "";
             double fut = futMnq;
             double S = fut / rz;
             var fl = FilasHoy.Armar(f.Foto, t);
             PerfilLado.CargaPorStrike(f.Foto, t, S, false, out var kCg, out var oiCg, out var oiCgC, out var oiCgP, out var gxCg);   // 4.1.7: TODOS los vencimientos
             var r = PerfilLado.Armar(fl, S, false);
-            if (r == null) return null;
+            if (r == null) { UltimoMotivo = "SPY: la cadena vigente no tiene filas del vencimiento de hoy"; return null; }
 
             // C5 con la cache de la vista previa (tanda de 240 minutos desde el inicio de la sesion)
             long claveIni = TiempoFam.Clave(TiempoFam.IniSesion(TiempoFam.Sesion(t)));
             _cache.Tanda(CacheZero.TandaDe(clave, claveIni));
             long envB = (long)Math.Floor((t - f.GeneradoUtc).TotalSeconds / 900.0);
-            long bS = (long)Math.Round(S / 1.0, MidpointRounding.ToEven);
+            long bS = (long)Math.Round(S / ZeroEstandarFam.SPY.CentroPaso, MidpointRounding.ToEven);   // 5.0: el centro de SPY (1 USD), ya no a mano
             var (zv, zo) = _op.ZeroCadaMinuto
                 ? ZeroEstandarFam.Calcular(fl, S, false, ZeroEstandarFam.SPY)
                 : _cache.Obtener(f, envB, bS, () => ZeroEstandarFam.Calcular(fl, S, false, ZeroEstandarFam.SPY));
@@ -159,7 +212,7 @@ namespace PythiaGexCinco.Familia.Spy
                 Fut = new double[n], K = new double[n], GvC = new double[n], GvP = new double[n], GoC = new double[n], GoP = new double[n], Gv = new double[n], Go = new double[n],
                 ZeroVol = double.IsNaN(zv) ? double.NaN : zv * rz, ZeroOi = double.IsNaN(zo) ? double.NaN : zo * rz,
                 DatoUtc = f.DatoUtc, OiOk = !f.OiViejo, Mult = MULT, Congelada = f.Congelada,
-                ConvTexto = "razon " + rz.ToString("0.0000", CultureInfo.InvariantCulture) + " (mediana de " + f.RazonN.ToString(CultureInfo.InvariantCulture) + " muestras sincronizadas)",
+                ConvTexto = TextoConversion(f, t),
             };
             int j = 0;
             for (int i = 0; i < r.N; i++)
@@ -190,11 +243,27 @@ namespace PythiaGexCinco.Familia.Spy
             return b;
         }
 
-        /// <summary>Estado de la fuente para la pestaña (FuenteEstado del contrato) a partir del libro del minuto y su foto.</summary>
+        /// <summary>5.0: el texto de la conversion para la pestaña: "razon X (mediana de N muestras sincronizadas MES/SPY de 04:00-20:00 NY[; ex-dividendo ...])".
+        /// Empieza con "razon " como en la 4.1 (lo que lee la pantalla).</summary>
+        private string TextoConversion(FotoSpy f, DateTime t)
+        {
+            var inv = CultureInfo.InvariantCulture;
+            string s = "razon " + f.Razon.ToString("0.0000", inv) + " (mediana de " + f.RazonN.ToString(inv) + " muestras sincronizadas MES(ts - 900 s)/spot SPY"
+                       + (_op.VentanaHorariaNy ? " de 04:00-20:00 NY" : "");
+            if (ExDivReciente(f, t))
+                s += "; ex-dividendo de SPY del " + ExDividendoSpy.Dia(f.ExDivUtc) + ": ventana reiniciada a las 04:00 NY, " + f.MuestrasDesdeExDiv.ToString(inv) + " muestras nuevas";
+            return s + ")";
+        }
+
+        /// <summary>Estado de la fuente para la pestaña (FuenteEstado del contrato) a partir del libro del minuto y su foto. 5.0: sin libro, el motivo.</summary>
         public FuenteEstado Fuente(LibroMinuto b, DateTime tUtc)
         {
             var f = FotoEn(tUtc);
-            if (b == null || f == null) return new FuenteEstado { Libro = LIBRO, Texto = "SPY: sin cadena vigente", DatoUtc = f?.DatoUtc ?? DateTime.MinValue };
+            if (b == null || f == null)
+            {
+                string m = MotivoSinLibro(tUtc);
+                return new FuenteEstado { Libro = LIBRO, Texto = string.IsNullOrEmpty(m) ? "SPY: sin cadena vigente" : m, DatoUtc = f?.DatoUtc ?? DateTime.MinValue };
+            }
             return new FuenteEstado { Libro = LIBRO, Texto = b.ConvTexto, ConvValor = b.Conv, DatoUtc = f.DatoUtc, Congelada = f.Congelada, OiOk = !f.OiViejo };
         }
 

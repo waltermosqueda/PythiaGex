@@ -305,10 +305,14 @@ namespace PythiaGexCinco.Familia
     {
         public const int VENTANA = 24, MIN_BUENAS = 5;
         public const int INI_MIN_UTC = 13 * 60 + 50, FIN_MIN_UTC = 20 * 60 + 10;      // "9:50-16:10 de Nueva York" escrito en UTC fijo (como la clasica)
+        // 5.0 (27-10-2026, agente principal): la ventana va en HORA DE NY (9:50-16:10), no en UTC fijo como la clasica. En horario de verano da lo
+        // mismo (la paridad con sus AUDIT de ES no cambia); desde el 01-11 la de UTC empezaria 8:50 NY con el SPX todavia cerrado (spot del cierre
+        // anterior contra el MES moviendose) y cortaria a las 15:10. Es la que la clasica QUERIA (su comentario dice "9:50-16:10 de Nueva York").
+        public const int INI_MIN_NY = 9 * 60 + 50, FIN_MIN_NY = 16 * 60 + 10;
         public const double EDAD_CADENA_MAX_MIN = 30;
 
         /// <summary>El sello de CBOE entra en la ventana de la clasica (hora UTC entre 13:50 y 20:10, el minuto 20:10 entero).</summary>
-        public static bool EnVentana(DateTime tsUtc) { int m = tsUtc.Hour * 60 + tsUtc.Minute; return m >= INI_MIN_UTC && m <= FIN_MIN_UTC; }
+        public static bool EnVentana(DateTime tsUtc) { var ny = TiempoFam.ANy(tsUtc); int m = ny.Hour * 60 + ny.Minute; return m >= INI_MIN_NY && m <= FIN_MIN_NY; }
 
         /// <summary>Una muestra: la agrega a obs (las ultimas 24), saca la mediana robusta y, con >= 5 buenas (o sin base), la adopta con la hora 'ahora'.
         /// precio = el cierre de la vela (el tope usa ESE precio, como la clasica).</summary>
@@ -706,8 +710,9 @@ namespace PythiaGexCinco.Familia
         /// <summary>t cae en la ventana de la rueda de su dia UTC: [13:50, 20:11) (la ultima muestra posible tiene sello 20:10:59). ini = 13:50 de ese dia.</summary>
         public static bool EnVentanaRueda(DateTime tUtc, out DateTime iniUtc)
         {
-            iniUtc = DateTime.SpecifyKind(tUtc.Date, DateTimeKind.Utc).AddMinutes(ReglaBaseClasica.INI_MIN_UTC);
-            var fin = DateTime.SpecifyKind(tUtc.Date, DateTimeKind.Utc).AddMinutes(ReglaBaseClasica.FIN_MIN_UTC + 1);
+            var diaNy = TiempoFam.ANy(tUtc).Date;   // 5.0: en hora de NY (ver ReglaBaseClasica.INI_MIN_NY)
+            iniUtc = TiempoFam.NyAUtc(diaNy.AddMinutes(ReglaBaseClasica.INI_MIN_NY));
+            var fin = TiempoFam.NyAUtc(diaNy.AddMinutes(ReglaBaseClasica.FIN_MIN_NY + 1));
             return tUtc >= iniUtc && tUtc < fin;
         }
 

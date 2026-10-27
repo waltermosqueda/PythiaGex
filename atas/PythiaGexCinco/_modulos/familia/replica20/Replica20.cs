@@ -1,54 +1,82 @@
 // Replica20.cs — PythiaGex 4.1.3 (09-10-2026), modulo replica20. Pedido del operador (09-10): "copia la formula de la 2.0 y agregala a lo que ya
 // tenemos, que tambien funciona, asi vamos refinando y calibrando". Cuatro series NUEVAS, todas calculadas ADENTRO (no se lee nada de la 2.0:
-// ni su log, ni su razon-ES-SPY.txt, ni sus estelas; independencia total). Fuera de la cuenta de la vista previa: CONF y FAM no las ven.
+// ni su log, ni su razon-ES-SPY.txt, ni su base-rueda-ES.json, ni sus estelas; independencia total). Fuera de la cuenta de la vista previa: CONF
+// y FAM no las ven.
 //
-//   R20_SPY_vol  "2.0 SPY"  replica EXACTA de las dominantes de la 2.0 (PythiaGexDos 2.0.6 con los ajustes del .ws del operador:
-//                Horizonte=Hoy, CuantasDominantes=2, RadioDominantesPct=2, RadioDominantesMaxPts=100, DominantesReferencia=true (=> sin una por lado
-//                y sin centroide), DominantesDeNoche=volumen, Tasa=0,0375, RetrasoCboeSeg=960):
-//                  * libro = la cadena SPY de CBOE (la ultima con generado <= t), horizonte Hoy (0 <= dias - env <= max(1, mas cercano + 0,01));
-//                  * gamma Black-Scholes r 0,0375 sin dividendo; por fila gv = (g(ivC) volC - g(ivP) volP) x 100 x S^2 x 0,01, go igual con el OI;
-//                    sumado por K (GammaHoyNucleo.cs:189-196, 332-353);
-//                  * dominantes = las 2 barras de mayor |gv| con |Fut - fut| <= min(2 % de fut, 100) (orden estable por K); si no hay, lo mismo con go
-//                    (GammaHoyNucleo.cs:394-410);
-//                  * SU conversion (EscalarCon, GammaHoy.cs:1040-1131): razon = cierre de la vela de 1 min del MES que contiene el ultimo trade de la
-//                    cadena / spot_idx de la cadena; con la cadena fresca y |pAl/pAhora - 1| > 0,006, la cruda pAhora/spot; sin vela, sus respaldos
-//                    (ultima valida <= 4 dias, mediana de la rueda, cruda). Fut(K) = K x razon, S = fut / razon.
-//   R20_SPX_vol  "2.0 SPX"  la capa SPX de la 2.0 (GammaHoyCapas.cs RepreciarCapas, mismos ajustes): la misma seleccion sobre la cadena _SPX de CBOE
-//                con base = la base cruda de forwards de la cadena si pasa la cota |b - carry| <= max(0,6 |carry|, 0,0006 fut) (carry = fut x
-//                (0,0375 - 0,008) x dias al vencimiento del futuro / 365, GammaHoyNucleo.cs:298-321); si no, el carry; si no hay carry, la cruda.
-//                Fut(K) = K + base.
-//   DOMS_SPY_vol "SPY dom"  la SELECCION de la 2.0 sobre el libro SPY de la 4.1 (LibroMinuto del minutero SPY: razon sincronizada C8).
-//   DOMS_SPX_vol "SPX dom"  la seleccion de la 2.0 sobre el libro SPX de la 4.1 (base C7). Apagada por defecto: sin medir.
+// 5.0 (27-10-2026, P3): LA 2.0 EN UN GRAFICO DE ES (MESZ6). Verificado en su codigo (PythiaGexDos 2.0.6) con la raiz "ES" (GammaHoy.cs:966-973):
+//   * en ES la 2.0 NO arma capas (CapaActiva solo con raiz NQ, GammaHoyCapas.cs:437-438) y con 'Libro automatico' (default true, GammaHoy.cs:81)
+//     su UNICO libro es CBOE_SPX (GammaHoy.cs:88): la cadena de SPX por BASE ADITIVA, Fut = K + base (GammaHoyNucleo.cs:322, 343). Nada de 'por
+//     beta' (eso es la capa SPX dibujada en un grafico de NQ). MEDIDO en su log del 05-10 13:11 ART: "raiz=ES ... libro efectivo=CBOE_SPX/ES".
+//   * R20_SPX_vol = ESE libro. Horizonte Hoy; Black-Scholes r 0,0375 SIN dividendo; GEX x 100 (MULT_INDICE); dominantes con los defaults del .ws
+//     (CuantasDominantes 2, RadioDominantesPct 2, RadioDominantesMaxPts 100, DominantesReferencia true => sin una por lado ni centroide,
+//     GammaHoy.cs:1508; DominantesDeNoche Volumen): las 2 de mayor |GEX vol| a <= min(2 % del futuro, 100 pts) = 100 pts en ES (2 % de 7.700
+//     son 154); si ninguna del radio tiene volumen, por OI. NO se reescala nada: es lo que la 2.0 hace en ES (MEDICIONES_ES.md §1.5 punto 7).
+//   * SU base, la cascada de CalcularAdentro (GammaHoyNucleo.cs:298-321), cada escalon acotado por el carry del contrato del grafico:
+//       carry = fut x (0,0375 - dividendo) x dias al vencimiento del futuro / 365 (vencimiento: Security/codigo, tercer viernes 13:30 UTC,
+//       GammaHoy.cs:1587-1647); dividendo = DividendoUsado() = 1,2 % en ES (GammaHoy.cs:1649; la 4.1 tenia el 0,8 % de NQ: DIVIDENDO_ES);
+//       cota |b - carry| <= max(0,6 |carry|, 0,0006 fut); la "medida" (y la reciente) tambien vale contra el carry del trimestre siguiente
+//       cuando el vencimiento es SUPUESTO (codigo sin mes, GammaHoyNucleo.cs:308):
+//       1. "medida": la base de forwards de la cadena cuando es CONFIABLE. La 2.0 lee base/base_confiable del json (pythiagex/base.py:250-255:
+//          residuo <= 8 ticks, dispersion <= 12 ticks, >= 5 vencimientos, >= 8 strikes y 0 <= q <= 0,04 con la tasa del Tesoro). Aca sale de la
+//          tabla de la descarga (Cboe.IMedidaCboe de P2: la "base"/"base_confiable" de cada linea, la de Python en las de cboe-local y la de
+//          CboeCadena.Medir con TasaConfianza 4,1 % en las propias). Si la fuente no tiene esa tabla (un arnes), el respaldo es el residuo
+//          <= 8 ticks (OpcionesReplica20.MedidaErrTicks): medido contra el base_confiable de cboe-local, 98,9 % de acuerdo en la rueda y 99,5 %
+//          de noche (1.979 cadenas de SPX del 20 al 27-10: ningun confiable perdido, 20 marcadas de mas). Detalle en _diseno/P3_SPY.md.
+//       2. "medida reciente": la 2.0 la lee del radar de la nube (base_ultima_buena, si tiene <= 360 min). Con la cadena LOCAL de cboe_local.py
+//          (la que la 2.0 usa casi siempre: FeedMinuto y gana la de 'generado' mas nuevo, GammaHoy.cs:950-953) ese campo no viene y la 2.0 salta
+//          directo a 3: por eso queda APAGADO por defecto (OpcionesReplica20.MedidaReciente; prendido = la ultima cadena "medida" de <= 360 min).
+//       3. "de la rueda" (<= 24 h desde que se adopto): MedirBaseRueda (GammaHoy.cs:1656-1723), port 1:1 en RuedaSpx20/BaseEs20: una muestra por
+//          sello NUEVO de CBOE con el sello entre 13:50 y 20:10 UTC (fijo, como la 2.0) y la cadena de <= 30 min; muestra = cierre de la vela de
+//          1 min del MES que contiene (sello - 960 s) - spot de SPX; las ultimas 24; mediana alta; MAD; tope max(3 MAD, 0,0002 x precio);
+//          con >= 3 buenas la mediana de las buenas; con >= 5 buenas (o sin base todavia) se adopta.
+//       4. CRUDA (la de forwards, con la cota); 5. TEORICA (el carry); 6. la CRUDA sin cota.
+//   * R20_SPY_vol NO tiene original en ES: la 2.0 solo dibuja SPY con 'Libro automatico' APAGADO y CBOE_ETF a mano (RaizLibro "SPY",
+//     GammaHoy.cs:999-1004; MEDIDO: no existe PythiaGex2\razon-ES-SPY.txt). Queda como "seleccion estilo 2.0 sobre SPY con la conversion estilo
+//     2.0" (EscalarCon tal cual: vela de 1 min del MES del ultimo trade de la cadena / spot de SPY, guardia del 0,6 %, cordura 5 %, mediana de
+//     24); el catalogo la rotula asi y la deja apagada (P5).
+//   * DOMS_SPX_vol / DOMS_SPY_vol: la SELECCION de la 2.0 (2 de mayor |GEX vol| a <= min(2 %, 100)) sobre los libros SPX (base C7) y SPY (razon
+//     C8) de la 5.0, con la conversion de la 5.0.
+//   Diferencias con la 2.0 en ES que NO se pueden evitar (dichas, no escondidas), ademas de las de la 4.1.3 de abajo:
+//     * "medida": en las cadenas propias el q se mide con TasaConfianza (4,1 % fijo) en vez de la curva del Tesoro de Python (P2); sin la
+//       tabla de la descarga, solo el residuo;
+//     * "medida reciente": apagada (la 2.0 la tiene solo cuando la cadena que gano es la del radar de la nube: el log de la clasica, que baja
+//       igual, muestra 49-102 AUDIT "medida hace N" por dia el 04-10 y el 17-09 y ninguno el 05-10);
+//     * la lista de 24 de la rueda arranca vacia cada dia UTC (la 2.0 la arrastra mientras ATAS siga abierto; ATAS arranca cada mañana) y el
+//       "archivo" (base-rueda-ES.json de la 2.0) es la ultima adopcion de los dias anteriores recorridos (DiasHistoria);
+//     * la vela de la muestra de la rueda: el ultimo tick de ese minuto en la cinta (la 2.0: la vela del grafico de 1 min); sin ticks de ese
+//       minuto, la vela m2 interpolada, marcada provisional y vuelta a mirar (como las razones de SPY);
+//     * VENTANA DE LA RUEDA EN UTC FIJO = la de la 2.0 (13:50-20:10 UTC = 09:50-16:10 NY en horario de verano). DESDE EL 01-11-2026 (invierno)
+//       queda 08:50-15:10 NY: las muestras de 08:50-09:30 NY comparan el MES con el spot de SPX de la vispera (el indice abre 09:30) y la base
+//       de la rueda sale corrida lo que se movio la noche. La 2.0 haria lo mismo (y la replica de la clasica, que usa la misma regla).
+//       OpcionesReplica20.RuedaVentanaNy = true la corrige (09:50-16:10 NY); 5.0: el coordinador la dejo en true por defecto (27-10).
+//   SIN VERIFICAR contra la 2.0 corriendo en ES: no hay salidas de la 2.0 en ES desde el 05-10 (5 AUDIT ese dia, "base=53.42 origen=medida").
+//
+// 4.1.3/4.1.4 (texto original, con los nombres ya de ES por el clon):
+//   R20_SPY_vol  "2.0 SPY"  replica de las dominantes de la 2.0 sobre la cadena SPY de CBOE con SU conversion (EscalarCon, GammaHoy.cs:1040-1131):
+//                razon = cierre de la vela de 1 min del MES que contiene el ultimo trade de la cadena / spot_idx de la cadena; con la cadena fresca y
+//                |pAl/pAhora - 1| > 0,006, la cruda pAhora/spot; sin vela, sus respaldos (ultima valida <= 4 dias, mediana de la rueda, cruda).
+//                Fut(K) = K x razon, S = fut / razon.
+//   R20_SPX_vol  "2.0 SPX"  la misma seleccion sobre la cadena _SPX de CBOE con la base de la 2.0 (5.0: la cascada completa de arriba). Fut(K) = K + base.
+//   DOMS_SPY_vol "SPY dom"  la SELECCION de la 2.0 sobre el libro SPY de la 5.0 (LibroMinuto del minutero SPY: razon sincronizada C8).
+//   DOMS_SPX_vol "SPX dom"  la seleccion de la 2.0 sobre el libro SPX de la 5.0 (base C7). Apagada por defecto: sin medir.
 // Rol "D1" (la de mayor |GEX|) y "D2"; monto = GEX con signo / 1e6 (M USD por 1 %, escala 1 como SPX/SPY), round 1. Strike en su libro.
-//
-// Diferencias con la 2.0 que NO se pueden evitar (dichas, no escondidas):
-//   * la cuenta se hace una vez por minuto (4.1.4: con el ultimo precio del MES al empezar el minuto; la 4.1.3 usaba el fut del minuto de la 4.1,
-//     el cierre de la ultima vela m2 cerrada); la 2.0 reprecia cada segundo con el precio de ese instante (el arnes replica20 mide la cuenta con el
-//     precio de cada AUDIT de la 2.0);
-//   * la cadena es la que bajo la 4.1 (otra bajada que la de cboe-local: de noche el dato es el mismo);
-//   * la vela de 1 min sale de la cinta de la 4.1 (el ultimo tick antes de que termine ese minuto); si la cinta no tiene los ticks de ese minuto
+// Diferencias con la 2.0 que NO se pueden evitar (4.1.3):
+//   * la cuenta se hace una vez por minuto (4.1.4: con el ultimo precio del MES al empezar el minuto); la 2.0 reprecia cada segundo con el precio
+//     de ese instante;
+//   * la cadena es la que bajo la 5.0 (su descarga y la de cboe-local: de noche el dato es el mismo);
+//   * la vela de 1 min sale de la cinta (el ultimo tick antes de que termine ese minuto); si la cinta no tiene los ticks de ese minuto
 //     (ATAS cerrado), la vela m2 interpolada, y lo dice el texto de la conversion;
-//   * la 4.1 no guarda si la cadena traia ultimo_trade: se toma FotoCadena.DatoUtc (CBOE siempre lo trae; sin el, la 4.1 pone ts - 902 s);
-//   * la base SPX: los respaldos "medida" (base del radar de la nube), "ultima buena" y "de la rueda" (archivo base-rueda-ES.json) de la 2.0 no
-//     estan en las cadenas de la 4.1 (con la primaria en SPY la 2.0 tampoco mide la rueda): queda cruda -> carry -> cruda sin cota.
-// Nada de E/S. Lo llama el hilo del motor (IExtrasMinuto); el arnes lo llama directo (publico y puro donde se puede).
-//
+//   * la 5.0 no guarda si la cadena traia ultimo_trade: se toma FotoCadena.DatoUtc (CBOE siempre lo trae; sin el, ts - 902 s).
 // 4.1.4 (09-10-2026, arreglos de la revision de la 4.1.3):
 //   * la razon de una cadena ya no se escala "una vez y para siempre": las cadenas cuya razon salio SIN la vela de 1 min de la cinta (la cinta
-//     todavia cargaba su historia al arrancar: la carga va de los dias viejos a los CSV, y el ultimo dia es el que mas tarda) o sin el precio del
-//     MES de cuando se bajaron, se vuelven a mirar cada SondeoCadaS s; si la vela aparecio, se rehace el estado entero en orden (lo mismo que daria
-//     un arranque con la cinta completa) y, si cambio la razon de alguna cadena, sube Generacion: el motor rehace los minutos ya calculados desde
-//     esa cadena (IExtrasRehacer.Rehacer: solo R20_SPY_vol y su "2.0 SPY") y los vuelve a guardar. Medido por la revision: con la cinta sin el 10-08
-//     la razon quedaba 41,6095 (CRUDA sin alinear) toda la noche en vez de 41,4447 = 124 pts en la raya de K750.
+//     todavia cargaba su historia al arrancar) o sin el precio del MES de cuando se bajaron, se vuelven a mirar cada SondeoCadaS s; si la vela
+//     aparecio, se rehace el estado entero en orden (lo mismo que daria un arranque con la cinta completa) y, si cambio la razon de alguna cadena,
+//     sube Generacion: el motor rehace los minutos ya calculados desde esa cadena (IExtrasRehacer.Rehacer) y los vuelve a guardar. 5.0: lo mismo
+//     con las muestras de la rueda de SPX (la base de la 2.0 en ES tiene estado) y Rehacer rehace R20_SPY_vol Y R20_SPX_vol.
 //   * la razon de la 2.0 depende del MARCO del grafico donde corre la 2.0 (su "vela del ultimo trade"): esta replica es la de la 2.0 en un grafico
-//     de 1 min. En 2 min la vela de las 16:14 NY cierra 30.993,25 en vez de 30.990,25 (41,4487 contra 41,4447: ~3 pts de noche). La revision mostro
-//     que los 3 minutos SPY distintos del 09-10 (22:00, 22:02, 22:03 UTC) eran la 2.0 en un grafico de 2 min (y a las 22:00 otra bajada), NO "la
-//     instancia previa / I1 recien arrancada" como dijo el informe de la 4.1.3.
+//     de 1 min.
 //   * el fut de las R20 (OpcionesReplica20.FutDelInstante, PRENDIDO): el ultimo precio del MES al empezar el minuto en vez del cierre de la ultima
-//     vela m2 cerrada (el de todas las series). Es lo mas parecido al "cierre de la vela actual" con que reprecia la 2.0 y da lo mismo en vivo que al
-//     recalcular. Medido (arnes replica20, variante E contra la D, AUDIT de la 2.0 del 09-10): minutos iguales a la 2.0 SPY 113/138 contra 97,
-//     SPX 113/132 contra 101; |fut - fut de la 2.0| mediana 2,25 contra 3,25 pts. Las rayas no se mueven (strike x razon / strike + base): cambia
-//     el monto y, en el borde de los 100 pts, cual strike entra.
+//     vela m2 cerrada (el de todas las series). Es lo mas parecido al "cierre de la vela actual" con que reprecia la 2.0.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -60,9 +88,9 @@ namespace PythiaGexCinco.Familia
     public static class Nucleo20
     {
         public const double TASA = 0.0375;               // ajuste "Tasa" del .ws (0,0375)
-        public const double MULT = 100.0;                // GammaHoyNucleo.MULT_INDICE
+        public const double MULT = 100.0;                // GammaHoyNucleo.MULT_INDICE (SPX y SPY x 100)
         public const double PISO_DIAS = 1.0 / 1440.0;    // GammaHoyNucleo.PISO_DIAS
-        public const double RADIO_PCT = 2.0, RADIO_MAX_PTS = 100.0;
+        public const double RADIO_PCT = 2.0, RADIO_MAX_PTS = 100.0;   // 5.0: los de la 2.0 en ES (no se reescalan: 100 pts de ES)
         public const int CUANTAS = 2;
 
         private static double Fi(double x) => Math.Exp(-0.5 * x * x) / Math.Sqrt(2.0 * Math.PI);
@@ -77,7 +105,7 @@ namespace PythiaGexCinco.Familia
             return Fi(d1) / (S * v);
         }
 
-        /// <summary>Feed.Parsear de la 2.0 lee un null del json como 0 (la 4.1 lo guarda NaN).</summary>
+        /// <summary>Feed.Parsear de la 2.0 lee un null del json como 0 (la 5.0 lo guarda NaN).</summary>
         private static double Z(double x) => double.IsNaN(x) ? 0.0 : x;
 
         /// <summary>GammaHoyNucleo.Gex (libro de CBOE): (gC wC - gP wP) x 100 x S x S x 0,01.</summary>
@@ -145,7 +173,7 @@ namespace PythiaGexCinco.Familia
             return cand;
         }
 
-        /// <summary>La seleccion de la 2.0 sobre un libro de la 4.1 (LibroMinuto ya convertido a ES por la 4.1: Fut, K, Gv, Go en orden de Fut).</summary>
+        /// <summary>La seleccion de la 2.0 sobre un libro de la 5.0 (LibroMinuto ya convertido a ES por la 5.0: Fut, K, Gv, Go en orden de Fut).</summary>
         public static List<(double Fut, double G, double K)> Dominantes(LibroMinuto b, out string libroDom)
         {
             libroDom = "";
@@ -168,7 +196,8 @@ namespace PythiaGexCinco.Familia
     }
 
     /// <summary>EscalarCon + RazonEtf de la 2.0 para UNA serie de cadenas en orden de llegada (el estado: la ultima razon valida, la mediana de las
-    /// ultimas 24 frescas). Sin archivo (la 2.0 guarda razon-ES-SPY.txt): el estado se arma con las cadenas que tiene la 4.1.</summary>
+    /// ultimas 24 frescas). Sin archivo (la 2.0 guarda razon-ES-SPY.txt): el estado se arma con las cadenas que tiene la 5.0.
+    /// 5.0: sin cambios de numero (la 2.0 no tiene nada de ES/SPY aca adentro; la guardia del 0,6 % y la cordura del 5 % son las suyas).</summary>
     public sealed class RazonSpy20
     {
         public const double VIEJA_MIN = 20;              // GammaHoy.RazonCadenaViejaMin
@@ -180,7 +209,7 @@ namespace PythiaGexCinco.Familia
         public int Procesadas { get; private set; }
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-        /// <summary>Una cadena (en orden de 'generado'). ahora = su 'generado' (cuando la bajo la 4.1 = cuando la 2.0 la habria escalado).
+        /// <summary>Una cadena (en orden de 'generado'). ahora = su 'generado' (cuando la bajo la 5.0 = cuando la 2.0 la habria escalado).
         /// cierreVela(t) = cierre de la vela de 1 min del MES abierta a t o antes (NaN si no hay; deTick = si salio de los ticks);
         /// precioEn(t) = el ultimo precio del MES en t (NaN si no hay).</summary>
         public Razon20 Escalar(FotoCadena c, DateTime ahora, Func<DateTime, (double P, bool DeTick)> cierreVela, Func<DateTime, double> precioEn)
@@ -256,29 +285,60 @@ namespace PythiaGexCinco.Familia
         }
     }
 
-    /// <summary>La base de la capa SPX de la 2.0 (CalcularAdentro, rama indice con base), con lo que trae una cadena de la 4.1.</summary>
+    /// <summary>La base del libro SPX de la 2.0 en un grafico de ES (CalcularAdentro, rama indice con base: GammaHoyNucleo.cs:298-321).</summary>
     public static class BaseSpx20
     {
-        public const double DIVIDENDO_ES = 0.008;        // DividendoUsado(): 0 en el .ws -> 0,8 % para ES
+        /// <summary>DividendoUsado() de la 2.0 en ES: el ajuste 'Dividendo' en 0 -> 1,2 % para ES (0,8 % solo para NQ). GammaHoy.cs:1649.
+        /// 5.0: era 0,008 (copiado de NQ). (La replica de la clasica ya no lo usa: tiene su propio 1,2 %, PythiaGexNiveles/GammaHoy.cs:1411.)</summary>
+        public const double DIVIDENDO_ES = 0.012;
+        /// <summary>5.0: el residuo de la recta de forwards (base_error_ticks) hasta el que la base de la cadena cuenta como "medida" (base.py: 8 ticks).</summary>
+        public const double MEDIDA_ERR_TICKS = 8.0;
+        /// <summary>"medida reciente": base_ultima_buena con edad &lt;= 360 min (GammaHoyNucleo.cs:315).</summary>
+        public const double MEDIDA_RECIENTE_MIN = 360.0;
+        /// <summary>"de la rueda": BaseRuedaEdadMin &lt;= 24 h (GammaHoyNucleo.cs:316).</summary>
+        public const double RUEDA_VIDA_MIN = 24 * 60;
+        /// <summary>5.0: como empieza el texto de cada origen (despues de "base 2.0 X (" en Resultado20.Texto): lo lee la pantalla. Chequear
+        /// ORIGEN_MEDIDA_HACE antes que ORIGEN_MEDIDA y "(sin cota)" antes que ORIGEN_CRUDA.</summary>
+        public const string ORIGEN_MEDIDA = "medida", ORIGEN_MEDIDA_HACE = "medida hace", ORIGEN_RUEDA = "de la rueda", ORIGEN_CRUDA = "CRUDA",
+                            ORIGEN_TEORICA = "TEORICA", MARCA_SIN_COTA = "(sin cota)";
+        private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         /// <summary>carry = fut x (tasa - dividendo) x dias al vencimiento / 365 (NaN si el vencimiento no es posterior a ahora).</summary>
         public static double Carry(double futuro, DateTime ahoraUtc, DateTime expUtc, double tasa = Nucleo20.TASA, double dividendo = DIVIDENDO_ES)
             => expUtc != default(DateTime) && expUtc > ahoraUtc ? futuro * (tasa - dividendo) * (expUtc - ahoraUtc).TotalDays / 365.0 : double.NaN;
 
-        /// <summary>CRUDA si pasa la cota del carry; si no, el carry (TEORICA); si no hay carry, la cruda sin cota; si nada, NaN.</summary>
+        /// <summary>La cota de la 2.0: |b - k| &lt;= max(0,6 |k|, 0,0006 fut).</summary>
+        public static bool Cerca(double b, double k, double futuro) => Math.Abs(b - k) <= Math.Max(Math.Abs(k) * 0.6, futuro * 0.0006);
+
+        /// <summary>La cascada SIN los escalones con estado (la de la 4.1, sin "medida" ni rueda): CRUDA si pasa la cota del carry; si no, el carry
+        /// (TEORICA); si no hay carry, la cruda sin cota; si nada, NaN. Queda para los arneses; la replica usa Cascada.</summary>
         public static double Base(FotoCadena c, double futuro, DateTime ahoraUtc, DateTime expUtc, out string origen, out double carry,
                                   double tasa = Nucleo20.TASA, double dividendo = DIVIDENDO_ES)
+            => Cascada(c?.BaseCruda ?? double.NaN, c?.BaseErrorTicks ?? double.NaN, double.NaN, "", double.NaN, double.NaN, double.NaN, double.NaN, 0,
+                       futuro, ahoraUtc, expUtc, default(DateTime), tasa, dividendo, out origen, out carry);
+
+        /// <summary>5.0: la cascada de la 2.0 en ES (GammaHoyNucleo.cs:314-319), escalon por escalon:
+        /// medida (la base medida de la cadena, NaN si no es confiable; pasa la cota, tambien contra el carry alternativo) &gt; medida reciente (ultBuena
+        /// con edad &lt;= 360 min, misma cota) &gt; de la rueda (edad &lt;= 24 h, cota del carry) &gt; CRUDA (cota) &gt; TEORICA (el carry) &gt; CRUDA sin cota.
+        /// NaN = sin base. medidaDe = de donde salio la medida, para el texto. expAltUtc = el vencimiento del trimestre siguiente cuando el del
+        /// grafico es SUPUESTO (default = no hay).</summary>
+        public static double Cascada(double cruda, double errTicks, double medida, string medidaDe, double ultBuena, double ultBuenaEdadMin, double rueda, double ruedaEdadMin, int ruedaBuenas,
+                                     double futuro, DateTime ahoraUtc, DateTime expUtc, DateTime expAltUtc, double tasa, double dividendo, out string origen, out double carry)
         {
-            var iv0 = CultureInfo.InvariantCulture;
             carry = Carry(futuro, ahoraUtc, expUtc, tasa, dividendo);
-            double k0 = carry;
-            bool Cerca(double b, double k) => Math.Abs(b - k) <= Math.Max(Math.Abs(k) * 0.6, futuro * 0.0006);
-            bool Razonable(double b) => double.IsNaN(k0) || Cerca(b, k0);
-            double cruda = c == null || double.IsNaN(c.BaseCruda) ? 0 : c.BaseCruda;
-            double err = c == null || double.IsNaN(c.BaseErrorTicks) ? 0 : c.BaseErrorTicks;
-            if (cruda != 0 && Razonable(cruda)) { origen = "CRUDA " + err.ToString("0", iv0) + " ticks"; return cruda; }
-            if (!double.IsNaN(carry)) { origen = "TEORICA carry " + carry.ToString("0.0", iv0) + (cruda != 0 ? " (cruda " + cruda.ToString("0.0", iv0) + " descartada)" : ""); return carry; }
-            if (cruda != 0) { origen = "CRUDA " + err.ToString("0", iv0) + " ticks (sin cota)"; return cruda; }
+            double k0 = carry, k1 = Carry(futuro, ahoraUtc, expAltUtc, tasa, dividendo);
+            bool Razonable(double b) => double.IsNaN(k0) || Cerca(b, k0, futuro);
+            bool RazonableMedida(double b) => double.IsNaN(k0) || Cerca(b, k0, futuro) || (!double.IsNaN(k1) && Cerca(b, k1, futuro));
+            double cr = double.IsNaN(cruda) ? 0 : cruda, er = double.IsNaN(errTicks) ? 0 : errTicks;
+            if (!double.IsNaN(medida) && medida != 0 && RazonableMedida(medida))
+            { origen = ORIGEN_MEDIDA + ": forwards de la cadena, confiable (" + (string.IsNullOrEmpty(medidaDe) ? "" : medidaDe + "; ") + "residuo " + er.ToString("0.0", Inv) + " ticks)"; return medida; }
+            if (!double.IsNaN(ultBuena) && ultBuena != 0 && ultBuenaEdadMin <= MEDIDA_RECIENTE_MIN && RazonableMedida(ultBuena))
+            { origen = ORIGEN_MEDIDA_HACE + " " + ultBuenaEdadMin.ToString("0", Inv) + " min (la ultima cadena con la base confiable)"; return ultBuena; }
+            if (!double.IsNaN(rueda) && ruedaEdadMin <= RUEDA_VIDA_MIN && Razonable(rueda))
+            { origen = ORIGEN_RUEDA + " hace " + ruedaEdadMin.ToString("0", Inv) + " min (mediana de " + ruedaBuenas.ToString(Inv) + " muestras MES - SPX de su regla)"; return rueda; }
+            if (cr != 0 && Razonable(cr)) { origen = ORIGEN_CRUDA + " " + er.ToString("0", Inv) + " ticks"; return cr; }
+            if (!double.IsNaN(carry)) { origen = ORIGEN_TEORICA + " carry " + carry.ToString("0.0", Inv) + (cr != 0 ? " (cruda " + cr.ToString("0.0", Inv) + " descartada)" : ""); return carry; }
+            if (cr != 0) { origen = ORIGEN_CRUDA + " " + er.ToString("0", Inv) + " ticks " + MARCA_SIN_COTA; return cr; }
             origen = "sin base"; return double.NaN;
         }
 
@@ -315,26 +375,168 @@ namespace PythiaGexCinco.Familia
         }
     }
 
+    /// <summary>5.0: MedirBaseRueda de la 2.0 (PythiaGexDos/GammaHoy.cs:1656-1723): la ventana y la cuenta de UNA muestra, port 1:1.
+    /// Propia de esta replica (no usa la de la clasica, que vive en otro paquete y puede cambiar): la regla es la misma letra por letra.</summary>
+    public static class RuedaSpx20
+    {
+        public const int VENTANA = 24, MIN_BUENAS = 5;
+        /// <summary>La ventana de la 2.0: "9:50-16:10 de Nueva York" escrito en UTC fijo (13:50-20:10 UTC, el minuto 20:10 entero).</summary>
+        public const int INI_MIN_UTC = 13 * 60 + 50, FIN_MIN_UTC = 20 * 60 + 10;
+        /// <summary>La misma ventana en hora de NY (RuedaVentanaNy: la que la 2.0 queria; en horario de verano da lo mismo).</summary>
+        public const int INI_MIN_NY = 9 * 60 + 50, FIN_MIN_NY = 16 * 60 + 10;
+        /// <summary>La cadena tiene que tener &lt;= 30 min ("(ahora - tsCboe).TotalMinutes &lt;= 30").</summary>
+        public const double EDAD_CADENA_MAX_MIN = 30;
+
+        /// <summary>El sello de CBOE entra en la ventana de la 2.0 (UTC fijo) o en la de NY.</summary>
+        public static bool EnVentana(DateTime tsUtc, bool enNy)
+        {
+            if (enNy) { var ny = TiempoFam.ANy(tsUtc); int mn = ny.Hour * 60 + ny.Minute; return mn >= INI_MIN_NY && mn <= FIN_MIN_NY; }
+            int m = tsUtc.Hour * 60 + tsUtc.Minute;
+            return m >= INI_MIN_UTC && m <= FIN_MIN_UTC;
+        }
+
+        /// <summary>Una muestra: la agrega a obs (las ultimas 24), saca la mediana alta, el MAD y el tope max(3 MAD, 0,0002 x precio); con &gt;= 3 buenas
+        /// la mediana de las buenas; con &gt;= 5 buenas (o sin base) la adopta con la hora 'ahora'. precio = el cierre de la vela.</summary>
+        public static void Paso(List<double> obs, double muestra, double precio, DateTime ahoraUtc, ref double baseRueda, ref DateTime baseUtc,
+                                out double med, out double mad, out int buenas, out bool adopto)
+        {
+            obs.Add(muestra);
+            if (obs.Count > VENTANA) obs.RemoveAt(0);
+            var ord = obs.OrderBy(x => x).ToList();
+            med = ord[ord.Count / 2];
+            double m0 = med;
+            mad = ord.Select(x => Math.Abs(x - m0)).OrderBy(x => x).ToList()[ord.Count / 2];
+            double tope = Math.Max(3 * mad, precio * 0.0002);
+            var b = obs.Where(x => Math.Abs(x - m0) <= tope).OrderBy(x => x).ToList();
+            buenas = b.Count;
+            if (b.Count >= 3) med = b[b.Count / 2];
+            adopto = b.Count >= MIN_BUENAS || double.IsNaN(baseRueda);
+            if (adopto) { baseRueda = med; baseUtc = ahoraUtc; }
+        }
+    }
+
+    /// <summary>5.0: el estado de la base de la 2.0 en ES despues de procesar UNA cadena de SPX (en orden de generado).</summary>
+    public sealed class EstadoSpx20
+    {
+        public DateTime GenUtc, TsUtc;
+        public double Spot = double.NaN, Cruda = double.NaN, ErrTicks = double.NaN;
+        /// <summary>"medida": la base de forwards de la cadena es confiable (tabla de la descarga, IMedidaCboe; sin tabla, residuo &lt;= MedidaErrTicks).</summary>
+        public bool Medida;
+        /// <summary>La base medida (NaN si la cadena no es "medida") y de donde salio el "confiable" ("tabla de la descarga" | "aprox.: residuo &lt;= 8").</summary>
+        public double MedidaBase = double.NaN; public string MedidaDe = "";
+        /// <summary>La ultima "medida" hasta esta cadena (incluida) y su generado: la "medida reciente".</summary>
+        public double UltBuena = double.NaN; public DateTime UltBuenaUtc = DateTime.MinValue;
+        // ---- la muestra de la rueda de ESTA cadena (MedirBaseRueda)
+        /// <summary>La cadena es una muestra de la rueda: sello nuevo en la ventana y cadena de &lt;= 30 min.</summary>
+        public bool MuestraRueda;
+        public DateTime HoraVelaUtc;
+        public double Precio = double.NaN, Muestra = double.NaN;
+        /// <summary>false = la cinta no tiene un tick de ese minuto: vela m2 interpolada (o nada); provisional, se vuelve a mirar.</summary>
+        public bool PrecioDeTick;
+        public double Mediana = double.NaN, Mad = double.NaN; public int Buenas, N; public bool Adopto;
+        // ---- la base de la rueda vigente despues de esta cadena
+        public double Rueda = double.NaN; public DateTime RuedaUtc = DateTime.MinValue; public int RuedaBuenas;
+    }
+
+    /// <summary>5.0: lo que la 2.0 en ES arrastra de cadena en cadena para su base (MedirBaseRueda y la ultima "medida"). Uno por serie de cadenas;
+    /// se recorre en orden de generado. Determinista: el mismo orden de cadenas y la misma cinta dan el mismo estado.</summary>
+    public sealed class BaseEs20
+    {
+        private readonly OpcionesReplica20 _op;
+        private readonly List<double> _obs = new List<double>();
+        private DateTime _obsDia = DateTime.MinValue, _ultTs = DateTime.MinValue;
+        private double _rueda = double.NaN; private DateTime _ruedaUtc = DateTime.MinValue; private int _ruedaBuenas;
+        private double _ultBuena = double.NaN; private DateTime _ultBuenaUtc = DateTime.MinValue;
+        public int Procesadas { get; private set; }
+        public int Muestras { get; private set; }
+
+        public BaseEs20(OpcionesReplica20 op) { _op = op ?? new OpcionesReplica20(); }
+
+        /// <summary>Una cadena de SPX. cierreVela(t) = cierre de la vela de 1 min del MES que contiene t (deTick = de un tick de ese minuto).
+        /// medidaDe(f) = la base medida de la tabla de la descarga (Hay = la fuente tiene tabla; Base NaN = no confiable); null = sin tabla:
+        /// respaldo con el residuo de la recta (base_error_ticks &lt;= MedidaErrTicks).</summary>
+        public EstadoSpx20 Procesar(FotoCadena f, DateTime genUtc, Func<DateTime, (double P, bool DeTick)> cierreVela, Func<FotoCadena, (bool Hay, double Base)> medidaDe = null)
+        {
+            Procesadas++;
+            var e = new EstadoSpx20 { GenUtc = genUtc, TsUtc = f?.TsUtc ?? default, Spot = f?.Spot ?? double.NaN, Cruda = f?.BaseCruda ?? double.NaN, ErrTicks = f?.BaseErrorTicks ?? double.NaN };
+            if (f != null)
+            {
+                (bool Hay, double Base) tm = (false, double.NaN);
+                if (medidaDe != null) try { tm = medidaDe(f); } catch { tm = (false, double.NaN); }
+                if (tm.Hay)
+                {
+                    e.MedidaDe = "tabla de la descarga";
+                    e.Medida = !double.IsNaN(tm.Base) && tm.Base != 0;
+                    e.MedidaBase = e.Medida ? tm.Base : double.NaN;
+                }
+                else
+                {
+                    e.MedidaDe = "aprox.: residuo <= " + _op.MedidaErrTicks.ToString("0.#", CultureInfo.InvariantCulture) + " ticks";
+                    e.Medida = !double.IsNaN(e.Cruda) && e.Cruda != 0 && !double.IsNaN(e.ErrTicks) && e.ErrTicks <= _op.MedidaErrTicks;
+                    e.MedidaBase = e.Medida ? e.Cruda : double.NaN;
+                }
+                if (e.Medida) { _ultBuena = e.MedidaBase; _ultBuenaUtc = genUtc; }
+                // MedirBaseRueda: UNA muestra por sello nuevo, en la ventana, con la cadena fresca y el spot del indice
+                if (f.TsUtc != default(DateTime) && f.TsUtc != _ultTs && f.Spot > 0 && RuedaSpx20.EnVentana(f.TsUtc, _op.RuedaVentanaNy)
+                    && (genUtc - f.TsUtc).TotalMinutes <= RuedaSpx20.EDAD_CADENA_MAX_MIN)
+                {
+                    _ultTs = f.TsUtc;                                       // la 2.0 marca el sello antes de buscar la vela
+                    e.MuestraRueda = true;
+                    e.HoraVelaUtc = f.TsUtc.AddSeconds(-Math.Max(0, _op.RetrasoCboeSeg));
+                    var (p, deTick) = cierreVela != null ? cierreVela(e.HoraVelaUtc) : (double.NaN, false);
+                    e.Precio = p; e.PrecioDeTick = deTick && p > 0;
+                    if (p > 0)
+                    {
+                        var dia = f.TsUtc.Date;                              // la lista de 24 arranca vacia cada dia UTC (ATAS arranca cada mañana)
+                        if (dia != _obsDia) { _obs.Clear(); _obsDia = dia; }
+                        e.Muestra = p - f.Spot;
+                        RuedaSpx20.Paso(_obs, e.Muestra, p, genUtc, ref _rueda, ref _ruedaUtc, out var med, out var mad, out var buenas, out var adopto);
+                        e.Mediana = med; e.Mad = mad; e.Buenas = buenas; e.N = _obs.Count; e.Adopto = adopto;
+                        if (adopto) _ruedaBuenas = buenas;
+                        Muestras++;
+                    }
+                }
+            }
+            e.UltBuena = _ultBuena; e.UltBuenaUtc = _ultBuenaUtc;
+            e.Rueda = _rueda; e.RuedaUtc = _ruedaUtc; e.RuedaBuenas = _ruedaBuenas;
+            return e;
+        }
+    }
+
     public sealed class OpcionesReplica20
     {
         /// <summary>Codigo del grafico (MESZ6): el vencimiento del futuro para la cota de la base SPX (como la 2.0 con el codigo del instrumento).</summary>
         public string Contrato = "";
         public double Tasa = Nucleo20.TASA, Dividendo = BaseSpx20.DIVIDENDO_ES;
         public int RetrasoCboeSeg = 960;
-        /// <summary>Dias de cadenas previos al inicio de la sesion que se recorren (estado de la razon: ultima valida, mediana de la rueda).</summary>
+        /// <summary>Dias de cadenas previos al inicio de la sesion que se recorren (estado de la razon de SPY y de la base de SPX: ultima valida,
+        /// medianas de la rueda; el lunes, la del viernes).</summary>
         public int DiasHistoria = 6;
         public Action<string> Log;
-        /// <summary>4.1.4 (revision 4.1.3): cada cuantos segundos (reloj de la PC) se vuelven a mirar en la cinta las cadenas cuya razon se escalo SIN la
-        /// vela de 1 min de sus ticks (cinta cargando al arrancar, ATAS cerrado a esa hora): si la vela aparecio, se rehace el estado entero en orden
-        /// (como un arranque con la cinta completa) y el motor rehace esos minutos. 0 = en cada llamada (arnes).</summary>
+        /// <summary>4.1.4 (revision 4.1.3): cada cuantos segundos (reloj de la PC) se vuelven a mirar en la cinta las cadenas cuya razon (SPY) o muestra
+        /// de la rueda (SPX, 5.0) salio SIN la vela de 1 min de sus ticks (cinta cargando al arrancar, ATAS cerrado a esa hora): si la vela aparecio,
+        /// se rehace el estado entero en orden (como un arranque con la cinta completa) y el motor rehace esos minutos. 0 = en cada llamada (arnes).</summary>
         public int SondeoCadaS = 20;
         /// <summary>4.1.4 (revision 4.1.3, hallazgo del precio): true (default) = las R20 usan el ultimo precio del MES al empezar el minuto (lo mas parecido
-        /// a la 2.0, que reprecia con el precio de cada instante: "cierre de la vela actual"); false = el fut del minuto de la 4.1 (el cierre de la ultima
-        /// vela m2 cerrada, el de todas las series, como la 4.1.3). Medido en el arnes replica20 (variante E contra la D, 09-10, AUDIT de la 2.0):
-        /// minutos iguales a la 2.0 SPY 113 de 138 contra 97, SPX 113 de 132 contra 101; |fut - fut de la 2.0| mediana 2,25 contra 3,25 pts,
-        /// maximo 12,75 contra 22,25. Las rayas no se mueven (son strike x razon / strike + base): cambia el monto y, en el borde de los 100 pts,
-        /// cual strike entra.</summary>
+        /// a la 2.0, que reprecia con el precio de cada instante: "cierre de la vela actual"); false = el fut del minuto de la 5.0 (el cierre de la ultima
+        /// vela m2 cerrada, el de todas las series). Las rayas no se mueven (son strike x razon / strike + base): cambia el monto y, en el borde de
+        /// los 100 pts, cual strike entra.</summary>
         public bool FutDelInstante = true;
+        /// <summary>5.0: true (default) = la "medida" sale de la tabla de la descarga (Cboe.IMedidaCboe, si la fuente la tiene: el base_confiable de
+        /// cada linea); false o fuente sin tabla = el respaldo por el residuo (MedidaErrTicks).</summary>
+        public bool UsarTablaMedida = true;
+        /// <summary>5.0: residuo (base_error_ticks) hasta el que la base de forwards de una cadena de SPX cuenta como "medida" cuando la fuente no tiene
+        /// la tabla (pythiagex/base.py: 8).</summary>
+        public double MedidaErrTicks = BaseSpx20.MEDIDA_ERR_TICKS;
+        /// <summary>5.0: el escalon "medida reciente" (la ultima cadena medida de &lt;= 360 min, reconstruida). false (default) = como la 2.0 con la cadena
+        /// LOCAL de cboe_local.py, la que usa casi siempre (FeedMinuto y gana la de generado mas nuevo; ese json no trae base_ultima_buena): de
+        /// "medida" pasa directo a "de la rueda". true = como la 2.0 cuando gana la cadena del radar de la nube. Medido el 26-10 con true: 355 de
+        /// 390 minutos de la rueda salian de "medida hace N" y quedaban 1,46 pts por debajo de la rueda (mediana; |max| 3,2).</summary>
+        public bool MedidaReciente = false;
+        /// <summary>5.0: false (default) = la ventana de la rueda de la 2.0 en UTC fijo (13:50-20:10); true = 09:50-16:10 hora de NY (la que la 2.0
+        /// queria). Iguales hasta el 31-10; desde el 01-11 la de UTC empieza 08:50 NY, con el SPX todavia cerrado.</summary>
+        public bool RuedaVentanaNy = true;   // 5.0 (27-10-2026, agente principal): en hora de NY por defecto (igual hasta el 31-10; desde el 01-11 la de UTC
+                                             // empezaria 8:50 NY con el SPX cerrado). La 2.0 original queda con su UTC fijo.
     }
 
     /// <summary>Lo que dio una replica de la 2.0 en un instante (para el motor y el arnes).</summary>
@@ -349,15 +551,15 @@ namespace PythiaGexCinco.Familia
         public List<(double Fut, double G, double K)> Doms = new List<(double, double, double)>();
         public Razon20 Razon;                                  // solo SPY
         public string OrigenBase = ""; public double Carry = double.NaN;   // solo SPX
+        public EstadoSpx20 Base20;                             // 5.0, solo SPX: el estado de la base de la 2.0 (rueda, ultima medida) en esa cadena
     }
 
     /// <summary>Las series "como la 2.0" de cada minuto (IExtrasMinuto del motor). Un solo hilo (el del motor); lock por si acaso.
     /// 4.1.4 (revision 4.1.3): IExtrasRehacer: si una cadena se escalo sin la vela de la cinta (la cinta todavia cargaba) y la vela llega despues, se
-    /// rehace el estado de la razon en orden y el motor rehace los minutos ya calculados desde esa cadena (antes quedaba la razon de respaldo toda la
-    /// noche: 41,6095 en vez de 41,4447 = 124 pts en la raya de K750).</summary>
+    /// rehace el estado en orden y el motor rehace los minutos ya calculados desde esa cadena. 5.0: tambien la base de SPX (su rueda).</summary>
     public sealed class Replica20 : IExtrasMinuto, IExtrasRehacer
     {
-        public const string VERSION = "replica20 4.1.4 (09-10-2026)";
+        public const string VERSION = "replica20 5.0 (27-10-2026)";
         public const string LIBRO_SPY = "2.0 SPY", LIBRO_SPX = "2.0 SPX";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
         private readonly IFuenteCboe _cboe;
@@ -372,8 +574,6 @@ namespace PythiaGexCinco.Familia
         private readonly List<long> _gq = new List<long>();                    // generado al segundo (ms)
         private readonly List<Razon20> _rq = new List<Razon20>();
         private RazonSpy20 _estado;
-        private readonly List<FotoCadena> _fn = new List<FotoCadena>();
-        private readonly List<long> _gn = new List<long>();
         private long _ver = long.MinValue;
         private DateTime _desde = DateTime.MinValue;
         // 4.1.4: por cadena aceptada (mismo indice que _rq): su razon salio sin la vela de la cinta (o sin el precio de la cinta al bajarla)
@@ -381,15 +581,34 @@ namespace PythiaGexCinco.Familia
         private int _nProv;
         private DateTime _ultSondeoUtc = DateTime.MinValue;
 
+        // SPX (5.0): la base de la 2.0 en ES tiene estado (su rueda y la ultima "medida"): por cadena aceptada, el estado despues de procesarla
+        private readonly List<(DateTime Gen, DateTime Ts)> _vistasSpx = new List<(DateTime, DateTime)>();
+        private readonly List<FotoCadena> _fn = new List<FotoCadena>();
+        private readonly List<long> _gn = new List<long>();
+        private readonly List<EstadoSpx20> _en = new List<EstadoSpx20>();
+        private readonly List<int> _provSpx = new List<int>();                // indices de _en cuya muestra de la rueda salio sin un tick de su minuto
+        private BaseEs20 _baseEs;
+        private readonly Cboe.IMedidaCboe _tabla;                             // 5.0: la base medida de cada cadena (la tabla de la descarga de P2); null = sin tabla
+
+        // IExtrasRehacer: la generacion y desde cuando rehacer (el minimo de lo que cambio desde la ultima vez que el motor leyo la generacion)
+        private long _gen, _genLeida;
+        private DateTime _rehacerDesde = DateTime.MaxValue;
+
         public int Reprocesos { get; private set; }
         /// <summary>4.1.4: veces que el sondeo encontro en la cinta la vela (o el precio) que faltaba al escalar alguna cadena y rehizo el estado.</summary>
         public int Resondeos { get; private set; }
-        /// <summary>4.1.4 (IExtrasRehacer): sube cada vez que cambia la razon (o su origen) de una cadena ya escalada.</summary>
-        public long Generacion { get; private set; }
-        /// <summary>4.1.4 (IExtrasRehacer): el 'generado' de la primera cadena que cambio en la ultima Generacion (desde ahi se rehacen los minutos).</summary>
-        public DateTime RehacerDesdeUtc { get; private set; } = DateTime.MaxValue;
+        /// <summary>5.0: lo mismo para la base de SPX (la serie de cadenas se rehizo entera / por el sondeo de la rueda).</summary>
+        public int ReprocesosSpx { get; private set; }
+        public int ResondeosSpx { get; private set; }
+        /// <summary>4.1.4 (IExtrasRehacer): sube cada vez que cambia la razon (o su origen) de una cadena de SPY ya escalada, o (5.0) la base de la rueda
+        /// de una cadena de SPX ya procesada.</summary>
+        public long Generacion { get { lock (_llave) { _genLeida = _gen; return _gen; } } }
+        /// <summary>4.1.4 (IExtrasRehacer): el 'generado' de la primera cadena que cambio desde la ultima lectura de Generacion (desde ahi se rehacen).</summary>
+        public DateTime RehacerDesdeUtc { get { lock (_llave) return _rehacerDesde; } }
         /// <summary>4.1.4: cadenas cuya razon todavia espera la vela de la cinta.</summary>
         public int Provisionales { get { lock (_llave) return _nProv; } }
+        /// <summary>5.0: muestras de la rueda de SPX que todavia esperan un tick de su minuto en la cinta.</summary>
+        public int ProvisionalesSpx { get { lock (_llave) return _provSpx.Count; } }
         public int FotosSpy { get { lock (_llave) return _gq.Count; } }
         public int FotosSpx { get { lock (_llave) return _fn.Count; } }
 
@@ -399,9 +618,26 @@ namespace PythiaGexCinco.Familia
             _cinta = cinta;
             _op = op ?? new OpcionesReplica20();
             _estado = new RazonSpy20 { RetrasoSeg = _op.RetrasoCboeSeg };
+            _baseEs = new BaseEs20(_op);
+            _tabla = _op.UsarTablaMedida ? cboe as Cboe.IMedidaCboe : null;
+        }
+
+        /// <summary>5.0: la base medida de una cadena segun la tabla de la descarga: (true, base) si es confiable, (true, NaN) si no (o no esta).</summary>
+        private (bool Hay, double Base) MedidaDeTabla(FotoCadena f)
+        {
+            var m = _tabla?.Medida(f);
+            return (true, m != null && m.Confiable && !double.IsNaN(m.Base) && m.Base != 0 ? m.Base : double.NaN);
         }
 
         private static DateTime Seg(DateTime d) => new DateTime(d.Ticks - d.Ticks % TimeSpan.TicksPerSecond, DateTimeKind.Utc);
+
+        /// <summary>Sube la generacion: desde = el minimo de lo cambiado desde que el motor leyo la ultima (si ya la leyo, arranca de nuevo).</summary>
+        private void Subir(DateTime desdeUtc)
+        {
+            if (_genLeida == _gen) _rehacerDesde = desdeUtc;
+            else if (desdeUtc < _rehacerDesde) _rehacerDesde = desdeUtc;
+            _gen++;
+        }
 
         // ------------------------------------------------------------------ la cinta (lo que en la 2.0 es el grafico de 1 min)
         /// <summary>GammaHoy.BarraDeExacta + GetCandle(b).Close: el cierre de la vela de 1 min abierta a t o antes (a lo sumo 4 h) = el ultimo tick
@@ -412,6 +648,22 @@ namespace PythiaGexCinco.Familia
             var fin = new DateTime((tUtc.Ticks / TimeSpan.TicksPerMinute + 1) * TimeSpan.TicksPerMinute - TimeSpan.TicksPerMillisecond, DateTimeKind.Utc);
             double p = double.NaN;
             try { p = _cinta.PrecioSoloTick(fin, 4 * 3600); } catch { }
+            if (p > 0) return (p, true);
+            try { p = _cinta.Precio(fin); } catch { p = double.NaN; }
+            return (p > 0 ? p : double.NaN, false);
+        }
+
+        /// <summary>5.0: la vela de la muestra de la rueda de la 2.0 (BarraDe(sello - 960 s) + GetCandle(b).Close en el grafico de 1 min): el ultimo tick
+        /// DE ESE MINUTO en la cinta (deTick = true). No se acepta un tick de antes (con un hueco de la cinta, PrecioSoloTick a 4 h daria el de antes
+        /// del hueco y la muestra quedaria corrida para siempre): sin un tick de ese minuto, la vela m2 interpolada (deTick = false: provisional,
+        /// se vuelve a mirar). NaN si nada.</summary>
+        public (double P, bool DeTick) CierreVela1mRueda(DateTime tUtc)
+        {
+            if (_cinta == null) return (double.NaN, false);
+            var ini = new DateTime((tUtc.Ticks / TimeSpan.TicksPerMinute) * TimeSpan.TicksPerMinute, DateTimeKind.Utc);
+            var fin = ini.AddMinutes(1).AddTicks(-TimeSpan.TicksPerMillisecond);
+            double p = double.NaN;
+            try { p = _cinta.PrecioSoloTick(fin, 60); } catch { }
             if (p > 0) return (p, true);
             try { p = _cinta.Precio(fin); } catch { p = double.NaN; }
             return (p > 0 ? p : double.NaN, false);
@@ -429,19 +681,25 @@ namespace PythiaGexCinco.Familia
         }
 
         // ------------------------------------------------------------------ las cadenas
-        /// <summary>Trae las cadenas de SPY y SPX si cambio la fuente o la sesion, y corre la razon de la 2.0 sobre las SPY nuevas, en orden. Si la
-        /// fuente cambio el principio de la lista (historia que llego tarde), rehace el estado desde el principio (causal y determinista).</summary>
+        /// <summary>Trae las cadenas de SPY y SPX si cambio la fuente o la sesion, y corre la razon de la 2.0 sobre las SPY nuevas y (5.0) la base de
+        /// la 2.0 sobre las SPX nuevas, en orden. Si la fuente cambio el principio de la lista (historia que llego tarde) o el sondeo encontro la vela
+        /// que faltaba, rehace el estado de ese libro desde el principio (causal y determinista).</summary>
         private void Refrescar(DateTime tUtc)
         {
             var desde = TiempoFam.IniSesion(TiempoFam.Sesion(tUtc)).AddDays(-_op.DiasHistoria);
             long ver = _cboe.Version;
-            // 4.1.4 (revision 4.1.3): antes la razon se escalaba UNA vez por cadena y nunca se revisaba; si al escalar la cinta no tenia la vela (cargaba
-            // la historia), la cadena congelada quedaba con un respaldo toda la noche. Ahora las cadenas "provisionales" se vuelven a mirar cada
-            // SondeoCadaS s: si la vela (o el precio) aparecio, se rehace todo el estado en orden, igual que un arranque con la cinta completa.
-            string porQue = SondeoProvisionales();
-            if (porQue == null && ver == _ver && desde == _desde) return;
+            // 4.1.4 (revision 4.1.3): las cadenas "provisionales" se vuelven a mirar cada SondeoCadaS s: si la vela (o el precio) aparecio, se rehace
+            // todo el estado de ese libro en orden, igual que un arranque con la cinta completa.
+            var (porQueSpy, porQueSpx) = SondeoProvisionales();
+            if (porQueSpy == null && porQueSpx == null && ver == _ver && desde == _desde) return;
             bool otraVentana = desde != _desde;
             _ver = ver; _desde = desde;
+            RefrescarSpy(desde, otraVentana, porQueSpy);
+            RefrescarSpx(desde, otraVentana, porQueSpx);
+        }
+
+        private void RefrescarSpy(DateTime desde, bool otraVentana, string porQue)
+        {
             // SPY: la razon se escala UNA vez por cadena, en orden (como la 2.0 al bajar cada una); si la fuente solo agrego al final, se siguen
             var lq = _cboe.Fotos("SPY", desde, DateTime.MaxValue) ?? Array.Empty<FotoCadena>();
             var nuevas = new List<FotoCadena>(lq.Count);
@@ -478,10 +736,11 @@ namespace PythiaGexCinco.Familia
                     if (antes.TryGetValue((_gq[i], _tsq[i]), out var vj) && (!vj.Item1.Equals(_rq[i].Razon) || vj.Item2 != _rq[i].Origen)) primera = i;
                 if (primera >= 0)
                 {
-                    Generacion++; RehacerDesdeUtc = TiempoFam.DeMs(_gq[primera]);
+                    var desdeCambio = TiempoFam.DeMs(_gq[primera]);
+                    Subir(desdeCambio);
                     _op.Log?.Invoke("SPY: razon de la 2.0 REHECHA (" + (porQue ?? (otraVentana ? "otra ventana de cadenas" : "la fuente cambio el principio de la lista")) + "): la primera cadena que cambio es la de "
-                                    + RehacerDesdeUtc.ToString("MM-dd HH:mm:ss", Inv) + "Z, " + NumFam.F(antes[(_gq[primera], _tsq[primera])].Item1, "0.000000") + " -> " + NumFam.F(_rq[primera].Razon, "0.000000")
-                                    + " (" + _rq[primera].Origen + "); generacion " + Generacion + ", " + _nProv + " cadenas siguen sin la vela");
+                                    + desdeCambio.ToString("MM-dd HH:mm:ss", Inv) + "Z, " + NumFam.F(antes[(_gq[primera], _tsq[primera])].Item1, "0.000000") + " -> " + NumFam.F(_rq[primera].Razon, "0.000000")
+                                    + " (" + _rq[primera].Origen + "); generacion " + _gen + ", " + _nProv + " cadenas siguen sin la vela");
                 }
             }
             if (_gq.Count > a0 && _op.Log != null)
@@ -491,15 +750,59 @@ namespace PythiaGexCinco.Familia
                         + u.GenUtc.ToString("MM-dd HH:mm:ss", Inv) + "Z razon 2.0 " + NumFam.F(u.Razon, "0.0000") + " (" + u.Origen + "), MES vela " + NumFam.F(u.PAl, "0.00")
                         + (u.PAlDeTick ? "" : " (m2 interpolada)") + " / spot " + NumFam.F(u.Spot, "0.00") + (_nProv > 0 ? "; " + _nProv + " cadenas sin la vela de la cinta (se vuelven a mirar)" : ""));
             }
-            // SPX (sin estado)
+        }
+
+        /// <summary>5.0: las cadenas de SPX en orden, con el estado de la base de la 2.0 (su rueda y la ultima "medida") despues de cada una.</summary>
+        private void RefrescarSpx(DateTime desde, bool otraVentana, string porQue)
+        {
             var ln = _cboe.Fotos("SPX", desde, DateTime.MaxValue) ?? Array.Empty<FotoCadena>();
-            _fn.Clear(); _gn.Clear();
-            foreach (var f in ln)
+            var nuevas = new List<FotoCadena>(ln.Count);
+            foreach (var f in ln) if (f != null) nuevas.Add(f);
+            int nv = _vistasSpx.Count;
+            bool prefijo = porQue == null && !otraVentana && nv <= nuevas.Count && (nv == 0 || (Clave(nuevas[0]) == _vistasSpx[0] && Clave(nuevas[nv - 1]) == _vistasSpx[nv - 1]));
+            Dictionary<(long, DateTime), (double, DateTime)> antes = null;
+            if (!prefijo)
             {
-                if (f == null) continue;
-                long g = TiempoFam.Ms(Seg(f.GeneradoUtc));
-                if (_gn.Count > 0 && g < _gn[_gn.Count - 1]) continue;
-                _fn.Add(f); _gn.Add(g);
+                if (_gn.Count > 0) { ReprocesosSpx++; if (porQue != null) ResondeosSpx++; }
+                antes = new Dictionary<(long, DateTime), (double, DateTime)>(_gn.Count);
+                for (int i = 0; i < _gn.Count; i++) antes[(_gn[i], _fn[i].TsUtc)] = (_en[i].Rueda, _en[i].RuedaUtc);
+                _vistasSpx.Clear(); _fn.Clear(); _gn.Clear(); _en.Clear(); _provSpx.Clear();
+                _baseEs = new BaseEs20(_op);
+            }
+            int n0 = _vistasSpx.Count, a0 = _gn.Count;
+            for (int i = n0; i < nuevas.Count; i++)
+            {
+                var f = nuevas[i]; var gen = Seg(f.GeneradoUtc);
+                _vistasSpx.Add(Clave(f));
+                long g = TiempoFam.Ms(gen);
+                if (_gn.Count > 0 && g < _gn[_gn.Count - 1]) continue;              // fuera de orden (la fuente ya las da ordenadas)
+                var e = _baseEs.Procesar(f, gen, CierreVela1mRueda, _tabla == null ? null : (Func<FotoCadena, (bool, double)>)MedidaDeTabla);
+                _fn.Add(f); _gn.Add(g); _en.Add(e);
+                if (e.MuestraRueda && !e.PrecioDeTick) _provSpx.Add(_en.Count - 1);
+            }
+            if (a0 == 0 || !prefijo) _ultSondeoUtc = DateTime.UtcNow;
+            if (antes != null && antes.Count > 0)
+            {
+                int primera = -1;
+                for (int i = 0; i < _gn.Count && primera < 0; i++)
+                    if (antes.TryGetValue((_gn[i], _fn[i].TsUtc), out var vj) && (!vj.Item1.Equals(_en[i].Rueda) || vj.Item2 != _en[i].RuedaUtc)) primera = i;
+                if (primera >= 0)
+                {
+                    var desdeCambio = TiempoFam.DeMs(_gn[primera]);
+                    Subir(desdeCambio);
+                    _op.Log?.Invoke("SPX: base de la rueda de la 2.0 REHECHA (" + (porQue ?? (otraVentana ? "otra ventana de cadenas" : "la fuente cambio el principio de la lista")) + "): la primera cadena que cambio es la de "
+                                    + desdeCambio.ToString("MM-dd HH:mm:ss", Inv) + "Z, " + NumFam.F(antes[(_gn[primera], _fn[primera].TsUtc)].Item1, "0.00") + " -> " + NumFam.F(_en[primera].Rueda, "0.00")
+                                    + "; generacion " + _gen + ", " + _provSpx.Count + " muestras siguen sin un tick de su minuto");
+                }
+            }
+            if (_gn.Count > a0 && _op.Log != null)
+            {
+                var u = _en[_en.Count - 1];
+                _op.Log("SPX: " + (_gn.Count - a0) + " cadenas nuevas" + (prefijo ? "" : " (estado rehecho desde " + desde.ToString("MM-dd HH:mm", Inv) + "Z)") + "; ultima "
+                        + u.GenUtc.ToString("MM-dd HH:mm:ss", Inv) + "Z: cruda " + NumFam.F(u.Cruda, "0.00") + " residuo " + NumFam.F(u.ErrTicks, "0.0") + " tk (" + (u.Medida ? "medida " + NumFam.F(u.MedidaBase, "0.00") : "no medida") + ", " + u.MedidaDe
+                        + "), rueda de la 2.0 " + NumFam.F(u.Rueda, "0.00") + (u.RuedaUtc > DateTime.MinValue ? " adoptada " + u.RuedaUtc.ToString("MM-dd HH:mm", Inv) + "Z con " + u.RuedaBuenas + " buenas" : "")
+                        + (u.MuestraRueda ? "; muestra " + NumFam.F(u.Muestra, "0.00") + " (vela " + u.HoraVelaUtc.ToString("HH:mm", Inv) + "Z " + NumFam.F(u.Precio, "0.00") + (u.PrecioDeTick ? "" : " m2 interpolada") + ")" : "")
+                        + (_provSpx.Count > 0 ? "; " + _provSpx.Count + " muestras sin un tick de su minuto (se vuelven a mirar)" : ""));
             }
         }
 
@@ -515,14 +818,16 @@ namespace PythiaGexCinco.Familia
         /// <summary>4.1.4: el precio "de ahora" no pesa en la razon de esta cadena (salio de la vela alineada con la cadena congelada o vieja).</summary>
         private static bool SinPrecioAhora(Razon20 r) => r.UtUtc != default(DateTime) && r.PAl > 0 && (r.Congelada || r.Vieja);
 
-        /// <summary>4.1.4 (revision 4.1.3): vuelve a mirar en la cinta las cadenas provisionales (cada SondeoCadaS s de reloj). null = nada nuevo; si no, el
-        /// motivo (para el log): la vela de 1 min del ultimo trade aparecio (o cambio), o aparecio el precio del MES de cuando se bajo la cadena.</summary>
-        private string SondeoProvisionales()
+        /// <summary>4.1.4 (revision 4.1.3): vuelve a mirar en la cinta las cadenas provisionales (cada SondeoCadaS s de reloj). (null, null) = nada nuevo;
+        /// si no, el motivo de cada libro (para el log): SPY = la vela de 1 min del ultimo trade aparecio (o cambio), o aparecio el precio del MES de
+        /// cuando se bajo la cadena; SPX (5.0) = la vela de una muestra de la rueda aparecio con sus ticks (o cambio).</summary>
+        private (string Spy, string Spx) SondeoProvisionales()
         {
-            if (_nProv == 0 || _rq.Count == 0) return null;
-            if (_op.SondeoCadaS > 0 && (DateTime.UtcNow - _ultSondeoUtc).TotalSeconds < _op.SondeoCadaS) return null;
+            if ((_nProv == 0 || _rq.Count == 0) && _provSpx.Count == 0) return (null, null);
+            if (_op.SondeoCadaS > 0 && (DateTime.UtcNow - _ultSondeoUtc).TotalSeconds < _op.SondeoCadaS) return (null, null);
             _ultSondeoUtc = DateTime.UtcNow;
-            for (int i = 0; i < _rq.Count; i++)
+            string spy = null, spx = null;
+            for (int i = 0; i < _rq.Count && spy == null && _nProv > 0; i++)
             {
                 var r = _rq[i];
                 if (_provVela[i])
@@ -531,13 +836,26 @@ namespace PythiaGexCinco.Familia
                     var (p, deTick) = CierreVela1m(t);
                     bool habia = r.PAl > 0;
                     if ((p > 0 && deTick) || (p > 0) != habia || (p > 0 && habia && Math.Abs(p - r.PAl) > 1e-9))
-                        return "la cinta ahora tiene la vela de las " + TiempoFam.ANy(t).ToString("HH:mm", Inv) + " NY de la cadena del " + r.GenUtc.ToString("MM-dd HH:mm", Inv) + "Z: "
-                               + NumFam.F(p, "0.00") + (deTick ? "" : " (m2 interpolada)") + ", antes " + NumFam.F(r.PAl, "0.00");
+                        spy = "la cinta ahora tiene la vela de las " + TiempoFam.ANy(t).ToString("HH:mm", Inv) + " NY de la cadena del " + r.GenUtc.ToString("MM-dd HH:mm", Inv) + "Z: "
+                              + NumFam.F(p, "0.00") + (deTick ? "" : " (m2 interpolada)") + ", antes " + NumFam.F(r.PAl, "0.00");
                 }
-                if (_provAhora[i] && TickEn(r.GenUtc))
-                    return "la cinta ahora tiene el MES de las " + r.GenUtc.ToString("MM-dd HH:mm:ss", Inv) + "Z (cuando se bajo la cadena)";
+                if (spy == null && _provAhora[i] && TickEn(r.GenUtc))
+                    spy = "la cinta ahora tiene el MES de las " + r.GenUtc.ToString("MM-dd HH:mm:ss", Inv) + "Z (cuando se bajo la cadena)";
             }
-            return null;
+            foreach (int i in _provSpx)
+            {
+                if (i < 0 || i >= _en.Count) continue;
+                var e = _en[i];
+                var (p, deTick) = CierreVela1mRueda(e.HoraVelaUtc);
+                bool habia = e.Precio > 0;
+                if ((p > 0 && deTick) || (p > 0) != habia || (p > 0 && habia && Math.Abs(p - e.Precio) > 1e-9))
+                {
+                    spx = "la cinta ahora tiene la vela de las " + e.HoraVelaUtc.ToString("HH:mm", Inv) + "Z de la muestra de la rueda de la cadena del " + e.GenUtc.ToString("MM-dd HH:mm", Inv) + "Z: "
+                          + NumFam.F(p, "0.00") + (deTick ? "" : " (m2 interpolada)") + ", antes " + NumFam.F(e.Precio, "0.00");
+                    break;
+                }
+            }
+            return (spy, spx);
         }
 
         /// <summary>La cadena de la fuente con ese generado (al segundo) y ese sello (null si la fuente ya no la tiene).</summary>
@@ -550,8 +868,8 @@ namespace PythiaGexCinco.Familia
         }
 
         // ------------------------------------------------------------------ las dos replicas (publicas para el arnes)
-        /// <summary>Las dominantes de la 2.0 en SPY en el instante t con el futuro fut (la cadena = la ultima con generado &lt;= t). null si no hay
-        /// cadena con filas o no hay razon.</summary>
+        /// <summary>Las dominantes estilo 2.0 en SPY en el instante t con el futuro fut (la cadena = la ultima con generado &lt;= t). null si no hay
+        /// cadena con filas o no hay razon. 5.0: sin original en ES (ver la cabecera).</summary>
         public Resultado20 Spy(DateTime tUtc, double fut)
         {
             lock (_llave)
@@ -574,7 +892,8 @@ namespace PythiaGexCinco.Familia
             }
         }
 
-        /// <summary>Las dominantes de la capa SPX de la 2.0 en el instante t con el futuro fut. null si no hay cadena con filas o no hay base.</summary>
+        /// <summary>Las dominantes del libro SPX de la 2.0 en ES en el instante t con el futuro fut. null si no hay cadena con filas o no hay base.
+        /// 5.0: con la cascada completa de la 2.0 en ES (medida &gt; medida reciente &gt; de la rueda &gt; cruda &gt; teorica &gt; cruda sin cota).</summary>
         public Resultado20 Spx(DateTime tUtc, double fut)
         {
             lock (_llave)
@@ -582,10 +901,13 @@ namespace PythiaGexCinco.Familia
                 Refrescar(tUtc);
                 int k = NumFam.UltimoMenorIgual(_gn, TiempoFam.Ms(tUtc));
                 if (k < 0 || !(fut > 0)) return null;
-                var f = _fn[k];
+                var f = _fn[k]; var e = _en[k];
                 if (f.Filas == null || f.Filas.Length == 0) return null;
-                var exp = Expiracion(tUtc);
-                double b = BaseSpx20.Base(f, fut, tUtc, exp, out var origen, out var carry, _op.Tasa, _op.Dividendo);
+                var (exp, expAlt) = Expiraciones(tUtc);
+                double edadUlt = _op.MedidaReciente && e.UltBuenaUtc > DateTime.MinValue ? (e.GenUtc - e.UltBuenaUtc).TotalMinutes : double.NaN;
+                double edadRueda = !double.IsNaN(e.Rueda) && e.RuedaUtc > DateTime.MinValue ? (tUtc - e.RuedaUtc).TotalMinutes : double.NaN;
+                double b = BaseSpx20.Cascada(f.BaseCruda, f.BaseErrorTicks, e.Medida ? e.MedidaBase : double.NaN, e.MedidaDe, _op.MedidaReciente ? e.UltBuena : double.NaN, edadUlt,
+                                             e.Rueda, edadRueda, e.RuedaBuenas, fut, tUtc, exp, expAlt, _op.Tasa, _op.Dividendo, out var origen, out var carry);
                 if (double.IsNaN(b)) return null;
                 double S = fut - b;
                 if (S <= 0) return null;
@@ -594,19 +916,36 @@ namespace PythiaGexCinco.Familia
                 var doms = Nucleo20.Dominantes(perfil, fut, out var lib);
                 bool cong = f.DatoUtc.Year >= 2000 && TiempoFam.ANy(f.DatoUtc).TimeOfDay >= new TimeSpan(15, 59, 0);
                 var r = new Resultado20 { Libro = LIBRO_SPX, Foto = f, GeneradoUtc = gen, Conv = b, S = S, Fut = fut, LibroDom = lib, Strikes = perfil.Count, Doms = doms,
-                                          OrigenBase = origen, Carry = carry, Congelada = cong };
-                r.Texto = "base 2.0 " + b.ToString("0.00", Inv) + " (" + origen + (origen.StartsWith("CRUDA", StringComparison.Ordinal) ? " de forwards de la cadena" : "")
-                          + (double.IsNaN(carry) ? "" : "; cota: carry " + carry.ToString("0.0", Inv) + " +-60 %") + ")"
+                                          OrigenBase = origen, Carry = carry, Congelada = cong, Base20 = e };
+                r.Texto = "base 2.0 " + b.ToString("0.00", Inv) + " (" + origen + (origen.StartsWith(BaseSpx20.ORIGEN_CRUDA, StringComparison.Ordinal) ? " de forwards de la cadena" : "")
+                          + (double.IsNaN(carry) ? "" : "; cota: carry " + carry.ToString("0.0", Inv) + " +-60 % (dividendo " + (_op.Dividendo * 100).ToString("0.0", Inv) + " %)") + ")"
                           + (lib == "OI" && doms.Count > 0 ? "; dominantes por OI (sin volumen en el radio)" : "");
                 return r;
             }
         }
 
         /// <summary>Vencimiento del futuro del grafico (13:30 UTC del tercer viernes), como la 2.0: del codigo; si no trae mes, el trimestral mas cercano.</summary>
-        public DateTime Expiracion(DateTime tUtc)
+        public DateTime Expiracion(DateTime tUtc) => Expiraciones(tUtc).Exp;
+
+        /// <summary>5.0: el vencimiento del grafico y, si es SUPUESTO (codigo sin mes), el del trimestre siguiente, que la 2.0 tambien acepta para la
+        /// "medida" (ExpiracionFuturoAltUtc, GammaHoy.cs:1606-1611; GammaHoyNucleo.cs:302-308). Con el codigo con mes, Alt = default.</summary>
+        public (DateTime Exp, DateTime Alt) Expiraciones(DateTime tUtc)
         {
             var e = BaseSpx20.ExpiracionDeCodigo(_op.Contrato, tUtc);
-            return e != default(DateTime) ? e : BaseSpx20.TrimestralDesde(tUtc.AddDays(1));
+            if (e != default(DateTime)) return (e, default(DateTime));
+            var sup = BaseSpx20.TrimestralDesde(tUtc.AddDays(1));
+            return (sup, sup != default(DateTime) ? BaseSpx20.TrimestralDesde(sup.AddDays(1)) : default(DateTime));
+        }
+
+        /// <summary>5.0: el estado de la base de la 2.0 en la cadena de SPX vigente a t (null si no hay): para el arnes y los diagnosticos.</summary>
+        public EstadoSpx20 EstadoBaseEn(DateTime tUtc)
+        {
+            lock (_llave)
+            {
+                Refrescar(tUtc);
+                int k = NumFam.UltimoMenorIgual(_gn, TiempoFam.Ms(tUtc));
+                return k >= 0 ? _en[k] : null;
+            }
         }
 
         private static string TextoRazon(Razon20 r)
@@ -624,7 +963,7 @@ namespace PythiaGexCinco.Familia
         /// <summary>4.1.4: el fut con el que se ponen las R20 del minuto t. Con FutDelInstante (default): el ultimo precio del MES al empezar el minuto
         /// (el ultimo tick con hora &lt;= t, a lo sumo 120 s antes; lo mas parecido al "cierre de la vela actual" con que reprecia la 2.0 y lo mismo en vivo
         /// que al recalcular: si a la hora de calcular todavia no llego un tick posterior a t, el ultimo tick ES el de antes de t). Sin tick en esos
-        /// 120 s, o con FutDelInstante apagado: el fut del minuto de la 4.1 (cierre de la ultima vela m2 cerrada, el de todas las series).</summary>
+        /// 120 s, o con FutDelInstante apagado: el fut del minuto de la 5.0 (cierre de la ultima vela m2 cerrada, el de todas las series).</summary>
         public double FutR20(DateTime tUtc, double futMinuto)
         {
             if (!_op.FutDelInstante || _cinta == null) return futMinuto;
@@ -670,30 +1009,46 @@ namespace PythiaGexCinco.Familia
             return Guardar(r, ex, ks, metas);
         }
 
-        /// <summary>4.1.4 (IExtrasRehacer): rehace en un minuto YA calculado lo que depende de la razon de la 2.0 (R20_SPY_vol y su conversion "2.0 SPY"),
-        /// con el estado de la razon de ahora; el resto (R20_SPX_vol, DOMS_*) queda igual. true si cambio algo (el motor lo vuelve a guardar).</summary>
+        /// <summary>4.1.4 (IExtrasRehacer): rehace en un minuto YA calculado lo que depende del estado de la 2.0 (5.0: R20_SPY_vol con su razon "2.0 SPY"
+        /// Y R20_SPX_vol con su base "2.0 SPX", que ahora tiene rueda), con el estado de ahora; el resto (DOMS_*, la clasica) queda igual. true si
+        /// cambio algo (el motor lo vuelve a guardar).</summary>
         public bool Rehacer(RegistroMinuto r, DateTime tUtc)
         {
             if (r == null || double.IsNaN(r.FutMnq)) return false;
-            int iq = CatalogoFamilia.IndiceExtra("R20_SPY_vol"), n = CatalogoFamilia.Extra.Length;
-            if (iq < 0) return false;
-            var q = Spy(tUtc, FutR20(tUtc, r.FutMnq));
+            int iq = CatalogoFamilia.IndiceExtra("R20_SPY_vol"), ix = CatalogoFamilia.IndiceExtra("R20_SPX_vol"), n = CatalogoFamilia.Extra.Length;
+            if (iq < 0 && ix < 0) return false;
+            double fut = FutR20(tUtc, r.FutMnq);
+            var q = iq >= 0 ? Spy(tUtc, fut) : null;
+            var d = ix >= 0 ? Spx(tUtc, fut) : null;
             var ex1 = new Nivel[n][]; var ks1 = new double[n][];
             if (q != null) Poner(ex1, ks1, iq, q.Doms, 1.0);
-            var meta = q == null ? null : new MetaLibro { Libro = LIBRO_SPY, Conv = q.Conv, S = q.S, DatoUtc = q.Foto.DatoUtc, OiOk = true, Congelada = q.Congelada, ConvTexto = q.Texto };
-            var lvViejo = r.Extra != null && iq < r.Extra.Length ? r.Extra[iq] : null;
-            var ksViejo = r.ExtraStrikes != null && iq < r.ExtraStrikes.Length ? r.ExtraStrikes[iq] : null;
-            if (MismosNiveles(lvViejo, ksViejo, ex1[iq], ks1[iq]) && MismaMeta(r.MetaExtraDe(LIBRO_SPY), meta)) return false;
+            if (d != null) Poner(ex1, ks1, ix, d.Doms, 1.0);
+            var mq = q == null ? null : MetaDe(q);
+            var md = d == null ? null : MetaDe(d);
+            bool igual = MismaMeta(r.MetaExtraDe(LIBRO_SPY), mq) && MismaMeta(r.MetaExtraDe(LIBRO_SPX), md);
+            foreach (int i in new[] { iq, ix })
+            {
+                if (!igual || i < 0) continue;
+                var lv = r.Extra != null && i < r.Extra.Length ? r.Extra[i] : null;
+                var kv = r.ExtraStrikes != null && i < r.ExtraStrikes.Length ? r.ExtraStrikes[i] : null;
+                if (!MismosNiveles(lv, kv, ex1[i], ks1[i])) igual = false;
+            }
+            if (igual) return false;
             var ex = new Nivel[n][]; var ks = new double[n][];
             if (r.Extra != null) Array.Copy(r.Extra, ex, Math.Min(n, r.Extra.Length));
             if (r.ExtraStrikes != null) Array.Copy(r.ExtraStrikes, ks, Math.Min(n, r.ExtraStrikes.Length));
-            ex[iq] = ex1[iq]; ks[iq] = ks1[iq];
-            var metas = new List<MetaLibro>(2);
-            if (meta != null) metas.Add(meta);                                   // el mismo orden que PonerReplicas: "2.0 SPY" y despues "2.0 SPX"
-            if (r.MetaExtra != null) foreach (var m in r.MetaExtra) if (m != null && m.Libro != LIBRO_SPY) metas.Add(m);
+            if (iq >= 0) { ex[iq] = ex1[iq]; ks[iq] = ks1[iq]; }
+            if (ix >= 0) { ex[ix] = ex1[ix]; ks[ix] = ks1[ix]; }
+            var metas = new List<MetaLibro>(3);
+            if (mq != null) metas.Add(mq);                                       // el mismo orden que PonerReplicas: "2.0 SPY" y despues "2.0 SPX"
+            if (md != null) metas.Add(md);
+            if (r.MetaExtra != null) foreach (var m in r.MetaExtra) if (m != null && m.Libro != LIBRO_SPY && m.Libro != LIBRO_SPX) metas.Add(m);
             r.Extra = ex; r.ExtraStrikes = ks; r.MetaExtra = metas.ToArray();
             return true;
         }
+
+        private static MetaLibro MetaDe(Resultado20 x) =>
+            new MetaLibro { Libro = x.Libro, Conv = x.Conv, S = x.S, DatoUtc = x.Foto.DatoUtc, OiOk = true, Congelada = x.Congelada, ConvTexto = x.Texto };
 
         private static bool MismosNiveles(Nivel[] a, double[] ka, Nivel[] b, double[] kb)
         {
@@ -720,13 +1075,13 @@ namespace PythiaGexCinco.Familia
             if (q != null)
             {
                 Poner(ex, ks, CatalogoFamilia.IndiceExtra("R20_SPY_vol"), q.Doms, 1.0);
-                metas.Add(new MetaLibro { Libro = LIBRO_SPY, Conv = q.Conv, S = q.S, DatoUtc = q.Foto.DatoUtc, OiOk = true, Congelada = q.Congelada, ConvTexto = q.Texto });
+                metas.Add(MetaDe(q));
             }
             var d = Spx(tUtc, fut);
             if (d != null)
             {
                 Poner(ex, ks, CatalogoFamilia.IndiceExtra("R20_SPX_vol"), d.Doms, 1.0);
-                metas.Add(new MetaLibro { Libro = LIBRO_SPX, Conv = d.Conv, S = d.S, DatoUtc = d.Foto.DatoUtc, OiOk = true, Congelada = d.Congelada, ConvTexto = d.Texto });
+                metas.Add(MetaDe(d));
             }
         }
 
