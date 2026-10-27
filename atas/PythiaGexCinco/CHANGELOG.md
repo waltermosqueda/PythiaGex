@@ -19,6 +19,13 @@
   (~5 px de aire); barras ES recalculadas por fuera desde viva3-ES (D1 7755 −24,7M / D2 7775 +16,0M; el zero GL ES del minuto k = el de la foto del
   minuto k−1 al centavo).
 
+- **5.0.5b (20:08 ART, git bbe63bc73):** control de las 20:02: el fondo de "SPX C" tapaba la punta de la ultima vela. Los fondos (y el carril de la
+  barrita) se recortan a la derecha de toda vela que cae en su renglon (ultimas 80 velas con maximo y minimo: `IGraficoPantalla.VelaHL`, `VistaPantalla.VelasDer`).
+- **5.0.5c (20:54 ART, DLL 6FFC68F3…):** control de las 20:47: con el precio en el nivel, "3.0 SPX D1 1,63B · Clasica SPX D2" caia encima de las
+  velas y no se leia. Si una etiqueta choca con una vela se COMPACTA: los acompañantes pasan a " +N" y, si igual choca, sin barrita de peso (la carga
+  no se compacta). Verificado: "3.0 SPX D1 1,66B +1" entra al lado de la ultima vela. El margen derecho del grafico es de ATAS: `ChartOffset` del
+  .ws (subido a 50 en "MES 1m Chart" con `herramientas/ws_margen_derecho_mes1m.py`) NO movio las velas; el aire lo da arrastrar el grafico.
+
 ## 5.0.4 (27-10-2026) — estilo Gammalito con el libro ES de Rithmic: barras a la derecha, amarillos y zero (compilada; SIN instalar)
 - Pedido del operador (textual): "agregá el perfil estilo Gammalito también con el libro de ES de Rithmic (barras, amarillos y zero), en vivo las 24
   horas". La MISMA cuenta de la 5.0.3 (`GammalitoFam`) sobre el LibroMinuto ES de la 5.0 (opciones sobre el futuro ES de CME por Rithmic, una foto por

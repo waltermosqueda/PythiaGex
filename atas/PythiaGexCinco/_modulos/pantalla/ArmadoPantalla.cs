@@ -1454,6 +1454,17 @@ namespace PythiaGexCinco.Familia
                 foreach (var r in (ESTILO_2E && nuevo) ? en : new List<Rot>())
                 {
                     int bw = BARRA_2E, tw = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir), w = bw + 6 + tw, x0 = xr - w - 4, yb = r.Yl - hC / 2;
+                    // 5.0.5 (control de las 20:47 ART: con el precio en el nivel, "3.0 SPX D1 1,63B · Clasica SPX D2" caia encima de las ultimas velas y no
+                    // se leia; el margen derecho del grafico es de ATAS): si la etiqueta choca con una vela, se COMPACTA. Primero los acompañantes pasan a
+                    // " +N" (cuantas series mas hay en ese precio); si igual choca, sin la barrita de peso. Lo que no se puede achicar mas se cuenta en
+                    // SolapesVelas. La carga (con su precio en T3) no se compacta.
+                    if (CorteVelas(x0 - 3, xr, yb, hC) != int.MinValue && r.T3.Contains("·"))
+                    {
+                        int nAc = r.T3.Count(ch => ch == '·');
+                        r.T3 = " +" + nAc; r.Txt = r.T1 + r.T2 + r.T3;
+                        tw = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir); w = bw + 6 + tw; x0 = xr - w - 4;
+                    }
+                    if (CorteVelas(x0 - 3, xr, yb, hC) != int.MinValue) { bw = 0; w = tw; x0 = xr - w - 4; }
                     int bh = Math.Max(4, hC - 8), by = r.Yl - bh / 2;
                     // 5.0.5 (pedido del operador: "que no se superpongan con otros"): un fondo del color del grafico detras de la etiqueta. Sin borde (sigue
                     // siendo "sin caja", el estilo 2E del 09-10), pero las rayas, la estela y las punteadas ya no pasan POR ENCIMA del texto (se leia tachado)
@@ -1463,13 +1474,13 @@ namespace PythiaGexCinco.Familia
                     int xq = Math.Max(x0, xVelaDer);                                                                         // 5.0.5: ni el carril tapa velas
                     if (xq < x0 + bw) d.Relleno(Color.FromArgb(150, 40, 46, 58), new Rectangle(xq, by, x0 + bw - xq, bh));      // el carril (100 %)
                     double pf = PesoFirmado(r.Cab);
-                    if (Fin(pf) && Fin(maxPeso) && maxPeso > 0)
+                    if (bw > 0 && Fin(pf) && Fin(maxPeso) && maxPeso > 0)
                     {
                         int fw = Math.Max(2, Math.Min(bw, (int)Math.Round(bw * Math.Abs(pf) / maxPeso)));                         // LINEAL: proporcion exacta
                         int xf = Math.Max(x0 + bw - fw, xVelaDer);
                         if (xf < x0 + bw) d.Relleno(pf < 0 ? Color.FromArgb(230, 239, 83, 80) : Color.FromArgb(230, 38, 166, 154), new Rectangle(xf, by, x0 + bw - xf, bh));
                     }
-                    int xt = x0 + bw + 6;
+                    int xt = bw > 0 ? x0 + bw + 6 : x0;
                     var sombra = new Rot { Txt = r.Txt, T1 = r.T1, T2 = r.T2, T3 = r.T3, ColCambio = Color.FromArgb(200, ColFondo) };
                     Tramos(d, sombra, "", tamC, cw, Color.FromArgb(200, ColFondo), xt + 1, yb + 2);                               // sombra
                     Tramos(d, r, "", tamC, cw, r.Col, xt, yb + 1);
