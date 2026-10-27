@@ -14,6 +14,8 @@
 //     fuera de los saltos la fraccion maxima es 0,00 % en ES/SPY/TQQQ y 0,10 % en SPX; ningun par sin salto con menos de 20 claves comunes);
 //   * cambio SIN CONFIRMAR: cualquier otro par con >= 50 % de C cambiado (C >= 1) abre un regimen marcado Dudoso. Mientras R0 sea dudoso
 //     el ΔOI no se publica (NaN con nota): ni se inventa una publicacion ni se tapa el cambio pisando R0 en silencio.
+// 5.0 (27-10-2026): ya no hay libro TQQQ. Lo de arriba se midio en la 4.1 sobre la familia del Nasdaq (el clon cambio NQ/NDX/QQQ por
+// ES/SPX/SPY en este texto: no es una medicion de ES); las reglas no cambian y se aplican a ES, SPX y SPY.
 // Sin E/S. No es seguro entre hilos: lo usa el hilo del host de la familia.
 using System;
 using System.Collections.Generic;

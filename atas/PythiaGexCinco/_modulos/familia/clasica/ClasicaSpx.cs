@@ -664,7 +664,9 @@ namespace PythiaGexCinco.Familia
         /// "base clasica 243.06 = de la rueda 2026-10-08 (21 buenas de 24, 92 muestras, vela de 2 min, adoptada 20:10:52Z, hace 1080 min), congelada en la
         ///  rueda de hoy · ahora: 4.1 sincronizada 228.62; regla de la clasica con la rueda de hoy 227.30 (247 muestras) · zero en el indice 30825.15".
         /// 4.1.5d: ", vela de N min" (el marco con que se midio); sin cruce "· zero sin cruce en +-3 %"; con las dominantes del interes abierto
-        /// "· dominantes por OI (ningun strike del radio con volumen)".</summary>
+        /// "· dominantes por OI (ningun strike del radio con volumen)".
+        /// 5.0 (27-10-2026): el producto se nombra "5.0" en la pestaña: "5.0 sincronizada" y "las cadenas de la 5.0" (ArmadoPantalla.ReAhoraClasica
+        /// lee "5.0 sincronizada"; los numeros y el resto del texto no cambian).</summary>
         public static string Texto(ResultadoClasica r, DateTime tUtc, double edadMaxMin = 24 * 60)
         {
             var sb = new System.Text.StringBuilder(220);
@@ -685,11 +687,11 @@ namespace PythiaGexCinco.Familia
                     sb.Append(" (la de la rueda ").Append(ru.BaseDia.ToString("yyyy-MM-dd", Inv)).Append(" ").Append(ru.Base.ToString("0.00", Inv)).Append(" tiene ")
                       .Append(edad.ToString("0", Inv)).Append(edad > edadMaxMin ? " min: vencio a las 24 h)" : " min: no paso la cota del carry)");
                 }
-                else sb.Append(" (sin base de la rueda en las cadenas de la 4.1)");
+                else sb.Append(" (sin base de la rueda en las cadenas de la 5.0)");
             }
             sb.Append(" · ahora:");
             bool alguna = false;
-            if (!double.IsNaN(r.BaseAhora)) { sb.Append(" 4.1 sincronizada ").Append(r.BaseAhora.ToString("0.00", Inv)); alguna = true; }
+            if (!double.IsNaN(r.BaseAhora)) { sb.Append(" 5.0 sincronizada ").Append(r.BaseAhora.ToString("0.00", Inv)); alguna = true; }
             if (r.Hoy != null && r.Hoy.Hay && r.Hoy.BaseDia == tUtc.Date)
             { sb.Append(alguna ? ";" : "").Append(" regla de la clasica con la rueda de hoy ").Append(r.Hoy.Base.ToString("0.00", Inv)).Append(" (").Append(r.Hoy.MuestrasDia).Append(" muestras)"); alguna = true; }
             if (!alguna) sb.Append(" sin dato");

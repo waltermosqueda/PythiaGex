@@ -1,8 +1,9 @@
 // SesionFamilia.cs — PythiaGex 4.1, modulo fam (B3d), 08-10-2026.
 // La sesion del motor. Dos modos (DISENO_4_1 §A.1):
-//   Paridad (la vista previa): dia = fecha(t_utc + 2 h); [dia - 2 h, dia + 21 h) en UTC fijo; la rueda de TQQQ desde las 13:30 UTC.
-//   Corregida (default del indicador): la sesion de CME en hora de Nueva York, 18:00 NY de la vispera a 17:00 NY; rueda desde las 09:30 NY.
+//   Paridad (la vista previa): dia = fecha(t_utc + 2 h); [dia - 2 h, dia + 21 h) en UTC fijo.
+//   Corregida (default del indicador): la sesion de CME en hora de Nueva York, 18:00 NY de la vispera a 17:00 NY.
 //   En horario de verano de EE.UU. las dos dan lo mismo; desde el 01-11 la paridad se corre una hora (el bug del Python).
+//   5.0 (27-10-2026): sin RuedaIniUtc (la apertura de la rueda: 13:30 UTC en paridad, 09:30 NY corregida); solo la usaban las velas de TQQQ.
 // Sin referencias a ATAS. NY con TimeZoneInfo "Eastern Standard Time" (Windows) o "America/New_York".
 using System;
 using System.Globalization;
@@ -13,8 +14,7 @@ namespace PythiaGexCinco.Familia
     {
         public string Dia;                 // yyyy-MM-dd (la fecha de la rueda)
         public DateTime IniUtc, FinUtc;    // ventana de minutos [ini, fin)
-        public DateTime SiguienteIniUtc;   // donde empieza la proxima (hasta ahi vive esta: historia de TQQQ despues del cierre)
-        public DateTime RuedaIniUtc;       // apertura de la rueda (desde donde se piden las velas de TQQQ)
+        public DateTime SiguienteIniUtc;   // donde empieza la proxima (hasta ahi vive esta: su historia sigue despues del cierre)
         public long IniClave => IniUtc.Ticks / TimeSpan.TicksPerMinute - EpocaMin;
         public long FinClave => FinUtc.Ticks / TimeSpan.TicksPerMinute - EpocaMin;
         public bool Corregida;
@@ -51,7 +51,6 @@ namespace PythiaGexCinco.Familia
                 s.IniUtc = DateTime.SpecifyKind(d.AddHours(-2), DateTimeKind.Utc);
                 s.FinUtc = DateTime.SpecifyKind(d.AddHours(21), DateTimeKind.Utc);
                 s.SiguienteIniUtc = DateTime.SpecifyKind(d.AddHours(22), DateTimeKind.Utc);
-                s.RuedaIniUtc = DateTime.SpecifyKind(d.AddHours(13).AddMinutes(30), DateTimeKind.Utc);
             }
             else
             {   // CME: 18:00 NY de la vispera -> 17:00 NY; el dia es la fecha NY de (t + 6 h)
@@ -67,7 +66,6 @@ namespace PythiaGexCinco.Familia
                 s.IniUtc = NyAUtc(d.AddDays(-1).AddHours(18));
                 s.FinUtc = NyAUtc(d.AddHours(17));
                 s.SiguienteIniUtc = NyAUtc(d.AddHours(18));
-                s.RuedaIniUtc = NyAUtc(d.AddHours(9).AddMinutes(30));
             }
             return s;
         }

@@ -16,7 +16,7 @@ namespace PythiaGexCinco
     /// </summary>
     public partial class GammaCinco
     {
-        [Display(Name = "↳ atravesadas", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 100, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. 3.6.4, APAGADO desde la 3.6.7. Medido (laboratorio/tres/atravesadas.py, 22 sesiones, pre-registrado y verificado): las rayas atravesadas rinden IGUAL (F1) o MEJOR (F5: rebote 77 % vs 64 % de noche) que las no atravesadas, y el filtro llega tarde (en el caso 31.372 apaga el medio 16 min despues de empezar el serrucho). Solo limpieza visual, y esconde rayas que funcionan igual o mejor.")]
+        [Display(Name = "↳ atravesadas", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 95, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. 3.6.4, APAGADO desde la 3.6.7. Medido (laboratorio/tres/atravesadas.py, 22 sesiones, pre-registrado y verificado): las rayas atravesadas rinden IGUAL (F1) o MEJOR (F5: rebote 77 % vs 64 % de noche) que las no atravesadas, y el filtro llega tarde (en el caso 31.372 apaga el medio 16 min despues de empezar el serrucho). Solo limpieza visual, y esconde rayas que funcionan igual o mejor.")]
         public bool Atravesadas3AtenuarB { get; set; } = false;
 
         [Display(Name = "Atravesadas: velas hacia atras (N)", GroupName = "9.3 3.0 · Pantalla", Order = 1041)]

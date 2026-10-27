@@ -179,7 +179,9 @@ namespace PythiaGexCinco
         // 4.1: el espaciador es estatico POR ENSAMBLADO: no separa a la 3.0 (PythiaGexTres.dll) de la 4.0. Al reiniciar ATAS las dos arman a la
         // vez; la 4.0 espera DESFASE_PRIMER_ARMADO_S desde que se toca esta clase por primera vez (el primer indicador), asi la 3.0 suscribe
         // primero y la 4.0 despues. Las suscripciones al mismo contrato se comparten en el servicio de ATAS (un dueño mas, no otra suscripcion).
-        public const double DESFASE_PRIMER_ARMADO_S = 20;
+        // 5.0 (27-10-2026): la 5.0 es OTRA DLL en el mismo ATAS que la 4.1 (que arranca a +20 s): este espaciador no la ve. Arranca a +50 s
+        // para que al reiniciar ATAS no armen a la vez (3.0 en 0 s, 4.1 en +20 s, 5.0 en +50 s). _proximoTurnoGlobal arranca de aca tambien.
+        public const double DESFASE_PRIMER_ARMADO_S = 50;
         private static readonly DateTime _primerArmadoDesdeUtc = DateTime.UtcNow.AddSeconds(DESFASE_PRIMER_ARMADO_S);   // consultas y suscripciones
         private static DateTime _proximoTurnoGlobal = _primerArmadoDesdeUtc;
         /// <summary>4.1: constructor estatico explicito (sin beforefieldinit): los estaticos se inicializan al crear la PRIMERA instancia (el
@@ -289,7 +291,7 @@ namespace PythiaGexCinco
                 double espera0 = (_primerArmadoDesdeUtc - DateTime.UtcNow).TotalSeconds;
                 if (espera0 > 0)
                 {
-                    L("4.1: espero " + espera0.ToString("0", CultureInfo.InvariantCulture) + " s antes del primer armado (desfase de " + DESFASE_PRIMER_ARMADO_S.ToString("0", CultureInfo.InvariantCulture) + " s contra la 3.0, que arma al mismo tiempo al reiniciar ATAS)");
+                    L("5.0: espero " + espera0.ToString("0", CultureInfo.InvariantCulture) + " s antes del primer armado (desfase de " + DESFASE_PRIMER_ARMADO_S.ToString("0", CultureInfo.InvariantCulture) + " s: al reiniciar ATAS la 3.0 arma enseguida y la 4.1 a los 20 s)");
                     await Task.Delay(TimeSpan.FromSeconds(espera0)).ConfigureAwait(false);
                     if (_parada) return;
                     _ultimoIntento = DateTime.UtcNow;

@@ -1,5 +1,5 @@
 // IntegracionFamilia.cs — PythiaGex 4.1 (08-10-2026), integracion del agente principal. Une los modulos de los constructores con el clon:
-//   descargador propio de CBOE (B2) + minuteros ES/SPX/SPY (B3a/b/c) + TQQQ (B4) + motor de la familia (B3d) + pantalla (B5),
+//   descargador propio de CBOE (B2) + minuteros ES/SPX/SPY (B3a/b/c) + motor de la familia (B3d) + pantalla (B5),
 //   sobre los adaptadores del clon (B1: ICinta = cinta del MES, ILibroEs = libro ES por Rithmic).
 // UN host por proceso y contrato (dos graficos con la 4.0 comparten el mismo calculo y la misma bajada). El motor corre en SU hilo
 // ("PythiaGex5 familia", BelowNormal): nada de calculo en el hilo de ATAS ni en el render. Cero programas externos.
@@ -12,6 +12,8 @@
 // sobre la misma descarga y la misma cinta; el motor recibe las dos juntas (ExtrasCompuestos: primero la Replica20, despues la clasica). Log "clasica".
 // 4.1.5d (09-10-2026): la clasica guarda las muestras de su base de la rueda en PythiaGex5\familia\muestras-clasica-SPX-<dia>.jsonl (CarpetaDatos) y
 // recibe de la cinta si la vela de cada muestra esta completa (CintaFamilia.VelaM2Completa): la rueda cerrada no cambia segun como arranque la cinta.
+// 5.0 (27-10-2026): sin TQQQ (era el B4): fuera CalculoTqqq, el ajuste Tqqq41AnclaNoche ("TQQQ de noche") y su paso al motor y a los cambios;
+// la descarga de CBOE baja SPX y SPY solamente.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -34,7 +36,7 @@ namespace PythiaGexCinco
                  Description = "Corregida (recomendado): la sesion va de 18:00 NY a 17:00 NY y no se rompe con el cambio de hora del 01-11. Apagado = paridad exacta con la vista previa (22:00-21:00 UTC fijo).")]
         public bool Familia41Corregida { get; set; } = true;
 
-        [Display(Name = "Bajar las cadenas de CBOE (SPX, SPY, TQQQ)", GroupName = "7. Datos", Order = 1020,
+        [Display(Name = "Bajar las cadenas de CBOE (SPX, SPY)", GroupName = "7. Datos", Order = 1020,
                  Description = "El propio indicador baja la cadena publica de CBOE (15 min de atraso), comprimida, de a un ticker, sin rafagas: cada 75 s en la rueda y cada 300 s fuera. Apagado = usa solo lo ya guardado en PythiaGex5\\cboe.")]
         public bool Cboe41Bajar { get; set; } = true;
 
@@ -43,9 +45,7 @@ namespace PythiaGexCinco
         [Range(16, 20000)]
         public int Cboe41TopeKBps { get; set; } = 1250;
 
-        [Display(Name = "TQQQ de noche (anclaje al cierre, SIN VALIDAR)", GroupName = "7. Datos", Order = 1040,
-                 Description = "De noche la cadena de TQQQ esta congelada: con esto se dibuja reanclando la conversion x3 al cierre de hoy. Sin validar: apagado por defecto.")]
-        public bool Tqqq41AnclaNoche { get; set; } = false;
+        // 5.0 (27-10-2026): aca iba Tqqq41AnclaNoche ("TQQQ de noche", Order 1040): se saco con TQQQ.
 
         // ------------------------------------------------------------------ host de la familia
         private HostFamilia _famHost;
@@ -67,7 +67,7 @@ namespace PythiaGexCinco
                 if ((DateTime.UtcNow - _famHostIntentoUtc).TotalSeconds < 30) return;     // si fallo, reintenta cada 30 s (sin inundar el log)
                 _famHostIntentoUtc = DateTime.UtcNow;
                 if (_famHost != null) { HostFamilia.Soltar(_famHost); _famHost = null; }
-                _famHost = HostFamilia.Tomar(clave, () => new HostFamilia(cinta, libro, codigo, Familia41Corregida, Cboe41Bajar, Cboe41TopeKBps, Tqqq41AnclaNoche));
+                _famHost = HostFamilia.Tomar(clave, () => new HostFamilia(cinta, libro, codigo, Familia41Corregida, Cboe41Bajar, Cboe41TopeKBps));
                 _famHostClave = clave;
                 try { _pantalla.Catalogo = _famHost.Catalogo; } catch { }
                 Log("familia: host " + clave + " tomado (" + _famHost.Descripcion + ")");
@@ -102,7 +102,7 @@ namespace PythiaGexCinco
         internal FotoFamilia FamiliaFoto => _famHost?.Foto;
 
         // ==================================================================
-        /// <summary>Un calculo de la familia por proceso y contrato: descargador + minuteros + TQQQ + motor, con su hilo.</summary>
+        /// <summary>Un calculo de la familia por proceso y contrato: descargador + minuteros + motor, con su hilo.</summary>
         internal sealed class HostFamilia
         {
             private static readonly object _llaveHosts = new object();
@@ -139,7 +139,6 @@ namespace PythiaGexCinco
             private readonly ICinta _cinta; private readonly ILibroEs _libro;
             private readonly ManijaCboe _cboe;
             private readonly MinuteroEs _minEs; private readonly LibroMinuteroSpx _minSpx; private readonly MinuteroSpy _minSpy;
-            private readonly CalculoTqqq _tqqq;
             private readonly MotorFamilia _motor;
             private readonly CambiosFamilia _cambios;          // 4.1.2: cambios por nivel (solo en el hilo del host)
             private readonly Replica20 _replica20;             // 4.1.3: las dominantes como la 2.0 (las calcula el motor, en su hilo)
@@ -155,7 +154,7 @@ namespace PythiaGexCinco
             private Func<string, (string Json, DateTime EscritoUtc)?> _fuenteCapa;
             public IReadOnlyList<SerieInfo> Catalogo => _motor?.Catalogo;
 
-            public HostFamilia(ICinta cinta, ILibroEs libro, string codigo, bool corregida, bool bajar, int topeKBps, bool tqqqNoche)
+            public HostFamilia(ICinta cinta, ILibroEs libro, string codigo, bool corregida, bool bajar, int topeKBps)
             {
                 _cinta = cinta; _libro = libro;
                 AdaptadoresFamilia.SesionUtcFija = !corregida;
@@ -181,19 +180,7 @@ namespace PythiaGexCinco
                 _minSpy.AlProcesar = r => AnotarMuestraSpy(r);
 
                 var cboe = _cboe;
-                _tqqq = new CalculoTqqq(new OpcionesTqqq
-                {
-                    Corregida = corregida, AnclaNoche = tqqqNoche,
-                    Cierres = (lb, f) =>
-                    {
-                        var c = cboe.Cierre(lb, f);
-                        return c == null ? null : new CierresTqqqDia
-                        {
-                            Anterior = c.Anterior, AnteriorUtc = c.AnteriorUtc, Close = c.Close, CloseUtc = c.CloseUtc,
-                            PdcNuevo = c.PdcCambioUtc != default(DateTime) ? c.PdcTrasCierreFin : double.NaN, PdcNuevoUtc = c.PdcCambioUtc
-                        };
-                    }
-                }) { Contrato = contrato };
+                // 5.0 (27-10-2026): aca se creaba el CalculoTqqq (con los cierres de cboe.Cierre); se saco con TQQQ.
 
                 // 4.1.3: las dominantes como la 2.0 (R20_SPY_vol, R20_SPX_vol, DOMS_SPY_vol, DOMS_SPX_vol), calculadas adentro sobre la MISMA
                 // descarga de CBOE y la MISMA cinta; el motor las agrega despues de la cuenta de la vista previa (las 21 series no cambian)
@@ -211,15 +198,15 @@ namespace PythiaGexCinco
                 var extras = new ExtrasCompuestos(_replica20, _clasica) { Error = (donde, e) => Escribir("extras", "ERROR en " + donde + ": " + e.GetType().Name + ": " + e.Message) };
                 _motor = new MotorFamilia(new OpcionesMotorFamilia
                 {
-                    Carpeta = carpeta, Corregida = corregida, TqqqDeNoche = tqqqNoche,
+                    Carpeta = carpeta, Corregida = corregida,
                     FuentesListas = () => (cboe.Motor?.HistoriaCargada ?? false) && LibroSembrado(libro) && CintaConDatos(cinta),
                     Extras = extras
                 });
-                _motor.Configurar(cinta, libro, _cboe, new ILibroMinutero[] { _minEs, _minSpx, _minSpy }, _tqqq, codigo ?? "");
+                _motor.Configurar(cinta, libro, _cboe, new ILibroMinutero[] { _minEs, _minSpx, _minSpy }, codigo ?? "");
                 // 4.1.2: mismo modo que los minuteros; el OI del dia espera a que las fuentes tengan su historico en memoria
                 _cambios = new CambiosFamilia(libro, _cboe, new OpcionesCambios
                 {
-                    Corregida = corregida, TqqqNoche = tqqqNoche,
+                    Corregida = corregida,
                     HistoriaLista = () => (cboe.Motor?.HistoriaCargada ?? false) && LibroSembrado(libro)
                 });
                 Descripcion = "contrato " + (contrato == "" ? "(sin mes)" : contrato) + ", sesion " + (corregida ? "NY" : "UTC fija") + ", bajada " + (bajar ? "si" : "no") + " " + topeKBps + " KB/s";
@@ -273,7 +260,7 @@ namespace PythiaGexCinco
             private void Parar()
             {
                 _parar = true; _despertar.Set();
-                try { _motor.Detener = true; } catch { }      // el motor corta su paso en curso (puesta al dia, TQQQ) sin esperar el presupuesto
+                try { _motor.Detener = true; } catch { }      // el motor corta su paso en curso (puesta al dia) sin esperar el presupuesto
                 bool termino = true;
                 try { termino = _hilo == null || _hilo.Join(2000); } catch { }
                 try { if (AdaptadoresFamilia.AlEstela == (Action<string, string>)_motor.Estela) AdaptadoresFamilia.AlEstela = null; } catch { }
@@ -311,11 +298,11 @@ namespace PythiaGexCinco
                 {
                     string est = _cboe.Estado ?? "";
                     DateTime gen = DateTime.MinValue;
-                    foreach (var lb in new[] { "SPX", "SPY", "TQQQ" }) { var u = _cboe.Ultima(lb); if (u != null && u.GeneradoUtc > gen) gen = u.GeneradoUtc; }
-                    if (!_cboe.Bajar) { if (EnRueda(ahora)) partes.Add("descarga de CBOE apagada: SPX/SPY/TQQQ no se actualizan"); }
+                    foreach (var lb in new[] { "SPX", "SPY" }) { var u = _cboe.Ultima(lb); if (u != null && u.GeneradoUtc > gen) gen = u.GeneradoUtc; }   // 5.0: sin TQQQ
+                    if (!_cboe.Bajar) { if (EnRueda(ahora)) partes.Add("descarga de CBOE apagada: SPX/SPY no se actualizan"); }
                     else if (est.Contains("falla")) partes.Add("CBOE con fallas (" + (est.Length > 70 ? est.Substring(0, 70) + "…" : est) + ")");
                     else if (EnRueda(ahora) && gen > DateTime.MinValue && (ahora - gen).TotalMinutes > 10)
-                        partes.Add("CBOE sin bajar hace " + Math.Round((ahora - gen).TotalMinutes) + " min: SPX/SPY/TQQQ congelados");
+                        partes.Add("CBOE sin bajar hace " + Math.Round((ahora - gen).TotalMinutes) + " min: SPX/SPY congelados");
                 }
                 catch { }
                 try
@@ -329,17 +316,14 @@ namespace PythiaGexCinco
             }
 
             /// <summary>4.1.2: la foto del motor con los cambios por nivel (copia; la del motor no se toca). En el hilo del host, despues de
-            /// Avanzar: el almacen de minutos y las velas de TQQQ solo los toca este hilo. Si algo falla, la foto del motor tal cual.</summary>
+            /// Avanzar: el almacen de minutos solo lo toca este hilo. Si algo falla, la foto del motor tal cual. 5.0: sin la vela de TQQQ.</summary>
             private FotoFamilia Anotar()
             {
                 var f = _motor.Foto;
                 if (f == null) return null;
                 try
                 {
-                    TqqqVela tq = null; long tqT = long.MinValue;            // la misma vela que usa MotorFamilia.Publicar para los actuales de TQQQ
-                    var velas = _motor.VelasTqqq;
-                    if (velas != null) foreach (var kv in velas) if (kv.Value != null && kv.Key > tqT) { tqT = kv.Key; tq = kv.Value; }
-                    return _cambios.Anotar(f, _motor.Almacen?.Ultimo, tq) ?? f;
+                    return _cambios.Anotar(f, _motor.Almacen?.Ultimo) ?? f;
                 }
                 catch (Exception e)
                 {

@@ -5,14 +5,14 @@
 // saltea el contrato con iv <= 0 y su OI/volumen quedan en 0 sin ser cero de verdad) y su valor no es NaN. Ausente != 0: lo ausente nunca
 // entra como 0 en una resta (queda fuera y baja la cobertura).
 // La "fotoΔ" es la foto de AHORA con las cuatro columnas (OI y volumen por lado) reemplazadas: mismas K, V, IV, Dias, Generado, Ts, Dato y
-// Spot. Como el perfil es LINEAL en esas columnas (comun/Perfil.cs:100-101, tqqq/TqqqPerfil.cs:78), Perfil(fotoΔ) = cambio valuado con la
+// Spot. Como el perfil es LINEAL en esas columnas (comun/Perfil.cs:100-101; en la 4.1 tambien tqqq/TqqqPerfil.cs:78), Perfil(fotoΔ) = cambio valuado con la
 // gamma de ahora. Funciones puras, sin estado ni E/S.
 using System;
 using System.Collections.Generic;
 
 namespace PythiaGexCinco.Familia
 {
-    /// <summary>(K, vencimiento redondeado a 30 min, lado). K en milesimas (los strikes de TQQQ/SPY pueden ser de medio punto).</summary>
+    /// <summary>(K, vencimiento redondeado a 30 min, lado). K en milesimas (los strikes de SPY pueden ser de medio punto).</summary>
     public readonly struct ClaveFila : IEquatable<ClaveFila>
     {
         public readonly long K1000;

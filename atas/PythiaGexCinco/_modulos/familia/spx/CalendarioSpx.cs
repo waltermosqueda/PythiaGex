@@ -109,7 +109,7 @@ namespace PythiaGexCinco.Familia.Spx
         {
             var k = CodigoMes(contrato);
             if (k == null) return default;
-            int mes = "FGHJKMESUVXZ".IndexOf(k[0]) + 1;
+            int mes = "FGHJKMNQUVXZ".IndexOf(k[0]) + 1;
             int anio = 2020 + (k[1] - '0');
             if (anio < DateTime.UtcNow.Year - 5) anio += 10;
             return DeNy(TercerViernes(anio, mes).AddHours(9).AddMinutes(30));
@@ -143,7 +143,7 @@ namespace PythiaGexCinco.Familia.Spx
         {
             if (string.IsNullOrEmpty(codigo) || codigo.Length < 2) return null;
             char l = char.ToUpperInvariant(codigo[codigo.Length - 2]), n = codigo[codigo.Length - 1];
-            if (!char.IsDigit(n) || "FGHJKMESUVXZ".IndexOf(l) < 0) return null;
+            if (!char.IsDigit(n) || "FGHJKMNQUVXZ".IndexOf(l) < 0) return null;
             return new string(new[] { l, n });
         }
 

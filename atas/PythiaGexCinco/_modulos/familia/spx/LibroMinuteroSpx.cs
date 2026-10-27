@@ -253,7 +253,7 @@ namespace PythiaGexCinco.Familia.Spx
             _ver = ver;
             var desde = CalendarioSpx.InicioSesion(dia.AddDays(-_op.DiasHistoria), par);
             var crudas = _cboe.Fotos(LIBRO, desde, DateTime.MaxValue) ?? Array.Empty<FotoCadena>();
-            // la Version de la fuente sube con cualquier libro (SPY, TQQQ): si las fotos de SPX son las mismas, C7 no cambia
+            // la Version de la fuente sube con cualquier libro (SPY; en la 4.1 tambien TQQQ): si las fotos de SPX son las mismas, C7 no cambia
             if (!cambioDia && !reintento && crudas.Count == _nCrudas && crudas.Count > 0 && crudas[crudas.Count - 1] != null
                 && crudas[crudas.Count - 1].TsUtc == _ultTs && crudas[crudas.Count - 1].GeneradoUtc == _ultGen) return;
             _nCrudas = crudas.Count;

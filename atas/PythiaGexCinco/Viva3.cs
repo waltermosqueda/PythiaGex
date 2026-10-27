@@ -60,7 +60,7 @@ namespace PythiaGexCinco
                     Registro.Anexar(ruta, json);
                 }
                 // GANCHO-4.1 familia (B1): el libro NQ por minuto para la Familia (ILibroEs), el mismo texto que el archivo
-                try { if (raiz == "NQ") Familia.LibroEsFamilia.Para(raiz).AgregarLinea(json, "vivo"); } catch (Exception e) { Registro.Excepcion(log ?? "viva3", "Viva3.Guardar.familia", e); }
+                try { if (raiz == "ES") Familia.LibroEsFamilia.Para(raiz).AgregarLinea(json, "vivo"); } catch (Exception e) { Registro.Excepcion(log ?? "viva3", "Viva3.Guardar.familia", e); }
                 return n;
             }
             catch (Exception e) { Registro.Excepcion(log ?? "viva3", "Viva3.Guardar", e); return 0; }

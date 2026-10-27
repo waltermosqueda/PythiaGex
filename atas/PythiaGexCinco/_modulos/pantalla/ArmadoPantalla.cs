@@ -6,7 +6,7 @@
 //   * etiquetas chicas pegadas al eje (hasta la 4.1.1 con "+N" si varias series caian a <= 1 pt; ver 4.1.2 abajo); arriba de la columna la edad del dato
 //     ("DATO DE HACE ..." ANTES de los numeros si pasa de 30 min);
 //   * pestaña desplegable arriba a la izquierda (margen 56), arranca cerrada; abierta: fuentes, edades, conversiones y el detalle;
-//   * doble eje elegible Ninguno/SPX/SPY/TQQQ con la MISMA conversion que sus rayas (GetYByPrice por marca, paso automatico);
+//   * doble eje elegible Ninguno/SPX/SPY con la MISMA conversion que sus rayas (GetYByPrice por marca, paso automatico) (5.0: sin TQQQ);
 //   * control de vencimiento (el grafico en otro contrato que el de la Familia: no dibuja); sin sombreado (la banda solo en el texto).
 // Cambios contra la 4.0.6 (no tocan lo que se dibuja sobre las velas): las fuentes y la edad salen de la foto del motor (no de un json);
 // "EL GENERADOR NO ESCRIBE" pasa a "EL MOTOR NO CALCULA" (CalculadoUtc); el aviso del motor va en la pestaña; el precio MES del
@@ -53,6 +53,10 @@
 //   cambio ▲▼ (TieneLado, igual que las R20_: su base y su S no son las del libro de la 4.1; antes D1/D2 lo tomaban del libro SPX de la 4.1 y D3 no);
 //   (3) el detalle de R10_SPX_dom dice "(strike SPX 30.900, centroide ±12)" (antes "(en el indice SPX ...)", que es la leyenda del zero); (4) si la
 //   fuente "Clasica SPX" dice "dominantes por OI", la etiqueta de R10_SPX_dom lleva OI en vez de V.
+// 5.0 (27-10-2026): sin TQQQ. El eje doble queda Ninguno/SPX/SPY (default SPX: el valor TQQQ ya no existe); fuera el eje "TQQQ x3", la
+//   etiqueta con el strike de TQQQ, la linea "TQQQ sin dato", el "por 1 % de TQQQ" del detalle y los roles/tipos de TQQQ (dom, dom (razon),
+//   RAZON). El color de las marcas del eje (antes ColTqqq) se llama ColEje y es el MISMO. Las demas series se dibujan igual.
+//   Carteles y pestaña: "PythiaGex 5.0" en vez de "la Familia" como nombre del producto; la base de la clasica se rotula "5.0 sincronizada".
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -63,8 +67,9 @@ using System.Text.RegularExpressions;
 
 namespace PythiaGexCinco
 {
-    /// <summary>Doble eje de la izquierda. MISMO nombre y namespace que en el visor 4.0.6: el .ws guarda Eje4Libro como texto.</summary>
-    public enum EjeFamilia4 { Ninguno, SPX, SPY, TQQQ }
+    /// <summary>Doble eje de la izquierda. MISMO nombre y namespace que en el visor 4.0.6: el .ws guarda Eje4Libro como texto.
+    /// 5.0 (27-10-2026): sin TQQQ (era el ultimo valor: Ninguno, SPX y SPY conservan su numero).</summary>
+    public enum EjeFamilia4 { Ninguno, SPX, SPY }
 
     /// <summary>4.1.2: ventana del cambio por volumen que muestran las etiquetas (Cambio41Ventana; el host calcula las tres: CambiosVentanas.Min).</summary>
     public enum VentanaCambio41
@@ -81,7 +86,7 @@ namespace PythiaGexCinco.Familia
     public sealed class AjustesPantalla
     {
         public readonly HashSet<string> Visibles = new HashSet<string>(StringComparer.Ordinal);
-        public EjeFamilia4 Eje = EjeFamilia4.TQQQ;
+        public EjeFamilia4 Eje = EjeFamilia4.SPX;              // 5.0: era TQQQ (mismo default que Eje4Libro)
         public bool Estela = true, Rotulos = true, Cabecera = true, PanelAbierto;
         public int Letra = 9, MargenSup = 56;
         /// <summary>4.1.2: Monto41Rotulos, Cambio41Rotulos y Cambio41Ventana.</summary>
@@ -222,7 +227,7 @@ namespace PythiaGexCinco.Familia
         public static readonly Color ColFondo = Color.FromArgb(8, 12, 18);
         public static readonly Color ColNaranja = Color.FromArgb(255, 150, 40);
         public static readonly Color ColRojo = Color.FromArgb(240, 60, 60);
-        public static readonly Color ColTqqq = Color.FromArgb(255, 213, 79);
+        public static readonly Color ColEje = Color.FromArgb(255, 213, 79);       // 5.0: antes ColTqqq (el mismo color, para el eje de cualquier libro)
         public static readonly Color ColPrecio = Color.FromArgb(243, 211, 90);
         public static readonly Color ColSube = Color.FromArgb(0x08, 0x99, 0x81);   // 4.1.2: ▲ el muro crece en magnitud (ColPos de la 3.0)
         public static readonly Color ColBaja = Color.FromArgb(0xf2, 0x36, 0x45);   // 4.1.2: ▼ se achica (ColNeg de la 3.0; ojo: parecido a ColRojo)
@@ -259,8 +264,8 @@ namespace PythiaGexCinco.Familia
         // revision 4.1.4: el juntar y el agrupar comparan tramos de a pares: antes de eso quedan los TRAMO_CAND no vigentes mas largos en pantalla
         // (alcanza de sobra para 14 rotulos; con niveles que saltan cada 16 velas habia 8.200-16.400 tramos y el render tardaba 220-570 ms)
         public const int TRAMO_CAND = 200;
-        private static readonly Regex ReVencEs = new Regex(@"ES\s*([FGHJKMESUVXZ])\s*(\d{1,4})", RegexOptions.Compiled);
-        private static readonly Regex ReVencSolo = new Regex(@"^([FGHJKMESUVXZ])(\d{1,4})$", RegexOptions.Compiled);
+        private static readonly Regex ReVencEs = new Regex(@"ES\s*([FGHJKMNQUVXZ])\s*(\d{1,4})", RegexOptions.Compiled);
+        private static readonly Regex ReVencSolo = new Regex(@"^([FGHJKMNQUVXZ])(\d{1,4})$", RegexOptions.Compiled);
 
         /// <summary>Mes + ultimo digito del año del contrato: "MESZ6" -> "Z6", "ESZ26" -> "Z6", "Z6" -> "Z6" (lo que publica el motor). "" si no se entiende.</summary>
         public static string Venc(string s)
@@ -286,9 +291,6 @@ namespace PythiaGexCinco.Familia
 
         /// <summary>Precio en formato del operador: 31.073 o 31.073,31.</summary>
         public static string P(double p) => double.IsNaN(p) ? "?" : p.ToString(Math.Abs(p - Math.Round(p)) < 1e-6 ? "#,##0" : "#,##0.00", Es);
-
-        /// <summary>Strike de TQQQ en la etiqueta, como la 4.0.6: "82", "80,5", "80,88".</summary>
-        private static string StrikeTqqq(double k) => double.IsNaN(k) ? "" : k.ToString(Math.Abs(k * 2 - Math.Round(k * 2)) < 1e-6 ? "0.#" : "0.00", Es);
 
         /// <summary>Strike en el detalle de la pestaña (unidad de su libro): "31.060", "750", "760,2".</summary>
         private static string Strike(double k) => double.IsNaN(k) ? "" : k.ToString("#,##0.##", Es);
@@ -388,15 +390,15 @@ namespace PythiaGexCinco.Familia
         }
 
         /// <summary>4.1.2 (revision): el nivel tiene lado y por lo tanto cambio. La MISMA regla que CambiosFamilia.LadoDe (posiciones/): Tipo
-        /// MUROS/MAJORS/DOMS/RAZON con rol muro C, muro P, M+, M-, dom o dom (razon). CambiosFamilia anota arreglos NaN en TODOS los niveles
+        /// MUROS/MAJORS/DOMS con rol muro C, muro P, M+ o M- (5.0: sin RAZON, dom y dom (razon), que eran de TQQQ). CambiosFamilia anota arreglos NaN en TODOS los niveles
         /// (tambien ZEST/ZTP/CONF/TRES): en esos el cambio no aplica (no es que falte), asi que no va ni en la etiqueta ni en el detalle.</summary>
         public static bool TieneLado(NivelActual a)
         {
             if (a == null) return false;
-            if (a.Tipo != "MUROS" && a.Tipo != "MAJORS" && a.Tipo != "DOMS" && a.Tipo != "RAZON") return false;
+            if (a.Tipo != "MUROS" && a.Tipo != "MAJORS" && a.Tipo != "DOMS") return false;
             switch (a.Rol)
             {
-                case "muro C": case "muro P": case "M+": case "M-": case "dom": case "dom (razon)": return true;
+                case "muro C": case "muro P": case "M+": case "M-": return true;
                 // 4.1.3: la seleccion de la 2.0 sobre los libros de la 4.1 (DOMS_SPY_vol / DOMS_SPX_vol) lleva el cambio neto; las replicas de la
                 // 2.0 (R20_*) no (CambiosFamilia las deja NaN con nota: su conversion no es la del libro de la 4.1)
                 // 4.1.5d: las de la clasica (R10_*) tampoco (su base y su S no son las del libro SPX de la 4.1; antes D1/D2 tenian flecha y D3 no)
@@ -475,7 +477,7 @@ namespace PythiaGexCinco.Familia
             return (origen == "" ? "origen sin dato" : "origen: " + Recortar(origen, 70), false);
         }
 
-        /// <summary>4.1.4: las series "como la 2.0" (R20_* y DOMS_*; no T_DOMS_vol).</summary>
+        /// <summary>4.1.4: las series "como la 2.0" (R20_* y DOMS_*).</summary>
         public static bool EsSerie20(string serie) => serie != null && (serie.StartsWith("R20_", StringComparison.Ordinal) || serie.StartsWith("DOMS_", StringComparison.Ordinal));
 
         /// <summary>4.1.5: la replica de la clasica (R10_SPX_zero "Clasica SPX 0Γ"): su nombre corto ya dice el rol (el zero), no se repite.</summary>
@@ -488,11 +490,11 @@ namespace PythiaGexCinco.Familia
                                           + "re-mide su base en la rueda y esta replica deja de coincidir (09-10 16:48-17:11 ART: ~13 pts)";
 
         private static readonly Regex ReRuedaClasica = new Regex(@"= de la rueda (\d{4})-(\d{2})-(\d{2})", RegexOptions.Compiled);
-        private static readonly Regex ReAhoraClasica = new Regex(@"4\.1 sincronizada (-?\d+(?:\.\d+)?)", RegexOptions.Compiled);
+        private static readonly Regex ReAhoraClasica = new Regex(@"5\.0 sincronizada (-?\d+(?:\.\d+)?)", RegexOptions.Compiled);   // 5.0: ClasicaSpx.Texto dice "5.0 sincronizada" (antes "4.1")
         private static readonly Regex ReHoyClasica = new Regex(@"rueda de hoy (-?\d+(?:\.\d+)?) \((\d+) muestras\)", RegexOptions.Compiled);
 
         /// <summary>4.1.5: de donde salio la base de la replica de la clasica, leido del texto de su fuente ("Clasica SPX", ClasicaSpx.Texto:
-        /// "base clasica X = ORIGEN (...) · ahora: 4.1 sincronizada Y; regla de la clasica con la rueda de hoy Z (n muestras) · zero en el indice W").
+        /// "base clasica X = ORIGEN (...) · ahora: 5.0 sincronizada Y; regla de la clasica con la rueda de hoy Z (n muestras) · zero en el indice W").
         /// Normal = la base de la rueda (la de la clasica); si no (CRUDA, TEORICA, sin cota) es un respaldo y el detalle lo dice en naranja.
         /// Ahora = la base sincronizada de la 4.1 del mismo minuto (NaN si no esta); Hoy = la regla de la clasica con la rueda de hoy (NaN si no hay).</summary>
         public static (string Txt, bool Normal, double Ahora, double Hoy) OrigenClasica(string texto)
@@ -512,8 +514,8 @@ namespace PythiaGexCinco.Familia
             return ("origen sin dato", false, ahora, hoy);
         }
 
-        /// <summary>4.1.4: nombre corto de una serie para los rotulos de tramos: base ("SPX muro", "SPX cruce", "2.0 SPX", "SPY dom", "3.0 SPX", "FAM muro",
-        /// "TQQQ muro") y fuente ("V"/"OI" solo si el catalogo tiene la misma serie por volumen y por OI; si no, ""). Ej.: MUROS_SPX_vol -> ("SPX muro","V").</summary>
+        /// <summary>4.1.4: nombre corto de una serie para los rotulos de tramos: base ("SPX muro", "SPX cruce", "2.0 SPX", "SPY dom", "3.0 SPX", "FAM muro")
+        /// y fuente ("V"/"OI" solo si el catalogo tiene la misma serie por volumen y por OI; si no, ""). Ej.: MUROS_SPX_vol -> ("SPX muro","V").</summary>
         public static (string Base, string Suf) NombreDeTramo(SerieInfo s, IReadOnlyList<SerieInfo> lista)
         {
             if (s == null) return ("", "");
@@ -527,10 +529,9 @@ namespace PythiaGexCinco.Familia
                     case "MUROS": bas = lib + " muro"; break;
                     case "MAJORS": bas = lib + " major"; break;
                     case "ZEST": bas = lib + " 0G"; break;
-                    case "ZTP": bas = lib + (lib == "TQQQ" ? " 0G" : " cruce"); break;
+                    case "ZTP": bas = lib + " cruce"; break;            // 5.0: sin el " 0G" de TQQQ
                     case "DOMS": bas = lib + " dom"; break;
-                    case "RAZON": bas = lib + " razon"; break;
-                    default: bas = corto; break;
+                    default: bas = corto; break;                       // 5.0: sin "RAZON" (T_DOMS_raz)
                 }
             bool doble = false;
             if ((s.Fuente == "vol" || s.Fuente == "oi") && lista != null)
@@ -750,7 +751,7 @@ namespace PythiaGexCinco.Familia
             if (instr.IndexOf("ES", StringComparison.OrdinalIgnoreCase) < 0)
             { Cartel(d, tam, area, "PythiaGex 5.0: los niveles estan en precio de ES/MES; este grafico es " + instr + ": no dibujo nada", ColNaranja); return; }
             if (F == null)
-            { Cartel(d, tam, area, "PythiaGex 5.0: esperando el primer calculo de la Familia (todo adentro: libro ES por Rithmic, SPX/SPY/TQQQ bajados de CBOE)", ColNaranja); return; }
+            { Cartel(d, tam, area, "PythiaGex 5.0: esperando el primer calculo (todo adentro: libro ES por Rithmic, SPX/SPY bajados de CBOE)", ColNaranja); return; }
             // los niveles son del contrato de la Familia (el del grafico donde corre el motor): en el roll, otro vencimiento quedaria corrido por el spread
             string vj = Venc(F.Instrumento), vg = Venc(instr);
             if (vj != "" && vg != "" && vj != vg)
@@ -833,12 +834,8 @@ namespace PythiaGexCinco.Familia
             {
                 Func<double, double> aLibro = null, aEs = null; string tituloEje = "", fmtEje = "0.00"; DateTime datoEje = DateTime.MinValue; double fuerte = 1;
                 var fSpx = Fuente(fuentes, "SPX"); var fSpy = Fuente(fuentes, "SPY");
-                if (aj.Eje == EjeFamilia4.TQQQ && !double.IsNaN(F.TqS) && !double.IsNaN(F.TqC) && F.TqS >= 20 && F.TqS <= 1000)
-                {
-                    double s0 = F.TqS, c0 = F.TqC; aLibro = q => (q - c0) / s0; aEs = x => s0 * x + c0; datoEje = F.TqDatoUtc;
-                    tituloEje = "eje TQQQ x3: ES = " + s0.ToString("0.00", Es) + " x TQQQ + " + c0.ToString("#,##0.0", Es) + " (no regla de tres)";
-                }
-                else if (aj.Eje == EjeFamilia4.SPY && fSpy != null && !double.IsNaN(fSpy.ConvValor) && fSpy.ConvValor > 30 && fSpy.ConvValor < 60)
+                // 5.0 (27-10-2026): aca iba el eje "TQQQ x3" (ES = s x TQQQ + c); quedan SPY y SPX con las mismas cotas que en la 4.1
+                if (aj.Eje == EjeFamilia4.SPY && fSpy != null && !double.IsNaN(fSpy.ConvValor) && fSpy.ConvValor > 30 && fSpy.ConvValor < 60)
                 {
                     double r0 = fSpy.ConvValor; aLibro = q => q / r0; aEs = x => x * r0; datoEje = fSpy.DatoUtc;
                     tituloEje = "eje SPY: ES = SPY x " + r0.ToString("0.0000", Es) + " (razon sincronizada)";
@@ -863,9 +860,9 @@ namespace PythiaGexCinco.Familia
                         double K = Math.Round(kk / paso) * paso;
                         int y = Y(aEs(K)); if (!EnPantalla(y)) continue;     // GetYByPrice exacto por marca
                         bool f2 = Math.Abs(K / fuerte - Math.Round(K / fuerte)) < 1e-6;    // dolares enteros (strikes) / SPX cada 100
-                        d.Linea(Color.FromArgb(f2 ? 170 : 90, ColTqqq), 1f, area.Left, y, area.Left + (f2 ? 8 : 5), y);
+                        d.Linea(Color.FromArgb(f2 ? 170 : 90, ColEje), 1f, area.Left, y, area.Left + (f2 ? 8 : 5), y);
                         string tk = K.ToString(fmtEje, Es);
-                        d.Texto(tk, tam, Color.FromArgb(f2 ? 235 : 150, ColTqqq), area.Left + 10, y - hf / 2);
+                        d.Texto(tk, tam, Color.FromArgb(f2 ? 235 : 150, ColEje), area.Left + 10, y - hf / 2);
                         d.Marcas.Add((K, y));
                         if (largos != null) ocupado.Add(new Rectangle(area.Left, y - hf / 2, 12 + medir(tk, tam).Width, hf));
                     }
@@ -875,8 +872,8 @@ namespace PythiaGexCinco.Familia
                     double ee = datoEje == DateTime.MinValue ? double.NaN : (ahora - datoEje).TotalSeconds;
                     bool vj2 = !double.IsNaN(ee) && ee > VIEJO_S;
                     ejeLargo = (vj2 ? "DATO DE HACE " + Edad(ee) + " · " : "") + tituloEje + (!vj2 && !double.IsNaN(ee) ? " · dato " + Edad(ee) : "");
-                    ejeCorto = aLibro != null ? "eje " + (aj.Eje == EjeFamilia4.TQQQ ? "TQQQ x3" : aj.Eje.ToString()) : "eje " + aj.Eje + " SIN DATO";
-                    ejeColor = vj2 ? ColNaranja : Color.FromArgb(220, ColTqqq);
+                    ejeCorto = aLibro != null ? "eje " + aj.Eje.ToString() : "eje " + aj.Eje + " SIN DATO";
+                    ejeColor = vj2 ? ColNaranja : Color.FromArgb(220, ColEje);
                     d.EjeTitulo = ejeLargo;
                 }
             }
@@ -911,12 +908,11 @@ namespace PythiaGexCinco.Familia
                 string fu = fuA == "3.0" ? "" : (fuA == "oi" ? "·OI" : "·vol");
                 string corto0 = s?.Corto ?? "";
                 bool esConf = s != null && s.Tipo == "CONF";
-                // 4.1.8: las series de carga llevan el STRIKE NATIVO del libro al lado del nombre, como ya hacia TQQQ.
+                // 4.1.8: las series de carga llevan el STRIKE NATIVO del libro al lado del nombre (como hacia TQQQ en la 4.1).
                 // En ES el strike y el precio dibujado coinciden (conversion 0) y no se repite; en SPX y SPY no: la raya
                 // del strike 30.600 de SPX se dibuja en 30.827,37, y el operador cruza el 30.600 contra CBOE, no el otro.
                 bool esCarga = a.Serie != null && a.Serie.StartsWith("CARGA", StringComparison.Ordinal);
-                string libro = a.Libro == "TQQQ" ? (double.IsNaN(a.Strike) ? "TQQQ" : "TQQQ " + StrikeTqqq(a.Strike))
-                             : s != null && s.Tipo == "TRES" ? (corto0 == "" ? "3.0" : corto0)
+                string libro = s != null && s.Tipo == "TRES" ? (corto0 == "" ? "3.0" : corto0)          // 5.0: sin la rama "TQQQ <strike>"
                              : esConf ? "CONF"
                              : esCarga && !double.IsNaN(a.Strike) && Math.Abs(a.Strike - a.Precio) >= 0.005
                                  ? (corto0 == "" ? a.Libro : corto0) + " " + Strike(a.Strike)
@@ -1207,15 +1203,14 @@ namespace PythiaGexCinco.Familia
                 if (aj.PanelAbierto)
                 {
                     var lineas = new List<(string T, Color C)>();
-                    lineas.Add(("calculado adentro: libro ES por Rithmic + SPX/SPY/TQQQ bajados de CBOE (15 min de retraso de CBOE) · calculo de hace "
+                    lineas.Add(("calculado adentro: libro ES por Rithmic + SPX/SPY bajados de CBOE (15 min de retraso de CBOE) · calculo de hace "
                                 + (sinCalculo ? "?" : Edad(eg)) + (string.IsNullOrEmpty(F.Sesion) ? "" : " · sesion " + F.Sesion), Color.FromArgb(200, ColTexto)));
-                    if (motorParado) lineas.Add(("el motor de la Familia no publica hace " + Edad(eg) + ": lo que se ve puede estar viejo", ColRojo));
+                    if (motorParado) lineas.Add(("el motor de PythiaGex 5.0 no publica hace " + Edad(eg) + ": lo que se ve puede estar viejo", ColRojo));
                     if (aviso != "") lineas.Add(("aviso: " + aviso, ColNaranja));
                     if (ejeLargo != "") lineas.Add((ejeLargo, ejeColor));
                     var libros = new HashSet<string>(vis.Select(s => s.Libro ?? ""), StringComparer.Ordinal);
                     bool usaFam = libros.Contains("familia");
-                    bool pideTq = aj.Eje == EjeFamilia4.TQQQ || libros.Contains("TQQQ");
-                    bool usaCboe = usaFam || pideTq || libros.Contains("SPX") || libros.Contains("SPY") || aj.Eje == EjeFamilia4.SPX || aj.Eje == EjeFamilia4.SPY;
+                    bool usaCboe = usaFam || libros.Contains("SPX") || libros.Contains("SPY") || aj.Eje == EjeFamilia4.SPX || aj.Eje == EjeFamilia4.SPY;   // 5.0: sin TQQQ
                     foreach (var fu in fuentes)
                     {
                         if (fu == null || string.IsNullOrEmpty(fu.Libro)) continue;
@@ -1223,9 +1218,9 @@ namespace PythiaGexCinco.Familia
                         bool vv = !double.IsNaN(e) && e > VIEJO_S;
                         switch (fu.Libro)
                         {
-                            case "ES": case "SPX": case "SPY": case "TQQQ":
+                            case "ES": case "SPX": case "SPY":                                   // 5.0: sin "TQQQ"
                             {
-                                bool usa = fu.Libro == "TQQQ" ? pideTq : (libros.Contains(fu.Libro) || usaFam || aj.Eje.ToString() == fu.Libro);
+                                bool usa = libros.Contains(fu.Libro) || usaFam || aj.Eje.ToString() == fu.Libro;
                                 if (!usa) continue;
                                 string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro + (fu.Libro == "ES" ? " Rithmic" : " CBOE")
                                          + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")") + (fu.Congelada ? " · cadena congelada" : "")
@@ -1265,8 +1260,6 @@ namespace PythiaGexCinco.Familia
                                 break;
                         }
                     }
-                    if (pideTq && double.IsNaN(F.TqS))
-                        lineas.Add(("TQQQ sin dato en la sesion " + F.Sesion + " (arranca con la rueda de NY)", ColNaranja));
                     // 4.1.2: el estado del calculo de cambios por libro (CambiosFamilia), al final de las fuentes
                     //      (sin repetir "cambios" si la linea ya empieza asi: "cambios: sin minuto con libros todavia")
                     if (F.CambiosEstado != null)
@@ -1291,14 +1284,14 @@ namespace PythiaGexCinco.Familia
                         if (!puesto && a0.Precio < px) { lineas.Add(("— precio MES " + P(px) + " —", ColPrecio)); puesto = true; }
                         double e = l.Where(x => !double.IsNaN(x.E)).Select(x => x.E).DefaultIfEmpty(double.NaN).Max();
                         bool viejo = !double.IsNaN(e) && e > VIEJO_S;
-                        // 4.1.2: el monto de cada nivel va pegado a su nombre (TQQQ: por 1 % de TQQQ, no de ES)
+                        // 4.1.2: el monto de cada nivel va pegado a su nombre (5.0: sin el "por 1 % de TQQQ")
                         // 4.1.3: las dominantes como la 2.0 dicen con que conversion se pusieron (la de la 2.0 o la sincronizada de la 4.1)
-                        string noms = string.Join(" / ", l.Select(x => x.Nom + (x.MontoTxt != "" ? " " + x.MontoTxt + (x.Libro == "TQQQ" ? " por 1 % de TQQQ" : "") : "")
+                        string noms = string.Join(" / ", l.Select(x => x.Nom + (x.MontoTxt != "" ? " " + x.MontoTxt : "")
                                                                    + ConvDe(x.Partes != null && x.Partes.Length > 0 ? x.Partes[0].Serie : null, fuentes)
                                                                    + (l.Count > 1 && x.Banda != "" ? " " + x.Banda : "")).Distinct());
                         string precios = string.Join("/", l.Select(x => x.Banda != "" ? P(Math.Round(x.Precio)) : P(x.Precio)).Distinct());
                         string k = "";
-                        if (l.Count == 1 && a0.Libro != "TQQQ" && a0.Libro != "familia" && !double.IsNaN(a0.Strike))
+                        if (l.Count == 1 && a0.Libro != "familia" && !double.IsNaN(a0.Strike))          // 5.0: sin la excepcion de TQQQ
                         {
                             string sx0 = a0.Partes != null && a0.Partes.Length > 0 ? a0.Partes[0].Serie : null;
                             k = sx0 == "R10_SPX_zero" ? " (en el indice " + a0.Libro + " " + Strike(a0.Strike) + ")"           // 4.1.5: un zero no es un strike

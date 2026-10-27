@@ -288,9 +288,9 @@ namespace PythiaGexCinco.Familia
         {
             if (string.IsNullOrEmpty(codigo)) return default(DateTime);
             var limpio = System.Text.RegularExpressions.Regex.Replace(codigo.ToUpperInvariant(), "[^A-Z0-9]", "");
-            var m = System.Text.RegularExpressions.Regex.Match(limpio, @"^[A-Z0-9]*?([FGHJKMESUVXZ])(\d{1,2})$");
+            var m = System.Text.RegularExpressions.Regex.Match(limpio, @"^[A-Z0-9]*?([FGHJKMNQUVXZ])(\d{1,2})$");
             if (!m.Success) return default(DateTime);
-            int mes = "FGHJKMESUVXZ".IndexOf(m.Groups[1].Value[0]) + 1;
+            int mes = "FGHJKMNQUVXZ".IndexOf(m.Groups[1].Value[0]) + 1;
             int y = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
             int anio = m.Groups[2].Value.Length == 2 ? 2000 + y : (ahoraUtc.Year / 10) * 10 + y;
             if (m.Groups[2].Value.Length == 1 && anio < ahoraUtc.Year - 1) anio += 10;

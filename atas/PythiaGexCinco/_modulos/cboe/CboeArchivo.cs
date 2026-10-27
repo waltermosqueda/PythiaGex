@@ -1,6 +1,6 @@
 // CboeArchivo.cs — PythiaGex 4.1, modulo cboe (B2). Sin referencias a ATAS.
 // El archivo propio en %APPDATA%\ATAS\PythiaGex5\cboe\ (mismo formato que cboe-local, asi el laboratorio lo lee cambiando solo la ruta):
-//   ultima-<ES|SPY|TQQQ>.json            la ultima linea flaca, sin comprimir, escrita atomica (temporal + reemplazo)
+//   ultima-<ES|SPY>.json                 la ultima linea flaca, sin comprimir, escrita atomica (temporal + reemplazo) (5.0: sin TQQQ)
 //   cadena-<X>-<yyyy-MM-dd UTC de generado>.jsonl.gz   un miembro gzip por linea, agregado al final
 //   cadena-<X>.ultimo                    el sello (timestamp de CBOE) de la ultima linea archivada
 //   cierres.json                         por fecha NY y libro: cierre anterior (prev_day_close de la rueda), close tras 15:59 NY y el
@@ -21,7 +21,7 @@ namespace PythiaGexCinco.Cboe
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
         private static readonly UTF8Encoding Utf8 = new UTF8Encoding(false);
-        private static readonly Regex RxDia = new Regex(@"^cadena-(ES|SPY|TQQQ)-(\d{4}-\d{2}-\d{2})\.jsonl\.gz$", RegexOptions.CultureInvariant);
+        private static readonly Regex RxDia = new Regex(@"^cadena-(ES|SPY)-(\d{4}-\d{2}-\d{2})\.jsonl\.gz$", RegexOptions.CultureInvariant);   // 5.0: sin TQQQ
 
         public static string RutaDia(string carpeta, string archivo, DateTime diaUtc) =>
             Path.Combine(carpeta, "cadena-" + archivo + "-" + diaUtc.ToString("yyyy-MM-dd", Inv) + ".jsonl.gz");

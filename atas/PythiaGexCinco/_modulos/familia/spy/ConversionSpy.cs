@@ -67,7 +67,7 @@ namespace PythiaGexCinco.Familia.Spy
             while (i >= 0 && char.IsDigit(s[i])) i--;
             if (i < 0 || i == s.Length - 1) return "";
             char mes = s[i];
-            if ("FGHJKMESUVXZ".IndexOf(mes) < 0) return "";
+            if ("FGHJKMNQUVXZ".IndexOf(mes) < 0) return "";
             return s.Substring(i);
         }
     }

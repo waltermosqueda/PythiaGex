@@ -1,7 +1,10 @@
 // MotorFamilia.cs — PythiaGex 4.1, modulo fam (B3d), 08-10-2026. Implementa IMotorFamilia (Contratos.cs).
 // Port de preview_niveles.Motor (ciclo / historico / calcular / salida) sobre los modulos por libro (ILibroMinutero es/spx/spy), la cinta
-// (ICinta), TQQQ (ICalculoTqqq) y lo que dibuja el motor 3.0 del clon (AlmacenTres). Una sesion por vez; cambia sola a las 18:00 NY
+// (ICinta) y lo que dibuja el motor 3.0 del clon (AlmacenTres). Una sesion por vez; cambia sola a las 18:00 NY
 // (corregida) o a las 22:00 UTC (paridad).
+// 5.0 (27-10-2026): sin TQQQ. Fuera ICalculoTqqq, las velas m2 de TQQQ (_tq, VelasTqqq, PasadasTqqqPorS, MismaVela), la opcion
+// TqqqDeNoche y el eje TqS/TqC de la foto. Los minutos, su historia por vela m2 y los actuales de las demas series no cambian: TQQQ
+// solo se AGREGABA al final (SalidaFamilia) y nunca entraba en la cuenta de un minuto (RegistroMinuto).
 //
 // Grilla por minuto (preview_niveles.calcular): fut = ICinta.CierreConocido(t); por libro LibroMinuto (null = no vale); ReglasFam.Minuto.
 // Tandas: como la vista previa, que reinicia el corrimiento de ES y la cache del zero estandar en CADA llamada a calcular:
@@ -20,9 +23,8 @@
 //   var motor = new MotorFamilia(new OpcionesMotorFamilia {
 //         Carpeta = AdaptadoresFamilia.Carpeta,                      // %APPDATA%\ATAS\PythiaGex5 (familia\ y estela\ debajo)
 //         Corregida = !AdaptadoresFamilia.SesionUtcFija,             // mismo modo que los minuteros (OpcionesSpx.ParidadPython, OpcionesSpy.Corregida)
-//         TqqqDeNoche = Tqqq41AnclaNoche,
 //         FuentesListas = () => bajador.HistoriaCargada && libroEs.Sembrado && cinta.Version > 0 });
-//   motor.Configurar(cinta, libroEs, cboe, new ILibroMinutero[] { minEs, minSpx, minSpy }, tqqq, "MESZ6" /* codigo del grafico */);
+//   motor.Configurar(cinta, libroEs, cboe, new ILibroMinutero[] { minEs, minSpx, minSpy }, "MESZ6" /* codigo del grafico */);
 //   AdaptadoresFamilia.AlEstela = motor.Estela;                    // TRES_* al instante (sin el gancho igual se leen de PythiaGex5\estela)
 //   hilo "PythiaGex5 familia" (BelowNormal): motor.Avanzar(DateTime.UtcNow) cada 5 s; si motor.Pendiente, otra vez a los 300 ms.
 //   render: motor.Foto (inmutable) y motor.Catalogo (CatalogoFamilia.Series).
@@ -102,7 +104,6 @@ namespace PythiaGexCinco.Familia
         /// () => bajador.HistoriaCargada &amp;&amp; libroEs.Sembrado &amp;&amp; cinta.Version > 0. Sin esto: CBOE con Version > 0 y sin "leyendo historia"
         /// en su Estado, libro ES con Version > 0 y cinta con algun tick; o EsperaArranqueS.</summary>
         public Func<bool> FuentesListas;
-        public bool TqqqDeNoche = false;           // Tqqq41AnclaNoche: pedir velas de TQQQ desde el inicio de la sesion (si no, desde la rueda)
         public int RetencionDias = 14;
         public string RutaLog = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "pythiagex5-familia.log");
         /// <summary>4.1.3: las series extra (las dominantes como la 2.0, Replica20). null = sin extras: el motor queda EXACTO como en la 4.1.2
@@ -112,11 +113,11 @@ namespace PythiaGexCinco.Familia
 
     public sealed class MotorFamilia : IMotorFamilia
     {
-        public const string VERSION = "fam 4.1.5d (09-10-2026)";
+        public const string VERSION = "fam 5.0 (27-10-2026, la 4.1.5d sin TQQQ)";
         private readonly OpcionesMotorFamilia _op;
         private readonly object _paso = new object();
 
-        private ICinta _cinta; private ILibroEs _es; private IFuenteCboe _cboe; private ICalculoTqqq _tqqq;
+        private ICinta _cinta; private ILibroEs _es; private IFuenteCboe _cboe;
         private ILibroMinutero[] _libros = Array.Empty<ILibroMinutero>();
         private string _contrato = "";
         private DateTime _configuradoUtc = DateTime.MinValue;
@@ -127,9 +128,6 @@ namespace PythiaGexCinco.Familia
         private AlmacenTres _tres;
         private long _siguiente, _finTanda;
         private bool _listoFuentes;
-        private readonly Dictionary<long, TqqqVela> _tq = new Dictionary<long, TqqqVela>();
-        private long _tqVersionCboe = -1; private DateTime _tqPasadaUtc = DateTime.MinValue;
-        private long _tqVersionS = long.MinValue;
         private long _ultimoEsperado = long.MinValue;
         private ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>> _hist = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty;
         /// <summary>4.1.8 REBOBINADO: minuto -> su registro CLONADO y la estela de SU sesion. Clonado porque los
@@ -151,21 +149,19 @@ namespace PythiaGexCinco.Familia
         /// <summary>4.1.0: el minuto en vivo espera el primer tick de la vela m2 en curso (ver EsperaCierreS). El hilo puede mirar cada 1 s.</summary>
         public bool EsperandoCierre { get; private set; }
         public long MinutosEsperados { get; private set; }
-        public int PasadasTqqqPorS { get; private set; }
         /// <summary>4.1.3: minutos del archivo a los que se les completaron las series extra en esta corrida.</summary>
         public long MinutosCompletados { get; private set; }
         /// <summary>4.1.4: minutos ya calculados cuyas series extra se rehicieron (IExtrasRehacer: la razon de la 2.0 cambio) y veces que paso.</summary>
         public long MinutosRehechos { get; private set; }
         public int Rehechuras { get; private set; }
         private long _genExtras;
-        /// <summary>4.1.0: lo pone el host al parar. Avanzar deja de calcular minutos (y velas de TQQQ) en el proximo paso, sin esperar la tanda:
+        /// <summary>4.1.0: lo pone el host al parar. Avanzar deja de calcular minutos en el proximo paso, sin esperar la tanda:
         /// Parar ya no espera 2,5 s de puesta al dia. Lo ya calculado se guarda igual (las fuentes siguen vivas hasta que el hilo termina).</summary>
         public volatile bool Detener;
         public double MsUltimoAvanzar { get; private set; }
         public SesionFamilia Sesion => _ses;
         public AlmacenNiveles Almacen => _alm;
         public AlmacenTres Tres => _tres;
-        public IReadOnlyDictionary<long, TqqqVela> VelasTqqq => _tq;
 
         public MotorFamilia() : this(new OpcionesMotorFamilia()) { }
         public MotorFamilia(OpcionesMotorFamilia op) { _op = op ?? new OpcionesMotorFamilia(); }
@@ -176,11 +172,11 @@ namespace PythiaGexCinco.Familia
         private string CarpetaFamilia => string.IsNullOrEmpty(_op.Carpeta) ? null : Path.Combine(_op.Carpeta, "familia");
         private string CarpetaEstela => string.IsNullOrEmpty(_op.Carpeta) ? null : Path.Combine(_op.Carpeta, "estela");
 
-        public void Configurar(ICinta cinta, ILibroEs es, IFuenteCboe cboe, IReadOnlyList<ILibroMinutero> libros, ICalculoTqqq tqqq, string contrato)
+        public void Configurar(ICinta cinta, ILibroEs es, IFuenteCboe cboe, IReadOnlyList<ILibroMinutero> libros, string contrato)
         {
             lock (_paso)
             {
-                _cinta = cinta; _es = es; _cboe = cboe; _tqqq = tqqq;
+                _cinta = cinta; _es = es; _cboe = cboe;
                 var orden = new List<ILibroMinutero>();
                 if (libros != null)
                 {   // el orden de bk de la vista previa: ES, SPX, SPY (y cualquier otro al final)
@@ -194,7 +190,7 @@ namespace PythiaGexCinco.Familia
                 _configurado = true;
                 if (otroContrato) _ses = null;          // roll o primer arranque: se abre la sesion de nuevo con el archivo de este contrato
                 BitacoraFam.Linea(_op.RutaLog, "configurar", VERSION + ": contrato " + _contrato + ", libros " + string.Join(",", _libros.Select(x => x.Libro)) +
-                          (_tqqq != null ? ", TQQQ" : "") + (_cboe != null ? ", CBOE" : "") + ", modo " + (_op.Corregida ? "corregido (NY)" : "paridad (UTC fijo)")
+                          (_cboe != null ? ", CBOE" : "") + ", modo " + (_op.Corregida ? "corregido (NY)" : "paridad (UTC fijo)")
                           + (_op.Extras != null ? ", series extra " + string.Join("/", CatalogoFamilia.Extra) : ""));
             }
         }
@@ -218,7 +214,6 @@ namespace PythiaGexCinco.Familia
             try { lt = _tres.LeerArchivos(CarpetaEstela, s.Dia); } catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "Estelas", e); }
             _tresVersion = -1;
             _siguiente = s.IniClave; _finTanda = long.MinValue;
-            _tq.Clear(); _tqVersionCboe = -1; _tqPasadaUtc = DateTime.MinValue; _tqVersionS = long.MinValue;
             _hist = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty;
             string previas = "";
             try { _hist = HistoriaPrevia(s, out previas); } catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "HistoriaPrevia", e); }   // 4.1.6g: memoria de 2 sesiones
@@ -238,7 +233,7 @@ namespace PythiaGexCinco.Familia
 
         /// <summary>4.1.6g (pedido del operador 11-10: "por que no cargo las dominantes del jueves y viernes, solo las de ahora ... quiero que minimo
         /// siempre cargue hasta dos dias antes"): la historia por vela m2 de las SESIONES_PREVIAS sesiones anteriores que tengan archivo (se buscan hasta
-        /// 10 dias atras: el fin de semana no tiene archivo), leida del disco (niv + estelas de la 3.0), sin TQQQ y sin recalcular nada. Va debajo de la
+        /// 10 dias atras: el fin de semana no tiene archivo), leida del disco (niv + estelas de la 3.0), sin recalcular nada. Va debajo de la
         /// de la sesion en curso (sus velas son anteriores a su apertura): la pantalla la dibuja sobre las velas viejas del grafico.</summary>
         public const int SESIONES_PREVIAS = 2;
         private ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>> HistoriaPrevia(SesionFamilia s, out string txt)
@@ -264,7 +259,7 @@ namespace PythiaGexCinco.Familia
                 int velas = 0;
                 for (long T = ini; T <= fin; T += 120000L)
                 {
-                    var e = SalidaFamilia.Entrada(T, alm.Get, tres, null);
+                    var e = SalidaFamilia.Entrada(T, alm.Get, tres);
                     if (e != null) { b[T] = e; velas++; }
                 }
                 // 4.1.8: hasta la 4.1.7 'alm' y 'tres' se tiraban aca y por eso, al retroceder el grafico a estos dias,
@@ -363,43 +358,11 @@ namespace PythiaGexCinco.Familia
                 Pendiente = _siguiente <= limite && !esperando && !Detener;
                 EsperandoCierre = esperando;
 
-                // ---- TQQQ por vela m2
+                // ---- la vela m2 que se esta formando y las velas de la historia a rehacer
+                //      5.0 (27-10-2026): aca iba el calculo de TQQQ por vela m2 (sus velas cambiadas tambien entraban en 'sucias'). Sin TQQQ,
+                //      'sucias' se llena solo con lo de abajo (minutos nuevos/rehechos, TRES y las ultimas velas), como para las demas series.
                 long formando = Ms(ahoraUtc) / 120000L * 120000L;
-                long tqIni = Ms(_op.TqqqDeNoche ? _ses.IniUtc : _ses.RuedaIniUtc) / 120000L * 120000L;
-                long tqFin = Math.Min(formando, Ms(_ses.SiguienteIniUtc) - 120000L);
                 var sucias = new HashSet<long>();
-                if (_tqqq != null && _listoFuentes && !Detener)
-                {
-                    // una foto nueva de CBOE cambia solo las velas desde su 'generado' (vale 1500 s): se rehacen las ultimas 15 velas (30 min);
-                    // cada 10 min (o al abrir la sesion) una pasada completa por si el historico del descargador llego tarde
-                    long vc = _cboe?.Version ?? 0;
-                    bool total = todo || (vc != _tqVersionCboe && (DateTime.UtcNow - _tqPasadaUtc).TotalSeconds >= 600);
-                    bool cambio = vc != _tqVersionCboe;
-                    _tqVersionCboe = vc;
-                    // 4.1.0: la s del dia es UNA para toda la rueda. Con la s de respaldo (recta libre, sin cierres oficiales: AVISO) se re-estima
-                    // en cada refresco; las velas ya hechas quedaban con la s anterior hasta la pasada de 10 min (la historia se repintaba y no
-                    // coincidia con un recalculo). Si la s cambio (IVersionSTqqq), se rehacen TODAS las velas con la s nueva; y si cambia durante
-                    // la pasada, otra vez (tope 3).
-                    var verS = _tqqq as IVersionSTqqq;
-                    for (int pasada = 0; pasada < 3 && !Detener; pasada++)
-                    {
-                        long vs0 = verS?.VersionS ?? 0;
-                        if (vs0 != _tqVersionS && !total) { total = true; if (_tqVersionS != long.MinValue) PasadasTqqqPorS++; }
-                        long desde = total ? tqIni : Math.Max(tqIni, tqFin - (cambio ? 15 : 2) * 120000L);
-                        if (total) _tqPasadaUtc = DateTime.UtcNow;
-                        for (long T = desde; T <= tqFin && !Detener; T += 120000L)
-                        {
-                            TqqqVela v = null;
-                            try { v = _tqqq.Vela(T, _cinta, _cboe); } catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "TQQQ", e); }
-                            bool tenia = _tq.TryGetValue(T, out var vieja);
-                            if (v == null) { if (tenia) { _tq.Remove(T); sucias.Add(T); } continue; }
-                            if (!tenia || !MismaVela(vieja, v)) { _tq[T] = v; sucias.Add(T); }
-                        }
-                        _tqVersionS = vs0;
-                        if ((verS?.VersionS ?? 0) == vs0) break;   // la s no cambio durante la pasada: todas las velas tienen la misma
-                        total = false;                               // cambio adentro de la pasada: la proxima vuelta la ve distinta y rehace todo
-                    }
-                }
 
                 // ---- 4.1.8: el indice del rebobinado sigue a los minutos nuevos y a los re-completados. Se vuelve a
                 //      clonar porque CompletarExtras muta el registro en el lugar: lo publicado tiene que ser la version completa.
@@ -431,8 +394,7 @@ namespace PythiaGexCinco.Familia
                     foreach (var T in sucias)
                     {
                         if (T < histIni || T > histFin) continue;
-                        _tq.TryGetValue(T, out var tv);
-                        var e = SalidaFamilia.Entrada(T, _alm.Get, _tres, tv);
+                        var e = SalidaFamilia.Entrada(T, _alm.Get, _tres);
                         if (e == null) b.Remove(T); else b[T] = e;
                     }
                     _hist = b.ToImmutable();
@@ -475,22 +437,6 @@ namespace PythiaGexCinco.Familia
             long piso = Ms(t) / 120000L * 120000L;            // apertura de la vela m2 en curso = fin de la anterior
             if (Ms(tick) >= piso) return false;
             if (k != _ultimoEsperado) { _ultimoEsperado = k; MinutosEsperados++; }
-            return true;
-        }
-
-        private static bool MismaVela(TqqqVela a, TqqqVela b)
-        {
-            if (a == null || b == null) return a == b;
-            if (!(a.S.Equals(b.S) && a.C.Equals(b.C) && a.DatoUtc == b.DatoUtc && a.Congelada == b.Congelada)) return false;
-            if ((a.Series?.Count ?? 0) != (b.Series?.Count ?? 0)) return false;
-            if (a.Series == null) return true;
-            foreach (var kv in a.Series)
-            {
-                if (!b.Series.TryGetValue(kv.Key, out var y)) return false;
-                var x = kv.Value;
-                if ((x?.Length ?? 0) != (y?.Length ?? 0)) return false;
-                for (int i = 0; x != null && i < x.Length; i++) if (!x[i].Precio.Equals(y[i].Precio) || x[i].Etq != y[i].Etq || !x[i].GexM.Equals(y[i].GexM)) return false;
-            }
             return true;
         }
 
@@ -550,9 +496,6 @@ namespace PythiaGexCinco.Familia
         private void Publicar(DateTime ahoraUtc)
         {
             var ultimo = _alm.Ultimo;
-            // tqqq_vivo: 'ultimo' = la ultima vela con foto vigente y c (ICalculoTqqq.Vela != null), tenga o no niveles
-            TqqqVela tqU = null; long tqT = long.MinValue;
-            foreach (var kv in _tq) if (kv.Value != null && kv.Key > tqT) { tqT = kv.Key; tqU = kv.Value; }
             string estCboe = null; DateTime tick = default;
             try { estCboe = _cboe?.Estado; } catch { }
             try { tick = _cinta?.UltimoTickUtc ?? default; } catch { }
@@ -584,9 +527,8 @@ namespace PythiaGexCinco.Familia
             var f = new FotoFamilia
             {
                 Sesion = _ses.Dia, CalculadoUtc = ahoraUtc, HistoriaM2 = _hist,
-                Actuales = SalidaFamilia.Actuales(ultimo, _tres, tqU).AsReadOnly(),
-                Fuentes = SalidaFamilia.Fuentes(ultimo, tqU, estCboe, tick, ahoraUtc).AsReadOnly(),
-                TqS = tqU?.S ?? double.NaN, TqC = tqU?.C ?? double.NaN, TqDatoUtc = tqU?.DatoUtc ?? default,
+                Actuales = SalidaFamilia.Actuales(ultimo, _tres).AsReadOnly(),
+                Fuentes = SalidaFamilia.Fuentes(ultimo, estCboe, tick, ahoraUtc).AsReadOnly(),
                 Instrumento = _contrato, Aviso = string.Join(" · ", avisos)
             };
             // 4.1.8 REBOBINADO: clausura sobre la instantanea INMUTABLE de este instante. El hilo de dibujo no toca
@@ -608,8 +550,8 @@ namespace PythiaGexCinco.Familia
                 {
                     ClavePedida = clave, ClaveUsada = usada, MinutoUtc = min, FutMnq = e.R.FutMnq,
                     Libros = e.R.Libros ?? Array.Empty<string>(),
-                    Niveles = SalidaFamilia.Actuales(e.R, e.Tres, null).AsReadOnly(),
-                    Fuentes = SalidaFamilia.Fuentes(e.R, null, "", default, min).AsReadOnly(),
+                    Niveles = SalidaFamilia.Actuales(e.R, e.Tres).AsReadOnly(),
+                    Fuentes = SalidaFamilia.Fuentes(e.R, "", default, min).AsReadOnly(),
                     Nota = nota,
                 };
             };

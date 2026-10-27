@@ -15,6 +15,8 @@
 // 4.1.5d (09-10-2026): color de R10_SPX_dom #b8f8d8 (el #9dffd2 quedaba a CIEDE2000 11,4 del "2.0 SPX" #3ddc97; ahora 14,3).
 // 4.1.5e (09-10-2026): la fuente de verdad del Display pasa a herramientas/grupo_arriba_415e.py (jerarquia de llaves; las S_* siguen arriba, en el
 // orden y con el nombre de siempre, y su descripcion dice que no necesitan ninguna llave). Esta lista no cambia.
+// 5.0 (27-10-2026): sin TQQQ: fuera las 6 casillas del grupo "5. TQQQ x3", sus 6 series del respaldo y T_MUROS_oi de PrendidasPorDefecto.
+// El orden relativo de lo que queda no cambia.
 // Ademas: un catalogo de RESPALDO (id, corto, libro, fuente, tipo, grupo, color, banda) por si el motor todavia no publico el suyo
 // (IMotorFamilia.Catalogo manda; el arnes compara este respaldo campo por campo contra CatalogoFamilia de B3d).
 using System;
@@ -59,17 +61,11 @@ namespace PythiaGexCinco.Familia
             C("TRES_ES",        "3.0 (ES)",                     "4. Lo que dibujo la 3.0", 10, false),
             C("TRES_SPX",       "3.0 SPX",                      "4. Lo que dibujo la 3.0", 20, true),
             C("TRES_SPY",       "3.0 SPY",                      "4. Lo que dibujo la 3.0", 30, false),
-            C("T_DOMS_vol",     "TQQQ dominantes vol",          "5. TQQQ x3", 10, false),
-            C("T_MUROS_vol",    "TQQQ muros vol",               "5. TQQQ x3", 20, false),
-            C("T_MUROS_oi",     "TQQQ muros OI",                "5. TQQQ x3", 30, true),
             C("CARGA_ES",       "ES carga (strikes abiertos)",       "1. ES", 9, true),
             C("CARGA_SPX",      "SPX carga (strikes abiertos)",      "2. SPX", 9, false),
             C("CARGA_SPY",      "SPY carga (strikes abiertos)",      "3. SPY", 9, false),
             C("TOPN_ES_vol",    "ES top-N vol",                 "1. ES", 7, true),
             C("TOPN_ES_oi",     "ES top-N OI",                  "1. ES", 8, false),
-            C("T_ZERO_oi",      "TQQQ zero OI",                 "5. TQQQ x3", 40, false),
-            C("T_ZERO_vol_pm",  "TQQQ 0Γ vol punto medio",      "5. TQQQ x3", 41, true),
-            C("T_DOMS_raz",     "TQQQ razon (como Gammalito, SOLO para comparar)", "5. TQQQ x3", 50, false),
             // 4.1.3 (09-10-2026): las dominantes como la 2.0. Propiedades NUEVAS (ningun .ws las tiene: toman estos defaults).
             C("R20_SPY_vol",    "2.0 SPY (dominantes y conversion de la 2.0)",   GRUPO_20, 10, true),
             C("R20_SPX_vol",    "2.0 SPX (capa SPX de la 2.0)",                  GRUPO_20, 20, true),
@@ -80,22 +76,23 @@ namespace PythiaGexCinco.Familia
             C("R10_SPX_dom",    "Clasica SPX D1-D3 (dominantes de la capa SPX con la base de la rueda anterior, como la clasica)", GRUPO_CLASICA, 20, true),   // 4.1.5b
         };
 
-        /// <summary>4.1.3: grupo de las casillas "como la 2.0" (en ATAS va entre "4. Lo que dibujo la 3.0" y "5. TQQQ x3").</summary>
+        /// <summary>4.1.3: grupo de las casillas "como la 2.0" (en la 4.1 iba entre "4. Lo que dibujo la 3.0" y "5. TQQQ x3").</summary>
         public const string GRUPO_20 = "4b. Dominantes como la 2.0";
-        /// <summary>4.1.5: grupo de la casilla "como la clasica" (en ATAS va entre "4b. Dominantes como la 2.0" y "5. TQQQ x3").</summary>
+        /// <summary>4.1.5: grupo de la casilla "como la clasica" (en la 4.1 iba entre "4b. Dominantes como la 2.0" y "5. TQQQ x3"; 5.0: sin TQQQ).</summary>
         public const string GRUPO_CLASICA = "4c. Como la clasica";
 
         /// <summary>Las prendidas por defecto (mismo orden que CatalogoFamilia.PrendidasPorDefecto): las 8 del operador del 08-10 + (4.1.3) 2.0 SPY,
         /// 2.0 SPX y SPY dom, MENOS (4.1.4, pedido del operador 09-10: "suman ruido al ser ya superadas por la formula de la 2.0 spy") SPY majors OI,
         /// SPY muros OI, FAM muros OI y SPY dom (SPY muros vol ya estaba apagada). Quedaban 6; 4.1.5: + Clasica SPX 0Γ (pedido del operador); 4.1.5b: + Clasica
-        /// SPX D1-D3. Quedan 8.</summary>
-        public static readonly string[] PrendidasPorDefecto = { "MUROS_ES_oi", "MUROS_SPX_vol", "TRES_SPX", "T_MUROS_oi",
+        /// SPX D1-D3. Quedaban 8; 5.0 (27-10-2026): sin T_MUROS_oi (TQQQ), quedan 7.</summary>
+        public static readonly string[] PrendidasPorDefecto = { "MUROS_ES_oi", "MUROS_SPX_vol", "TRES_SPX",
                                                                 "R20_SPY_vol", "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 4.1.5b: + Clasica SPX D1-D3
 
         private static Casilla C(string id, string nombre, string grupo, int orden, bool def) => new Casilla { Id = id, Nombre = nombre, Grupo = grupo, Orden = orden, Default = def };
 
         // ------------------------------------------------------------------ catalogo de respaldo (los mismos valores que CatalogoFamilia de B3d)
-        /// <summary>Respaldo de dibujo si el motor no paso su catalogo. Mismo orden que la vista previa (24) + TQQQ (5) + como la 2.0 (4) + la clasica (1).</summary>
+        /// <summary>Respaldo de dibujo si el motor no paso su catalogo. Mismo orden que la vista previa (24) + carga y top-N + como la 2.0 (4) + la clasica (2)
+        /// (5.0: sin las 6 de TQQQ).</summary>
         public static readonly IReadOnlyList<SerieInfo> Respaldo = new[]
         {
             R("MUROS_ES_vol", "ES", "ES", "vol", "MUROS", "Recomendadas", "#4db5e4", 0),
@@ -122,17 +119,11 @@ namespace PythiaGexCinco.Familia
             R("TRES_ES", "3.0", "ES", "3.0", "TRES", "3.0", "#8a96a8", 0),
             R("TRES_SPX", "3.0 SPX", "SPX", "3.0", "TRES", "3.0", "#5f6b7d", 0),
             R("TRES_SPY", "3.0 SPY", "SPY", "3.0", "TRES", "3.0", "#7c6f57", 0),
-            R("T_DOMS_vol", "TQQQ", "TQQQ", "vol", "DOMS", "TQQQ x3", "#ffd54f", 4.0),
-            R("T_MUROS_vol", "TQQQ", "TQQQ", "vol", "MUROS", "TQQQ x3", "#26c6da", 4.0),
-            R("T_MUROS_oi", "TQQQ", "TQQQ", "oi", "MUROS", "TQQQ x3", "#ba68c8", 4.0),
             R("CARGA_ES", "ES", "ES", "oi", "TOPN", "Recomendadas", "#ffb74d", 0),
             R("CARGA_SPX", "SPX", "SPX", "oi", "TOPN", "Recomendadas", "#ce93d8", 0),
             R("CARGA_SPY", "SPY", "SPY", "oi", "TOPN", "Recomendadas", "#80cbc4", 0),
             R("TOPN_ES_vol", "ES", "ES", "vol", "TOPN", "Recomendadas", "#7cf5c4", 0),
             R("TOPN_ES_oi", "ES", "ES", "oi", "TOPN", "Recomendadas", "#4fb98a", 0),
-            R("T_ZERO_oi", "TQQQ", "TQQQ", "oi", "ZTP", "TQQQ x3", "#b0bec5", 4.0),
-            R("T_ZERO_vol_pm", "TQQQ", "TQQQ", "vol", "ZTP", "TQQQ x3", "#e8eaed", 4.0),
-            R("T_DOMS_raz", "TQQQ", "TQQQ", "vol", "RAZON", "TQQQ x3", "#ff7043", 0),
             R("R20_SPY_vol", "2.0 SPY", "SPY", "vol", "DOMS", "2.0", "#cc8800", 0),     // 4.1.4: ambar oscuro (antes #e8c83c, igual al SPY 0G)
             R("R20_SPX_vol", "2.0 SPX", "SPX", "vol", "DOMS", "2.0", "#3ddc97", 0),
             R("DOMS_SPY_vol", "SPY dom", "SPY", "vol", "DOMS", "2.0", "#5b8cff", 0),

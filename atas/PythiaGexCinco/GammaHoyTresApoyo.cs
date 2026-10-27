@@ -20,17 +20,17 @@ namespace PythiaGexCinco
     /// </summary>
     public partial class GammaCinco
     {
-        [Display(Name = "↳ apoyo", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 57, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.2.3. Los N strikes del 0DTE con mas contratos en las puntas (bid + ask de call y put, tamaños del Summary de Rithmic), como rombos verdes por vela y rotulo con los contratos. Es el libro profundo de las opciones, no una dominante por gamma. Sin medir: la caja negra lo graba como APOYO.")]
+        [Display(Name = "↳ apoyo", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 52, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.2.3. Los N strikes del 0DTE con mas contratos en las puntas (bid + ask de call y put, tamaños del Summary de Rithmic), como rombos verdes por vela y rotulo con los contratos. Es el libro profundo de las opciones, no una dominante por gamma. Sin medir: la caja negra lo graba como APOYO.")]
         public bool Ver3Apoyo { get; set; } = false;   // 3.6.2: ruido (pedido 08-10)
 
         [Display(Name = "Apoyo: cuantos strikes", GroupName = "9.3 3.0 · Pantalla", Order = 1033)]
         [Range(1, 6)]
         public int Apoyo3Cuantos { get; set; } = 3;
 
-        [Display(Name = "↳ 0Γ OI estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 58, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.2.3. Ademas del zero por volumen, el cruce por cero de la gamma por INTERES ABIERTO por vela: rombos turquesa (con 'Zero gamma: estilo de la estela' en RomboVerde, grupo 9.3: el default) o puntos grises finos. La 2.0 lo dibuja como rombos; aca es apagable y se mide.")]
+        [Display(Name = "↳ 0Γ OI estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 53, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.2.3. Ademas del zero por volumen, el cruce por cero de la gamma por INTERES ABIERTO por vela: rombos turquesa (con 'Zero gamma: estilo de la estela' en RomboVerde, grupo 9.3: el default) o puntos grises finos. La 2.0 lo dibuja como rombos; aca es apagable y se mide.")]
         public bool Ver3EstelaZeroOi { get; set; } = false;   // 3.6.2: ruido (pedido 08-10)
 
-        [Display(Name = "↳ todos cruces", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 59, Description = "Necesita la llave '3.0 NQ dom▸' prendida. Tambien necesita '↳ apoyo' o '↳ 0Γ OI estela' prendida: sin ninguna de las dos no se dibuja (asi esta en el codigo). 3.3.1 (pedido 07-10: 'que toque aun mas las mechas cercanas'). Ademas del cruce mas cercano al precio (la fila de la 2.0), TODOS los cruces de signo de la gamma por volumen y por OI a +-0,1 % del precio, como rombos chicos por vela. Mas filas = mas toques; lo medido dice que el % de rebote por toque no sube (criterio_operador.py).")]
+        [Display(Name = "↳ todos cruces", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 54, Description = "Necesita la llave '3.0 NQ dom▸' prendida. Tambien necesita '↳ apoyo' o '↳ 0Γ OI estela' prendida: sin ninguna de las dos no se dibuja (asi esta en el codigo). 3.3.1 (pedido 07-10: 'que toque aun mas las mechas cercanas'). Ademas del cruce mas cercano al precio (la fila de la 2.0), TODOS los cruces de signo de la gamma por volumen y por OI a +-0,1 % del precio, como rombos chicos por vela. Mas filas = mas toques; lo medido dice que el % de rebote por toque no sube (criterio_operador.py).")]
         public bool Zero3TodosLosCruces { get; set; } = false;   // 3.6.2: ruido (pedido 08-10)
 
         [Display(Name = "Zero gamma: radio de los cruces (pts)", GroupName = "9.3 3.0 · Pantalla", Order = 1036)]

@@ -6,8 +6,10 @@
 //   * Series por OI: OI(publicacion vigente, R0) - OI(publicacion anterior, R1) en el mismo (strike, vencimiento, lado), valuado con la gamma de
 //     ahora. Es cambio de POSICIONES entre dos noches (la OCC consolida una vez por noche), no actividad de hoy.
 //   * Nada de restar montos entre minutos: el perfil es lineal en VolC/VolP/OiC/OiP, asi que el cambio = PerfilLado(fotoΔ), con fotoΔ = la foto
-//     de ahora con esas columnas reemplazadas por las diferencias (mismo S, misma t, misma IV). TQQQ: la misma cuenta de TqqqPerfil.Calcular.
-// Unidades = las de NivelActual.GexM del mismo nivel (ES x0,2; SPX/SPY x1; familia = suma escalada; TQQQ = las de TqqqPerfil), SIN redondear.
+//     de ahora con esas columnas reemplazadas por las diferencias (mismo S, misma t, misma IV).
+// Unidades = las de NivelActual.GexM del mismo nivel (ES x0,2; SPX/SPY x1; familia = suma escalada), SIN redondear.
+// 5.0 (27-10-2026): sin TQQQ (CalcularTqqq, CambiosLibro.EsTqqq, PerfilK.De(TqqqPerfil), OpcionesCambios.TqqqNoche, el regimen de OI "TQQQ"
+// y su parte de la clave del cache). ES, SPX, SPY y FAM se calculan igual: TQQQ iba DESPUES de los tres libros y con su propio resultado.
 // 4.1.4 (09-10-2026): la fotoΔ se valua con "aporta si CUALQUIER lado es distinto de 0" (PerfilLado.Armar porLado). Con el neto (la regla de las
 //   series, que no cambia) un cambio igual de calls y puts con la misma IV se anulaba y el cambio del muro C y del muro P salia 0. Visto en el arnes
 //   posiciones (P3 linealidad) con los datos de esta noche: ES OI 10-09 05:59:55Z, K 31.160 (+9 calls, +9 puts, IV 0,206258 en los dos lados).
@@ -15,9 +17,9 @@
 //   * La ventana del volumen (CambioVolDesdeUtc/HastaUtc/SegReal) es la HORA DEL DATO de las dos fotos (FotoCadena.DatoUtc), no el sello:
 //     en CBOE el sello va ~900 s DESPUES del dato (medido 900-912 s en SPX/SPY del 10-08) y la pestaña rotulaba "14:43->14:58" un volumen
 //     operado de 14:28 a 14:43. En ES (Rithmic) dato = sello. El sello queda solo para buscar la foto de antes y para la tolerancia.
-//   * Volumen de OTRO dia de negociacion = NaN ("volumen de otro dia de negociacion"): CBOE/TQQQ por la fecha de NY del dato, ES por la
+//   * Volumen de OTRO dia de negociacion = NaN ("volumen de otro dia de negociacion"): CBOE por la fecha de NY del dato, ES por la
 //     sesion de CME del sello. Antes pasaba si bajaban menos de la mitad de las claves (10-01 14:17Z SPX 30 min: 49,2 %, error 20 %).
-//   * OI: salto de libro flaco y cambio sin confirmar (RegimenesOi); en CBOE/TQQQ, desde las 09:30 NY de un dia habil la publicacion
+//   * OI: salto de libro flaco y cambio sin confirmar (RegimenesOi); en CBOE, desde las 09:30 NY de un dia habil la publicacion
 //     vigente tiene que ser de ese dia (si no: NaN "sin la publicacion de OI del ..."): un salto perdido no se publica como cambio de un dia.
 //   * FAM: OI de la familia solo si las publicaciones de los tres libros son de la misma noche (sesion de CME); volumen de la familia sin
 //     ventana agregada cuando las ventanas de los libros no coinciden (ES en vivo contra CBOE de ~15 min antes): la nota dice cada una.
@@ -42,19 +44,18 @@ namespace PythiaGexCinco.Familia
     {
         /// <summary>Mismo modo que los minuteros (pausa de CME y vigencia de CBOE en hora de NY). false = paridad UTC fija.</summary>
         public bool Corregida = true;
-        /// <summary>Tqqq41AnclaNoche (la sesion de TQQQ es "continua").</summary>
-        public bool TqqqNoche = false;
         public string RutaLog = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "pythiagex5-cambios.log");
         /// <summary>Tope por llamada para leer la historia de OI (arranque: ~30 h de fotos de ES y la rueda previa de CBOE). 0 = sin tope.</summary>
         public int PresupuestoHistoriaMs = 25;
         public int MinClavesSalto = 20;
         public double FraccionSalto = 0.20;
-        /// <summary>Libro flaco (TQQQ: 28 claves comunes el 10-08 y bajando): salto con >= 8 claves comunes si cambio >= 80 % (RegimenesOi).</summary>
+        /// <summary>Libro flaco (medido en la 4.1 con TQQQ: 28 claves comunes el 10-08 y bajando; la regla vale para cualquier libro): salto con
+        /// >= 8 claves comunes si cambio >= 80 % (RegimenesOi).</summary>
         public int MinClavesSaltoFlaco = 8;
         public double FraccionSaltoFlaco = 0.80;
         /// <summary>Cambio de OI sin confirmar (pocas claves): >= 50 % de las comunes cambiadas. Mientras sea el regimen vigente, sin ΔOI.</summary>
         public double FraccionDudoso = 0.50;
-        /// <summary>CBOE/TQQQ: hora de NY desde la que la publicacion de OI del dia ya tendria que haberse visto (medido: 02:26-08:40 NY).</summary>
+        /// <summary>CBOE: hora de NY desde la que la publicacion de OI del dia ya tendria que haberse visto (medido en la 4.1: 02:26-08:40 NY).</summary>
         public TimeSpan PublicacionCboeHastaNy = new TimeSpan(9, 30, 0);
         /// <summary>NivelActual.Strike (round 2) contra K del libro.</summary>
         public double TolStrike = 0.006;
@@ -68,7 +69,6 @@ namespace PythiaGexCinco.Familia
         public double[] K, VC, VP, OC, OP;
         public static readonly PerfilK Vacio = new PerfilK { K = Array.Empty<double>(), VC = Array.Empty<double>(), VP = Array.Empty<double>(), OC = Array.Empty<double>(), OP = Array.Empty<double>() };
         public static PerfilK De(PerfilLado p) => p == null ? Vacio : new PerfilK { K = p.K, VC = p.GvC, VP = p.GvP, OC = p.GoC, OP = p.GoP };
-        public static PerfilK De(TqqqPerfil.Perfil p) => p == null ? Vacio : new PerfilK { K = p.K, VC = p.Gvc, VP = p.Gvp, OC = p.Goc, OP = p.Gop };
 
         /// <summary>Valor en K exacto (0 si K no aporta). lado: 'C' calls, 'P' puts, 'N' neto.</summary>
         public double Valor(double k, char lado, bool oi)
@@ -101,10 +101,10 @@ namespace PythiaGexCinco.Familia
         public RegimenOi R0, R1;                 // solo OI
     }
 
-    /// <summary>Lo calculado para un libro en un minuto (ES, SPX, SPY o TQQQ).</summary>
+    /// <summary>Lo calculado para un libro en un minuto (ES, SPX o SPY).</summary>
     public sealed class CambiosLibro
     {
-        public string Libro; public bool EsTqqq;
+        public string Libro;
         public string Nota = "";                 // por que no hay nada
         public FotoCadena Ahora, AhoraOriginal;  // Ahora = la que usa el minutero (SPX/SPY: generado al segundo); Original = la de la fuente
         public DateTime TUtc;
@@ -118,7 +118,7 @@ namespace PythiaGexCinco.Familia
 
     public sealed class CambiosFamilia
     {
-        public const string VERSION = "cambios 4.1.5d (09-10-2026)";
+        public const string VERSION = "cambios 5.0 (27-10-2026, la 4.1.5d sin TQQQ)";
         public static readonly string[] Libros = { "ES", "SPX", "SPY" };
         /// <summary>Hasta cuanto antes de (ahora - W) se busca la foto de "antes" para reconocer una cadena congelada.</summary>
         public const double MIRAR_ATRAS_CONGELADA_S = 7200;
@@ -131,7 +131,7 @@ namespace PythiaGexCinco.Familia
         private readonly Dictionary<string, RegimenesOi> _reg = new Dictionary<string, RegimenesOi>(StringComparer.Ordinal);
         private readonly Dictionary<string, CambiosLibro> _res = new Dictionary<string, CambiosLibro>(StringComparer.Ordinal);
         private readonly Dictionary<FotoCadena, Dictionary<ClaveFila, double>> _mapasVol = new Dictionary<FotoCadena, Dictionary<ClaveFila, double>>();
-        private (long, long, long, long, long, bool) _clave;
+        private (long, long, long, bool) _clave;      // 5.0: sin la vela de TQQQ (apertura y hora del dato)
         private bool _hayClave, _pendiente, _listoVisto;
         private IReadOnlyList<string> _estado = Array.Empty<string>();
         private FotoFamilia _fotoMotor, _anotada;
@@ -157,14 +157,14 @@ namespace PythiaGexCinco.Familia
         {
             _es = es; _cboe = cboe; _op = opciones ?? new OpcionesCambios();
             _convSpy = new ConversionSpy(new OpcionesSpy { Corregida = _op.Corregida });
-            foreach (var lb in new[] { "ES", "SPX", "SPY", "TQQQ" })
+            foreach (var lb in Libros)                     // 5.0: ES, SPX, SPY (sin el regimen de TQQQ)
                 _reg[lb] = new RegimenesOi(lb, _op.MinClavesSalto, _op.FraccionSalto, _op.MinClavesSaltoFlaco, _op.FraccionSaltoFlaco, _op.FraccionDudoso);
         }
 
         // ================================================================== entrada
-        /// <summary>La foto del motor anotada (copia). ultimo = MotorFamilia.Almacen.Ultimo; tq = la ultima vela de TQQQ con niveles (o null).
+        /// <summary>La foto del motor anotada (copia). ultimo = MotorFamilia.Almacen.Ultimo.
         /// Si algo falla devuelve la foto del motor tal cual (y lo anota en el log).</summary>
-        public FotoFamilia Anotar(FotoFamilia foto, RegistroMinuto ultimo, TqqqVela tq)
+        public FotoFamilia Anotar(FotoFamilia foto, RegistroMinuto ultimo)
         {
             if (foto == null) return null;
             var sw = Stopwatch.StartNew();
@@ -176,11 +176,11 @@ namespace PythiaGexCinco.Familia
                 long vEs = 0, vCb = 0;
                 try { vEs = _es?.Version ?? 0; } catch { }
                 try { vCb = _cboe?.Version ?? 0; } catch { }
-                var clave = (ultimo?.Clave ?? long.MinValue, vEs, vCb, tq?.AperturaM2Ms ?? long.MinValue, tq?.DatoUtc.Ticks ?? 0L, listo);
+                var clave = (ultimo?.Clave ?? long.MinValue, vEs, vCb, listo);
                 bool recalc = !_hayClave || !clave.Equals(_clave) || _pendiente || !ReferenceEquals(ultimo, Ultimo);
                 if (recalc)
                 {
-                    Recalcular(ultimo, tq, listo, sw);
+                    Recalcular(ultimo, listo, sw);
                     _clave = clave; _hayClave = true; Ultimo = ultimo; Recalculos++;
                     MsUltimoRecalculo = sw.Elapsed.TotalMilliseconds;
                 }
@@ -205,7 +205,7 @@ namespace PythiaGexCinco.Familia
         }
 
         // ================================================================== el calculo de un minuto
-        private void Recalcular(RegistroMinuto u, TqqqVela tq, bool listo, Stopwatch sw)
+        private void Recalcular(RegistroMinuto u, bool listo, Stopwatch sw)
         {
             _res.Clear();
             _pendiente = false;
@@ -223,12 +223,7 @@ namespace PythiaGexCinco.Familia
                     catch (Exception e) { r = new CambiosLibro { Libro = lb, Nota = "error: " + e.Message }; BitacoraCambios.Error(_op.RutaLog, "libro " + lb, e); }
                     _res[lb] = r;
                 }
-            if (tq != null)
-            {
-                try { _res["TQQQ"] = CalcularTqqq(tq, listo, sw); }
-                catch (Exception e) { _res["TQQQ"] = new CambiosLibro { Libro = "TQQQ", EsTqqq = true, Nota = "error: " + e.Message }; BitacoraCambios.Error(_op.RutaLog, "TQQQ", e); }
-            }
-            foreach (var lb in new[] { "ES", "SPX", "SPY", "TQQQ" }) if (_res.TryGetValue(lb, out var r)) est.Add(EstadoLibro(r));
+            foreach (var lb in Libros) if (_res.TryGetValue(lb, out var r)) est.Add(EstadoLibro(r));      // 5.0: sin TQQQ (iba al final)
             if (_pendiente) est.Add("cambios de OI: leyendo la historia de las fuentes (sigue en el proximo paso)");
             _estado = est.AsReadOnly();
             if (u != null && u.Clave != _claveLog)
@@ -263,26 +258,12 @@ namespace PythiaGexCinco.Familia
             return r;
         }
 
-        private CambiosLibro CalcularTqqq(TqqqVela tq, bool listo, Stopwatch sw)
-        {
-            var r = new CambiosLibro { Libro = "TQQQ", EsTqqq = true, Escala = 1.0 };
-            var f = FotosCambios.AhoraTqqq(_cboe, tq, _op.Corregida, _op.Corregida && _op.TqqqNoche, out var motivo);
-            if (f == null) { r.Nota = motivo; return r; }
-            r.Ahora = r.AhoraOriginal = f; r.TUtc = TiempoFam.DeMs(tq.AperturaM2Ms + 120_000L); r.S = f.Spot;
-            r.Indice = ClavesCambios.Indexar(f, null);       // TqqqPerfil elige solo el vencimiento mas cercano (desde la hora del dato)
-            r.Base = Valuar(r, f);
-            for (int w = 0; w < CambiosVentanas.Min.Length; w++) r.Vol[w] = Ventana(r, CambiosVentanas.Min[w]);
-            r.Oi = OiDia(r, listo, sw);
-            return r;
-        }
-
-        /// <summary>El perfil de una foto del libro con el S y la t del minuto (TQQQ: TqqqPerfil, spot y T de la foto).
+        /// <summary>El perfil de una foto del libro con el S y la t del minuto.
         /// porLado (4.1.4): para la fotoΔ (el cambio de cada lado) una fila aporta si cualquier lado es distinto de 0 (PerfilLado.Armar): con el neto, un
         /// cambio igual de calls y puts con la misma IV se anulaba y el cambio del muro C y del muro P de ese strike salia 0.</summary>
         public static PerfilK Valuar(CambiosLibro r, FotoCadena f, bool porLado = false)
         {
-            if (r.EsTqqq) return PerfilK.De(TqqqPerfil.Calcular(f));
-            return PerfilK.De(PerfilLado.Armar(FilasHoy.Armar(f, r.TUtc), r.S, r.Libro == "ES", porLado));
+            return PerfilK.De(PerfilLado.Armar(FilasHoy.Armar(f, r.TUtc), r.S, r.Libro == "ES", porLado));   // 5.0: sin la rama de TQQQ (TqqqPerfil)
         }
 
         // ---------------------------------------------------------------- volumen
@@ -316,7 +297,7 @@ namespace PythiaGexCinco.Familia
         }
 
         /// <summary>Dia de negociacion de una foto (el volumen de opciones vuelve a cero en cada uno): ES (Rithmic) la sesion de CME del sello
-        /// (TiempoFam.Sesion, 22:00 UTC); CBOE y TQQQ la fecha de Nueva York de la hora del DATO (el sello de la noche sigue con el dato de la tarde).</summary>
+        /// (TiempoFam.Sesion, 22:00 UTC); CBOE (SPX, SPY) la fecha de Nueva York de la hora del DATO (el sello de la noche sigue con el dato de la tarde).</summary>
         public static string DiaNegociacion(string libro, FotoCadena f)
             => libro == "ES" ? TiempoFam.Sesion(f.TsUtc) : TiempoFam.ANy(f.DatoUtc).ToString("yyyy-MM-dd", Inv);
 
@@ -341,7 +322,7 @@ namespace PythiaGexCinco.Familia
                 if (ix.HayC[i]) Uno(F[i].VolC, ix.C[i], ref dC[i], ref cC[i]);
                 if (ix.HayP[i]) Uno(F[i].VolP, ix.P[i], ref dP[i], ref cP[i]);
             }
-            // 4.1.2 (principal, 09-10): en CBOE/TQQQ, misma HORA DEL DATO en las dos fotos = no hubo negociacion entre ellas. Despues del cierre
+            // 4.1.2 (principal, 09-10): en CBOE, misma HORA DEL DATO en las dos fotos = no hubo negociacion entre ellas. Despues del cierre
             // CBOE alterna dos versiones de la misma cadena (medido: SPY +-39 contratos en 10 claves, mismo ultimo_trade 16:14:59 NY, 20:55Z/
             // 21:00Z/03:50:54Z): eso NO es volumen operado. Cambio 0 exacto, con la nota que lo dice.
             if (r.Libro != "ES" && v.Comparadas > 0 && antes.DatoUtc == r.Ahora.DatoUtc)
@@ -396,8 +377,8 @@ namespace PythiaGexCinco.Familia
             return v;
         }
 
-        /// <summary>CBOE/TQQQ: fecha de NY de la publicacion de OI que ya tendria que haberse visto en t. La OCC publica el OI de cada rueda antes
-        /// de la apertura del dia habil siguiente (medido 10-01..10-08: SPX 02:26-02:36, SPY 03:31-05:12, TQQQ 05:02-08:40, hora de NY). Desde
+        /// <summary>CBOE: fecha de NY de la publicacion de OI que ya tendria que haberse visto en t. La OCC publica el OI de cada rueda antes
+        /// de la apertura del dia habil siguiente (medido en la 4.1, 10-01..10-08: SPX 02:26-02:36, SPY 03:31-05:12 y TQQQ 05:02-08:40, hora de NY). Desde
         /// 'hasta' (09:30 NY) de un dia habil es la de ese dia; antes, la del dia habil anterior. Sabados, domingos y feriados de la bolsa no publican.</summary>
         public static DateTime PublicacionCboeEsperada(DateTime tUtc, TimeSpan hasta)
         {
@@ -407,7 +388,7 @@ namespace PythiaGexCinco.Familia
             return d;
         }
 
-        /// <summary>OI de ahora contra el de la publicacion anterior (R1). Llena v. CBOE/TQQQ (r.Libro != "ES" y r.TUtc puesto): si la publicacion
+        /// <summary>OI de ahora contra el de la publicacion anterior (R1). Llena v. CBOE (r.Libro != "ES" y r.TUtc puesto): si la publicacion
         /// vigente (R0) no es la que ya tendria que haberse visto (PublicacionCboeEsperada), NaN: un salto perdido no se publica como cambio de un dia.
         /// R0 que empezo con un cambio SIN CONFIRMAR (RegimenOi.Dudoso): NaN hasta la proxima publicacion confirmada.</summary>
         public static void CompararOi(CambiosLibro r, CambioVentana v, RegimenesOi det) => CompararOi(r, v, det, new TimeSpan(9, 30, 0));
@@ -483,12 +464,12 @@ namespace PythiaGexCinco.Familia
         // ================================================================== anotar un nivel
         private static char LadoDe(NivelActual n)
         {
-            if (n.Tipo != "MUROS" && n.Tipo != "MAJORS" && n.Tipo != "DOMS" && n.Tipo != "RAZON") return '?';
+            if (n.Tipo != "MUROS" && n.Tipo != "MAJORS" && n.Tipo != "DOMS") return '?';     // 5.0: sin "RAZON" (solo lo tenia T_DOMS_raz)
             switch (n.Rol)
             {
                 case "muro C": return 'C';
                 case "muro P": return 'P';
-                case "M+": case "M-": case "dom": case "dom (razon)": return 'N';
+                case "M+": case "M-": return 'N';                                            // 5.0: sin "dom" / "dom (razon)" (solo TQQQ)
                 // 4.1.3: la seleccion de la 2.0 sobre los libros de la 4.1 (DOMS_SPY_vol / DOMS_SPX_vol): GEX NETO del strike, como M+/M-
                 case "D1": case "D2": return n.Tipo == "DOMS" && !EsReplica20(n) && !EsReplicaClasica(n) ? 'N' : '?';
                 default: return '?';
@@ -721,7 +702,7 @@ namespace PythiaGexCinco.Familia
         {
             var sb = new StringBuilder(600);
             sb.Append("k ").Append(u.Clave).Append(' ').Append(Hm(TiempoFam.DeClave(u.Clave))).Append("Z");
-            foreach (var lb in new[] { "ES", "SPX", "SPY", "TQQQ" })
+            foreach (var lb in Libros)                     // 5.0: sin TQQQ
             {
                 if (!_res.TryGetValue(lb, out var r)) continue;
                 sb.Append(" || ").Append(lb);

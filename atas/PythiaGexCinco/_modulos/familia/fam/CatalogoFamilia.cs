@@ -13,6 +13,9 @@
 // 4.1.5d (09-10-2026, revision 4.1.5b/c): color de R10_SPX_dom #b8f8d8 (menta palido): el #9dffd2 de la 4.1.5b quedaba a CIEDE2000 11,4 del "2.0 SPX"
 // #3ddc97 (criterio de la 4.1.4: >= 12); ahora 14,3 del 2.0 SPX, 14,7 del SPX major V y 21,2 del blanco del 0Γ. Descripciones de las dos R10 con la
 // salvedad medida el 09-10 (si la clasica pierde Rithmic re-mide su base en la rueda y la replica deja de coincidir: ~13 pts de 16:48 a 17:11 ART).
+// 5.0 (27-10-2026): sin TQQQ. Fuera las 6 series T_* (estaban DESPUES de las 24 de la vista previa: Calc y Extra, que son indices de
+// RegistroMinuto.Series/Extra, no cambian), SeriesTqqq, los presets "TQQQ x3" y "TQQQ vs Gammalito" y T_MUROS_oi de PrendidasPorDefecto.
+// Quedan 35 series: 24 de la vista previa + 4 como la 2.0 + 2 de la clasica + 2 TOPN (4.1.7) + 3 CARGA (4.1.8).
 // Sin referencias a ATAS.
 using System;
 using System.Collections.Generic;
@@ -22,13 +25,15 @@ namespace PythiaGexCinco.Familia
 {
     public static class CatalogoFamilia
     {
-        /// <summary>Las 35 series: las 24 de la vista previa en su orden, las 5 de TQQQ, (4.1.3) las 4 "como la 2.0" y (4.1.5/4.1.5b) las 2 de la clasica.</summary>
+        /// <summary>Las 35 series: las 24 de la vista previa en su orden, (4.1.3) las 4 "como la 2.0", (4.1.5/4.1.5b) las 2 de la clasica y (4.1.7/4.1.8)
+        /// las 2 TOPN y las 3 CARGA. 5.0: sin las de TQQQ (iban despues de las 24).</summary>
         public static readonly IReadOnlyList<SerieInfo> Series;
         /// <summary>id -> serie.</summary>
         public static readonly IReadOnlyDictionary<string, SerieInfo> PorId;
         /// <summary>id -> texto 'estado' de la vista previa (SIN VALIDAR, etc.). SerieInfo no tiene ese campo: va aparte.</summary>
         public static readonly IReadOnlyDictionary<string, string> Estado;
-        /// <summary>preview_niveles.CALC: las 21 series que calcula la cuenta (todas menos TRES y TQQQ), en orden. El indice es el de RegistroMinuto.Series.</summary>
+        /// <summary>preview_niveles.CALC: las 21 series que calcula la cuenta (las 24 de la vista previa menos TRES; en la 4.1 tampoco entraba TQQQ)
+        /// + (4.1.7/4.1.8) TOPN y CARGA al final, en orden. El indice es el de RegistroMinuto.Series.</summary>
         public static readonly string[] Calc;
         /// <summary>id -> indice en Calc (o -1).</summary>
         public static int IndiceCalc(string id) => _idxCalc.TryGetValue(id ?? "", out var i) ? i : -1;
@@ -36,7 +41,7 @@ namespace PythiaGexCinco.Familia
 
         public static readonly string[] Libros = { "ES", "SPX", "SPY" };       // backtest_familia.LIBROS (orden de bk)
         public static readonly string[] CapasTres = { "ES", "SPX", "SPY" };
-        public static readonly string[] SeriesTqqq = { "T_DOMS_vol", "T_MUROS_vol", "T_MUROS_oi", "T_ZERO_oi", "T_DOMS_raz", "T_ZERO_vol_pm" };
+        // 5.0 (27-10-2026): aca iba SeriesTqqq (T_DOMS_vol, T_MUROS_vol, T_MUROS_oi, T_ZERO_oi, T_DOMS_raz, T_ZERO_vol_pm).
         /// <summary>4.1.3: las series "como la 2.0" (fuera de Calc) y (4.1.5) la de la clasica, AL FINAL (un archivo de la 4.1.4 se lee igual). El indice
         /// es el de RegistroMinuto.Extra / ExtraStrikes.</summary>
         public static readonly string[] Extra = { "R20_SPY_vol", "R20_SPX_vol", "DOMS_SPY_vol", "DOMS_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 4.1.5b: + R10_SPX_dom al final
@@ -51,10 +56,10 @@ namespace PythiaGexCinco.Familia
         /// 4.1.4 (pedido del operador 09-10: "suman ruido al ser ya superadas por la formula de la 2.0 spy"): fuera SPY majors OI, SPY muros OI,
         /// FAM muros OI y SPY dom. Quedan 6 (mismo orden que SeriesPantalla.PrendidasPorDefecto).
         /// 4.1.5 (pedido del operador 09-10: "copiarla ahora para nuestro 4.0"): + R10_SPX_zero, la estela 'SPX 0Γ' de la clasica. Quedaban 7;
-        /// 4.1.5b: + R10_SPX_dom (las D1-D3 de la clasica). Quedan 8.</summary>
-        public static readonly string[] PrendidasPorDefecto = { "MUROS_ES_oi", "MUROS_SPX_vol", "TRES_SPX", "T_MUROS_oi",
+        /// 4.1.5b: + R10_SPX_dom (las D1-D3 de la clasica). Quedaban 8; 5.0 (27-10-2026): sin T_MUROS_oi (TQQQ), quedan 7.</summary>
+        public static readonly string[] PrendidasPorDefecto = { "MUROS_ES_oi", "MUROS_SPX_vol", "TRES_SPX",
                                                                 "R20_SPY_vol", "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 4.1.5b: + Clasica SPX D1-D3 (pedido del operador)
-        /// <summary>preview_niveles.PRESETS (+ los de tqqq_vivo).</summary>
+        /// <summary>preview_niveles.PRESETS (5.0: sin los de tqqq_vivo, "TQQQ x3" y "TQQQ vs Gammalito").</summary>
         public static readonly IReadOnlyDictionary<string, string[]> Presets = new Dictionary<string, string[]>
         {
             ["Recomendadas"] = new[] { "MUROS_ES_vol", "MAJORS_SPY_oi", "CONF_vol", "TRES_ES" },
@@ -62,8 +67,6 @@ namespace PythiaGexCinco.Familia
             ["Familia OI"] = new[] { "MUROS_ES_oi", "MUROS_SPX_oi", "MUROS_SPY_oi", "MAJORS_SPY_oi", "FAM_MUROS_oi", "TRES_ES" },
             ["Zero y cruces"] = new[] { "ZEST_ES_vol", "ZEST_SPX_vol", "ZEST_SPY_vol", "ZTP_ES_vol", "TRES_ES" },
             ["3.0 actual"] = new[] { "TRES_ES", "TRES_SPX", "TRES_SPY" },
-            ["TQQQ x3"] = new[] { "T_DOMS_vol", "T_MUROS_oi" },
-            ["TQQQ vs Gammalito"] = new[] { "T_DOMS_vol", "T_DOMS_raz" },
             ["2.0 contra 4.1"] = new[] { "R20_SPY_vol", "R20_SPX_vol", "DOMS_SPY_vol", "DOMS_SPX_vol" },
             ["Clasica contra 4.1"] = new[] { "R10_SPX_zero", "R10_SPX_dom", "ZEST_SPX_vol", "ZTP_SPX_vol" },
         };
@@ -166,28 +169,7 @@ namespace PythiaGexCinco.Familia
               "D1/D2 de la capa SPX del motor 3.0 interno (aprox. a la 3.0: spot al sello - 900 s, base por forwards; sin arnes propio)", "la capa SPX de su grafico, calculada adentro", "lo que hay hoy", l, est);
             S("TRES_SPY", "3.0 SPY", "SPY", "3.0", "TRES", "3.0", "#7c6f57", 0,
               "D1/D2 de la capa SPY del motor 3.0 interno (aprox. a la 3.0: spot al sello - 900 s; sin arnes propio)", "la capa SPY de su grafico, calculada adentro", "lo que hay hoy", l, est);
-            // --- TQQQ x3 (tqqq_vivo.py 1.0)
-            S("T_DOMS_vol", "TQQQ", "TQQQ", "vol", "DOMS", "TQQQ x3", "#ffd54f", 4.0,
-              "Dominantes de TQQQ por volumen (las dos barras de GEX mas grandes del vencimiento mas cercano), x3 bien convertido",
-              "los dos strikes de TQQQ donde hoy se negocio mas gamma: las rayas amarillas de Gammalito, pero puestas donde caen de verdad en ES (124 pts por dolar)",
-              "SIN VALIDAR: hoy 3 rebotes en 8 toques contra 48 % al azar (t04); una rueda", l, est);
-            S("T_MUROS_vol", "TQQQ", "TQQQ", "vol", "MUROS", "TQQQ x3", "#26c6da", 4.0,
-              "Call wall / put wall de TQQQ por volumen (vencimiento mas cercano), x3 bien convertido",
-              "el strike de TQQQ con mas gamma de calls negociada hoy (muro C) y el de puts (muro P)", "SIN VALIDAR (t04: 4 de 10)", l, est);
-            S("T_MUROS_oi", "TQQQ", "TQQQ", "oi", "MUROS", "TQQQ x3", "#ba68c8", 4.0,
-              "Call wall / put wall de TQQQ por interes abierto (OI de la OCC al cierre de ayer), x3 bien convertido",
-              "los strikes de TQQQ con mas posiciones abiertas de calls y de puts desde ayer", "SIN VALIDAR (t04: 3 de 7)", l, est);
-            S("T_ZERO_oi", "TQQQ", "TQQQ", "oi", "ZTP", "TQQQ x3", "#b0bec5", 4.0,
-              "Zero gamma de TQQQ por OI (cruce de signo del perfil mas cercano al spot), x3 bien convertido",
-              "donde el libro de TQQQ pasa de frenar a empujar segun las posiciones de ayer", "SIN VALIDAR; el cruce mas cercano se pega al precio", l, est);
-            S("T_ZERO_vol_pm", "TQQQ", "TQQQ", "vol", "ZTP", "TQQQ x3", "#e8eaed", 4.0,
-              "Zero de TQQQ por VOLUMEN en el PUNTO MEDIO de los dos strikes que encierran el cruce (no interpolado)",
-              "la raya blanca de Gammalito: el medio del hueco donde el libro de TQQQ pasa de frenar a empujar, porque entre strike y strike no se sabe donde cae exactamente",
-              "SIN VALIDAR como nivel; lo que SI esta medido (12-10) es que reproduce la raya de Gammalito en 2 dias distintos: 79,50 hoy y 81,50 el 08-10, los dos exactos, mientras el cruce interpolado daba 79,13-79,28 y 81,20. La incertidumbre REAL es +-0,5 USD de TQQQ (~63 pts de ES): la banda de 4 es cosmetica, no honesta", l, est);
-            S("T_DOMS_raz", "TQQQ", "TQQQ", "vol", "RAZON", "TQQQ x3", "#ff7043", 0,
-              "COMPARACION: las mismas dominantes convertidas con RAZON SIMPLE (K x ES/TQQQ), como las integra Gammalito (medido en t08)",
-              "asi las dibuja Gammalito sobre ES: 3 veces mas lejos del precio y corriendose al reves del precio (el abanico). NO usar",
-              "SOLO PARA COMPARAR", l, est);
+            // --- 5.0 (27-10-2026): aca iban las 6 de TQQQ x3 (tqqq_vivo.py 1.0). Se sacaron: la 5.0 es del S&P y no tiene un equivalente pedido.
             // --- 4.1.3 (09-10-2026): como la 2.0 (Replica20.cs). Rol D1 = la de mayor |GEX|, D2 la segunda; monto con signo (escala 1).
             S("R20_SPY_vol", "2.0 SPY", "SPY", "vol", "DOMS", "2.0", "#cc8800", 0,   // 4.1.4: ambar oscuro (el #e8c83c no se distinguia del SPY 0G #fcd34d)
               "Dominantes de la 2.0 (SPY 0DTE por volumen: las 2 barras de mayor |GEX| a <= min(2 % del futuro, 100 pts)) con SU conversion: razon = cierre de la vela de 1 min del MES del ultimo trade de la cadena / spot de SPY",
@@ -244,6 +226,8 @@ namespace PythiaGexCinco.Familia
             PorId = l.ToDictionary(x => x.Id, StringComparer.Ordinal);
             Estado = est;
             Calc = l.Take(24).Where(x => x.Tipo != "TRES").Select(x => x.Id).Concat(new[] { "TOPN_ES_vol", "TOPN_ES_oi", "CARGA_ES", "CARGA_SPX", "CARGA_SPY" }).ToArray();   // 4.1.7: anexadas AL FINAL (0-20 intactos)
+            // 5.0 (27-10-2026): las T_* estaban en las posiciones 24-29 de 'l', despues del Take(24): Calc sale identico al del clon (los mismos
+            // 26 ids en las mismas posiciones; verificado volcando el catalogo antes y despues, ver _diseno/QUITAR_TQQQ.md).
             _idxCalc = new Dictionary<string, int>(StringComparer.Ordinal);
             for (int i = 0; i < Calc.Length; i++) _idxCalc[Calc[i]] = i;
         }

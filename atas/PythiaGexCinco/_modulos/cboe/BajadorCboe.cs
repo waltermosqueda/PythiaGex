@@ -1,7 +1,7 @@
 // BajadorCboe.cs — PythiaGex 4.1, modulo cboe (B2). Sin referencias a ATAS. Implementa IFuenteCboe (Contratos.cs).
-// El descargador propio de las cadenas de SPX (_SPX), SPY y TQQQ de CBOE (lo que Rithmic no transmite), adentro del indicador:
+// El descargador propio de las cadenas de SPX (_SPX) y SPY de CBOE (lo que Rithmic no transmite), adentro del indicador:
 //   * UN hilo propio "PythiaGex5 cboe" (IsBackground, BelowNormal); nunca el pool de ATAS ni sus timers.
-//   * Un ticker por vez (SPX -> SPY -> TQQQ) con 3 s entre tickers; cadencia de cboe_local: 75 s de lunes a viernes 09:20-16:10 NY
+//   * Un ticker por vez (SPX -> SPY) con 3 s entre tickers; cadencia de cboe_local: 75 s de lunes a viernes 09:20-16:10 NY
 //     (13:20-20:10 UTC en verano, que es lo que tenia cboe_local clavado en UTC), 300 s el resto. Proxima vuelta = max(5, espera - duracion).
 //   * Gzip y de a trozos (HttpCboe). Sin reintento dentro de la vuelta; con 3 fallos seguidos un ticker pasa a 300 s; 403/429 = 15 min.
 //   * Se acepta una cadena solo si: timestamp legible, current_price > 0, mas de 100 contratos, timestamp NO anterior al ultimo aceptado
@@ -14,6 +14,8 @@
 //     La ultima foto anterior al corte conserva sus filas (es la vigente en el primer minuto despues del corte). HorasConFilas = 0: todo con filas.
 //   * Un solo descargador por proceso (FuenteCboe.Obtener, con contador) y entre procesos (Mutex Local\PythiaGex5.BajadorCboe): el que no
 //     es dueno no baja nada y sigue ultima-*.json cada 30 s.
+// 5.0 (27-10-2026): sin TQQQ (la 4.1 bajaba SPX -> SPY -> TQQQ): Libros = SPX, SPY y Describir ya no conoce "TQQQ". Cada ticker conserva
+// su cadencia (75 s / 300 s) y la pausa de 3 s entre SPX y SPY; solo desaparece la tercera bajada de cada vuelta.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -53,7 +55,7 @@ namespace PythiaGexCinco.Cboe
         public int RetencionDias = 14;            // poda diaria de cadena-*-dia.jsonl.gz PROPIOS (0 = no podar)
         public string NombreMutex = @"Local\PythiaGex5.BajadorCboe";   // null/"" = sin mutex (siempre dueno)
         public int SeguirCadaS = 30;              // seguidor: cada cuanto mira ultima-*.json
-        public string[] Libros = { "SPX", "SPY", "TQQQ" };
+        public string[] Libros = { "SPX", "SPY" };                    // 5.0: sin "TQQQ"
         public Func<DateTime> AhoraUtc = () => DateTime.UtcNow;      // inyectable (arnes)
         public IHttpCboe Http;                                        // null = HttpCboe real
         public Action<string, byte[], int, DateTime> AlBajarCrudo;    // arnes: (simbolo, bytes comprimidos, largo, generado) de cada bajada OK
@@ -140,8 +142,7 @@ namespace PythiaGexCinco.Cboe
             {
                 case "SPX": case "ES": return new LibroCboe { Nombre = "SPX", Archivo = "ES", Simbolo = "_SPX" };
                 case "SPY": return new LibroCboe { Nombre = "SPY", Archivo = "SPY", Simbolo = "SPY" };
-                case "TQQQ": return new LibroCboe { Nombre = "TQQQ", Archivo = "TQQQ", Simbolo = "TQQQ" };
-                default: return null;
+                default: return null;                                // 5.0: "TQQQ" ya no existe (devuelve null: no se baja)
             }
         }
 
@@ -229,7 +230,8 @@ namespace PythiaGexCinco.Cboe
         /// <summary>data.* de la foto (null si vino de una linea sin bloque "sub", p. ej. cboe-local).</summary>
         public SubCboe Sub(FotoCadena f) => f != null && _subs.TryGetValue(f, out var s) ? s : null;
 
-        /// <summary>Lo observado del cierre de un subyacente para una fecha NY (cierres.json). null si no hay nada.</summary>
+        /// <summary>Lo observado del cierre de un subyacente para una fecha NY (cierres.json). null si no hay nada.
+        /// 5.0 (27-10-2026): ningun calculo lo lee (lo leia la s de TQQQ); cierres.json se sigue anotando para SPX y SPY (dato, sin interpretar).</summary>
         public CierreCboe Cierre(string libro, DateTime fechaNy)
         {
             if (!_porNombre.TryGetValue(libro ?? "", out var L)) return null;

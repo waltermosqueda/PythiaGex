@@ -1,7 +1,7 @@
 // Gamma.cs — PythiaGex 4.1, modulo Familia, CODIGO COMUN (B3a, 08-10-2026).
 // La gamma de la vista previa (laboratorio/tres/nucleo.py gamma76 / gamma_bs), con el MISMO orden de operaciones que numpy:
 //   Black-76 (libro ES, opciones sobre el futuro), SIN descuento:  v = iv*sqrt(T); d1 = (ln(F/K) + 0.5*iv*iv*T)/v; g = fi(d1)/(F*v)
-//   Black-Scholes (SPX, SPY, TQQQ de CBOE), r = 0.0375, sin dividendo: d1 = (ln(S/K) + (r + 0.5*iv*iv)*T)/v; g = fi(d1)/(S*v)
+//   Black-Scholes (SPX y SPY de CBOE; 5.0: sin TQQQ), r = 0.0375, sin dividendo: d1 = (ln(S/K) + (r + 0.5*iv*iv)*T)/v; g = fi(d1)/(S*v)
 //   fi(x) = exp(-0.5*x*x) * (1/sqrt(2 pi)).  g = 0 si S, K, T o iv no son > 0 (NaN incluido).
 // OJO: Black76.Gamma de la 3.0 (atas/PythiaGexCinco/Black76.cs) multiplica por exp(-0.0375 T): NO usarla en la Familia (paridad con la
 // vista previa; la diferencia es <= 2,1e-4 relativa con T <= 2 dias y solo podria dar vuelta empates finisimos 0DTE/1DTE).

@@ -63,7 +63,7 @@ namespace PythiaGexCinco
         [Range(0.25, 50)]
         public decimal Capa3FusionPts { get; set; } = 5m;
 
-        [Display(Name = "↳ capas 0Γ▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 74, Description = "Necesita la llave '3.0 capas▸' prendida. Sub-llave: sin ella no se dibuja ningun 0Γ de las capas ('↳ NDX 0Γ', '↳ NDX 0Γ enf.', '↳ NDX techo/piso', '↳ QQQ 0Γ' y '↳ QQQ 0Γ enf.', abajo). 3.3.1 (pedido 07-10): el zero gamma de NDX y QQQ como rombos por vela del color de la capa, mas su rotulo. Es la fila de 31485 de la 2.0 (misma formula: cruce de signo mas cercano al precio; la base de NDX aca es la mediana de la rueda, la 2.0 usa la cruda de ticks, ~3,6 pts). Con GuionGris queda la estela de 1 px.")]
+        [Display(Name = "↳ capas 0Γ▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 69, Description = "Necesita la llave '3.0 capas▸' prendida. Sub-llave: sin ella no se dibuja ningun 0Γ de las capas ('↳ NDX 0Γ', '↳ NDX 0Γ enf.', '↳ NDX techo/piso', '↳ QQQ 0Γ' y '↳ QQQ 0Γ enf.', abajo). 3.3.1 (pedido 07-10): el zero gamma de NDX y QQQ como rombos por vela del color de la capa, mas su rotulo. Es la fila de 31485 de la 2.0 (misma formula: cruce de signo mas cercano al precio; la base de NDX aca es la mediana de la rueda, la 2.0 usa la cruda de ticks, ~3,6 pts). Con GuionGris queda la estela de 1 px.")]
         public bool Capa3ZeroRombos { get; set; } = true;
 
         [Display(Name = "Capas: tamaño de letra (% del de NQ)", GroupName = "9.3 3.0 · Pantalla", Order = 1064,
@@ -76,7 +76,7 @@ namespace PythiaGexCinco
         [Range(2, 3)]
         public int Capa3Cuantas { get; set; } = 3;
 
-        [Display(Name = "↳ linea al eje", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 80, Description = "Necesita la llave '3.0 capas▸' prendida. Solo cambia algo con '↳ rayas largas' prendida (por defecto apagada). Cada dominante de capa dentro del radio de dibujo lleva una linea fina de 1 px desde la ultima vela hasta el eje, en su color (3.0.5). Sin esto solo se ve el chip.")]
+        [Display(Name = "↳ linea al eje", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 75, Description = "Necesita la llave '3.0 capas▸' prendida. Solo cambia algo con '↳ rayas largas' prendida (por defecto apagada). Cada dominante de capa dentro del radio de dibujo lleva una linea fina de 1 px desde la ultima vela hasta el eje, en su color (3.0.5). Sin esto solo se ve el chip.")]
         public bool Capa3LineaActual { get; set; } = true;
 
         [Display(Name = "Capas: regla de dominantes", GroupName = "9.3 3.0 · Pantalla", Order = 1067,
@@ -126,7 +126,8 @@ namespace PythiaGexCinco
         private const double VIDA_CAPA_S = 25 * 60;       // sin cadena fresca el nivel no existe (CBOE: generado + 25 min, como el juez)
         // GANCHO-4.1 descargador: la 3.0 leia %APPDATA%\ATAS\PythiaGex\cboe-local\ultima-<QQQ|NQ>.json (lo escribe cboe_local.py, un programa
         // EXTERNO) y, si tenia mas de 20 min, la nube (GitHub raw). La 4.1 lee SOLO lo que baja ella misma: el descargador propio (B2, IFuenteCboe)
-        // escribe %APPDATA%\ATAS\PythiaGex5\cboe\ultima-<NQ|QQQ|TQQQ>.json con la MISMA linea flaca de archivar_cadena.py (NQ = la cadena de _SPX).
+        // escribe %APPDATA%\ATAS\PythiaGex5\cboe\ultima-<NQ|QQQ>.json con la MISMA linea flaca de archivar_cadena.py (NQ = la cadena de _SPX).
+        // 5.0 (27-10-2026): el descargador ya no baja TQQQ (y en la 5.0 escribe ultima-ES.json / ultima-SPY.json: estas capas las adapta el paso semantico).
         // Si el integrador prefiere pasarla en memoria (sin el archivo), asigna FuenteCapaEnMemoria: (Archivo "QQQ"|"NQ") -> (json, escrito UTC)
         // y aca se usa eso; null o sin dato = el archivo propio. Nada mas: ni cboe-local, ni nube, ni base de la clasica.
         private static string CarpetaCboePropia => Path.Combine(Registro.CarpetaDatos, "cboe");
@@ -334,11 +335,11 @@ namespace PythiaGexCinco
                     var ruta = Path.Combine(CarpetaCboePropia, "ultima-" + k.Archivo + ".json");
                     (string Json, DateTime EscritoUtc)? mem = null;
                     try { mem = FuenteCapaEnMemoria?.Invoke(k.Archivo); } catch (Exception e) { Registro.Excepcion(LOG, "FuenteCapaEnMemoria " + k.Nombre, e); }
-                    if (mem.HasValue && !string.IsNullOrEmpty(mem.Value.Json) && (ahora - mem.Value.EscritoUtc).TotalMinutes <= 20) { json = mem.Value.Json; origen = "cboe-4.0 (memoria)"; }
-                    else if (File.Exists(ruta) && (ahora - File.GetLastWriteTimeUtc(ruta)).TotalMinutes <= 20) { json = File.ReadAllText(ruta); origen = "cboe-4.0"; }
+                    if (mem.HasValue && !string.IsNullOrEmpty(mem.Value.Json) && (ahora - mem.Value.EscritoUtc).TotalMinutes <= 20) { json = mem.Value.Json; origen = "cboe-5.0 (memoria)"; }
+                    else if (File.Exists(ruta) && (ahora - File.GetLastWriteTimeUtc(ruta)).TotalMinutes <= 20) { json = File.ReadAllText(ruta); origen = "cboe-5.0"; }
                     if (json == null)
                     {
-                        lock (_candado) { k.Estado = "sin cadena propia fresca (" + ruta + ", menos de 20 min): la baja el descargador de la 4.0"; }
+                        lock (_candado) { k.Estado = "sin cadena propia fresca (" + ruta + ", menos de 20 min): la baja el descargador de la 5.0"; }
                         continue;
                     }
                     CargarCapa(k, json, origen, fut, ahora);

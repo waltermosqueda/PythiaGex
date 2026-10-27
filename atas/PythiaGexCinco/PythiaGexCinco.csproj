@@ -94,12 +94,7 @@
     <Compile Include="_modulos\pantalla\GammaCincoPantalla.cs" />
     <Compile Include="_modulos\pantalla\PantallaFamilia.cs" />
     <Compile Include="_modulos\pantalla\SeriesPantalla.cs" />
-    <Compile Include="_modulos\tqqq\CalculoTqqq.cs" />
-    <Compile Include="_modulos\tqqq\TqqqArchivo.cs" />
-    <Compile Include="_modulos\tqqq\TqqqNoche.cs" />
-    <Compile Include="_modulos\tqqq\TqqqPerfil.cs" />
-    <Compile Include="_modulos\tqqq\TqqqSesion.cs" />
-    <Compile Include="_modulos\tqqq\TqqqUtil.cs" />
+    <!-- 5.0 (27-10-2026): sin el modulo _modulos\tqqq (TQQQ x3 eliminado; ver _diseno\QUITAR_TQQQ.md). -->
     <Compile Include="IntegracionFamilia.cs" />
   </ItemGroup>
 

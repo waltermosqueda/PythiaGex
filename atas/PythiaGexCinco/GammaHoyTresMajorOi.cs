@@ -22,19 +22,19 @@ namespace PythiaGexCinco
     /// </summary>
     public partial class GammaCinco
     {
-        [Display(Name = "↳ NQ M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 46, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.1. Raya de dominante en el strike con mas GEX positivo por OI (p. ej. 31.350 el 08-10 a la noche): estela por vela y rotulo 'NQ M+ OI'. Tambien decide si entra (con su punto) en el '3.0 libro▸'.")]
+        [Display(Name = "↳ NQ M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 41, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.1. Raya de dominante en el strike con mas GEX positivo por OI (p. ej. 31.350 el 08-10 a la noche): estela por vela y rotulo 'NQ M+ OI'. Tambien decide si entra (con su punto) en el '3.0 libro▸'.")]
         public bool Raya3NqMasOi { get; set; } = true;
 
-        [Display(Name = "↳ NQ M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 47, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.1. Idem del lado negativo (puts): el strike con mas GEX negativo por OI. Tambien decide si entra (con su punto) en el '3.0 libro▸'.")]
+        [Display(Name = "↳ NQ M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 42, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.1. Idem del lado negativo (puts): el strike con mas GEX negativo por OI. Tambien decide si entra (con su punto) en el '3.0 libro▸'.")]
         public bool Raya3NqMenosOi { get; set; } = true;
 
-        [Display(Name = "↳ NDX M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 53, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major positivo por OI del libro de NDX (CBOE), estela en el color de la capa con filo verde; la edad del dato va en el rotulo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa NDX' en No (grupo 9.3) no hay dato.")]
+        [Display(Name = "↳ NDX M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 48, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major positivo por OI del libro de NDX (CBOE), estela en el color de la capa con filo verde; la edad del dato va en el rotulo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa NDX' en No (grupo 9.3) no hay dato.")]
         public bool Raya3NdxMasOi { get; set; } = true;
-        [Display(Name = "↳ NDX M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 54, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major negativo por OI del libro de NDX (CBOE), filo rojo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa NDX' en No (grupo 9.3) no hay dato.")]
+        [Display(Name = "↳ NDX M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 49, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major negativo por OI del libro de NDX (CBOE), filo rojo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa NDX' en No (grupo 9.3) no hay dato.")]
         public bool Raya3NdxMenosOi { get; set; } = true;
-        [Display(Name = "↳ QQQ M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 55, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major positivo por OI del libro de QQQ (CBOE, por razon), estela en el color de la capa con filo verde; la edad del dato va en el rotulo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa QQQ' en No (grupo 9.3) no hay dato.")]
+        [Display(Name = "↳ QQQ M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 50, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major positivo por OI del libro de QQQ (CBOE, por razon), estela en el color de la capa con filo verde; la edad del dato va en el rotulo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa QQQ' en No (grupo 9.3) no hay dato.")]
         public bool Raya3QqqMasOi { get; set; } = true;
-        [Display(Name = "↳ QQQ M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 56, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major negativo por OI del libro de QQQ (CBOE, por razon), filo rojo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa QQQ' en No (grupo 9.3) no hay dato.")]
+        [Display(Name = "↳ QQQ M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 51, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major negativo por OI del libro de QQQ (CBOE, por razon), filo rojo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa QQQ' en No (grupo 9.3) no hay dato.")]
         public bool Raya3QqqMenosOi { get; set; } = true;
 
         [Display(Name = "Majors por OI: hasta cuantos pts del precio", GroupName = "9.7 3.0 · Rayas una por una", Order = 1008,

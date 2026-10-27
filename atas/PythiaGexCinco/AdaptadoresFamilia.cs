@@ -20,7 +20,7 @@
 //     b + 120 s <= ultimo tick de SU sesion. CierreConocido usa SOLO las velas de la sesion de t (como self.vs), con el tope de 4 h.
 //   - Precio(ts): ultimo tick <= ts si ts - t <= 120 s y ts <= ultimo tick; si no, la vela m2 cerrada que contiene ts, interpolada.
 //     El almacen es POR SEGUNDO (casilla ceil(t/1000), gana el t mayor; empate: el ultimo en llegar): EXACTO para ts en segundos enteros,
-//     que es lo que piden C7/C8/TQQQ (sello de CBOE - 900 s; fin de vela - 1 s). Con ts fraccionario puede devolver un tick de hasta 1 s antes.
+//     que es lo que piden C7/C8 (sello de CBOE - 900 s; en la 4.1 tambien TQQQ: fin de vela - 1 s). Con ts fraccionario puede devolver un tick de hasta 1 s antes.
 //   - Lo que la vista previa NO tiene: los TRAMOS DE ESCUCHA. Si el indicador no estaba corriendo (arranco a mitad de sesion, o entre un
 //     Parar y el siguiente Arrancar), una vela m2 de ticks puede estar incompleta: ahi manda la vela del grafico (respaldo) y un tick solo
 //     vale si se escucho de corrido desde el tick hasta ts. Un hueco de ticks MIENTRAS corre (mercado quieto o corte de datos) no corta el
@@ -101,7 +101,7 @@ namespace PythiaGexCinco.Familia
 
         // ------------------------------------------------------------------ contrato y sesion
 
-        private static readonly Regex _reContrato = new Regex(@"([FGHJKMESUVXZ])(\d{1,2})$", RegexOptions.CultureInvariant);
+        private static readonly Regex _reContrato = new Regex(@"([FGHJKMNQUVXZ])(\d{1,2})$", RegexOptions.CultureInvariant);
 
         /// <summary>"MESZ6" -> "Z6"; "ESZ26" -> "Z26"; "" si el codigo no termina en mes + año.</summary>
         public static string ContratoDeCodigo(string codigo)

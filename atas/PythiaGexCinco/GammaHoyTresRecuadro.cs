@@ -39,7 +39,7 @@ namespace PythiaGexCinco
                  Description = "3.5.7. Minimal (default, maqueta 1 elegida el 08-10): el nombre del nivel en su color, al lado de la ultima vela, sin caja y sin precio (el precio esta en el recuadro). Columna: los chips de la 3.5.5.")]
         public EstiloRotulos3 Rotulos3Estilo { get; set; } = EstiloRotulos3.Minimal;
 
-        [Display(Name = "↳ ver libro", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 91, Description = "Necesita la llave '3.0 libro▸' prendida. 3.6.2. Plegado por defecto: una pestañita 'LIBRO NQ ▸'; un clic lo abre y un clic en su titulo lo cierra (pedido 08-10: 'me molestaba para la lectura, algo mas chico o desplegable'). Adentro: niveles cercanos con GEX por volumen y por OI, muros, majors y neto.")]
+        [Display(Name = "↳ ver libro", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 86, Description = "Necesita la llave '3.0 libro▸' prendida. 3.6.2. Plegado por defecto: una pestañita 'LIBRO NQ ▸'; un clic lo abre y un clic en su titulo lo cierra (pedido 08-10: 'me molestaba para la lectura, algo mas chico o desplegable'). Adentro: niveles cercanos con GEX por volumen y por OI, muros, majors y neto.")]
         public bool RecuadroLibro3Ver { get; set; } = true;
 
         private bool _recuadroAbierto;

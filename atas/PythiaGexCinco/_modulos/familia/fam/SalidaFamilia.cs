@@ -1,11 +1,12 @@
 // SalidaFamilia.cs — PythiaGex 4.1, modulo fam (B3d), 08-10-2026.
-// Lo que va a la pantalla, port de preview_niveles.Motor.salida / _actual / _meta_libro y de tqqq_vivo.ciclo (historia y actuales):
+// Lo que va a la pantalla, port de preview_niveles.Motor.salida / _actual / _meta_libro (historia y actuales):
 //   * historia por vela m2 (apertura T en ms UTC): niv[T/60000] o, si falta o esta vacio, niv[T/60000 - 1]; TRES solo de la clave T/60000
-//     (como la vista previa); TQQQ de su vela (ICalculoTqqq.Vela).
+//     (como la vista previa).
 //   * actuales: el ultimo minuto con libros (fuente y edad de cada libro; la familia con el dato MAS VIEJO de los libros que entran),
 //     TRES buscado hasta 29 minutos atras (edad: ES = la linea de su estela; SPX/SPY = el t_dato de la cadena de CBOE de ese minuto;
-//     4.1.2: GexM = el "gm" de la misma linea, NaN en las estelas viejas),
-//     TQQQ de la ultima vela con niveles.
+//     4.1.2: GexM = el "gm" de la misma linea, NaN en las estelas viejas).
+//   * 5.0 (27-10-2026): sin TQQQ (en la 4.1 iba AL FINAL de la historia, de los actuales y de las fuentes, desde su vela m2 de tqqq_vivo.ciclo;
+//     lo de las demas series sale igual y en el mismo orden).
 //   * 4.1.3: las series extra (RegistroMinuto.Extra: R20_*, DOMS_*) en la historia y en los actuales, despues de las 21 de la cuenta; su edad es
 //     la de su replica de la 2.0 (MetaExtra) o la de su libro de la 4.1 (Meta); la conversion de cada replica va como una fuente mas
 //     ("2.0 SPY", "2.0 SPX"). Sin extras (motor sin OpcionesMotorFamilia.Extras) la salida queda igual que en la 4.1.2.
@@ -21,7 +22,7 @@ namespace PythiaGexCinco.Familia
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         /// <summary>Precios por serie de la vela m2 que abre en aperturaMs. null si no hay nada.</summary>
-        public static Dictionary<string, double[]> Entrada(long aperturaMs, Func<long, RegistroMinuto> niv, AlmacenTres tres, TqqqVela tq)
+        public static Dictionary<string, double[]> Entrada(long aperturaMs, Func<long, RegistroMinuto> niv, AlmacenTres tres)
         {
             long key = aperturaMs / 60000L;
             Dictionary<string, double[]> d = null;
@@ -54,18 +55,11 @@ namespace PythiaGexCinco.Familia
                     var ps = new double[lv.Length]; for (int k = 0; k < lv.Length; k++) ps[k] = lv[k].Precio;
                     (d ?? (d = new Dictionary<string, double[]>(StringComparer.Ordinal)))["TRES_" + capa] = ps;
                 }
-            if (tq?.Series != null)
-                foreach (var kv in tq.Series)
-                {
-                    if (kv.Value == null || kv.Value.Length == 0 || !CatalogoFamilia.PorId.ContainsKey(kv.Key)) continue;
-                    var ps = new double[kv.Value.Length]; for (int k = 0; k < ps.Length; k++) ps[k] = kv.Value[k].Precio;
-                    (d ?? (d = new Dictionary<string, double[]>(StringComparer.Ordinal)))[kv.Key] = ps;
-                }
             return d;
         }
 
-        /// <summary>Los niveles vigentes "ahora" (preview_niveles.salida 'actuales' + tqqq_vivo 'actuales').</summary>
-        public static List<NivelActual> Actuales(RegistroMinuto ultimo, AlmacenTres tres, TqqqVela tqUltima)
+        /// <summary>Los niveles vigentes "ahora" (preview_niveles.salida 'actuales'; 5.0: sin los 'actuales' de tqqq_vivo).</summary>
+        public static List<NivelActual> Actuales(RegistroMinuto ultimo, AlmacenTres tres)
         {
             var act = new List<NivelActual>();
             var calc = CatalogoFamilia.Calc;
@@ -109,21 +103,6 @@ namespace PythiaGexCinco.Familia
                         act.Add(new NivelActual { Serie = si.Id, Libro = si.Libro, Fuente = si.Fuente, Tipo = si.Tipo, Rol = CatalogoFamilia.Rol(si.Tipo, n.Etq),
                                                   Precio = n.Precio, Strike = double.NaN, GexM = n.GexM, Banda = si.Banda, DatoUtc = dato, OiViejo = false });
                 }
-            if (tqUltima?.Series != null)
-                foreach (var id in CatalogoFamilia.SeriesTqqq)
-                {
-                    if (!tqUltima.Series.TryGetValue(id, out var lv) || lv == null) continue;
-                    var si = CatalogoFamilia.PorId[id];
-                    tqUltima.Strikes.TryGetValue(id, out var ks);
-                    for (int k = 0; k < lv.Length; k++)
-                    {
-                        string rol = lv[k].Etq;
-                        if (id == "T_DOMS_raz" && (rol == "dom" || string.IsNullOrEmpty(rol))) rol = "dom (razon)";   // tqqq_vivo: rol="dom (razon)"
-                        act.Add(new NivelActual { Serie = id, Libro = "TQQQ", Fuente = si.Fuente, Tipo = si.Tipo, Rol = rol, Precio = lv[k].Precio,
-                                                  Strike = ks != null && k < ks.Length ? ks[k] : double.NaN, GexM = lv[k].GexM, Banda = si.Banda,
-                                                  DatoUtc = tqUltima.DatoUtc, OiViejo = false });
-                    }
-                }
             return act;
         }
 
@@ -149,8 +128,8 @@ namespace PythiaGexCinco.Familia
             };
         }
 
-        /// <summary>Una por libro del ultimo minuto (conversion, edad, OI) + TQQQ + el estado del descargador y de la cinta.</summary>
-        public static List<FuenteEstado> Fuentes(RegistroMinuto ultimo, TqqqVela tq, string estadoCboe, DateTime ultimoTickUtc, DateTime ahoraUtc)
+        /// <summary>Una por libro del ultimo minuto (conversion, edad, OI) + el estado del descargador y de la cinta (5.0: sin la de TQQQ).</summary>
+        public static List<FuenteEstado> Fuentes(RegistroMinuto ultimo, string estadoCboe, DateTime ultimoTickUtc, DateTime ahoraUtc)
         {
             var l = new List<FuenteEstado>();
             if (ultimo != null)
@@ -160,8 +139,6 @@ namespace PythiaGexCinco.Familia
             if (ultimo?.MetaExtra != null)
                 foreach (var m in ultimo.MetaExtra)
                     l.Add(new FuenteEstado { Libro = m.Libro, Texto = m.ConvTexto ?? "", ConvValor = m.Conv, DatoUtc = m.DatoUtc, Congelada = m.Congelada, OiOk = m.OiOk });
-            if (tq != null && !double.IsNaN(tq.S) && !double.IsNaN(tq.C))
-                l.Add(new FuenteEstado { Libro = "TQQQ", Texto = string.Format(Inv, "x3: ES = {0:0.00} x TQQQ + {1:0.0} (+-4)", tq.S, tq.C), DatoUtc = tq.DatoUtc, Congelada = tq.Congelada });
             if (!string.IsNullOrEmpty(estadoCboe))
                 l.Add(new FuenteEstado { Libro = "CBOE", Texto = estadoCboe });
             if (ultimoTickUtc != default)

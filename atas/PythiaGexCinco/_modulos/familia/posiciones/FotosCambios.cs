@@ -4,7 +4,7 @@
 //   SPX (LibroMinuteroSpx:170-179 + ConversionSpx:187-195): generado al segundo; sin las de la pausa de CME (CalendarioSpx.EntreSesiones);
 //       la ultima con generado <= t; vale si t < generado + 1500 s, o, congelada (dato NY >= 15:59), hasta la proxima apertura.
 //   SPY (MinuteroSpy:125-133 + ConversionSpy:163-189): igual con FueraDeSesion y Vigencia de ConversionSpy (congelada exige dato >= 2000).
-//   TQQQ (CalculoTqqq.VelaRueda): fotos con filas de la sesion de la vela; la ultima con generado <= apertura + 120 s; vale 1500 s.
+//   5.0 (27-10-2026): sin TQQQ (AhoraTqqq y VIDA_TQQQ_S afuera).
 // La foto de "antes" de una ventana de W min: la ultima con filas y TsUtc <= TsUtc(ahora) - W.
 // Sin estado. Solo lectura de las fuentes.
 using System;
@@ -16,7 +16,7 @@ namespace PythiaGexCinco.Familia
 {
     public static class FotosCambios
     {
-        public const double VIDA_ES_S = 300, VIDA_CBOE_S = 1500, VIDA_TQQQ_S = 1500;
+        public const double VIDA_ES_S = 300, VIDA_CBOE_S = 1500;
 
         /// <summary>Generado truncado al segundo (los minuteros de SPX/SPY envejecen desde ahi). Copia solo si hace falta.</summary>
         public static FotoCadena ASegundos(FotoCadena f)
@@ -78,26 +78,6 @@ namespace PythiaGexCinco.Familia
             if (t >= vig) { motivo = "cadena de " + libro + " vencida (vigente hasta " + vig.ToString("MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture) + "Z)"; return (null, null); }
             if (usada.Filas == null || usada.Filas.Length == 0) { motivo = "la cadena vigente de " + libro + " no tiene filas en memoria"; return (null, null); }
             return (orig, usada);
-        }
-
-        /// <summary>TQQQ: la foto de la vela (CalculoTqqq.VelaRueda). Se exige el mismo t_dato que la vela (si no, no es la misma foto).</summary>
-        public static FotoCadena AhoraTqqq(IFuenteCboe cboe, TqqqVela v, bool corregida, bool continua, out string motivo)
-        {
-            motivo = "";
-            if (cboe == null || v == null) { motivo = "sin vela de TQQQ"; return null; }
-            long t = v.AperturaM2Ms + 120_000L;
-            var ses = TqqqSesion.De(v.AperturaM2Ms, corregida, continua);
-            var l = cboe.Fotos("TQQQ", ses.FotosIniUtc, ses.FotosFinUtc);
-            FotoCadena f = null;
-            for (int i = (l?.Count ?? 0) - 1; i >= 0; i--)
-            {
-                var x = l[i];
-                if (x?.Filas == null || x.Filas.Length == 0) continue;
-                if (TiempoFam.Ms(x.GeneradoUtc) <= t) { f = x; break; }
-            }
-            if (f == null || t - TiempoFam.Ms(f.GeneradoUtc) > (long)(VIDA_TQQQ_S * 1000)) { motivo = "sin foto de TQQQ vigente para la vela"; return null; }
-            if (f.DatoUtc != v.DatoUtc) { motivo = "la vela de TQQQ no usa la foto vigente (ancla de noche?): sin cambios"; return null; }
-            return f;
         }
 
         /// <summary>La foto de "antes": la ultima con filas y TsUtc &lt;= limite. ES por TsUtc; CBOE por generado (se mira hasta 20 min mas atras).</summary>

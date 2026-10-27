@@ -8,12 +8,14 @@
 //  * Precios de nivel SIEMPRE en precio de ES/MES (el grafico). Strikes en la unidad de su libro.
 //  * NaN = "no hay". Nunca 0 para "no hay".
 //  * Nada de E/S en el hilo de dibujo. Los calculos corren en el timer/hilo de fondo y publican fotos INMUTABLES.
+// 5.0 (27-10-2026): sin TQQQ. Fuera TqqqVela, ICalculoTqqq, IVersionSTqqq y el eje "TQQQ x3" de FotoFamilia (TqS/TqC/TqDatoUtc);
+// IMotorFamilia.Configurar ya no recibe el calculo de TQQQ. Lo demas, igual que en la 4.1.
 using System;
 using System.Collections.Generic;
 
 namespace PythiaGexCinco.Familia
 {
-    // ------------------------------------------------------------------ cadenas (ES por Rithmic, SPX/SPY/TQQQ por la descarga propia de CBOE)
+    // ------------------------------------------------------------------ cadenas (ES por Rithmic, SPX/SPY por la descarga propia de CBOE)
 
     /// <summary>Una fila por (strike, vencimiento): [K, V, oi_c, oi_p, iv_c, iv_p, vol_c, vol_p] como pythiagex/cadena_atas.py y viva3.</summary>
     public readonly struct FilaCadena
@@ -27,7 +29,7 @@ namespace PythiaGexCinco.Familia
     /// <summary>Una foto de una cadena. Inmutable despues de construida.</summary>
     public sealed class FotoCadena
     {
-        public string Libro;                 // "ES" (Rithmic, futuro) | "SPX" (CBOE _SPX) | "SPY" | "TQQQ"
+        public string Libro;                 // "ES" (Rithmic, futuro) | "SPX" (CBOE _SPX) | "SPY"
         public DateTime GeneradoUtc;         // cuando la obtuvo el indicador (bajada) o el minuto de la foto (ES)
         public DateTime TsUtc;               // sello de la fuente (CBOE "timestamp"; ES = minuto de la foto)
         public DateTime DatoUtc;             // hora del DATO: CBOE = ultimo_trade NY -> UTC (si falta, Ts - 902 s); ES = Ts
@@ -37,7 +39,7 @@ namespace PythiaGexCinco.Familia
         public bool EsFuturo;                // true solo ES (Black-76 sin descuento); CBOE = Black-Scholes r = 0.0375
         public double OiTotal;               // suma oi_c + oi_p (para oi_fresco)
         public double BaseCruda = double.NaN, BaseErrorTicks = double.NaN;   // solo SPX: base por forwards (pythiagex/base.py medir)
-        public double CierreAnterior = double.NaN;  // CBOE prev_day_close si viene en el json (para TQQQ s y verificacion)
+        public double CierreAnterior = double.NaN;  // CBOE prev_day_close si viene en el json (verificacion; 5.0: ningun calculo lo usa, lo usaba la s de TQQQ)
         public double FuturoFoto = double.NaN;      // solo ES: precio del futuro en la foto (para el corrimiento corr)
     }
 
@@ -50,7 +52,7 @@ namespace PythiaGexCinco.Familia
         IReadOnlyList<FotoCadena> Fotos(string libro, DateTime desdeUtc, DateTime hastaUtc);
         FotoCadena Ultima(string libro);                       // null si no hay
         long Version { get; }                                  // sube con cada foto nueva (para saber si recalcular)
-        string Estado { get; }                                 // texto corto para la pestaña: "SPY hace 40 s · SPX hace 1 min · TQQQ sin internet (reintento 60 s)"
+        string Estado { get; }                                 // texto corto para la pestaña: "SPX hace 1 min · SPY sin internet (reintento 60 s)"
     }
 
     /// <summary>El libro de ES por Rithmic (del clon de la 3.0): una foto por minuto como viva3 (ConPuntas && IV > 0), con historia de la sesion.</summary>
@@ -66,7 +68,7 @@ namespace PythiaGexCinco.Familia
     {
         /// <summary>Spec 1.2: ultimo tick con t <= ts, ts - t <= 120 s y ts <= ultimo tick; si no, la vela m2 que contiene ts interpolada o + (c-o)(ts-b)/120 s; si no, NaN.</summary>
         double Precio(DateTime tUtc);
-        /// <summary>Solo tick (TQQQ): ultimo tick con t <= ts y ts - t <= maxEdadS; NaN si no.</summary>
+        /// <summary>Solo tick (C7, la 2.0 y la clasica; en la 4.1 tambien TQQQ): ultimo tick con t <= ts y ts - t <= maxEdadS; NaN si no.</summary>
         double PrecioSoloTick(DateTime tUtc, int maxEdadS = 120);
         /// <summary>Cierre de la ultima vela m2 CERRADA con b + 120 s <= t; NaN si t - (b + 120 s) > 4 h.</summary>
         double CierreConocido(DateTime tUtc);
@@ -111,7 +113,7 @@ namespace PythiaGexCinco.Familia
     public readonly struct Nivel
     {
         public readonly double Precio;        // ES, round 2
-        public readonly string Etq;           // "muro C", "muro P", "M+", "M-", "0G est.", "cruce arriba", "cruce abajo", "conf", "D1", "D2", "dom", "zero"
+        public readonly string Etq;           // "muro C", "muro P", "M+", "M-", "0G est.", "cruce arriba", "cruce abajo", "conf", "D1", "D2" (5.0: sin "dom"/"zero", eran de TQQQ)
         public readonly double GexM;          // M USD por 1 % (C1), round 1; NaN si no aplica
         public Nivel(double precio, string etq, double gexM) { Precio = precio; Etq = etq; GexM = gexM; }
     }
@@ -119,7 +121,7 @@ namespace PythiaGexCinco.Familia
     /// <summary>Un nivel vigente "ahora" con su fuente y edad (protocolo: edad antes del numero si > 30 min).</summary>
     public sealed class NivelActual
     {
-        public string Serie, Libro, Fuente, Tipo, Rol;   // Fuente "vol" | "oi" | "3.0"; Tipo MUROS|MAJORS|ZEST|ZTP|CONF|TRES|DOMS|RAZON
+        public string Serie, Libro, Fuente, Tipo, Rol;   // Fuente "vol" | "oi" | "3.0"; Tipo MUROS|MAJORS|ZEST|ZTP|CONF|TRES|DOMS|TOPN (5.0: sin RAZON, era de TQQQ)
         public double Precio, Strike = double.NaN, GexM = double.NaN, Banda;
         public DateTime DatoUtc;
         public bool OiViejo;
@@ -159,7 +161,7 @@ namespace PythiaGexCinco.Familia
 
     public sealed class FuenteEstado
     {
-        public string Libro, Texto;           // Texto: "base 241.62 (...)" / "razon 41.4331 (...)" / "x3: ES = 124.21 x TQQQ + 21012.1"
+        public string Libro, Texto;           // Texto: "base <X> (...)" / "razon <X> (...)" (5.0: sin la linea "x3: ES = s x TQQQ + c")
         public double ConvValor = double.NaN; // SPX base | SPY razon | ES corr
         public DateTime DatoUtc;
         public bool Congelada, OiOk = true;
@@ -173,7 +175,6 @@ namespace PythiaGexCinco.Familia
         public IReadOnlyDictionary<long, IReadOnlyDictionary<string, double[]>> HistoriaM2;  // apertura m2 (ms) -> serie -> precios
         public IReadOnlyList<NivelActual> Actuales;
         public IReadOnlyList<FuenteEstado> Fuentes;
-        public double TqS = double.NaN, TqC = double.NaN; public DateTime TqDatoUtc;      // eje TQQQ x3
         public string Instrumento = "";                                       // contrato de la cinta (control de vencimiento)
         public string Aviso = "";                                             // "sin Rithmic", "sin internet: CBOE de hace 2 h", etc.
         /// <summary>4.1.2: estado del calculo de cambios por libro, para la pestaña ("ES: vol 15 min 01:59-02:14Z; OI 10-09 01:48Z vs 10-08 01:30Z").</summary>
@@ -204,43 +205,20 @@ namespace PythiaGexCinco.Familia
         public string Nota = "";
     }
 
-    /// <summary>Catalogo de las 29 series (id, grupo, color, banda) — el mismo de la vista previa + TQQQ. Lo llena el modulo fam (B3d).</summary>
+    /// <summary>Catalogo de las series (id, grupo, color, banda) — el de la vista previa y lo agregado en la 4.1 (5.0: sin TQQQ). Lo llena el modulo fam (B3d).</summary>
     public sealed class SerieInfo
     {
         public string Id, Corto, Libro, Fuente, Tipo, Grupo, ColorHex, Tecnico, Criollo;
         public double Banda;
     }
 
-    // ------------------------------------------------------------------ TQQQ
-
-    public sealed class TqqqVela
-    {
-        public long AperturaM2Ms;
-        public double S = double.NaN, C = double.NaN;          // ES = S*K + C
-        public Dictionary<string, Nivel[]> Series = new Dictionary<string, Nivel[]>();   // T_DOMS_vol, T_MUROS_vol, T_MUROS_oi, T_ZERO_oi, T_DOMS_raz
-        public Dictionary<string, double[]> Strikes = new Dictionary<string, double[]>();
-        public DateTime DatoUtc; public bool Congelada;
-    }
-
-    public interface ICalculoTqqq
-    {
-        /// <summary>Niveles de TQQQ para la vela m2 que abre en aperturaMs (foto = ultima con Generado <= apertura + 120 s, vida 1500 s). null si no hay.</summary>
-        TqqqVela Vela(long aperturaM2Ms, ICinta cinta, IFuenteCboe cboe);
-    }
-
-    /// <summary>4.1.0 (integracion, OPCIONAL): un ICalculoTqqq cuya s del dia puede cambiar dentro de la sesion (s de respaldo por recta libre,
-    /// o la s que aparece cuando llegan los cierres) sube VersionS cada vez que cambia; el motor rehace entonces TODAS las velas de la sesion
-    /// con la s nueva (antes quedaban velas viejas con la s anterior hasta la pasada de 10 min).</summary>
-    public interface IVersionSTqqq
-    {
-        long VersionS { get; }
-    }
+    // 5.0 (27-10-2026): aca iba la seccion TQQQ (TqqqVela, ICalculoTqqq, IVersionSTqqq). Se saco entera con el modulo _modulos\tqqq.
 
     // ------------------------------------------------------------------ motor de la familia (B3d) y pantalla (B5)
 
     public interface IMotorFamilia
     {
-        void Configurar(ICinta cinta, ILibroEs es, IFuenteCboe cboe, IReadOnlyList<ILibroMinutero> libros, ICalculoTqqq tqqq, string contrato);
+        void Configurar(ICinta cinta, ILibroEs es, IFuenteCboe cboe, IReadOnlyList<ILibroMinutero> libros, string contrato);   // 5.0: sin el ICalculoTqqq
         /// <summary>Calcula los minutos nuevos (de a tandas, sin bloquear) y publica la foto. Llamado desde el timer de fondo.</summary>
         void Avanzar(DateTime ahoraUtc);
         FotoFamilia Foto { get; }
