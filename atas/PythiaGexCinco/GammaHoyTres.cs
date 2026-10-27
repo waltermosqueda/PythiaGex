@@ -191,16 +191,16 @@ namespace PythiaGexCinco
         [Display(Name = "Zero interpolado por strike (como la referencia)", GroupName = "9.2 3.0 · Lectura", Order = 1060, Description = "Prendido: cambio de signo del perfil por strike, interpolado. Apagado: cruce repreciado en grilla.")]
         public bool Zero3Interpolado { get; set; } = true;
 
-        [Display(Name = "↳ perfil visual", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 43, Description = "Necesita la llave '3.0 NQ dom▸' prendida. Solo decide dos cosas cuando estan en 'Segun el perfil': '↳ ver majors' (NQ: Limpio = no; ConMajors y Todo = si; ES: siempre si) y '↳ barras perfil' (solo con Todo). Las demas 'ver' en 'Segun el perfil' quedan en Si con cualquier perfil.")]
+        [Display(Name = "↳ perfil visual", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 43, Description = "Necesita la llave '3.0 ES dom▸' prendida. Solo decide dos cosas cuando estan en 'Segun el perfil': '↳ ver majors' (en ES: siempre si; en NQ: Limpio = no, ConMajors y Todo = si) y '↳ barras perfil' (solo con Todo). Las demas 'ver' en 'Segun el perfil' quedan en Si con cualquier perfil.")]
         public PerfilVisual3 Perfil3Visual { get; set; } = PerfilVisual3.Limpio;
 
-        [Display(Name = "↳ ver estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 89, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸' o '3.0 capas▸' prendida. Vale para todas las que esten prendidas. La estela por vela (guiones o rombos) de D1/D2 de NQ, del 0Γ de NQ y de las capas. Segun el perfil = Si. No toca las F1-F8, los majors por OI ni el apoyo (tienen su estela propia).")]
+        [Display(Name = "↳ ver estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 89, Description = "Necesita alguna de las llaves '3.0 ES dom▸', '3.0 ES 0Γ▸' o '3.0 capas▸' prendida. Vale para todas las que esten prendidas. La estela por vela (guiones o rombos) de D1/D2 del libro ES, del 0Γ del libro ES y de las capas SPX/SPY. Segun el perfil = Si. No toca las F1-F8, los majors por OI ni el apoyo (tienen su estela propia).")]
         public Tri3 Ver3Estela { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "↳ ver 0Γ raya", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 59, Description = "Necesita la llave '3.0 NQ 0Γ▸' prendida. Solo cambia algo con '↳ rayas largas' prendida (por defecto apagada). La raya punteada del zero de NQ que cruza el grafico (Segun el perfil = Si).")]
+        [Display(Name = "↳ ver 0Γ raya", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 59, Description = "Necesita la llave '3.0 ES 0Γ▸' prendida. Solo cambia algo con '↳ rayas largas' prendida (por defecto apagada). La raya punteada del zero del libro ES que cruza el grafico (Segun el perfil = Si).")]
         public Tri3 Ver3Zero { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "↳ ver 0Γ estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 58, Description = "Necesita la llave '3.0 NQ 0Γ▸' prendida. Tambien necesita '↳ NQ 0Γ' prendida y '↳ ver estela' en Si (el default). La estela del zero de NQ por vela cerrada: rombos verdes o guiones grises segun 'Zero gamma: estilo de la estela' (grupo 9.3). Segun el perfil = Si. 3.1.2 (pedido del operador): para ver donde estuvo el flip y si el precio reacciono ahi. Lo medido en el laboratorio: como nivel de rebote el zero rebota igual que su placebo y cambia 26-31 veces por hora; la caja negra lo graba como fam ZERO para medirlo con muestra nueva.")]
+        [Display(Name = "↳ ver 0Γ estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 58, Description = "Necesita la llave '3.0 ES 0Γ▸' prendida. Tambien necesita '↳ ES 0Γ' prendida y '↳ ver estela' en Si (el default). La estela del zero del libro ES por vela cerrada: rombos verdes o guiones grises segun 'Zero gamma: estilo de la estela' (grupo 9.3). Segun el perfil = Si. 3.1.2 (pedido del operador): para ver donde estuvo el flip y si el precio reacciono ahi. Lo medido en el laboratorio (NQ): como nivel de rebote el zero rebota igual que su placebo y cambia 26-31 veces por hora; SIN MEDIR EN ES. La caja negra lo graba como fam ZERO para medirlo con muestra nueva.")]
         public Tri3 Ver3EstelaZero { get; set; } = Tri3.SegunPerfil;
 
         [Display(Name = "Zero gamma: estilo de la estela", GroupName = "9.3 3.0 · Pantalla", Order = 1032,
@@ -210,19 +210,19 @@ namespace PythiaGexCinco
         [Display(Name = "↳ ver tunel", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 61, Description = "Necesita la llave '3.0 tunel▸' prendida. Segun el perfil = Si. Con No la llave no dibuja nada.")]
         public Tri3 Ver3Tunel { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "↳ toques", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 40, Description = "Necesita la llave '3.0 NQ dom▸' prendida. La marca de toque (un bloque de una vela de ancho) en la vela que llega a D1 o D2. Segun el perfil = Si.")]
+        [Display(Name = "↳ toques", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 40, Description = "Necesita la llave '3.0 ES dom▸' prendida. La marca de toque (un bloque de una vela de ancho) en la vela que llega a D1 o D2. Segun el perfil = Si.")]
         public Tri3 Ver3Toques { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "↳ ver majors", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 44, Description = "Necesita la llave '3.0 NQ dom▸' prendida. Si los majors por volumen de NQ ('↳ NQ M+ vol' y '↳ NQ M− vol') se ven. Segun el perfil: no en NQ con Limpio (el default), si con ConMajors o Todo, y en ES siempre. El rotulo siempre; la raya ademas con '↳ rayas largas' y dentro del radio de dibujo. Tambien la usa el '3.0 libro▸'.")]
+        [Display(Name = "↳ ver majors", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 44, Description = "Necesita la llave '3.0 ES dom▸' prendida. Si los majors por volumen del libro ES ('↳ ES M+ vol' y '↳ ES M− vol') se ven. Segun el perfil: en ES siempre (en NQ no con Limpio, si con ConMajors o Todo). El rotulo siempre; la raya ademas con '↳ rayas largas' y dentro del radio de dibujo. Tambien la usa el '3.0 libro▸'.")]
         public Tri3 Ver3Majors { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "↳ ver rotulos", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 90, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. Los rotulos de la 3.0 (la columna de nombres al lado de las velas). Segun el perfil = Si.")]
+        [Display(Name = "↳ ver rotulos", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 90, Description = "Necesita alguna de las llaves '3.0 ES dom▸', '3.0 ES 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. Los rotulos de la 3.0 (la columna de nombres al lado de las velas). Segun el perfil = Si.")]
         public Tri3 Ver3Rotulos { get; set; } = Tri3.SegunPerfil;
 
         [Display(Name = "↳ ver cabecera", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 88, Description = "Necesita la llave '3.0 cabecera▸' prendida. El renglon de la cabecera (Segun el perfil = Si). Con No queda solo el cartel de estado cuando hace falta.")]
         public Tri3 Ver3Cabecera { get; set; } = Tri3.SegunPerfil;
 
-        [Display(Name = "↳ barras perfil", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 47, Description = "Necesita la llave '3.0 NQ dom▸' prendida. Las barras del perfil de GEX a la izquierda. Ninguna por defecto; Izquierda: ancho maximo 12 % del lienzo, alpha 50 %, sin pelotitas ni montos. Segun el perfil = solo con '↳ perfil visual' en Todo.")]
+        [Display(Name = "↳ barras perfil", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 47, Description = "Necesita la llave '3.0 ES dom▸' prendida. Las barras del perfil de GEX a la izquierda. Ninguna por defecto; Izquierda: ancho maximo 12 % del lienzo, alpha 50 %, sin pelotitas ni montos. Segun el perfil = solo con '↳ perfil visual' en Todo.")]
         public BarrasLado3 Barras3Lado { get; set; } = BarrasLado3.SegunPerfil;
 
         [Display(Name = "Radio de dibujo en puntos (0 = auto: 150 NQ / 40 ES)", GroupName = "9.3 3.0 · Pantalla", Order = 1090,
@@ -247,7 +247,7 @@ namespace PythiaGexCinco
         [Range(0, 5000)]
         public int Estela3VelasAtras { get; set; } = 0;
 
-        [Display(Name = "↳ sesion ant.", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 94, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. 3.0.5: lo de antes del inicio de sesion (18:00 NY) se dibuja al 45 % en vez de esconderse: estelas, toques, rombos, majors por OI y F1-F8.")]
+        [Display(Name = "↳ sesion ant.", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 94, Description = "Necesita alguna de las llaves '3.0 ES dom▸', '3.0 ES 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. 3.0.5: lo de antes del inicio de sesion (18:00 NY) se dibuja al 45 % en vez de esconderse: estelas, toques, rombos, majors por OI y F1-F8.")]
         public bool Estela3SesionAnterior { get; set; } = true;
 
         [Display(Name = "Tunel: alpha (%)", GroupName = "9.3 3.0 · Pantalla", Order = 1130)]
@@ -293,28 +293,30 @@ namespace PythiaGexCinco
         // ------------------------------------------------------------------
         // 4.1: lo que DIBUJA la 3.0, apagado por defecto. Casillas NUEVAS (nunca existieron en ningun .ws: el default vale). Con una
         // prendida, esa parte se dibuja EXACTAMENTE como en la 3.0 (deciden los ajustes de la 3.0 de los grupos 2-9). Con todas apagadas
-        // OnRender no entra a Pintar. La CUENTA de la 3.0 (libro NQ, capas NDX/QQQ, regla Tres, estela) corre siempre: TRES_* sale de ahi.
+        // OnRender no entra a Pintar. La CUENTA de la 3.0 (5.0: libro ES, capas SPX/SPY, regla Tres, estela) corre siempre: TRES_* sale de ahi.
+        // 5.0 (27-10-2026, P4): las llaves dicen ES/SPX/SPY ("3.0 ES dom▸", "3.0 ES 0Γ▸"); mismos nombres de propiedad y mismos Order. La
+        // primera frase de cada descripcion del grupo dice que llave necesita (GammaHoyTresCasillas la lee para el log).
         // ------------------------------------------------------------------
 
-        [Display(Name = "3.0 NQ dom▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 37, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. Lo de NQ que dibuja la 3.0: la estela de D1/D2, las marcas de toque, los majors por volumen y por OI, las barras del perfil y sus rotulos; ADEMAS los majors por OI de NDX y QQQ, el apoyo y los cruces del zero (asi esta en el codigo). Apagada: no se dibuja nada de eso (se calcula igual). Lo comun a varias llaves (ver estela, ver rotulos, rayas largas, sesion anterior, atravesadas) esta al final del grupo.")]
+        [Display(Name = "3.0 ES dom▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 37, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. Lo del libro ES (opciones del futuro por Rithmic) que dibuja la 3.0: la estela de D1/D2, las marcas de toque, los majors por volumen y por OI, las barras del perfil y sus rotulos; ADEMAS los majors por OI de SPX y SPY, el apoyo y los cruces del zero (asi esta en el codigo). Apagada: no se dibuja nada de eso (se calcula igual). Lo comun a varias llaves (ver estela, ver rotulos, rayas largas, sesion anterior, atravesadas) esta al final del grupo.")]
         public bool Tres41Dominantes { get; set; } = false;
 
-        [Display(Name = "3.0 tunel▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 60, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. La franja entre D1 y D2 de NQ de la 3.0, desde la ultima vela hasta el eje, si las dos estan dentro del radio de dibujo. 4.1.5d: se prende SOLA con esta llave (antes ademas hacia falta 'Tunel sombreado' de 9.7, que estaba apagado: no dibujaba nada).")]
+        [Display(Name = "3.0 tunel▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 60, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. La franja entre D1 y D2 del libro ES de la 3.0, desde la ultima vela hasta el eje, si las dos estan dentro del radio de dibujo (ES 40 pts). 4.1.5d: se prende SOLA con esta llave (antes ademas hacia falta 'Tunel sombreado' de 9.7, que estaba apagado: no dibujaba nada).")]
         public bool Tres41Tunel { get; set; } = false;
 
-        [Display(Name = "3.0 NQ 0Γ▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 56, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. El zero gamma de NQ de la 3.0: su estela por vela, su raya larga y su rotulo. Apagada: no se dibuja (se calcula igual). Lo comun a varias llaves esta al final del grupo.")]
+        [Display(Name = "3.0 ES 0Γ▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 56, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. El zero gamma del libro ES de la 3.0: su estela por vela, su raya larga y su rotulo. Apagada: no se dibuja (se calcula igual). Lo comun a varias llaves esta al final del grupo.")]
         public bool Tres41Zero { get; set; } = false;
 
-        [Display(Name = "3.0 capas▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 62, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. Las capas NDX y QQQ de la 3.0 (CBOE, 15 min tarde): D1-D3, el 0Γ con su techo/piso, la linea al eje y sus rotulos (con 'Capa NDX' y 'Capa QQQ' en Propia, grupo 9.3: el default). Se CALCULAN igual: TRES_SPX y TRES_SPY de la Familia salen de ahi. Los majors por OI de NDX y QQQ NO van con esta llave: van con '3.0 NQ dom▸'. Lo comun a varias llaves esta al final del grupo.")]
+        [Display(Name = "3.0 capas▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 62, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. Las capas SPX y SPY de la 3.0 (CBOE, 15 min tarde, llevadas a ES con su base y su razon): D1-D3, el 0Γ con su techo/piso, la linea al eje y sus rotulos (con 'Capa SPX' y 'Capa SPY' en Propia, grupo 9.3: el default). Solo en un grafico de ES/MES. Se CALCULAN igual: TRES_SPX y TRES_SPY de la Familia salen de ahi. Los majors por OI de SPX y SPY NO van con esta llave: van con '3.0 ES dom▸'. Lo comun a varias llaves esta al final del grupo.")]
         public bool Tres41Capas { get; set; } = false;
 
-        [Display(Name = "3.0 libro▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 85, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. La pestañita 'LIBRO NQ ▸' de la 3.0 (el recuadro del libro: niveles cercanos con GEX por volumen y por OI, muros, majors y neto). Apagada tampoco toma el clic (la pestaña de la 5.0 va en la misma esquina).")]
+        [Display(Name = "3.0 libro▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 85, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. La pestañita 'LIBRO ES ▸' de la 3.0 (el recuadro del libro ES: niveles cercanos con GEX por volumen y por OI, muros a +-25 pts, majors y neto). Apagada tampoco toma el clic (la pestaña de la 5.0 va en la misma esquina).")]
         public bool Tres41Recuadro { get; set; } = false;
 
-        [Display(Name = "3.0 cabecera▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 87, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. La cabecera de la 3.0: un renglon arriba a la izquierda con el estado del libro NQ y sus niveles, y el cartel de estado (LIBRO VIVO CAIDO, SIN CADENA, MERCADO CERRADO) cuando hace falta. La 5.0 tiene su propia pestaña con fuentes y edades.")]
+        [Display(Name = "3.0 cabecera▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 87, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. La cabecera de la 3.0: un renglon arriba a la izquierda con el estado del libro ES y sus niveles, y el cartel de estado (LIBRO VIVO CAIDO, SIN CADENA, MERCADO CERRADO) cuando hace falta. La 5.0 tiene su propia pestaña con fuentes y edades.")]
         public bool Tres41Cabecera { get; set; } = false;
 
-        [Display(Name = "3.0 F1-F8▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 76, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. Las formulas de dominantes de la 3.0 dibujadas a la vez para juzgarlas (F1..F8, cada una en su color, con su estela y un rotulo chico). Apagada: no se dibuja ninguna (se calculan igual). F7 son los majors por OI: '↳ NQ M+ OI' y siguientes, con '3.0 NQ dom▸'. Lo comun a varias llaves esta al final del grupo.")]
+        [Display(Name = "3.0 F1-F8▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 76, Description = "Llave: sin ella no se dibuja ninguno de los renglones con ↳ que la siguen. Las formulas de dominantes de la 3.0 dibujadas a la vez para juzgarlas (F1..F8, cada una en su color, con su estela y un rotulo chico). Apagada: no se dibuja ninguna (se calculan igual). F7 son los majors por OI: '↳ ES M+ OI' y siguientes, con '3.0 ES dom▸'. Lo comun a varias llaves esta al final del grupo.")]
         public bool Tres41Formulas { get; set; } = false;
 
         /// <summary>4.1: hay algo de la 3.0 para dibujar.</summary>
@@ -504,7 +506,7 @@ namespace PythiaGexCinco
                     else if (L != null && L.SinBase) Log("la cuenta vino SinBase (no deberia: EsFuturo=true)");
                 }
                 else lock (_candado) { _strikesUtiles = utiles; }
-                ActualizarCapas(raiz, fut, ahora);   // capas QQQ/NDX de CBOE (06-10): se bajan, se cuentan y se guardan aparte
+                ActualizarCapas(raiz, fut, ahora);   // capas de CBOE (06-10; 5.0: SPY/SPX, solo con raiz ES): se leen, se cuentan y se guardan aparte
 
                 RecalcularInicioSesion();
                 SembrarMemoriaSiHaceFalta(raiz);   // la memoria: estela guardada + rebobinado de viva3 (06-10)
@@ -757,20 +759,20 @@ namespace PythiaGexCinco
                 string linea = "{\"t\":\"" + horaUtc.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", inv) + "\",\"d\":[" + d + "]" + extra + "}";
                 Registro.Anexar(ruta, linea);
                 // GANCHO-4.1 familia (TRES_ES / TRES_SPX / TRES_SPY): la MISMA linea que va al archivo, despues del control de escritor unico
-                // (solo postea el dueño de la raiz). raiz = "NQ" | "NDX" | "QQQ". La lee el motor como la vista previa: d[0..1] > 15000, vida
-                // 300 s (NQ) / 1500 s (NDX, QQQ). Al reiniciar, el motor lee PythiaGex5\estela\estela-<raiz>-<dia>.jsonl (los mismos renglones).
+                // (solo postea el dueño de la raiz). 5.0: raiz = "ES" (libro primario, desde Tick) | "SPX" | "SPY" (capas, GammaHoyTresCapas). La lee
+                // el motor como la vista previa: d[0..1] > 3750 (AlmacenTres.PISO_ESTELA; la 4.1: 15000), vida 300 s (ES) / 1500 s (SPX, SPY), todo
+                // en precio del grafico. Al reiniciar, el motor lee PythiaGex5\estela\estela-<raiz>-<dia>.jsonl (los mismos renglones).
                 try { Familia.AdaptadoresFamilia.AlEstela?.Invoke(raiz, linea); } catch (Exception e) { Registro.Excepcion(LOG, "GuardarEstela.AlEstela", e); }
             }
             catch (Exception e) { Registro.Excepcion(LOG, "GuardarEstela", e); }
         }
 
         /// <summary>4.1.2 (montos en las etiquetas): el campo nuevo ,"gm":[m1,m2] de la estela, alineado con d[0]/d[1]: el GEX NETO con signo del
-        /// strike elegido para cada dominante / 1e6 en unidades de la FAMILIA (NQ x0,2: la 3.0 cuenta con multiplicador 100 y el NQ es 20;
-        /// NDX/QQQ x1), con el libro que dice "b" (vol u OI). null donde no hay monto: d[i] es 0 (no hay dominante), el relleno +-1e6 del tunel
-        /// por cruces (de noche con la regla Tres: los cruces de signo no son strikes), una vigente de la histeresis cuyo strike no esta en el
-        /// perfil (Gex 0), cualquier valor que no sea exactamente el GexVol/GexOi de un strike del perfil, o una raiz sin unidad de familia
-        /// (ES/RTY). La regla y las unidades viven en Familia.AlmacenTres (MontosDominantes3/CampoGm), el mismo archivo que lo lee; el arnes fam
-        /// (atas/_test_cuatro_paridad/fam, modo gm) las corre con lecturas REALES del nucleo sobre las cadenas de CBOE.</summary>
+        /// strike elegido para cada dominante / 1e6 en unidades de la FAMILIA (5.0: ES x0,5, la 3.0 cuenta con multiplicador 100 y el ES es 50;
+        /// SPX/SPY x1; la 4.1: NQ x0,2), con el libro que dice "b" (vol u OI). null donde no hay monto: d[i] es 0 (no hay dominante), el relleno
+        /// +-1e6 del tunel por cruces (de noche con la regla Tres: los cruces de signo no son strikes), una vigente de la histeresis cuyo strike no
+        /// esta en el perfil (Gex 0), cualquier valor que no sea exactamente el GexVol/GexOi de un strike del perfil, o una raiz sin unidad de
+        /// familia. La regla y las unidades viven en Familia.AlmacenTres (MontosDominantes3/CampoGm), el mismo archivo que lo lee.</summary>
         private static string CampoGmEstela(string raiz, GammaHoyNucleo.Lectura L)
         {
             try
@@ -954,7 +956,7 @@ namespace PythiaGexCinco
                 }
             }
 
-            // ---- capas QQQ / NDX (06-10): su estela en su color y sus rotulos; la fusion con D1/D2 de NQ va al rotulo de NQ
+            // ---- capas (06-10; 5.0: SPY / SPX): su estela en su color y sus rotulos; la fusion con D1/D2 del libro ES va al rotulo de ES
             int XBar(int b) { try { return cont.GetXByBar(b, false); } catch { return int.MinValue; } }
             // 4.1: cada parte con su casilla Tres41* (las capas se calculan igual: ActualizarCapas no mira estas casillas)
             var extra = Tres41Capas ? PintarCapas(g, XBar, area, xr, piso, desde, hasta, horas, fut, radioDib, es, Y, EnPantalla) : new ExtraRotulos();
@@ -992,7 +994,7 @@ namespace PythiaGexCinco
             double rMaj = Math.Max(20, MajorOi3RadioMaxPts);   // 3.6.1: majors por interes abierto como dominantes (pedido 08-10 sobre 31.350)
             if ((todos || Tres41Dominantes) && Raya3NqMasOi && L != null && !double.IsNaN(L.MpOi) && L.MpOi > 0 && Math.Abs(L.MpOi - fut) <= rMaj) cand.Add((raiz + " M+ OI", L.MpOi, ColPos, false, ""));
             if ((todos || Tres41Dominantes) && Raya3NqMenosOi && L != null && !double.IsNaN(L.MnOi) && L.MnOi > 0 && Math.Abs(L.MnOi - fut) <= rMaj) cand.Add((raiz + " M− OI", L.MnOi, ColNeg, false, ""));
-            // fusion: un nivel de capa que coincide con D1/D2 de NQ le suma su sigla al rotulo (NQ·QQQ D1), no se dibuja aparte
+            // fusion: un nivel de capa que coincide con D1/D2 del libro primario le suma su sigla al rotulo (5.0: ES·SPX D1), no se dibuja aparte
             if (!Rayas3Independientes && extra != null && extra.Fusion.Count > 0)   // 3.5.0: independientes = sin fusion
             {
                 double fus = (double)Math.Max(0.25m, Capa3FusionPts);

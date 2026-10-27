@@ -26,8 +26,8 @@ namespace PythiaGexCinco
         [System.ComponentModel.Description("F2 Una por lado por volumen: el strike con mas |GEX vol| arriba y abajo del precio en el radio (como la clasica)")] UnoPorLadoVol,
         [System.ComponentModel.Description("F3 Una por lado por OI: el strike con mas |GEX OI| arriba y abajo del precio en el radio")] UnoPorLadoOi,
         [System.ComponentModel.Description("F4 Una por lado, volumen + OI: el strike con mas |GEX vol| + |GEX OI| arriba y abajo")] UnoPorLadoVolOi,
-        [System.ComponentModel.Description("F5 Muros por volumen: el mayor GEX de calls y el mayor de puts a +-100 pts (como la pagina)")] MurosVol,
-        [System.ComponentModel.Description("F6 Muros por OI: el mayor GEX de calls y el mayor de puts por interes abierto a +-100 pts")] MurosOi,
+        [System.ComponentModel.Description("F5 Muros por volumen: el mayor GEX de calls y el mayor de puts a +-25 pts en ES (+-100 en NQ, como la pagina)")] MurosVol,
+        [System.ComponentModel.Description("F6 Muros por OI: el mayor GEX de calls y el mayor de puts por interes abierto a +-25 pts en ES (+-100 en NQ)")] MurosOi,
         [System.ComponentModel.Description("F7 Majors por OI: el mayor GEX neto positivo y el mayor negativo por interes abierto")] MajorsOi,
         [System.ComponentModel.Description("F8 Las dos mas grandes por volumen (como la 2.0), sin importar el lado")] DosMasGrandesVol,
     }
@@ -44,18 +44,19 @@ namespace PythiaGexCinco
         public int Doms3MantenerPct { get; set; } = 80;
 
         // ---- 3.6.1: las formulas a la vez, para juzgarlas a ojo
-        [Display(Name = "↳ F1-F8 ver▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 77, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Sub-llave: sin ella no se dibuja ninguna de las F1-F8 de abajo. 3.6.1. Cada formula de dominantes dibujada a la vez, con su color, su estela por vela y un rotulo chico. F7 son los majors por OI ('↳ NQ M+ OI' y siguientes, con la llave '3.0 NQ dom▸').")]
+        [Display(Name = "↳ F1-F8 ver▸", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 77, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Sub-llave: sin ella no se dibuja ninguna de las F1-F8 de abajo. 3.6.1. Cada formula de dominantes dibujada a la vez, con su color, su estela por vela y un rotulo chico. F7 son los majors por OI ('↳ ES M+ OI' y siguientes, con la llave '3.0 ES dom▸'). SIN MEDIR EN ES.")]
         public bool Formulas3Ver { get; set; } = true;
         [Display(Name = "↳ F1 cruce", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 78, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F1 Cruces de signo (3.3.3): el cruce mas cercano por lado. Se pega al precio. Color gris claro.")] public bool Formula3F1 { get; set; } = true;
         [Display(Name = "↳ F2 lado vol", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 79, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F2 Una por lado por volumen: el strike con mas |GEX vol| arriba y abajo del precio en el radio (como la clasica). Color naranja.")] public bool Formula3F2b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
         [Display(Name = "↳ F3 lado OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 80, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F3 Una por lado por OI: el strike con mas |GEX OI| arriba y abajo del precio en el radio. Color violeta.")] public bool Formula3F3b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
         [Display(Name = "↳ F4 lado v+OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 81, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F4 Una por lado, volumen + OI: el strike con mas |GEX vol| + |GEX OI| arriba y abajo. Color lila.")] public bool Formula3F4b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
-        [Display(Name = "↳ F5 muros vol", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 82, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F5 Muros por volumen: el mayor GEX de calls y el mayor de puts a +-100 pts (como la pagina). Color verde lima.")] public bool Formula3F5 { get; set; } = true;
-        [Display(Name = "↳ F6 muros OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 83, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F6 Muros por OI: el mayor GEX de calls y el mayor de puts por interes abierto a +-100 pts. Color rosa.")] public bool Formula3F6b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
+        [Display(Name = "↳ F5 muros vol", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 82, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F5 Muros por volumen: el mayor GEX de calls y el mayor de puts a +-25 pts en ES (los +-100 de NQ / 4, como la pagina). Color verde lima.")] public bool Formula3F5 { get; set; } = true;
+        [Display(Name = "↳ F6 muros OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 83, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F6 Muros por OI: el mayor GEX de calls y el mayor de puts por interes abierto a +-25 pts en ES (+-100 en NQ). Color rosa.")] public bool Formula3F6b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
         [Display(Name = "↳ F8 como 2.0", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 84, Description = "Necesita la llave '3.0 F1-F8▸' prendida. Tambien necesita '↳ F1-F8 ver▸' prendida. F8 Las dos mas grandes por volumen (como la 2.0), sin importar el lado. Color celeste.")] public bool Formula3F8b { get; set; } = false;   // 3.6.2: el operador se quedo con F1 y F5
-        [Display(Name = "Formulas: hasta cuantos pts del precio", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 1020)]
-        [Range(20, 400)]
-        public int Formulas3RadioPts { get; set; } = 150;
+        [Display(Name = "Formulas: hasta cuantos pts del precio (0 = el radio de dibujo: 40 ES / 150 NQ)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 1020,
+                 Description = "Las F1-F8 se dibujan solo a esta distancia del precio. 5.0: 0 por defecto = el radio de dibujo del libro (ES 40, NQ 150: el 150 fijo de la 4.1 en ES abarcaba casi toda la cadena).")]
+        [Range(0, 400)]
+        public int Formulas3RadioPts { get; set; } = 0;
 
         private static readonly FormulaDoms3[] FormulasJuzgar = { FormulaDoms3.Cruces, FormulaDoms3.UnoPorLadoVol, FormulaDoms3.UnoPorLadoOi, FormulaDoms3.UnoPorLadoVolOi, FormulaDoms3.MurosVol, FormulaDoms3.MurosOi, FormulaDoms3.DosMasGrandesVol };
         private static readonly Color[] ColFormula = { Color.FromArgb(235, 235, 235), Color.FromArgb(255, 152, 0), Color.FromArgb(224, 64, 251), Color.FromArgb(149, 117, 255), Color.FromArgb(174, 234, 0), Color.FromArgb(255, 105, 180), Color.FromArgb(64, 196, 255) };
@@ -65,7 +66,21 @@ namespace PythiaGexCinco
         private readonly Dictionary<DateTime, double[]> _estelaFormulas = new Dictionary<DateTime, double[]>();   // 2 niveles por formula de FormulasJuzgar
         private double _fTecho = double.NaN, _fPiso = double.NaN, _fTechoM = double.NaN, _fPisoM = double.NaN;
 
-        private double RadioFormula(FormulaDoms3 f, double fut, string raiz) => f == FormulaDoms3.MurosVol || f == FormulaDoms3.MurosOi ? 100.0 : Math.Min(fut * 0.02, RadioDominantes(raiz));
+        private double RadioFormula(FormulaDoms3 f, double fut, string raiz) => f == FormulaDoms3.MurosVol || f == FormulaDoms3.MurosOi ? RadioMuros(raiz) : Math.Min(fut * 0.02, RadioDominantes(raiz));
+
+        // ------------------------------------------------------------------ 5.0 (27-10-2026, P4): distancias del nucleo por raiz
+        // Las constantes en puntos de NQ que no miraban la raiz se reescalan con el cociente de precios NQ/ES MEDIDO (3,82-3,86, DISENO 4: /4,
+        // redondeado a ticks de 0,25), como ya hacian RadioDominantes / RadioDibujo / ZonaToque / Lejos. RTY con 0,2, el mismo cociente que
+        // esas ramas (20/100, 30/150, 3/15). Las que salen de la ESTRUCTURA DE STRIKES (paso 5 en ES, SPX y NQ) no se tocan.
+
+        /// <summary>Factor de las distancias en puntos de NQ: ES 0,25, RTY 0,2, NQ (y lo demas) 1.</summary>
+        private static double EscalaRaiz(string raiz) => raiz == "ES" ? 0.25 : raiz == "RTY" ? 0.2 : 1.0;
+        /// <summary>Una distancia de NQ llevada a la raiz y redondeada a ticks de 0,25 (piso: un tick).</summary>
+        private static double PtsRaiz(double ptsNq, string raiz) => Math.Max(0.25, Math.Round(ptsNq * EscalaRaiz(raiz) / 0.25, MidpointRounding.AwayFromZero) * 0.25);
+        /// <summary>Radio de los muros de F5/F6 y del recuadro: los +-100 pts de la pagina en NQ -> ES 25, RTY 20.</summary>
+        private static double RadioMuros(string raiz) => PtsRaiz(100.0, raiz);
+        /// <summary>Hasta donde se dibujan las F1-F8: el ajuste, o (0) el radio de dibujo del libro (ES 40, NQ 150).</summary>
+        private double RadioFormulasDibujo(string raiz) => Formulas3RadioPts > 0 ? Math.Max(5, Formulas3RadioPts) : RadioDibujo(raiz);
 
         private static Func<GammaHoyNucleo.Strike, double> FuerzaFormula(FormulaDoms3 f)
         {
@@ -162,7 +177,7 @@ namespace PythiaGexCinco
                 int bw = 5;
                 { int xa = XBar(desde), xb = XBar(hasta); if (hasta > desde && xa != int.MinValue && xb != int.MinValue) bw = Math.Max(3, (xb - xa) / Math.Max(1, hasta - desde)); }
                 int ancho = Math.Max(3, bw - 1);
-                double radio = Math.Max(20, Formulas3RadioPts);
+                double radio = RadioFormulasDibujo(Raiz());   // 5.0: por raiz (la 4.1: max(20, 150) fijo)
                 foreach (var kv in est)
                 {
                     int b = kv.Key; if (b < desde || b > hasta) continue;

@@ -16,6 +16,9 @@
 // lo dice: al arrancar, "prendidas SIN dibujo por su llave apagada: N (...)" (lo que midio el verificador a mano el 09-10: 8 de 28), y en cada
 // cambio, si esa casilla queda prendida con su llave apagada, " · su llave '...' esta APAGADA: no se dibuja". Solo texto del log: no cambia el dibujo.
 // No recalcula nada (ni la Familia ni la 3.0): solo redibuja. Nunca tira.
+// 5.0 (27-10-2026, P4): las llaves del nucleo dicen ES ('3.0 ES dom▸', '3.0 ES 0Γ▸') y las casillas de capas SPX/SPY ('↳ SPX D1', '↳ SPY 0Γ',
+// ...); toda descripcion del grupo que las nombra en su primera frase se reescribio con el nombre nuevo, asi este reloj las sigue encontrando.
+// grupo_arriba_415e.py lee la 4.1 (PythiaGexCuatro), no la 5.0: la jerarquia de la 5.0 sale del codigo de este grupo tal cual.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

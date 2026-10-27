@@ -14,8 +14,10 @@ namespace PythiaGexCinco
     /// RECUADRO DEL LIBRO (3.5.7, 08-10-2026). Pedido del operador sobre la maqueta 10: "la 1 pero sacale el precio y agregale este recuadro ... con
     /// los datos cruzados con el libro profundo: muro de calls y puts, los majors, la gamma o gex, lo que miran los expertos de un libro cuando se
     /// acerca el precio" y "separalo por volumen y por OI: ven cual baja o sube en tiempo real".
-    /// Arriba: los N niveles dibujados mas cercanos por encima y por debajo del precio, cada uno con el GEX del libro de NQ en su strike mas
-    /// cercano, por volumen de hoy y por interes abierto (de ayer), con una flecha de cambio en los ultimos M minutos.
+    /// Arriba: los N niveles dibujados mas cercanos por encima y por debajo del precio, cada uno con el GEX del libro del grafico (5.0: ES) en su
+    /// strike mas cercano, por volumen de hoy y por interes abierto (de ayer), con una flecha de cambio en los ultimos M minutos.
+    /// 5.0 (27-10-2026, P4): el radio de los muros pasa a ser por raiz (ES 25; la 4.1: 100 fijo). La busqueda del strike mas cercano (7,5 y
+    /// 2,5 pts) no cambia: sale del paso de strike, que es 5 en ES igual que en NQ.
     /// Abajo: muro de calls y de puts (el mayor GEX de UN lado a +-radio del precio, como k_muro_calls/k_muro_puts de motor.py), majors y neto,
     /// cada uno por volumen y por OI. Describe el libro; no dice para donde va el precio.
     /// </summary>
@@ -39,7 +41,7 @@ namespace PythiaGexCinco
                  Description = "3.5.7. Minimal (default, maqueta 1 elegida el 08-10): el nombre del nivel en su color, al lado de la ultima vela, sin caja y sin precio (el precio esta en el recuadro). Columna: los chips de la 3.5.5.")]
         public EstiloRotulos3 Rotulos3Estilo { get; set; } = EstiloRotulos3.Minimal;
 
-        [Display(Name = "↳ ver libro", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 86, Description = "Necesita la llave '3.0 libro▸' prendida. 3.6.2. Plegado por defecto: una pestañita 'LIBRO NQ ▸'; un clic lo abre y un clic en su titulo lo cierra (pedido 08-10: 'me molestaba para la lectura, algo mas chico o desplegable'). Adentro: niveles cercanos con GEX por volumen y por OI, muros, majors y neto.")]
+        [Display(Name = "↳ ver libro", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 86, Description = "Necesita la llave '3.0 libro▸' prendida. 3.6.2. Plegado por defecto: una pestañita 'LIBRO ES ▸'; un clic lo abre y un clic en su titulo lo cierra (pedido 08-10: 'me molestaba para la lectura, algo mas chico o desplegable'). Adentro: niveles cercanos con GEX del libro ES por volumen y por OI, muros, majors y neto.")]
         public bool RecuadroLibro3Ver { get; set; } = true;
 
         private bool _recuadroAbierto;
@@ -73,9 +75,9 @@ namespace PythiaGexCinco
         [Range(1, 30)]
         public int Recuadro3CambioMin { get; set; } = 5;
 
-        [Display(Name = "Muros: radio (pts)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1015, Description = "El muro de calls (puts) es el strike con mas GEX de calls (puts) a esta distancia del precio, como en la pagina Profundidad.")]
-        [Range(20, 400)]
-        public int Recuadro3RadioMuros { get; set; } = 100;
+        [Display(Name = "Muros: radio (pts, 0 = auto: 25 ES / 100 NQ)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1015, Description = "El muro de calls (puts) es el strike con mas GEX de calls (puts) a esta distancia del precio, como en la pagina Profundidad. 5.0: 0 por defecto = los +-100 de NQ llevados a la raiz (ES 25, cociente de precios / 4).")]
+        [Range(0, 400)]
+        public int Recuadro3RadioMuros { get; set; } = 0;
 
         [Display(Name = "Tamaño (%)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1016)]
         [Range(50, 130)]
@@ -146,7 +148,7 @@ namespace PythiaGexCinco
             if (L == null || L.Perfil == null || L.Perfil.Count == 0 || fut <= 0) return;
             long minuto = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMinute;
             int nMin = Math.Max(1, Math.Min(30, Recuadro3CambioMin));
-            double radioM = Math.Max(20, Recuadro3RadioMuros);
+            double radioM = Recuadro3RadioMuros > 0 ? Math.Max(5, Recuadro3RadioMuros) : RadioMuros(raiz);   // 5.0: por raiz (la 4.1: max(20, 100) fijo)
             var mV = Muros(L.Perfil, fut, radioM, true);
             var mO = Muros(L.Perfil, fut, radioM, false);
             FotoRec viejo;

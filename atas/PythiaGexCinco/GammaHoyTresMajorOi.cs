@@ -19,36 +19,39 @@ namespace PythiaGexCinco
     /// (se ven aunque esten lejos: rotulo con flecha en el borde). Estela por vela: NQ verde / roja; NDX y QQQ en el color de su capa con un filo
     /// verde (M+) o rojo (M−). La estela se guarda en estela-*.jsonl ("m":[M+,M−]) y vuelve al reiniciar.
     /// Que el precio haya frenado ahi una vez no prueba nada: se mide en laboratorio/tres (extremos_dibujado.py) como cualquier otra raya.
+    /// 5.0 (27-10-2026, P4): en la 5.0 los libros son ES (primario, Rithmic) y las capas SPX y SPY (CBOE): Raya3Ndx*Oi -> Raya3Spx*Oi y
+    /// Raya3Qqq*Oi -> Raya3Spy*Oi (DLL nueva, nada guardado); las Raya3Nq*Oi gobiernan el primario (rotulo "ES M+ OI"). SIN MEDIR EN ES.
     /// </summary>
     public partial class GammaCinco
     {
-        [Display(Name = "↳ NQ M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 41, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.1. Raya de dominante en el strike con mas GEX positivo por OI (p. ej. 31.350 el 08-10 a la noche): estela por vela y rotulo 'NQ M+ OI'. Tambien decide si entra (con su punto) en el '3.0 libro▸'.")]
+        [Display(Name = "↳ ES M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 41, Description = "Necesita la llave '3.0 ES dom▸' prendida. 3.6.1. Raya de dominante en el strike del libro ES con mas GEX positivo por OI: estela por vela y rotulo 'ES M+ OI'. Tambien decide si entra (con su punto) en el '3.0 libro▸'.")]
         public bool Raya3NqMasOi { get; set; } = true;
 
-        [Display(Name = "↳ NQ M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 42, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.1. Idem del lado negativo (puts): el strike con mas GEX negativo por OI. Tambien decide si entra (con su punto) en el '3.0 libro▸'.")]
+        [Display(Name = "↳ ES M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 42, Description = "Necesita la llave '3.0 ES dom▸' prendida. 3.6.1. Idem del lado negativo (puts): el strike del libro ES con mas GEX negativo por OI. Tambien decide si entra (con su punto) en el '3.0 libro▸'.")]
         public bool Raya3NqMenosOi { get; set; } = true;
 
-        [Display(Name = "↳ NDX M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 48, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major positivo por OI del libro de NDX (CBOE), estela en el color de la capa con filo verde; la edad del dato va en el rotulo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa NDX' en No (grupo 9.3) no hay dato.")]
-        public bool Raya3NdxMasOi { get; set; } = true;
-        [Display(Name = "↳ NDX M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 49, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major negativo por OI del libro de NDX (CBOE), filo rojo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa NDX' en No (grupo 9.3) no hay dato.")]
-        public bool Raya3NdxMenosOi { get; set; } = true;
-        [Display(Name = "↳ QQQ M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 50, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major positivo por OI del libro de QQQ (CBOE, por razon), estela en el color de la capa con filo verde; la edad del dato va en el rotulo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa QQQ' en No (grupo 9.3) no hay dato.")]
-        public bool Raya3QqqMasOi { get; set; } = true;
-        [Display(Name = "↳ QQQ M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 51, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.6.2. Major negativo por OI del libro de QQQ (CBOE, por razon), filo rojo. Va con la llave '3.0 NQ dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa QQQ' en No (grupo 9.3) no hay dato.")]
-        public bool Raya3QqqMenosOi { get; set; } = true;
+        [Display(Name = "↳ SPX M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 48, Description = "Necesita la llave '3.0 ES dom▸' prendida. 3.6.2. Major positivo por OI del libro de SPX (CBOE, llevado a ES con la base de la capa), estela en el color de la capa con filo verde; la edad del dato va en el rotulo. Va con la llave '3.0 ES dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa SPX' en No (grupo 9.3) no hay dato.")]
+        public bool Raya3SpxMasOi { get; set; } = true;
+        [Display(Name = "↳ SPX M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 49, Description = "Necesita la llave '3.0 ES dom▸' prendida. 3.6.2. Major negativo por OI del libro de SPX (CBOE), filo rojo. Va con la llave '3.0 ES dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa SPX' en No (grupo 9.3) no hay dato.")]
+        public bool Raya3SpxMenosOi { get; set; } = true;
+        [Display(Name = "↳ SPY M+ OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 50, Description = "Necesita la llave '3.0 ES dom▸' prendida. 3.6.2. Major positivo por OI del libro de SPY (CBOE, llevado a ES por la razon ES/SPY), estela en el color de la capa con filo verde; la edad del dato va en el rotulo. Va con la llave '3.0 ES dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa SPY' en No (grupo 9.3) no hay dato.")]
+        public bool Raya3SpyMasOi { get; set; } = true;
+        [Display(Name = "↳ SPY M− OI", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 51, Description = "Necesita la llave '3.0 ES dom▸' prendida. 3.6.2. Major negativo por OI del libro de SPY (CBOE, por razon), filo rojo. Va con la llave '3.0 ES dom▸' y NO con '3.0 capas▸' (asi esta en el codigo); con 'Capa SPY' en No (grupo 9.3) no hay dato.")]
+        public bool Raya3SpyMenosOi { get; set; } = true;
 
         [Display(Name = "Majors por OI: hasta cuantos pts del precio", GroupName = "9.7 3.0 · Rayas una por una", Order = 1008,
-                 Description = "3.6.2: 3000 = siempre (pedido 08-10). Fuera de pantalla queda el rotulo con flecha en el borde.")]
+                 Description = "3.6.2: 3000 = siempre (pedido 08-10; en ES tambien es 'siempre': el libro ES llega a +-2 % del precio y los de CBOE a +-5 %). Fuera de pantalla queda el rotulo con flecha en el borde.")]
         [Range(20, 5000)]
         public int MajorOi3RadioMaxPts { get; set; } = 3000;
 
-        private readonly Dictionary<DateTime, double[]> _estelaMajOi = new Dictionary<DateTime, double[]>();   // NQ: {M+ OI, M− OI} por hora de vela
+        private readonly Dictionary<DateTime, double[]> _estelaMajOi = new Dictionary<DateTime, double[]>();   // libro primario (5.0: ES): {M+ OI, M− OI} por hora de vela
         private readonly Dictionary<string, Dictionary<DateTime, double[]>> _estelaMajOiCapas = new Dictionary<string, Dictionary<DateTime, double[]>>(StringComparer.OrdinalIgnoreCase);
+        private const string MAJ_OI_PRIMARIO = "primario";   // 5.0: clave interna del libro primario (la 4.1 decia "NQ"); el rotulo lo arma Candidatos con la raiz
 
         private bool MajOiVisible(string libro, bool mas)
         {
-            if (string.Equals(libro, "NDX", StringComparison.OrdinalIgnoreCase)) return mas ? Raya3NdxMasOi : Raya3NdxMenosOi;
-            if (string.Equals(libro, "QQQ", StringComparison.OrdinalIgnoreCase)) return mas ? Raya3QqqMasOi : Raya3QqqMenosOi;
+            if (string.Equals(libro, "SPX", StringComparison.OrdinalIgnoreCase)) return mas ? Raya3SpxMasOi : Raya3SpxMenosOi;
+            if (string.Equals(libro, "SPY", StringComparison.OrdinalIgnoreCase)) return mas ? Raya3SpyMasOi : Raya3SpyMenosOi;
             return mas ? Raya3NqMasOi : Raya3NqMenosOi;
         }
 
@@ -90,14 +93,15 @@ namespace PythiaGexCinco
                     dM[v.TOpen] = new[] { pts[i].MpOi, pts[i].MnOi };
                 }
                 SembrarMajorOi(dM);
-                Log("memoria: majors OI de NQ desde la estela guardada en " + dM.Count + " velas");
+                Log("memoria: majors OI del libro " + Raiz() + " desde la estela guardada en " + dM.Count + " velas");
             }
             catch (Exception e) { Registro.Excepcion(LOG, "SembrarMajorOiArchivo", e); }
         }
 
         private void SembrarMajorOi(Dictionary<DateTime, double[]> d) { lock (_candado) foreach (var kv in d) if (!_estelaMajOi.ContainsKey(kv.Key)) _estelaMajOi[kv.Key] = kv.Value; }
 
-        /// <summary>Estela por vela de M+ OI / M− OI de NQ y de las capas, y los rotulos de las capas (los de NQ van por Candidatos).</summary>
+        /// <summary>Estela por vela de M+ OI / M− OI del libro primario (5.0: ES) y de las capas SPX/SPY, y los rotulos de las capas (los del
+        /// primario van por Candidatos).</summary>
         private void PintarMajorOi(RenderContext g, Func<int, int> XBar, int desde, int hasta, List<(int B, DateTime T)> horas, double fut,
                                    GammaHoyNucleo.Lectura L, Func<double, int> Y, Func<int, bool> EnPantalla, ExtraRotulos extra)
         {
@@ -116,7 +120,7 @@ namespace PythiaGexCinco
                 {
                     var est = new Dictionary<int, double[]>();
                     lock (_candado) foreach (var (b, t) in horas) if (_estelaMajOi.TryGetValue(t, out var e0)) est[b] = e0;
-                    libros.Add(("NQ", Color.Empty, est, L != null ? new[] { L.MpOi, L.MnOi } : null, "", false));
+                    libros.Add((MAJ_OI_PRIMARIO, Color.Empty, est, L != null ? new[] { L.MpOi, L.MnOi } : null, "", false));
                 }
                 foreach (var k in _capas)
                 {

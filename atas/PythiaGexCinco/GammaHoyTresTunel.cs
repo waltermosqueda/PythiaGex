@@ -20,17 +20,18 @@ namespace PythiaGexCinco
         [System.ComponentModel.Description("Strikes con fuerza (3.3.2): el mas cercano por lado con |gex| >= umbral del mayor del radio")] Strikes,
     }
 
-    /// <summary>3.6.5: de donde sale la base de NDX (indice -> futuro NQ).</summary>
-    public enum BaseNdx3
+    /// <summary>3.6.5: de donde sale la base de la capa aditiva (indice -> futuro). 5.0 (27-10-2026): la de SPX (indice -> futuro ES del grafico);
+    /// en la 4.1 era BaseNdx3 (NDX -> NQ).</summary>
+    public enum BaseSpx3
     {
-        [System.ComponentModel.Description("Recta de forwards de la cadena (la de la 2.0)")] Forwards,
-        [System.ComponentModel.Description("Mediana de la rueda (vela contra spot con 16 min de atraso)")] Rueda,
+        [System.ComponentModel.Description("Recta de forwards de la cadena (la de la 2.0), si pasa la cota del carry y no se aleja de la sincronizada")] Forwards,
+        [System.ComponentModel.Description("Mediana de la rueda (vela del MES a la hora del spot contra el spot de SPX, 900 s)")] Rueda,
     }
 
     public partial class GammaCinco
     {
         [Display(Name = "Tunel: con que se arma", GroupName = "9.2 3.0 · Lectura", Order = 1023,
-                 Description = "3.3.3. Cruces = techo y piso en los cruces de signo de la gamma mas cercanos al ultimo cierre (las filas de la 2.0, p. ej. 31484 / 31456), con histeresis mientras el precio cierre adentro. Strikes = el strike con fuerza mas cercano por lado (3.3.2; medido de noche 65,9 % vs 62,1 / 59,2 de las filas). Lo medido para los cruces mas cercanos: 62,1 % (vol) y 59,2 % (OI) de noche, 20 sesiones.")]
+                 Description = "3.3.3. Cruces = techo y piso en los cruces de signo de la gamma mas cercanos al ultimo cierre (las filas de la 2.0), con histeresis mientras el precio cierre adentro. Strikes = el strike con fuerza mas cercano por lado (3.3.2). Medido en NQ (20 sesiones, noche): strikes 65,9 % de rebote contra 62,1 % (vol) y 59,2 % (OI) de los cruces. 5.0: SIN MEDIR EN ES.")]
         public TunelFuente3 Tunel3Fuente { get; set; } = TunelFuente3.Cruces;
 
         [Display(Name = "Tunel: umbral de fuerza (% del mayor |gex| del radio)", GroupName = "9.2 3.0 · Lectura", Order = 1024,
@@ -43,7 +44,7 @@ namespace PythiaGexCinco
         public bool Tunel3Histeresis { get; set; } = true;
 
         [Display(Name = "Tunel de noche con la regla Tres", GroupName = "9.2 3.0 · Lectura", Order = 1026,
-                 Description = "3.3.2. Con la regla Tres, fuera de la rueda de NY (antes de las 09:30 y desde las 16:00) las dominantes son el Tunel en vez de la clasica a secas. Medido con el criterio del operador (laboratorio/tres/criterio_operador.py, 20 sesiones, noche): 65,9 % de rebote en 587 toques contra 62,1 % y 59,2 % de las filas de la 2.0; rayas al azar 65 %. Apagado: la clasica a secas (63,3 %).")]
+                 Description = "3.3.2. Con la regla Tres, fuera de la rueda de NY (antes de las 09:30 y desde las 16:00) las dominantes son el Tunel en vez de la clasica a secas. Apagado: la clasica a secas. Medido en NQ con el criterio del operador (laboratorio/tres/criterio_operador.py, 20 sesiones, noche): 65,9 % de rebote en 587 toques contra 62,1 % y 59,2 % de las filas de la 2.0, la clasica 63,3 % y rayas al azar 65 %. 5.0: SIN MEDIR EN ES.")]
         public bool Tunel3DeNoche { get; set; } = true;
 
         private double _tunelTecho = double.NaN, _tunelPiso = double.NaN;

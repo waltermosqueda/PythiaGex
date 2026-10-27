@@ -17,25 +17,29 @@ namespace PythiaGexCinco
     /// fam APOYO para medirlos contra placebo. NO es una dominante por gamma: es donde los creadores de mercado tienen mas ordenes paradas.
     /// Tambien la estela del zero gamma por INTERES ABIERTO (la 2.0 la dibuja y el operador la ve como "zona").
     /// Lo medido hasta hoy sobre estos niveles: nada (ni el laboratorio ni la caja): se dibujan a pedido del operador y se miden.
+    /// 5.0 (27-10-2026, P4): los radios de los cruces pasan a ser por raiz (0 = auto: ES 5 y 15, los 20 y 60 de NQ / 4). Las tolerancias de
+    /// "el mismo cruce" del relleno sin cortes (1,0 y 0,5 pts) quedan: son posiciones interpoladas entre strikes, y el paso de strike es 5
+    /// en ES igual que en NQ. El radio del apoyo es RadioDibujo(raiz) (ES 40), desde Tick.
     /// </summary>
     public partial class GammaCinco
     {
-        [Display(Name = "↳ apoyo", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 52, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.2.3. Los N strikes del 0DTE con mas contratos en las puntas (bid + ask de call y put, tamaños del Summary de Rithmic), como rombos verdes por vela y rotulo con los contratos. Es el libro profundo de las opciones, no una dominante por gamma. Sin medir: la caja negra lo graba como APOYO.")]
+        [Display(Name = "↳ apoyo", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 52, Description = "Necesita la llave '3.0 ES dom▸' prendida. 3.2.3. Los N strikes del 0DTE con mas contratos en las puntas (bid + ask de call y put, tamaños del Summary de Rithmic), como rombos verdes por vela y rotulo con los contratos. Es el libro profundo de las opciones, no una dominante por gamma. Sin medir: la caja negra lo graba como APOYO.")]
         public bool Ver3Apoyo { get; set; } = false;   // 3.6.2: ruido (pedido 08-10)
 
         [Display(Name = "Apoyo: cuantos strikes", GroupName = "9.3 3.0 · Pantalla", Order = 1033)]
         [Range(1, 6)]
         public int Apoyo3Cuantos { get; set; } = 3;
 
-        [Display(Name = "↳ 0Γ OI estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 53, Description = "Necesita la llave '3.0 NQ dom▸' prendida. 3.2.3. Ademas del zero por volumen, el cruce por cero de la gamma por INTERES ABIERTO por vela: rombos turquesa (con 'Zero gamma: estilo de la estela' en RomboVerde, grupo 9.3: el default) o puntos grises finos. La 2.0 lo dibuja como rombos; aca es apagable y se mide.")]
+        [Display(Name = "↳ 0Γ OI estela", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 53, Description = "Necesita la llave '3.0 ES dom▸' prendida. 3.2.3. Ademas del zero por volumen, el cruce por cero de la gamma por INTERES ABIERTO por vela: rombos turquesa (con 'Zero gamma: estilo de la estela' en RomboVerde, grupo 9.3: el default) o puntos grises finos. La 2.0 lo dibuja como rombos; aca es apagable y se mide.")]
         public bool Ver3EstelaZeroOi { get; set; } = false;   // 3.6.2: ruido (pedido 08-10)
 
-        [Display(Name = "↳ todos cruces", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 54, Description = "Necesita la llave '3.0 NQ dom▸' prendida. Tambien necesita '↳ apoyo' o '↳ 0Γ OI estela' prendida: sin ninguna de las dos no se dibuja (asi esta en el codigo). 3.3.1 (pedido 07-10: 'que toque aun mas las mechas cercanas'). Ademas del cruce mas cercano al precio (la fila de la 2.0), TODOS los cruces de signo de la gamma por volumen y por OI a +-0,1 % del precio, como rombos chicos por vela. Mas filas = mas toques; lo medido dice que el % de rebote por toque no sube (criterio_operador.py).")]
+        [Display(Name = "↳ todos cruces", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 54, Description = "Necesita la llave '3.0 ES dom▸' prendida. Tambien necesita '↳ apoyo' o '↳ 0Γ OI estela' prendida: sin ninguna de las dos no se dibuja (asi esta en el codigo). 3.3.1 (pedido 07-10: 'que toque aun mas las mechas cercanas'). Ademas del cruce mas cercano al precio (la fila de la 2.0), TODOS los cruces de signo de la gamma por volumen y por OI a +-0,1 % del precio, como rombos chicos por vela. Mas filas = mas toques; lo medido dice que el % de rebote por toque no sube (criterio_operador.py).")]
         public bool Zero3TodosLosCruces { get; set; } = false;   // 3.6.2: ruido (pedido 08-10)
 
-        [Display(Name = "Zero gamma: radio de los cruces (pts)", GroupName = "9.3 3.0 · Pantalla", Order = 1036)]
-        [Range(5, 40)]
-        public int Zero3CrucesRadioPts { get; set; } = 20;
+        [Display(Name = "Zero gamma: radio de los cruces (pts, 0 = auto: 5 ES / 20 NQ)", GroupName = "9.3 3.0 · Pantalla", Order = 1036,
+                 Description = "Hasta cuantos puntos del precio se dibujan todos los cruces de signo por volumen ('↳ todos cruces'). 5.0: 0 por defecto = los 20 de NQ / 4 (ES 5).")]
+        [Range(0, 40)]
+        public int Zero3CrucesRadioPts { get; set; } = 0;
 
         private readonly Dictionary<DateTime, double[]> _estelaCruces = new Dictionary<DateTime, double[]>();
         private readonly Dictionary<DateTime, double[]> _estelaCrucesOi = new Dictionary<DateTime, double[]>();   // 3.5.1: solo los de interes abierto
@@ -45,10 +49,14 @@ namespace PythiaGexCinco
         private static readonly Color ColCruceVol = Color.FromArgb(176, 186, 200);  // gris claro: cruces por VOLUMEN
         private List<double> _crucesOiAhora = new List<double>();
 
-        [Display(Name = "Cruces por interés abierto: radio (pts)", GroupName = "9.3 3.0 · Pantalla", Order = 1037,
-                 Description = "3.5.2. Hasta cuantos puntos del precio se dibujan los cruces de signo por interes abierto (turquesa, con rotulo '0Γ OI'). Son los que casi no se mueven en la sesion (el OI es de ayer).")]
-        [Range(10, 80)]
-        public int CrucesOiRadio3Pts { get; set; } = 60;   // 3.5.3: nombre nuevo (el .ws no lo pisa) y 60 pts
+        [Display(Name = "Cruces por interés abierto: radio (pts, 0 = auto: 15 ES / 60 NQ)", GroupName = "9.3 3.0 · Pantalla", Order = 1037,
+                 Description = "3.5.2. Hasta cuantos puntos del precio se dibujan los cruces de signo por interes abierto (turquesa, con rotulo '0Γ OI'). Son los que casi no se mueven en la sesion (el OI es de ayer). 5.0: 0 por defecto = los 60 de NQ / 4 (ES 15).")]
+        [Range(0, 80)]
+        public int CrucesOiRadio3Pts { get; set; } = 0;   // 3.5.3: nombre nuevo (el .ws no lo pisa) y 60 pts; 5.0: 0 = auto por raiz
+
+        /// <summary>5.0: los radios de los cruces por raiz (0 = auto: los de NQ x EscalaRaiz, ES 5 / 15).</summary>
+        private double RadioCrucesVol(string raiz) => Zero3CrucesRadioPts > 0 ? Zero3CrucesRadioPts : PtsRaiz(20.0, raiz);
+        private double RadioCrucesOi(string raiz) => CrucesOiRadio3Pts > 0 ? CrucesOiRadio3Pts : PtsRaiz(60.0, raiz);
 
         private static readonly Color ColApoyo = Color.FromArgb(76, 175, 80);      // verde (como los rombos de la 2.0)
         private static readonly Color ColZeroOi = Color.FromArgb(130, 130, 130);
@@ -110,6 +118,7 @@ namespace PythiaGexCinco
             try
             {
                 if (!Ver3Apoyo && !Ver3EstelaZeroOi) return;
+                string raizA = Raiz(); double rCrucesVol = RadioCrucesVol(raizA), rCrucesOi = RadioCrucesOi(raizA);   // 5.0: por raiz (ES 5 / 15)
                 Dictionary<int, double[]> est = new Dictionary<int, double[]>(); Dictionary<int, double> zoi = new Dictionary<int, double>(); Dictionary<int, double[]> cru = new Dictionary<int, double[]>(); Dictionary<int, double[]> cruO = new Dictionary<int, double[]>();
                 List<(double Fut, double Ctos)> ap;
                 lock (_candado)
@@ -187,7 +196,7 @@ namespace PythiaGexCinco
                     int rz = Math.Max(1, Math.Min(3, bw / 2));
                     foreach (var p in kv.Value)
                     {
-                        if (double.IsNaN(p) || p <= 0 || Math.Abs(p - fut) > Zero3CrucesRadioPts) continue;
+                        if (double.IsNaN(p) || p <= 0 || Math.Abs(p - fut) > rCrucesVol) continue;
                         int y = Y(p); if (!EnPantalla(y)) continue;
                         int alfa = b >= ultima - 30 ? 150 : 95; if (previa) alfa = alfa * 45 / 100;
                         g.FillPolygon(Color.FromArgb(alfa, ColCruceVol), new[] { new Point(x, y - rz), new Point(x + rz, y), new Point(x, y + rz), new Point(x - rz, y) });   // 3.5.1: VOL gris
@@ -201,7 +210,7 @@ namespace PythiaGexCinco
                     int rz = Math.Max(2, Math.Min(4, bw / 2 + 1));
                     foreach (var p in kv.Value)
                     {
-                        if (double.IsNaN(p) || p <= 0 || Math.Abs(p - fut) > CrucesOiRadio3Pts) continue;
+                        if (double.IsNaN(p) || p <= 0 || Math.Abs(p - fut) > rCrucesOi) continue;
                         int y = Y(p); if (!EnPantalla(y)) continue;
                         int alfa = b >= ultima - 30 ? 220 : 140; if (previa) alfa = alfa * 45 / 100;
                         g.FillPolygon(Color.FromArgb(alfa, ColCruceOi), new[] { new Point(x, y - rz), new Point(x + rz, y), new Point(x, y + rz), new Point(x - rz, y) });
@@ -213,7 +222,7 @@ namespace PythiaGexCinco
                     int xU = XBar(Math.Max(0, CurrentBar - 1));
                     foreach (var p in oiAhora)
                     {
-                        if (double.IsNaN(p) || p <= 0 || Math.Abs(p - fut) > CrucesOiRadio3Pts) continue;
+                        if (double.IsNaN(p) || p <= 0 || Math.Abs(p - fut) > rCrucesOi) continue;
                         int y = Y(p);
                         if (Rayas3Largas && EnPantalla(y) && xU != int.MinValue && xr > xU) g.DrawLine(new RenderPen(Color.FromArgb(200, ColCruceOi), 1f), Math.Max(area.Left, xU), y, xr, y);
                         extra?.Rotulos.Add(("0Γ OI " + (p >= fut ? "▲" : "▼"), p, ColCruceOi, " ·cruce de signo por interés abierto"));

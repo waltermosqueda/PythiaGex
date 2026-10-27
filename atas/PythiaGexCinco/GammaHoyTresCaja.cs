@@ -20,6 +20,8 @@ namespace PythiaGexCinco
     /// Toque = la primera vela (la viva, mirada cada 5 s) que entra en [nivel - zona, nivel + zona] cuando la cerrada anterior no estaba;
     /// un toque por nivel y lado hasta que un cierre se aleje LEJOS (PRE_REGISTRO seccion 3, la misma regla del indicador).
     /// No dibuja nada: solo graba.
+    /// 5.0 (27-10-2026, P4): en la 5.0 la familia del libro primario es la raiz ("ES" en caja-ES, la 4.1 grababa "NQ"), las capas son SPX/SPY
+    /// y los placebos y la ventana anti-repeticion van en la escala de la raiz (ES: +-3,25 / +-6,25 y 0,75 pts; PtsRaiz). Apagada por defecto.
     /// </summary>
     public partial class GammaCinco
     {
@@ -27,12 +29,12 @@ namespace PythiaGexCinco
                  Description = "3.1.0. En cada toque de una dominante (y de sus placebos) graba opciones, cinta y libro en PythiaGex5\\caja\\caja-<raiz>-<dia>.jsonl, y el resultado a 5/15/30 min. No dibuja nada.")]
         public bool Caja4Activa { get; set; } = false;   // 4.1: apagada por defecto (nombre nuevo): es instrumental del laboratorio de la 3.0
 
-        [Display(Name = "Caja negra: niveles placebo (+-12,5 y +-25)", GroupName = "9.4 3.0 · Caja negra", Order = 1020,
-                 Description = "Graba tambien los toques a las dominantes de NQ corridas +-12,5 y +-25 pts. Es el control: sin el, el rebote medido no se puede comparar con nada.")]
+        [Display(Name = "Caja negra: niveles placebo (ES +-3,25 y +-6,25)", GroupName = "9.4 3.0 · Caja negra", Order = 1020,
+                 Description = "Graba tambien los toques a las dominantes del libro del grafico corridas: en ES +-3,25 y +-6,25 pts (los +-12,5 y +-25 de NQ / 4, a ticks de 0,25). Es el control: sin el, el rebote medido no se puede comparar con nada.")]
         public bool Caja3Placebos { get; set; } = true;
 
-        [Display(Name = "Caja negra: capas NDX/QQQ y zero", GroupName = "9.4 3.0 · Caja negra", Order = 1030,
-                 Description = "Graba tambien los toques a las dominantes de las capas (con la edad del dato) y al zero gamma de NQ.")]
+        [Display(Name = "Caja negra: capas SPX/SPY y zero", GroupName = "9.4 3.0 · Caja negra", Order = 1030,
+                 Description = "Graba tambien los toques a las dominantes de las capas SPX y SPY (con la edad del dato) y al zero gamma del libro ES.")]
         public bool Caja3Capas { get; set; } = true;
 
         [Display(Name = "Caja negra: niveles del libro por lado", GroupName = "9.4 3.0 · Caja negra", Order = 1040,
@@ -116,16 +118,18 @@ namespace PythiaGexCinco
                     while (_cajaVolHist.Count > 0 && (ahora - _cajaVolHist[0].T).TotalMinutes > 7) _cajaVolHist.RemoveAt(0);
                 }
 
-                // los niveles vigilados ahora
+                // los niveles vigilados ahora. 5.0: la familia del libro primario es la raiz (ES; la 4.1 grababa "NQ" fijo, tambien en caja-ES)
+                // y los placebos se corren en la escala de la raiz (ES +-3,25 / +-6,25: los +-12,5 / +-25 de NQ / 4, a ticks)
                 var niveles = new List<CajaNivel>();
+                double pl1 = PtsRaiz(12.5, raiz), pl2 = PtsRaiz(25.0, raiz);
                 for (int i = 0; i < Math.Min(2, L.Doms.Count); i++)
                 {
                     double p = L.Doms[i].Fut; if (p <= 0) continue;
                     string etq = "D" + (i + 1);
-                    niveles.Add(new CajaNivel { Fam = "NQ", Etq = etq, Origen = "", Nivel = p });
+                    niveles.Add(new CajaNivel { Fam = raiz, Etq = etq, Origen = "", Nivel = p });
                     if (Caja3Placebos)
-                        foreach (double corr in new[] { 12.5, -12.5, 25.0, -25.0 })
-                            niveles.Add(new CajaNivel { Fam = "PLACEBO", Etq = etq, Origen = "NQ " + etq + " " + (corr > 0 ? "+" : "") + corr.ToString("0.#", inv), Nivel = p + corr });
+                        foreach (double corr in new[] { pl1, -pl1, pl2, -pl2 })
+                            niveles.Add(new CajaNivel { Fam = "PLACEBO", Etq = etq, Origen = raiz + " " + etq + " " + (corr > 0 ? "+" : "") + corr.ToString("0.##", inv), Nivel = p + corr });
                 }
                 if (Caja3Capas)
                 {
@@ -160,7 +164,8 @@ namespace PythiaGexCinco
                 {
                     // 3.2.4: los niveles continuos (zero por volumen / por OI, capas) se mueven centesimas tick a tick: la clave va redondeada al punto,
                     // y un toque de la misma familia a <= 3 pts en los ultimos 5 min no se repite (a las 02:41 ZEROOI anoto 3 toques en 15 s).
-                    bool continuo = n.Fam != "NQ" && n.Fam != "PLACEBO";
+                    // 5.0: la primaria es la raiz; los 3 pts son de NQ: en ES 0,75 (PtsRaiz)
+                    bool continuo = n.Fam != raiz && n.Fam != "PLACEBO";
                     string key = n.Fam + "|" + n.Origen + "|" + (continuo ? Math.Round(n.Nivel).ToString("0", inv) : n.Nivel.ToString("0.00", inv));
                     vivos.Add(key);
                     if (!_cajaEstado.TryGetValue(key, out var est))
@@ -189,7 +194,7 @@ namespace PythiaGexCinco
                     DateTime lejosT = lado == +1 ? est.LejosArriba : est.LejosAbajo;
                     bool gastado = lado == +1 ? est.GastadoArriba : est.GastadoAbajo;
                     if (lejosT == DateTime.MinValue || (ahora - lejosT).TotalMinutes > 30 || gastado) continue;   // no viene de lejos (o ya conto): es un cruce, no un toque
-                    if (_cajaUltimoToque.TryGetValue(n.Fam, out var ut) && (ahora - ut.T).TotalSeconds <= 300 && Math.Abs(ut.Nivel - n.Nivel) <= 3) continue;   // 3.2.4
+                    if (_cajaUltimoToque.TryGetValue(n.Fam, out var ut) && (ahora - ut.T).TotalSeconds <= 300 && Math.Abs(ut.Nivel - n.Nivel) <= PtsRaiz(3.0, raiz)) continue;   // 3.2.4; 5.0: por raiz
                     _cajaUltimoToque[n.Fam] = (ahora, n.Nivel);
                     est.Vela = tViva;
                     if (lado == +1) est.GastadoArriba = true; else est.GastadoAbajo = true;
@@ -229,7 +234,7 @@ namespace PythiaGexCinco
             try { sb.Append(",\"cinta\":").Append(CajaCinta(ahora)); } catch { sb.Append(",\"cinta\":null"); }
             try { sb.Append(",\"libro\":").Append(CajaLibro()); } catch (Exception e) { sb.Append(",\"libro\":null"); Registro.Excepcion(LOG, "CajaLibro", e); }
             string vigDesde = null;
-            if (n.Fam == "NQ" && ReglaEfectiva() == ReglaDominantes3.Tres) { var t0 = Hist.DesdeCuando(n.Nivel); if (t0.HasValue) vigDesde = t0.Value.ToString("HH:mm'Z'", inv); }
+            if (n.Fam == raiz && ReglaEfectiva() == ReglaDominantes3.Tres) { var t0 = Hist.DesdeCuando(n.Nivel); if (t0.HasValue) vigDesde = t0.Value.ToString("HH:mm'Z'", inv); }   // 5.0: la primaria es la raiz
             sb.Append(",\"hist\":{\"regla\":").Append(JS(ReglaEfectiva().ToString())).Append(",\"vigDesde\":").Append(JS(vigDesde)).Append('}');
             // 3.1.1: los niveles vigentes de las demas familias en este instante (para la pregunta del ping-pong), sin los placebos
             sb.Append(",\"otras\":[");
@@ -364,7 +369,7 @@ namespace PythiaGexCinco
                     // la vela del toque INCLUIDA; a favor / en contra segun el lado; y el ORDEN: segundos desde el toque hasta la primera vela que
                     // alcanzo a favor 12 / 20 y en contra 6 / 8 (regla chica y grande del PRE_REGISTRO para NQ; en ES se escalan /4), con "primero"
                     double alto = double.MinValue, bajo = double.MaxValue, cierre = double.NaN; int velas = 0;
-                    double esc = raiz == "ES" ? 0.25 : 1.0;
+                    double esc = EscalaRaiz(raiz);   // 5.0: el mismo factor que el resto del nucleo (ES 0,25 como antes; RTY 0,2)
                     double g12 = double.NaN, s6 = double.NaN, g20 = double.NaN, s8 = double.NaN;
                     double sV6 = double.NaN, sC2 = double.NaN;   // 3.2.5: criterio VISUAL del operador (ventana 6 min = 3 velas m2)
                     for (int b = Math.Max(0, p.Barra); b <= CurrentBar - 1; b++)
