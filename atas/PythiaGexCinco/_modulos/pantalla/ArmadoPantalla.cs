@@ -158,7 +158,9 @@ namespace PythiaGexCinco.Familia
         public Func<double, int> Y;                  // GetYByPrice exacto; int.MinValue si no se puede
         public readonly List<(int X, long M2)> Velas = new List<(int X, long M2)>(1024);   // velas visibles: x y apertura m2 (ms UTC) de su hora
         public int AnchoVela = 6;
-        public bool UltimaVisible = true;            // LastVisibleBarNumber >= CurrentBar - 1 (mirando velas viejas no van los niveles de AHORA)
+        /// <summary>5.0.5: las ultimas velas a la vista (hasta VELAS_DER) con su maximo y minimo: los fondos de la columna se recortan donde hay una.</summary>
+        public readonly List<(int X, double Alto, double Bajo)> VelasDer = new List<(int X, double Alto, double Bajo)>(96);
+        public bool UltimaVisible = true;           // LastVisibleBarNumber >= CurrentBar - 1 (mirando velas viejas no van los niveles de AHORA)
         /// <summary>4.1.8: si no es null, la columna muestra ESE minuto del pasado en vez del vivo.</summary>
         public RebobinadoFam Rebobinado;
         public double PrecioUltimo = double.NaN;     // cierre de la ultima vela del grafico (separador del detalle)
@@ -242,6 +244,8 @@ namespace PythiaGexCinco.Familia
         /// cuantas barras se superponen con algo: ES contra la columna / renglon de arriba / rotulos, izquierda contra los numeros del eje. Esperado: 0 y 0.</summary>
         public Rectangle FranjaEs = Rectangle.Empty;
         public int ColumnaDer = int.MinValue, ColumnaIzq = int.MaxValue, XIzqGl = int.MinValue, EjeAncho, SolapesEs, SolapesIzq;
+        /// <summary>5.0.5: etiquetas de la columna cuyo texto empieza sobre la ultima vela (sus fondos se recortan y no la tapan; el texto si cae encima).</summary>
+        public int SolapesVelas;
 
         public void Limpiar()
         {
@@ -249,7 +253,7 @@ namespace PythiaGexCinco.Familia
             ColorTitulo = Color.Empty; ColorCartel = Color.Empty; Etiquetas.Clear(); Rotulos.Clear(); Panel.Clear(); Marcas.Clear(); Rayitas = 0;
             RotulosTramos.Clear(); TramosNoPuestos.Clear(); TramosLargos = 0; TramosVigentes = 0; TramosGrupos = 0; TramosDescartados = 0; TramosRecortados = 0;
             BarrasGl.Clear(); BarrasGlEs.Clear(); GlEsXFin = int.MinValue;
-            FranjaEs = Rectangle.Empty; ColumnaDer = int.MinValue; ColumnaIzq = int.MaxValue; XIzqGl = int.MinValue; EjeAncho = 0; SolapesEs = 0; SolapesIzq = 0;   // 5.0.5
+            FranjaEs = Rectangle.Empty; ColumnaDer = int.MinValue; ColumnaIzq = int.MaxValue; XIzqGl = int.MinValue; EjeAncho = 0; SolapesEs = 0; SolapesIzq = 0; SolapesVelas = 0;   // 5.0.5
         }
         internal void Relleno(Color c, Rectangle r) => Prims.Add(new PrimPantalla(TipoPrimPantalla.Relleno, c, r, 0, 0, 0, null));
         internal void Borde(Color c, float grosor, Rectangle r) => Prims.Add(new PrimPantalla(TipoPrimPantalla.Borde, c, r, 0, 0, grosor, null));
@@ -367,6 +371,8 @@ namespace PythiaGexCinco.Familia
         public const int GL_AIRE = 3;
         /// <summary>5.0.5: opacidad del fondo (color del grafico, sin borde) detras de las etiquetas de la columna, las ↑/↓ y la edad.</summary>
         public const int FONDO_ROT = 215;
+        /// <summary>5.0.5: cuantas velas (las ultimas a la vista) se miran para recortar los fondos de la columna.</summary>
+        public const int VELAS_DER = 80;
         private static readonly Regex ReVencEs = new Regex(@"ES\s*([FGHJKMNQUVXZ])\s*(\d{1,4})", RegexOptions.Compiled);
         private static readonly Regex ReVencSolo = new Regex(@"^([FGHJKMNQUVXZ])(\d{1,4})$", RegexOptions.Compiled);
 
@@ -1002,6 +1008,26 @@ namespace PythiaGexCinco.Familia
                 xr = xBorde - franjaEs;
                 if (franjaEs > 0) d.FranjaEs = new Rectangle(xr, area.Top, franjaEs, area.Height);
             }
+            // 5.0.5 (control de las 20:02 ART: el fondo de "SPX C" tapaba la punta de la ultima vela): los fondos de la columna se recortan a la derecha
+            // de toda vela (de las VELAS_DER ultimas, con su maximo y minimo) que cae en su renglon: nunca tapan velas. Si el TEXTO igual cae sobre una
+            // vela se cuenta en SolapesVelas (falta aire a la derecha del grafico: el desplazamiento de ATAS, no la 5.0).
+            int CorteVelas(int xa, int xb, int ya, int hh)
+            {
+                int corte = int.MinValue, mw = v.AnchoVela / 2 + 1;
+                foreach (var vv in v.VelasDer)
+                {
+                    if (vv.X + mw <= xa || vv.X - mw >= xb) continue;
+                    int yHi = Yr(vv.Alto), yLo = Yr(vv.Bajo);
+                    if (yHi == int.MinValue || yLo == int.MinValue || yHi > ya + hh || yLo < ya) continue;
+                    corte = Math.Max(corte, vv.X + mw + 2);
+                }
+                return corte;
+            }
+            void Fondo(int xa, int ya, int xb, int hh)
+            {
+                int xi = Math.Max(xa, CorteVelas(xa, xb, ya, hh));
+                if (xb > xi) d.Relleno(Color.FromArgb(FONDO_ROT, ColFondo), new Rectangle(xi, ya, xb - xi, hh));
+            }
 
             int Y(double p)
             {
@@ -1390,7 +1416,7 @@ namespace PythiaGexCinco.Familia
                         bool cerradoR = aviso.StartsWith("mercado cerrado", StringComparison.OrdinalIgnoreCase);
                         string tEd = (paradoR ? "MOTOR PARADO " + Edad(egR) + " · " : "") + Edad(edadMax) + (cerradoR ? " · mercado cerrado" : "");
                         int wEd = medir(tEd, tamC).Width;
-                        d.Relleno(Color.FromArgb(FONDO_ROT, ColFondo), new Rectangle(rx - wEd - 11, ry, wEd + 7, hC));   // 5.0.5: fondo (la estela cruzaba la edad)
+                        Fondo(rx - wEd - 11, ry, rx - 4, hC);   // 5.0.5: fondo (la estela cruzaba la edad)
                         Sombra(d, tamC, tEd, paradoR ? ColRojo : (viejo || cerradoR) ? ColNaranja : Color.FromArgb(170, ColTexto), rx - wEd - 8, ry + 1);
                         d.EdadColumna = tEd;
                         ocupado.Add(new Rectangle(rx - wEd - 9, ry, wEd + 8, hC)); colIzq = Math.Min(colIzq, rx - wEd - 9);
@@ -1431,13 +1457,17 @@ namespace PythiaGexCinco.Familia
                     int bh = Math.Max(4, hC - 8), by = r.Yl - bh / 2;
                     // 5.0.5 (pedido del operador: "que no se superpongan con otros"): un fondo del color del grafico detras de la etiqueta. Sin borde (sigue
                     // siendo "sin caja", el estilo 2E del 09-10), pero las rayas, la estela y las punteadas ya no pasan POR ENCIMA del texto (se leia tachado)
-                    d.Relleno(Color.FromArgb(FONDO_ROT, ColFondo), new Rectangle(x0 - 3, yb, w + 5, hC));
-                    d.Relleno(Color.FromArgb(150, 40, 46, 58), new Rectangle(x0, by, bw, bh));                                   // el carril (100 %)
+                    Fondo(x0 - 3, yb, x0 + w + 2, hC);
+                    if (CorteVelas(x0, x0 + w, yb, hC) != int.MinValue) d.SolapesVelas++;
+                    int xVelaDer = CorteVelas(x0, x0 + bw, by, bh);
+                    int xq = Math.Max(x0, xVelaDer);                                                                         // 5.0.5: ni el carril tapa velas
+                    if (xq < x0 + bw) d.Relleno(Color.FromArgb(150, 40, 46, 58), new Rectangle(xq, by, x0 + bw - xq, bh));      // el carril (100 %)
                     double pf = PesoFirmado(r.Cab);
                     if (Fin(pf) && Fin(maxPeso) && maxPeso > 0)
                     {
                         int fw = Math.Max(2, Math.Min(bw, (int)Math.Round(bw * Math.Abs(pf) / maxPeso)));                         // LINEAL: proporcion exacta
-                        d.Relleno(pf < 0 ? Color.FromArgb(230, 239, 83, 80) : Color.FromArgb(230, 38, 166, 154), new Rectangle(x0 + bw - fw, by, fw, bh));
+                        int xf = Math.Max(x0 + bw - fw, xVelaDer);
+                        if (xf < x0 + bw) d.Relleno(pf < 0 ? Color.FromArgb(230, 239, 83, 80) : Color.FromArgb(230, 38, 166, 154), new Rectangle(xf, by, x0 + bw - xf, bh));
                     }
                     int xt = x0 + bw + 6;
                     var sombra = new Rot { Txt = r.Txt, T1 = r.T1, T2 = r.T2, T3 = r.T3, ColCambio = Color.FromArgb(200, ColFondo) };
@@ -1465,7 +1495,7 @@ namespace PythiaGexCinco.Familia
                 foreach (var r in et.Where(r => r.Fuera > 0).OrderByDescending(r => r.Y).Take(2))
                 {
                     var t = "↑ " + r.Txt; int w = AnchoTexto(t, r.T2 != "", tamC, cw, medir), x = xr - w - 6;
-                    d.Relleno(Color.FromArgb(FONDO_ROT, ColFondo), new Rectangle(x - 3, yA, w + 5, hC));   // 5.0.5: fondo (nada pasa por encima del texto)
+                    Fondo(x - 3, yA, x + w + 2, hC);   // 5.0.5: fondo (nada pasa por encima del texto; recortado en la ultima vela)
                     d.Texto(t, tamC, Color.FromArgb(200, ColFondo), x + 1, yA + 1);
                     Tramos(d, r, "↑ ", tamC, cw, r.Col, x, yA);
                     d.Etiquetas.Add((t, yA, r.Y)); d.Rotulos.Add(Diag(r, t, x, w, yA));
@@ -1474,7 +1504,7 @@ namespace PythiaGexCinco.Familia
                 foreach (var r in et.Where(r => r.Fuera < 0).OrderBy(r => r.Y).Take(2))
                 {
                     var t = "↓ " + r.Txt; int w = AnchoTexto(t, r.T2 != "", tamC, cw, medir), x = xr - w - 6;
-                    d.Relleno(Color.FromArgb(FONDO_ROT, ColFondo), new Rectangle(x - 3, yB, w + 5, hC));   // 5.0.5: fondo
+                    Fondo(x - 3, yB, x + w + 2, hC);   // 5.0.5: fondo
                     d.Texto(t, tamC, Color.FromArgb(200, ColFondo), x + 1, yB + 1);
                     Tramos(d, r, "↓ ", tamC, cw, r.Col, x, yB);
                     d.Etiquetas.Add((t, yB, r.Y)); d.Rotulos.Add(Diag(r, t, x, w, yB));

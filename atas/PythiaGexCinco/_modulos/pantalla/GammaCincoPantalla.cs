@@ -379,6 +379,21 @@ namespace PythiaGexCinco
             catch { return false; }
         }
 
+        /// <summary>5.0.5: maximo y minimo de la vela (GetCandle).</summary>
+        bool IGraficoPantalla.VelaHL(int barra, out double alto, out double bajo)
+        {
+            alto = double.NaN; bajo = double.NaN;
+            try
+            {
+                if (barra < 0 || barra >= CurrentBar) return false;
+                var c = GetCandle(barra);
+                if (c == null) return false;
+                alto = (double)c.High; bajo = (double)c.Low;
+                return true;
+            }
+            catch { return false; }
+        }
+
         void IGraficoPantalla.Redibujar() { try { RedrawChart(new RedrawArg(ChartArea)); } catch { } }
     }
 }

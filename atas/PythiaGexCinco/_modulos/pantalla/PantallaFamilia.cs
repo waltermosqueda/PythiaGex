@@ -99,6 +99,14 @@ namespace PythiaGexCinco.Familia
                         int x = _g.XDeBarra(b); if (x == int.MinValue) continue;
                         v.Velas.Add((x, PisoM2(ms)));
                     }
+                // 5.0.5: las ultimas velas a la vista con su rango (los fondos de la columna no las tapan)
+                v.VelasDer.Clear();
+                for (int b = hasta; b >= desde && b > hasta - ArmadoPantalla.VELAS_DER; b--)
+                {
+                    if (!_g.VelaHL(b, out double hi, out double lo)) continue;
+                    int x = _g.XDeBarra(b); if (x == int.MinValue) continue;
+                    v.VelasDer.Add((x, hi, lo));
+                }
                 v.UltimaVisible = _g.UltimaVisible >= cur - 1;
                 v.PrecioUltimo = cur > 0 && _g.Vela(cur - 1, out _, out double cierre) ? cierre : double.NaN;
 
@@ -167,7 +175,7 @@ namespace PythiaGexCinco.Familia
             string col = d.ColumnaIzq == int.MaxValue ? "sin columna" : "columna x=" + d.ColumnaIzq + ".." + d.ColumnaDer;
             return fr + " (" + d.BarrasGlEs.Count + " barras ES" + (d.BarrasGlEs.Count == 0 ? "" : ", la mas larga " + d.BarrasGlEs.Max(b => b.Largo) + " px") + ") · " + col
                  + " · barras izq " + d.BarrasGl.Count + (d.XIzqGl == int.MinValue ? "" : " desde x=" + d.XIzqGl) + " · eje " + d.EjeAncho + " px"
-                 + " · SOLAPES ES/columna=" + d.SolapesEs + " izq/eje=" + d.SolapesIzq;
+                 + " · SOLAPES ES/columna=" + d.SolapesEs + " izq/eje=" + d.SolapesIzq + " · etiquetas sobre la ultima vela=" + d.SolapesVelas + " (fondo recortado)";
         }
 
         private CajaRect _recuadro;   // 4.1.6

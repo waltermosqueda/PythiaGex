@@ -43,6 +43,8 @@ namespace PythiaGexCinco.Familia
         /// <summary>ms UTC de la hora de la vela por TICKS crudos de (LastTime si no es default, si no Time) — Kind Unspecified = UTC, nunca
         /// ToUniversalTime — y su cierre.</summary>
         bool Vela(int barra, out long msUtc, out double cierre);
+        /// <summary>5.0.5: maximo y minimo de la vela (para que los fondos de la columna de etiquetas no tapen velas).</summary>
+        bool VelaHL(int barra, out double alto, out double bajo);
         /// <summary>4.1.8 REBOBINADO: la vela que tiene el mouse encima, o -1 si ninguna. Unico camino posible: el SDK
         /// de ATAS no expone inversa pixel->barra (no existe GetBarByX), solo IMouseLocationInfo.BarBelowMouse.</summary>
         int BarraBajoMouse { get; }
