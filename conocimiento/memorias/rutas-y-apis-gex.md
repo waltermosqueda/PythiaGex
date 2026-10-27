@@ -25,7 +25,7 @@ Para varios tickers **sin navegar** (mucho más rápido y evita cargar la págin
 Ojo: SPX y NDX se congelan al cierre; los ETF siguen actualizando. `isStale` siempre dice `false`, no sirve.
 
 ## Opensera — niveles y base ES–SPX (sin login)
-`https://opensera.com/api/gex/latest?t={timestamp}` (el parámetro `t` evita caché).
+`https://opensera.com/api/gex/latest?t={timestamp}` (el parámetro `t` evita caché). **27-10-2026: fuera del navegador responde 402** (pago); se leyo desde la pagina. Su OI es el de dos sesiones atras (ver [[paginas-gex-auditadas]]).
 
 Trae `spotPrice`, `zeroGamma`, `callWall`, `putWall`, `activeCallWall`, `activePutWall`, `maxGammaStrike`, `gammaRegime`, **`basisSpread`** (la base ES–SPX, con signo invertido), `atmIV`, `expectedMove`, `zeroDTEGEX`, `totalNetGEX` (**100× inflado**), más `optionsChain[7094]` y `strikeGEX[508]`.
 

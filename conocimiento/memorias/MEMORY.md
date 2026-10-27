@@ -123,3 +123,4 @@
 - [Estudio toques EMA 9/20 en 45 s (15-10)](estudio-toques-ema-45s.md) — su grafico es MNQZ6 45 s; reglas v3 verificadas; reiniciar_atas.ps1 le borro el espacio (corregido)
 - [Arranque automatico de ATAS (16-10)](arranque-automatico-atas.md) — tarea \PythiaGex\ATAS - arranque lun-vie 10:00 AR; probada en vivo 58 s; log pythiagex-arranque.log
 - [PythiaGex 5.0 Gamma ES (27-10)](pythiagex-5-0-gamma-es.md) — INSTALADA en MES 1m, auditor codigo 0; tipo nuevo se agrega por el dialogo; vigia de suscripciones mudas; pendientes
+- [la referencia sobre ES: formula (27-10)](la referencia-es-formula.md) — amarillos 2 dominantes x 2 instancias por minuto; izq gamma x vol neto; zero cambio de signo; derecha convexidad ABIERTA

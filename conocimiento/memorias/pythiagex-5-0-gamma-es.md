@@ -32,3 +32,17 @@ originales), y por eso el mismo strike SPX 7730 sale en 3 alturas. Todo SIN MEDI
 14-12; recuadro 3.0 "LIBRO ES" muestra ×100 (ES es ×50; oculto por llave); SPX y SPY se bajan dos veces (5.0 + cboe_local.py).
 La 4.1 de NQ tiene los mismos dos errores de NDX: 0DTE vencido de noche (55,8 ticks el 26-10) y tercer viernes AM+PM sumados: sin tocar.
 Ver [[pythiagex-4-0-familia]], [[conversion-spx-a-es]], [[atas-dialogo-indicadores-clics]].
+
+**27-10 tarde (estado por si se corta):** control multifuente OK (Yahoo/CME/InsiderFinance; `_diseno/CONTROL_MULTIFUENTE_2710.md`); hallo que las
+replicas 2.0/clasica dibujan 1,2 pts abajo y la 2.0 salta 1,1-1,7 pts → agente "replicas con la conversion de la 5.0" (ajuste nuevo
+Replicas50Conversion, default true) y agente 5.0.1 (cierres anticipados 27-11/24-12, histeresis del roll por raiz, recuadro x0,5) en curso,
+SIN instalar. Pedido del operador: primero terminar y validar la 5.0; la reparacion NDX de la 4.1 (vencido de noche + 3er viernes) DESPUES:
+avance parcial guardado en `PythiaGex/atas/_pendiente_4_1_10_parcial.patch` (sin compilar ni probar; la 4.1 quedo restaurada a 31d68ec46).
+Instalador: `instalar_5_0.ps1 -Dll <5.0> [-Dll41 <4.1>]` instala las dos en un reinicio. la referencia: ver [[la referencia-es-formula]].
+
+**5.0.1 INSTALADA 27-10 17:04 ART (DLL 00d52c55…, git 585695e1f):** cierres anticipados (27-11 y 24-12 a las 13:00 NY: Cboe/CME/NYSE; SPY SIN VERIFICAR),
+histeresis del roll ES 0,25, recuadro LIBRO ES x0,5, y replicas 2.0/clasica con la conversion de la 5.0 (ajuste Replicas50Conversion, default true:
+la raya en K + base C7; seleccion y gamma con la base de cada original: mismos strikes, saltos de R20 66 → 0). Probado en vivo: el vencimiento de las
+16:00 NY saco las 94 opciones de ES de hoy y paso al 10-28; auditor 20:08-20:10Z CODIGO 0. **Ojo al leer la pantalla:** el renglon naranja
+"◀ MM-dd HH:mmZ · fut …" = REBOBINADO (4.1.8): muestra el minuto bajo el mouse, no esta trabada; a minutos del vencimiento los montos explotan
+(SPX C 1.221B = 1,2 billones a las 19:52Z): es la gamma con T → 0, no un error. Pendiente: reparar NDX en la 4.1 (parche parcial guardado).
