@@ -39,6 +39,12 @@ namespace PythiaGexCuatro.Familia
         public bool ExtraIntentado;
         public bool TieneExtra => Extra != null && !Array.TrueForAll(Extra, x => x == null);
         public MetaLibro MetaExtraDe(string libro) { if (MetaExtra != null) foreach (var m in MetaExtra) if (m.Libro == libro) return m; return null; }
+
+        /// <summary>4.1.8: clon superficial para PUBLICAR al rebobinado. Hace falta porque los registros ya publicados
+        /// se mutan despues en el hilo del host al completar las series extra (Replica20 y ClasicaNdx reemplazan
+        /// Extra/ExtraStrikes/MetaExtra en tres escrituras NO atomicas). Congelar el diccionario no alcanza: hay que
+        /// congelar el registro. Es seguro porque TODAS esas mutaciones reemplazan el arreglo entero, nunca un elemento.</summary>
+        public RegistroMinuto Copia() => (RegistroMinuto)MemberwiseClone();
     }
 
     /// <summary>preview_niveles.Motor._meta_libro reducido: lo que necesitan los actuales y la pestaña.</summary>
@@ -100,6 +106,84 @@ namespace PythiaGexCuatro.Familia
         public static void Majors(double[] Fut, double fut, double[] g, List<(double P, string E)> sal) => Muros(Fut, fut, g, g, sal);
 
         /// <summary>backtest_familia.ztp(b, oi, isla=0.10, fuerza=0): cruces sin islas (C3) a <= 100 pts; D1 el menor por encima, D2 el mayor por debajo.</summary>
+        /// <summary>4.1.7: los N strikes con mas |valor| dentro del radio R, de mayor a menor (D1..DN).
+        /// MUROS y MAJORS marcan UNO por lado; medido el 12-10 habia 24 strikes con gamma en +-100 pts y se dibujaban 2.</summary>
+        public static int TopNCantidad = 6;
+        private static double Radio(double fut) => Math.Min(fut * 0.02, 100.0);
+
+        /// <summary>4.1.8 (12-10-2026): TODOS los strikes con carga >= umbral dentro del radio, de mayor a menor.
+        /// Pedido del operador: "si hay mas de 50 contratos tiene MINIMO que estar marcado, pase lo que pase".
+        /// Un top-N fijo deja afuera los dias con muchos strikes cargados; el umbral no.
+        /// El tope solo evita que un dia raro llene la pantalla.</summary>
+        public static double CargaMinima = 50.0;
+        public static int CargaTope = 12;
+        /// <summary>4.1.8: radio propio de la carga, en puntos. 0 = usar Radio(fut), que con MNQ en 31.000 es la
+        /// CONSTANTE 100 (el termino del 2 % son 620 y nunca manda). Un strike cargado no deja de existir porque el
+        /// precio se corrio 4 puntos: medido el 12-10, el 30800 se caia con el futuro en 30904 y volvia en 30890.
+        /// Techo 300: pasando los +-309 pts la cadena de NQ llega con un strike de cada dos (CadenaApi.cs:687) y el
+        /// numero dejaria de ser trazable.</summary>
+        public static int CargaRadioPts = 0;
+        /// <summary>4.1.8: cuantos strikes cargados se marcan SIEMPRE, aunque no lleguen al umbral de contratos.
+        /// Medido el 12-10-2026: el umbral absoluto de 50 borra medio libro en cuanto vence el 0DTE, porque TODOS los
+        /// strikes pierden sus contratos del dia a la vez. Caso del operador: el strike NDX 30675 (30.904 en el eje
+        /// MNQ) venia marcado con 51 contratos y a las 20:01Z desaparecio con 32 — pero 25 de esos 32 estaban en el
+        /// vencimiento a 4 dias, o sea una posicion abierta de verdad, y el precio siguio respetando ese nivel. Un
+        /// numero fijo no puede decidir que es significativo cuando el libro entero se achica tres veces.</summary>
+        public static int CargaMinimaRayas = 10;  // MEDIDO sobre el caso del operador (12-10): ordenando por carga los
+                                                 // 22 strikes de NDX con OI>0 en el radio, el 30675 (30.904 en el eje
+                                                 // MNQ, 32 contratos, 25 de ellos a 4 dias) queda NOVENO. Con 8 entraba
+                                                 // el 30625 y no el suyo.
+
+        public static void CargaPorUmbral(double[] Fut, double fut, double[] v, List<(double P, string E)> sal, double umbral, int tope, double[] vC = null, double[] vP = null)
+        {
+            if (Fut == null || v == null || Fut.Length == 0) return;
+            double r = CargaRadioPts > 0 ? Math.Min(CargaRadioPts, 300) : Radio(fut);
+            // Todos los del radio, ordenados por carga: primero se aplica el umbral y, si quedan menos de
+            // CargaMinimaRayas, se completa con los que siguen en carga aunque no lleguen. Asi el libro nunca queda
+            // vacio ni se borra de golpe al vencer el 0DTE: lo que cambia es CUANTOS contratos dice la etiqueta.
+            var todos = new List<int>();
+            for (int i = 0; i < Fut.Length && i < v.Length; i++)
+                if (Math.Abs(Fut[i] - fut) <= r && v[i] > 0) todos.Add(i);
+            if (todos.Count == 0) return;
+            todos.Sort((x, y) => { int c = v[y].CompareTo(v[x]); return c != 0 ? c : x.CompareTo(y); });
+            var idx = new List<int>();
+            foreach (var i in todos) if (v[i] >= umbral) idx.Add(i);
+            for (int i = 0; i < todos.Count && idx.Count < CargaMinimaRayas; i++)
+                if (v[todos[i]] < umbral) idx.Add(todos[i]);
+            if (idx.Count == 0) return;
+            idx.Sort((x, y) => { int c = v[y].CompareTo(v[x]); return c != 0 ? c : x.CompareTo(y); });
+            int n = Math.Min(Math.Max(1, tope), idx.Count);
+            for (int j = 0; j < n; j++)
+            {
+                // 4.1.8: los CONTRATOS van en la etiqueta del rol ("D1·301"), que es lo unico que viaja entero
+                // hasta el rotulo. Asi la raya se lee sola: rol + contratos, y al lado el monto en millones de gamma
+                // y la flecha de cambio que arma la pantalla. Pedido del operador: un nivel que sirva para decidir.
+                int i2 = idx[j];
+                var inv = System.Globalization.CultureInfo.InvariantCulture;
+                string N(double x) => x >= 1000 ? (x / 1000.0).ToString("0.#", inv) + "k" : x.ToString("0", inv);
+                // 4.1.8: calls y puts POR SEPARADO, como los lee el operador ("C 120 P 180"): un strike con 300 calls
+                // no es lo mismo que uno con 300 puts, y el total los confunde.
+                string etq = (vC != null && vP != null && i2 < vC.Length && i2 < vP.Length && !double.IsNaN(vC[i2]) && !double.IsNaN(vP[i2]))
+                    ? "C" + N(vC[i2]) + " P" + N(vP[i2])
+                    : "D" + (j + 1).ToString(inv) + "·" + N(v[i2]);
+                sal.Add((Fut[i2], etq));
+            }
+        }
+
+        public static void TopNPeso(double[] Fut, double fut, double[] v, List<(double P, string E)> sal, int n)
+        {
+            if (Fut == null || v == null || Fut.Length == 0) return;
+            double r = Radio(fut);
+            var idx = new List<int>();
+            for (int i = 0; i < Fut.Length && i < v.Length; i++)
+                if (Math.Abs(Fut[i] - fut) <= r && v[i] != 0) idx.Add(i);
+            if (idx.Count == 0) return;
+            idx.Sort((x, y) => { int c = Math.Abs(v[y]).CompareTo(Math.Abs(v[x])); return c != 0 ? c : x.CompareTo(y); });
+            int tope = Math.Min(Math.Max(1, n), idx.Count);
+            for (int j = 0; j < tope; j++)
+                sal.Add((Fut[idx[j]], "D" + (j + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+
         public static void Ztp(double[] Fut, double fut, double[] g, List<(double P, string E)> sal)
         {
             int n = g.Length;
@@ -213,6 +297,9 @@ namespace PythiaGexCuatro.Familia
             {
                 porLibro[b.Libro] = b;
                 double fut = b.FutMnq;
+                // 4.1.7: CARGA = los N strikes con mas interes abierto TOTAL de TODOS los vencimientos (el mapa de calor de CME).
+                if (b.FutCarga != null && b.Carga != null)
+                { var cg = new List<(double, string)>(); CargaPorUmbral(b.FutCarga, fut, b.Carga, cg, CargaMinima, CargaTope, b.CargaC, b.CargaP); Poner(crudo, "CARGA_" + b.Libro, cg); }
                 foreach (var oi in new[] { false, true })
                 {
                     if (oi && !OiVale(b)) continue;
@@ -225,6 +312,8 @@ namespace PythiaGexCuatro.Familia
                     Poner(crudo, "MAJORS_" + b.Libro + "_" + fu, ma);
                     Poner(crudo, "ZTP_" + b.Libro + "_" + fu, zt);
                     Poner(crudo, "ZEST_" + b.Libro + "_" + fu, ze);
+                    var tn = new List<(double, string)>(); TopNPeso(b.Fut, fut, oi ? b.Go : b.Gv, tn, TopNCantidad);
+                    Poner(crudo, "TOPN_" + b.Libro + "_" + fu, tn);
                     if (!oi)
                     {
                         var ps = new List<double>();
@@ -266,7 +355,16 @@ namespace PythiaGexCuatro.Familia
                     double monto = esFam ? (si.Tipo != "CONF" ? MontoFam(fam, si, p, e) : double.NaN) : Monto(b, si, p, e);
                     double pr = NumPy.RoundPy(p, 2); cru[k] = p;
                     arr[k] = new Nivel(pr, e, monto);
-                    stk[k] = esFam || b == null ? double.NaN : (b.PorRazon ? NumPy.RoundPy(pr / b.Conv, 2) : NumPy.RoundPy(pr - b.Conv, 2));
+                    // 4.1.8: para la carga el strike CRUDO del libro, no la inversa de la conversion sobre el precio ya
+                    // redondeado (daba 30599,99 / 30600,01 en el 8 % de los renglones de NDX y el operador cruza ese
+                    // numero contra CBOE/CME).
+                    double stkCarga = double.NaN;
+                    if (!esFam && b?.FutCarga != null && b.CargaK != null && si.Id != null && si.Id.StartsWith("CARGA", StringComparison.Ordinal))
+                        for (int q = 0; q < b.FutCarga.Length && q < b.CargaK.Length; q++)
+                            if (Math.Abs(b.FutCarga[q] - p) < 1e-6) { stkCarga = b.CargaK[q]; break; }
+                    stk[k] = !double.IsNaN(stkCarga) ? stkCarga
+                           : esFam || b == null ? double.NaN
+                           : (b.PorRazon ? NumPy.RoundPy(pr / b.Conv, 2) : NumPy.RoundPy(pr - b.Conv, 2));
                 }
                 reg.Series[s] = arr; reg.Strikes[s] = stk; reg.Crudo[s] = cru;
             }
@@ -283,7 +381,21 @@ namespace PythiaGexCuatro.Familia
         /// <summary>preview_niveles.Motor._monto para una serie de un libro: M USD por 1 % con el multiplicador del libro (C1), round 1. NaN si no aplica.</summary>
         public static double Monto(LibroMinuto b, SerieInfo s, double p, string e)
         {
-            if (b == null || (s.Tipo != "MUROS" && s.Tipo != "MAJORS" && s.Tipo != "UNO")) return double.NaN;
+            if (b == null) return double.NaN;
+            // 4.1.8: TOPN (NQ top-N y las series de carga) tambien llevan monto en el rotulo, con la gamma en dolares
+            // de ESE strike. Sin esto el rotulo salia pelado ("NQ carga D1") y no se veia ni cuanto pesa ni si crece:
+            // el monto es ademas lo que alimenta la flecha de cambio del rotulo.
+            if (s.Tipo == "TOPN")
+            {
+                // 4.1.8: la CARGA se mide en SU propio eje y con SU gamma (todos los vencimientos, los mismos que los
+                // contratos del rotulo). Antes se buscaba en b.Fut/b.Go, el perfil del FRENTE: horizontes distintos en
+                // el mismo rotulo, y un strike cargado sin gamma del frente salia sin monto.
+                if (s.Id != null && s.Id.StartsWith("CARGA", StringComparison.Ordinal))
+                    return b.FutCarga == null || b.CargaGex == null ? double.NaN : MontoEn(b.FutCarga, b.CargaGex, p, Escala(b));
+                bool oiT = s.Fuente == "oi";
+                return MontoEn(b.Fut, oiT ? b.Go : b.Gv, p, Escala(b));
+            }
+            if (s.Tipo != "MUROS" && s.Tipo != "MAJORS" && s.Tipo != "UNO") return double.NaN;
             bool oi = s.Fuente == "oi";
             double[] v = s.Tipo == "MUROS" ? (e == "D1" ? (oi ? b.GoC : b.GvC) : (oi ? b.GoP : b.GvP)) : (oi ? b.Go : b.Gv);
             return MontoEn(b.Fut, v, p, Escala(b));

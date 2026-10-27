@@ -75,6 +75,30 @@ namespace PythiaGexCuatro.Familia
             return o;
         }
 
+        /// <summary>4.1.7 (12-10-2026): TOP-N por |gamma neta| dentro del radio R, de mayor a menor.
+        /// MUROS y MAJORS marcan UN strike por lado (argmax de calls, argmin de puts): con 24 strikes con gamma
+        /// en la ventana de +-100 pts quedan 22 sin marcar. Esta serie marca los N mas pesados, dinamicos:
+        /// se recalculan cada minuto y se mueven con el libro. Etiquetas D1..DN por orden de peso.</summary>
+        public static int TopNCantidad = 6;
+
+        public static List<NivelFam> TopN(double[] Fut, double[] g, double fut, int n)
+        {
+            var o = new List<NivelFam>();
+            if (Fut == null || Fut.Length == 0 || g == null) return o;
+            double r = R(fut);
+            var idx = new List<int>();
+            for (int i = 0; i < Fut.Length; i++)
+                if (Math.Abs(Fut[i] - fut) <= r && g[i] != 0) idx.Add(i);
+            if (idx.Count == 0) return o;
+            idx.Sort((x, y) => { int c = Math.Abs(g[y]).CompareTo(Math.Abs(g[x])); return c != 0 ? c : x.CompareTo(y); });
+            int tope = Math.Min(Math.Max(1, n), idx.Count);
+            for (int j = 0; j < tope; j++) o.Add(new NivelFam(Fut[idx[j]], "D" + (j + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            return o;
+        }
+
+        public static List<NivelFam> TopN(LibroMinuto b, bool oi) =>
+            b == null ? new List<NivelFam>() : TopN(b.Fut, oi ? b.Go : b.Gv, b.FutMnq, TopNCantidad);
+
         /// <summary>backtest_familia.cruces: [(z, i0, i1)] entre strikes vecinos con g != 0; con isla &gt; 0 y 3 o mas, se sacan las islas.</summary>
         public static List<(double Z, int I0, int I1)> Cruces(double[] Fut, double[] g, double isla)
         {
@@ -163,6 +187,7 @@ namespace PythiaGexCuatro.Familia
                 case "UNO": return e == "D1" ? "techo" : e == "D2" ? "piso" : e;
                 case "ZTP": return e == "D1" ? "cruce arriba" : e == "D2" ? "cruce abajo" : e;
                 case "ZEST": return e == "Z" ? "0G est." : e;
+                case "TOPN": return e;
                 case "CONF": return "conf";
                 default: return e;      // TRES: D1/D2
             }

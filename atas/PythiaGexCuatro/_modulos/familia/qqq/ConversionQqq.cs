@@ -36,6 +36,15 @@ namespace PythiaGexCuatro.Familia.Qqq
     {
         /// <summary>true (default del indicador): horas de C9 / oi_fresco / ventana de sesion en hora de NY. false = como el Python (UTC fijo).</summary>
         public bool Corregida = true;
+
+        /// <summary>4.1.8 (12-10-2026): calcular el zero FRESCO cada minuto en vez de reusar el de la cache.
+        /// La cache memoriza el resultado del PRIMER minuto que cae en cada clave (ZeroEstandar.cs:103) y el valor
+        /// NO es funcion de la clave: dentro de una misma clave el envejecimiento mueve T minuto a minuto y S puede
+        /// enganchar otro cruce. Medido sobre la sesion 2026-10-09 (1.378 minutos, codigo real compilado):
+        /// ZEST_QQQ_vol p50 0,014 / p95 0,137 / MAX 115,6 pts en el eje MNQ, y el valor dibujado de QQQ sale de la
+        /// cache en el 99,8 % de los minutos. Costo de no cachear: ~5,0 ms por minuto los tres libros (~7 s por
+        /// sesion). Sin esto el pasado no es reproducible y el operador leeria un zero que no rigio.</summary>
+        public bool ZeroCadaMinuto = true;
         /// <summary>Contrato del grafico vigente en un instante UTC. Default = tabla del Python (U6 hasta la sesion del 14-09, Z6 hasta la del 17-12, H7).</summary>
         public Func<DateTime, string> ContratoDe = ContratoTablaPython;
 

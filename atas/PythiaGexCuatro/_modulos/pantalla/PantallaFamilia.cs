@@ -37,6 +37,10 @@ namespace PythiaGexCuatro.Familia
         private IReadOnlyList<SerieInfo> _catDe;
         private CatalogoPantalla _cat;
         private int _renders;
+        // 4.1.8: la vela rebobinada queda LATCHEADA. Sin esto parpadeaba: el indicador repinta muchas veces por
+        // segundo y BarraBajoMouse alterna con -1 (el mouse pasa por el borde, por la escala, por un rotulo), asi
+        // que la columna saltaba entre el minuto pasado y el vivo en cada cuadro.
+        private int _barRebob = -1, _sinMouse;
         private DateTime _ultErrorUtc = DateTime.MinValue;
         private int _fallasPrim;
 
@@ -95,8 +99,37 @@ namespace PythiaGexCuatro.Familia
                 v.UltimaVisible = _g.UltimaVisible >= cur - 1;
                 v.PrecioUltimo = cur > 0 && _g.Vela(cur - 1, out _, out double cierre) ? cierre : double.NaN;
 
+                // 4.1.8 REBOBINADO: con el mouse sobre una vela que NO es la ultima, la columna muestra lo que regia EN
+                // ESA VELA en vez del vivo. Sin esto, al correr el grafico hacia atras la columna entera desaparecia
+                // (los rotulos solo se dibujan con la ultima vela a la vista) y quedaban las rayas mudas: se veia DONDE
+                // estaba el nivel pero no CUANTO tenia. La foto del motor no se toca: se publica una copia anotada.
+                v.Rebobinado = null;
+                var fotoUsar = foto;
+                if (foto?.Rebobinar != null)
+                {
+                    int bm = _g.BarraBajoMouse;
+                    if (bm >= 0 && bm < cur) { _barRebob = bm; _sinMouse = 0; }
+                    else if (++_sinMouse > 5) _barRebob = -1;
+                    // 4.1.8: sin mouse y con el grafico corrido hacia atras, la columna mostraba NADA (los rotulos
+                    // piden la ultima vela a la vista). Ahora cae en la ultima vela VISIBLE: mirar el pasado sin el
+                    // mouse encima sigue diciendo que habia. Pegado al borde derecho manda el vivo, como siempre.
+                    int bUsar = _barRebob >= 0 ? _barRebob : (!v.UltimaVisible && hasta >= 0 ? hasta : -1);
+                    if (bUsar >= 0 && bUsar < cur - 1 && _g.Vela(bUsar, out long msBm, out _))
+                    {
+                        var reb = foto.Rebobinar((long)Math.Floor(msBm / 60000.0));
+                        if (reb != null && reb.Niveles != null && reb.Niveles.Count > 0)
+                        {
+                            fotoUsar = foto.Copia();
+                            fotoUsar.Actuales = reb.Niveles;
+                            fotoUsar.Fuentes = reb.Fuentes;
+                            v.Rebobinado = reb;
+                            v.UltimaVisible = true;   // la columna se dibuja aunque la ultima vela no este a la vista
+                        }
+                    }
+                }
+
                 _gActual = g;
-                ArmadoPantalla.Armar(_d, foto, Cat(), _aj, v, DateTime.UtcNow, _medir);
+                ArmadoPantalla.Armar(_d, fotoUsar, Cat(), _aj, v, DateTime.UtcNow, _medir);
                 PintarPrims(g, _d);
                 _pestana = _d.Pestana.IsEmpty ? null : new CajaRect(_d.Pestana);
                 _recuadro = _d.Recuadro2E.IsEmpty ? null : new CajaRect(_d.Recuadro2E);

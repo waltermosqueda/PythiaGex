@@ -31,7 +31,11 @@ namespace PythiaGexCuatro.Familia
         }
 
         /// <summary>null si la foto no tiene filas o ninguna entra en el horizonte (como Python: None).</summary>
-        public static FilasHoy Armar(FotoCadena f, DateTime ahoraUtc)
+        public static FilasHoy Armar(FotoCadena f, DateTime ahoraUtc) => Armar(f, ahoraUtc, false);
+
+        /// <summary>4.1.7 (12-10-2026): todos=true NO aplica el tope de horizonte: entran TODOS los vencimientos de la cadena.
+        /// Hace falta para la carga: en CME los strikes redondos llevan su interes abierto en 4, 11, 18 y 25 dias, no en el 0DTE.</summary>
+        public static FilasHoy Armar(FotoCadena f, DateTime ahoraUtc, bool todos)
         {
             if (f?.Filas == null || f.Filas.Length == 0) return null;
             var dias = f.Dias ?? Array.Empty<double>();
@@ -55,7 +59,7 @@ namespace PythiaGexCuatro.Familia
                 int v = F[i].V;
                 if (v < 0 || v >= nd) continue;
                 double x = de[v];
-                if (x >= 0 && x <= tope) { ok[i] = true; d[i] = x; n++; }
+                if (x >= 0 && (todos || x <= tope)) { ok[i] = true; d[i] = x; n++; }
             }
             if (n == 0) return null;
             var r = new FilasHoy
@@ -89,6 +93,45 @@ namespace PythiaGexCuatro.Familia
         /// series (vista previa, paridad) usan el neto (false, el default): una fila con calls y puts que se anulan no entra. En una fotoΔ eso perdia
         /// el cambio de cada lado cuando los dos cambian igual con la misma IV (NQ OI 10-09 05:59:55Z, K 31.160: +9 calls y +9 puts, IV 0,206258
         /// las dos: el cambio del muro C y del muro P de ese strike salia 0).</summary>
+        /// <summary>4.1.7: interes abierto TOTAL por strike sumando TODOS los vencimientos (lo que muestra el mapa de calor de CME).
+        /// No usa gamma: es "cuanto papel hay puesto ahi", que es lo que el operador ve cargado y donde el precio reacciona.</summary>
+        /// <summary>4.1.8: ademas del OI por strike devuelve la GAMMA de ese strike sumando LOS MISMOS vencimientos.
+        /// Hasta la 4.1.8 el rotulo mezclaba horizontes: los contratos eran de todos los vencimientos y el monto salia
+        /// del perfil del FRENTE (ReglasFam.Monto -> MontoEn(b.Fut, b.Go, ...)), que ademas exige coincidencia exacta,
+        /// asi que un strike cargado sin gamma del frente salia sin monto. Ahora los dos numeros del rotulo miden lo mismo.</summary>
+        public static void CargaPorStrike(FotoCadena f, DateTime ahoraUtc, double S, bool esFuturo,
+                                          out double[] K, out double[] Oi, out double[] OiC, out double[] OiP, out double[] Gex)
+        {
+            Gex = null;
+            CargaPorStrike(f, ahoraUtc, out K, out Oi, out OiC, out OiP);
+            if (K == null || S <= 0) return;
+            var pf = Armar(FilasHoy.Armar(f, ahoraUtc, true), S, esFuturo);
+            if (pf == null || pf.K == null) return;
+            var g = new Dictionary<double, double>(pf.K.Length);
+            for (int i = 0; i < pf.K.Length; i++) g[pf.K[i]] = pf.Go[i];
+            Gex = new double[K.Length];
+            for (int i = 0; i < K.Length; i++) Gex[i] = g.TryGetValue(K[i], out var x) ? x : double.NaN;
+        }
+
+        public static void CargaPorStrike(FotoCadena f, DateTime ahoraUtc, out double[] K, out double[] Oi, out double[] OiC, out double[] OiP)
+        {
+            K = null; Oi = null; OiC = null; OiP = null;
+            var fl = FilasHoy.Armar(f, ahoraUtc, true);
+            if (fl == null || fl.N == 0) return;
+            var ac = new Dictionary<double, double[]>();   // [0]=calls [1]=puts
+            for (int i = 0; i < fl.N; i++)
+            {
+                double c = fl.OiC[i] > 0 ? fl.OiC[i] : 0, q = fl.OiP[i] > 0 ? fl.OiP[i] : 0;
+                if (c + q <= 0) continue;
+                if (!ac.TryGetValue(fl.K[i], out var a)) { a = new double[2]; ac[fl.K[i]] = a; }
+                a[0] += c; a[1] += q;
+            }
+            if (ac.Count == 0) return;
+            var ks = new List<double>(ac.Keys); ks.Sort();
+            K = ks.ToArray(); Oi = new double[ks.Count]; OiC = new double[ks.Count]; OiP = new double[ks.Count];
+            for (int i = 0; i < ks.Count; i++) { var a = ac[ks[i]]; OiC[i] = a[0]; OiP[i] = a[1]; Oi[i] = a[0] + a[1]; }
+        }
+
         public static PerfilLado Armar(FilasHoy fl, double S, bool esFuturo, bool porLado = false)
         {
             if (fl == null || S <= 0) return null;

@@ -28,7 +28,14 @@ namespace PythiaGexCuatro.Familia
         /// true: se recalcula cada minuto, que es lo que hacia la vista previa EN VIVO (su cache vivia dentro de cada llamada de un minuto).
         /// Medido 07/08-10: recalcular cada minuto cambia ZEST_NQ_vol en 61/76 minutos (hasta 0,30/2,67 pts) y ZEST_NQ_oi en 81/48 (hasta
         /// 29,08/0,69 pts: el zero salta de cruce cuando S se mueve dentro del mismo balde de 50).</summary>
-        public bool ZeroCadaMinuto = false;
+        /// <summary>4.1.8 (12-10-2026): calcular el zero FRESCO cada minuto en vez de reusar el de la cache.
+        /// La cache memoriza el resultado del PRIMER minuto que cae en cada clave (ZeroEstandar.cs:103) y el valor
+        /// NO es funcion de la clave: dentro de una misma clave el envejecimiento mueve T minuto a minuto y S puede
+        /// enganchar otro cruce. Medido sobre la sesion 2026-10-09 (1.378 minutos, codigo real compilado):
+        /// ZEST_QQQ_vol p50 0,014 / p95 0,137 / MAX 115,6 pts en el eje MNQ, y el valor dibujado de QQQ sale de la
+        /// cache en el 99,8 % de los minutos. Costo de no cachear: ~5,0 ms por minuto los tres libros (~7 s por
+        /// sesion). Sin esto el pasado no es reproducible y el operador leeria un zero que no rigio.</summary>
+        public bool ZeroCadaMinuto = true;
         public int VidaVivaS = 300;
         public double CorrMinimo = 30.0;
         public int CorrMuestrasMin = 5;
@@ -137,6 +144,7 @@ namespace PythiaGexCuatro.Familia
 
             double S = futMnq - corr;
             var fl = FilasHoy.Armar(f, tUtc);
+            PerfilLado.CargaPorStrike(f, tUtc, S, true, out var kCg, out var oiCg, out var oiCgC, out var oiCgP, out var gxCg);   // 4.1.7: TODOS los vencimientos
             var r = PerfilLado.Armar(fl, S, true);
             if (r == null) return null;
             FotoUsada = f;
@@ -147,7 +155,7 @@ namespace PythiaGexCuatro.Familia
             string conv = Math.Abs(corr) < 1e-9
                 ? "mismo contrato (corrimiento 0)"
                 : "corrimiento " + corr.ToString("0.00", CultureInfo.InvariantCulture) + " (mediana de " + _corrHist.Count + " fotos)";
-            return ArmadoLibroMinuto.Armar("NQ", clave, futMnq, S, corr, false, r, zv + corr, zo + corr, f.TsUtc, oiOk, MULT, conv, false);
+            return ArmadoLibroMinuto.Armar("NQ", clave, futMnq, S, corr, false, r, zv + corr, zo + corr, f.TsUtc, oiOk, MULT, conv, false, kCg, oiCg, oiCgC, oiCgP, gxCg);
         }
 
         /// <summary>V.cierre_conocido(vs, ts + 120 s): la ultima m2 cerrada con fin &lt;= ts + 120 s (= apertura &lt;= ts); vale si ts - fin &lt;= 240 s.

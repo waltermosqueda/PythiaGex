@@ -136,6 +136,7 @@ namespace PythiaGexCuatro.Familia.Qqq
             double fut = futMnq;
             double S = fut / rz;
             var fl = FilasHoy.Armar(f.Foto, t);
+            PerfilLado.CargaPorStrike(f.Foto, t, S, false, out var kCg, out var oiCg, out var oiCgC, out var oiCgP, out var gxCg);   // 4.1.7: TODOS los vencimientos
             var r = PerfilLado.Armar(fl, S, false);
             if (r == null) return null;
 
@@ -144,7 +145,9 @@ namespace PythiaGexCuatro.Familia.Qqq
             _cache.Tanda(CacheZero.TandaDe(clave, claveIni));
             long envB = (long)Math.Floor((t - f.GeneradoUtc).TotalSeconds / 900.0);
             long bS = (long)Math.Round(S / 1.0, MidpointRounding.ToEven);
-            var (zv, zo) = _cache.Obtener(f, envB, bS, () => ZeroEstandarFam.Calcular(fl, S, false, ZeroEstandarFam.QQQ));
+            var (zv, zo) = _op.ZeroCadaMinuto
+                ? ZeroEstandarFam.Calcular(fl, S, false, ZeroEstandarFam.QQQ)
+                : _cache.Obtener(f, envB, bS, () => ZeroEstandarFam.Calcular(fl, S, false, ZeroEstandarFam.QQQ));
 
             // BM: Fut = K * razon; solo |Fut - fut| <= fut * 0.03 (orden por K = orden por Fut)
             int n = 0;
@@ -164,6 +167,25 @@ namespace PythiaGexCuatro.Familia.Qqq
                 if (!(Math.Abs(fu[i] - fut) <= fut * FILTRO)) continue;
                 b.Fut[j] = fu[i]; b.K[j] = r.K[i]; b.GvC[j] = r.GvC[i]; b.GvP[j] = r.GvP[i]; b.GoC[j] = r.GoC[i]; b.GoP[j] = r.GoP[i]; b.Gv[j] = r.Gv[i]; b.Go[j] = r.Go[i];
                 j++;
+            }
+            // 4.1.8: la carga (OI de TODOS los vencimientos) convertida al eje MNQ. Este minutero arma el LibroMinuto a
+            // mano y NO pasa por ArmadoLibroMinuto.Armar, asi que la carga se engancha aca o no llega nunca a pantalla:
+            // hasta la 4.1.8 CargaPorStrike se calculaba y se tiraba, y CARGA_QQQ no dibujaba una sola raya.
+            if (kCg != null && oiCg != null)
+            {
+                var fcQ = new List<double>(kCg.Length); var cgQ = new List<double>(kCg.Length);
+                var ccQ = new List<double>(kCg.Length); var cpQ = new List<double>(kCg.Length);
+                var kkQ = new List<double>(kCg.Length); var gxQ = new List<double>(kCg.Length);
+                for (int i = 0; i < kCg.Length; i++)
+                {
+                    double F = kCg[i] * rz;
+                    if (Math.Abs(F - fut) > fut * FILTRO) continue;
+                    fcQ.Add(F); cgQ.Add(oiCg[i]); kkQ.Add(kCg[i]);
+                    gxQ.Add(gxCg != null && i < gxCg.Length ? gxCg[i] : double.NaN);
+                    ccQ.Add(oiCgC != null && i < oiCgC.Length ? oiCgC[i] : double.NaN);
+                    cpQ.Add(oiCgP != null && i < oiCgP.Length ? oiCgP[i] : double.NaN);
+                }
+                if (fcQ.Count > 0) { b.FutCarga = fcQ.ToArray(); b.Carga = cgQ.ToArray(); b.CargaC = ccQ.ToArray(); b.CargaP = cpQ.ToArray(); b.CargaK = kkQ.ToArray(); b.CargaGex = gxQ.ToArray(); }
             }
             return b;
         }

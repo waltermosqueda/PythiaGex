@@ -105,6 +105,8 @@ namespace PythiaGexCuatro.Familia
         public readonly List<(int X, long M2)> Velas = new List<(int X, long M2)>(1024);   // velas visibles: x y apertura m2 (ms UTC) de su hora
         public int AnchoVela = 6;
         public bool UltimaVisible = true;            // LastVisibleBarNumber >= CurrentBar - 1 (mirando velas viejas no van los niveles de AHORA)
+        /// <summary>4.1.8: si no es null, la columna muestra ESE minuto del pasado en vez del vivo.</summary>
+        public RebobinadoFam Rebobinado;
         public double PrecioUltimo = double.NaN;     // cierre de la ultima vela del grafico (separador del detalle)
     }
 
@@ -235,6 +237,10 @@ namespace PythiaGexCuatro.Familia
         /// sin precio, con una barrita de peso LINEAL antes del texto (la de mayor |monto| visible = 100 %) y el cambio pegado al monto.</summary>
         public const bool ESTILO_2E = true;
         public const int BARRA_2E = 44;               // ancho del carril de la barrita (px)
+        /// <summary>4.1.8: cuantas rayas de seguimiento punteadas se dibujan. Pedido del operador (12-10): "poneles las
+        /// lineas seguimiento solo a las tres mas cercanas al precio". Son las tres mas cercanas al ultimo precio
+        /// CONTANDO LOS TRES LIBROS juntos, no tres por libro: lo que importa es lo que el precio tiene al lado.</summary>
+        public const int PUNTEADAS_N = 3;
         public const int RECUADRO_Y = 24;             // 4.1.6f: el recuadro, a esta distancia del borde de arriba (debajo del boton ▶| de ATAS)
         /// <summary>4.1.6: el recuadro desplegable arranca CERRADO ("que no moleste"); el clic en su titulo lo abre/cierra.</summary>
         public static volatile bool Recuadro2EAbierto = false;
@@ -905,9 +911,15 @@ namespace PythiaGexCuatro.Familia
                 string fu = fuA == "3.0" ? "" : (fuA == "oi" ? "·OI" : "·vol");
                 string corto0 = s?.Corto ?? "";
                 bool esConf = s != null && s.Tipo == "CONF";
+                // 4.1.8: las series de carga llevan el STRIKE NATIVO del libro al lado del nombre, como ya hacia TQQQ.
+                // En NQ el strike y el precio dibujado coinciden (conversion 0) y no se repite; en NDX y QQQ no: la raya
+                // del strike 30.600 de NDX se dibuja en 30.827,37, y el operador cruza el 30.600 contra CBOE, no el otro.
+                bool esCarga = a.Serie != null && a.Serie.StartsWith("CARGA", StringComparison.Ordinal);
                 string libro = a.Libro == "TQQQ" ? (double.IsNaN(a.Strike) ? "TQQQ" : "TQQQ " + StrikeTqqq(a.Strike))
                              : s != null && s.Tipo == "TRES" ? (corto0 == "" ? "3.0" : corto0)
                              : esConf ? "CONF"
+                             : esCarga && !double.IsNaN(a.Strike) && Math.Abs(a.Strike - a.Precio) >= 0.005
+                                 ? (corto0 == "" ? a.Libro : corto0) + " " + Strike(a.Strike)
                              : (corto0 == "" ? a.Libro : corto0);
                 bool clasica = a.Serie == "R10_NDX_zero";          // 4.1.5: "Clasica NDX 0Γ" ya dice que es el zero: sin rol (4.1.5b: las D1-D3 de la clasica SI llevan rol)
                 string nom = esConf ? "CONF" + fu : clasica ? libro + fu : libro + " " + rol + fu;
@@ -955,6 +967,21 @@ namespace PythiaGexCuatro.Familia
             {
                 int hC = medir("X", tamC).Height + 3;
                 double cw = medir(new string('0', 20), tamC).Width / 20.0;     // Consolas: todas las letras (▲ ▼ − incluidas) avanzan lo mismo
+                // 4.1.8: las tres de la raya de seguimiento se eligen ANTES de armar los rotulos, por cercania al
+                // ultimo precio. Antes era por distancia (+-110 pts) y dibujaba de mas en los dias de muchos strikes.
+                var puntear = new HashSet<double>();
+                if (!double.IsNaN(v.PrecioUltimo))
+                {
+                    var cand = new List<double>();
+                    foreach (var l0 in grupos)
+                    {
+                        var c0 = nuevo ? Cabeza(l0) : l0[0];
+                        if (c0 != null && c0.Partes != null && c0.Partes.Length > 0 && c0.Partes[0].Serie != null
+                            && c0.Partes[0].Serie.StartsWith("CARGA", StringComparison.Ordinal)) cand.Add(c0.Precio);
+                    }
+                    cand.Sort((x, y) => Math.Abs(x - v.PrecioUltimo).CompareTo(Math.Abs(y - v.PrecioUltimo)));
+                    for (int i = 0; i < cand.Count && i < PUNTEADAS_N; i++) puntear.Add(cand[i]);
+                }
                 var et = new List<Rot>();
                 foreach (var l in grupos)
                 {
@@ -987,15 +1014,44 @@ namespace PythiaGexCuatro.Familia
                         if (aj.Cambios && a0.CambioTxt != "") { r.T2 = " " + a0.CambioTxt; r.ColCambio = ColorSentido(a0.CambioSentido); }
                         // 4.1.6 (estilo 2E elegido por el operador 09-10: "una sola columna a la derecha, sin el precio", con barrita LINEAL de peso):
                         // sin precio ni fuente (el precio se lee en el eje y en la raya; la fuente esta en el detalle); quedan los acompañantes.
-                        r.T3 = ESTILO_2E ? acomp2 : " " + precio + (a0.FuenteTxt != "" ? " " + a0.FuenteTxt : "") + acomp;
+                        // 4.1.8: la carga (strikes abiertos) SI lleva el precio aunque el estilo 2E lo saque del resto. Es la referencia
+                        // dura: con el grafico alejado el eje no alcanza para leer a que strike apunta la raya, y el operador decide sobre ese
+                        // numero. Las demas series siguen como las eligio el 09-10 ("una sola columna a la derecha, sin el precio").
+                        bool esCarga = a0.Partes != null && a0.Partes.Length > 0 && a0.Partes[0].Serie != null
+                                       && a0.Partes[0].Serie.StartsWith("CARGA", StringComparison.Ordinal);
+                        r.T3 = ESTILO_2E ? (esCarga ? " " + precio + acomp2 : acomp2)
+                                         : " " + precio + (a0.FuenteTxt != "" ? " " + a0.FuenteTxt : "") + acomp;
                     }
                     r.Txt = r.T1 + r.T2 + r.T3;
                     int y = Y(a0.Precio);
                     r.Y = y; r.Yl = y;
                     r.Fuera = y == int.MinValue ? 0 : (y < area.Top ? 1 : (y > area.Bottom ? -1 : 0));
+                    // 4.1.8: raya PUNTEADA muy tenue de borde a borde en los strikes cargados que el precio puede
+                    // llegar a tocar hoy. Es para no tener que adivinar que rotulo corresponde a que nivel; los
+                    // lejanos no se marcan a proposito para no volver al arbol de navidad.
+                    if (r.Fuera == 0 && y != int.MinValue && puntear.Contains(a0.Precio))
+                    {
+                        var cPunt = Color.FromArgb(55, a0.Col);
+                        int xFin = Math.Max(area.Left + 2, xr - 8);   // los rotulos se dibujan DESPUES y con fondo: tapan lo que sobre
+                        for (int xx = area.Left + 2; xx < xFin; xx += 9) d.Relleno(cPunt, new Rectangle(xx, y, 3, 1));
+                    }
                     et.Add(r);
                 }
                 int topCol = yCab;
+                // 4.1.8 REBOBINADO: el renglon que dice QUE MINUTO se esta mostrando. Va PRIMERO y en naranja: sin esto el
+                // operador no puede distinguir el pasado del vivo, que es exactamente como se sacan conclusiones erroneas.
+                if (v.Rebobinado != null)
+                {
+                    var rb = v.Rebobinado;
+                    string tRb = "◀ " + rb.MinutoUtc.ToString("MM-dd HH:mm", Inv) + "Z"
+                               + (double.IsNaN(rb.FutMnq) ? "" : " · fut " + P(rb.FutMnq))
+                               + (rb.Libros != null && rb.Libros.Length > 0 ? " · " + string.Join("/", rb.Libros) : "")
+                               + (string.IsNullOrEmpty(rb.Nota) ? "" : " · " + rb.Nota);
+                    int wRb = medir(tRb, tamC).Width;
+                    Sombra(d, tamC, tRb, ColNaranja, xr - wRb - 6, topCol);
+                    ocupado.Add(new Rectangle(xr - wRb - 7, topCol, wRb + 8, hC)); colIzq = Math.Min(colIzq, xr - wRb - 7);
+                    topCol += hC;
+                }
                 // la edad va ANTES de los numeros: una linea arriba de la columna
                 if (!double.IsNaN(edadMax) && !(ESTILO_2E && nuevo))   // 4.1.6f: en 2E la edad va minima en el renglon del recuadro
                 {

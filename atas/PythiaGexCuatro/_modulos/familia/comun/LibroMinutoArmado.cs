@@ -14,7 +14,8 @@ namespace PythiaGexCuatro.Familia
     {
         /// <summary>BM(libro, fut, ...): r en el eje del libro; zvNq/zoNq YA en precio de NQ (NaN si no hay). null si r es null.</summary>
         public static LibroMinuto Armar(string libro, long clave, double futMnq, double S, double conv, bool porRazon, PerfilLado r,
-                                        double zvNq, double zoNq, DateTime datoUtc, bool oiOk, double mult, string convTexto, bool congelada)
+                                        double zvNq, double zoNq, DateTime datoUtc, bool oiOk, double mult, string convTexto, bool congelada,
+                                        double[] kCarga = null, double[] oiCarga = null, double[] oiCargaC = null, double[] oiCargaP = null, double[] gexCarga = null)
         {
             if (r == null) return null;
             int n = r.N;
@@ -39,6 +40,22 @@ namespace PythiaGexCuatro.Familia
                 b.Fut[j] = futAll[i]; b.K[j] = r.K[i];
                 b.GvC[j] = r.GvC[i]; b.GvP[j] = r.GvP[i]; b.GoC[j] = r.GoC[i]; b.GoP[j] = r.GoP[i]; b.Gv[j] = r.Gv[i]; b.Go[j] = r.Go[i];
             }
+            if (kCarga != null && oiCarga != null && kCarga.Length == oiCarga.Length && kCarga.Length > 0)
+            {
+                var fc = new List<double>(kCarga.Length); var cg = new List<double>(kCarga.Length);
+                var cc = new List<double>(kCarga.Length); var cp = new List<double>(kCarga.Length);
+                var kk = new List<double>(kCarga.Length); var gx = new List<double>(kCarga.Length);
+                for (int i = 0; i < kCarga.Length; i++)
+                {
+                    double F = porRazon ? kCarga[i] * conv : kCarga[i] + conv;
+                    if (Math.Abs(F - futMnq) > futMnq * SeleccionFam.FILTRO) continue;
+                    fc.Add(F); cg.Add(oiCarga[i]); kk.Add(kCarga[i]);
+                    gx.Add(gexCarga != null && i < gexCarga.Length ? gexCarga[i] : double.NaN);
+                    cc.Add(oiCargaC != null && i < oiCargaC.Length ? oiCargaC[i] : double.NaN);
+                    cp.Add(oiCargaP != null && i < oiCargaP.Length ? oiCargaP[i] : double.NaN);
+                }
+                if (fc.Count > 0) { b.FutCarga = fc.ToArray(); b.Carga = cg.ToArray(); b.CargaC = cc.ToArray(); b.CargaP = cp.ToArray(); b.CargaK = kk.ToArray(); b.CargaGex = gx.ToArray(); }
+            }
             return b;
         }
     }
@@ -55,7 +72,7 @@ namespace PythiaGexCuatro.Familia
 
     public static class SeriesLibroFam
     {
-        public static readonly string[] TIPOS = { "MUROS", "MAJORS", "ZTP", "ZEST" };
+        public static readonly string[] TIPOS = { "MUROS", "MAJORS", "ZTP", "ZEST", "TOPN" };
 
         /// <summary>oi_vale(b): NQ -> OiOk (C2); NDX/QQQ -> siempre (la marca oi_fresco no apaga).</summary>
         public static bool OiVale(LibroMinuto b) => b != null && (b.Libro != "NQ" || b.OiOk);
@@ -73,12 +90,15 @@ namespace PythiaGexCuatro.Familia
                 foreach (var n in mu) n.GexM = SeleccionFam.Monto(b.Fut, n.E == "D1" ? (oi ? b.GoC : b.GvC) : (oi ? b.GoP : b.GvP), n.P, mult);
                 var ma = SeleccionFam.Majors(b, oi);
                 foreach (var n in ma) n.GexM = SeleccionFam.Monto(b.Fut, oi ? b.Go : b.Gv, n.P, mult);
+                var tn = SeleccionFam.TopN(b, oi);
+                foreach (var n in tn) n.GexM = SeleccionFam.Monto(b.Fut, oi ? b.Go : b.Gv, n.P, mult);
                 var zt = SeleccionFam.Ztp(b, oi);
                 var ze = SeleccionFam.Zest(b, oi);
                 if (mu.Count > 0) s.Series["MUROS_" + b.Libro + "_" + fu] = mu;
                 if (ma.Count > 0) s.Series["MAJORS_" + b.Libro + "_" + fu] = ma;
                 if (zt.Count > 0) s.Series["ZTP_" + b.Libro + "_" + fu] = zt;
                 if (ze.Count > 0) s.Series["ZEST_" + b.Libro + "_" + fu] = ze;
+                if (tn.Count > 0) s.Series["TOPN_" + b.Libro + "_" + fu] = tn;
                 var pool = new List<double>(6);
                 foreach (var n in mu) pool.Add(n.P);
                 foreach (var n in ma) pool.Add(n.P);

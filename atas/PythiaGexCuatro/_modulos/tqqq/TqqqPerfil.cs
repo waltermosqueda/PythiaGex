@@ -25,7 +25,7 @@ namespace PythiaGexCuatro.Familia
     /// <summary>Lo que sale de UNA foto de TQQQ (cache por foto): perfil del vencimiento mas cercano y las 4 series en strikes.</summary>
     public sealed class TqqqNivelesFoto
     {
-        public static readonly string[] Orden = { "T_DOMS_vol", "T_MUROS_vol", "T_MUROS_oi", "T_ZERO_oi" };
+        public static readonly string[] Orden = { "T_DOMS_vol", "T_MUROS_vol", "T_MUROS_oi", "T_ZERO_oi", "T_ZERO_vol_pm" };
         public double Spot = double.NaN;
         public double VencD = double.NaN;               // dias al vencimiento mas cercano (desde la hora del dato); NaN si no hubo perfil
         public int NStrikes;                            // strikes del perfil
@@ -140,6 +140,26 @@ namespace PythiaGexCuatro.Familia
                 if (dz < dMejor) { dMejor = dz; mejor = z; }
             }
             o.Series["T_ZERO_oi"] = double.IsNaN(mejor) ? Array.Empty<TqqqNivelK>() : new[] { new TqqqNivelK(mejor, "zero", double.NaN) };
+
+            // T_ZERO_vol_pm (12-10-2026): el PUNTO MEDIO de los dos strikes que encierran el cruce de signo del perfil
+            // por VOLUMEN (no el interpolado, y no por OI). Es lo que reproduce la raya blanca de Gammalito:
+            //   12-10: punto medio 79,50 (el nivel que el precio respeto a las 11:39 y 12:32 ART); interpolado 79,13-79,28.
+            //   08-10: punto medio 81,50, que es el valor que quedo anotado en la bitacora para esa raya; interpolado 81,20.
+            // Por que el punto medio y no la interpolacion: la grilla de TQQQ es de 1 USD (~127 pts de NQ a la escala de hoy)
+            // y ademas CBOE solo lista medios strikes por DEBAJO de 79 (verificado en 6 dias: el 79,5 no existe en ninguna
+            // de 424/416/405/78 fotos). Interpolar dentro de un hueco de 1 USD es precision falsa.
+            var kv = new List<double>(); var gv2 = new List<double>();
+            for (int i = 0; i < p.K.Length; i++)
+                if (Math.Abs(p.K[i] - S) <= RADIO_ZERO * S && p.Gv[i] != 0) { kv.Add(p.K[i]); gv2.Add(p.Gv[i]); }
+            double pm = double.NaN, dPm = double.PositiveInfinity;
+            for (int i = 0; i + 1 < kv.Count; i++)
+            {
+                if (!(gv2[i] * gv2[i + 1] < 0)) continue;
+                double medio = (kv[i] + kv[i + 1]) / 2.0;
+                double dz = Math.Abs(medio - S);
+                if (dz < dPm) { dPm = dz; pm = medio; }
+            }
+            o.Series["T_ZERO_vol_pm"] = double.IsNaN(pm) ? Array.Empty<TqqqNivelK>() : new[] { new TqqqNivelK(pm, "0G pm", double.NaN) };
             return o;
         }
 

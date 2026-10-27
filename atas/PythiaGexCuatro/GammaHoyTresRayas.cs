@@ -51,6 +51,36 @@ namespace PythiaGexCuatro
         [Display(Name = "↳ rot. rayitas", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 97, Description = "Necesita alguna de las llaves '3.0 NQ dom▸', '3.0 NQ 0Γ▸', '3.0 capas▸' o '3.0 F1-F8▸' prendida. Vale para todas las que esten prendidas. Tambien necesita '↳ ver rotulos' (Si por defecto). 3.5.6: apagadas por defecto (pedido 08-10: 'quedaron sueltas').")]
         public bool Rotulos3Conectores { get; set; } = false;
 
+        [Display(Name = "↳ rot. rayita solo si esta corrida", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 98, Description = "4.1.7 (12-10-2026): dibuja la rayita que une el rotulo con su precio SOLO cuando la escalera anti-solape lo corrio mas de N pixeles. Resuelve el problema que se ve al alejar el zoom: con el grafico ampliado los rotulos caen casi en su precio y se leen bien, pero al alejar entran mas niveles en menos pixeles, la escalera los corre mucho y el rotulo pasa a estar lejos de su raya. A diferencia de 'rot. rayitas' (que las dibuja para TODAS y por eso se apagaron el 08-10 porque 'quedaron sueltas'), esta solo aparece donde hace falta.")]
+        public bool Rotulos3ConectaCorridos { get; set; } = true;
+
+        // 4.1.8: los [Display]/[Range] van SOBRE LA PROPIEDAD PUBLICA. Hasta la 4.1.7 estaban sobre el campo privado,
+        // asi que ATAS no les veia ni nombre ni descripcion ni rango. Mover el atributo no cambia el nombre de la
+        // propiedad, asi que lo guardado en el .ws se respeta.
+        private int _cargaMinOi = 50;
+        [Display(Name = "↳ carga: contratos minimos para marcar", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 100, Description = "4.1.8 (12-10-2026): cuantos contratos de interes abierto TOTAL tiene que tener un strike para que las series 'carga' lo marquen. Pedido del operador: 'si hay mas de 50 tiene minimo que estar marcado, pase lo que pase'. OJO: lo que se suma NO son todos los vencimientos de CME. El libro NQ suscribe solo los 2 mas cercanos (CadenaApi.Vencimientos) y CBOE recorta a 14 dias en vivo y 8 desde el archivo. 0 = marcar todos los que haya (hasta el tope).")]
+        [Range(0, 5000)]
+        public int CargaMinimaOi { get { return _cargaMinOi; } set { _cargaMinOi = value; PythiaGexCuatro.Familia.ReglasFam.CargaMinima = value; } }
+
+        private int _cargaTope = 12;
+        [Display(Name = "↳ carga: tope de rayas", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 101, Description = "Tope de seguridad para que un dia raro no llene la pantalla. Se quedan los de mas carga. OJO: hoy este tope descarta EN SILENCIO: con el futuro en 31.350 hay 18 strikes que cumplen los contratos minimos y se dibujan 12.")]
+        [Range(1, 40)]
+        public int CargaTopeRayas { get { return _cargaTope; } set { _cargaTope = value; PythiaGexCuatro.Familia.ReglasFam.CargaTope = value; } }
+
+        private int _cargaMinRayas = 10;
+        [Display(Name = "↳ carga: rayas minimas (aunque no lleguen a los contratos)", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 103, Description = "4.1.8: cuantos strikes cargados se marcan SIEMPRE por libro, aunque no alcancen los contratos minimos. Hace falta porque cuando vence el 0DTE TODOS los strikes pierden sus contratos del dia a la vez y un umbral fijo los borra de golpe: el 12-10 el strike NDX 30675 (30.904 en el grafico) venia marcado con 51 contratos y desaparecio al quedar en 32, aunque 25 de esos 32 eran una posicion abierta a 4 dias y el precio siguio respetando el nivel. 0 = solo los que pasan el umbral.")]
+        [Range(0, 20)]
+        public int CargaMinimaRayas { get { return _cargaMinRayas; } set { _cargaMinRayas = value; PythiaGexCuatro.Familia.ReglasFam.CargaMinimaRayas = value; } }
+
+        private int _cargaRadio = 0;
+        [Display(Name = "↳ carga: radio de busqueda (pts, 0 = como las dominantes)", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 102, Description = "4.1.8: a cuantos puntos del futuro se buscan los strikes cargados. 0 = el radio de las dominantes, que con MNQ en 31.000 es una CONSTANTE de 100 puntos (el termino del 2 % son 620 y nunca manda). Por eso una raya de carga aparece y desaparece sola cuando el precio se corre: medido el 12-10, el 30800 se caia con el futuro en 30904 y volvia en 30890. Para una referencia dura conviene 200-250. Techo 300: mas lejos la cadena de NQ llega con un strike de cada dos y el numero dejaria de ser trazable.")]
+        [Range(0, 300)]
+        public int CargaRadioPts { get { return _cargaRadio; } set { _cargaRadio = value; PythiaGexCuatro.Familia.ReglasFam.CargaRadioPts = value; } }
+
+        [Display(Name = "↳ rot. pixeles para considerarla corrida", GroupName = "0. PRENDER / APAGAR (todo lo que se dibuja)", Order = 99, Description = "Cuantos pixeles tiene que haberse corrido el rotulo respecto de su precio real para que se dibuje la rayita. Mas chico = mas rayitas.")]
+        [Range(2, 60)]
+        public int Rotulos3CorridoPx { get; set; } = 7;
+
         /// <summary>3.5.5: el rotulo corto. 'NQ D2 ▼' -> 'NQ D2'; edad ' ·422m' -> ' ·7h' solo si > 30 min; ' ·21 ctos' -> ' ·21'; descripciones fuera.</summary>
         private string RotuloCorto(string nombre, string precio, string sufijo)
         {

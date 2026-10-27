@@ -132,6 +132,13 @@ namespace PythiaGexCuatro.Familia
         private long _tqVersionS = long.MinValue;
         private long _ultimoEsperado = long.MinValue;
         private ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>> _hist = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty;
+        /// <summary>4.1.8 REBOBINADO: minuto -> su registro CLONADO y la estela de SU sesion. Clonado porque los
+        /// registros publicados se mutan despues en el hilo del host (Replica20/ClasicaNdx reemplazan Extra en tres
+        /// escrituras no atomicas): congelar el diccionario no alcanza, hay que congelar el registro. El apareo con
+        /// la sesion se hace ACA, en el hilo del host, para que el de dibujo no tenga que resolver que sesion es.</summary>
+        private sealed class RegRebob { public RegistroMinuto R; public AlmacenTres Tres; }
+        private ImmutableDictionary<long, RegRebob> _rebob = ImmutableDictionary<long, RegRebob>.Empty;
+        private ImmutableDictionary<long, RegRebob> _rebobPrevias = ImmutableDictionary<long, RegRebob>.Empty;
         private long _tresVersion;
         private FotoFamilia _foto = new FotoFamilia { CalculadoUtc = DateTime.MinValue, HistoriaM2 = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty,
                                                        Actuales = Array.Empty<NivelActual>(), Fuentes = Array.Empty<FuenteEstado>(), Aviso = "sin configurar" };
@@ -215,6 +222,14 @@ namespace PythiaGexCuatro.Familia
             _hist = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty;
             string previas = "";
             try { _hist = HistoriaPrevia(s, out previas); } catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "HistoriaPrevia", e); }   // 4.1.6g: memoria de 2 sesiones
+            // 4.1.8: el indice del rebobinado = lo previo (lo llena HistoriaPrevia) + lo ya cargado de esta sesion
+            try
+            {
+                var br = _rebobPrevias.ToBuilder();
+                foreach (var r in _alm.Todos) if (r != null) br[r.Clave] = new RegRebob { R = r.Copia(), Tres = _tres };
+                _rebob = br.ToImmutable();
+            }
+            catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "RebobinadoSiembra", e); }
             _listoFuentes = false;
             _genExtras = (_op.Extras as IExtrasRehacer)?.Generacion ?? 0;          // 4.1.4: lo que cambie desde ahora se rehace
             BitacoraFam.Linea(_op.RutaLog, "sesion", "sesion " + s + ": " + cargados + " minutos de " + (_alm.Ruta ?? "(sin archivo)") + ", " + lt + " lineas de estela"
@@ -230,6 +245,8 @@ namespace PythiaGexCuatro.Familia
         {
             txt = "";
             var b = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty.ToBuilder();
+            var rb = ImmutableDictionary<long, RegRebob>.Empty.ToBuilder();
+            _rebobPrevias = ImmutableDictionary<long, RegRebob>.Empty;
             if (!_op.Persistir || CarpetaFamilia == null) return b.ToImmutable();
             var d0 = DateTime.ParseExact(s.Dia, "yyyy-MM-dd", CultureInfo.InvariantCulture);
             int n = 0; var partes = new List<string>();
@@ -250,9 +267,13 @@ namespace PythiaGexCuatro.Familia
                     var e = SalidaFamilia.Entrada(T, alm.Get, tres, null);
                     if (e != null) { b[T] = e; velas++; }
                 }
+                // 4.1.8: hasta la 4.1.7 'alm' y 'tres' se tiraban aca y por eso, al retroceder el grafico a estos dias,
+                // las rayas se dibujaban pero no habia con que leerlas. Quedarselos no cuesta nada: ya estan parseados.
+                foreach (var rr in alm.Todos) if (rr != null) rb[rr.Clave] = new RegRebob { R = rr.Copia(), Tres = tres };
                 n++; partes.Add(dia + " (" + c + " min, " + velas + " velas m2)");
             }
             txt = string.Join(", ", partes);
+            _rebobPrevias = rb.ToImmutable();
             return b.ToImmutable();
         }
 
@@ -378,6 +399,19 @@ namespace PythiaGexCuatro.Familia
                         if ((verS?.VersionS ?? 0) == vs0) break;   // la s no cambio durante la pasada: todas las velas tienen la misma
                         total = false;                               // cambio adentro de la pasada: la proxima vuelta la ve distinta y rehace todo
                     }
+                }
+
+                // ---- 4.1.8: el indice del rebobinado sigue a los minutos nuevos y a los re-completados. Se vuelve a
+                //      clonar porque CompletarExtras muta el registro en el lugar: lo publicado tiene que ser la version completa.
+                if (ultimaNueva != long.MinValue)
+                {
+                    var rb = _rebob.ToBuilder();
+                    for (long k = primeraNueva; k <= ultimaNueva; k++)
+                    {
+                        var rr = _alm.Get(k);
+                        if (rr != null) rb[k] = new RegRebob { R = rr.Copia(), Tres = _tres };
+                    }
+                    _rebob = rb.ToImmutable();
                 }
 
                 // ---- historia por vela m2 (solo las velas que cambiaron)
@@ -554,6 +588,30 @@ namespace PythiaGexCuatro.Familia
                 Fuentes = SalidaFamilia.Fuentes(ultimo, tqU, estCboe, tick, ahoraUtc).AsReadOnly(),
                 TqS = tqU?.S ?? double.NaN, TqC = tqU?.C ?? double.NaN, TqDatoUtc = tqU?.DatoUtc ?? default,
                 Instrumento = _contrato, Aviso = string.Join(" · ", avisos)
+            };
+            // 4.1.8 REBOBINADO: clausura sobre la instantanea INMUTABLE de este instante. El hilo de dibujo no toca
+            // estado vivo del motor: solo consulta este diccionario congelado de clones. Si el minuto no esta, devuelve
+            // null y la pantalla sigue mostrando el vivo; nunca rellena con el valor de ahora.
+            var rebob = _rebob;
+            f.Rebobinar = clave =>
+            {
+                if (rebob == null || rebob.Count == 0) return null;
+                string nota = "";
+                long usada = clave;
+                if (!rebob.TryGetValue(usada, out var e) || e?.R == null || e.R.Vacio)
+                {
+                    usada = clave - 1; nota = "el minuto pedido no tiene niveles: se muestra el anterior";
+                    if (!rebob.TryGetValue(usada, out e) || e?.R == null || e.R.Vacio) return null;
+                }
+                var min = DateTime.UnixEpoch.AddMinutes(usada);
+                return new RebobinadoFam
+                {
+                    ClavePedida = clave, ClaveUsada = usada, MinutoUtc = min, FutMnq = e.R.FutMnq,
+                    Libros = e.R.Libros ?? Array.Empty<string>(),
+                    Niveles = SalidaFamilia.Actuales(e.R, e.Tres, null).AsReadOnly(),
+                    Fuentes = SalidaFamilia.Fuentes(e.R, null, "", default, min).AsReadOnly(),
+                    Nota = nota,
+                };
             };
             Volatile.Write(ref _foto, f);
         }

@@ -29,6 +29,14 @@ namespace PythiaGexCuatro.Cboe
     {
         private static string App => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS");
         public string Carpeta = Path.Combine(App, "PythiaGex4", "cboe");
+        /// <summary>4.1.9 (13-10-2026): carpeta EXTRA de solo lectura que se suma al arrancar. La escribe cboe_local.py,
+        /// que corre fuera de ATAS desde la carpeta Inicio de Windows y baja NDX/QQQ cada 75 s de cdn.cboe.com sin costo.
+        /// Hace falta porque la cadena propia SOLO se junta mientras ATAS esta prendido, y el operador no puede dejarlo
+        /// toda la noche (se tilda). Medido el 13-10: con ATAS apagado de 05:37 a 14:19 la carpeta propia quedo vacia y
+        /// cboe-local tenia 88 fotos de NDX y 57 de QQQ de esa misma ventana. El formato es IDENTICO (mismos campos,
+        /// mismo dias_max_archivo, misma fila); lo unico que no trae es el bloque "sub", que Sub() ya devuelve null.
+        /// Solo se LEE: nunca se escribe ni se poda ahi. "" = no leer ninguna extra.</summary>
+        public string CarpetaExtra = Path.Combine(App, "PythiaGex", "cboe-local");
         public string Log = Path.Combine(App, "pythiagex4-cboe.log");
         public bool Bajar = true;                 // Cboe41Bajar
         public int TopeKBps = 1250;               // Cboe41TopeKBps: pausa = trozo / tope
@@ -611,20 +619,28 @@ namespace PythiaGexCuatro.Cboe
                 if (_parar) return;
                 var todas = new List<(LineaCboe X, string Ruta)>();
                 int ileg = 0, archivos = 0;
+                // 4.1.9: se leen DOS carpetas por dia: la propia y la extra de solo lectura (cboe_local.py, que corre
+                // sin ATAS). El dedup por CadenaTs de mas abajo se queda con una sola foto por sello, asi que solapar
+                // no duplica nada: la extra solo APORTA los sellos que la propia no tiene (las horas con ATAS apagado).
+                var carpetas = string.IsNullOrEmpty(_o.CarpetaExtra) || string.Equals(_o.CarpetaExtra, _o.Carpeta, StringComparison.OrdinalIgnoreCase)
+                             ? new[] { _o.Carpeta } : new[] { _o.Carpeta, _o.CarpetaExtra };
                 for (int d = Math.Max(0, _o.DiasHistoria); d >= 0; d--)
                 {
-                    var ruta = CboeArchivo.RutaDia(_o.Carpeta, L.Archivo, ahora.Date.AddDays(-d));
-                    if (!File.Exists(ruta)) continue;
-                    archivos++;
-                    try
+                    foreach (var carp in carpetas)
                     {
-                        var leidas = CboeArchivo.LeerDia(ruta, g => g >= corte, out int il);
-                        ileg += il;
-                        foreach (var x in leidas) todas.Add((x, ruta));
+                        var ruta = CboeArchivo.RutaDia(carp, L.Archivo, ahora.Date.AddDays(-d));
+                        if (!File.Exists(ruta)) continue;
+                        archivos++;
+                        try
+                        {
+                            var leidas = CboeArchivo.LeerDia(ruta, g => g >= corte, out int il);
+                            ileg += il;
+                            foreach (var x in leidas) todas.Add((x, ruta));
+                        }
+                        catch (Exception e) { _log.Linea("historia " + Path.GetFileName(ruta) + ": " + e.Message); }
+                        Thread.Sleep(20);
+                        if (_parar) return;
                     }
-                    catch (Exception e) { _log.Linea("historia " + Path.GetFileName(ruta) + ": " + e.Message); }
-                    Thread.Sleep(20);
-                    if (_parar) return;
                 }
                 // dedup por sello: gana el generado mas temprano (libros.fotos_cboe)
                 todas.Sort((a, b) => a.X.GeneradoUtc.CompareTo(b.X.GeneradoUtc));

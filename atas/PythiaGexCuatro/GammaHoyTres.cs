@@ -1046,7 +1046,8 @@ namespace PythiaGexCuatro
 
             // fuera de pantalla: un rotulo con flecha por lado, el mas cercano al borde
             // fuera de pantalla: el mas cercano al borde por lado y, ademas, los majors por OI siempre (3.6.2, pedido 08-10)
-            bool EsMajOi(string s) => s != null && s.Contains(" OI") && (s.Contains("M+") || s.Contains("M−"));
+            bool EsMajOi(string s) => s != null && ((s.Contains(" OI") && (s.Contains("M+") || s.Contains("M−")))
+                                                   || s.Contains("carga"));   // 4.1.8: los strikes CARGADOS tambien se avisan fuera de pantalla
             var fueraArr = filas.Where(r => !r.EnPant && r.Arriba).OrderByDescending(r => r.YExacto).ToList();
             var fueraAba = filas.Where(r => !r.EnPant && !r.Arriba && r.YExacto != int.MinValue).OrderBy(r => r.YExacto).ToList();
             int yTop = area.Top + 2, yBot = piso - 2;
@@ -1065,9 +1066,14 @@ namespace PythiaGexCuatro
                 if (y0[i] < area.Top) continue;
                 Marca(FDe(en[i].Chico), xCol, y0[i], wMax, hh[i], en[i].Txt, en[i].C);
                 int ymed = y0[i] + hh[i] / 2;
-                if (Rotulos3Conectores)   // 3.5.6: las rayitas que unen el rotulo con su precio, apagadas por defecto (pedido 08-10)
+                int corrido = Math.Abs(ymed - en[i].YExacto);
+                // 4.1.7: la rayita va si estan prendidas para todas (3.5.6) o si SOLO se piden para las corridas.
+                // Al alejar el zoom entran mas niveles en menos pixeles y la escalera corre mucho el rotulo:
+                // sin la rayita el rotulo parece marcar un precio que no es el suyo.
+                bool conecta = Rotulos3Conectores || (Rotulos3ConectaCorridos && corrido >= Math.Max(2, Rotulos3CorridoPx));
+                if (conecta)
                 {
-                    if (Math.Abs(ymed - en[i].YExacto) > 2) g.DrawLine(new RenderPen(Color.FromArgb(200, en[i].C), 1f), xCol - 10, en[i].YExacto, xCol, ymed);
+                    if (corrido > 2) g.DrawLine(new RenderPen(Color.FromArgb(200, en[i].C), 1f), xCol - 10, en[i].YExacto, xCol, ymed);
                     else g.FillRectangle(Color.FromArgb(230, en[i].C), new Rectangle(xCol - 6, en[i].YExacto - 1, 6, 2));
                 }
             }

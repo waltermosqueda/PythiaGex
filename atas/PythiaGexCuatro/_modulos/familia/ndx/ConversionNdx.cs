@@ -50,6 +50,15 @@ namespace PythiaGexCuatro.Familia.Ndx
         /// cuantas filas entran en el horizonte, asi el 0DTE que vence a las 16:00 NY no queda adentro del zero por la cache (en la vista
         /// previa historica pasa hasta 15 min: medido 07-10 20:00-20:01 UTC, ZEST_NDX_vol 58 pts corrido). Decide el integrador.</summary>
         public bool ZeroCacheConHorizonte = false;
+
+        /// <summary>4.1.8 (12-10-2026): calcular el zero FRESCO cada minuto en vez de reusar el de la cache.
+        /// La cache memoriza el resultado del PRIMER minuto que cae en cada clave (ZeroEstandar.cs:103) y el valor
+        /// NO es funcion de la clave: dentro de una misma clave el envejecimiento mueve T minuto a minuto y S puede
+        /// enganchar otro cruce. Medido sobre la sesion 2026-10-09 (1.378 minutos, codigo real compilado):
+        /// ZEST_QQQ_vol p50 0,014 / p95 0,137 / MAX 115,6 pts en el eje MNQ, y el valor dibujado de QQQ sale de la
+        /// cache en el 99,8 % de los minutos. Costo de no cachear: ~5,0 ms por minuto los tres libros (~7 s por
+        /// sesion). Sin esto el pasado no es reproducible y el operador leeria un zero que no rigio.</summary>
+        public bool ZeroCadaMinuto = true;
         public Action<string> Log;
 
         public string Contrato(DateTime utc)

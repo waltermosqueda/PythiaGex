@@ -183,18 +183,21 @@ namespace PythiaGexCuatro.Familia.Ndx
             double S = fut - b;
             d.S = S;
             var fl = FilasHoy.Armar(e.Foto, t);
+            PerfilLado.CargaPorStrike(e.Foto, t, S, false, out var kCg, out var oiCg, out var oiCgC, out var oiCgP, out var gxCg);   // 4.1.7: TODOS los vencimientos
             var r = PerfilLado.Armar(fl, S, false);
             if (r == null) { d.Motivo = "la cadena de NDX no aporta gamma en el horizonte Hoy"; return null; }
             // C5: clave (foto, tramo de 900 s desde generado, round(S/50)); se calcula con el S del PRIMER minuto de la clave
             long envB = (long)Math.Floor((t - e.Foto.GeneradoUtc).TotalSeconds / 900.0);
             long sr = (long)Math.Round(S / ZeroEstandarFam.NDX.CentroPaso, MidpointRounding.ToEven);
             object fotoKey = _op.ZeroCacheConHorizonte ? (object)(e.Foto.GeneradoUtc.Ticks, e.Foto.TsUtc.Ticks, fl.N) : (e.Foto.GeneradoUtc.Ticks, e.Foto.TsUtc.Ticks);
-            var z = _cache.Obtener(fotoKey, envB, sr, () => ZeroEstandarFam.Calcular(fl, S, false, ZeroEstandarFam.NDX));
+            var z = _op.ZeroCadaMinuto
+                ? ZeroEstandarFam.Calcular(fl, S, false, ZeroEstandarFam.NDX)
+                : _cache.Obtener(fotoKey, envB, sr, () => ZeroEstandarFam.Calcular(fl, S, false, ZeroEstandarFam.NDX));
             if (!salida) return null;
             double zv = double.IsNaN(z.Zv) ? double.NaN : z.Zv + b, zo = double.IsNaN(z.Zo) ? double.NaN : z.Zo + b;
             d.ZeroVol = zv; d.ZeroOi = zo;
             // BM: Fut = K + base, solo strikes a <= 3 % de fut (en orden de K = orden de Fut)
-            return ArmadoLibroMinuto.Armar(LIBRO, clave, fut, S, b, false, r, zv, zo, e.Foto.DatoUtc, !e.OiViejo, MULT, texto, e.Congelada);
+            return ArmadoLibroMinuto.Armar(LIBRO, clave, fut, S, b, false, r, zv, zo, e.Foto.DatoUtc, !e.OiViejo, MULT, texto, e.Congelada, kCg, oiCg, oiCgC, oiCgP, gxCg);
         }
 
         /// <summary>Tanda interna de la cache del zero: (dia de sesion, minutos desde el inicio de la sesion / 240).</summary>

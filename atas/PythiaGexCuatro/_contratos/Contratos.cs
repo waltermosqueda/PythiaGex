@@ -93,6 +93,9 @@ namespace PythiaGexCuatro.Familia
         public double Mult;                   // C1: NQ 20, NDX 100, QQQ 100
         public string ConvTexto;              // "base 241.62 (mediana ...)" para la pestaña
         public bool Congelada;                // CBOE: t_dato NY >= 15:59
+        public double[] FutCarga, Carga, CargaC, CargaP, CargaK, CargaGex;   // 4.1.8: CargaK = strike CRUDO del libro
+        // (no se recalcula deshaciendo la conversion sobre el precio ya redondeado: eso daba 30599,99 / 30600,01);
+        // CargaGex = gamma de ese strike con LOS MISMOS vencimientos que los contratos.   // 4.1.7/4.1.8: strikes (eje MNQ) y OI de TODOS los vencimientos: total, calls y puts
     }
 
     /// <summary>Un modulo por libro (nq / ndx / qqq): arma el LibroMinuto con SU foto vigente, SU conversion y SUS reglas de vigencia.</summary>
@@ -177,6 +180,28 @@ namespace PythiaGexCuatro.Familia
         public IReadOnlyList<string> CambiosEstado = Array.Empty<string>();
         /// <summary>4.1.2: copia superficial (para publicar una foto anotada sin tocar la del motor). Usar SIEMPRE esto en vez de copiar campo por campo.</summary>
         public FotoFamilia Copia() => (FotoFamilia)MemberwiseClone();
+
+        /// <summary>4.1.8: REBOBINADO. clave de minuto (ms UTC / 60000) -> lo que regia en ESE minuto, o null si no hay.
+        /// Es una clausura que el motor arma sobre instantaneas YA CONGELADAS (clones de los RegistroMinuto, nunca las
+        /// referencias vivas: los registros publicados se mutan en el hilo del host al completar las series extra).
+        /// La pantalla solo hace foto.Rebobinar?.Invoke(clave): toda la regla de fidelidad vive en el motor, y aca no
+        /// entra ningun tipo del modulo fam (Contratos.cs se compila en cuatro proyectos).</summary>
+        public Func<long, RebobinadoFam> Rebobinar;
+    }
+
+    /// <summary>4.1.8: lo que regia en un minuto del pasado. Mismos campos que lee la pantalla del vivo, para que el
+    /// rebobinado no sea un camino de dibujo aparte: si un dato no se puede reconstruir se deja vacio, NUNCA se rellena
+    /// con el valor de ahora (seria justo lo que hace sacar conclusiones erroneas).</summary>
+    public sealed class RebobinadoFam
+    {
+        public long ClavePedida, ClaveUsada;
+        public DateTime MinutoUtc;
+        public double FutMnq = double.NaN;
+        public IReadOnlyList<NivelActual> Niveles = Array.Empty<NivelActual>();
+        public IReadOnlyList<FuenteEstado> Fuentes = Array.Empty<FuenteEstado>();
+        public string[] Libros = Array.Empty<string>();
+        /// <summary>Por que el minuto que se muestra no es el pedido (minuto sin libros, respaldo a clave-1), o "".</summary>
+        public string Nota = "";
     }
 
     /// <summary>Catalogo de las 29 series (id, grupo, color, banda) — el mismo de la vista previa + TQQQ. Lo llena el modulo fam (B3d).</summary>
