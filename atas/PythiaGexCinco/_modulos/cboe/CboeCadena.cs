@@ -26,6 +26,11 @@
 //     no sale de la curva del Tesoro (bajada externa, prohibida) sino de TasaConfianza (4,1 %, la letra de 28-91 dias medida el 23-10:
 //     4,00/4,08/4,17 %). Con el carry implicito medido (3,4 %) da q ~ 0,7 %, lejos de los bordes. base = base_cruda si es confiable (como
 //     archivar_cadena). Lo leen la replica de la clasica ("medida") y la pestaña; base_cruda y base_error_ticks siguen igual.
+// 5.0.1 (27-10-2026): CIERRES ANTICIPADOS. En un dia de la tabla CierresAnticipados (27-11-2026 y 24-12-2026) la PM que vence ese dia vence a
+//   la hora de su producto (13:00 NY), no a las 16:00: Construir le da los dias hasta esa hora (sale del horizonte Hoy a las 13:00 y su T
+//   cuenta hasta ahi) y Medir la excluye de la base desde esa hora (el x del contado sigue anclado a las 16:00 de la fecha del cercano: la
+//   recta va en dias enteros entre fechas). El producto sale de las raices de la cadena (CrudoCboe.Producto). Las lineas de cboe-local
+//   (Python) siguen con sus dias a las 16:00: aca no se tocan.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -186,6 +191,7 @@ namespace PythiaGexCinco.Cboe
             var vencOrden = new List<int>();
             var diasPorSerie = new Dictionary<int, double>();
             bool hayAm = c.Am != null;
+            var prod = c.Producto;                                // 5.0.1: la hora de vencimiento de un cierre anticipado es por producto
             // 5.0, pasada 1: que series dan alguna fila (los mismos filtros de abajo) y el PM mas cercano -> el limite de la AM
             double masPm = double.PositiveInfinity;
             var amConFila = new HashSet<int>();
@@ -194,7 +200,7 @@ namespace PythiaGexCinco.Cboe
                 int fe = c.Fecha[i];
                 if (fe == 0) continue;
                 bool am = hayAm && c.Am[i];
-                double dias = DiasSerie(diasPorSerie, fe, am, ahora);
+                double dias = DiasSerie(diasPorSerie, fe, am, ahora, prod);
                 if (dias < 0 || dias > diasMax) continue;
                 double K0 = c.K[i];
                 if (Math.Abs(K0 - S) / S > ancho) continue;
@@ -205,13 +211,13 @@ namespace PythiaGexCinco.Cboe
             }
             double limiteAm = Math.Max(1.0, (double.IsPositiveInfinity(masPm) ? 0.0 : masPm) + 0.01) + MargenAmDias;
             cad.LimiteAm = limiteAm;
-            foreach (var fe in amConFila) if (DiasSerie(diasPorSerie, fe, true, ahora) <= limiteAm) cad.AmFuera++;
+            foreach (var fe in amConFila) if (DiasSerie(diasPorSerie, fe, true, ahora, prod) <= limiteAm) cad.AmFuera++;
             for (int i = 0; i < c.N; i++)
             {
                 int fe = c.Fecha[i];
                 if (fe == 0) continue;
                 bool am = hayAm && c.Am[i];
-                double dias = DiasSerie(diasPorSerie, fe, am, ahora);
+                double dias = DiasSerie(diasPorSerie, fe, am, ahora, prod);
                 if (dias < 0 || dias > diasMax) continue;
                 if (am && dias <= limiteAm) continue;            // 5.0: la AM nunca entra al horizonte Hoy (el 0DTE es la SPXW del dia)
                 double K = c.K[i];
@@ -269,13 +275,15 @@ namespace PythiaGexCinco.Cboe
             return cad;
         }
 
-        /// <summary>Dias de la serie (fecha, raiz) hasta su vencimiento desde 'ahora' (ticks), con cache (como diasPorFecha de la 4.1).</summary>
-        private static double DiasSerie(Dictionary<int, double> cache, int fecha, bool am, long ahora)
+        /// <summary>Dias de la serie (fecha, raiz) hasta su vencimiento desde 'ahora' (ticks), con cache (como diasPorFecha de la 4.1).
+        /// 5.0.1: con el producto de la cadena: en un cierre anticipado la PM vence a la hora de la tabla (CierresAnticipados), asi el 0DTE sale
+        /// del horizonte Hoy a esa hora (dias &lt; 0) y su T cuenta hasta ahi.</summary>
+        private static double DiasSerie(Dictionary<int, double> cache, int fecha, bool am, long ahora, ProductoVenc? prod)
         {
             int sk = Serie(fecha, am);
             if (!cache.TryGetValue(sk, out double dias))
             {
-                dias = (CrudoCboe.VencUtc(fecha, am).Ticks - ahora) / 1e7 / 86400.0;   // total_seconds()/86400.0
+                dias = (CrudoCboe.VencUtc(fecha, am, prod).Ticks - ahora) / 1e7 / 86400.0;   // total_seconds()/86400.0
                 cache[sk] = dias;
             }
             return dias;
@@ -332,6 +340,7 @@ namespace PythiaGexCinco.Cboe
             int venc = vt.Year * 10000 + vt.Month * 100 + vt.Day;
             bool hayAm = c.Am != null && corregida;
             bool excluir = corregida && datoUtc != default;
+            var prod = corregida ? c.Producto : null;             // 5.0.1: la hora de vencimiento de un cierre anticipado es por producto
             // series vivas a la hora del dato (5.0): SPXW/SPY hasta las 16:00 NY de su fecha, SPX AM hasta las 09:30 NY
             var set = new SortedSet<int>();
             var vivas = new HashSet<int>(); var vencidas = new HashSet<int>();
@@ -343,7 +352,7 @@ namespace PythiaGexCinco.Cboe
                 int sk = Serie(fe, am);
                 if (vivas.Contains(sk)) continue;
                 if (vencidas.Contains(sk)) continue;
-                if (excluir && CrudoCboe.VencUtc(fe, am) <= datoUtc) { vencidas.Add(sk); continue; }
+                if (excluir && CrudoCboe.VencUtc(fe, am, prod) <= datoUtc) { vencidas.Add(sk); continue; }   // 5.0.1: con el cierre anticipado
                 vivas.Add(sk); set.Add(fe);
             }
             if (!set.Contains(venc)) return null;
@@ -409,7 +418,9 @@ namespace PythiaGexCinco.Cboe
             {
                 var datoNy = HoraNyCboe.DeUtc(datoUtc).Date;
                 int fDato = datoNy.Year * 10000 + datoNy.Month * 100 + datoNy.Day;
-                if (fDato < cercano) xRef = Math.Max(-5.0, Math.Min(0.0, (datoUtc - CrudoCboe.VencUtc(cercano)).TotalDays));
+                // 5.0.1: el ancla es SIEMPRE las 16:00 de la fecha del cercano (la recta va en dias enteros entre fechas), aunque ese dia sea de
+                // cierre anticipado: la serie ya se excluyo arriba con su hora real (VencUtc con el producto)
+                if (fDato < cercano) xRef = Math.Max(-5.0, Math.Min(0.0, (datoUtc - HoraNyCboe.CierreNormalUtc(cercano / 10000, cercano / 100 % 100, cercano % 100)).TotalDays));
             }
             res.XRef = xRef;
             double contado = aj != null ? PyCboe.Round(aj.Value.A + aj.Value.B * xRef, 2) : fCer.Fwd;

@@ -7,10 +7,12 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>PythiaGexCinco</AssemblyName>
     <RootNamespace>PythiaGexCinco</RootNamespace>
-    <Version>5.0.0.0</Version>
+    <Version>5.0.1.0</Version>
+    <!-- 5.0.1 (27-10-2026): AssemblyVersion FIJA en 5.0.0.0 (como la 4.1 con 4.0.0.0: el .ws guarda el tipo con su Version=); la version
+         real va en FileVersion / InformationalVersion. -->
     <AssemblyVersion>5.0.0.0</AssemblyVersion>
-    <FileVersion>5.0.0.0</FileVersion>
-    <InformationalVersion>5.0.0</InformationalVersion>
+    <FileVersion>5.0.1.0</FileVersion>
+    <InformationalVersion>5.0.1</InformationalVersion>
     <Company>PythiaGex</Company>
     <Product>PythiaGex 5.0 - Gamma ES</Product>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -24,6 +26,8 @@
   <ItemGroup>
     <Compile Include="Black76.cs" />
     <Compile Include="CadenaApi.cs" />
+    <!-- 5.0.1 (27-10-2026): la tabla editable de cierres anticipados (vencimiento PM de SPXW, SPY y ES antes de las 16:00 NY). -->
+    <Compile Include="CierresAnticipados.cs" />
     <Compile Include="Centinela.cs" />
     <Compile Include="Feed.cs" />
     <Compile Include="GammaHoyNucleo.cs" />

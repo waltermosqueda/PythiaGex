@@ -382,7 +382,7 @@ namespace PythiaGexCinco
                 var elegidasSeries = vivas.Where(z => fechas.Contains(z.Expiration.Date)).ToList();
                 if (elegidasSeries.Count == 0) { L("sin series vivas para " + _futuro.Code + " (" + series.Count + " listadas)"); lock (_llave) _estado.Series = 0; return; }
                 L(elegidasSeries.Count + " serie(s) elegidas: " + string.Join(", ", elegidasSeries.Select(z => z.Expiration.ToString("MM-dd") + " " + z.Type + " sobre " + z.UnderlyingCode))
-                  + ((fechas[0] - hoy).Days > 0 && ahoraNy.TimeOfDay < TimeSpan.FromHours(16.5) && hoy.DayOfWeek != DayOfWeek.Saturday && hoy.DayOfWeek != DayOfWeek.Sunday ? "  OJO: sin el vencimiento de HOY" : ""));
+                  + ((fechas[0] - hoy).Days > 0 && ahoraNy < RelojNy.Cierre(hoy, false).AddMinutes(30) && hoy.DayOfWeek != DayOfWeek.Saturday && hoy.DayOfWeek != DayOfWeek.Sunday ? "  OJO: sin el vencimiento de HOY" : ""));   // 5.0.1: 16:30 NY, o el cierre anticipado + 30 min
 
                 // 5) contratos por serie
                 var ops = new List<(Security op, bool delAnt, bool am)>();
@@ -395,7 +395,10 @@ namespace PythiaGexCinco
                     foreach (var o in lista)
                         if (o != null && o.StrikePrice.HasValue && o.StrikePrice.Value > 0 && codigosYa.Add(o.Code ?? o.SecurityId ?? Guid.NewGuid().ToString()))
                             ops.Add((o, delAnt, VenceAm(z)));
-                    L("serie " + z.Expiration.ToString("MM-dd") + " " + z.Type + ": " + lista.Count + " contratos (" + (ops.Count - antes) + " nuevos con strike), sobre " + (delAnt ? anterior.Code : _futuro.Code) + ", vence " + (VenceAm(z) ? "9:30" : "16:00") + " NY");
+                    // 5.0.1: la hora de vencimiento sale de RelojNy.Cierre (9:30 la trimestral; 16:00 o la del cierre anticipado de la tabla)
+                    string anticipado = VenceAm(z) ? "" : CierresAnticipados.Describir(z.Expiration.Date, ProductoVenc.EsPm);
+                    L("serie " + z.Expiration.ToString("MM-dd") + " " + z.Type + ": " + lista.Count + " contratos (" + (ops.Count - antes) + " nuevos con strike), sobre " + (delAnt ? anterior.Code : _futuro.Code) + ", vence "
+                      + (anticipado != "" ? anticipado : RelojNy.Cierre(z.Expiration.Date, VenceAm(z)).ToString("H:mm", CultureInfo.InvariantCulture) + " NY"));
                 }
                 lock (_llave) { _estado.Series = elegidasSeries.Count; _estado.Contratos = ops.Count; }
                 if (ops.Count == 0) { L("las series vinieron sin contratos"); return; }
@@ -774,6 +777,13 @@ namespace PythiaGexCinco
             return Futuro;
         }
 
+        /// <summary>5.0.1 (27-10-2026): la histeresis del spread del roll, POR RAIZ, en puntos. RefrescarDesplazamiento redondea el spread (futuro
+        /// del grafico - trimestre que vence, por puntos medios) a 0,25 y solo lo reemplaza si cambio AL MENOS esto. Con el 1 pt heredado de NQ, en
+        /// ES (ESZ6 -> ESH7, vence el 18-12) las weeklies y la Regular sobre el trimestre viejo podian quedar dibujadas hasta 0,75 pt (3 ticks; casi 4
+        /// con el redondeo) lejos de donde estan. ES: 0,25 = un tick (cualquier cambio del spread redondeado se aplica: error maximo, el redondeo,
+        /// 0,125 pt). NQ (y RTY): 1 pt, igual que antes.</summary>
+        public static double HisteresisRollPts(string raiz) => string.Equals(raiz, "ES", StringComparison.OrdinalIgnoreCase) ? 0.25 : 1.0;
+
         private void RefrescarDesplazamiento()
         {
             var fa = _futuroAnterior; if (fa == null || Futuro <= 0) return;
@@ -784,7 +794,7 @@ namespace PythiaGexCinco
             if (p <= 0) return;
             _futuroAnteriorPrecio = p;
             double nuevo = Math.Round((Futuro - p) * 4) / 4;
-            if (_desplazListo && Math.Abs(nuevo - DesplazamientoAnterior) < 1.0) return;   // histeresis de 1 pt
+            if (_desplazListo && Math.Abs(nuevo - DesplazamientoAnterior) < HisteresisRollPts(_raiz)) return;   // 5.0.1: histeresis por raiz (ES 0,25; NQ 1 pt)
             DesplazamientoAnterior = nuevo; _desplazListo = true;
             if ((DateTime.UtcNow - _desplazLog).TotalMinutes >= 5)
             {
@@ -915,7 +925,7 @@ namespace PythiaGexCinco
         private static bool EsDelAnterior(OptionSeries z, Security anterior)
             => anterior != null && (z.Expiration.Date < anterior.Expiration.Date || (z.Expiration.Date == anterior.Expiration.Date && EsRegular(z)));
 
-        /// <summary>"MESZ6" / "#MNQ" / "ESZ6" -> "NQ"; "MESU6" -> "ES"; "M2K" -> "RTY"; otro -> "".</summary>
+        /// <summary>"MNQZ6" / "#MNQ" / "NQZ6" -> "NQ"; "MESZ6" / "#MES" / "ESZ6" -> "ES"; "M2KZ6" / "RTYZ6" -> "RTY"; otro -> "".</summary>
         public static string RaizGrande(string codigoOInstrumento)
         {
             var s = (codigoOInstrumento ?? "").ToUpperInvariant().TrimStart('#').Trim();
@@ -935,7 +945,7 @@ namespace PythiaGexCinco
             return i >= 0 ? c.Substring(0, i + 1) : c;
         }
 
-        /// <summary>Del codigo del grafico al del grande y su trimestre siguiente: MESZ6 -> ESZ6, NQH7 (y M2KU6 -> RTYU6, RTYZ6).
+        /// <summary>Del codigo del grafico al del grande y su trimestre siguiente: MESZ6 -> ESZ6, ESH7 (MNQZ6 -> NQZ6, NQH7; M2KU6 -> RTYU6, RTYZ6).
         /// Si el grafico no trae mes (instrumento "#MNQ"), devuelve la raiz sola.</summary>
         private static List<string> CodigosGrande(string codGrafico, string grande)
         {
@@ -956,7 +966,7 @@ namespace PythiaGexCinco
             return salida;
         }
 
-        /// <summary>ESZ6 -> NQU6, NQH7 -> ESZ6. "" si el codigo no es trimestral.</summary>
+        /// <summary>ESZ6 -> ESU6, ESH7 -> ESZ6 (NQZ6 -> NQU6; la raiz no cambia, el mes retrocede un trimestre). "" si el codigo no es trimestral.</summary>
         private static string CodigoTrimestreAnterior(string cod)
         {
             cod = (cod ?? "").Trim().ToUpperInvariant();

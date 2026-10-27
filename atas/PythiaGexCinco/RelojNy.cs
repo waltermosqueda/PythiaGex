@@ -14,6 +14,9 @@ namespace PythiaGexCinco
     ///     fecha local el vencimiento de hoy quedaba en 0,01 dias (gamma 8x).
     ///   - Las weeklies vencen a las 16:00 NY. La trimestral (la serie Regular
     ///     del dia en que vence el futuro) se liquida a las 9:30 NY.
+    ///   - 5.0.1 (27-10-2026): en un CIERRE ANTICIPADO (tabla CierresAnticipados,
+    ///     producto EsPm: 27-11-2026 y 24-12-2026) las PM vencen al mediodia de
+    ///     Chicago = 13:00 NY (regla de CME de las semanales), no a las 16:00.
     ///   - El tiempo al vencimiento lleva la HORA, no solo el dia: a las 03:01 NY
     ///     un vencimiento del dia 8 esta a 4,54 dias, no a 4,00 (12 % menos en T,
     ///     6 % de gamma de mas, y desbalancea el 0DTE contra el resto).
@@ -44,9 +47,12 @@ namespace PythiaGexCinco
         /// <summary>La fecha de HOY en Nueva York: la que manda para contar dias a un vencimiento de CME.</summary>
         public static DateTime Hoy() => Ahora().Date;
 
-        /// <summary>Hora de cierre de un vencimiento: 16:00 NY la weekly/diaria, 9:30 NY la trimestral de la mañana.</summary>
+        /// <summary>Hora de cierre de un vencimiento: 16:00 NY la weekly/diaria, 9:30 NY la trimestral de la mañana. 5.0.1: la PM, en un cierre
+        /// anticipado de la tabla (CierresAnticipados, ProductoVenc.EsPm), a la hora de la tabla (13:00 NY el 27-11-2026 y el 24-12-2026):
+        /// DiasAlVencimiento cuenta la T hasta ahi y Filas() la deja afuera desde ahi; YaVencio deja de pedirla 30 min despues.</summary>
         public static DateTime Cierre(DateTime fechaVencimiento, bool venceALaManana)
-            => fechaVencimiento.Date.AddHours(venceALaManana ? 9.5 : 16.0);
+            => venceALaManana ? fechaVencimiento.Date.AddHours(9.5)
+                              : fechaVencimiento.Date.Add(CierresAnticipados.HoraPm(fechaVencimiento.Date, ProductoVenc.EsPm));
 
         /// <summary>Dias (con fraccion) hasta el cierre del vencimiento. Negativo si ya vencio.</summary>
         public static double DiasAlVencimiento(DateTime fechaVencimiento, bool venceALaManana, DateTime ahoraNy)
@@ -63,6 +69,8 @@ namespace PythiaGexCinco
         /// <summary>
         /// Los futuros de CME cotizan de domingo 18:00 a viernes 17:00 NY con una pausa diaria 17:00-18:00. Solo el RELOJ: los
         /// feriados de CME (y sus cierres anticipados) no estan aca. Sirve para distinguir "no hay cotizacion" de "la API no manda".
+        /// 5.0.1: el VENCIMIENTO de las opciones en un cierre anticipado si (Cierre); la sesion del futuro esos dias no (la hora del halt de
+        /// Globex no la pude leer en una fuente oficial: el cartel puede decir CAIDO en vez de CERRADO esa tarde).
         /// </summary>
         public static bool MercadoAbierto(DateTime ahoraNy)
         {

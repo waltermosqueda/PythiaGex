@@ -94,7 +94,7 @@ namespace PythiaGexCinco
     public partial class GammaCinco : Indicator
     {
         private const string LOG = "gammahoy";
-        private const string VERSION = "5.0.0";
+        private const string VERSION = "5.0.1";
         private const string MOTOR_TRES = "3.6.9";    // la version de la 3.0 que corre adentro (clonar_4_0.py)
         private const int MIN_STRIKES_UTILES = 8;     // strikes con IV en call y put para que la cuenta valga
 
@@ -354,6 +354,8 @@ namespace PythiaGexCinco
                     + " datos=" + Registro.CarpetaDatos
                     + " | 4.1: dibujo 3.0 " + (Tres41AlgoVisible ? "PRENDIDO (dom=" + Tres41Dominantes + " tunel=" + Tres41Tunel + " zero=" + Tres41Zero + " capas=" + Tres41Capas + " recuadro=" + Tres41Recuadro + " cabecera=" + Tres41Cabecera + " formulas=" + Tres41Formulas + ")" : "apagado")
                     + " cintaCsv=" + Cinta4Exportar + " relleno=" + Cinta4Rellenar + " caja=" + Caja4Activa + " centinela=" + Guardar4Centinela + " pulso=" + Estado4Pulso);
+                // 5.0.1: la tabla de cierres anticipados con que se cuentan los vencimientos (y si alguna fila no se entendio) y la histeresis del roll
+                Log("5.0.1: " + CierresAnticipados.Resumen() + " | histeresis del spread del roll " + CadenaApi.HisteresisRollPts(raiz).ToString("0.##", CultureInfo.InvariantCulture) + " pts (raiz " + (raiz == "" ? "?" : raiz) + ")");
                 _tick = Tick;
                 SubscribeToTimer(_periodo, _tick);
                 EstadoPulsoArrancar();   // 3.2.1: el pulso por cambio (1 s) para Profundidad 3.0; solo escribe indicador.json

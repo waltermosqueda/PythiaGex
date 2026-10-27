@@ -168,8 +168,23 @@ namespace PythiaGexCinco.Cboe
             return d.AddDays(hasta + 7 * (cual - 1));
         }
 
-        /// <summary>16:00 de Nueva York de esa fecha, en UTC (20 en verano, 21 en invierno) — exposicion.hora_cierre_utc.</summary>
-        public static DateTime CierreUtc(int anio, int mes, int dia)
+        /// <summary>16:00 de Nueva York de esa fecha, en UTC (20 en verano, 21 en invierno) — exposicion.hora_cierre_utc.
+        /// 5.0.1 (27-10-2026): en un cierre anticipado de la tabla (PythiaGexCinco.CierresAnticipados) la hora de la tabla: el 27-11-2026 y el
+        /// 24-12-2026, 13:00 NY = 18:00 UTC. Sin producto = la mas temprana de SPXW y SPY (Python, exposicion.hora_cierre_utc, sigue en 16:00).</summary>
+        public static DateTime CierreUtc(int anio, int mes, int dia) => CierreUtc(anio, mes, dia, null);
+
+        /// <summary>5.0.1: la hora de vencimiento PM del producto ese dia (16:00 NY o la del cierre anticipado), en UTC.</summary>
+        public static DateTime CierreUtc(int anio, int mes, int dia, ProductoVenc? producto)
+        {
+            var f = new DateTime(anio, mes, dia, 0, 0, 0, DateTimeKind.Utc);
+            return f.AddHours(DstEeuu(f) ? 4 : 5).Add(CierresAnticipados.HoraPm(f, producto));   // 16:00 -> 20/21 UTC como antes
+        }
+
+        /// <summary>5.0.1: 16:00 NY de esa fecha en UTC SIEMPRE, sin la tabla de cierres anticipados (lo que era CierreUtc en la 5.0.0). Es el
+        /// ancla del contado en la recta de forwards de CboeCadena.Medir: la recta cuenta dias ENTEROS entre fechas (todas a la misma hora), asi
+        /// que el "ahora" se mide desde las 16:00 del cercano aunque ese dia cierre a las 13:00 (anclado a las 13:00 el contado se corria
+        /// pendiente x 0,125 d, ~0,08 pts de base: medido en el arnes de la 5.0.1).</summary>
+        public static DateTime CierreNormalUtc(int anio, int mes, int dia)
         {
             var f = new DateTime(anio, mes, dia, 0, 0, 0, DateTimeKind.Utc);
             return f.AddHours(DstEeuu(f) ? 20 : 21);

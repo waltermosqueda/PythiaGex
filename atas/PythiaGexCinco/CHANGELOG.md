@@ -1,5 +1,63 @@
 # CHANGELOG — PythiaGex 5.0 (Gamma ES)
 
+## 5.0.1 (27-10-2026, compilada; SIN instalar) — cierres anticipados, histéresis del roll por raíz, recuadro en USD de ES
+
+Base: commit `deb23344a` (la 5.0.0 instalada, DLL sha256 `b06c59c3…`). FileVersion 5.0.1.0, InformationalVersion 5.0.1, `VERSION`
+"5.0.1"; **AssemblyVersion queda fija en 5.0.0.0** (el .ws guarda el tipo con su versión, como la 4.1 con 4.0.0.0). Ninguna propiedad
+pública renombrada; ningún default de lo que se dibuja cambiado.
+
+### Cierres anticipados (27-11-2026 y 24-12-2026)
+- **Qué pasaba.** El vencimiento PM estaba clavado en 16:00 NY en los tres lugares que lo fijan (`HoraNyCboe.CierreUtc`, `RelojNy.Cierre`,
+  `GammaHoyTresCapas.VencimientoYaVencido`). El viernes después de Thanksgiving y en Nochebuena la bolsa cierra a las 13:00 y las opciones que
+  vencen ese día liquidan a esa hora: el 0DTE quedaba en el horizonte Hoy de 13:00 a 16:00 ya liquidado (la trampa "siguen contando el 0DTE
+  ya vencido", con T en el piso de 1 minuto) y a la mañana su T salía 3 h más larga (12:30 NY: 3,5 h en vez de 0,5 h). Medido en el arnés con
+  la 5.0.0: a las 13:30 NY la serie del día seguía adentro con 2,5 h por delante y la base por forwards tomaba la serie liquidada como cercana.
+- **Arreglo.** Tabla editable nueva `CierresAnticipados.cs` (fecha → hora NY por producto: SPXW PM, SPY, ES PM de CME; una fecha que no está
+  = 16:00; solo ADELANTA el cierre; lo que no se entiende se ignora y lo dice el log de arranque). La usan `HoraNyCboe.CierreUtc` (con
+  producto), `CrudoCboe.VencUtc` + `CrudoCboe.Producto` (el producto sale de las raíces OCC de la cadena: SPY o SPX/SPXW),
+  `CboeCadena.Construir` (los días de la serie hasta esa hora: sale del Hoy a esa hora y su T cuenta hasta ahí), `CboeCadena.Medir` (la
+  excluye de la base desde esa hora; el x del contado sigue anclado a las 16:00 del cercano, `HoraNyCboe.CierreNormalUtc`: la recta va en días
+  enteros entre fechas), `RelojNy.Cierre` (libro ES de Rithmic: `DiasAlVencimiento`, `Filas()` y `YaVencio`) y las capas 3.0
+  (`VencimientoYaVencido` → `YaVencioCapa`, con SPY o SPX según la capa). Logs: la línea de arranque lista la tabla
+  ("5.0.1: cierres anticipados …"), la de cada serie de ES dice "vence 13:00 NY (cierre anticipado …, verificada)" y la de cada bajada de
+  CBOE agrega "serie 2026-11-27 vence 13:00 NY (…)" cuando la cadena la trae.
+- **Tabla.** 27-11-2026 y 24-12-2026: SPXW 13:00 (verificada), ES 13:00 (verificada), SPY 13:00 **SIN VERIFICAR** (el cierre de SPY es a las
+  13:00, pero no encontré en fuente oficial si las SPY que vencen operan hasta 13:15 como las "eligible options" de NYSE: 13:00 es el valor
+  conservador). 26-11-2027, 03-07-2028 y 24-11-2028: la fecha la publica NYSE; Cboe y CME no publicaron esos años: **SIN VERIFICAR**, misma regla.
+- **Fuentes (consultadas el 27-10-2026).** NYSE `https://www.nyse.com/markets/hours-calendars` (cada mercado cierra a la 1:00 p.m., 1:15 las
+  "eligible options", el 27-11-2026 y el 24-12-2026); Cboe `https://www.cboe.com/about/hours/us-options/` (tabla 2026: "Thanksgiving Early
+  Close" y "Christmas Early Close", RTH 09:30:00 - 13:00:00) y regla 5.1(b)(2)(C) (Exhibit 5 de SR-CBOE-2026-005: el último día las PM operan
+  hasta el cierre de las acciones); CME: regla de las semanales europeas sobre el S&P (presentación CME 26-264 a la CFTC, capítulo 353B, que
+  remite a la 358A: terminan a las 3:00 p.m. CT o al mediodía CT con cierre anticipado programado de la bolsa principal; fixing 11:59:30-12:00
+  CT), `https://www.cftc.gov/filings/ptc/ptc0611265993.pdf`. La 358A del E-mini y los PDF de liquidación 2026 de CME (equity 12:00 CT el 27-11
+  y el 24-12) se vieron SOLO por el índice del buscador: cmegroup.com no deja leer (WebFetch: timeout; desde la PC: 403 "IP blocked").
+- **No cambia:** los días normales (823 fechas 2026-10-01..2028-12-31 iguales a la 5.0.0 salvo las 5 de la tabla), la AM (09:30), las líneas
+  de cboe-local (Python: siguen a las 16:00), la sesión del futuro (`MercadoAbierto`) y las ventanas de rueda (09:30-16:00) de la 3.0 y la familia.
+
+### Histéresis del spread del roll por raíz (`CadenaApi.HisteresisRollPts`)
+- `RefrescarDesplazamiento` redondea el spread (futuro del gráfico − trimestre que vence, por puntos medios, cada 5 s desde `Latido`) a 0,25 y
+  solo lo reemplaza si cambió al menos la histéresis; ese spread (`DesplazamientoAnterior`) corre el strike de las series sobre el trimestre
+  viejo en `Filas()` (K = strike + spread) y centra su ventana en `Ventana()`. Con el 1 pt heredado de NQ, en ES (ESZ6 → ESH7, vence el 18-12)
+  las weeklies y la Regular sobre Z6 podían quedar 0,75 pt (3 ticks; casi 4 con el redondeo) corridas. Ahora ES 0,25 (un tick: error máximo,
+  el redondeo); NQ y RTY 1 pt como antes. Medido en el arnés con el método real: ES 0,00 pts de error máximo y 10 cambios en 11 pasos de un
+  tick; NQ y la 5.0.0 en ES, 0,75 pts y 2 cambios.
+
+### Recuadro 3.0 "LIBRO ES" en USD de ES (`FactorRecuadro3` / `GxRecuadro`)
+- El núcleo cuenta con ×100 para todo (`GammaHoyNucleo.MULT_INDICE`, copia letra por letra: no se toca) y el contrato de ES es ×50: el
+  recuadro mostraba el DOBLE que las etiquetas de la familia para el mismo strike. Ahora cada monto del recuadro (GEX vol/OI por nivel, muros,
+  majors, neto) va × `AlmacenTres.FactorMonto3` (ES 0,5; SPX/SPY 1; NQ 0,2 como la 4.1; otra raíz 1). Las flechas se siguen calculando con el
+  valor del núcleo (el factor es positivo). Arnés: strike 7700 por OI −69,2M → −34,6M = etiqueta de la familia −34,6M = monto TRES_ES.
+
+### Comentarios rotos por el clon (`CadenaApi.cs`, solo comentarios)
+- `RaizGrande`: "MNQZ6"/"#MNQ"/"NQZ6" → "NQ"; "MESZ6"/"#MES"/"ESZ6" → "ES". `CodigoTrimestreAnterior`: ESZ6 → ESU6, ESH7 → ESZ6.
+  También `CodigosGrande` (decía MESZ6 → ESZ6, NQH7; es ESH7).
+
+### Verificado (sin instalar, sin ATAS)
+- Compila (`herramientas/build_serial.ps1`). Arnés por reflexión fuera del árbol (`scratchpad\p6\arnes`, carga la DLL nueva y la 5.0.0 en dos
+  AssemblyLoadContext): 141 de 141. `python -I herramientas/auditar_familia.py --perfil ES --autoprueba-es`: TODO OK.
+- Sin captura en ATAS: falta la comprobación en pantalla (regla 8) después de instalar, y el 27-11 en vivo (leer en el log la línea
+  "5.0.1: cierres anticipados" y "vence 13:00 NY").
+
 ## 5.0.0 (27-10-2026, compilada; SIN instalar) — la 4.1 de NQ clonada para ES/MES con SPX y SPY
 
 Pedido del operador (textual): "copia y creame un indicador phitiagex gamma v5 como el de nq pero esta vez para es mes spx spy todo bien

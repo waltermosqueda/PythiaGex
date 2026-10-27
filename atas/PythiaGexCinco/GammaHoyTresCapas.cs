@@ -37,7 +37,8 @@ namespace PythiaGexCinco
     /// de la clasica, la 2.0 ni la 4.1). Cotas MEDIDAS (MEDICIONES_ES.md 3.8, 30 ruedas de Z6): base 0 &lt; b &lt;= 150 y a max(25 %, 3 pts) del
     /// carry fut x 3,4 % x dias/365 del contrato DEL GRAFICO; razon 9,95-10,25; muestras de SPY solo con t_spot de 04:00 a 20:00 NY y reinicio
     /// el tercer viernes trimestral a las 04:00 NY (ex-dividendo); muestras de SPX de 09:35 a 16:00 NY; el vencimiento ya vencido fuera del
-    /// libro. En otro grafico (p. ej. MNQ) no se bajan, no se cuentan y no se dibujan. Lo que sigue es la historia de la 3.0/4.1 (NQ).
+    /// libro (5.0.1: con la hora de los cierres anticipados, CierresAnticipados). En otro grafico (p. ej. MNQ) no se bajan, no se cuentan y no
+    /// se dibujan. Lo que sigue es la historia de la 3.0/4.1 (NQ).
     ///
     /// LAS CAPAS QQQ Y NDX DE GAMMA HOY 3.0 (06-10-2026, pedido del operador: "habilitame igualmente el QQQ y el NDX y que yo
     /// pueda juzgar o elegir desactivarlos").
@@ -353,16 +354,24 @@ namespace PythiaGexCinco
 
         /// <summary>Un vencimiento de la linea flaca ({"f":"yyyy-MM-dd","dias":...}) que ya vencio: fecha anterior a hoy NY, u hoy desde su hora
         /// (16:00 NY; 09:30 NY si viene marcado "am": true, la SPX mensual). Sin fecha legible no se toca (el nucleo igual lo saca cuando sus dias,
-        /// envejecidos desde 'generado', quedan negativos).</summary>
-        private static bool VencimientoYaVencido(JsonElement v, DateTime ahoraNy, out string fecha)
+        /// envejecidos desde 'generado', quedan negativos). 5.0.1 (27-10-2026): la hora de la PM es la de su producto en la tabla de cierres
+        /// anticipados (CierresAnticipados.HoraPm: 13:00 NY el 27-11-2026 y el 24-12-2026; 16:00 NY los demas dias).</summary>
+        private static bool VencimientoYaVencido(JsonElement v, DateTime ahoraNy, ProductoVenc producto, out string fecha)
         {
             fecha = "";
             if (!v.TryGetProperty("f", out var fe) || fe.ValueKind != JsonValueKind.String) return false;
             fecha = fe.GetString() ?? "";
             if (!DateTime.TryParseExact(fecha, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dia)) return false;
             bool am = v.TryGetProperty("am", out var a) && a.ValueKind == JsonValueKind.True;
+            return YaVencioCapa(dia, am, producto, ahoraNy);
+        }
+
+        /// <summary>5.0.1: la regla de VencimientoYaVencido sin el JSON: vencio si su fecha es anterior a hoy NY u hoy desde su hora (AM 09:30;
+        /// PM la de CierresAnticipados.HoraPm para el producto: 16:00 o la del cierre anticipado).</summary>
+        private static bool YaVencioCapa(DateTime dia, bool am, ProductoVenc producto, DateTime ahoraNy)
+        {
             if (dia.Date < ahoraNy.Date) return true;
-            return dia.Date == ahoraNy.Date && ahoraNy.TimeOfDay.TotalHours >= (am ? 9.5 : 16.0);
+            return dia.Date == ahoraNy.Date && ahoraNy.TimeOfDay >= (am ? new TimeSpan(9, 30, 0) : CierresAnticipados.HoraPm(dia.Date, producto));
         }
 
         // 4.1: el spot de CBOE es el de (sello de CBOE - 900 s) exactos (medido 08-10 sobre el crudo de TQQQ; ts - ultimo_trade: mediana 901 s en
@@ -657,14 +666,16 @@ namespace PythiaGexCinco
             {
                 // 5.0 (27-10-2026): el vencimiento YA VENCIDO fuera del libro de la capa. De noche CBOE sigue mandando el 0DTE del dia (bid/ask 0,
                 // IV basura; medido 26-10 22:48 NY: 504 opciones). Vencido = fecha "f" anterior a hoy NY, u hoy despues de su hora: SPXW/SPY 16:00
-                // NY; SPX mensual AM 09:30 NY si la linea lo marca ("am": true). Se le pone dias = -1: el nucleo no lo cuenta en el perfil ni en
-                // el vencimiento "mas cercano" del horizonte Hoy (si no, a la noche el horizonte quedaba en el 0DTE muerto y el perfil vacio).
+                // NY (5.0.1: 13:00 NY en un cierre anticipado, CierresAnticipados); SPX mensual AM 09:30 NY si la linea lo marca ("am": true). Se le
+                // pone dias = -1: el nucleo no lo cuenta en el perfil ni en el vencimiento "mas cercano" del horizonte Hoy (si no, a la noche el
+                // horizonte quedaba en el 0DTE muerto y el perfil vacio).
                 var dias = new List<double>(); var vencidas = new List<string>();
                 var nyAhora = UtcANyCapa(ahora);
+                var producto = k.PorRazon ? ProductoVenc.Spy : ProductoVenc.SpxPm;   // 5.0.1: la hora de vencimiento de un cierre anticipado
                 foreach (var v in c.GetProperty("vencimientos").EnumerateArray())
                 {
                     double d = v.GetProperty("dias").GetDouble();
-                    if (VencimientoYaVencido(v, nyAhora, out var fv)) { vencidas.Add(fv); d = -1; }
+                    if (VencimientoYaVencido(v, nyAhora, producto, out var fv)) { vencidas.Add(fv); d = -1; }
                     dias.Add(d);
                 }
                 var filas = new List<Feed.Fila>(); int filasVencidas = 0;

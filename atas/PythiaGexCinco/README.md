@@ -1,4 +1,4 @@
-# PythiaGex 5.0 — Gamma ES (ES/MES, SPX, SPY) — 5.0.0
+# PythiaGex 5.0 — Gamma ES (ES/MES, SPX, SPY) — 5.0.1
 
 Indicador de ATAS para gráficos de **MES/ES**. Es el clon de la 4.1 (la de NQ, `atas/PythiaGexCuatro`) con los libros del S&P: calcula
 **adentro** las 35 series de la familia (muros, majors, zero estándar, cruces, top-N y carga por libro; la familia sumada y la confluencia;
@@ -9,7 +9,9 @@ no depende de otro indicador ni de ningún programa externo (regla del operador)
 está medido en ES** (ver "Sin medir" abajo).
 
 - Carpeta `atas/PythiaGexCinco`, DLL `PythiaGexCinco.dll`, tipo `PythiaGexCinco.GammaCinco`, nombre "PythiaGex 5.0 - Gamma ES", categoría
-  "PythiaGex 5.0", versión 5.0.0.0.
+  "PythiaGex 5.0", AssemblyVersion 5.0.0.0 fija (el .ws guarda el tipo con su versión), FileVersion 5.0.1.0 (CHANGELOG).
+- Los días de cierre anticipado de la bolsa (27-11-2026, 24-12-2026, …) están en la tabla editable `CierresAnticipados.cs`: ese día el
+  0DTE vence a la hora de la tabla (13:00 NY), no a las 16:00.
 - Datos en `%APPDATA%\ATAS\PythiaGex5`, logs `%APPDATA%\ATAS\pythiagex5-*.log`. Convive con la 4.1 en el mismo ATAS (otro ensamblado,
   otros archivos y candados).
 - En un gráfico que no es ES/MES no dibuja: "PythiaGex 5.0 es para ES/MES: este gráfico es X, no dibujo".

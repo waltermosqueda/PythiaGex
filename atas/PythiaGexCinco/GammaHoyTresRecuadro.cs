@@ -20,6 +20,8 @@ namespace PythiaGexCinco
     /// 2,5 pts) no cambia: sale del paso de strike, que es 5 en ES igual que en NQ.
     /// Abajo: muro de calls y de puts (el mayor GEX de UN lado a +-radio del precio, como k_muro_calls/k_muro_puts de motor.py), majors y neto,
     /// cada uno por volumen y por OI. Describe el libro; no dice para donde va el precio.
+    /// 5.0.1 (27-10-2026): los montos van en USD de la raiz (FactorRecuadro3 = AlmacenTres.FactorMonto3: ES x0,5): el nucleo cuenta x100 para
+    /// todo y el contrato de ES es x50, asi que hasta la 5.0.0 el recuadro mostraba el doble que las etiquetas de la familia para el mismo strike.
     /// </summary>
     public enum EstiloRotulos3
     {
@@ -122,6 +124,21 @@ namespace PythiaGexCinco
             }
             return (mc, mp);
         }
+
+        /// <summary>5.0.1 (27-10-2026): el factor que lleva el GEX del nucleo 3.0 (GammaHoyNucleo.MULT_INDICE = 100 para todo, la cuenta letra por
+        /// letra de la 2.0/clasica: no se toca) a los USD reales de la raiz, el MISMO de las etiquetas de la familia (AlmacenTres.FactorMonto3,
+        /// C1): ES 0,5 (opciones sobre ES, x50: hasta la 5.0.0 el recuadro "LIBRO ES" mostraba el DOBLE del monto real), SPX y SPY 1. NQ 0,2 (x20,
+        /// el de la 4.1). Otra raiz (RTY): 1, sin cambio.</summary>
+        private static double FactorRecuadro3(string raiz)
+        {
+            double f = Familia.AlmacenTres.FactorMonto3(raiz);
+            if (!double.IsNaN(f)) return f;
+            return string.Equals(raiz, "NQ", StringComparison.OrdinalIgnoreCase) ? 0.2 : 1.0;
+        }
+
+        /// <summary>5.0.1: un monto del recuadro (GEX del nucleo, x100) en USD de la raiz: Gx(v x FactorRecuadro3). Las flechas se siguen calculando
+        /// con el valor del nucleo (el factor es positivo: no cambia ni el signo ni el sentido).</summary>
+        private static string GxRecuadro(double v, string raiz, CultureInfo es) => Gx(v * FactorRecuadro3(raiz), es);
 
         /// <summary>+129M / −1,2B / +5K / 0 (signo matematico; coma decimal).</summary>
         private static string Gx(double v, CultureInfo es)
@@ -239,8 +256,8 @@ namespace PythiaGexCinco
                 Der(Precio(q.P, tick, es), 24, cTxt);
                 Der((q.P - fut).ToString("+0;-0;0", es), 30, cGris);
                 Der(s != null ? Precio(s.Fut, tick, es) : "—", 38, cGris);
-                Der(Gx(gv, es), 46, CSigno(gv)); Izq(fv, 46.2, CFlecha(fv));
-                Der(Gx(go, es), 56, CSigno(go)); Izq(fo, 56.2, CFlecha(fo));
+                Der(GxRecuadro(gv, raiz, es), 46, CSigno(gv)); Izq(fv, 46.2, CFlecha(fv));   // 5.0.1: en USD de la raiz (ES x0,5)
+                Der(GxRecuadro(go, raiz, es), 56, CSigno(go)); Izq(fo, 56.2, CFlecha(fo));
                 y += hf;
             }
             foreach (var q in arriba) FilaNivel(q, true);
@@ -258,14 +275,14 @@ namespace PythiaGexCinco
                 if (sv != null)
                 {
                     string fl = Flecha(gv, Antes(sv, iv), uV);
-                    Der(Precio(sv.Fut, tick, es), 22, cTxt); Der(Gx(gv, es), 30, CSigno(gv)); Izq(fl, 30.2, CFlecha(fl));
+                    Der(Precio(sv.Fut, tick, es), 22, cTxt); Der(GxRecuadro(gv, raiz, es), 30, CSigno(gv)); Izq(fl, 30.2, CFlecha(fl));
                     if (!double.IsNaN(movV) && Math.Abs(movV - sv.Fut) > 0.01) Izq("*", 31.4, cOro);
                 }
                 else Der("—", 30, cGris);
                 if (so != null)
                 {
                     string fl = Flecha(go, Antes(so, io), uO);
-                    Der(Precio(so.Fut, tick, es), 43, cTxt); Der(Gx(go, es), 51, CSigno(go)); Izq(fl, 51.2, CFlecha(fl));
+                    Der(Precio(so.Fut, tick, es), 43, cTxt); Der(GxRecuadro(go, raiz, es), 51, CSigno(go)); Izq(fl, 51.2, CFlecha(fl));
                     if (!double.IsNaN(movO) && Math.Abs(movO - so.Fut) > 0.01) Izq("*", 52.4, cOro);
                 }
                 else Der("—", 51, cGris);
@@ -282,8 +299,8 @@ namespace PythiaGexCinco
             {
                 string fv = Flecha(L.NetVol, viejo?.NetV ?? double.NaN, uV), fo = Flecha(L.NetOi, viejo?.NetO ?? double.NaN, uO);
                 Izq("neto", 0, cTxt);
-                Der(Gx(L.NetVol, es), 30, CSigno(L.NetVol)); Izq(fv, 30.2, CFlecha(fv));
-                Der(Gx(L.NetOi, es), 51, CSigno(L.NetOi)); Izq(fo, 51.2, CFlecha(fo));
+                Der(GxRecuadro(L.NetVol, raiz, es), 30, CSigno(L.NetVol)); Izq(fv, 30.2, CFlecha(fv));
+                Der(GxRecuadro(L.NetOi, raiz, es), 51, CSigno(L.NetOi)); Izq(fo, 51.2, CFlecha(fo));
                 y += hf;
                 Izq("régimen", 0, cGris);
                 Der(L.NetVol > 0 ? "colchón" : L.NetVol < 0 ? "tobogán" : "—", 30, CSigno(L.NetVol));

@@ -2,7 +2,7 @@
 # aprieta Connect (la clave recordada) y restaura la ventana. Imprime cada paso.
 # 09-10: -Dll <ruta> instala esa DLL en vez de la de bin/Release (p. ej. una copia compilada aparte).
 # 09-10: -SinDll reinicia sin copiar DLL; -AntesDeLanzar <script.py> corre ese script (python -I) con ATAS CERRADO (p. ej. editar el .ws).
-param([string]$Dll = "", [switch]$SinDll, [string]$AntesDeLanzar = "")
+param([string]$Dll = "", [switch]$SinDll, [string]$AntesDeLanzar = "", [string]$Dll41 = "")   # 27-10: -Dll41 <ruta> instala TAMBIEN la 4.1 (PythiaGexCuatro.dll) en el mismo reinicio
 $ErrorActionPreference = "SilentlyContinue"
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
@@ -55,6 +55,7 @@ $dll6 = Join-Path $PSScriptRoot "../atas/PythiaGexCinco/bin/Release/PythiaGexCin
 if ($Dll -ne "") { $dll6 = $Dll }
 $dst6 = Join-Path $env:APPDATA "ATAS/Indicators/PythiaGexCinco.dll"
 if ($SinDll) { Paso "sin DLL: no copio nada (-SinDll)" } elseif (Test-Path $dll6) { Copy-Item -Force $dll6 $dst6; Paso ("DLL 5.0 instalado: " + (Get-Item $dst6).LastWriteTime + " " + (Get-Item $dst6).Length + " bytes sha256 " + (Get-FileHash $dst6 -Algorithm SHA256).Hash.Substring(0,12)) } else { Paso "SIN DLL 5.0 en bin/Release: no se instalo nada" }
+if ($Dll41 -ne "") { if (Test-Path $Dll41) { $dst4 = Join-Path $env:APPDATA "ATAS/Indicators/PythiaGexCuatro.dll"; Copy-Item -Force $Dll41 $dst4; Paso ("DLL 4.1 instalado: " + (Get-Item $dst4).LastWriteTime + " " + (Get-Item $dst4).Length + " bytes sha256 " + (Get-FileHash $dst4 -Algorithm SHA256).Hash.Substring(0,12)) } else { Paso "SIN DLL 4.1 en $Dll41" } }
 if ($AntesDeLanzar -ne "") { $o = & python -I $AntesDeLanzar 2>&1 | Out-String; Paso ("antes de lanzar: " + $o.Trim()) }
 # 08-10: pausa para que Lucid/Rithmic suelte la sesion anterior (a las 18:16 un relanzamiento inmediato quedo trabado en el login de ordenes)
 Start-Sleep -Seconds 30

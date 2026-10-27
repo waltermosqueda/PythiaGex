@@ -492,6 +492,13 @@ namespace PythiaGexCinco.Cboe
                              + (b != null ? " | base: " + b.Vencidas + " serie(s) vencidas fuera, cercano " + b.Cercano + (b.XRef != 0 ? " (x " + b.XRef.ToString("0.00", Inv) + " d)" : "")
                                             + ", trimestral " + b.Venc + (b.FutAm ? " AM" : " PM") + ", " + (b.Confiable ? "CONFIABLE" : "no confiable") + " (q " + (double.IsNaN(b.Q) ? "?" : (b.Q * 100).ToString("0.00", Inv) + " %")
                                             + ", disp " + (double.IsNaN(b.DispersionTicks) ? "?" : b.DispersionTicks.ToString("0.0", Inv)) + " tk, " + b.Puntos + " vtos, " + b.MuestrasFut + " strikes)" : "");
+            // 5.0.1: si la cadena trae una serie PM de un dia de cierre anticipado (CierresAnticipados), con que hora se le contaron los dias
+            for (int j = 0; j < cad.VencF.Length; j++)
+            {
+                if (cad.VencAm != null && j < cad.VencAm.Length && cad.VencAm[j]) continue;
+                if (DateTime.TryParseExact(cad.VencF[j], "yyyy-MM-dd", Inv, DateTimeStyles.None, out var fAnt) && CierresAnticipados.Anticipado(fAnt, cr.Producto, out _))
+                    extra50 += " | serie " + cad.VencF[j] + " vence " + CierresAnticipados.Describir(fAnt, cr.Producto);
+            }
             if (linea == null)
             {
                 _log.Linea(cab + " | ts " + cr.Timestamp + " | cadena sin filas a <= 8 dias (" + cad.Filas.Length + " en 14 dias), no se anota");

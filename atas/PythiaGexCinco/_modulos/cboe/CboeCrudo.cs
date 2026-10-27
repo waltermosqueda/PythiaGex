@@ -6,6 +6,8 @@
 // marcada en Am[] y vence a las 09:30 NY de su fecha (VencUtc(f, true)); todo lo demas (SPXW, SPY) vence 16:00 NY como antes. En la 4.1
 // las dos raices del tercer viernes se sumaban en la misma fila con vida hasta las 16:00: la vispera del 16-10 el "mañana" traia 1,34 M de
 // OI contra 0,33 M de la SPXW (medido en cboe-local). Que hace cada consumidor con la AM: CboeCadena.Construir y Medir.
+// 5.0.1 (27-10-2026): en un cierre anticipado (CierresAnticipados: 27-11-2026 y 24-12-2026) la PM vence a la hora de la tabla (13:00 NY), con
+// el producto de la cadena sacado de las raices (Producto: SPY o SPXW/SPX).
 // La capacidad inicial de los arreglos sale del largo del JSON (~445 B por opcion medido en _SPX y SPY): sin la cadena de duplicaciones
 // 1024 -> 32768 en cada bajada (cada paso eran ~13 arreglos nuevos, varios en el LOH).
 // Semantica de Python que se respeta (pythiagex/cadena_atas.py y base.py):
@@ -56,6 +58,12 @@ namespace PythiaGexCinco.Cboe
         public int ContratosValidos { get { int n = 0; for (int i = 0; i < N; i++) if (Fecha[i] != 0) n++; return n; } }
         /// <summary>5.0: contratos validos con raiz AM ("SPX").</summary>
         public int ContratosAm { get { int n = 0; for (int i = 0; i < N; i++) if (Fecha[i] != 0 && Am[i]) n++; return n; } }
+
+        /// <summary>5.0.1 (27-10-2026): de que producto es la cadena, por las RAICES de sus simbolos OCC (lo que define el producto de cada
+        /// contrato): solo "SPY" = Spy; solo "SPX"/"SPXW" = SpxPm; otra cosa o mezcla = null (los cierres anticipados toman la hora mas temprana
+        /// de SPXW y SPY). Lo usan Construir y Medir para la hora de vencimiento de un cierre anticipado (CierresAnticipados).</summary>
+        public ProductoVenc? Producto => _raizSpy && !_raizSpx && !_raizOtra ? ProductoVenc.Spy : _raizSpx && !_raizSpy && !_raizOtra ? ProductoVenc.SpxPm : (ProductoVenc?)null;
+        private bool _raizSpy, _raizSpx, _raizOtra;
 
         private void Crecer(int min)
         {
@@ -222,6 +230,11 @@ namespace PythiaGexCinco.Cboe
             c.EsCall[i] = cp == (byte)'C';
             c.Am[i] = EsRaizAm(s.Slice(0, raiz));
             c.K[i] = k / 1000.0;          // int(k) / 1000.0 de Python: division IEEE correctamente redondeada
+            // 5.0.1: el producto de la cadena por la raiz (CrudoCboe.Producto)
+            var r = s.Slice(0, raiz);
+            if (r.Length == 3 && r[0] == (byte)'S' && r[1] == (byte)'P' && r[2] == (byte)'Y') c._raizSpy = true;
+            else if (r.Length >= 3 && r.Length <= 4 && r[0] == (byte)'S' && r[1] == (byte)'P' && r[2] == (byte)'X' && (r.Length == 3 || r[3] == (byte)'W')) c._raizSpx = true;
+            else c._raizOtra = true;
         }
 
         private static bool Dig(byte b) => b >= (byte)'0' && b <= (byte)'9';
@@ -236,12 +249,17 @@ namespace PythiaGexCinco.Cboe
 
         public static DateTime FechaDe(int yyyymmdd) => new DateTime(yyyymmdd / 10000, yyyymmdd / 100 % 100, yyyymmdd % 100, 0, 0, 0, DateTimeKind.Utc);
         public static string FechaIso(int yyyymmdd) => (yyyymmdd / 10000).ToString("0000", CultureInfo.InvariantCulture) + "-" + (yyyymmdd / 100 % 100).ToString("00", CultureInfo.InvariantCulture) + "-" + (yyyymmdd % 100).ToString("00", CultureInfo.InvariantCulture);
-        /// <summary>Vencimiento a las 16:00 NY de esa fecha, en UTC (exposicion.parse_occ / hora_cierre_utc).</summary>
-        public static DateTime VencUtc(int yyyymmdd) => HoraNyCboe.CierreUtc(yyyymmdd / 10000, yyyymmdd / 100 % 100, yyyymmdd % 100);
+        /// <summary>Vencimiento a las 16:00 NY de esa fecha, en UTC (exposicion.parse_occ / hora_cierre_utc). 5.0.1: en un cierre anticipado, la
+        /// hora mas temprana de SPXW y SPY de la tabla (CierresAnticipados); con el producto, VencUtc(f, am, producto).</summary>
+        public static DateTime VencUtc(int yyyymmdd) => VencUtc(yyyymmdd, false, null);
 
         /// <summary>5.0: vencimiento por raiz: AM ("SPX") a las 09:30 NY de la fecha; PM (SPXW, SPY) a las 16:00 NY.</summary>
-        public static DateTime VencUtc(int yyyymmdd, bool am) => am
+        public static DateTime VencUtc(int yyyymmdd, bool am) => VencUtc(yyyymmdd, am, null);
+
+        /// <summary>5.0.1 (27-10-2026): lo mismo con el producto de la cadena (CrudoCboe.Producto): la PM vence a la hora de su producto en la tabla
+        /// de cierres anticipados (27-11-2026 y 24-12-2026: 13:00 NY) y a las 16:00 NY los demas dias. La AM no cambia (09:30 NY).</summary>
+        public static DateTime VencUtc(int yyyymmdd, bool am, ProductoVenc? producto) => am
             ? HoraNyCboe.AperturaUtc(yyyymmdd / 10000, yyyymmdd / 100 % 100, yyyymmdd % 100)
-            : VencUtc(yyyymmdd);
+            : HoraNyCboe.CierreUtc(yyyymmdd / 10000, yyyymmdd / 100 % 100, yyyymmdd % 100, producto);
     }
 }
