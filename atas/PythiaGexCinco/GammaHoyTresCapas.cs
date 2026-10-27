@@ -95,10 +95,10 @@ namespace PythiaGexCinco
         [Display(Name = "Capas: radio de dibujo (pts, 0 = el de ES)", GroupName = "9.3 3.0 · Pantalla", Order = 1068,
                  Description = "3.0.7: los guiones y la linea de una capa se dibujan solo a esta distancia del precio; mas lejos queda el rotulo con su precio y la estela muy tenue. 5.0: 15 por defecto (los 60 de NQ / 4, cociente de precios NQ/ES 3,8-3,9, DISENO 4); 0 = el radio de dibujo del libro ES (40). Los rotulos de las capas siguen hasta 40.")]
         [Range(0, 500)]
-        public decimal Capa3RadioDibujoPts { get; set; } = 15m;
+        public decimal Capa3RadioDibujoPtsEs { get; set; } = 15m;
 
         [Display(Name = "Base de SPX: de donde sale", GroupName = "9.3 3.0 · Pantalla", Order = 1095,
-                 Description = "5.0. La base ES - SPX con la que la capa SPX se dibuja en ES. Rueda = la mediana robusta de 24 muestras sincronizadas (vela del MES a la hora del spot = sello de CBOE - 900 s, menos el spot de SPX, solo de 09:35 a 16:00 NY), de noche decaida con el carry hasta el vencimiento del contrato del grafico. Forwards (default, como la 4.1) = la recta de forwards de la cadena (la de la 2.0), solo si pasa la cota del carry y queda a 3 pts o menos de la sincronizada en la rueda (de noche: 4 pts y residuo de 8 ticks o menos); si no, va la sincronizada. Medido en 30 ruedas de Z6: forwards - sincronizada mediana -0,72 (p05 -2,44, p95 +1,39). Cota de toda base: 0 < b <= 150 y a max(25 %, 3 pts) de fut x 3,4 % x dias/365.")]
+                 Description = "5.0. La base ES - SPX con la que la capa SPX se dibuja en ES. Rueda = la mediana robusta de 24 muestras sincronizadas (vela del MES a la hora del spot = sello de CBOE - 900 s, menos el spot de SPX, solo de 09:35 a 16:00 NY), de noche decaida con el carry hasta el vencimiento del contrato del grafico. Forwards (el default de la 4.1; en la 5.0 el default es Rueda) = la recta de forwards de la cadena (la de la 2.0), solo si pasa la cota del carry y queda a 3 pts o menos de la sincronizada en la rueda (de noche: 4 pts y residuo de 8 ticks o menos); si no, va la sincronizada. Medido en 30 ruedas de Z6: forwards - sincronizada mediana -0,72 (p05 -2,44, p95 +1,39). Cota de toda base: 0 < b <= 150 y a max(25 %, 3 pts) de fut x 3,4 % x dias/365.")]
         // 5.0 (27-10-2026, agente principal): default Rueda, no Forwards como la 4.1. Medido (MEDICIONES_ES 6): la base por forwards queda ~0,72 pts por debajo de la sincronizada (p05 -2,44, p95 +1,39) y la sincronizada tiene menos ruido (MAD 0,48); la familia (MUROS_SPX, ZEST_SPX) usa la sincronizada: con Forwards la raya TRES_SPX y la de la familia sobre el MISMO strike quedaban ~3 ticks separadas.
         public BaseSpx3 Capa3BaseSpx { get; set; } = BaseSpx3.Rueda;
 
@@ -118,6 +118,7 @@ namespace PythiaGexCinco
             // 4.1: sin NubeJson / UltimaNubeUtc (la 4.0 no baja de la nube: la cadena la baja ella misma, ver CarpetaCboePropia)
             // 3.0.6: base de la rueda (solo capas aditivas): mediana robusta de (vela alineada - spot) con el indice vivo, persistida
             public List<double> BaseObs = new List<double>();
+            public DateTime FechaObsNy = DateTime.MinValue;      // 5.0: la fecha NY de las muestras de BaseObs (se vacia al cambiar)
             public double BaseRueda = double.NaN;
             public DateTime BaseRuedaUtc = DateTime.MinValue;
             public int BaseMuestras;
@@ -435,6 +436,11 @@ namespace PythiaGexCinco
                     Log("capa " + k.Nombre + ": " + Que() + " muestra " + F(muestra) + " (" + ancla + ", spot " + spot.ToString("0.####", inv) + ") DESCARTADA: " + pqM);
                 else
                 {
+                    // 5.0 (revision adversarial M1): la primera muestra de una fecha NY nueva vacia las de ayer (antes la mediana de la manana era la
+                    // de ayer sin decaer: ~+0,7 pts por dia; la familia ya reinicia sus 24 por dia de NY en ConversionSpx).
+                    var fechaMuestraNy = UtcANyCapa(tSpot == DateTime.MinValue ? ahora : tSpot).Date;
+                    if (k.BaseObs.Count > 0 && k.FechaObsNy != DateTime.MinValue && fechaMuestraNy != k.FechaObsNy) k.BaseObs.Clear();
+                    k.FechaObsNy = fechaMuestraNy;
                     k.BaseObs.Add(muestra); if (k.BaseObs.Count > 24) k.BaseObs.RemoveAt(0);
                     var ord = k.BaseObs.OrderBy(x => x).ToList();
                     double med = ord[ord.Count / 2];
@@ -467,8 +473,14 @@ namespace PythiaGexCinco
             double medAhora = medianaVale ? MedianaAhora(k, ahora, out txtMed) : double.NaN;
             double conFam = ConversionDeLaFamilia(k, ahora, out txtFam);
             double cruda = spot > 0 ? (k.PorRazon ? fut / spot : fut - spot) : double.NaN;
+            // 5.0 (27-10-2026, revision adversarial A2): la conversion de la FAMILIA va primero, tambien con el spot vivo: es la que muestra el eje
+            // doble y la de MUROS_SPX/ZEST_SPX (C7/C8, el tick a la hora del spot). Medido hoy 15:25Z tras reiniciar: con la mediana propia en
+            // armado, la capa uso UNA muestra alineada (33,99) contra 36,31 de la familia: TRES_SPX quedo 2,3 pts corrida; ya con mediana, 0,64
+            // abajo. La mediana propia queda de respaldo (sin familia: primeros minutos o si la familia no tiene base vigente).
             bool hay =
-                (medianaVale && (!vivo || !fresca || k.BaseMuestras >= 5)
+                Probar(conFam, "familia", () => Que() + " de la familia " + F(conFam) + " (" + txtFam + "); " + estadoSpot
+                                                        + (double.IsNaN(muestra) ? "" : ", alineada ahora " + F(muestra)), false)
+                || (medianaVale && (!vivo || !fresca || k.BaseMuestras >= 5)
                     && Probar(medAhora, "mediana", () => Que() + " mediana " + F(medAhora) + " (" + k.BaseMuestras + " muestras, " + k.BaseRuedaUtc.ToString("HH:mm", inv) + "Z" + txtMed + (k.BaseDeLaClasica ? ", archivo de la clasica" : "") + "); " + estadoSpot
                                                         + (double.IsNaN(muestra) ? "" : ", alineada ahora " + F(muestra)), false))
                 || (!vivo && Probar(conFam, "familia", () => Que() + " de la familia " + F(conFam) + " (" + txtFam + "); " + estadoSpot + ", sin mediana propia que sirva"
@@ -838,7 +850,7 @@ namespace PythiaGexCinco
                             p += corr;   // 3.6.6
                             if (i < 2 ? !RayaCapa(k.Nombre, i) : !RayaCapaZero(k.Nombre)) continue;   // 3.5.0: una por una
                             int y = Y(p); if (!EnPantalla(y)) continue;
-                            double radioCapa = Capa3RadioDibujoPts > 0 ? (double)Capa3RadioDibujoPts : radioDib;
+                            double radioCapa = Capa3RadioDibujoPtsEs > 0 ? (double)Capa3RadioDibujoPtsEs : radioDib;
                             int alfa = Math.Abs(p - fut) > radioCapa ? 60 : (b >= ultima - 30 ? 230 : 160);
                             if (previa) alfa = alfa * 45 / 100;
                             if (i == 2 && Zero3Estilo == ZeroEstilo3.RomboVerde)
@@ -889,7 +901,7 @@ namespace PythiaGexCinco
                     bool coincide = Lnq != null && Lnq.Doms.Any(dq => dq.Fut > 0 && Math.Abs(dq.Fut - p) <= fus);
                     if (coincide && !Rayas3Independientes) continue;   // 3.5.0: independientes = se dibuja aunque coincida con NQ
                     // 3.0.5: el nivel ACTUAL de la capa se ve como linea fina desde la ultima vela hasta el eje (como en la clasica)
-                    if (Rayas3Largas && Capa3LineaActual && xUlt != int.MinValue && Math.Abs(p - fut) <= (Capa3RadioDibujoPts > 0 ? (double)Capa3RadioDibujoPts : radioDib))
+                    if (Rayas3Largas && Capa3LineaActual && xUlt != int.MinValue && Math.Abs(p - fut) <= (Capa3RadioDibujoPtsEs > 0 ? (double)Capa3RadioDibujoPtsEs : radioDib))
                     {
                         int y = Y(p);
                         if (EnPantalla(y) && xr > xUlt) g.DrawLine(new RenderPen(Color.FromArgb(170, k.Color), 1f), Math.Max(area.Left, xUlt), y, xr, y);

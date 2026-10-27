@@ -39,7 +39,7 @@ namespace PythiaGexCinco
         [Display(Name = "Zero gamma: radio de los cruces (pts, 0 = auto: 5 ES / 20 NQ)", GroupName = "9.3 3.0 · Pantalla", Order = 1036,
                  Description = "Hasta cuantos puntos del precio se dibujan todos los cruces de signo por volumen ('↳ todos cruces'). 5.0: 0 por defecto = los 20 de NQ / 4 (ES 5).")]
         [Range(0, 40)]
-        public int Zero3CrucesRadioPts { get; set; } = 0;
+        public int Zero3CrucesRadioPtsEs { get; set; } = 0;
 
         private readonly Dictionary<DateTime, double[]> _estelaCruces = new Dictionary<DateTime, double[]>();
         private readonly Dictionary<DateTime, double[]> _estelaCrucesOi = new Dictionary<DateTime, double[]>();   // 3.5.1: solo los de interes abierto
@@ -52,11 +52,11 @@ namespace PythiaGexCinco
         [Display(Name = "Cruces por interés abierto: radio (pts, 0 = auto: 15 ES / 60 NQ)", GroupName = "9.3 3.0 · Pantalla", Order = 1037,
                  Description = "3.5.2. Hasta cuantos puntos del precio se dibujan los cruces de signo por interes abierto (turquesa, con rotulo '0Γ OI'). Son los que casi no se mueven en la sesion (el OI es de ayer). 5.0: 0 por defecto = los 60 de NQ / 4 (ES 15).")]
         [Range(0, 80)]
-        public int CrucesOiRadio3Pts { get; set; } = 0;   // 3.5.3: nombre nuevo (el .ws no lo pisa) y 60 pts; 5.0: 0 = auto por raiz
+        public int CrucesOiRadio3PtsEs { get; set; } = 0;   // 3.5.3: nombre nuevo (el .ws no lo pisa) y 60 pts; 5.0: 0 = auto por raiz
 
         /// <summary>5.0: los radios de los cruces por raiz (0 = auto: los de NQ x EscalaRaiz, ES 5 / 15).</summary>
-        private double RadioCrucesVol(string raiz) => Zero3CrucesRadioPts > 0 ? Zero3CrucesRadioPts : PtsRaiz(20.0, raiz);
-        private double RadioCrucesOi(string raiz) => CrucesOiRadio3Pts > 0 ? CrucesOiRadio3Pts : PtsRaiz(60.0, raiz);
+        private double RadioCrucesVol(string raiz) => Zero3CrucesRadioPtsEs > 0 ? Zero3CrucesRadioPtsEs : PtsRaiz(20.0, raiz);
+        private double RadioCrucesOi(string raiz) => CrucesOiRadio3PtsEs > 0 ? CrucesOiRadio3PtsEs : PtsRaiz(60.0, raiz);
 
         private static readonly Color ColApoyo = Color.FromArgb(76, 175, 80);      // verde (como los rombos de la 2.0)
         private static readonly Color ColZeroOi = Color.FromArgb(130, 130, 130);

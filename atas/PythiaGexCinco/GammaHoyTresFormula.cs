@@ -56,7 +56,7 @@ namespace PythiaGexCinco
         [Display(Name = "Formulas: hasta cuantos pts del precio (0 = el radio de dibujo: 40 ES / 150 NQ)", GroupName = "9.9 3.0 · Formulas a juzgar", Order = 1020,
                  Description = "Las F1-F8 se dibujan solo a esta distancia del precio. 5.0: 0 por defecto = el radio de dibujo del libro (ES 40, NQ 150: el 150 fijo de la 4.1 en ES abarcaba casi toda la cadena).")]
         [Range(0, 400)]
-        public int Formulas3RadioPts { get; set; } = 0;
+        public int Formulas3RadioPtsEs { get; set; } = 0;
 
         private static readonly FormulaDoms3[] FormulasJuzgar = { FormulaDoms3.Cruces, FormulaDoms3.UnoPorLadoVol, FormulaDoms3.UnoPorLadoOi, FormulaDoms3.UnoPorLadoVolOi, FormulaDoms3.MurosVol, FormulaDoms3.MurosOi, FormulaDoms3.DosMasGrandesVol };
         private static readonly Color[] ColFormula = { Color.FromArgb(235, 235, 235), Color.FromArgb(255, 152, 0), Color.FromArgb(224, 64, 251), Color.FromArgb(149, 117, 255), Color.FromArgb(174, 234, 0), Color.FromArgb(255, 105, 180), Color.FromArgb(64, 196, 255) };
@@ -80,7 +80,7 @@ namespace PythiaGexCinco
         /// <summary>Radio de los muros de F5/F6 y del recuadro: los +-100 pts de la pagina en NQ -> ES 25, RTY 20.</summary>
         private static double RadioMuros(string raiz) => PtsRaiz(100.0, raiz);
         /// <summary>Hasta donde se dibujan las F1-F8: el ajuste, o (0) el radio de dibujo del libro (ES 40, NQ 150).</summary>
-        private double RadioFormulasDibujo(string raiz) => Formulas3RadioPts > 0 ? Math.Max(5, Formulas3RadioPts) : RadioDibujo(raiz);
+        private double RadioFormulasDibujo(string raiz) => Formulas3RadioPtsEs > 0 ? Math.Max(5, Formulas3RadioPtsEs) : RadioDibujo(raiz);
 
         private static Func<GammaHoyNucleo.Strike, double> FuerzaFormula(FormulaDoms3 f)
         {

@@ -77,7 +77,7 @@ namespace PythiaGexCinco
 
         [Display(Name = "Muros: radio (pts, 0 = auto: 25 ES / 100 NQ)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1015, Description = "El muro de calls (puts) es el strike con mas GEX de calls (puts) a esta distancia del precio, como en la pagina Profundidad. 5.0: 0 por defecto = los +-100 de NQ llevados a la raiz (ES 25, cociente de precios / 4).")]
         [Range(0, 400)]
-        public int Recuadro3RadioMuros { get; set; } = 0;
+        public int Recuadro3RadioMurosEs { get; set; } = 0;
 
         [Display(Name = "Tamaño (%)", GroupName = "9.8 3.0 · Recuadro del libro", Order = 1016)]
         [Range(50, 130)]
@@ -148,7 +148,7 @@ namespace PythiaGexCinco
             if (L == null || L.Perfil == null || L.Perfil.Count == 0 || fut <= 0) return;
             long minuto = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMinute;
             int nMin = Math.Max(1, Math.Min(30, Recuadro3CambioMin));
-            double radioM = Recuadro3RadioMuros > 0 ? Math.Max(5, Recuadro3RadioMuros) : RadioMuros(raiz);   // 5.0: por raiz (la 4.1: max(20, 100) fijo)
+            double radioM = Recuadro3RadioMurosEs > 0 ? Math.Max(5, Recuadro3RadioMurosEs) : RadioMuros(raiz);   // 5.0: por raiz (la 4.1: max(20, 100) fijo)
             var mV = Muros(L.Perfil, fut, radioM, true);
             var mO = Muros(L.Perfil, fut, radioM, false);
             FotoRec viejo;
