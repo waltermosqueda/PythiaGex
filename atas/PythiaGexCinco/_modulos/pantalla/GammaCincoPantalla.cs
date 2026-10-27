@@ -173,7 +173,6 @@ namespace PythiaGexCinco
         [Display(Name = "↳ rot. tramos", GroupName = G0, Order = 32, Description = "Necesita la llave 'Estela▸' prendida. Cada raya de la estela que ya no es la vigente (15 velas o mas, y unos 15 min o mas, al mismo precio: a <= 0,5 pt del ultimo) lleva al final un rotulo chico con su nombre y su precio (\"SPX muro V 6.886,38\"); varias rayas a <= 0,25 pt (un tick) que terminan juntas van en uno solo, con el precio al tick (\"SPX muro V/OI · 2.0 SPX 6.886,25\"). Nunca sobre las etiquetas de la derecha, la pestaña ni la franja de arriba (Separacion del borde de arriba); como mucho 14 (los tramos mas largos). Apagado de fabrica.")]
         public bool Tramos41Rotulos { get; set; } = false;   // 4.1.6d: apagado de fabrica (pedido del operador 09-10: "las etiquetas del medio sacalas, solo a la derecha")
 
-        [Display(Name = "Pestaña 5.0", GroupName = G0, Order = 36, Description = "No necesita ninguna llave. La pestaña 'PythiaGex 5.0 ▸' arriba a la izquierda: los avisos (motor parado, fuentes caidas, 'mercado cerrado: se muestra la sesion del ...') y, con un clic, las fuentes con su edad, las conversiones (base ES - SPX, razon ES/SPY) y el detalle de cada nivel con su strike. Es donde se ve de donde sale cada numero y de cuando es: conviene dejarla prendida.")] public bool Cabecera4 { get; set; } = true;
         [Display(Name = "Recuadro abierto", GroupName = "6. Pantalla", Order = 1035, Description = "Lo mismo que hacer clic en la pestaña PythiaGex 5.0.")]
         public bool Recuadro4Abierto { get => _pantallaAbierta4; set => _pantallaAbierta4 = value; }
         [Display(Name = "Separacion del borde de arriba (px)", GroupName = "6. Pantalla", Order = 1036, Description = "Para no tapar la leyenda ni el cartel rojo de ATAS (la 3.0 usa 56).")]
@@ -265,7 +264,7 @@ namespace PythiaGexCinco
             if (a == null) return;
             a.Visibles.Clear();
             foreach (var c in SeriesPantalla.Casillas) if (SerieVisible4(c.Id)) a.Visibles.Add(c.Id);
-            a.Eje = Eje4Libro; a.Estela = Estela4; a.Rotulos = Rotulos4; a.Cabecera = Cabecera4; a.PanelAbierto = _pantallaAbierta4;
+            a.Eje = Eje4Libro; a.Estela = Estela4; a.Rotulos = Rotulos4;   // 5.0.2: sin pestaña
             a.Letra = Letra4; a.MargenSup = MargenSup4;
             a.Montos = Monto41Rotulos; a.Cambios = Cambio41Rotulos; a.Ventana = Cambio41Ventana;      // 4.1.2
             a.Tramos = Tramos41Rotulos;                                                               // 4.1.4

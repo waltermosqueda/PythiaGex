@@ -1,5 +1,10 @@
 # CHANGELOG — PythiaGex 5.0 (Gamma ES)
 
+## 5.0.2 (27-10-2026) — sin la pestaña de detalle
+- Pedido del operador (textual): "elimina este cuadro, es poco profesional, no hace falta" / "no lo escondas, elimina". Se ELIMINO del codigo la pestaña
+  "PythiaGex 5.0 ▸/▾" (titulo, panel desplegable con fuentes y detalle por nivel, su clic y la casilla "Pestaña 5.0" / Cabecera4). Queda la edad del dato
+  arriba a la derecha (protocolo), que ahora lleva tambien los avisos que solo decia la pestaña: "MOTOR PARADO <edad>" en rojo y "mercado cerrado".
+
 ## 5.0.1 (27-10-2026) — replicas con la conversion de la 5.0
 - Pedido del control multifuente (CONTROL_MULTIFUENTE_2710.md): "2.0 SPX D1-D2", "Clas SPX 0Γ" y "Clas SPX D1-3" dibujaban ~1,2 pts DEBAJO (base "medida"
   por la recta de forwards) y la 2.0 saltaba 1,1-1,7 pts al alternar medida/rueda. Ahora (ajuste nuevo `Replicas50Conversion`, 7. Datos, default true) la

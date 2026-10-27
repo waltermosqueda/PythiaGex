@@ -132,7 +132,6 @@ namespace PythiaGexCinco.Familia
                 _gActual = g;
                 ArmadoPantalla.Armar(_d, fotoUsar, Cat(), _aj, v, DateTime.UtcNow, _medir);
                 PintarPrims(g, _d);
-                _pestana = _d.Pestana.IsEmpty ? null : new CajaRect(_d.Pestana);
                 _recuadro = _d.Recuadro2E.IsEmpty ? null : new CajaRect(_d.Recuadro2E);
 
                 if (_renders++ == 0)
@@ -152,11 +151,7 @@ namespace PythiaGexCinco.Familia
         {
             var q = _recuadro;
             if (q != null && q.R.Contains(x, y)) { try { ArmadoPantalla.Recuadro2EAbierto = !ArmadoPantalla.Recuadro2EAbierto; _g.Redibujar(); } catch (Exception e) { Error("Clic", e); } return true; }
-            var r = _pestana;
-            if (r == null || !r.R.Contains(x, y)) return false;
-            try { _g.PanelAbierto = !_g.PanelAbierto; _g.Redibujar(); }
-            catch (Exception e) { Error("Clic", e); }
-            return true;
+            return false;   // 5.0.2: la pestaña se elimino; solo queda el recuadro
         }
 
         /// <summary>Texto de los ajustes para el log de arranque ("el log lista los ajustes leidos").</summary>
@@ -165,7 +160,7 @@ namespace PythiaGexCinco.Familia
             if (a == null) return "";
             var on = SeriesPantalla.Casillas.Where(c => a.Visible(c.Id)).Select(c => c.Id).ToArray();
             return "casillas prendidas (" + on.Length + "): " + (on.Length == 0 ? "ninguna" : string.Join(",", on)) + " · eje=" + a.Eje + " estela=" + a.Estela
-                 + " etiquetas=" + a.Rotulos + " pestaña=" + a.Cabecera + " abierta=" + a.PanelAbierto + " letra=" + a.Letra + " margen=" + a.MargenSup
+                 + " etiquetas=" + a.Rotulos + " letra=" + a.Letra + " margen=" + a.MargenSup
                  + " montos=" + a.Montos + " cambios=" + a.Cambios + " ventana=" + a.VentanaMin + " min" + " tramos=" + a.Tramos;
         }
 

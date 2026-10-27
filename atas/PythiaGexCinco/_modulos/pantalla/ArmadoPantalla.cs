@@ -107,7 +107,7 @@ namespace PythiaGexCinco.Familia
     {
         public readonly HashSet<string> Visibles = new HashSet<string>(StringComparer.Ordinal);
         public EjeFamilia4 Eje = EjeFamilia4.SPX;              // 5.0: era TQQQ (mismo default que Eje4Libro)
-        public bool Estela = true, Rotulos = true, Cabecera = true, PanelAbierto;
+        public bool Estela = true, Rotulos = true;   // 5.0.2: sin Cabecera ni PanelAbierto (la pestaña se elimino)
         public int Letra = 9, MargenSup = 56;
         /// <summary>4.1.2: Monto41Rotulos, Cambio41Rotulos y Cambio41Ventana.</summary>
         public bool Montos = true, Cambios = true;
@@ -999,7 +999,7 @@ namespace PythiaGexCinco.Familia
             var ocupado = new List<Rectangle>(64);
             int colIzq = int.MaxValue;                                       // borde izquierdo de la columna de etiquetas de la derecha
             // ---- doble eje elegible a la izquierda: valor del libro elegido en cada marca, con la conversion que usan sus rayas
-            int yCab = area.Top + aj.MargenSup + (aj.Cabecera ? hf + 10 : 0);   // debajo de la leyenda de ATAS y de la pestaña
+            int yCab = area.Top + aj.MargenSup;   // 5.0.2: debajo de la leyenda de ATAS (la pestaña se elimino)
             string ejeCorto = "", ejeLargo = ""; Color ejeColor = Color.Empty;
             {
                 Func<double, double> aLibro = null, aEs = null; string tituloEje = "", fmtEje = "0.00"; DateTime datoEje = DateTime.MinValue; double fuerte = 1;
@@ -1265,11 +1265,15 @@ namespace PythiaGexCinco.Familia
                     int rx = xr - wb - 4, ry = area.Top + RECUADRO_Y;   // 4.1.6f: arriba de todo, apenas debajo del boton ▶| de ATAS
                     if (!double.IsNaN(edadMax))
                     {   // 4.1.6f (pedido del operador 09-10: "este mensaje nunca me sirvio, recortalo al minimo"): solo la edad, p. ej. "5,1 h";
-                        // en naranja si pasa de 30 min (protocolo: la edad va ANTES de los numeros). El detalle (congelada, fuentes) esta en la pestaña.
+                        // en naranja si pasa de 30 min (protocolo: la edad va ANTES de los numeros). 5.0.2: la pestaña de detalle se elimino.
                         bool viejo = edadMax > VIEJO_S;
-                        string tEd = Edad(edadMax);
+                        // 5.0.2: la pestaña se elimino; los avisos que solo ella decia van aca, cortos: motor parado (rojo) y mercado cerrado
+                        double egR = F.CalculadoUtc == DateTime.MinValue ? double.NaN : (ahora - F.CalculadoUtc).TotalSeconds;
+                        bool paradoR = !double.IsNaN(egR) && egR > MOTOR_PARADO_S;
+                        bool cerradoR = aviso.StartsWith("mercado cerrado", StringComparison.OrdinalIgnoreCase);
+                        string tEd = (paradoR ? "MOTOR PARADO " + Edad(egR) + " · " : "") + Edad(edadMax) + (cerradoR ? " · mercado cerrado" : "");
                         int wEd = medir(tEd, tamC).Width;
-                        Sombra(d, tamC, tEd, viejo ? ColNaranja : Color.FromArgb(170, ColTexto), rx - wEd - 8, ry + 1);
+                        Sombra(d, tamC, tEd, paradoR ? ColRojo : (viejo || cerradoR) ? ColNaranja : Color.FromArgb(170, ColTexto), rx - wEd - 8, ry + 1);
                         d.EdadColumna = tEd;
                         ocupado.Add(new Rectangle(rx - wEd - 9, ry, wEd + 8, hC)); colIzq = Math.Min(colIzq, rx - wEd - 9);
                     }
@@ -1355,26 +1359,6 @@ namespace PythiaGexCinco.Familia
                 }
             }
 
-            // ---- la pestaña (su lugar: los rotulos de tramos no la tapan; se dibuja mas abajo, encima de todo)
-            int pX0 = area.Left + 3, pY0 = area.Top + aj.MargenSup;
-            double eg = F.CalculadoUtc == DateTime.MinValue ? double.NaN : (ahora - F.CalculadoUtc).TotalSeconds;
-            bool sinCalculo = double.IsNaN(eg);
-            bool motorParado = !sinCalculo && eg > MOTOR_PARADO_S;
-            bool viejoTodo = !double.IsNaN(edadMax) && edadMax > VIEJO_S;
-            string tPest = ""; Color cPest = Color.Empty; Size mp = Size.Empty;
-            if (aj.Cabecera)
-            {
-                if (ESTILO_2E) tPest = "PythiaGex 5.0 " + (aj.PanelAbierto ? "▾" : "▸") + (motorParado ? " · MOTOR PARADO " + Edad(eg) : "");   // 4.1.6f: titulo minimo
-                else tPest = "PythiaGex 5.0 " + (aj.PanelAbierto ? "▾" : "▸")
-                      + (motorParado ? " · EL MOTOR NO CALCULA HACE " + Edad(eg) : sinCalculo ? " · sin calcular todavia" : "")
-                      + (!double.IsNaN(edadMax) ? (viejoTodo ? " · DATO DE HACE " : " · dato de hace ") + Edad(edadMax) : "")
-                      + (aviso != "" ? " · " + Recortar(aviso, 90) : "")
-                      + (ejeCorto != "" ? " · " + ejeCorto : "");
-                cPest = motorParado ? ColRojo : (viejoTodo || aviso != "" || sinCalculo) ? ColNaranja : Color.FromArgb(220, ColTexto);
-                mp = medir(tPest, tam);
-                d.Pestana = new Rectangle(pX0, pY0, mp.Width + 12, mp.Height + 6);
-                ocupado.Add(Rectangle.Inflate(d.Pestana, 2, 2));
-            }
             if (d.Cartel != "") ocupado.Add(new Rectangle(area.Left + 4, area.Top + 4, medir(d.Cartel, tam).Width + 6, hf + 4));
 
             // ---- 4.1.4: rotulos de los tramos de historia que ya no son el vigente (Tramos41Rotulos)
@@ -1383,173 +1367,6 @@ namespace PythiaGexCinco.Familia
             if (largos != null && largos.Count > 0)
                 RotularTramos(d, largos, vis, cat, actuales, v, area, xr, colIzq, ocupado, wEst, tamC, medir, Yr, EnPantalla, area.Top + Math.Max(0, aj.MargenSup));
 
-            // ---- pestaña desplegable (arranca cerrada): "PythiaGex 5.0 ▸ · dato de hace X". Abierta: fuentes, edades y el detalle de cada nivel.
-            if (aj.Cabecera)
-            {
-                int x0 = pX0, y0 = pY0;                       // 4.1.4: el texto, el color y el lugar se calcularon arriba (antes de los rotulos de tramos)
-                d.Titulo = tPest; d.ColorTitulo = cPest;
-                d.Relleno(Color.FromArgb(225, ColFondo), d.Pestana);
-                d.Borde(Color.FromArgb(150, cPest), 1f, d.Pestana);
-                d.Texto(tPest, tam, cPest, x0 + 6, y0 + 3);
-                if (aj.PanelAbierto)
-                {
-                    var lineas = new List<(string T, Color C)>();
-                    lineas.Add(("calculado adentro: libro ES por Rithmic + SPX/SPY bajados de CBOE (15 min de retraso de CBOE) · calculo de hace "
-                                + (sinCalculo ? "?" : Edad(eg)) + (string.IsNullOrEmpty(F.Sesion) ? "" : " · sesion " + F.Sesion), Color.FromArgb(200, ColTexto)));
-                    if (motorParado) lineas.Add(("el motor de PythiaGex 5.0 no publica hace " + Edad(eg) + ": lo que se ve puede estar viejo", ColRojo));
-                    if (aviso != "") lineas.Add(("aviso: " + aviso, ColNaranja));
-                    if (ejeLargo != "") lineas.Add((ejeLargo, ejeColor));
-                    var libros = new HashSet<string>(vis.Select(s => s.Libro ?? ""), StringComparer.Ordinal);
-                    bool usaFam = libros.Contains("familia");
-                    bool usaCboe = usaFam || libros.Contains("SPX") || libros.Contains("SPY") || aj.Eje == EjeFamilia4.SPX || aj.Eje == EjeFamilia4.SPY;   // 5.0: sin TQQQ
-                    foreach (var fu in fuentes)
-                    {
-                        if (fu == null || string.IsNullOrEmpty(fu.Libro)) continue;
-                        double e = fu.DatoUtc == DateTime.MinValue ? double.NaN : (ahora - fu.DatoUtc).TotalSeconds;
-                        bool vv = !double.IsNaN(e) && e > VIEJO_S;
-                        switch (fu.Libro)
-                        {
-                            case "ES": case "SPX": case "SPY":                                   // 5.0: sin "TQQQ"
-                            {
-                                bool usa = libros.Contains(fu.Libro) || usaFam || aj.Eje.ToString() == fu.Libro;
-                                if (!usa) continue;
-                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro + (fu.Libro == "ES" ? " Rithmic" : " CBOE")
-                                         + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")") + (fu.Congelada ? " · cadena congelada" : "")
-                                         + (!fu.OiOk ? " · OI de 2 sesiones" : "") + (string.IsNullOrEmpty(fu.Texto) ? "" : " · " + fu.Texto);
-                                lineas.Add((t, vv ? ColNaranja : Color.FromArgb(180, ColTexto)));
-                                break;
-                            }
-                            case "CBOE":
-                                if (usaCboe && !string.IsNullOrEmpty(fu.Texto)) lineas.Add(("descarga CBOE: " + fu.Texto, Color.FromArgb(160, ColTexto)));
-                                break;
-                            case "2.0 SPY": case "2.0 SPX":
-                            {   // 4.1.3: la conversion de cada replica de la 2.0, solo si su serie esta prendida (edad ANTES del numero si es vieja)
-                                if (!vis.Any(s => s.Corto == fu.Libro)) continue;
-                                // 5.0 (P5): en un grafico de ES la 2.0 solo dibuja SPX: "2.0 SPX" es su replica; "2.0 SPY" es su formula aplicada a SPY (no replica nada)
-                                // 5.0.1: con Replicas50Conversion la 2.0 SPX lleva la formula y la seleccion de la 2.0 pero la base de la 5.0 (lo dice su texto)
-                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro
-                                         + (fu.Libro == "2.0 SPY" ? " (estilo 2.0, CBOE: la 2.0 no dibuja SPY en ES)"
-                                            : EsConv50(fu.Texto) ? " (formula y seleccion de la 2.0 en ES con la conversion de la 5.0, CBOE)" : " (replica de la 2.0 en ES, CBOE)")
-                                         + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
-                                         + (fu.Congelada ? " · cadena congelada" : "") + (string.IsNullOrEmpty(fu.Texto) ? "" : " · " + fu.Texto)
-                                         // 4.1.4 (revision 4.1.3): la razon de la 2.0 depende del marco del grafico donde corre (su vela del ultimo trade)
-                                         + (fu.Libro == "2.0 SPY" ? " · su razon sale de la vela de 1 min del ultimo trade (en otro marco la vela, y la razon, cambian)" : "");
-                                lineas.Add((t, vv ? ColNaranja : Color.FromArgb(180, ColTexto)));
-                                break;
-                            }
-                            case "Clasica SPX":
-                            {   // 4.1.5: la base de la replica de la clasica (de cuando es y la de ahora), solo si su serie esta prendida
-                                if (!vis.Any(s => EsClasica(s.Id))) continue;
-                                bool c50 = EsConv50(fu.Texto);              // 5.0.1: con Replicas50Conversion, la formula de la clasica con la base de la 5.0
-                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro
-                                         + (c50 ? " (formula y seleccion de la clasica en ES con la conversion de la 5.0, CBOE)" : " (replica de la clasica en ES, CBOE)")
-                                         + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
-                                         + (fu.Congelada ? " · cadena congelada" : "") + (string.IsNullOrEmpty(fu.Texto) ? "" : " · " + fu.Texto);
-                                lineas.Add((t, vv ? ColNaranja : Color.FromArgb(180, ColTexto)));
-                                // 4.1.5d (revision 4.1.5b/c): la salvedad de la replica debajo de su fuente. 5.0 (P5): la de ES (lo que P2 comparo contra la
-                                // clasica en ES el 05-10; AVISO_CLASICA). 5.0.1: con la conversion de la 5.0, AVISO_CLASICA_50
-                                lineas.Add((c50 ? AVISO_CLASICA_50 : AVISO_CLASICA, Color.FromArgb(160, ColTexto)));
-                                break;
-                            }
-                            case "cinta":
-                                lineas.Add(("cinta " + raizG + ": ultimo tick hace " + Edad(e), !double.IsNaN(e) && e > 120 ? ColNaranja : Color.FromArgb(160, ColTexto)));
-                                break;
-                            default:
-                                lineas.Add(((vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro + (string.IsNullOrEmpty(fu.Texto) ? "" : ": " + fu.Texto), Color.FromArgb(160, ColTexto)));
-                                break;
-                        }
-                    }
-                    // 4.1.2: el estado del calculo de cambios por libro (CambiosFamilia), al final de las fuentes
-                    //      (sin repetir "cambios" si la linea ya empieza asi: "cambios: sin minuto con libros todavia")
-                    if (F.CambiosEstado != null)
-                        foreach (var ce in F.CambiosEstado)
-                        {
-                            if (string.IsNullOrWhiteSpace(ce)) continue;
-                            string ct = ce.Trim();
-                            lineas.Add(((ct.StartsWith("cambios", StringComparison.OrdinalIgnoreCase) ? "" : "cambios ") + ct, Color.FromArgb(160, ColTexto)));
-                        }
-                    lineas.Add(("", ColTexto));
-                    if (grupos.Count > 0)
-                    {   // 4.1.2: leyenda de los montos y los cambios, en tres renglones cortos (<= 103 letras: el grafico del operador muestra ~115)
-                        lineas.Add(("monto = M USD de cobertura por 1 % (M millones, B mil millones) · gamma de ahora: el precio no lo mueve", Color.FromArgb(170, ColTexto)));
-                        lineas.Add(("▲ crece · ▼ se achica · " + VUELTA + " dio vuelta (cambió de signo)", Color.FromArgb(170, ColTexto)));
-                        lineas.Add(("V: volumen nuevo en " + aj.VentanaMin + " min (no dice si abren o cierran) · OI: posiciones vs la publicación anterior",
-                                    Color.FromArgb(170, ColTexto)));
-                    }
-                    double px = v.PrecioUltimo; bool puesto = double.IsNaN(px);
-                    foreach (var l in grupos)
-                    {
-                        var a0 = l[0];
-                        if (!puesto && a0.Precio < px) { lineas.Add(("— precio " + raizG + " " + P(px) + " —", ColPrecio)); puesto = true; }
-                        double e = l.Where(x => !double.IsNaN(x.E)).Select(x => x.E).DefaultIfEmpty(double.NaN).Max();
-                        bool viejo = !double.IsNaN(e) && e > VIEJO_S;
-                        // 4.1.2: el monto de cada nivel va pegado a su nombre (5.0: sin el "por 1 % de TQQQ")
-                        // 4.1.3: las dominantes como la 2.0 dicen con que conversion se pusieron (la de la 2.0 o la sincronizada de la 4.1)
-                        string noms = string.Join(" / ", l.Select(x => x.Nom + (x.MontoTxt != "" ? " " + x.MontoTxt : "")
-                                                                   + ConvDe(x.Partes != null && x.Partes.Length > 0 ? x.Partes[0].Serie : null, fuentes)
-                                                                   + (l.Count > 1 && x.Banda != "" ? " " + x.Banda : "")).Distinct());
-                        string precios = string.Join("/", l.Select(x => x.Banda != "" ? P(Math.Round(x.Precio)) : P(x.Precio)).Distinct());
-                        string k = "";
-                        if (l.Count == 1 && a0.Libro != "familia" && !double.IsNaN(a0.Strike))          // 5.0: sin la excepcion de TQQQ
-                        {
-                            string sx0 = a0.Partes != null && a0.Partes.Length > 0 ? a0.Partes[0].Serie : null;
-                            k = sx0 == "R10_SPX_zero" ? " (en el indice " + a0.Libro + " " + Strike(a0.Strike) + ")"           // 4.1.5: un zero no es un strike
-                              : sx0 == "R10_SPX_dom" ? " (strike " + a0.Libro + " " + Strike(a0.Strike) + ", centroide ±12)"   // 4.1.5d: el STRIKE ganador; la raya va en el centroide (DominantesClasica.CENTROIDE)
-                              : " (strike " + a0.Libro + " " + Strike(a0.Strike) + ")";
-                        }
-                        // revision 4.1.2: el PRECIO va primero (despues de la edad si es vieja): con los montos el renglon de un grupo pasa de
-                        // 130 letras y al final el precio quedaba fuera de la vista
-                        lineas.Add(((viejo ? "[" + Edad(e) + "] " : "") + precios + (l.Count == 1 && a0.Banda != "" ? " " + a0.Banda : "") + "  " + noms + k
-                                    + (!viejo && !double.IsNaN(e) ? " · " + Edad(e) : ""), a0.Col));
-                        // 4.1.4 (revision 4.1.3): una replica de la 2.0 puesta con una conversion de RESPALDO (no la vela del ultimo trade / no la base
-                        // cruda que paso la cota) lo dice en naranja: la raya puede quedar corrida
-                        foreach (var sx in l.Select(x => x.Partes != null && x.Partes.Length > 0 ? x.Partes[0].Serie : null).Where(s => s == "R20_SPY_vol" || s == "R20_SPX_vol").Distinct())
-                        {
-                            string lb20 = sx == "R20_SPY_vol" ? "2.0 SPY" : "2.0 SPX";
-                            var f20 = Fuente(fuentes, lb20);
-                            if (f20 == null || !Fin(f20.ConvValor)) continue;
-                            var (oTxt, normal) = OrigenConv20(sx, f20.Texto);
-                            if (!normal) lineas.Add(("    " + lb20 + ": conversion de RESPALDO de la 2.0 (" + oTxt + "): la raya puede quedar corrida", ColNaranja));
-                        }
-                        // 4.1.5: la replica de la clasica con una base de RESPALDO (la de la rueda vencio: CRUDA de cada cadena o el carry) lo dice en naranja
-                        if (l.Any(x => x.Partes != null && x.Partes.Length > 0 && EsClasica(x.Partes[0].Serie)))
-                        {
-                            var fc = Fuente(fuentes, "Clasica SPX");
-                            if (fc != null && Fin(fc.ConvValor))
-                            {
-                                var (oTxtC, normalC, _, _) = OrigenClasica(fc.Texto);
-                                if (!normalC) lineas.Add(("    Clasica SPX: base de RESPALDO de la clasica (" + oTxtC + "): la raya salta con cada cadena", ColNaranja));
-                            }
-                        }
-                        // 4.1.2: debajo, el cambio de cada nivel con su ventana real o las fechas de las dos publicaciones de OI, la cobertura y la nota
-                        foreach (var x in l)
-                            for (int j = 0; j < x.Partes.Length; j++)
-                            {
-                                var (sub, colSub) = DetalleCambio(x.Partes[j], iv, aj.VentanaMin);
-                                if (sub == "") continue;
-                                string quien = (l.Count > 1 ? x.Nom : "") + (x.Partes.Length > 1 ? (l.Count > 1 ? " " : "") + (x.Partes[j].Rol ?? "") : "");
-                                lineas.Add(("    " + (quien != "" ? quien + ": " : "") + sub, colSub));
-                            }
-                    }
-                    if (!puesto) lineas.Add(("— precio " + raizG + " " + P(px) + " —", ColPrecio));
-                    lineas.Add(("SIN MEDIR EN ES: describe el regimen, no anticipa la direccion · clic en la pestaña para cerrar", Color.FromArgb(140, ColTexto)));
-                    // revision 4.1.2: cada renglon se parte en el ancho VISIBLE (xr = min(area.Right, clip.Right)), no en el del area: en el grafico
-                    // del operador (area 852 px, clip 781) entran ~115 letras y la leyenda, los grupos y las notas de OI de la FAM se cortaban.
-                    // Consolas es monoespaciada: letras que entran = ancho visible / ancho de '0' medido con medir().
-                    int xT = x0 + 7;
-                    double cwP = medir(new string('0', 20), tam).Width / 20.0;
-                    int maxCh = cwP > 0 ? Math.Max(20, (int)Math.Floor((xr - xT - 8) / cwP)) : int.MaxValue;
-                    var vista = new List<(string T, Color C)>(lineas.Count + 16);
-                    foreach (var (t, c) in lineas) Partir(t, c, maxCh, vista);
-                    int wMax = 0; foreach (var (t, _) in vista) if (t != "") wMax = Math.Max(wMax, medir(t, tam).Width);
-                    int wP = Math.Max(40, Math.Min(xr - x0 - 2, wMax + 14));
-                    int yP0 = y0 + mp.Height + 8, hP = vista.Count * hf + 8;
-                    d.Relleno(Color.FromArgb(235, ColFondo), new Rectangle(x0, yP0, wP, hP));
-                    d.Borde(Color.FromArgb(120, ColTexto), 1f, new Rectangle(x0, yP0, wP, hP));
-                    int yy = yP0 + 4;
-                    foreach (var (t, c) in vista) { if (t != "") d.Texto(t, tam, c, xT, yy); d.Panel.Add(t); yy += hf; }
-                }
-            }
         }
 
         /// <summary>4.1.4: un rotulo de tramos (una o varias rayas de la misma altura que terminan juntas).</summary>
