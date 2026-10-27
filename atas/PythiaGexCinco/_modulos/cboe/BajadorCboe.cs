@@ -116,6 +116,8 @@ namespace PythiaGexCinco.Cboe
             public DateTime FallandoDesdeUtc;       // 4.1.0: primer fallo de la racha actual (default = responde bien)
             public DateTime UltimaBajadaOkUtc; public long UltimoMs, UltimoGz; public int UltimoHttp;
             public DateTime UltimaEscrituraVista;   // seguidor: LastWriteTimeUtc de ultima-*.json
+            public DateTime PrimeraPropiaUtc;       // 5.0: generado de la primera bajada propia de este arranque (cierra el hueco de la extra)
+            public int RelecturasExtra;             // 5.0: cuantas veces se releyo la carpeta extra despues de arrancar (tope 3)
         }
 
         private readonly OpcionesCboe _o;
@@ -341,6 +343,7 @@ namespace PythiaGexCinco.Cboe
                             var inicio = _o.AhoraUtc();
                             L.ProximaBajadaUtc = inicio.AddSeconds(EnRueda(inicio) ? _o.CadenciaRuedaS : _o.CadenciaFueraS);
                             BajarYProcesar(L);
+                            CerrarHuecoExtra(L);
                             if (_o.AhoraUtc() < _pausaGlobalHasta) break;
                         }
                         var ahora2 = _o.AhoraUtc();
@@ -717,6 +720,39 @@ namespace PythiaGexCinco.Cboe
                            + CboeCadena.IsoGenerado(arr[0].GeneradoUtc) + " a " + CboeCadena.IsoGenerado(arr[arr.Length - 1].GeneradoUtc) : "") + ", ultimo sello " + (L.UltimoTs.Length > 0 ? L.UltimoTs : "-"));
             }
             if (_cierres.Cambiado) _cierres.Cambiado = false;   // lo de la historia ya esta en el archivo (o se reescribe con la proxima foto)
+        }
+
+        /// <summary>5.0 (27-10-2026): cierra el hueco de la carpeta extra al arrancar. La extra (cboe_local.py) se lee una sola vez, en
+        /// CargarHistoria, y su programa escribe la linea de una foto recien despues de armarla: la foto que estaba bajando en ese momento quedaba
+        /// afuera hasta el arranque siguiente. Medido por el auditor (auditar_familia.py) el 27-10: tras el reinicio de las 15:19:10 UTC falto la
+        /// de sello 15:18:26 (generada 15:19:11) y la base de SPX quedo 0,02-0,10 pts corrida de 15:21 a 15:32 (SPY: 0,028 pts un minuto tras el de
+        /// las 15:35:53). Ahora, despues de cada una de las 3 primeras bajadas propias, se relee el archivo de hoy de la extra y se insertan las
+        /// fotos generadas ANTES de la primera bajada propia que todavia no estan (Insertar acepta fotos fuera de orden y sube la version: C7/C8
+        /// se rehacen). Despues de eso la propia ya cubre todo.</summary>
+        private void CerrarHuecoExtra(LibroCboe L)
+        {
+            if (string.IsNullOrEmpty(_o.CarpetaExtra) || string.Equals(_o.CarpetaExtra, _o.Carpeta, StringComparison.OrdinalIgnoreCase) || L.RelecturasExtra >= 3) return;
+            var u = Volatile.Read(ref L.Ultimo);
+            if (u == null) return;
+            if (L.PrimeraPropiaUtc == DateTime.MinValue) L.PrimeraPropiaUtc = u.GeneradoUtc;
+            L.RelecturasExtra++;
+            try
+            {
+                var hasta = L.PrimeraPropiaUtc; var desde = hasta.AddMinutes(-30);
+                var ruta = CboeArchivo.RutaDia(_o.CarpetaExtra, L.Archivo, hasta.Date);
+                if (!File.Exists(ruta)) return;
+                var leidas = CboeArchivo.LeerDia(ruta, g => g > desde && g < hasta, out _);
+                var nuevas = new List<LineaCboe>();
+                foreach (var x in leidas)
+                    if (x.Filas != null && x.GeneradoUtc > desde && x.GeneradoUtc < hasta && !L.Sellos.Contains(x.CadenaTs)) nuevas.Add(x);
+                if (nuevas.Count == 0) return;
+                nuevas.Sort((a, b) => a.GeneradoUtc.CompareTo(b.GeneradoUtc));
+                Insertar(L, nuevas, null);
+                _log.Linea("hueco de la extra " + L.Nombre + " (relectura " + L.RelecturasExtra + "): " + nuevas.Count + " foto(s) que faltaban, sellos "
+                           + nuevas[0].CadenaTs + (nuevas.Count > 1 ? " .. " + nuevas[nuevas.Count - 1].CadenaTs : "") + " (generadas antes de la primera bajada propia, "
+                           + CboeCadena.IsoGenerado(hasta) + ")");
+            }
+            catch (Exception e) { _log.Linea("hueco de la extra " + L.Nombre + ": " + e.Message); }
         }
 
         /// <summary>Seguidor: otro proceso baja; se leen sus ultima-*.json cuando cambian.</summary>

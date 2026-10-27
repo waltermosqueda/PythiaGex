@@ -181,7 +181,12 @@ def catalogo(perfil):
 DECISIONES_DEL_CSHARP = [
     "FUENTES de CBOE: la 4.1 suma la carpeta extra PythiaGex\\cboe-local (BajadorCboe.CarpetaExtra, 4.1.9 del 13-10) a la propia, con "
     "dedup por cadena_ts (gana la bajada mas temprana, como libros.fotos_cboe), pero la extra se lee SOLO AL ARRANCAR. La especificacion "
-    "(libros.fotos_cboe) ya une varias carpetas; lo que es del C# es el CUANDO: el auditor modela que fotos conocia en cada minuto.",
+    "(libros.fotos_cboe) ya une varias carpetas; lo que es del C# es el CUANDO: el auditor modela que fotos conocia en cada minuto. Lo leido "
+    "de la extra en un arranque llega hasta la ULTIMA foto que dice el log ('historia <libro>: ... a Y'), no hasta la hora de la linea "
+    "(27-10 15:19: cboe_local escribio una foto mientras la 5.0 leia). Lo que la Familia DEBIA tener y no tuvo sale en 'CONV <libro> espec.'.",
+    "ES (5.0, P2_SPX.md) BASE DE FORWARDS: sin base sincronizada (sin rueda, roll o fuera de cota) la 5.0 dibuja SPX con la base de forwards "
+    "de la foto (error <= 8 ticks y dentro de las cotas). No esta en backtest_familia ni en el DISENO §4 (ahi el indice no se dibuja): si "
+    "pasa, el auditor lo marca 'decision C#'.",
     "CIERRE DE VELA en vivo: el minuto T se calcula a T + 6 s y espera hasta T + 60 s el tick que cierra la vela m2 (MotorFamilia."
     "RetrasoMinutoS y EsperaCierreS). La especificacion (vista previa en vivo) usaba el ultimo tick a T + ~6 s; la del backtest, la cinta entera.",
     "CINTA: la 4.1 guarda la cinta compacta (ultimo tick por segundo, velas m2 de ticks y tramos escuchados). Un tick vale si [tick, ts] "
@@ -557,12 +562,13 @@ class Cinta:
 class Cadena:
     """nucleo.Cadena: filas (n x 8: K, venc, oi_c, oi_p, iv_c, iv_p, vol_c, vol_p), dias por vencimiento relativos a 'generado'.
     fechas: la fecha 'f' de cada vencimiento (solo CBOE; el libro del futuro no la trae)."""
-    __slots__ = ("filas", "dias", "spot", "es_fut", "generado", "fechas")
+    __slots__ = ("filas", "dias", "spot", "es_fut", "generado", "fechas", "am")
 
-    def __init__(self, filas, dias, spot, es_fut, generado, fechas=None):
+    def __init__(self, filas, dias, spot, es_fut, generado, fechas=None, am=None):
         self.filas = np.asarray(filas, float).reshape(-1, 8) if len(filas) else np.zeros((0, 8))
         self.dias = np.asarray(dias, float); self.spot = float(spot or 0.0); self.es_fut = bool(es_fut); self.generado = generado
         self.fechas = list(fechas) if fechas else None
+        self.am = list(am) if am else None
 
 
 def tercer_viernes(y, m):
@@ -572,12 +578,12 @@ def tercer_viernes(y, m):
     return d
 
 
-def venc_real_utc(fecha):
+def venc_real_utc(fecha, am=False):
     """C10 ES (DISENO_5_0 §4): el vencimiento real de una serie de CBOE de fecha 'f': 16:00 NY (SPXW y SPY, PM-settled), en UTC. La SPX
     mensual AM-settled del tercer viernes vence 09:30 NY, pero la cadena guardada la SUMA a la SPXW del mismo dia (cadena_atas.construir:
     una fila por (K, fecha); exposicion.parse_occ pone 16:00 a todas): no se puede separar (AVISO_AM)."""
     d = datetime.strptime(fecha, "%Y-%m-%d")
-    return ny_a_utc(d + timedelta(hours=16))
+    return ny_a_utc(d + timedelta(hours=9, minutes=30) if am else d + timedelta(hours=16))
 
 
 _ISQ = 1.0 / math.sqrt(2.0 * math.pi)
@@ -625,10 +631,12 @@ def filas_hoy(cad, ahora, piso_dias, venc_reales=False):
     vivo_real = None
     aviso_am = ""
     if venc_reales and cad.fechas and len(cad.fechas) == len(dias_env):
-        vivo_real = np.array([venc_real_utc(f) > ahora for f in cad.fechas], bool)
-        for f in cad.fechas:
+        am = cad.am if (cad.am and len(cad.am) == len(cad.fechas)) else [False] * len(cad.fechas)
+        vivo_real = np.array([venc_real_utc(f, a) > ahora for f, a in zip(cad.fechas, am)], bool)
+        fechas_am = {f for f, a in zip(cad.fechas, am) if a}
+        for f, a in zip(cad.fechas, am):
             d = datetime.strptime(f, "%Y-%m-%d")
-            if d == tercer_viernes(d.year, d.month):
+            if not a and f not in fechas_am and d == tercer_viernes(d.year, d.month):
                 vispera = d - timedelta(days=1)
                 while vispera.weekday() >= 5:
                     vispera -= timedelta(days=1)
@@ -893,7 +901,7 @@ def fotos_fut(carpeta, raiz, ses):
 # ====================================================================================================== fotos de CBOE (indice y ETF)
 class FotoCboe:
     """una bajada de CBOE (preview_niveles.foto_cboe_de_json / libros.fotos_cboe). Las filas se releen del archivo cuando hacen falta."""
-    __slots__ = ("generado", "ts", "t_dato", "spot", "oi_total", "origen", "ruta", "n_linea", "dias", "fechas", "_cad")
+    __slots__ = ("generado", "ts", "t_dato", "spot", "oi_total", "origen", "ruta", "n_linea", "dias", "fechas", "am", "_cad")
 
 
 class LectorGz:
@@ -973,6 +981,7 @@ def leer_cboe(carpetas, archivo, dias_cal, sesion_de):
                 f.oi_total = float(arr[:, 2].sum() + arr[:, 3].sum())
                 f.dias = [float(v.get("dias") or 0) for v in c.get("vencimientos", [])]
                 f.fechas = [str(v.get("f") or "") for v in c.get("vencimientos", [])]
+                f.am = [bool(v.get("am")) for v in c.get("vencimientos", [])]
                 vistos[ts] = f
             LECTOR.soltar(p)
             time.sleep(0.02)
@@ -984,7 +993,7 @@ def cadena_cboe(f):
         j = json.loads(LECTOR.lineas(f.ruta)[f.n_linea])
         c = j.get("cadena") or {}
         filas = [x[:8] for x in c.get("filas", []) if len(x) >= 8]
-        f._cad = Cadena(filas, f.dias, f.spot, False, f.generado, f.fechas if all(f.fechas) else None)
+        f._cad = Cadena(filas, f.dias, f.spot, False, f.generado, f.fechas if all(f.fechas) else None, getattr(f, "am", None))
     return f._cad
 
 
@@ -1017,9 +1026,11 @@ class Conocimiento:
     ('<iso>Z  historia <libro>: ...'); sin el log, los inicios de los tramos de la cinta."""
 
     def __init__(self, log_cboe, libros_log, cinta, desde, hasta):
-        self.arranques = []; self.fuente = ""
+        self.arranques = []; self.fuente = ""; self.extra_hasta = {}
+        lineas = []
         if log_cboe and os.path.exists(log_cboe):
-            rx = re.compile(r"^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)Z\s+historia (\S+):")
+            rx = re.compile(r"^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)Z\s+historia (\S+):(.*)$")
+            rx_a = re.compile(r" a (\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)")
             try:
                 with open(log_cboe, encoding="utf-8", errors="replace") as fh:
                     for l in fh:
@@ -1028,6 +1039,8 @@ class Conocimiento:
                             t = datetime.strptime(m.group(1), "%Y-%m-%dT%H:%M:%S")
                             if desde - timedelta(days=9) <= t <= hasta + timedelta(days=1):
                                 self.arranques.append(t)
+                                ma = rx_a.search(m.group(3))
+                                lineas.append((t, m.group(2), datetime.strptime(ma.group(1), "%Y-%m-%dT%H:%M:%S") if ma else None))
             except OSError:
                 pass
             self.fuente = os.path.basename(log_cboe)
@@ -1039,6 +1052,14 @@ class Conocimiento:
             if not xs or (t - xs[-1]).total_seconds() > 60:
                 xs.append(t)
         self.arranques = xs
+        # DECISION DEL C# (BajadorCboe.CargarHistoria): la carpeta extra se lee UNA vez, al arrancar; la linea "historia <libro>: ... de X a Y"
+        # dice la ultima foto que quedo en memoria (Y = generado). Una foto de la extra con generado > Y no la tuvo ese arranque, aunque sea
+        # anterior a la hora de la linea (medido 27-10 15:19: cboe_local escribio la foto de las 15:19:11 despues de que la 5.0 leyo su
+        # archivo, entre las 15:19:10 y las 15:19:20).
+        for t, lib, y in lineas:
+            R = max((x for x in xs if x <= t), default=None)
+            if R is not None and (t - R).total_seconds() <= 60 and y is not None:
+                self.extra_hasta[(R, lib)] = y
         self.corridas = []
         for i, R in enumerate(xs):
             nxt = xs[i + 1] if i + 1 < len(xs) else datetime(9999, 1, 1)
@@ -1403,16 +1424,19 @@ class Contexto:
         self.seg_carga = time.time() - t0
 
     # -------------------------------------------------------------- lo conocido por el indicador
-    def lista_cboe(self, rol, corte, sin_ind_desde=None):
+    def lista_cboe(self, rol, corte, sin_ind_desde=None, lim_extra=None):
         """lo que conocia el indicador al 'corte' (el arranque que calculo el minuto; None = todo): las fotos de la carpeta propia, las de la
         extra con generado <= corte, y los precios de muestra no verificables que ya tenia guardados. Dedup por cadena_ts entre carpetas:
         gana la bajada mas temprana (libros.fotos_cboe). Devuelve (estados, generados, ruedas, conteo)."""
-        clave = (rol, corte, sin_ind_desde)
+        clave = (rol, corte, sin_ind_desde, lim_extra)
         if clave not in self._conv:
             todas = {}
+            lim = self.conoc.extra_hasta.get((corte, self.perfil[rol]["log"]), corte) if corte is not None else None
+            if lim_extra is not None:
+                lim = lim_extra
             for origen, d in self.cboe[rol].items():
                 for ts, f in d.items():
-                    if origen == "extra" and corte is not None and f.generado > corte:
+                    if origen == "extra" and lim is not None and f.generado > lim:
                         continue
                     if ts not in todas or f.generado < todas[ts].generado:
                         todas[ts] = f
@@ -1422,6 +1446,33 @@ class Contexto:
             gen = np.array([np.datetime64(e.f.generado) for e in est], dtype="datetime64[s]")
             self._conv[clave] = (est, gen, ruedas, cont)
         return self._conv[clave]
+
+    def ventana_muestras(self, rol, corte, foto_ts, lim_extra=None):
+        """(estado, [estados]) de las muestras que entran en la mediana de la foto 'foto_ts' con el conocimiento 'corte': de dia las ultimas
+        24 vivas en hora de la rueda en curso; de noche toda la rueda de referencia; ETF las ultimas 24 validas desde el ultimo reinicio."""
+        est, gen, ruedas, cont = self.lista_cboe(rol, corte, None, lim_extra)
+        k = next((i for i in range(len(est) - 1, -1, -1) if est[i].f.ts == foto_ts), None)
+        if k is None:
+            return None, []
+        e = est[k]; c = self.c
+        if rol == "ind":
+            if e.modo == "dia":
+                dia, n = a_ny(e.t_spot).strftime("%Y-%m-%d"), c["base_ultimas"]
+            elif e.noche_ref:
+                dia, n = e.noche_ref[0], None
+            else:
+                return e, []
+            xs = []
+            for x in est[:k + 1]:
+                ny = a_ny(x.t_spot)
+                en_hora = (c["base_hora"][0] <= hm(ny) <= c["base_hora"][1]) and ny.weekday() < 5
+                if ny.strftime("%Y-%m-%d") == dia and x.vivo and x.muestra == x.muestra and en_hora:
+                    xs.append(x)
+            return e, (xs[-n:] if n else xs)
+        r0 = ultimo_reinicio_etf(e.t_spot, c["etf_reinicio"]) if c["etf_reinicio"] else None
+        xs = [x for x in est[:k + 1] if x.muestra == x.muestra and
+              (not c["etf_reinicio"] or ultimo_reinicio_etf(x.t_spot, c["etf_reinicio"]) == r0)]
+        return e, xs[-c["razon_ultimas"]:]
 
     # -------------------------------------------------------------- insumos
     def fut_de(self, t, vivo=True, arranque=None):
@@ -1454,10 +1505,10 @@ class Contexto:
             return None, k
         return f, k
 
-    def estado_cboe(self, rol, t, corte="auto", sin_ind_desde=None):
+    def estado_cboe(self, rol, t, corte="auto", sin_ind_desde=None, lim_extra=None):
         if corte == "auto":
             corte = self.conoc.corte(t)[0]
-        est, gen, ruedas, cont = self.lista_cboe(rol, corte, sin_ind_desde)
+        est, gen, ruedas, cont = self.lista_cboe(rol, corte, sin_ind_desde, lim_extra)
         k = int(np.searchsorted(gen, np.datetime64(t), side="right")) - 1
         if k < 0:
             return None, None, corte
@@ -1472,7 +1523,7 @@ class Contexto:
         return not (self.oi_hasta is not None and self.ses.ini <= t < self.oi_hasta)
 
     # -------------------------------------------------------------- un libro en el minuto t
-    def libro(self, rol, t, fut=None, est=None, conv=None, corte="auto", sin_ind_desde=None, venc_spec=False):
+    def libro(self, rol, t, fut=None, est=None, conv=None, corte="auto", sin_ind_desde=None, venc_spec=False, lim_extra=None):
         """el libro 'rol' en el minuto t. Sin argumentos, todo recalculado; con fut/est/conv se fuerzan esos insumos (diagnostico)."""
         if fut is None:
             R, vivo = self.conoc.corte(t)
@@ -1498,7 +1549,7 @@ class Contexto:
             b.zv, b.zo = zero_de(b, self.perfil)
             return b, ""
         if est is None:
-            e, ult, corte = self.estado_cboe(rol, t, corte, sin_ind_desde)
+            e, ult, corte = self.estado_cboe(rol, t, corte, sin_ind_desde, lim_extra)
             if e is None:
                 if ult is None:
                     return None, "sin cadena de CBOE"
@@ -1743,6 +1794,64 @@ def estados_del_indicador(ctx, rol, t, meta, corte, maximo=6):
     return out
 
 
+def contraste_especificacion(ctx, rol, t, k, b, ci, corte):
+    """La conversion de CBOE contra lo que el indicador DEBIA saber. Dos vara (la especificacion no dice como se juntan las fotos en vivo):
+      DISENO (default): la carpeta propia mas la extra (cboe-local) LLENANDO EL HUECO de ATAS apagado: toda foto de la extra generada antes de
+        la primera bajada propia del arranque (para eso existe la extra: BajadorCboe.OpcionesCboe.CarpetaExtra, 4.1.9). Lo que falte aca
+        es un DEFECTO del indicador (p. ej. la carrera al arrancar: la foto se escribio mientras leia).
+      ESTRICTA (--espec-estricta): TODAS las fotos con generado <= t de las dos carpetas (backtest_familia: 'la foto con hora de
+        disponibilidad <= ese minuto'; la vista previa en vivo lee el ultima-*.json de cboe-local cada 15 s). Aca tambien aparece lo que la
+        Familia no lee POR DISENO (cboe-local en vivo: baja el mismo sello antes que la carpeta propia).
+    Si con esa vara la base/razon da otra cosa (mas alla de la tolerancia) y con lo que sabia el indicador coincide: fila 'CONV <libro>
+    espec.' con las muestras que entran en una lista y no en la otra, y por que."""
+    lid = ctx.perfil[rol]["id"]
+    tol = (TOL_CONV_PRECIO * abs(ci) / b.fut if b.fut > 0 else 0.0) if rol == "etf" else TOL_CONV_BASE
+    if abs(b.conv - ci) > tol + 1e-9:
+        return []                     # ya difiere con el modelo: lo explica la fila CONV
+    lim_ind = ctx.conoc.extra_hasta.get((corte, ctx.perfil[rol]["log"]), corte)
+    estricta = bool(ctx.opciones.get("espec_estricta"))
+    if estricta:
+        lim_v, corte_v, vara = None, None, "ESTRICTA (todas las fotos con generado <= t)"
+    else:
+        propias = [f.generado for f in ctx.cboe[rol].get("propia", {}).values() if f.generado >= corte]
+        lim_v = min(propias) if propias else t
+        corte_v = corte
+        vara = "de DISENO (la extra llena el hueco de ATAS apagado hasta la primera bajada propia, %s UTC)" % lim_v.strftime("%H:%M:%S")
+        if lim_v <= lim_ind:
+            return []
+    bs, porque = ctx.libro(rol, t, fut=b.fut, corte=corte_v, lim_extra=lim_v)
+    if bs is None:
+        return [Fila("CONV %s espec." % lid, k, "base" if rol == "ind" else "razon", "conversion", f2(ci, 4 if rol == "ind" else 6), "-", None,
+                     False, "con la vara %s no hay libro: %s" % (vara, porque), "insumo")]
+    if abs(bs.conv - ci) <= tol + 1e-9:
+        return []
+    e_m, w_m = ctx.ventana_muestras(rol, corte, b.est.f.ts)
+    e_s, w_s = ctx.ventana_muestras(rol, corte_v, bs.est.f.ts, lim_v)
+    ts_m = {x.f.ts for x in w_m}; ts_s = {x.f.ts for x in w_s}
+
+    def desc(x, de_vara):
+        txt = "ts %s (%s, generada %s UTC, spot %s, precio del futuro %s por %s, muestra %s)" % (
+            x.f.ts[11:], "cboe-local" if x.f.origen == "extra" else "carpeta propia", x.f.generado.strftime("%H:%M:%S"), f2(x.f.spot),
+            f2(x.precio), x.fuente_precio, f2(x.muestra, 4))
+        if de_vara and x.f.origen == "extra" and x.f.generado > lim_ind:
+            txt += (": el indicador NO la tenia: la carpeta extra se lee solo al arrancar y el arranque de las %s leyo hasta la foto "
+                    "generada a las %s (log de CBOE); esta se escribio despues" % (corte.strftime("%H:%M:%S"), lim_ind.strftime("%H:%M:%S")))
+        return txt
+    solo_s = [desc(x, True) for x in w_s if x.f.ts not in ts_m]
+    solo_m = [desc(x, False) for x in w_m if x.f.ts not in ts_s]
+    if solo_s or solo_m:
+        mot = "vara %s: la mediana tiene %d muestra(s) que el indicador no: %s%s" % (
+            vara, len(solo_s), "; ".join(solo_s) or "-", ("; y el indicador tiene %d que esta no (sale de la ventana de 24): %s" % (
+                len(solo_m), "; ".join(solo_m))) if solo_m else "")
+    else:
+        mot = ("vara %s: mismo conjunto de muestras; cambia el orden o 'vivo' por la hora de las bajadas (cboe-local baja el mismo sello "
+               "antes o despues que la carpeta propia)" % vara)
+    efecto = abs(bs.conv - ci) * (b.fut / ci if rol == "etf" else 1.0)
+    mot += ". Efecto: todas las rayas de %s quedan corridas %.3f pts en el futuro" % (lid, efecto)
+    return [Fila("CONV %s espec." % lid, k, "base" if rol == "ind" else "razon", "conversion", f2(ci, 4 if rol == "ind" else 6),
+                 f2(bs.conv, 4 if rol == "ind" else 6), bs.conv - ci, False, mot, "insumo")]
+
+
 def auditar_ausente(ctx, k):
     """un minuto que el niv NO tiene (preview: 'if not bk: continue', el minuto sin libros no se anota): coincide si el recalculo tampoco
     tiene ningun libro; si el recalculo tiene alguno, es una diferencia (el indicador no dibujo nada y debia)."""
@@ -1818,11 +1927,11 @@ def auditar_minuto(ctx, k, reg, filtro_series=None, diagnostico=True):
         ci = _num(m.get("c")) if m else None
         if rol == "etf":
             tol = TOL_CONV_PRECIO * abs(ci) / b.fut if (ci is not None and b.fut > 0) else 0.0
-            okc = ci is not None and abs(b.conv - ci) <= tol
+            okc = ci is not None and abs(b.conv - ci) <= tol + 1e-9
             fila = Fila("CONV " + lid, k, "razon", "conversion", f2(ci, 6), f2(b.conv, 6), (b.conv - ci) if ci is not None else None, okc)
             chica = ci is not None and abs(b.conv - ci) > DIF_MINIMA * 1e-3 * abs(ci)
         else:
-            okc = ci is not None and abs(b.conv - ci) <= TOL_CONV_BASE
+            okc = ci is not None and abs(b.conv - ci) <= TOL_CONV_BASE + 1e-9
             fila = Fila("CONV " + lid, k, "base" if rol == "ind" else "corr", "conversion", f2(ci, 4), f2(b.conv, 4),
                         (b.conv - ci) if ci is not None else None, okc)
             chica = ci is not None and abs(b.conv - ci) > DIF_MINIMA
@@ -1848,6 +1957,8 @@ def auditar_minuto(ctx, k, reg, filtro_series=None, diagnostico=True):
                     "la cuenta coincide pero ese insumo NO es verificable" % (nv, tot, "la mediana" if (rol == "etf" or e.modo == "dia")
                                                                              else "la rueda %s" % (e.noche_ref[0] if e.noche_ref else "?")))
         filas.append(fila)
+        if rol != "fut" and corte is not None and ci is not None:
+            filas.extend(contraste_especificacion(ctx, rol, t, k, b, ci, corte))
         for av in (b.avisos or []):
             filas.append(Fila("AVISO " + lid, k, "-", "dato", "-", "-", None, True, av, "aviso"))
         if m:
@@ -1874,7 +1985,7 @@ def auditar_minuto(ctx, k, reg, filtro_series=None, diagnostico=True):
         for f in comparar_niveles(s, ind.get(s), rec.get(s)):
             f.k = k; filas.append(f)
     # 4) motivo de cada diferencia
-    malas = [f for f in filas if not f.ok and (not f.clase or f.serie.startswith(("CONV", "LIBRO")))]
+    malas = [f for f in filas if not f.ok and not f.serie.endswith("espec.") and (not f.clase or f.serie.startswith(("CONV", "LIBRO")))]
     if malas and diagnostico:
         clasificar(ctx, k, t, reg, libros, ins, malas, ind, corte)
     for f in filas:
@@ -1951,9 +2062,14 @@ def clasificar(ctx, k, t, reg, libros, ins, malas, ind, corte):
                 for f in fs:
                     f.clase = "insumo" if ok else "sin explicar"; f.motivo = mot
             else:
+                m_ = meta_de(reg, perfil[rol]["id"]) if rol else None
+                fwd = bool(m_ and "FORWARDS" in str(m_.get("t") or "").upper())
                 for f in fs:
-                    f.clase = "insumo"
-                    f.motivo = "; ".join(dif_ins) or "el indicador %s el libro y el recalculo %s" % (f.ind, f.rec)
+                    f.clase = "decision C#" if fwd else "insumo"
+                    f.motivo = ("el indicador uso la base de FORWARDS (P2_SPX.md: respaldo cuando no hay base sincronizada; NO esta en "
+                                "backtest_familia ni en el DISENO_5_0 §4, donde sin base sincronizada el indice no se dibuja): '%s'" % (
+                                    str(m_.get("t"))[:120]) if fwd else
+                                "; ".join(dif_ins) or "el indicador %s el libro y el recalculo %s" % (f.ind, f.rec))
             continue
         con_insumos = comparar_niveles(s, ind.get(s), rec_f.get(s))
         otra = None
@@ -2030,7 +2146,7 @@ def motivo_conversion(ctx, rol, t, reg, b, corte):
                 variantes.append((R, "con lo que conocia el arranque de las %s (no el de las %s)" % (R.strftime("%m-%d %H:%M:%S"), corte.strftime("%H:%M:%S"))))
     for cc, nombre in variantes:
         bb, _ = ctx.libro(rol, t, fut=b.fut, corte=cc)
-        if bb is not None and abs(bb.conv - ci) <= tol:
+        if bb is not None and abs(bb.conv - ci) <= tol + 1e-9:
             return True, "coincide %s: " % nombre + " | ".join(txt)
     # el hueco de ATAS anterior al arranque: al calcular ese minuto la 4.1 todavia no tenia la vela del grafico para esas muestras
     if corte is not None:
@@ -2038,7 +2154,7 @@ def motivo_conversion(ctx, rol, t, reg, b, corte):
         if fin is not None:
             desde = de_ms(fin)
             bb, _ = ctx.libro(rol, t, fut=b.fut, corte=corte, sin_ind_desde=desde)
-            if bb is not None and abs(bb.conv - ci) <= tol:
+            if bb is not None and abs(bb.conv - ci) <= tol + 1e-9:
                 return True, ("coincide sin los precios de las muestras con ts - 900 s despues de las %s (fin de la cinta antes del arranque de "
                               "las %s): cuando se calculo este minuto el indicador todavia no tenia la vela del grafico para ellas (la guardo despues): "
                               % (desde.strftime("%H:%M:%S"), corte.strftime("%H:%M:%S"))) + " | ".join(txt)
@@ -2168,7 +2284,7 @@ def reporte(ctx, resultados, detalle, salida, encabezado_extra=""):
     malas = [f for f in todas if not f.ok]
     if not malas:
         codigo = 0
-    elif all(f.clase in ("insumo", "cache C5") for f in malas):
+    elif all(f.clase in ("insumo", "cache C5", "decision C#") for f in malas):
         codigo = 1
     else:
         codigo = 2
@@ -2228,6 +2344,7 @@ def autoprueba_es(carpeta):
     print("autoprueba del perfil ES (%s) sobre %s" % (VERSION, carpeta))
     ok(venc_real_utc("2026-10-27") == datetime(2026, 10, 27, 20, 0), "vencimiento real 27-10 = 20:00 UTC (16:00 NY, horario de verano)")
     ok(venc_real_utc("2026-11-02") == datetime(2026, 11, 2, 21, 0), "vencimiento real 02-11 = 21:00 UTC (16:00 NY, horario de invierno)")
+    ok(venc_real_utc("2026-11-20", am=True) == datetime(2026, 11, 20, 14, 30), "SPX AM del 20-11 (marca 'am' de la 5.0) = 14:30 UTC (09:30 NY)")
     ok(tercer_viernes(2026, 11) == datetime(2026, 11, 20) and tercer_viernes(2026, 12) == datetime(2026, 12, 18), "terceros viernes 20-11 y 18-12")
     ok(ultimo_reinicio_etf(datetime(2026, 12, 18, 9, 30), "04:00") == datetime(2026, 12, 18, 9, 0) and
        ultimo_reinicio_etf(datetime(2026, 12, 18, 8, 59), "04:00") == datetime(2026, 9, 18, 8, 0),
@@ -2296,7 +2413,7 @@ def autoprueba_es(carpeta):
         for mm, ds in ((0, -0.05), (5, 0.0)):
             x = FotoCboe(); x.generado = datetime(2026, 10, 27, 0, 0) + timedelta(hours=hh, minutes=mm)
             x.ts = (x.generado + timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
-            x.spot = spot + ds; x.oi_total = 1.0; x.t_dato = x.generado; x.origen = "prueba"; x.dias = []; x.fechas = []
+            x.spot = spot + ds; x.oi_total = 1.0; x.t_dato = x.generado; x.origen = "prueba"; x.dias = []; x.fechas = []; x.am = []
             fs.append(x)
     est, _, cont = conversion("etf", fs, _Cinta(), perfil, Sesion("2026-10-27", True), "Z6", {}, None)
     excl = [e.excluida for e in est if e.excluida]
@@ -2347,6 +2464,8 @@ def main(argv=None):
     ap.add_argument("--instrumento", help="contrato del grafico (default: el del niv)")
     ap.add_argument("--constantes", help="JSON que PISA constantes del perfil (claves exactas de C_NQ/C_ES) para probar otra regla; "
                                          "default: las decididas (NQ: especificacion; ES: DISENO_5_0 §4)")
+    ap.add_argument("--espec-estricta", action="store_true", help="el contraste 'CONV <libro> espec.' con TODAS las fotos de CBOE con generado <= t "
+                                                                  "(backtest_familia / vista previa en vivo) en vez de la vara de diseno")
     ap.add_argument("--paridad", action="store_true", help="sesion y horas fijas en UTC (modo paridad de la especificacion) en vez de NY")
     a = ap.parse_args(argv)
     if a.desde and not a.hasta:
@@ -2391,7 +2510,7 @@ def main(argv=None):
             claves = [k for k in claves if ses_.ini <= de_clave(k) < ses_.fin]
             if not claves:
                 raise FaltanDatos("ningun minuto del rango cae en la sesion %s" % dia)
-        opciones = dict(paridad=a.paridad)
+        opciones = dict(paridad=a.paridad, espec_estricta=a.espec_estricta)
         if a.extra is not None:
             opciones["extra"] = a.extra
         if a.log_cboe is not None:
