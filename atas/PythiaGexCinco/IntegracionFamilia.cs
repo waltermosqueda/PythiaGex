@@ -17,6 +17,10 @@
 // 5.0 (27-10-2026, P5): solo los textos de los ajustes de "7. Datos" (para ES: SPX = _SPX de CBOE con SPXW y SPX mensual, SPY; el tamaño de la
 // bajada de SPX; sin "la vista previa" de la 4.1 como unica referencia). Nombres de propiedad, tipos, defaults y la logica del host NO cambian.
 // Las muestras de la historia de este encabezado (4.1.x) se refieren a la 4.1 sobre NQ/NDX/QQQ (el clon cambio los nombres de los libros).
+// 5.0.1 (27-10-2026): ajuste NUEVO "Replicas con la conversion de la 5.0" (Replicas50Conversion, "7. Datos", default true): R20_SPX_vol, R10_SPX_zero y
+// R10_SPX_dom llevan sus strikes a ES con la base SPX del minuto de la 5.0 (la de MUROS_SPX) en vez de su cascada (medido 27-10: 1,17 pts abajo y
+// saltos de 1,1-1,7 pts en la 2.0). Uno por proceso y contrato como la bajada (prendido si cualquier instancia lo pide); el host lo pasa al crear las
+// replicas y en cada latido (AjustarConversion50: si cambia, el motor rehace la sesion entera de esas series).
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -50,6 +54,12 @@ namespace PythiaGexCinco
 
         // 5.0 (27-10-2026): aca iba Tqqq41AnclaNoche ("TQQQ de noche", Order 1040): se saco con TQQQ.
 
+        // 5.0.1 (27-10-2026): nombre NUEVO (no hay valor guardado en el .ws). Lo lee FamiliaAsegurarHost en cada latido y el host se lo pasa a la
+        // Replica20 (R20_SPX_vol) y a la ClasicaSpx (R10_SPX_zero, R10_SPX_dom): OpcionesReplica20/OpcionesClasicaSpx.ConversionDeLa50.
+        [Display(Name = "Replicas con la conversion de la 5.0", GroupName = "7. Datos", Order = 1040,
+                 Description = "Prendido (recomendado): las replicas '2.0 SPX D1-D2', 'Clas SPX 0Γ' y 'Clas SPX D1-3' conservan la formula y la seleccion de la 2.0 y de la clasica (su gamma, su radio de 100 pts, su cadena de CBOE 960 s atras, la grilla del zero, y la base con que eligen: los mismos strikes que las originales), pero dibujan sus strikes de SPX en ES con la CONVERSION DE LA 5.0: la base ES - SPX sincronizada (C7) del minuto, la misma de los muros de SPX, el eje doble y la 3.0 SPX. MEDIDO el 27-10 (control multifuente): la base propia de esas replicas (forwards de la cadena con el corte de una recta de 11 vencimientos) quedo 1,17 pts DEBAJO de la real (mediana de 51 fotos contra Yahoo ESZ26 - ^GSPC; de -0,77 a -1,84), y la de la 2.0 salto 1,1-1,7 pts al alternar 'medida' y 'de la rueda' (19 saltos desde las 15:15Z sin que el mercado se moviera): el strike SPX 7730 aparecia en 7764,57 en vez de 7766,12. Apagado = la conversion EXACTA de la 2.0 y de la clasica originales (su cascada de base), para compararlas. Al cambiarlo se rehace la sesion entera de esas tres series. El calculo es uno por contrato: con dos graficos de MES con la 5.0, manda el que lo tenga prendido.")]
+        public bool Replicas50Conversion { get; set; } = true;
+
         // ------------------------------------------------------------------ host de la familia
         private HostFamilia _famHost;
         private string _famHostClave;
@@ -66,7 +76,8 @@ namespace PythiaGexCinco
                 string codigo = CodigoGrafico();
                 string clave = (codigo ?? "") + "|" + (Familia41Corregida ? "ny" : "utc");
                 PedidoBajada(this, Cboe41Bajar, Cboe41TopeKBps);
-                if (_famHost != null && _famHostClave == clave) { _famHost.AjustarBajada(); return; }
+                PedidoConversion50(this, Replicas50Conversion);                         // 5.0.1: antes de crear el host (el host nace con el valor efectivo)
+                if (_famHost != null && _famHostClave == clave) { _famHost.AjustarBajada(); _famHost.AjustarConversion50(); return; }
                 if ((DateTime.UtcNow - _famHostIntentoUtc).TotalSeconds < 30) return;     // si fallo, reintenta cada 30 s (sin inundar el log)
                 _famHostIntentoUtc = DateTime.UtcNow;
                 if (_famHost != null) { HostFamilia.Soltar(_famHost); _famHost = null; }
@@ -80,7 +91,7 @@ namespace PythiaGexCinco
 
         private void FamiliaSoltarHost()
         {
-            try { QuitarPedidoBajada(this); var h = _famHost; _famHost = null; if (h != null) HostFamilia.Soltar(h); }
+            try { QuitarPedidoBajada(this); QuitarPedidoConversion50(this); var h = _famHost; _famHost = null; if (h != null) HostFamilia.Soltar(h); }
             catch (Exception e) { Registro.Excepcion(LOG, "FamiliaSoltarHost", e); }
         }
 
@@ -98,6 +109,22 @@ namespace PythiaGexCinco
                 bool b = false; int t = 16;
                 foreach (var v in _pedidosBajada.Values) { b |= v.Bajar; t = Math.Max(t, v.Tope); }
                 return (b, t);
+            }
+        }
+
+        // ---- 5.0.1: Replicas50Conversion. El host es uno por proceso y contrato: el valor efectivo es fijo para todas las instancias (prendido si
+        //      CUALQUIERA lo pide, como la bajada): si cada instancia empujara el suyo, dos graficos distintos lo prenderian y apagarian en cada latido y
+        //      cada cambio rehace la sesion entera de las replicas.
+        private static readonly Dictionary<GammaCinco, bool> _pedidosConv50 = new Dictionary<GammaCinco, bool>();
+        private static void PedidoConversion50(GammaCinco quien, bool v) { lock (_llaveBajada) _pedidosConv50[quien] = v; }
+        private static void QuitarPedidoConversion50(GammaCinco quien) { lock (_llaveBajada) _pedidosConv50.Remove(quien); }
+        internal static bool Conversion50Efectiva()
+        {
+            lock (_llaveBajada)
+            {
+                if (_pedidosConv50.Count == 0) return true;
+                foreach (var v in _pedidosConv50.Values) if (v) return true;
+                return false;
             }
         }
 
@@ -187,7 +214,9 @@ namespace PythiaGexCinco
 
                 // 4.1.3: las dominantes como la 2.0 (R20_SPY_vol, R20_SPX_vol, DOMS_SPY_vol, DOMS_SPX_vol), calculadas adentro sobre la MISMA
                 // descarga de CBOE y la MISMA cinta; el motor las agrega despues de la cuenta de la vista previa (las 21 series no cambian)
-                _replica20 = new Replica20(_cboe, cinta, new OpcionesReplica20 { Contrato = codigo ?? "", Log = s => Escribir("replica20", s) });
+                // 5.0.1: ConversionDeLa50 = Replicas50Conversion efectivo (R20_SPX_vol con la base SPX del minuto de la 5.0; apagado = la cascada de la 2.0)
+                bool conv50 = Conversion50Efectiva();
+                _replica20 = new Replica20(_cboe, cinta, new OpcionesReplica20 { Contrato = codigo ?? "", Log = s => Escribir("replica20", s), ConversionDeLa50 = conv50 });
                 // 4.1.5: la replica de la clasica (zero de SPX por volumen con SU base de la rueda anterior, medida con su regla sobre las cadenas y la cinta
                 // de la 4.1: nada de la clasica). Va DESPUES de la Replica20 (que reemplaza las extras al guardar; la clasica agrega la suya)
                 // 4.1.5d: las muestras de la base de la rueda se guardan en PythiaGex5\familia (la rueda cerrada no cambia al reiniciar) y la cinta dice si
@@ -196,8 +225,10 @@ namespace PythiaGexCinco
                 _clasica = new ClasicaSpx(_cboe, cinta, new OpcionesClasicaSpx
                 {
                     Contrato = codigo ?? "", Log = s => Escribir("clasica", s), CarpetaDatos = carpeta,
-                    VelaCompleta = cintaF == null ? (Func<DateTime, bool>)null : t => cintaF.VelaM2Completa(t)
+                    VelaCompleta = cintaF == null ? (Func<DateTime, bool>)null : t => cintaF.VelaM2Completa(t),
+                    ConversionDeLa50 = conv50                                               // 5.0.1: el zero y las D1-D3 con la base SPX del minuto de la 5.0
                 });
+                Escribir("replicas", "conversion de R20_SPX_vol / R10_SPX_zero / R10_SPX_dom: " + (conv50 ? "la de la 5.0 (base SPX del minuto del libro SPX)" : "la cascada original de la 2.0 y de la clasica"));
                 var extras = new ExtrasCompuestos(_replica20, _clasica) { Error = (donde, e) => Escribir("extras", "ERROR en " + donde + ": " + e.GetType().Name + ": " + e.Message) };
                 _motor = new MotorFamilia(new OpcionesMotorFamilia
                 {
@@ -227,6 +258,20 @@ namespace PythiaGexCinco
                     if (_cboe.TopeKBps != tope) _cboe.TopeKBps = tope;
                 }
                 catch { }
+            }
+
+            /// <summary>5.0.1: el ajuste Replicas50Conversion efectivo a las dos replicas, en cada latido desde el hilo de ATAS. Solo anota el pedido (sin
+            /// llave: no frena al hilo de ATAS aunque el motor este rehaciendo el estado); lo aplica el hilo del motor: si cambia, cada replica sube su
+            /// generacion desde el principio y el motor rehace todos los minutos de la sesion de esas series con la regla nueva; si no cambia, nada.</summary>
+            public void AjustarConversion50()
+            {
+                try
+                {
+                    bool v = Conversion50Efectiva();
+                    _replica20?.PonerConversionDeLa50(v);
+                    _clasica?.PonerConversionDeLa50(v);
+                }
+                catch (Exception e) { Escribir("replicas", "ERROR al cambiar la conversion: " + e.GetType().Name + ": " + e.Message); }
             }
 
             private void Arrancar()

@@ -51,6 +51,25 @@
 //       OpcionesReplica20.RuedaVentanaNy = true la corrige (09:50-16:10 NY); 5.0: el coordinador la dejo en true por defecto (27-10).
 //   SIN VERIFICAR contra la 2.0 corriendo en ES: no hay salidas de la 2.0 en ES desde el 05-10 (5 AUDIT ese dia, "base=53.42 origen=medida").
 //
+// 5.0.1 (27-10-2026): R20_SPX_vol CON LA CONVERSION DE LA 5.0 (OpcionesReplica20.ConversionDeLa50, default true; ajuste publico
+//   Replicas50Conversion de "7. Datos"). MEDIDO hoy por el control multifuente (_diseno/CONTROL_MULTIFUENTE_2710.md §4): (1) la "medida" de la
+//   cascada sale de los forwards con el corte de una RECTA ajustada a 11 vencimientos (CboeCadena.Medir) y quedo 1,17 pts DEBAJO de la base real
+//   (mediana de 51 fotos contra Yahoo ESZ26 - ^GSPC; rango -0,77 a -1,84): el strike SPX 7730 aparecia en 7764,57 y con la base de la 5.0 en
+//   7766,12; (2) la base salta 1,1-1,7 pts sin que el mercado se mueva al alternar "medida" (~34,5) y "de la rueda" (~36,0) segun la ultima foto
+//   traiga base confiable o no (19 saltos de la raya con el mismo strike desde las 15:15Z). Con la opcion prendida la RAYA va con la base de la
+//   5.0 del minuto (RegistroMinuto.MetaDe("SPX").Conv: la sincronizada C7 del libro SPX, la MISMA de MUROS_SPX, el eje doble y TRES_SPX;
+//   Base50De): Fut(K) = K + esa base. TODO lo demas queda como en la 2.0, tambien lo que depende de su base: la cascada se sigue calculando y con
+//   ella S = fut del instante - base de la 2.0, el radio |K + base de la 2.0 - fut| <= min(2 %, 100), la gamma (Black-Scholes r 0,0375 sin
+//   dividendo, x100, horizonte Hoy envejecido), el orden por |GEX| y por eso los MISMOS strikes y montos que la 2.0; la cadena (la ultima bajada
+//   con generado <= t) y el fut del instante tampoco cambian. Solo se mueve la raya: K + base de la 5.0 en lugar de K + base de la 2.0 (el texto
+//   dice las dos: "seleccion y gamma con la base de la 2.0 X (origen)"). Si la cascada no da base, S y el radio van con la de la 5.0. Sin base de
+//   la 5.0 en el minuto (sin libro SPX) la serie no se dibuja, como MUROS_SPX: no se completa con la cascada (mezclar bases es el salto de arriba).
+//   MetaLibro "2.0 SPX": Conv = la base de la 5.0 (la de la raya), S = el S de la gamma (fut - base de la 2.0).
+//   Apagada = la cascada original EXACTA (mismo numero y mismo texto que la 5.0.0). Calcular, Completar y Rehacer usan la misma regla; al cambiar
+//   la opcion (PonerConversionDeLa50) sube la generacion desde el principio y el motor rehace la sesion entera; un minuto del archivo calculado con
+//   la otra regla (su texto empieza o no con BaseSpx20.TEXTO_50) se completa con la vigente al cargarlo (IExtrasParciales.Falta + Completar ->
+//   Rehacer, que solo toca R20_*: DOMS_* y la clasica quedan como estan).
+//
 // 4.1.3/4.1.4 (texto original, con los nombres ya de ES por el clon):
 //   R20_SPY_vol  "2.0 SPY"  replica de las dominantes de la 2.0 sobre la cadena SPY de CBOE con SU conversion (EscalarCon, GammaHoy.cs:1040-1131):
 //                razon = cierre de la vela de 1 min del MES que contiene el ultimo trade de la cadena / spot_idx de la cadena; con la cadena fresca y
@@ -81,6 +100,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 
 namespace PythiaGexCinco.Familia
 {
@@ -301,6 +321,13 @@ namespace PythiaGexCinco.Familia
         /// ORIGEN_MEDIDA_HACE antes que ORIGEN_MEDIDA y "(sin cota)" antes que ORIGEN_CRUDA.</summary>
         public const string ORIGEN_MEDIDA = "medida", ORIGEN_MEDIDA_HACE = "medida hace", ORIGEN_RUEDA = "de la rueda", ORIGEN_CRUDA = "CRUDA",
                             ORIGEN_TEORICA = "TEORICA", MARCA_SIN_COTA = "(sin cota)";
+        /// <summary>5.0.1: el origen "conversion de la 5.0" (OpcionesReplica20.ConversionDeLa50) y como EMPIEZA el texto de la replica con esa
+        /// conversion ("conversion de la 5.0: base 36.12 (C7, ...) · seleccion y gamma con la base de la 2.0 34.57 (medida: ...)"). Lo leen la
+        /// pantalla (ArmadoPantalla) y Falta (un minuto del archivo calculado con la otra regla). El texto con la cascada sigue empezando con "base 2.0 ".</summary>
+        public const string ORIGEN_50 = "conversion de la 5.0", TEXTO_50 = "conversion de la 5.0: base ";
+        /// <summary>5.0.1: lo que va entre parentesis despues de la base de la 5.0 en el texto, y como empieza la base con que se eligio.</summary>
+        public const string DETALLE_50 = "C7, la del libro SPX de la 5.0: la misma de MUROS_SPX, el eje y TRES_SPX";
+        public const string SELECCION_50 = "seleccion y gamma con la base de la 2.0 ";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         /// <summary>carry = fut x (tasa - dividendo) x dias al vencimiento / 365 (NaN si el vencimiento no es posterior a ahora).</summary>
@@ -537,6 +564,14 @@ namespace PythiaGexCinco.Familia
         /// queria). Iguales hasta el 31-10; desde el 01-11 la de UTC empieza 08:50 NY, con el SPX todavia cerrado.</summary>
         public bool RuedaVentanaNy = true;   // 5.0 (27-10-2026, agente principal): en hora de NY por defecto (igual hasta el 31-10; desde el 01-11 la de UTC
                                              // empezaria 8:50 NY con el SPX cerrado). La 2.0 original queda con su UTC fijo.
+        /// <summary>5.0.1 (27-10-2026): true (default) = R20_SPX_vol lleva sus strikes a ES con la CONVERSION DE LA 5.0: la raya en Fut = K + la base
+        /// SPX del minuto del libro SPX de la 5.0 (sincronizada C7; RegistroMinuto.MetaDe("SPX").Conv, la de MUROS_SPX, el eje doble y TRES_SPX). La
+        /// seleccion queda la de la 2.0: S, el radio de 100 y el orden por |GEX| con SU base (su cascada), la formula, T/r, la cadena y el fut del
+        /// instante: los mismos strikes y montos, otra altura. Medido 27-10 (control multifuente): la base de la cascada de la 2.0 quedo 1,17 pts debajo
+        /// de la real (mediana de 51 fotos contra Yahoo; -0,77 a -1,84) y salto 1,1-1,7 pts al alternar "medida" y "de la rueda" (19 saltos desde las
+        /// 15:15Z con el strike quieto). Sin base de la 5.0 en el minuto no se dibuja. false = la cascada de la 2.0 EXACTA (la de la 5.0.0). La cambia
+        /// el host con Replica20.PonerConversionDeLa50.</summary>
+        public bool ConversionDeLa50 = true;
     }
 
     /// <summary>Lo que dio una replica de la 2.0 en un instante (para el motor y el arnes).</summary>
@@ -552,14 +587,20 @@ namespace PythiaGexCinco.Familia
         public Razon20 Razon;                                  // solo SPY
         public string OrigenBase = ""; public double Carry = double.NaN;   // solo SPX
         public EstadoSpx20 Base20;                             // 5.0, solo SPX: el estado de la base de la 2.0 (rueda, ultima medida) en esa cadena
+        /// <summary>5.0.1, solo SPX: Conv salio de la conversion de la 5.0 (OpcionesReplica20.ConversionDeLa50; S sigue siendo el de la gamma: fut -
+        /// BaseOriginal); BaseOriginal / OrigenOriginal = lo que daba la cascada de la 2.0 en ese instante (NaN / "sin base" si no tenia), con la que se
+        /// eligio. Con la cascada, BaseOriginal = Conv.</summary>
+        public bool Con50;
+        public double BaseOriginal = double.NaN; public string OrigenOriginal = "";
     }
 
     /// <summary>Las series "como la 2.0" de cada minuto (IExtrasMinuto del motor). Un solo hilo (el del motor); lock por si acaso.
     /// 4.1.4 (revision 4.1.3): IExtrasRehacer: si una cadena se escalo sin la vela de la cinta (la cinta todavia cargaba) y la vela llega despues, se
-    /// rehace el estado en orden y el motor rehace los minutos ya calculados desde esa cadena. 5.0: tambien la base de SPX (su rueda).</summary>
-    public sealed class Replica20 : IExtrasMinuto, IExtrasRehacer
+    /// rehace el estado en orden y el motor rehace los minutos ya calculados desde esa cadena. 5.0: tambien la base de SPX (su rueda).
+    /// 5.0.1: IExtrasParciales: un minuto del archivo cuyo R20_SPX_vol se calculo con la otra conversion (5.0 / cascada) se completa con la vigente.</summary>
+    public sealed class Replica20 : IExtrasMinuto, IExtrasRehacer, IExtrasParciales
     {
-        public const string VERSION = "replica20 5.0 (27-10-2026)";
+        public const string VERSION = "replica20 5.0.1 (27-10-2026, R20_SPX_vol con la conversion de la 5.0 por defecto)";
         public const string LIBRO_SPY = "2.0 SPY", LIBRO_SPX = "2.0 SPX";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
         private readonly IFuenteCboe _cboe;
@@ -602,7 +643,7 @@ namespace PythiaGexCinco.Familia
         public int ResondeosSpx { get; private set; }
         /// <summary>4.1.4 (IExtrasRehacer): sube cada vez que cambia la razon (o su origen) de una cadena de SPY ya escalada, o (5.0) la base de la rueda
         /// de una cadena de SPX ya procesada.</summary>
-        public long Generacion { get { lock (_llave) { _genLeida = _gen; return _gen; } } }
+        public long Generacion { get { lock (_llave) { AplicarPedido50(); _genLeida = _gen; return _gen; } } }   // 5.0.1: con el pedido de conversion aplicado
         /// <summary>4.1.4 (IExtrasRehacer): el 'generado' de la primera cadena que cambio desde la ultima lectura de Generacion (desde ahi se rehacen).</summary>
         public DateTime RehacerDesdeUtc { get { lock (_llave) return _rehacerDesde; } }
         /// <summary>4.1.4: cadenas cuya razon todavia espera la vela de la cinta.</summary>
@@ -620,6 +661,49 @@ namespace PythiaGexCinco.Familia
             _estado = new RazonSpy20 { RetrasoSeg = _op.RetrasoCboeSeg };
             _baseEs = new BaseEs20(_op);
             _tabla = _op.UsarTablaMedida ? cboe as Cboe.IMedidaCboe : null;
+        }
+
+        /// <summary>5.0.1: la conversion de R20_SPX_vol: true = la de la 5.0 (OpcionesReplica20.ConversionDeLa50; con un pedido pendiente, ya aplicado).</summary>
+        public bool ConversionDeLa50 { get { lock (_llave) { AplicarPedido50(); return _op.ConversionDeLa50; } } }
+
+        // 5.0.1: el valor pedido por el ajuste (-1 = ninguno, 0 = cascada, 1 = la de la 5.0). Lo escribe el hilo de ATAS sin llave; lo aplica el del motor.
+        private int _pedido50 = -1;
+
+        /// <summary>5.0.1: pide la conversion de R20_SPX_vol (el ajuste Replicas50Conversion). La llama el host en CADA latido desde el hilo de ATAS:
+        /// solo anota el valor (sin llave: el hilo del motor puede tener la llave segundos, rehaciendo el estado al arrancar). Lo aplica el hilo del
+        /// motor en la proxima cuenta o lectura de la generacion (AplicarPedido50): si cambia, sube la generacion desde el principio y el motor rehace
+        /// TODOS los minutos calculados de la sesion con la regla nueva (Rehacer) y los vuelve a guardar, asi la estela no mezcla las dos conversiones.</summary>
+        public void PonerConversionDeLa50(bool v) => Volatile.Write(ref _pedido50, v ? 1 : 0);
+
+        /// <summary>5.0.1: aplica el pedido de PonerConversionDeLa50 si cambia la regla (bajo _llave).</summary>
+        private void AplicarPedido50()
+        {
+            int p = Volatile.Read(ref _pedido50);
+            if (p < 0 || (p == 1) == _op.ConversionDeLa50) return;
+            _op.ConversionDeLa50 = p == 1;
+            Subir(DateTime.MinValue);
+            _op.Log?.Invoke("SPX: conversion de R20_SPX_vol -> " + (p == 1 ? "la de la 5.0 (la base SPX del minuto del libro SPX de la 5.0)" : "la cascada de la 2.0 (la original)")
+                            + "; generacion " + _gen + ": se rehace la sesion entera");
+        }
+
+        /// <summary>5.0.1: la base SPX -&gt; ES de la 5.0 en un minuto: la del libro SPX de la 5.0 (RegistroMinuto.Meta, la sincronizada C7: la misma
+        /// que usan MUROS_SPX, el eje doble y TRES_SPX; en el archivo, el "c" del "m" de SPX). NaN si el minuto no tiene libro SPX.</summary>
+        public static double Base50De(RegistroMinuto r)
+        {
+            var m = r?.MetaDe("SPX");
+            return m != null && EsBase(m.Conv) ? m.Conv : double.NaN;
+        }
+
+        private static bool EsBase(double b) => !double.IsNaN(b) && !double.IsInfinity(b);
+
+        /// <summary>5.0.1 (IExtrasParciales): el R20_SPX_vol del minuto (archivo) se calculo con la OTRA conversion que la vigente (su texto empieza o
+        /// no con BaseSpx20.TEXTO_50). Un minuto sin "2.0 SPX" no se toca.</summary>
+        public bool Falta(RegistroMinuto r)
+        {
+            var m = r?.MetaExtraDe(LIBRO_SPX);
+            if (m == null) return false;
+            bool es50 = (m.ConvTexto ?? "").StartsWith(BaseSpx20.TEXTO_50, StringComparison.Ordinal);
+            lock (_llave) { AplicarPedido50(); return es50 != _op.ConversionDeLa50; }
         }
 
         /// <summary>5.0: la base medida de una cadena segun la tabla de la descarga: (true, base) si es confiable, (true, NaN) si no (o no esta).</summary>
@@ -686,6 +770,7 @@ namespace PythiaGexCinco.Familia
         /// que faltaba, rehace el estado de ese libro desde el principio (causal y determinista).</summary>
         private void Refrescar(DateTime tUtc)
         {
+            AplicarPedido50();                                                     // 5.0.1: el pedido de conversion del ajuste, en el hilo del motor
             var desde = TiempoFam.IniSesion(TiempoFam.Sesion(tUtc)).AddDays(-_op.DiasHistoria);
             long ver = _cboe.Version;
             // 4.1.4 (revision 4.1.3): las cadenas "provisionales" se vuelven a mirar cada SondeoCadaS s: si la vela (o el precio) aparecio, se rehace
@@ -893,8 +978,11 @@ namespace PythiaGexCinco.Familia
         }
 
         /// <summary>Las dominantes del libro SPX de la 2.0 en ES en el instante t con el futuro fut. null si no hay cadena con filas o no hay base.
-        /// 5.0: con la cascada completa de la 2.0 en ES (medida &gt; medida reciente &gt; de la rueda &gt; cruda &gt; teorica &gt; cruda sin cota).</summary>
-        public Resultado20 Spx(DateTime tUtc, double fut)
+        /// 5.0: con la cascada completa de la 2.0 en ES (medida &gt; medida reciente &gt; de la rueda &gt; cruda &gt; teorica &gt; cruda sin cota).
+        /// 5.0.1: base50 = la base SPX -&gt; ES de la 5.0 en ese minuto (Base50De). Con OpcionesReplica20.ConversionDeLa50 (default) la raya va a
+        /// Fut = K + base50 (null si base50 es NaN: sin libro SPX de la 5.0 no se dibuja); S, el radio y la seleccion siguen con la base de la cascada
+        /// (si la cascada no da base, con base50). Apagada, la cascada exacta de antes (base50 no se mira).</summary>
+        public Resultado20 Spx(DateTime tUtc, double fut, double base50 = double.NaN)
         {
             lock (_llave)
             {
@@ -906,20 +994,34 @@ namespace PythiaGexCinco.Familia
                 var (exp, expAlt) = Expiraciones(tUtc);
                 double edadUlt = _op.MedidaReciente && e.UltBuenaUtc > DateTime.MinValue ? (e.GenUtc - e.UltBuenaUtc).TotalMinutes : double.NaN;
                 double edadRueda = !double.IsNaN(e.Rueda) && e.RuedaUtc > DateTime.MinValue ? (tUtc - e.RuedaUtc).TotalMinutes : double.NaN;
-                double b = BaseSpx20.Cascada(f.BaseCruda, f.BaseErrorTicks, e.Medida ? e.MedidaBase : double.NaN, e.MedidaDe, _op.MedidaReciente ? e.UltBuena : double.NaN, edadUlt,
-                                             e.Rueda, edadRueda, e.RuedaBuenas, fut, tUtc, exp, expAlt, _op.Tasa, _op.Dividendo, out var origen, out var carry);
-                if (double.IsNaN(b)) return null;
-                double S = fut - b;
+                double b20 = BaseSpx20.Cascada(f.BaseCruda, f.BaseErrorTicks, e.Medida ? e.MedidaBase : double.NaN, e.MedidaDe, _op.MedidaReciente ? e.UltBuena : double.NaN, edadUlt,
+                                               e.Rueda, edadRueda, e.RuedaBuenas, fut, tUtc, exp, expAlt, _op.Tasa, _op.Dividendo, out var origen20, out var carry);
+                // 5.0.1: la conversion de la 5.0 (default) o la cascada de la 2.0 (la original, exacta). Con la de la 5.0 la SELECCION no cambia: S, el
+                // radio y el orden por |GEX| siguen con la base de la 2.0 (bSel; sin base de la 2.0, la de la 5.0) y solo la raya va a K + base50
+                bool con50 = _op.ConversionDeLa50;
+                if (con50 ? !EsBase(base50) : double.IsNaN(b20)) return null;
+                double bSel = con50 && double.IsNaN(b20) ? base50 : b20;
+                double b = con50 ? base50 : b20;
+                string origen = con50 ? BaseSpx20.ORIGEN_50 : origen20;
+                double S = fut - bSel;
                 if (S <= 0) return null;
                 var gen = TiempoFam.DeMs(_gn[k]);
-                var perfil = Nucleo20.Perfil(f, gen, S, tUtc, b, false);
+                var perfil = Nucleo20.Perfil(f, gen, S, tUtc, bSel, false);
                 var doms = Nucleo20.Dominantes(perfil, fut, out var lib);
+                if (con50) doms = doms.Select(x => (x.K + b, x.G, x.K)).ToList();          // la misma seleccion, puesta con la base de la 5.0
                 bool cong = f.DatoUtc.Year >= 2000 && TiempoFam.ANy(f.DatoUtc).TimeOfDay >= new TimeSpan(15, 59, 0);
                 var r = new Resultado20 { Libro = LIBRO_SPX, Foto = f, GeneradoUtc = gen, Conv = b, S = S, Fut = fut, LibroDom = lib, Strikes = perfil.Count, Doms = doms,
-                                          OrigenBase = origen, Carry = carry, Congelada = cong, Base20 = e };
-                r.Texto = "base 2.0 " + b.ToString("0.00", Inv) + " (" + origen + (origen.StartsWith(BaseSpx20.ORIGEN_CRUDA, StringComparison.Ordinal) ? " de forwards de la cadena" : "")
-                          + (double.IsNaN(carry) ? "" : "; cota: carry " + carry.ToString("0.0", Inv) + " +-60 % (dividendo " + (_op.Dividendo * 100).ToString("0.0", Inv) + " %)") + ")"
-                          + (lib == "OI" && doms.Count > 0 ? "; dominantes por OI (sin volumen en el radio)" : "");
+                                          OrigenBase = origen, Carry = carry, Congelada = cong, Base20 = e, Con50 = con50, BaseOriginal = b20, OrigenOriginal = origen20 };
+                string porOi = lib == "OI" && doms.Count > 0 ? "; dominantes por OI (sin volumen en el radio)" : "";
+                if (con50)
+                    r.Texto = BaseSpx20.TEXTO_50 + b.ToString("0.00", Inv) + " (" + BaseSpx20.DETALLE_50 + ") · " + BaseSpx20.SELECCION_50
+                              + (double.IsNaN(b20) ? "ninguna (" + origen20 + "): van con la de la 5.0"
+                                                   : b20.ToString("0.00", Inv) + " (" + origen20 + (origen20.StartsWith(BaseSpx20.ORIGEN_CRUDA, StringComparison.Ordinal) ? " de forwards de la cadena" : "") + ")")
+                              + porOi;
+                else
+                    r.Texto = "base 2.0 " + b.ToString("0.00", Inv) + " (" + origen + (origen.StartsWith(BaseSpx20.ORIGEN_CRUDA, StringComparison.Ordinal) ? " de forwards de la cadena" : "")
+                              + (double.IsNaN(carry) ? "" : "; cota: carry " + carry.ToString("0.0", Inv) + " +-60 % (dividendo " + (_op.Dividendo * 100).ToString("0.0", Inv) + " %)") + ")"
+                              + porOi;
                 return r;
             }
         }
@@ -987,7 +1089,7 @@ namespace PythiaGexCinco.Familia
             if (r == null) return;
             int n = CatalogoFamilia.Extra.Length;
             var ex = new Nivel[n][]; var ks = new double[n][]; var metas = new List<MetaLibro>(2);
-            PonerReplicas(ex, ks, metas, tUtc, FutR20(tUtc, fut));
+            PonerReplicas(ex, ks, metas, tUtc, FutR20(tUtc, fut), Base50De(r));   // 5.0.1: la base del libro SPX de la 5.0 de este minuto (r.Meta)
             if (bk != null)
                 foreach (var b in bk)
                 {
@@ -1003,15 +1105,18 @@ namespace PythiaGexCinco.Familia
         public bool Completar(RegistroMinuto r, DateTime tUtc)
         {
             if (r == null || double.IsNaN(r.FutMnq)) return false;
+            // 5.0.1: un minuto que YA trae series extra llega aca solo por Falta (su R20_SPX_vol es de la otra conversion): se rehacen solo las R20_*
+            // (Rehacer las reemplaza sin tocar DOMS_* ni la clasica; Guardar de abajo pisaria r.Extra entero)
+            if (r.TieneExtra) return Rehacer(r, tUtc);
             int n = CatalogoFamilia.Extra.Length;
             var ex = new Nivel[n][]; var ks = new double[n][]; var metas = new List<MetaLibro>(2);
-            PonerReplicas(ex, ks, metas, tUtc, FutR20(tUtc, r.FutMnq));
+            PonerReplicas(ex, ks, metas, tUtc, FutR20(tUtc, r.FutMnq), Base50De(r));
             return Guardar(r, ex, ks, metas);
         }
 
         /// <summary>4.1.4 (IExtrasRehacer): rehace en un minuto YA calculado lo que depende del estado de la 2.0 (5.0: R20_SPY_vol con su razon "2.0 SPY"
         /// Y R20_SPX_vol con su base "2.0 SPX", que ahora tiene rueda), con el estado de ahora; el resto (DOMS_*, la clasica) queda igual. true si
-        /// cambio algo (el motor lo vuelve a guardar).</summary>
+        /// cambio algo (el motor lo vuelve a guardar). 5.0.1: con la misma conversion que Calcular (la de la 5.0 del minuto, r.Meta, o la cascada).</summary>
         public bool Rehacer(RegistroMinuto r, DateTime tUtc)
         {
             if (r == null || double.IsNaN(r.FutMnq)) return false;
@@ -1019,7 +1124,7 @@ namespace PythiaGexCinco.Familia
             if (iq < 0 && ix < 0) return false;
             double fut = FutR20(tUtc, r.FutMnq);
             var q = iq >= 0 ? Spy(tUtc, fut) : null;
-            var d = ix >= 0 ? Spx(tUtc, fut) : null;
+            var d = ix >= 0 ? Spx(tUtc, fut, Base50De(r)) : null;
             var ex1 = new Nivel[n][]; var ks1 = new double[n][];
             if (q != null) Poner(ex1, ks1, iq, q.Doms, 1.0);
             if (d != null) Poner(ex1, ks1, ix, d.Doms, 1.0);
@@ -1069,7 +1174,7 @@ namespace PythiaGexCinco.Familia
             return a.Conv.Equals(b.Conv) && a.S.Equals(b.S) && a.DatoUtc == b.DatoUtc && a.Congelada == b.Congelada && (a.ConvTexto ?? "") == (b.ConvTexto ?? "");
         }
 
-        private void PonerReplicas(Nivel[][] ex, double[][] ks, List<MetaLibro> metas, DateTime tUtc, double fut)
+        private void PonerReplicas(Nivel[][] ex, double[][] ks, List<MetaLibro> metas, DateTime tUtc, double fut, double base50)
         {
             var q = Spy(tUtc, fut);
             if (q != null)
@@ -1077,7 +1182,7 @@ namespace PythiaGexCinco.Familia
                 Poner(ex, ks, CatalogoFamilia.IndiceExtra("R20_SPY_vol"), q.Doms, 1.0);
                 metas.Add(MetaDe(q));
             }
-            var d = Spx(tUtc, fut);
+            var d = Spx(tUtc, fut, base50);
             if (d != null)
             {
                 Poner(ex, ks, CatalogoFamilia.IndiceExtra("R20_SPX_vol"), d.Doms, 1.0);

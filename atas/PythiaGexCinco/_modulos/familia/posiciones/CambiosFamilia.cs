@@ -490,11 +490,14 @@ namespace PythiaGexCinco.Familia
         /// <summary>4.1.3: las replicas de la 2.0 (R20_*): su S y su conversion no son las del libro de la 5.0, asi que no se anotan cambios. 5.0 (P5): la
         /// nota dice "estilo 2.0" porque R20_SPY_vol no replica nada en ES (la 2.0 no dibuja SPY ahi); R20_SPX_vol si es la replica de su libro SPX.</summary>
         public static bool EsReplica20(NivelActual n) => n?.Serie != null && n.Serie.StartsWith("R20_", StringComparison.Ordinal);
-        public const string NOTA_REPLICA20 = "estilo 2.0: sin cambio por nivel (su conversion y su S no son las del libro de la 5.0)";
+        // 5.0.1 (27-10-2026): "su formula y su S" (antes "su conversion y su S"): con Replicas50Conversion (default) la conversion de R20_SPX_vol ES
+        // la de la 5.0; lo que no es del libro de la 5.0 es su gamma (formula de la 2.0) y su S (fut del instante - base). Vale tambien con el ajuste apagado.
+        public const string NOTA_REPLICA20 = "estilo 2.0: sin cambio por nivel (su formula y su S no son las del libro de la 5.0)";
         /// <summary>4.1.5d (revision 4.1.5b): las replicas de la clasica (R10_*): su base y su S (la de la rueda anterior) no son las del libro SPX de la 4.1
         /// (difieren de 1 a 15 pts), asi que tampoco se anotan cambios (antes D1/D2 de R10_SPX_dom tomaban el del libro SPX de la 4.1 y D3 ninguno).</summary>
         public static bool EsReplicaClasica(NivelActual n) => n?.Serie != null && n.Serie.StartsWith("R10_", StringComparison.Ordinal);
-        public const string NOTA_REPLICA_CLASICA = "replica de la clasica: sin cambio por nivel (su base y su S no son las del libro SPX de la 5.0)";
+        // 5.0.1: idem ("su formula y su S"; antes "su base y su S": con la conversion de la 5.0 la base es la del libro SPX).
+        public const string NOTA_REPLICA_CLASICA = "replica de la clasica: sin cambio por nivel (su formula y su S no son las del libro SPX de la 5.0)";
 
         private NivelActual AnotarNivel(NivelActual n0, RegistroMinuto u)
         {

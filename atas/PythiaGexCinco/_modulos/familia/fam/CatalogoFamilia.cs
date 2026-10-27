@@ -33,6 +33,8 @@
 //   * PrendidasPorDefecto = las 6 del coordinador (el analogo de las que eligio el operador en NQ, sin R20_SPY_vol);
 //   * presets sin "Recomendadas" (era la recomendacion del verificador en NQ); "2.0/Clasica contra 5.0".
 // Ids, orden, colores, Calc y Extra NO cambian (verificado volcando el catalogo antes y despues, _diseno/P5_PANTALLA.md).
+// 5.0.1 (27-10-2026): textos de R20_SPX_vol, R10_SPX_zero y R10_SPX_dom: formula y seleccion de la 2.0/clasica, CONVERSION DE LA 5.0 (ajuste
+//   Replicas50Conversion, default; medido 27-10: la base original corre ~1,2 pts abajo y la de la 2.0 salta 1,1-1,7 pts). Ids, orden y colores igual.
 // Sin referencias a ATAS.
 using System;
 using System.Collections.Generic;
@@ -216,9 +218,10 @@ namespace PythiaGexCinco.Familia
               "Seleccion estilo 2.0 sobre SPY: las 2 barras de mayor |GEX| por volumen del 0DTE de SPY a <= min(2 % del futuro, 100 pts), con la conversion de la 2.0 para un ETF (razon = MES de la vela de 1 min del ultimo trade de la cadena / spot de SPY). La 2.0 NO dibuja SPY en un grafico de ES (alli su unico libro es SPX)",
               "la formula de la 2.0 aplicada a SPY, para comparar; no replica nada que la 2.0 muestre en ES; de noche la razon junta el MES de las 16:14 NY con el SPY del after-hours",
               EnNq("con QQQ era la raya ambar de la 2.0; su razon erro 24 pts de mediana de noche en 16 noches"), l, est);
+            // 5.0.1 (27-10-2026): con la conversion de la 5.0 por defecto (ajuste Replicas50Conversion de "7. Datos"; Replica20.cs)
             S("R20_SPX_vol", "2.0 SPX", "SPX", "vol", "DOMS", "2.0", "#3ddc97", 0,
-              "Dominantes del libro SPX de la 2.0 en un grafico de ES (con la cadena de CBOE 960 s atras): las 2 de mayor |GEX| por volumen del 0DTE de SPX a <= min(2 % del futuro, 100 pts) (= 100 pts en ES), sin lado ni centroide, con la base de la 2.0",
-              "lo que la 2.0 dibuja en ES (su unico libro alli es SPX), calculado adentro con su formula; la pestaña dice que base uso y de donde salio",
+              "Dominantes del libro SPX de la 2.0 en un grafico de ES (con la cadena de CBOE 960 s atras): las 2 de mayor |GEX| por volumen del 0DTE de SPX a <= min(2 % del futuro, 100 pts) (= 100 pts en ES), sin lado ni centroide. Formula y seleccion de la 2.0, conversion de la 5.0 (la base SPX sincronizada C7 del minuto, la de MUROS_SPX: la original corre ~1,2 pts abajo y la 2.0 salta 1,1-1,7 pts, medido 27-10; ajuste 'Replicas con la conversion de la 5.0' apagado = la base de la 2.0)",
+              "lo que la 2.0 dibuja en ES (su unico libro alli es SPX), calculado adentro con su formula y puesto con la base de la 5.0; la pestaña dice que base uso y cual habria usado la 2.0",
               EnNq("con NDX, la base cruda de forwards de la 2.0 erro 5,1 pts de mediana en 17 noches") + "; SIN VERIFICAR contra la 2.0 corriendo en ES (de la 2.0 en ES solo hay 5 salidas, del 05-10)", l, est);
             S("DOMS_SPY_vol", "SPY dom", "SPY", "vol", "DOMS", "2.0", "#5b8cff", 0,
               "Seleccion de la 2.0 (2 de mayor |GEX| por volumen a <= min(2 %, 100 pts)) sobre el libro SPY de la 5.0 (razon sincronizada C8)",
@@ -231,15 +234,15 @@ namespace PythiaGexCinco.Familia
             // --- 4.1.5 (09-10-2026): como la clasica (ClasicaSpx.cs). Rol "Z" (zero, sin monto); el strike guardado es el zero en el eje del indice.
             //     5.0 (P5): en ES la clasica tampoco arma capas: su libro primario es CBOE_SPX (MEDICIONES_ES.md §6). R10_* = ese libro.
             S("R10_SPX_zero", "Clasica SPX 0Γ", "SPX", "vol", "ZEST", "Clasica", "#ffffff", 0,
-              "Zero Gamma por volumen del 0DTE de SPX como lo calcula la clasica (Gamma Hoy) en un grafico de ES, donde su libro es SPX (con la cadena de CBOE 960 s atras): grilla de 61 precios en +-3 %, el PRIMER cruce de abajo hacia arriba, llevado al futuro con SU base y su cascada (medida > medida hace <= 360 min > de la rueda <= 24 h > cruda > teorica; la pestaña dice cual, de donde salio y de cuando es)",
-              "el zero de SPX de la clasica en ES, calculado adentro; la cuenta es la del zero estandar con la grilla de la clasica: lo que lo separa de 'SPX 0Γ est' es la grilla y, sobre todo, la base",
-              SIN_MEDIR + " como nivel; la replica, comparada con la clasica en ES solo el 05-10 (131 salidas, _diseno/P2_SPX.md): de dia la misma base y el mismo zero (mediana 0,00), esa noche +1,27 pts (ella en la de la rueda, la replica en la medida de hace 185 min)", l, est);
+              "Zero Gamma por volumen del 0DTE de SPX como lo calcula la clasica (Gamma Hoy) en un grafico de ES, donde su libro es SPX (con la cadena de CBOE 960 s atras): grilla de 61 precios en +-3 %, el PRIMER cruce de abajo hacia arriba. Formula de la clasica, conversion de la 5.0 (la base SPX sincronizada C7 del minuto, la de MUROS_SPX: la original corre ~1,2 pts abajo, medido 27-10; ajuste 'Replicas con la conversion de la 5.0' apagado = SU base y su cascada: medida > medida hace <= 360 min > de la rueda <= 24 h > cruda > teorica; la pestaña dice cual uso y cual habria usado la clasica)",
+              "el zero de SPX de la clasica en ES, calculado adentro con su grilla y puesto con la base de la 5.0: lo que lo separa de 'SPX 0Γ est' es la grilla (con el ajuste apagado, ademas la base de la clasica)",
+              SIN_MEDIR + " como nivel; la replica con SU conversion (ajuste apagado), comparada con la clasica en ES solo el 05-10 (131 salidas, _diseno/P2_SPX.md): de dia la misma base y el mismo zero (mediana 0,00), esa noche +1,27 pts (ella en la de la rueda, la replica en la medida de hace 185 min)", l, est);
             // --- 4.1.5b (09-10-2026, pedido del operador: "replicar la clasica su formula ... SPX D1 en 31141"): las dominantes de la capa SPX de la clasica
             //     5.0 (P5): en ES son las dominantes del libro primario (SPX) de la clasica.
             S("R10_SPX_dom", "Clasica SPX", "SPX", "vol", "DOMS", "Clasica", "#b8f8d8", 0,   // 4.1.5d: menta palido (el #9dffd2 quedaba a 11,4 del 2.0 SPX)
-              "Dominantes D1-D3 del libro SPX de la clasica en un grafico de ES (con la cadena de CBOE 960 s atras): GEX por volumen del 0DTE de SPX, radio min(2 %, 100 pts) (= 100 en ES), una por lado con empate 20 % (la mas cercana), D3 = la siguiente mas fuerte, en el centroide +-12 pts; con la misma base que la Clasica SPX 0Γ",
+              "Dominantes D1-D3 del libro SPX de la clasica en un grafico de ES (con la cadena de CBOE 960 s atras): GEX por volumen del 0DTE de SPX, radio min(2 %, 100 pts) (= 100 en ES), una por lado con empate 20 % (la mas cercana), D3 = la siguiente mas fuerte, en el centroide +-12 pts. Formula y seleccion de la clasica, conversion de la 5.0 (la misma base que la Clasica SPX 0Γ: la original corre ~1,2 pts abajo, medido 27-10)",
               "las rayas D1/D2/D3 de la clasica en ES, calculadas adentro con su formula (misma cadena, base y fut que la Clasica SPX 0Γ); a diferencia de la clasica, que solo deja estela de D1 y D2, aca D3 tambien deja estela; sin histeresis y sin cambio ▲▼",
-              SIN_MEDIR + " como nivel; la replica, comparada con la clasica en ES solo el 05-10 (131 salidas, _diseno/P2_SPX.md): con la base y el precio de la clasica, las mismas D1-D3 en 102 (en el resto la clasica leia otra cadena)", l, est);
+              SIN_MEDIR + " como nivel; la replica con SU conversion (ajuste apagado), comparada con la clasica en ES solo el 05-10 (131 salidas, _diseno/P2_SPX.md): con la base y el precio de la clasica, las mismas D1-D3 en 102 (en el resto la clasica leia otra cadena)", l, est);
 
             // --- 4.1.7 (12-10-2026): TOP-N del libro de ES. MUROS/MAJORS marcan UN strike por lado (en NQ, el 12-10: 24 strikes con gamma en la ventana
             //     y 2 dibujados).

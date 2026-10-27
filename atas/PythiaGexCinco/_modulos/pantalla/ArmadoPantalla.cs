@@ -72,6 +72,11 @@
 //     ES; "precio"/"cinta" con la raiz del grafico (MES o ES); el pie dice SIN MEDIR EN ES.
 //   * Los ejemplos de los comentarios de arriba con precios 30.xxx-31.xxx son de la 4.1 (NQ/NDX/QQQ): el clon solo cambio los nombres de los
 //     libros; no son mediciones de ES.
+// 5.0.1 (27-10-2026): las replicas "2.0 SPX" y "Clasica SPX" con la conversion de la 5.0 (ajuste Replicas50Conversion, default): su texto empieza con
+//   "conversion de la 5.0: base X" (TEXTO_CONV50). OrigenConv20 y OrigenClasica lo reconocen como NORMAL (no naranja: no es un respaldo); el detalle
+//   de cada raya dice "conversion de la 5.0: base X sincronizada; eleccion con la base de la 2.0|clasica Y (origen): la raya va +-Z pts de donde la
+//   ponia la 2.0|clasica" (DetalleConv50); la fuente dice "formula y seleccion de la 2.0|clasica en ES con la conversion de la 5.0" y la salvedad de
+//   la clasica es AVISO_CLASICA_50. Con el ajuste apagado, todo como en la 5.0.0.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -478,6 +483,7 @@ namespace PythiaGexCinco.Familia
                 case "R20_SPX_vol":
                 {
                     var f = Fuente(fuentes, "2.0 SPX"); if (f == null || !Fin(f.ConvValor)) return " (base 2.0 sin dato)";
+                    if (EsConv50(f.Texto)) return " (" + DetalleConv50(f, "2.0") + ")";          // 5.0.1: la conversion de la 5.0 (Replicas50Conversion)
                     return " (base 2.0 " + f.ConvValor.ToString("0.00", Es) + ", " + OrigenConv20(serie, f.Texto).Txt + ")";
                 }
                 case "DOMS_SPY_vol": { var f = Fuente(fuentes, "SPY"); return f == null || !Fin(f.ConvValor) ? "" : " (razon sincronizada " + f.ConvValor.ToString("0.0000", Es) + ")"; }
@@ -486,6 +492,7 @@ namespace PythiaGexCinco.Familia
                 case "R10_SPX_dom":                                  // 4.1.5b: la misma base que el 0Γ
                 {   // 4.1.5: la base usada, de cuando es, y la de ahora (la sincronizada de la 4.1) con la diferencia: lo que corre a la raya
                     var f = Fuente(fuentes, "Clasica SPX"); if (f == null || !Fin(f.ConvValor)) return " (base clasica sin dato)";
+                    if (EsConv50(f.Texto)) return " (" + DetalleConv50(f, "clasica") + ")";      // 5.0.1: la conversion de la 5.0 (Replicas50Conversion)
                     var (oTxt, _, ah, _) = OrigenClasica(f.Texto);
                     string dif = Fin(ah) ? "; base de ahora " + ah.ToString("0.00", Es) + " (sincronizada): " + (f.ConvValor - ah >= 0 ? "+" : MENOS) + Math.Abs(f.ConvValor - ah).ToString("0.00", Es) + " pts" : "";
                     return " (base clasica " + f.ConvValor.ToString("0.00", Es) + " " + oTxt + dif + ")";
@@ -504,6 +511,8 @@ namespace PythiaGexCinco.Familia
             texto = texto ?? "";
             if (serie == "R20_SPX_vol")
             {
+                // 5.0.1: con Replicas50Conversion (default) la base es la de la 5.0 (Replica20, BaseSpx20.TEXTO_50): normal, no un respaldo
+                if (EsConv50(texto)) return (ORIGEN_CONV50_TXT, true);
                 // 5.0 (P5): la cascada de la 2.0 en ES (Replica20.BaseSpx20.Cascada, paquete P3; "base 2.0 X (ORIGEN...; cota ...)"): medida > medida hace
                 // N min > de la rueda > CRUDA > TEORICA > CRUDA sin cota. Los tres primeros son lo que la 2.0 usa en ES (normal); CRUDA, TEORICA y sin
                 // cota son su respaldo (en NDX la cadena nunca traia "medida" y la CRUDA era lo normal de la 4.1). Orden: "medida hace" antes que
@@ -535,6 +544,60 @@ namespace PythiaGexCinco.Familia
             if (origen.StartsWith("CRUDA sin alinear", StringComparison.Ordinal)) return ("CRUDA: MES de ahora / SPY spot, sin vela alineada ni razon previa", false);
             return (origen == "" ? "origen sin dato" : "origen: " + Recortar(origen, 70), false);
         }
+
+        // ------------------------------------------------------------------ 5.0.1: replicas con la conversion de la 5.0
+        /// <summary>5.0.1: como empieza el texto de la fuente "2.0 SPX" / "Clasica SPX" cuando la replica usa la conversion de la 5.0 (ajuste
+        /// Replicas50Conversion): "conversion de la 5.0: base 36.12 (C7, ...) · seleccion y gamma con la base de la 2.0 34.57 (medida: ...)" (Replica20,
+        /// BaseSpx20.TEXTO_50) y "conversion de la 5.0: base 36.12 (C7, ...) · zero y seleccion con la base de la clasica 34.57 (medida (...)) · zero en
+        /// el indice ..." (ClasicaSpx, ResultadoClasica.TEXTO_50). Mismo literal en los tres archivos.</summary>
+        public const string TEXTO_CONV50 = "conversion de la 5.0: base ";
+        private const string ORIGEN_CONV50_TXT = "conversion de la 5.0 (la base SPX del minuto, sincronizada C7: la de los muros de SPX y el eje)";
+        private static readonly Regex ReUsaria50 = new Regex(@" · (?:seleccion y gamma|zero y seleccion) con la base de la (?:2\.0|clasica) (-?\d+(?:\.\d+)?|ninguna) \(", RegexOptions.Compiled);
+
+        /// <summary>5.0.1: el texto de una replica dice que uso la conversion de la 5.0.</summary>
+        public static bool EsConv50(string texto) => (texto ?? "").StartsWith(TEXTO_CONV50, StringComparison.Ordinal);
+
+        /// <summary>5.0.1: la base de la 5.0 que dice el texto ("conversion de la 5.0: base X"), NaN si no se entiende.</summary>
+        private static double BaseConv50(string texto)
+        {
+            if (!EsConv50(texto)) return double.NaN;
+            int i = TEXTO_CONV50.Length, j = i;
+            while (j < texto.Length && (char.IsDigit(texto[j]) || texto[j] == '.' || texto[j] == '-')) j++;
+            return double.TryParse(texto.Substring(i, j - i), NumberStyles.Float, Inv, out var b) ? b : double.NaN;
+        }
+
+        /// <summary>5.0.1: la base de la replica original (con la que se eligio y se calculo la gamma; la raya de la original iba ahi) y su origen corto
+        /// ("medida", "de la rueda hace 5 min", "CRUDA 8 ticks"), leidos de " · seleccion y gamma|zero y seleccion con la base de la 2.0|clasica X
+        /// (ORIGEN...". (NaN, "") si el texto no lo trae; (NaN, "sin base") si la original no tenia.</summary>
+        private static (double Base, string Origen) OriginalConv50(string texto)
+        {
+            texto = texto ?? "";
+            var m = ReUsaria50.Match(texto);
+            if (!m.Success) return (double.NaN, "");
+            int a = m.Index + m.Length, fin = texto.Length;
+            foreach (var corte in new[] { ":", " (", ";", ")" }) { int k = texto.IndexOf(corte, a, StringComparison.Ordinal); if (k >= 0 && k < fin) fin = k; }
+            string o = texto.Substring(a, fin - a).Trim();
+            if (m.Groups[1].Value == "ninguna") return (double.NaN, "sin base");
+            return (double.TryParse(m.Groups[1].Value, NumberStyles.Float, Inv, out var b) ? b : double.NaN, o);
+        }
+
+        /// <summary>5.0.1: el detalle de la conversion de una replica con la conversion de la 5.0: "conversion de la 5.0: base 36,12 sincronizada (la de
+        /// los muros de SPX); eleccion con la base de la 2.0 34,57 (medida): la raya va +1,55 pts de donde la ponia la 2.0" (quien = "2.0" | "clasica").</summary>
+        private static string DetalleConv50(FuenteEstado f, string quien)
+        {
+            string s = "conversion de la 5.0: base " + f.ConvValor.ToString("0.00", Es) + " sincronizada (la de los muros de SPX)";
+            var (bo, oo) = OriginalConv50(f.Texto);
+            if (Fin(bo))
+                s += "; eleccion con la base de la " + quien + " " + bo.ToString("0.00", Es) + (oo != "" ? " (" + Recortar(oo, 40) + ")" : "") + ": la raya va "
+                     + (f.ConvValor - bo >= 0 ? "+" : MENOS) + Math.Abs(f.ConvValor - bo).ToString("0.00", Es) + " pts de donde la ponia la " + quien;
+            else if (oo != "") s += "; la " + quien + " no tiene base: eleccion con la de la 5.0";
+            return s;
+        }
+
+        /// <summary>5.0.1: la salvedad de la replica de la clasica con la conversion de la 5.0 (debajo de su fuente en la pestaña).</summary>
+        public const string AVISO_CLASICA_50 = "    Clasica SPX: el zero y las D1-D3 de la clasica en ES (libro SPX, radio 100, cadena 960 s atras; eligen con SU base, los mismos strikes) "
+                                             + "puestos con la base SPX del minuto de la 5.0 (la de la clasica quedaba 1,17 pts abajo de la real, medido 27-10; apagado en "
+                                             + "'Replicas con la conversion de la 5.0' vuelve la suya). Como nivel, SIN MEDIR EN ES";
 
         /// <summary>5.0 (P5): el origen de la base de la 2.0 en su texto: lo que va entre "base 2.0 X (" y su "; cota" o su ")" (con los parentesis de
         /// adentro balanceados: "medida hace 12 min (la ultima cadena ...)"). "" si no se entiende.</summary>
@@ -588,6 +651,10 @@ namespace PythiaGexCinco.Familia
         {
             texto = texto ?? "";
             double ahora = double.NaN, hoy = double.NaN;
+            // 5.0.1: con Replicas50Conversion (default) la base ES la de la 5.0 (ClasicaSpx.Texto50, ResultadoClasica.TEXTO_50): normal; Ahora = esa
+            // misma base. Va ANTES de los patrones de la cascada: el texto nuevo nombra la base con que eligio la clasica ("zero y seleccion con la base
+            // de la clasica X (medida (...")
+            if (EsConv50(texto)) return (ORIGEN_CONV50_TXT, true, BaseConv50(texto), double.NaN);
             var ma = ReAhoraClasica.Match(texto); if (ma.Success && !double.TryParse(ma.Groups[1].Value, NumberStyles.Float, Inv, out ahora)) ahora = double.NaN;
             var mh = ReHoyClasica.Match(texto); if (mh.Success && !double.TryParse(mh.Groups[1].Value, NumberStyles.Float, Inv, out hoy)) hoy = double.NaN;
             // 5.0 (P5): en ES la cascada de la clasica empieza con la base MEDIDA (forwards confiables de esta cadena) y la medida de hace <= 360 min: son
@@ -1359,8 +1426,10 @@ namespace PythiaGexCinco.Familia
                             {   // 4.1.3: la conversion de cada replica de la 2.0, solo si su serie esta prendida (edad ANTES del numero si es vieja)
                                 if (!vis.Any(s => s.Corto == fu.Libro)) continue;
                                 // 5.0 (P5): en un grafico de ES la 2.0 solo dibuja SPX: "2.0 SPX" es su replica; "2.0 SPY" es su formula aplicada a SPY (no replica nada)
+                                // 5.0.1: con Replicas50Conversion la 2.0 SPX lleva la formula y la seleccion de la 2.0 pero la base de la 5.0 (lo dice su texto)
                                 string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro
-                                         + (fu.Libro == "2.0 SPY" ? " (estilo 2.0, CBOE: la 2.0 no dibuja SPY en ES)" : " (replica de la 2.0 en ES, CBOE)")
+                                         + (fu.Libro == "2.0 SPY" ? " (estilo 2.0, CBOE: la 2.0 no dibuja SPY en ES)"
+                                            : EsConv50(fu.Texto) ? " (formula y seleccion de la 2.0 en ES con la conversion de la 5.0, CBOE)" : " (replica de la 2.0 en ES, CBOE)")
                                          + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
                                          + (fu.Congelada ? " · cadena congelada" : "") + (string.IsNullOrEmpty(fu.Texto) ? "" : " · " + fu.Texto)
                                          // 4.1.4 (revision 4.1.3): la razon de la 2.0 depende del marco del grafico donde corre (su vela del ultimo trade)
@@ -1371,12 +1440,15 @@ namespace PythiaGexCinco.Familia
                             case "Clasica SPX":
                             {   // 4.1.5: la base de la replica de la clasica (de cuando es y la de ahora), solo si su serie esta prendida
                                 if (!vis.Any(s => EsClasica(s.Id))) continue;
-                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro + " (replica de la clasica en ES, CBOE)" + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
+                                bool c50 = EsConv50(fu.Texto);              // 5.0.1: con Replicas50Conversion, la formula de la clasica con la base de la 5.0
+                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro
+                                         + (c50 ? " (formula y seleccion de la clasica en ES con la conversion de la 5.0, CBOE)" : " (replica de la clasica en ES, CBOE)")
+                                         + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
                                          + (fu.Congelada ? " · cadena congelada" : "") + (string.IsNullOrEmpty(fu.Texto) ? "" : " · " + fu.Texto);
                                 lineas.Add((t, vv ? ColNaranja : Color.FromArgb(180, ColTexto)));
                                 // 4.1.5d (revision 4.1.5b/c): la salvedad de la replica debajo de su fuente. 5.0 (P5): la de ES (lo que P2 comparo contra la
-                                // clasica en ES el 05-10; AVISO_CLASICA)
-                                lineas.Add((AVISO_CLASICA, Color.FromArgb(160, ColTexto)));
+                                // clasica en ES el 05-10; AVISO_CLASICA). 5.0.1: con la conversion de la 5.0, AVISO_CLASICA_50
+                                lineas.Add((c50 ? AVISO_CLASICA_50 : AVISO_CLASICA, Color.FromArgb(160, ColTexto)));
                                 break;
                             }
                             case "cinta":

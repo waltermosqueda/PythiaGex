@@ -1,5 +1,11 @@
 # CHANGELOG — PythiaGex 5.0 (Gamma ES)
 
+## 5.0.1 (27-10-2026) — replicas con la conversion de la 5.0
+- Pedido del control multifuente (CONTROL_MULTIFUENTE_2710.md): "2.0 SPX D1-D2", "Clas SPX 0Γ" y "Clas SPX D1-3" dibujaban ~1,2 pts DEBAJO (base "medida"
+  por la recta de forwards) y la 2.0 saltaba 1,1-1,7 pts al alternar medida/rueda. Ahora (ajuste nuevo `Replicas50Conversion`, 7. Datos, default true) la
+  raya va en K + base de la 5.0 (C7, la del eje y de MUROS_SPX); la seleccion, la gamma, el radio y el zero siguen con la base de cada original (mismos
+  strikes y montos). Probado 15:18-19:30Z: strikes 253/253, precio = K + base 5.0 en 506/506, saltos de R20 66 → 0. Con false: identico a la 5.0.0.
+
 ## 5.0.1 (27-10-2026, compilada; SIN instalar) — cierres anticipados, histéresis del roll por raíz, recuadro en USD de ES
 
 Base: commit `deb23344a` (la 5.0.0 instalada, DLL sha256 `b06c59c3…`). FileVersion 5.0.1.0, InformationalVersion 5.0.1, `VERSION`

@@ -85,6 +85,22 @@
 // ultima-ES.json de cboe-local, Python: suma la SPX AM con la SPXW el tercer viernes y de noche mete el 0DTE vencido en su base de forwards;
 // la 5.0 no); "confiable" sin la curva del Tesoro; la "medida reciente" es la ultima foto propia confiable (no el archivo del radar).
 // Paridad: ver P2_SPX.md (13.472 AUDIT de la clasica en ES del 07-09 al 05-10 en %APPDATA%\ATAS\pythiagex-gammahoy.log).
+//
+// 5.0.1 (27-10-2026): R10_SPX_zero y R10_SPX_dom CON LA CONVERSION DE LA 5.0 (OpcionesClasicaSpx.ConversionDeLa50, default true; ajuste
+// publico Replicas50Conversion de "7. Datos"). MEDIDO hoy por el control multifuente (_diseno/CONTROL_MULTIFUENTE_2710.md §4.1): la "medida" de
+// la cascada (forwards con el corte de una recta ajustada a 11 vencimientos, CboeCadena.Medir) quedo 1,17 pts DEBAJO de la base real (mediana de
+// 51 fotos contra Yahoo ESZ26 - ^GSPC; -0,77 a -1,84): el zero y las D1-D3 de la clasica quedaban 4-6 ticks abajo de donde los pone la base del
+// mercado (15:57Z: base 34,57 contra 36,12). Con la opcion prendida las RAYAS van con la base de la 5.0 del minuto (la que ya recibia Zero como
+// baseAhora para el texto: RegistroMinuto.MetaDe("SPX").Conv, la sincronizada C7 de MUROS_SPX, el eje doble y TRES_SPX): zero = cruce en el eje
+// del indice + esa base, D1-D3 con Fut y centroide corridos de la base de la clasica a esa. El CALCULO queda el de la clasica, tambien lo que
+// depende de su base: la cascada (y su regla de la rueda, con sus muestras) se sigue calculando y con ella S = fut del instante - base de la
+// clasica, la grilla de 61 precios en +-3 % de ese S (el mismo zero en el indice), el radio min(2 %, 100), el lado y el empate 20 % de las D1-D3 (los
+// mismos strikes y montos), el centroide +-12; Black-Scholes r 0,0375 sin dividendo, x100, la cadena y el fut del instante tampoco cambian. El
+// texto dice las dos bases ("zero y seleccion con la base de la clasica X (...)"); si la cascada no da base, el calculo va con la de la 5.0.
+// Sin base de la 5.0 en el minuto no se dibuja. Apagada = la cascada original EXACTA (mismo numero y mismo texto que la 5.0.0). Calcular,
+// Completar y Rehacer usan la misma regla; al cambiarla (PonerConversionDeLa50) sube la generacion desde el principio y el motor rehace la sesion
+// (la generacion ahora acumula el "desde" mas viejo hasta que el motor la lee, como la Replica20: antes una segunda subida antes de la lectura lo
+// pisaba); un minuto del archivo calculado con la otra regla se completa con la vigente al cargarlo (Falta -> Completar -> Rehacer).
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -378,6 +394,13 @@ namespace PythiaGexCinco.Familia
         /// 0 = en cada llamada (arnes).</summary>
         public int SondeoCadaS = 20;
         public Action<string> Log;
+        /// <summary>5.0.1 (27-10-2026): true (default) = el zero y las D1-D3 se llevan a ES con la CONVERSION DE LA 5.0: la base SPX del minuto del
+        /// libro SPX de la 5.0 (el baseAhora de Zero: RegistroMinuto.MetaDe("SPX").Conv, la sincronizada C7 de MUROS_SPX, el eje doble y TRES_SPX);
+        /// S (la grilla del zero), la formula, la seleccion, el radio de 100, T/r, la cadena y el fut del instante siguen siendo los de la clasica, con
+        /// SU base: el mismo zero en el indice y los mismos strikes, otra altura. Medido 27-10 (control multifuente): la base de la cascada de la
+        /// clasica quedo 1,17 pts debajo de la real (mediana de 51 fotos contra Yahoo; -0,77 a -1,84). Sin base de la 5.0 en el minuto no se dibuja.
+        /// false = la cascada de la clasica EXACTA (la de la 5.0.0). La cambia el host con ClasicaSpx.PonerConversionDeLa50.</summary>
+        public bool ConversionDeLa50 = true;
     }
 
     /// <summary>Una muestra de la regla (una cadena de CBOE en la ventana) y el estado despues de procesarla.</summary>
@@ -419,7 +442,7 @@ namespace PythiaGexCinco.Familia
         public FotoCadena Foto; public DateTime GeneradoUtc;
         public double Fut = double.NaN, Base = double.NaN, S = double.NaN, ZeroIdx = double.NaN, Zero = double.NaN, Carry = double.NaN;
         public int Filas;
-        /// <summary>"medida" | "medida hace N min" (5.0) | "de la rueda" | "CRUDA" | "TEORICA" | "CRUDA sin cota".</summary>
+        /// <summary>"medida" | "medida hace N min" (5.0) | "de la rueda" | "CRUDA" | "TEORICA" | "CRUDA sin cota" | (5.0.1) "conversion de la 5.0".</summary>
         public string Origen = "";
         public EstadoBaseClasica Rueda;                  // la base de la rueda que mira la cascada (congelada en la rueda)
         public EstadoBaseClasica Hoy;                    // la regla de la clasica SIN congelar a esta hora (la rueda de hoy, para comparar)
@@ -437,12 +460,23 @@ namespace PythiaGexCinco.Familia
         public double MedidaErrTicks = double.NaN;
         /// <summary>4.1.5d: el marcador que pone Texto cuando las dominantes salen del interes abierto (ArmadoPantalla lo lee para la etiqueta).</summary>
         public const string MARCA_DOM_OI = "dominantes por OI";
+        /// <summary>5.0.1: el origen "conversion de la 5.0" (OpcionesClasicaSpx.ConversionDeLa50) y como EMPIEZA el texto con esa conversion
+        /// ("conversion de la 5.0: base 36.12 (C7, ...) · zero y seleccion con la base de la clasica 34.57 (medida (...)) · zero en el indice ...").
+        /// Los mismos literales que Replica20 (BaseSpx20.TEXTO_50): la pantalla los lee igual. Con la cascada el texto sigue empezando con "base clasica ".</summary>
+        public const string ORIGEN_50 = "conversion de la 5.0", TEXTO_50 = "conversion de la 5.0: base ";
+        public const string DETALLE_50 = "C7, la del libro SPX de la 5.0: la misma de MUROS_SPX, el eje y TRES_SPX";
+        public const string SELECCION_50 = "zero y seleccion con la base de la clasica ";
+        /// <summary>5.0.1: lo que daba la cascada de la clasica en ese instante (NaN / "sin base" si no tenia): con la conversion de la 5.0 es la base con
+        /// que se calcularon S, el zero en el indice y la seleccion de las D1-D3 (va al texto); con la cascada es la misma Base / Origen.</summary>
+        public double BaseClasica = double.NaN;
+        public string OrigenClasica = "";
     }
 
     /// <summary>La serie "Clasica SPX 0Γ" de cada minuto (IExtrasMinuto del motor, IExtrasRehacer si la base de la rueda cambia despues: la cinta
     /// cargaba su historia al arrancar). Un solo hilo (el del motor); lock por si acaso.</summary>
     public sealed class ClasicaSpx : IExtrasMinuto, IExtrasRehacer, IExtrasParciales
     {
+        // 5.0.1: VERSION sigue "clasica 4.1.5d": va en el archivo de muestras guardadas (MuestrasClasicaArchivo.Guardar) y la regla de la rueda no cambio
         public const string VERSION = "clasica 4.1.5d (09-10-2026)";
         public const string SERIE = "R10_SPX_zero";
         public const string SERIE_DOM = "R10_SPX_dom";             // 4.1.5b: las dominantes D1-D3 de la capa SPX de la clasica
@@ -465,9 +499,55 @@ namespace PythiaGexCinco.Familia
         private DateTime _ultSondeoUtc = DateTime.MinValue;
         private int _usadasGuardadas, _distintasGuardadas, _guardadasAhora;
 
-        public long Generacion { get; private set; }
-        public DateTime RehacerDesdeUtc { get; private set; } = DateTime.MaxValue;
+        // 5.0.1: la generacion como la de la Replica20: el "desde" acumula el MAS VIEJO de lo que cambio hasta que el motor lee Generacion (antes una
+        // segunda subida antes de la lectura pisaba el desde de la primera: con el cambio de conversion, que sube desde el principio, una muestra
+        // nueva en el mismo paso del motor achicaba el rehacer a esa muestra)
+        private long _gen, _genLeida;
+        private DateTime _rehacerDesde = DateTime.MaxValue;
+        public long Generacion { get { lock (_llave) { AplicarPedido50(); _genLeida = _gen; return _gen; } } }   // 5.0.1: con el pedido de conversion aplicado
+        public DateTime RehacerDesdeUtc { get { lock (_llave) return _rehacerDesde; } }
         public int Recalculos { get; private set; }
+
+        /// <summary>5.0.1: sube la generacion (bajo _llave): desde = el minimo de lo cambiado desde que el motor leyo la ultima.</summary>
+        private void Subir(DateTime desdeUtc)
+        {
+            if (_genLeida == _gen) _rehacerDesde = desdeUtc;
+            else if (desdeUtc < _rehacerDesde) _rehacerDesde = desdeUtc;
+            _gen++;
+        }
+
+        /// <summary>5.0.1: la conversion del zero y las D1-D3: true = la de la 5.0 (OpcionesClasicaSpx.ConversionDeLa50; con un pedido pendiente, ya aplicado).</summary>
+        public bool ConversionDeLa50 { get { lock (_llave) { AplicarPedido50(); return _op.ConversionDeLa50; } } }
+
+        // 5.0.1: el valor pedido por el ajuste (-1 = ninguno, 0 = cascada, 1 = la de la 5.0). Lo escribe el hilo de ATAS sin llave; lo aplica el del motor.
+        private int _pedido50 = -1;
+
+        /// <summary>5.0.1: pide la conversion (el ajuste Replicas50Conversion). La llama el host en CADA latido desde el hilo de ATAS: solo anota el valor
+        /// (sin llave: el hilo del motor puede tenerla segundos, rehaciendo las muestras al arrancar). Lo aplica el hilo del motor en la proxima cuenta o
+        /// lectura de la generacion (AplicarPedido50): si cambia, sube la generacion desde el principio y el motor rehace TODOS los minutos calculados
+        /// de la sesion con la regla nueva (Rehacer) y los vuelve a guardar.</summary>
+        public void PonerConversionDeLa50(bool v) => System.Threading.Volatile.Write(ref _pedido50, v ? 1 : 0);
+
+        /// <summary>5.0.1: aplica el pedido de PonerConversionDeLa50 si cambia la regla (bajo _llave).</summary>
+        private void AplicarPedido50()
+        {
+            int p = System.Threading.Volatile.Read(ref _pedido50);
+            if (p < 0 || (p == 1) == _op.ConversionDeLa50) return;
+            _op.ConversionDeLa50 = p == 1;
+            Subir(DateTime.MinValue);
+            _op.Log?.Invoke("conversion del zero y las D1-D3 -> " + (p == 1 ? "la de la 5.0 (la base SPX del minuto del libro SPX de la 5.0)" : "la cascada de la clasica (la original)")
+                            + "; generacion " + _gen + ": se rehace la sesion entera");
+        }
+
+        /// <summary>5.0.1: el minuto (archivo) trae la serie de la clasica calculada con la OTRA conversion que la vigente (su texto empieza o no con
+        /// ResultadoClasica.TEXTO_50). Sin la fuente "Clasica SPX" no se toca.</summary>
+        private bool ReglaDistinta(RegistroMinuto r)
+        {
+            var m = r?.MetaExtraDe(ResultadoClasica.LIBRO);
+            if (m == null) return false;
+            bool es50 = (m.ConvTexto ?? "").StartsWith(ResultadoClasica.TEXTO_50, StringComparison.Ordinal);
+            lock (_llave) { AplicarPedido50(); return es50 != _op.ConversionDeLa50; }
+        }
         public IReadOnlyList<MuestraClasica> Muestras { get { lock (_llave) return _m.ToArray(); } }
         public int SinVela { get { lock (_llave) return _sinVela.Count; } }
         /// <summary>4.1.5d: muestras con una vela incompleta (entran provisionales, no se guardan).</summary>
@@ -539,6 +619,7 @@ namespace PythiaGexCinco.Familia
         /// el estado de una muestra ya vista (la cinta trajo una vela que faltaba, o la fuente cambio el principio de la lista), sube Generacion.</summary>
         private void Refrescar(DateTime tUtc)
         {
+            AplicarPedido50();                                                     // 5.0.1: el pedido de conversion del ajuste, en el hilo del motor
             var desde = TiempoFam.IniSesion(TiempoFam.Sesion(tUtc)).AddDays(-_op.DiasHistoria);
             long ver = _cboe.Version;
             bool sondeo = false;
@@ -588,9 +669,9 @@ namespace PythiaGexCinco.Familia
             {
                 var g0 = i0 < vb.Count ? vb[i0].GenUtc : va[i0].GenUtc;
                 if (i0 < va.Count && va[i0].GenUtc < g0) g0 = va[i0].GenUtc;
-                Generacion++; RehacerDesdeUtc = g0;
+                Subir(g0);                                   // 5.0.1: acumula el desde mas viejo (antes: Generacion++; RehacerDesdeUtc = g0)
                 _op.Log?.Invoke("base de la rueda REHECHA (" + (sondeo ? "la cinta trajo velas que faltaban o completo velas provisionales" : "la fuente cambio") + "): la primera muestra distinta es la de "
-                                + g0.ToString("MM-dd HH:mm:ss", Inv) + "Z; generacion " + Generacion + ", " + _sinVela.Count + " muestras siguen sin vela y " + _provisionales.Count + " provisionales");
+                                + g0.ToString("MM-dd HH:mm:ss", Inv) + "Z; generacion " + _gen + ", " + _sinVela.Count + " muestras siguen sin vela y " + _provisionales.Count + " provisionales");
             }
             if (_op.Log != null && (viejas.Count != _m.Count || i0 >= 0 || _guardadasAhora > 0))
             {
@@ -774,7 +855,10 @@ namespace PythiaGexCinco.Familia
 
         /// <summary>La replica en el instante t con el futuro fut (la cadena = la ultima con generado &lt;= t). null si no hay cadena con filas o base, o si no
         /// hay ni cruce ni dominantes (4.1.5d: sin cruce del zero las D1-D3 se calculan igual, como la clasica: Zero/ZeroIdx quedan NaN).
-        /// baseAhora = la base sincronizada de la 4.1 de ese minuto (solo para el texto; NaN si no hay).</summary>
+        /// baseAhora = la base sincronizada de la 4.1 de ese minuto (solo para el texto; NaN si no hay).
+        /// 5.0.1: con OpcionesClasicaSpx.ConversionDeLa50 (default) baseAhora es la base de las RAYAS (la de la 5.0 del minuto: zero = cruce + baseAhora,
+        /// D1-D3 con Fut = K + baseAhora y el centroide corrido igual; null si es NaN); S, la grilla, el radio, el lado y el empate siguen con la base de
+        /// la cascada (sin ella, con baseAhora). Apagada, la cascada exacta.</summary>
         public ResultadoClasica Zero(DateTime tUtc, double fut, double baseAhora = double.NaN)
         {
             lock (_llave)
@@ -795,20 +879,31 @@ namespace PythiaGexCinco.Familia
                     if (ed > _op.EdadMedidaRecienteMaxMin) break;
                     if (!double.IsNaN(_mb[j])) { rec = _mb[j]; recEdad = Math.Max(0, ed); recUtc = _fn[j].GeneradoUtc; break; }
                 }
-                double b = BaseCascada(f, fut, tUtc, exp, ExpiracionAlternativa(tUtc), med, rec, recEdad, _op.EdadMedidaRecienteMaxMin, rueda, _op.EdadBaseRuedaMaxMin,
-                                       _op.Tasa, _op.Dividendo, out var origen, out var carry);
-                if (double.IsNaN(b)) return null;
-                double S = fut - b;
+                double b0 = BaseCascada(f, fut, tUtc, exp, ExpiracionAlternativa(tUtc), med, rec, recEdad, _op.EdadMedidaRecienteMaxMin, rueda, _op.EdadBaseRuedaMaxMin,
+                                        _op.Tasa, _op.Dividendo, out var origen0, out var carry);
+                // 5.0.1: la conversion de la 5.0 (default: la base del minuto del libro SPX de la 5.0) o la cascada de la clasica (la original, exacta).
+                // Con la de la 5.0 el CALCULO no cambia: S (la grilla del zero), el radio, el lado y el empate de las D1-D3 siguen con la base de la clasica
+                // (bSel; sin base de la clasica, la de la 5.0) y solo la raya se corre lo que va de esa base a la de la 5.0 (zero en el indice + base50,
+                // Fut y centroide + (base50 - bSel))
+                bool con50 = _op.ConversionDeLa50;
+                if (con50 ? (double.IsNaN(baseAhora) || double.IsInfinity(baseAhora)) : double.IsNaN(b0)) return null;
+                double bSel = con50 && double.IsNaN(b0) ? baseAhora : b0;
+                double b = con50 ? baseAhora : b0;
+                string origen = con50 ? ResultadoClasica.ORIGEN_50 : origen0;
+                double S = fut - bSel;
                 if (!(S > 0)) return null;
                 double z = CruceClasica.Cruce(f, S, tUtc, out int filas, _op.Tasa, true);
                 List<DomClasica> doms; string ld = "";
-                try { doms = DominantesClasica.Calcular(f, S, fut, b, tUtc, _op.Tasa, out ld); } catch { doms = new List<DomClasica>(); ld = ""; }   // 4.1.5b
+                try { doms = DominantesClasica.Calcular(f, S, fut, bSel, tUtc, _op.Tasa, out ld); } catch { doms = new List<DomClasica>(); ld = ""; }   // 4.1.5b
                 if (double.IsNaN(z) && doms.Count == 0) return null;
+                if (con50 && b != bSel)
+                    foreach (var d in doms) { d.Fut = d.K + b; d.Pos += b - bSel; }            // la misma seleccion y el mismo centroide, puestos con la base de la 5.0
                 bool cong = f.DatoUtc.Year >= 2000 && TiempoFam.ANy(f.DatoUtc).TimeOfDay >= new TimeSpan(15, 59, 0);
                 var r = new ResultadoClasica { Foto = f, GeneradoUtc = TiempoFam.DeMs(_gn[k]), Fut = fut, Base = b, S = S, ZeroIdx = z, Zero = double.IsNaN(z) ? double.NaN : z + b,
                                                Carry = carry, Filas = filas, Origen = origen, Rueda = rueda, Hoy = hoy, BaseAhora = baseAhora, Congelada = cong,
                                                Doms = doms, LibroDom = ld, VelaMin = _op.VelaMin,
-                                               MedidaUtc = origen == "medida" ? f.GeneradoUtc : recUtc, MedidaErrTicks = origen == "medida" ? f.BaseErrorTicks : double.NaN };
+                                               MedidaUtc = origen0 == "medida" ? f.GeneradoUtc : recUtc, MedidaErrTicks = origen0 == "medida" ? f.BaseErrorTicks : double.NaN,
+                                               BaseClasica = b0, OrigenClasica = origen0 };
                 r.Texto = Texto(r, tUtc, _op.EdadBaseRuedaMaxMin);
                 return r;
             }
@@ -820,21 +915,42 @@ namespace PythiaGexCinco.Familia
         /// 4.1.5d: ", vela de N min" (el marco con que se midio); sin cruce "· zero sin cruce en +-3 %"; con las dominantes del interes abierto
         /// "· dominantes por OI (ningun strike del radio con volumen)".
         /// 5.0 (27-10-2026): el producto se nombra "5.0" en la pestaña: "5.0 sincronizada" y "las cadenas de la 5.0" (ArmadoPantalla.ReAhoraClasica
-        /// lee "5.0 sincronizada"; los numeros y el resto del texto no cambian).</summary>
+        /// lee "5.0 sincronizada"; los numeros y el resto del texto no cambian).
+        /// 5.0.1: con la conversion de la 5.0 el texto es otro (Texto50); con la cascada, el MISMO de la 5.0.0 (el origen se describe en AgregarOrigen,
+        /// que es el codigo de antes movido tal cual).</summary>
         public static string Texto(ResultadoClasica r, DateTime tUtc, double edadMaxMin = 24 * 60)
         {
+            if (r.Origen == ResultadoClasica.ORIGEN_50) return Texto50(r, tUtc, edadMaxMin);
             var sb = new System.Text.StringBuilder(220);
             sb.Append("base clasica ").Append(r.Base.ToString("0.00", Inv)).Append(" = ");
+            AgregarOrigen(sb, r, r.Origen, tUtc, edadMaxMin);
+            sb.Append(" · ahora:");
+            bool alguna = false;
+            if (!double.IsNaN(r.BaseAhora)) { sb.Append(" 5.0 sincronizada ").Append(r.BaseAhora.ToString("0.00", Inv)); alguna = true; }
+            if (r.Hoy != null && r.Hoy.Hay && r.Hoy.BaseDia == tUtc.Date)
+            { sb.Append(alguna ? ";" : "").Append(" regla de la clasica con la rueda de hoy ").Append(r.Hoy.Base.ToString("0.00", Inv)).Append(" (").Append(r.Hoy.MuestrasDia).Append(" muestras)"); alguna = true; }
+            if (!alguna) sb.Append(" sin dato");
+            if (double.IsNaN(r.ZeroIdx)) sb.Append(" · zero sin cruce en +-3 %");
+            else sb.Append(" · zero en el indice ").Append(r.ZeroIdx.ToString("0.00", Inv));
+            if (r.LibroDom == "OI") sb.Append(" · ").Append(ResultadoClasica.MARCA_DOM_OI).Append(" (ningun strike del radio con volumen)");
+            return sb.ToString();
+        }
+
+        /// <summary>5.0.1: la descripcion de un origen de la cascada de la clasica (lo que en la 5.0.0 iba despues de "base clasica X = "), codigo de
+        /// antes movido tal cual con 'origen' en lugar de r.Origen: con la cascada, Texto da el mismo texto letra por letra.</summary>
+        private static void AgregarOrigen(System.Text.StringBuilder sb, ResultadoClasica r, string origen, DateTime tUtc, double edadMaxMin)
+        {
+            origen = origen ?? "";
             var ru = r.Rueda;
-            if (r.Origen == "medida" || r.Origen.StartsWith("medida hace", StringComparison.Ordinal))
+            if (origen == "medida" || origen.StartsWith("medida hace", StringComparison.Ordinal))
             {   // 5.0: la base de forwards confiable (de esta cadena o la ultima de <= 360 min), como la clasica en ES
-                sb.Append(r.Origen).Append(" (forwards de la cadena de las ").Append(r.MedidaUtc.ToString("HH:mm:ss", Inv)).Append("Z");
+                sb.Append(origen).Append(" (forwards de la cadena de las ").Append(r.MedidaUtc.ToString("HH:mm:ss", Inv)).Append("Z");
                 if (!double.IsNaN(r.MedidaErrTicks)) sb.Append(", ").Append(r.MedidaErrTicks.ToString("0.0", Inv)).Append(" ticks de error");
                 sb.Append(", confiable)");
                 if (ru != null && ru.Hay)
                     sb.Append("; la de la rueda ").Append(ru.BaseDia.ToString("yyyy-MM-dd", Inv)).Append(" ").Append(ru.Base.ToString("0.00", Inv)).Append(" (").Append(ru.MuestrasDia).Append(" muestras)");
             }
-            else if (r.Origen == "de la rueda")
+            else if (origen == "de la rueda")
             {
                 sb.Append("de la rueda ").Append(ru.BaseDia.ToString("yyyy-MM-dd", Inv)).Append(" (").Append(ru.Buenas).Append(" buenas de ").Append(ru.N)
                   .Append(", ").Append(ru.MuestrasDia).Append(" muestras, vela de ").Append(r.VelaMin.ToString(Inv)).Append(" min, adoptada ").Append(ru.BaseUtc.ToString("HH:mm:ss", Inv)).Append("Z, hace ")
@@ -842,7 +958,7 @@ namespace PythiaGexCinco.Familia
             }
             else
             {
-                sb.Append(r.Origen);
+                sb.Append(origen);
                 if (ru != null && ru.Hay)
                 {
                     double edad = ru.EdadMin(tUtc);
@@ -851,12 +967,21 @@ namespace PythiaGexCinco.Familia
                 }
                 else sb.Append(" (sin base de la rueda en las cadenas de la 5.0)");
             }
-            sb.Append(" · ahora:");
-            bool alguna = false;
-            if (!double.IsNaN(r.BaseAhora)) { sb.Append(" 5.0 sincronizada ").Append(r.BaseAhora.ToString("0.00", Inv)); alguna = true; }
-            if (r.Hoy != null && r.Hoy.Hay && r.Hoy.BaseDia == tUtc.Date)
-            { sb.Append(alguna ? ";" : "").Append(" regla de la clasica con la rueda de hoy ").Append(r.Hoy.Base.ToString("0.00", Inv)).Append(" (").Append(r.Hoy.MuestrasDia).Append(" muestras)"); alguna = true; }
-            if (!alguna) sb.Append(" sin dato");
+        }
+
+        /// <summary>5.0.1: el texto con la conversion de la 5.0 (numeros invariantes; ArmadoPantalla lo lee por ResultadoClasica.TEXTO_50):
+        /// "conversion de la 5.0: base 36.12 (C7, la del libro SPX de la 5.0: ...) · zero y seleccion con la base de la clasica 34.57 (medida (forwards
+        /// de la cadena de las 15:56:48Z, 7.9 ticks de error, confiable); la de la rueda 2026-10-27 36.02 (75 muestras)) · zero en el indice 7695.40". Sin "= " ni
+        /// "5.0 sincronizada": los patrones de la cascada (ArmadoPantalla.OrigenClasica) no lo confunden con una base medida o de la rueda.</summary>
+        private static string Texto50(ResultadoClasica r, DateTime tUtc, double edadMaxMin)
+        {
+            var sb = new System.Text.StringBuilder(260);
+            sb.Append(ResultadoClasica.TEXTO_50).Append(r.Base.ToString("0.00", Inv)).Append(" (").Append(ResultadoClasica.DETALLE_50).Append(") · ").Append(ResultadoClasica.SELECCION_50);
+            if (double.IsNaN(r.BaseClasica)) sb.Append("ninguna (");
+            else sb.Append(r.BaseClasica.ToString("0.00", Inv)).Append(" (");
+            AgregarOrigen(sb, r, r.OrigenClasica, tUtc, edadMaxMin);
+            sb.Append(')');
+            if (double.IsNaN(r.BaseClasica)) sb.Append(": van con la de la 5.0");
             if (double.IsNaN(r.ZeroIdx)) sb.Append(" · zero sin cruce en +-3 %");
             else sb.Append(" · zero en el indice ").Append(r.ZeroIdx.ToString("0.00", Inv));
             if (r.LibroDom == "OI") sb.Append(" · ").Append(ResultadoClasica.MARCA_DOM_OI).Append(" (ningun strike del radio con volumen)");
@@ -893,17 +1018,20 @@ namespace PythiaGexCinco.Familia
         public bool Completar(RegistroMinuto r, DateTime tUtc)
         {
             if (r == null || double.IsNaN(r.FutMnq)) return false;
+            // 5.0.1: la serie del archivo es de la otra conversion (5.0 / cascada): se rehace con la vigente (Rehacer compara y reemplaza solo la clasica)
+            if (ReglaDistinta(r)) return Rehacer(r, tUtc);
             return Poner(r, tUtc, FutClasica(tUtc, r.FutMnq));
         }
 
         /// <summary>IExtrasParciales: al minuto (guardado por la 4.1.4, con las R20) le falta esta serie. 4.1.5d: un minuto que ya tiene la meta de la
-        /// clasica y las D1-D3 pero no el 0Γ (sin cruce: el zero NaN) no esta incompleto.</summary>
+        /// clasica y las D1-D3 pero no el 0Γ (sin cruce: el zero NaN) no esta incompleto. 5.0.1: tambien "falta" si la serie del archivo se calculo
+        /// con la otra conversion (ReglaDistinta).</summary>
         public bool Falta(RegistroMinuto r)
         {
             int i = CatalogoFamilia.IndiceExtra(SERIE), j = CatalogoFamilia.IndiceExtra(SERIE_DOM);
             bool falta(int x) => x >= 0 && (r?.Extra == null || x >= r.Extra.Length || r.Extra[x] == null);
             bool conMeta = r?.MetaExtraDe(ResultadoClasica.LIBRO) != null;
-            return (falta(i) && !(conMeta && !falta(j))) || falta(j);
+            return (falta(i) && !(conMeta && !falta(j))) || falta(j) || ReglaDistinta(r);
         }
 
         /// <summary>IExtrasRehacer: rehace la serie en un minuto ya calculado con el estado de ahora. true si cambio algo.</summary>
