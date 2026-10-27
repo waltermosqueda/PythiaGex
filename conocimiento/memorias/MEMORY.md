@@ -124,3 +124,4 @@
 - [Arranque automatico de ATAS (16-10)](arranque-automatico-atas.md) — tarea \PythiaGex\ATAS - arranque lun-vie 10:00 AR; probada en vivo 58 s; log pythiagex-arranque.log
 - [PythiaGex 5.0 Gamma ES (27-10)](pythiagex-5-0-gamma-es.md) — INSTALADA en MES 1m, auditor codigo 0; tipo nuevo se agrega por el dialogo; vigia de suscripciones mudas; pendientes
 - [la referencia sobre ES: formula (27-10)](la referencia-es-formula.md) — amarillos 2 dominantes x 2 instancias por minuto; izq gamma x vol neto; zero cambio de signo; derecha convexidad ABIERTA
+- [SPX en vivo y X-Ray (27-10)](fuentes-tiempo-real-y-xray.md) — sin fuente gratis < 15 min; X-Ray = OptionsDepth sobre SPX sin API; boton X-Ray web desconecta ATAS

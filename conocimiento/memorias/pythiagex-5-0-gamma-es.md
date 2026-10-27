@@ -46,3 +46,17 @@ la raya en K + base C7; seleccion y gamma con la base de cada original: mismos s
 16:00 NY saco las 94 opciones de ES de hoy y paso al 10-28; auditor 20:08-20:10Z CODIGO 0. **Ojo al leer la pantalla:** el renglon naranja
 "◀ MM-dd HH:mmZ · fut …" = REBOBINADO (4.1.8): muestra el minuto bajo el mouse, no esta trabada; a minutos del vencimiento los montos explotan
 (SPX C 1.221B = 1,2 billones a las 19:52Z): es la gamma con T → 0, no un error. Pendiente: reparar NDX en la 4.1 (parche parcial guardado).
+
+**5.0.2 INSTALADA 27-10 17:21 ART (git 97ad5d4c8):** el operador pidio ELIMINAR (no esconder) la pestaña de detalle "PythiaGex 5.0 ▸/▾" ("poco
+profesional, no hace falta"): se saco del codigo (titulo, panel, clic, casilla Cabecera4). La edad del dato arriba a la derecha lleva ahora "MOTOR
+PARADO" (rojo) y "mercado cerrado". Cotejado en pantalla 20:23Z: SPX C 3,48B / P −2,36B en 7760,74/7755,74, ES C 156M 7765 / P −118M 7750 = niv.
+Preferencia: nada de cuadros de texto largos en el grafico; el detalle va en logs/archivos, no en pantalla.
+
+**5.0.3 INSTALADA 27-10 17:54 ART (git 65fb18fd0, DLL 84625f96…):** dibujo "estilo la referencia" (pedido del operador): barras por strike a la izquierda
+(gamma BS x (volC - volP); SPX en K + base C7, SPY en J x razon C8; verde #089981 / rojo #F23645 al 65 %; la mas larga = 30 % del ancho; SPY abajo, SPX
+encima), amarillos GL_SPX_dom / GL_SPY_dom (top-2 |valor| por libro; D1 opaca, D2 50 %) y zero gris GL_SPX_zero (cruce de signo mas cercano). Casillas
+"GL barras SPX/SPY", "GL amar. SPX/SPY", "GL zero SPX" prendidas (Order 99-103). Probado: 34.598 barras = recalculo Python (error 0); barras contra la
+captura de la referencia de las 12:33 NY R2 0,98-0,99 y colores 14/14 SPX, 7/7 SPY; amarillos 80 % a <= 0,9 pt (la referencia tiene dato en vivo: con CBOE
+el zero llega 15 min tarde, mediana 1,55 pt). En pantalla 20:58Z: etiquetas GL = niv (GL SPY D1 1,10B 7771,2; GL SPX 0Γ 7753,5). Despues del cierre
+el "Hoy" pasa al vencimiento siguiente y los GL quedan lejos (SPX 7770 = 7805,7): la referencia arranca 9:30 NY; recortar a la rueda lo decide el operador.
+Pendientes: auditor sin las GL; reparar NDX en la 4.1; "X-Ray Key Levels" quedo cargado en "MES 1m Chart" y "GEX Profile" en el grafico nuevo "MESZ6 5m Chart".
