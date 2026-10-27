@@ -24,7 +24,7 @@ cotejada contra el niv (ES C 2,04B=2037,8 en 7760; SPX C/P 85,7B/−17,6B en 775
 nuevos por nombre: 5 radios de NQ quedaron grabados → renombrados con sufijo Es. (3) Tras reiniciar ATAS, Rithmic puede dejar MUDAS casi todas
 las suscripciones de opciones (184 de 188 sin datos 10+ min; la 4.1 de NQ no): vigia en GammaHoyTres (menos de 1/4 con puntas 3 min → RearmarDeCero).
 (4) La extra cboe-local se leia solo al arrancar: faltaba la foto que cboe_local escribia en ese momento (base 0,1 pt corrida) → CerrarHuecoExtra.
-(5) Reinicie ATAS 4 veces con una posicion abierta del operador (MES −16): permitido por su regla, pero avisarlo.
+(5) Reinicie ATAS 4 veces con una posicion abierta del operador: permitido por su regla, pero avisarlo.
 Las replicas (2.0 SPX, Clasica SPX) usan SU base (cascada medida→rueda), 1,5-2,3 pts debajo de la de la familia: es a proposito (copian a las
 originales), y por eso el mismo strike SPX 7730 sale en 3 alturas. Todo SIN MEDIR EN ES como nivel.
 
