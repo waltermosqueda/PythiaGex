@@ -478,6 +478,21 @@ namespace PythiaGexCinco
         public Task Rearmar(object proveedor, object manager, object dataProvider)
             => Arrancar(proveedor, manager, dataProvider, _codigoGrafico, _precioGrafico, _log, forzar: true);
 
+        /// <summary>5.0 (27-10-2026): suelta TODAS las suscripciones y vuelve a armar de cero. Medido hoy tras reiniciar ATAS (12:20 ART): Rithmic
+        /// acepto las 188 suscripciones de ES pero 184 quedaron MUDAS mas de 10 min (conPuntas=4); un Rearmar comun las conservaba ("ventana sin
+        /// cambios: 184 contratos ya suscritos") y solo las 4 nuevas traian datos. Lo llama el vigia de GammaHoyTres (suscripciones mudas).</summary>
+        public async Task RearmarDeCero(object proveedor, object manager, object dataProvider)
+        {
+            if (_parada || Volatile.Read(ref _armando) == 1) return;
+            List<Entrada> es;
+            lock (_llave) { es = _entradas.Values.ToList(); _entradas.Clear(); _estado.Suscritos = 0; }
+            foreach (var e in es) { try { if (e.Sub != null) e.Sub.Changed -= AlCambio; } catch { } }
+            try { _puerta?.SoltarTodo(es.Select(e => e.Sub).Where(s => s != null)); } catch (Exception ex) { _log?.Invoke("[cadena api] rearme de cero, al soltar: " + ex.Message); }
+            _log?.Invoke("[cadena api] rearme de cero: " + es.Count + " suscripciones soltadas; espero 8 s (la API las retiene 5 s) y vuelvo a suscribir");
+            await Task.Delay(TimeSpan.FromSeconds(8)).ConfigureAwait(false);
+            await Arrancar(proveedor, manager, dataProvider, _codigoGrafico, _precioGrafico, _log, forzar: true).ConfigureAwait(false);
+        }
+
         /// <summary>Hace falta recentrar: el precio se fue mas de RecentrarPct del centro de la ventana.</summary>
         public bool HayQueRecentrar()
         {

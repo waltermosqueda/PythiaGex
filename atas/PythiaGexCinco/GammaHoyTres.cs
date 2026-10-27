@@ -135,6 +135,7 @@ namespace PythiaGexCinco
         private DateTime _ultimoIntentoArranque = DateTime.MinValue, _ultimoRearme = DateTime.MinValue, _ultimoMinuto = DateTime.MinValue, _ultimoAudit = DateTime.MinValue;
         private int _renders;
         private DateTime _ultimoRearmeVencidas = DateTime.MinValue;
+        private DateTime _mudasDesde = DateTime.MinValue, _ultimoRearmeDeCero = DateTime.MinValue;   // 5.0: vigia de suscripciones mudas
 
         // un solo escritor de la estela por raiz (dos graficos, o la instancia extra que ATAS crea al abrir los ajustes)
         private static readonly object _estelaLlave = new object();
@@ -464,6 +465,22 @@ namespace PythiaGexCinco
                         _ultimoRearme = ahora; _ultimoRearmeVencidas = ahora;
                         Log("rearmo: " + (porVencidas ? fotoR.Vencidas + " fila(s) de una serie vencida en el libro (cambio de vencimiento)" : "refresco periodico de series (6 h)"));
                         _ = Task.Run(() => _cadena.Rearmar(OptionsDataProvider, TradingManager, DataProvider));
+                    }
+                    // 5.0 (27-10-2026): VIGIA DE SUSCRIPCIONES MUDAS. Tras reiniciar ATAS, Rithmic acepto 188 suscripciones de ES y dejo 184 sin
+                    // datos 10+ min (conPuntas=4): sin libro ES no hay muros de ES. Si menos de 1/4 de las suscritas trae puntas durante 3 min
+                    // (de dia y de noche el libro ES trae puntas en casi todas: medido 184-188 de 188), se suelta todo y se suscribe de cero;
+                    // como mucho una vez cada 5 min.
+                    {
+                        var fm = _cadena.Foto();
+                        bool mudas = fm.Suscritos >= 20 && fm.ConPuntas * 4 < fm.Suscritos;
+                        if (!mudas) _mudasDesde = DateTime.MinValue;
+                        else if (_mudasDesde == DateTime.MinValue) _mudasDesde = ahora;
+                        else if ((ahora - _mudasDesde).TotalSeconds >= 180 && (ahora - _ultimoRearmeDeCero).TotalSeconds >= 300)
+                        {
+                            _ultimoRearmeDeCero = ahora; _ultimoRearme = ahora; _mudasDesde = DateTime.MinValue;
+                            Log("rearmo DE CERO: solo " + fm.ConPuntas + " de " + fm.Suscritos + " contratos con puntas hace 3 min (suscripciones mudas de Rithmic)");
+                            _ = Task.Run(() => _cadena.RearmarDeCero(OptionsDataProvider, TradingManager, DataProvider));
+                        }
                     }
                     if (_cadena.HayQueRecentrar() && (ahora - _ultimoRearme).TotalSeconds >= 60)
                     {
