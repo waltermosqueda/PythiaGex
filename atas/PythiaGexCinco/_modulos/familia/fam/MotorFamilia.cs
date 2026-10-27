@@ -113,7 +113,7 @@ namespace PythiaGexCinco.Familia
 
     public sealed class MotorFamilia : IMotorFamilia
     {
-        public const string VERSION = "fam 5.0 (27-10-2026, la 4.1.5d sin TQQQ; escala ES: radios ES 25 / SPX-SPY-familia 20, zero 0,5 +-75, CONF 0,75, FAM 2,5, ES x50)";
+        public const string VERSION = "fam 5.0 (27-10-2026, la 4.1.5d sin TQQQ; escala ES: radios ES 25 / SPX-SPY-familia 20, zero 0,5 +-75, CONF 3, FAM 5 (paso de strike 5 como NQ), ES x50)";
         private readonly OpcionesMotorFamilia _op;
         private readonly object _paso = new object();
 

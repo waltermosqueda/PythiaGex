@@ -1,6 +1,13 @@
 // CboeCrudo.cs — PythiaGex 4.1, modulo cboe (B2). Sin referencias a ATAS.
 // Lee el JSON crudo de CBOE (delayed_quotes/options/<SYM>.json) con Utf8JsonReader, en UNA pasada sobre el buffer, sin armar arbol
-// y sin crear un string por contrato (SPX trae ~16.000): el simbolo OCC se decodifica directo de los bytes.
+// y sin crear un string por contrato (_SPX trae ~29.400: 9.394 SPX + 20.030 SPXW, 13,1 MB, medido 27-10): el simbolo OCC se decodifica
+// directo de los bytes.
+// 5.0 (27-10-2026): la RAIZ ya no se descarta. "SPX" (la mensual/trimestral AM, liquida con la apertura del tercer viernes, SOQ) queda
+// marcada en Am[] y vence a las 09:30 NY de su fecha (VencUtc(f, true)); todo lo demas (SPXW, SPY) vence 16:00 NY como antes. En la 4.1
+// las dos raices del tercer viernes se sumaban en la misma fila con vida hasta las 16:00: la vispera del 16-10 el "mañana" traia 1,34 M de
+// OI contra 0,33 M de la SPXW (medido en cboe-local). Que hace cada consumidor con la AM: CboeCadena.Construir y Medir.
+// La capacidad inicial de los arreglos sale del largo del JSON (~445 B por opcion medido en _SPX y SPY): sin la cadena de duplicaciones
+// 1024 -> 32768 en cada bajada (cada paso eran ~13 arreglos nuevos, varios en el LOH).
 // Semantica de Python que se respeta (pythiagex/cadena_atas.py y base.py):
 //   oi  = o.get("open_interest") or 0   -> nulo o 0.0 cuentan como int 0
 //   vol = o.get("volume") or 0
@@ -38,6 +45,8 @@ namespace PythiaGexCinco.Cboe
         public int N;                                  // contratos leidos (todos, incluso los que no parsean)
         public int[] Fecha;                            // yyyymmdd del vencimiento; 0 = simbolo que no cumple la regex OCC
         public bool[] EsCall;
+        /// <summary>5.0: la raiz del simbolo es "SPX" (liquidacion AM, 09:30 NY). false = PM (SPXW, SPY, ...: 16:00 NY).</summary>
+        public bool[] Am;
         public double[] K;
         public double[] Iv; public bool[] IvEntero;    // ya con "or 0.0"
         public double[] Oi; public bool[] OiEntero;    // ya con "or 0"
@@ -45,23 +54,30 @@ namespace PythiaGexCinco.Cboe
         public double[] BidO, AskO, LastPx;            // NaN = None (bid), ask/last: NaN = None o 0 se tratan en Medir
 
         public int ContratosValidos { get { int n = 0; for (int i = 0; i < N; i++) if (Fecha[i] != 0) n++; return n; } }
+        /// <summary>5.0: contratos validos con raiz AM ("SPX").</summary>
+        public int ContratosAm { get { int n = 0; for (int i = 0; i < N; i++) if (Fecha[i] != 0 && Am[i]) n++; return n; } }
 
         private void Crecer(int min)
         {
             int cap = Fecha == null ? 0 : Fecha.Length;
             if (cap >= min) return;
             int nc = Math.Max(min, Math.Max(1024, cap * 2));
-            Array.Resize(ref Fecha, nc); Array.Resize(ref EsCall, nc); Array.Resize(ref K, nc);
+            Array.Resize(ref Fecha, nc); Array.Resize(ref EsCall, nc); Array.Resize(ref Am, nc); Array.Resize(ref K, nc);
             Array.Resize(ref Iv, nc); Array.Resize(ref IvEntero, nc); Array.Resize(ref Oi, nc); Array.Resize(ref OiEntero, nc);
             Array.Resize(ref Vol, nc); Array.Resize(ref VolEntero, nc); Array.Resize(ref BidO, nc); Array.Resize(ref AskO, nc); Array.Resize(ref LastPx, nc);
         }
 
         // ------------------------------------------------------------------ lectura
 
+        /// <summary>5.0: bytes de JSON por opcion para estimar la capacidad inicial (medido 27-10: _SPX 13.088.116 B / 29.424 = 445; SPY 445).
+        /// Un poco menos que lo medido: si sobra, la ultima duplicacion no hace falta casi nunca.</summary>
+        public const int BytesPorOpcion = 420;
+
         /// <summary>Lee el JSON crudo (UTF-8). Tira JsonException si no es JSON.</summary>
         public static CrudoCboe Leer(ReadOnlySpan<byte> utf8)
         {
             var c = new CrudoCboe();
+            c.Crecer(Math.Max(1024, Math.Min(400_000, utf8.Length / BytesPorOpcion + 256)));
             var rd = new Utf8JsonReader(utf8, new JsonReaderOptions { CommentHandling = JsonCommentHandling.Skip, MaxDepth = 64 });
             if (!rd.Read() || rd.TokenType != JsonTokenType.StartObject) throw new JsonException("la raiz no es un objeto");
             byte[] maxUt = null; int maxUtLen = 0;
@@ -116,7 +132,7 @@ namespace PythiaGexCinco.Cboe
             int i = c.N;
             c.Crecer(i + 1);
             c.N = i + 1;
-            c.Fecha[i] = 0; c.EsCall[i] = false; c.K[i] = double.NaN;
+            c.Fecha[i] = 0; c.EsCall[i] = false; c.Am[i] = false; c.K[i] = double.NaN;
             c.Iv[i] = 0.0; c.IvEntero[i] = false; c.Oi[i] = 0; c.OiEntero[i] = true; c.Vol[i] = 0; c.VolEntero[i] = true;
             c.BidO[i] = double.NaN; c.AskO[i] = double.NaN; c.LastPx[i] = double.NaN;
             while (rd.Read())
@@ -204,10 +220,17 @@ namespace PythiaGexCinco.Cboe
             if (mm < 1 || mm > 12 || dd < 1 || dd > DateTime.DaysInMonth(anio, mm)) return;
             c.Fecha[i] = anio * 10000 + mm * 100 + dd;
             c.EsCall[i] = cp == (byte)'C';
+            c.Am[i] = EsRaizAm(s.Slice(0, raiz));
             c.K[i] = k / 1000.0;          // int(k) / 1000.0 de Python: division IEEE correctamente redondeada
         }
 
         private static bool Dig(byte b) => b >= (byte)'0' && b <= (byte)'9';
+
+        /// <summary>5.0 (27-10-2026): raiz de liquidacion AM. Solo "SPX": la estandar (mensual, trimestral y LEAPS, todas del tercer viernes) liquida
+        /// con la apertura (SOQ) y deja de negociarse el dia habil anterior; "SPXW" (diarias, semanales, fin de mes y la PM del tercer viernes) y las
+        /// de SPY liquidan al cierre. Medido en la bajada del 27-10 03:29 UTC: 9.394 "SPX" + 20.030 "SPXW", 0 sin parsear. ("NDX" tambien es AM,
+        /// pero la 5.0 no baja NDX: no se toca lo que no se puede probar aca.)</summary>
+        public static bool EsRaizAm(ReadOnlySpan<byte> raiz) => raiz.Length == 3 && raiz[0] == (byte)'S' && raiz[1] == (byte)'P' && raiz[2] == (byte)'X';
 
         // ------------------------------------------------------------------ fechas de los contratos
 
@@ -215,5 +238,10 @@ namespace PythiaGexCinco.Cboe
         public static string FechaIso(int yyyymmdd) => (yyyymmdd / 10000).ToString("0000", CultureInfo.InvariantCulture) + "-" + (yyyymmdd / 100 % 100).ToString("00", CultureInfo.InvariantCulture) + "-" + (yyyymmdd % 100).ToString("00", CultureInfo.InvariantCulture);
         /// <summary>Vencimiento a las 16:00 NY de esa fecha, en UTC (exposicion.parse_occ / hora_cierre_utc).</summary>
         public static DateTime VencUtc(int yyyymmdd) => HoraNyCboe.CierreUtc(yyyymmdd / 10000, yyyymmdd / 100 % 100, yyyymmdd % 100);
+
+        /// <summary>5.0: vencimiento por raiz: AM ("SPX") a las 09:30 NY de la fecha; PM (SPXW, SPY) a las 16:00 NY.</summary>
+        public static DateTime VencUtc(int yyyymmdd, bool am) => am
+            ? HoraNyCboe.AperturaUtc(yyyymmdd / 10000, yyyymmdd / 100 % 100, yyyymmdd % 100)
+            : VencUtc(yyyymmdd);
     }
 }

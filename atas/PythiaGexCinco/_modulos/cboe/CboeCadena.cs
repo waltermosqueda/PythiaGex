@@ -5,11 +5,27 @@
 //   archivar_cadena.py        bajar_y_archivar + linea_flaca      -> CboeCadena.LineaFlaca (texto igual al de json.dumps)
 //   preview_niveles.py        foto_cboe_de_json / libros.fotos_cboe -> CboeCadena.DeLinea (el MISMO lector para el vivo y el archivo)
 // Diferencias declaradas:
-//   * base / base_confiable: la confianza necesita la curva del Tesoro (descarga externa): se escriben null / false (DISENO_4_1 C.2).
-//     base_cruda y base_error_ticks (lo que usan la 3.0 y la Familia) salen igual que en Python.
 //   * Si medir no da (falta el trimestral, < 3 forwards), Python revienta bajar_y_archivar y NO archiva la cadena; aca se archiva
 //     con base_cruda = null.
 //   * Un simbolo OCC con fecha imposible se descarta (Python revienta construir entero).
+// 5.0 (27-10-2026), lo que la 4.1 (y el Python) hacian mal en SPX y aca se corrige (P2_SPX.md):
+//   * TERCER VIERNES (Construir): la SPX mensual AM y la SPXW PM del mismo dia ya no se suman. La AM es un vencimiento PROPIO que vence a las
+//     09:30 NY y NUNCA entra al horizonte Hoy (el 0DTE del libro SPX es la SPXW del dia): se deja afuera de la cadena desde que sus dias quedan
+//     a <= max(1, PM mas cercano + 0,01) + 0,05 (el tope de Hoy de FilasHoy/GammaHoyNucleo mas ~1,2 h de margen para el envejecimiento), o sea
+//     desde la vispera ~08:20 NY. Antes de eso entra con su T propio (la carga de todos los vencimientos la ve) y la linea flaca la marca
+//     {"f":..,"dias":..,"am":true}. En los dias sin AM a <= 14 dias (casi todos) la cadena sale identica a la de Python.
+//   * 0DTE VENCIDO (Medir): CBOE sigue mandando de noche la serie de hoy con bid/ask en 0; Python la toma como el vencimiento "cercano" (medido
+//     27-10 03:29 UTC: base_cruda 37,18 con 51,9 ticks de error). Ahora toda serie vencida a la HORA DEL DATO (ultimo_trade NY, o ts - 902 s) se
+//     excluye: SPXW/SPY a las 16:00 NY, SPX AM a las 09:30 NY. Con la de hoy afuera el contado se evalua en la hora del dato sobre la recta
+//     (x = dato - 16:00 NY del cercano, en dias; de dia, con el cercano = hoy, x = 0 como Python).
+//   * Trimestral (Medir): el forward del vencimiento del futuro sale de UNA raiz: la SPX AM (la que liquida con el mismo SOQ que ES; 5,98 M de OI
+//     contra 144 mil de la SPXW el 18-12) y, si no da, la SPXW; los demas vencimientos, la SPXW (y la AM solo si la SPXW no da). En la 4.1 un
+//     (K, lado) repetido de las dos raices se pisaba.
+//   * base / base_confiable: se calculan (la 4.1 escribia null / false). El criterio es el de base.medir (recta <= 8 ticks, dispersion del
+//     trimestral <= 12 ticks, >= 5 vencimientos, >= 8 strikes en el trimestral, dividendo implicito 0 <= q <= 4 %) con UNA diferencia: la tasa
+//     no sale de la curva del Tesoro (bajada externa, prohibida) sino de TasaConfianza (4,1 %, la letra de 28-91 dias medida el 23-10:
+//     4,00/4,08/4,17 %). Con el carry implicito medido (3,4 %) da q ~ 0,7 %, lejos de los bordes. base = base_cruda si es confiable (como
+//     archivar_cadena). Lo leen la replica de la clasica ("medida") y la pestaña; base_cruda y base_error_ticks siguen igual.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -36,7 +52,13 @@ namespace PythiaGexCinco.Cboe
         public int HorizonteDias = 14;
         public string[] VencF = Array.Empty<string>();
         public double[] VencDias = Array.Empty<double>();
+        /// <summary>5.0: el vencimiento j es de la raiz AM ("SPX", 09:30 NY). Mismo largo que VencF.</summary>
+        public bool[] VencAm = Array.Empty<bool>();
         public FilaCboe[] Filas = Array.Empty<FilaCboe>();   // todas las de construir (<= 14 dias)
+        /// <summary>5.0: series AM (fecha) que daban filas y se dejaron afuera por estar al alcance del horizonte Hoy (ver cabecera).</summary>
+        public int AmFuera;
+        /// <summary>5.0: el limite (dias) desde el que una AM queda afuera: max(1, PM mas cercano + 0,01) + MargenAmDias.</summary>
+        public double LimiteAm = double.NaN;
 
         /// <summary>archivar_cadena.linea_flaca: solo filas con 0 &lt;= dias[v] &lt;= diasMax, sin reindexar los vencimientos.</summary>
         public FilaCboe[] FilasFlacas(double diasMax)
@@ -65,6 +87,15 @@ namespace PythiaGexCinco.Cboe
         public int Puntos, MuestrasFut;
         public double DispersionFut = double.NaN;
         public List<(string F, int Dias, double Fwd, int Muestras, double Disp)> Curva = new List<(string, int, double, int, double)>();
+        // 5.0 (27-10-2026)
+        /// <summary>base.medir "confiable" con TasaConfianza en lugar de la curva del Tesoro (ver cabecera).</summary>
+        public bool Confiable;
+        public double CarryNeto = double.NaN, Q = double.NaN;     // pendiente x 365 / contado; q = TasaConfianza - carry neto
+        public double XRef;                                        // donde se evaluo el contado sobre la recta (dias desde el cercano; 0 = Python)
+        public DateTime DatoUtc;                                   // la hora del dato con que se decide que vencio
+        public int Vencidas;                                       // series (fecha, raiz) excluidas por vencidas a esa hora
+        public bool FutAm;                                         // el forward del trimestral salio de la raiz AM ("SPX")
+        public double ResiduoTicksSinRedondeo = double.NaN, DispersionTicks = double.NaN;
     }
 
     /// <summary>Lo que trae data.* (el subyacente) en la linea propia.</summary>
@@ -91,7 +122,13 @@ namespace PythiaGexCinco.Cboe
         public DateTime DatoUtc;
         public double Spot = double.NaN;          // float(spot_idx or spot or 0) (0 -> NaN)
         public double BaseCruda = double.NaN, BaseErr = double.NaN;
+        /// <summary>5.0: "base" (la medida: base_cruda si es confiable; NaN si null) y "base_confiable" de la linea. Las de cboe-local las escribe
+        /// Python con la curva del Tesoro; las propias, CboeCadena.Medir con TasaConfianza.</summary>
+        public double BaseMedida = double.NaN;
+        public bool BaseConfiable;
         public double[] Dias = Array.Empty<double>();
+        /// <summary>5.0: el vencimiento j de Dias es AM ("am":true en la linea). null si la linea no trae ninguno.</summary>
+        public bool[] DiasAm;
         public FilaCadena[] Filas;                // null si se leyo sin filas
         public int NFilas;
         public double OiTotal;
@@ -116,17 +153,27 @@ namespace PythiaGexCinco.Cboe
         public const int DiasMax = 14;           // cadena_atas.DIAS_MAX
         public const double DiasMaxArchivo = 8.0; // archivar_cadena.DIAS_MAX
         public const int RetrasoS = 902;         // libros.RETRASO_S: t_dato de respaldo = ts - 902 s
+        /// <summary>5.0: margen (dias) de la AM sobre el tope del horizonte Hoy (max(1, mas cercano + 0,01)): ~1,2 h. Cubre el envejecimiento de una
+        /// foto vigente (C9: 25 min de dia) para que una AM que quedo adentro de la cadena no entre al Hoy por envejecer.</summary>
+        public const double MargenAmDias = 0.05;
+        /// <summary>5.0: la tasa con que se aproxima el dividendo implicito del criterio "confiable" (ver cabecera). 4,1 % = letras de 28-91 dias
+        /// del 23-10 (4,00 / 4,08 / 4,17 %, curva cacheada por el Python en datos\cache\tasas-*.json). SIN la descarga externa.</summary>
+        public const double TasaConfianza = 0.041;
 
         // ================================================================== construir
 
         private sealed class Acum
         {
-            public double K; public int Fecha;
+            public double K; public int Fecha; public bool Am;
             public double Oc, Op, Vc, Vp, Ic, Ip;
             public bool OcE = true, OpE = true, VcE = true, VpE = true, IcE, IpE;   // int 0 al empezar; ic/ip = 0.0 float
         }
 
-        /// <summary>cadena_atas.construir(crudo, ahora). ahoraUtc conviene truncado al microsegundo (como datetime de Python).</summary>
+        /// <summary>5.0: clave de una serie (fecha, raiz): fecha x 2 + (AM ? 1 : 0).</summary>
+        private static int Serie(int fecha, bool am) => fecha * 2 + (am ? 1 : 0);
+
+        /// <summary>cadena_atas.construir(crudo, ahora). ahoraUtc conviene truncado al microsegundo (como datetime de Python).
+        /// 5.0: la serie es (fecha, raiz): la AM ("SPX") vence 09:30 NY y queda afuera desde que esta al alcance del horizonte Hoy (cabecera).</summary>
         public static CadenaCboe Construir(CrudoCboe c, DateTime ahoraUtc, double ancho = Ancho, int diasMax = DiasMax)
         {
             double S = c.CurrentPrice.V;
@@ -137,25 +184,45 @@ namespace PythiaGexCinco.Cboe
             var mapa = new Dictionary<(double, int), Acum>();
             var vencDias = new Dictionary<int, double>();
             var vencOrden = new List<int>();
-            var diasPorFecha = new Dictionary<int, double>();
+            var diasPorSerie = new Dictionary<int, double>();
+            bool hayAm = c.Am != null;
+            // 5.0, pasada 1: que series dan alguna fila (los mismos filtros de abajo) y el PM mas cercano -> el limite de la AM
+            double masPm = double.PositiveInfinity;
+            var amConFila = new HashSet<int>();
             for (int i = 0; i < c.N; i++)
             {
                 int fe = c.Fecha[i];
                 if (fe == 0) continue;
-                if (!diasPorFecha.TryGetValue(fe, out double dias))
-                {
-                    dias = (CrudoCboe.VencUtc(fe).Ticks - ahora) / 1e7 / 86400.0;   // total_seconds()/86400.0
-                    diasPorFecha[fe] = dias;
-                }
+                bool am = hayAm && c.Am[i];
+                double dias = DiasSerie(diasPorSerie, fe, am, ahora);
                 if (dias < 0 || dias > diasMax) continue;
+                double K0 = c.K[i];
+                if (Math.Abs(K0 - S) / S > ancho) continue;
+                if (c.Oi[i] == 0 && c.Vol[i] == 0) continue;
+                if (c.Iv[i] <= 0) continue;
+                if (am) amConFila.Add(fe);
+                else if (dias < masPm) masPm = dias;
+            }
+            double limiteAm = Math.Max(1.0, (double.IsPositiveInfinity(masPm) ? 0.0 : masPm) + 0.01) + MargenAmDias;
+            cad.LimiteAm = limiteAm;
+            foreach (var fe in amConFila) if (DiasSerie(diasPorSerie, fe, true, ahora) <= limiteAm) cad.AmFuera++;
+            for (int i = 0; i < c.N; i++)
+            {
+                int fe = c.Fecha[i];
+                if (fe == 0) continue;
+                bool am = hayAm && c.Am[i];
+                double dias = DiasSerie(diasPorSerie, fe, am, ahora);
+                if (dias < 0 || dias > diasMax) continue;
+                if (am && dias <= limiteAm) continue;            // 5.0: la AM nunca entra al horizonte Hoy (el 0DTE es la SPXW del dia)
                 double K = c.K[i];
                 if (Math.Abs(K - S) / S > ancho) continue;
                 double oi = c.Oi[i], vol = c.Vol[i];
                 if (oi == 0 && vol == 0) continue;               // "if not oi and not vol"
                 double iv = c.Iv[i];
                 if (iv <= 0) continue;
-                if (!vencDias.ContainsKey(fe)) { vencDias[fe] = PyCboe.Round(dias, 4); vencOrden.Add(fe); }
-                if (!mapa.TryGetValue((K, fe), out var e)) { e = new Acum { K = K, Fecha = fe }; mapa[(K, fe)] = e; }
+                int sk = Serie(fe, am);
+                if (!vencDias.ContainsKey(sk)) { vencDias[sk] = PyCboe.Round(dias, 4); vencOrden.Add(sk); }
+                if (!mapa.TryGetValue((K, sk), out var e)) { e = new Acum { K = K, Fecha = fe, Am = am }; mapa[(K, sk)] = e; }
                 double ivr = c.IvEntero[i] ? iv : PyCboe.Round(iv, 4);   // round(int, 4) devuelve el int
                 if (c.EsCall[i])
                 {
@@ -176,21 +243,50 @@ namespace PythiaGexCinco.Cboe
             for (int j = 0; j < vencOrden.Count; j++) pos[vencOrden[j]] = j;
             orden.Sort((a, b) => { int r = vencDias[a].CompareTo(vencDias[b]); return r != 0 ? r : pos[a].CompareTo(pos[b]); });
             var idx = new Dictionary<int, int>();
-            cad.VencF = new string[orden.Count]; cad.VencDias = new double[orden.Count];
-            for (int j = 0; j < orden.Count; j++) { idx[orden[j]] = j; cad.VencF[j] = CrudoCboe.FechaIso(orden[j]); cad.VencDias[j] = vencDias[orden[j]]; }
-            // sorted(filas.items()): por (K, fecha iso) — la fecha iso ordena igual que yyyymmdd
+            cad.VencF = new string[orden.Count]; cad.VencDias = new double[orden.Count]; cad.VencAm = new bool[orden.Count];
+            for (int j = 0; j < orden.Count; j++)
+            {
+                idx[orden[j]] = j; cad.VencF[j] = CrudoCboe.FechaIso(orden[j] / 2); cad.VencDias[j] = vencDias[orden[j]]; cad.VencAm[j] = (orden[j] & 1) == 1;
+            }
+            // sorted(filas.items()): por (K, fecha iso) — la fecha iso ordena igual que yyyymmdd. 5.0: con la AM, (K, fecha, AM antes que PM) = (K, V):
+            // sin AM es exactamente el orden de Python
             var lista = new List<Acum>(mapa.Values);
-            lista.Sort((a, b) => { int r = a.K.CompareTo(b.K); return r != 0 ? r : a.Fecha.CompareTo(b.Fecha); });
+            lista.Sort((a, b) =>
+            {
+                int r = a.K.CompareTo(b.K); if (r != 0) return r;
+                r = a.Fecha.CompareTo(b.Fecha); if (r != 0) return r;
+                return idx[Serie(a.Fecha, a.Am)].CompareTo(idx[Serie(b.Fecha, b.Am)]);
+            });
             var filas = new List<FilaCboe>(lista.Count);
             foreach (var e in lista)
             {
                 if (e.Oc == 0 && e.Op == 0 && e.Vc == 0 && e.Vp == 0) continue;
                 byte ent = 0;
                 if (e.OcE) ent |= 1; if (e.OpE) ent |= 2; if (e.IcE) ent |= 4; if (e.IpE) ent |= 8; if (e.VcE) ent |= 16; if (e.VpE) ent |= 32;
-                filas.Add(new FilaCboe { K = e.K, V = idx[e.Fecha], OiC = e.Oc, OiP = e.Op, IvC = e.Ic, IvP = e.Ip, VolC = e.Vc, VolP = e.Vp, Ent = ent });
+                filas.Add(new FilaCboe { K = e.K, V = idx[Serie(e.Fecha, e.Am)], OiC = e.Oc, OiP = e.Op, IvC = e.Ic, IvP = e.Ip, VolC = e.Vc, VolP = e.Vp, Ent = ent });
             }
             cad.Filas = filas.ToArray();
             return cad;
+        }
+
+        /// <summary>Dias de la serie (fecha, raiz) hasta su vencimiento desde 'ahora' (ticks), con cache (como diasPorFecha de la 4.1).</summary>
+        private static double DiasSerie(Dictionary<int, double> cache, int fecha, bool am, long ahora)
+        {
+            int sk = Serie(fecha, am);
+            if (!cache.TryGetValue(sk, out double dias))
+            {
+                dias = (CrudoCboe.VencUtc(fecha, am).Ticks - ahora) / 1e7 / 86400.0;   // total_seconds()/86400.0
+                cache[sk] = dias;
+            }
+            return dias;
+        }
+
+        /// <summary>5.0: la hora del dato de un crudo (la misma regla que DeLinea para t_dato): ultimo_trade NY -> UTC; si falta o no se entiende,
+        /// timestamp - 902 s. default si tampoco hay timestamp. De noche ultimo_trade queda en las 16:14:59 NY del dia (medido 23 y 27-10).</summary>
+        public static DateTime DatoDe(CrudoCboe c)
+        {
+            if (!string.IsNullOrEmpty(c.UltimoTrade) && HoraNyCboe.TextoNyAUtc(c.UltimoTrade, out var u)) return DateTime.SpecifyKind(u, DateTimeKind.Utc);
+            return ParsearTs(c.Timestamp, out var ts) ? ts.AddSeconds(-RetrasoS) : default;
         }
 
         // ================================================================== medir (base por forwards)
@@ -218,29 +314,59 @@ namespace PythiaGexCinco.Cboe
         private sealed class Lado { public double MidC = double.NaN, LastC = double.NaN, MidP = double.NaN, LastP = double.NaN; }
 
         /// <summary>base.medir(crudo): recta por minimos cuadrados sobre los forwards de los vencimientos hasta el trimestral.
-        /// hoyLocal = la fecha LOCAL de la PC (Python usa dt.date.today()). null si no se puede medir.</summary>
+        /// hoyLocal = la fecha LOCAL de la PC (Python usa dt.date.today()). null si no se puede medir.
+        /// 5.0 (27-10-2026): sin las series vencidas a la hora del dato, una raiz por fecha (el trimestral con la AM) y el criterio "confiable"
+        /// (ver cabecera). La hora del dato sale del crudo (CboeCadena.DatoDe: ultimo_trade NY, o timestamp - 902 s).</summary>
         public static BaseCboe Medir(CrudoCboe c, DateTime hoyLocal, int n = 12, int maxVencimientos = 10, double tick = 0.25)
+            => Medir(c, hoyLocal, DatoDe(c), true, n, maxVencimientos, tick);
+
+        /// <summary>corregida = false reproduce la 4.1 / Python (todas las fechas, las dos raices del mismo dia en un solo mapa que se pisa, el "cercano"
+        /// puede ser la serie de hoy ya vencida y el contado en el cierre del cercano): solo para el arnes y para medir cuanto cambia.
+        /// Con corregida = true y datoUtc = default no se excluye nada por hora (solo se separan las raices).</summary>
+        public static BaseCboe Medir(CrudoCboe c, DateTime hoyLocal, DateTime datoUtc, bool corregida, int n = 12, int maxVencimientos = 10, double tick = 0.25)
         {
             double S = c.CurrentPrice.V;
             if (double.IsNaN(S)) return null;
             var vt = ContratoVigente(hoyLocal);
             if (vt == DateTime.MinValue) return null;
             int venc = vt.Year * 10000 + vt.Month * 100 + vt.Day;
+            bool hayAm = c.Am != null && corregida;
+            bool excluir = corregida && datoUtc != default;
+            // series vivas a la hora del dato (5.0): SPXW/SPY hasta las 16:00 NY de su fecha, SPX AM hasta las 09:30 NY
             var set = new SortedSet<int>();
-            for (int i = 0; i < c.N; i++) if (c.Fecha[i] != 0) set.Add(c.Fecha[i]);
+            var vivas = new HashSet<int>(); var vencidas = new HashSet<int>();
+            for (int i = 0; i < c.N; i++)
+            {
+                int fe = c.Fecha[i];
+                if (fe == 0) continue;
+                bool am = hayAm && c.Am[i];
+                int sk = Serie(fe, am);
+                if (vivas.Contains(sk)) continue;
+                if (vencidas.Contains(sk)) continue;
+                if (excluir && CrudoCboe.VencUtc(fe, am) <= datoUtc) { vencidas.Add(sk); continue; }
+                vivas.Add(sk); set.Add(fe);
+            }
             if (!set.Contains(venc)) return null;
             var vencs = new List<int>(set);
             int cercano = vencs[0];
             var hasta = new List<int>();
             foreach (var v in vencs) { if (v <= venc) { if (hasta.Count < maxVencimientos) hasta.Add(v); } }
             if (!hasta.Contains(venc)) hasta.Add(venc);
-            // _porK de cada vencimiento: dict K -> {C,P} -> {mid, last}; el orden de K es el de primera aparicion; un (K, lado) repetido pisa
-            var porFecha = new Dictionary<int, (List<double> Orden, Dictionary<double, Lado> Mapa)>();
-            foreach (var v in hasta) porFecha[v] = (new List<double>(), new Dictionary<double, Lado>());
+            // _porK de cada SERIE (fecha, raiz): dict K -> {C,P} -> {mid, last}; el orden de K es el de primera aparicion. 5.0: la AM y la PM del mismo
+            // dia ya no se pisan (en la 4.1 un (K, lado) repetido de las dos raices pisaba al anterior)
+            var porSerie = new Dictionary<int, (List<double> Orden, Dictionary<double, Lado> Mapa)>();
+            foreach (var v in hasta)
+            {
+                porSerie[Serie(v, false)] = (new List<double>(), new Dictionary<double, Lado>());
+                porSerie[Serie(v, true)] = (new List<double>(), new Dictionary<double, Lado>());
+            }
             for (int i = 0; i < c.N; i++)
             {
                 int fe = c.Fecha[i];
-                if (fe == 0 || !porFecha.TryGetValue(fe, out var pk)) continue;
+                if (fe == 0) continue;
+                bool am = hayAm && c.Am[i];
+                int sk = Serie(fe, am);
+                if (!vivas.Contains(sk) || !porSerie.TryGetValue(sk, out var pk)) continue;
                 double K = c.K[i];
                 if (!pk.Mapa.TryGetValue(K, out var lado)) { lado = new Lado(); pk.Mapa[K] = lado; pk.Orden.Add(K); }
                 double b = c.BidO[i], a = c.AskO[i];
@@ -249,17 +375,25 @@ namespace PythiaGexCinco.Cboe
                 if (last == 0) last = double.NaN;                                                         // "v if v else None"
                 if (c.EsCall[i]) { lado.MidC = mid; lado.LastC = last; } else { lado.MidP = mid; lado.LastP = last; }
             }
-            var res = new BaseCboe { Venc = CrudoCboe.FechaIso(venc), Cercano = CrudoCboe.FechaIso(cercano) };
+            var res = new BaseCboe { Venc = CrudoCboe.FechaIso(venc), Cercano = CrudoCboe.FechaIso(cercano), DatoUtc = datoUtc, Vencidas = vencidas.Count };
             var puntos = new List<(int D, double F)>();
             foreach (var v in hasta)
             {
-                var pk = porFecha[v];
-                if (pk.Orden.Count == 0) continue;
-                var f = Forward(pk.Orden, pk.Mapa, S, true, n) ?? Forward(pk.Orden, pk.Mapa, S, false, n);
+                // el trimestral: primero la AM (liquida con el SOQ, como el futuro); el resto: primero la PM (la curva diaria es SPXW)
+                bool primeroAm = v == venc;
+                (double Fwd, int M, double Disp)? f = null; bool deAm = false;
+                foreach (bool am in new[] { primeroAm, !primeroAm })
+                {
+                    var pk = porSerie[Serie(v, am)];
+                    if (pk.Orden.Count == 0) continue;
+                    f = Forward(pk.Orden, pk.Mapa, S, true, n) ?? Forward(pk.Orden, pk.Mapa, S, false, n);
+                    if (f != null) { deAm = am; break; }
+                }
                 if (f == null) continue;
                 int dias = (int)(CrudoCboe.FechaDe(v) - CrudoCboe.FechaDe(cercano)).TotalDays;
                 puntos.Add((dias, f.Value.Fwd));
                 res.Curva.Add((CrudoCboe.FechaIso(v), dias, f.Value.Fwd, f.Value.M, f.Value.Disp));
+                if (v == venc) res.FutAm = deAm;
             }
             if (puntos.Count < 3) return null;
             var aj = Ajuste(puntos);
@@ -267,7 +401,18 @@ namespace PythiaGexCinco.Cboe
             if (iFut < 0) return null;
             var fFut = res.Curva[iFut];
             var fCer = res.Curva[0];
-            double contado = aj != null ? PyCboe.Round(aj.Value.A, 2) : fCer.Fwd;
+            // 5.0: el contado es la recta en la HORA DEL DATO. De dia el cercano es la serie de hoy y x = 0 (Python); de noche y el fin de semana
+            // (la de hoy ya vencio) el cercano es la proxima y x = (dato - 16:00 NY del cercano) en dias, negativo (sin esto la base sale baja en
+            // ~0,7 pts por cada dia de carry: 2,2 un fin de semana)
+            double xRef = 0;
+            if (excluir)
+            {
+                var datoNy = HoraNyCboe.DeUtc(datoUtc).Date;
+                int fDato = datoNy.Year * 10000 + datoNy.Month * 100 + datoNy.Day;
+                if (fDato < cercano) xRef = Math.Max(-5.0, Math.Min(0.0, (datoUtc - CrudoCboe.VencUtc(cercano)).TotalDays));
+            }
+            res.XRef = xRef;
+            double contado = aj != null ? PyCboe.Round(aj.Value.A + aj.Value.B * xRef, 2) : fCer.Fwd;
             res.Contado = contado;
             res.Forward = fFut.Fwd;
             res.Base = PyCboe.Round(fFut.Fwd - contado, 2);
@@ -276,6 +421,13 @@ namespace PythiaGexCinco.Cboe
             res.Pendiente = aj != null ? aj.Value.B : double.NaN;
             res.R2 = aj != null ? aj.Value.R2 : 0.0;
             res.Puntos = puntos.Count; res.MuestrasFut = fFut.Muestras; res.DispersionFut = fFut.Disp;
+            // 5.0: "confiable" de base.medir con TasaConfianza en lugar de la letra del Tesoro (ver cabecera)
+            res.ResiduoTicksSinRedondeo = res.Residuo / tick;
+            res.DispersionTicks = fFut.Disp / tick;
+            res.CarryNeto = aj != null && contado != 0 ? aj.Value.B * 365.0 / contado : double.NaN;
+            res.Q = double.IsNaN(res.CarryNeto) ? double.NaN : TasaConfianza - res.CarryNeto;
+            res.Confiable = aj != null && res.ResiduoTicksSinRedondeo <= 8 && res.DispersionTicks <= 12 && puntos.Count >= 5 && fFut.Muestras >= 8
+                            && !double.IsNaN(res.Q) && res.Q >= 0.0 && res.Q <= 0.04;
             return res;
         }
 
@@ -346,7 +498,9 @@ namespace PythiaGexCinco.Cboe
             if (ParsearTs(cr.Timestamp, out var tsu)) sb.Append(PyCboe.Repr(PyCboe.Round((generadoUtc.Ticks - tsu.Ticks) / 1e7 / 60.0, 1)));
             else sb.Append("null");
             sb.Append(",\"spot\":").Append(cr.CurrentPrice.ToString());
-            sb.Append(",\"base\":null,\"base_confiable\":false");
+            // 5.0: base = base_cruda si es confiable (archivar_cadena: "base": base if confiable else None); la 4.1 escribia siempre null / false
+            bool conf = b != null && b.Confiable && !double.IsNaN(b.Base);
+            sb.Append(",\"base\":").Append(conf ? PyCboe.Repr(b.Base) : "null").Append(",\"base_confiable\":").Append(conf ? "true" : "false");
             sb.Append(",\"base_cruda\":").Append(b != null && !double.IsNaN(b.Base) ? PyCboe.Repr(b.Base) : "null");
             sb.Append(",\"base_error_ticks\":").Append(b != null && !double.IsNaN(b.ResiduoTicks) ? PyCboe.Repr(b.ResiduoTicks) : "null");
             sb.Append(",\"sub\":{\"current_price\":").Append(cr.CurrentPrice.ToString());
@@ -384,7 +538,9 @@ namespace PythiaGexCinco.Cboe
             for (int j = 0; j < cad.VencF.Length; j++)
             {
                 if (j > 0) sb.Append(',');
-                sb.Append("{\"f\":"); PyCboe.Str(sb, cad.VencF[j]); sb.Append(",\"dias\":").Append(PyCboe.Repr(cad.VencDias[j])).Append('}');
+                sb.Append("{\"f\":"); PyCboe.Str(sb, cad.VencF[j]); sb.Append(",\"dias\":").Append(PyCboe.Repr(cad.VencDias[j]));
+                if (cad.VencAm != null && j < cad.VencAm.Length && cad.VencAm[j]) sb.Append(",\"am\":true");   // 5.0: la SPX mensual AM (09:30 NY)
+                sb.Append('}');
             }
             sb.Append("],\"campos\":"); PyCboe.Str(sb, Campos);
             sb.Append(",\"filas\":[");
@@ -424,6 +580,7 @@ namespace PythiaGexCinco.Cboe
             bool hayGen = false, hayTs = false;
             double spotRaiz = double.NaN, spotIdx = double.NaN, retrasoS = double.NaN;
             var dias = new List<double>();
+            List<bool> diasAm = null;                                   // 5.0: "am":true por vencimiento (solo si alguno lo trae)
             List<FilaCadena> filas = null;
             int nFilas = 0; double oiC = 0, oiP = 0;
             bool? quiereFilas = null;
@@ -438,6 +595,8 @@ namespace PythiaGexCinco.Cboe
                 else if (rd.ValueTextEquals("retraso_s")) { rd.Read(); retrasoS = NumODe(ref rd); }
                 else if (rd.ValueTextEquals("base_cruda")) { rd.Read(); L.BaseCruda = NumODe(ref rd); }
                 else if (rd.ValueTextEquals("base_error_ticks")) { rd.Read(); L.BaseErr = NumODe(ref rd); }
+                else if (rd.ValueTextEquals("base")) { rd.Read(); L.BaseMedida = NumODe(ref rd); }                                   // 5.0
+                else if (rd.ValueTextEquals("base_confiable")) { rd.Read(); L.BaseConfiable = rd.TokenType == JsonTokenType.True; if (rd.TokenType == JsonTokenType.StartArray || rd.TokenType == JsonTokenType.StartObject) rd.Skip(); }
                 else if (rd.ValueTextEquals("sub")) { rd.Read(); if (rd.TokenType == JsonTokenType.StartObject) L.Sub = LeerSub(ref rd); else rd.Skip(); }
                 else if (rd.ValueTextEquals("cadena"))
                 {
@@ -456,14 +615,17 @@ namespace PythiaGexCinco.Cboe
                             while (rd.Read() && rd.TokenType != JsonTokenType.EndArray)
                             {
                                 if (rd.TokenType != JsonTokenType.StartObject) { rd.Skip(); continue; }
-                                double d = 0;
+                                double d = 0; bool am = false;
                                 while (rd.Read() && rd.TokenType != JsonTokenType.EndObject)
                                 {
                                     if (rd.TokenType != JsonTokenType.PropertyName) continue;
                                     if (rd.ValueTextEquals("dias")) { rd.Read(); double x = NumODe(ref rd); d = double.IsNaN(x) ? 0 : x; }   // float(v.get("dias") or 0)
+                                    else if (rd.ValueTextEquals("am")) { rd.Read(); am = rd.TokenType == JsonTokenType.True; if (rd.TokenType == JsonTokenType.StartArray || rd.TokenType == JsonTokenType.StartObject) rd.Skip(); }
                                     else { rd.Read(); rd.Skip(); }
                                 }
+                                if (am && diasAm == null) { diasAm = new List<bool>(dias.Count + 4); for (int q = 0; q < dias.Count; q++) diasAm.Add(false); }
                                 dias.Add(d);
+                                diasAm?.Add(am);
                             }
                         }
                         else if (rd.ValueTextEquals("filas"))
@@ -522,6 +684,7 @@ namespace PythiaGexCinco.Cboe
             double sp = (!double.IsNaN(spotIdx) && spotIdx != 0) ? spotIdx : ((!double.IsNaN(spotRaiz) && spotRaiz != 0) ? spotRaiz : 0);
             L.Spot = sp == 0 ? double.NaN : sp;
             L.Dias = dias.ToArray();
+            L.DiasAm = diasAm?.ToArray();
             L.Filas = filas?.ToArray();
             L.NFilas = nFilas;
             L.OiTotal = oiC + oiP;

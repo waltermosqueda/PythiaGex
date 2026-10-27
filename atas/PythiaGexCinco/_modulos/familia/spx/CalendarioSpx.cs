@@ -5,6 +5,9 @@
 // Truco: el "reloj" de una regla es la hora UTC en paridad y (hora NY + 4 h) en corregido. En horario de verano NY+4 h == UTC, asi que
 // los dos modos dan identico entre marzo y noviembre; en invierno el corregido se corre una hora con NY (que es lo que se busca).
 // Sin ATAS. Todo en UTC (Kind=Utc).
+// 5.0 (27-10-2026): SPX usa el mismo calendario que NDX (Globex de ES = Globex de NQ, mismos codigos de mes, mismo vencimiento trimestral del
+// tercer viernes 09:30 NY: ESZ6 = 18-12-2026). El indice se congela a las 16:00 NY como NDX (medido 23 y 27-10: spot_idx quieto desde las
+// 16:00 NY, ultimo_trade clavado en 16:14:59): Congelada y ProximaApertura no cambian.
 using System;
 using System.Globalization;
 

@@ -8,6 +8,8 @@
 // y al reiniciar ClasicaSpx usa el precio guardado en vez de la cinta de ese momento (como C7 con muestras-SPX y C8 con muestras-SPY). Clave: el sello,
 // el marco de la vela y el retraso (otro marco u otro retraso es otra medicion). Append; tolera lineas rotas; gana la primera de cada clave.
 // Nunca tira (los errores van al log). Un solo escritor: el host de la Familia del instrumento (un hilo).
+// 5.0 (27-10-2026): en ES la replica mide con la vela de 1 min (la clasica en ES corre en M1): las muestras llevan "vela_min":1 y son otra
+// medicion que las de 2 min de la 4.1 (la clave incluye el marco: no se mezclan). Archivo en %APPDATA%\ATAS\PythiaGex5\familia.
 using System;
 using System.Collections.Generic;
 using System.Globalization;

@@ -64,6 +64,27 @@
 // (IExtrasMinuto); el arnes lo llama directo (publico y puro donde se puede; sin CarpetaDatos no toca el disco).
 // 4.1.5d (09-10-2026, revision de la 4.1.5b/c): las D1-D3 se calculan aunque no haya cruce del zero (la clasica las calcula igual); si ningun strike
 // del radio tiene volumen y las dominantes salen del interes abierto, el texto de la fuente lo dice ("dominantes por OI") y la etiqueta lleva OI.
+//
+// 5.0 (27-10-2026, P2): REPLICA DE LA CLASICA EN UN GRAFICO DE ES. Todo lo de arriba (09-10, 243,06, 910 de 910, ~13 pts) se MIDIO EN NQ con la
+// capa NDX; en ES no hay nada medido todavia. Lo que hace la clasica (PythiaGexNiveles 1.11d) en ES, leido en su codigo:
+//   * NO arma capas en ES (GammaHoyCapas.cs:379-380): su libro PRINCIPAL es SPX (Libro = CBOE_SPX por defecto, GammaHoy.cs:78-81). Con la
+//     primaria de indice mide su base de la rueda (MedirBaseRueda, GammaHoy.cs:1418-1485) con la vela de SU grafico (M1 en ES: las "base
+//     muestra" del 05-10 caen en minutos consecutivos) => VelaMin = 1 y CongelarEnLaRueda = false (la 4.1 congelaba porque en NQ la primaria
+//     de la clasica era Rithmic).
+//   * la base: medida > medida reciente > de la rueda > cruda > teorica > cruda sin cota (GammaHoyNucleo.cs:282-287, verificado el 27-10).
+//     "medida" = la base de forwards de la cadena con base_confiable (y que se parezca al carry, o al del trimestral siguiente si el codigo no
+//     trae mes); "medida reciente" = la ultima confiable de <= 360 min (base_ultima_buena del radar); las dos van primero porque en SPX la
+//     recta de forwards SI pasa el criterio (medido en su log de ES: 05-10 65 AUDIT "medida", 04-10 111 + 49 "medida hace N"). La 4.1 no
+//     las tenia (en NDX no pasan nunca). Aca salen de la tabla de la descarga propia (IMedidaCboe; CboeCadena.Medir con TasaConfianza).
+//   * carry de la cota: fut x (0,0375 - 0,012) x dias / 365: el dividendo de la clasica en ES es 1,2 % (DividendoUsado, GammaHoy.cs:1411),
+//     no el 0,8 % de NQ. Radio min(2 %, 100) = 100 pts, empate 20 %, centroide +-12, 3 dominantes, retraso 960 s, x100: los de la clasica en ES
+//     (NO se reescalan: es una replica).
+//   * la cuenta (Black-Scholes, Gex, Envejecer, el Cruce de 61 precios) va en NucleoClasica, copia 1:1 de PythiaGexNiveles/GammaHoyNucleo.cs:
+//     ya no depende de Nucleo20/BaseSpx20 (replica20, otro paquete) ni de su dividendo de la 2.0.
+// Diferencias con la original en ES que no se pueden evitar: la cadena es la de la descarga propia (la clasica lee el radar de la nube o el
+// ultima-ES.json de cboe-local, Python: suma la SPX AM con la SPXW el tercer viernes y de noche mete el 0DTE vencido en su base de forwards;
+// la 5.0 no); "confiable" sin la curva del Tesoro; la "medida reciente" es la ultima foto propia confiable (no el archivo del radar).
+// Paridad: ver P2_SPX.md (13.472 AUDIT de la clasica en ES del 07-09 al 05-10 en %APPDATA%\ATAS\pythiagex-gammahoy.log).
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -71,7 +92,82 @@ using System.Linq;
 
 namespace PythiaGexCinco.Familia
 {
-    /// <summary>El zero de la clasica: GammaHoyNucleo.Cruce (PythiaGexNiveles) port 1:1, sobre una cadena de CBOE de la 4.1.</summary>
+    /// <summary>5.0 (27-10-2026): la cuenta de la clasica que usa la replica, copia 1:1 de PythiaGexNiveles/GammaHoyNucleo.cs (GammaBs :171,
+    /// Gex :183, Envejecer :219, MULT_INDICE :133, PISO_DIAS :134). Antes se tomaba de Nucleo20 (replica de la 2.0, otro paquete): son las mismas
+    /// operaciones, pero asi un cambio alla no mueve esta replica.</summary>
+    public static class NucleoClasica
+    {
+        public const double TASA = 0.0375;               // ajuste "Tasa" de la clasica
+        public const double MULT = 100.0;                // MULT_INDICE (SPX x100)
+        public const double PISO_DIAS = 1.0 / 1440.0;
+        /// <summary>DividendoUsado() de la clasica en un grafico de ES (Dividendo = 0 en el .ws -> 1,2 %; en NQ 0,8 %).</summary>
+        public const double DIVIDENDO_ES = 0.012;
+
+        private static double Fi(double x) => Math.Exp(-0.5 * x * x) / Math.Sqrt(2.0 * Math.PI);
+        private static double Z(double x) => double.IsNaN(x) ? 0.0 : x;     // Feed.Parsear de la clasica lee un null como 0
+
+        public static double GammaBs(double S, double K, double T, double iv, double r)
+        {
+            if (S <= 0 || K <= 0 || T <= 0 || iv <= 0) return 0;
+            var v = iv * Math.Sqrt(T);
+            if (v <= 0) return 0;
+            var d1 = (Math.Log(S / K) + (r + 0.5 * iv * iv) * T) / v;
+            return Fi(d1) / (S * v);
+        }
+
+        /// <summary>(gC wC - gP wP) x 100 x S x S x 0,01 (libro de CBOE: Black-Scholes sin dividendo, la r solo en d1).</summary>
+        public static double Gex(in FilaCadena f, double S, double T, double r, bool porVolumen)
+        {
+            var gC = GammaBs(S, Z(f.K), T, Z(f.IvC), r);
+            var gP = GammaBs(S, Z(f.K), T, Z(f.IvP), r);
+            double wC = porVolumen ? Z(f.VolC) : Z(f.OiC), wP = porVolumen ? Z(f.VolP) : Z(f.OiP);
+            return (gC * wC - gP * wP) * MULT * S * S * 0.01;
+        }
+
+        public static double Envejecer(DateTime generadoUtc, DateTime ahoraUtc)
+        {
+            if (generadoUtc == default(DateTime) || ahoraUtc <= generadoUtc) return 0;
+            return Math.Min(2.0, (ahoraUtc - generadoUtc).TotalDays);
+        }
+
+        /// <summary>carry = fut x (tasa - dividendo) x dias al vencimiento / 365 (NaN si el vencimiento no es posterior a ahora).</summary>
+        public static double Carry(double futuro, DateTime ahoraUtc, DateTime expUtc, double tasa, double dividendo)
+            => expUtc != default(DateTime) && expUtc > ahoraUtc ? futuro * (tasa - dividendo) * (expUtc - ahoraUtc).TotalDays / 365.0 : double.NaN;
+
+        /// <summary>GammaHoy.ExpiracionDeCodigo de la clasica: tercer viernes del mes del codigo a las 13:30 UTC; default si el codigo no trae mes.
+        /// ahora reemplaza al DateTime.UtcNow de la clasica (decada de un año de una cifra).</summary>
+        public static DateTime ExpiracionDeCodigo(string codigo, DateTime ahoraUtc)
+        {
+            if (string.IsNullOrEmpty(codigo)) return default(DateTime);
+            var limpio = System.Text.RegularExpressions.Regex.Replace(codigo.ToUpperInvariant(), "[^A-Z0-9]", "");
+            var m = System.Text.RegularExpressions.Regex.Match(limpio, @"^[A-Z0-9]*?([FGHJKMNQUVXZ])(\d{1,2})$");
+            if (!m.Success) return default(DateTime);
+            int mes = "FGHJKMNQUVXZ".IndexOf(m.Groups[1].Value[0]) + 1;
+            int y = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+            int anio = m.Groups[2].Value.Length == 2 ? 2000 + y : (ahoraUtc.Year / 10) * 10 + y;
+            if (m.Groups[2].Value.Length == 1 && anio < ahoraUtc.Year - 1) anio += 10;
+            var d1 = new DateTime(anio, mes, 1, 0, 0, 0, DateTimeKind.Utc);
+            int haciaViernes = ((int)DayOfWeek.Friday - (int)d1.DayOfWeek + 7) % 7;
+            return d1.AddDays(haciaViernes + 14).AddHours(13.5);
+        }
+
+        /// <summary>GammaHoy.TrimestralDesde: el tercer viernes trimestral (13:30 UTC) que sigue a la fecha.</summary>
+        public static DateTime TrimestralDesde(DateTime desdeUtc)
+        {
+            for (int k = 0; k < 8; k++)
+            {
+                int mes = ((desdeUtc.Month - 1) / 3 + 1 + k) * 3;
+                int anio = desdeUtc.Year + (mes - 1) / 12; mes = (mes - 1) % 12 + 1;
+                var d1 = new DateTime(anio, mes, 1, 0, 0, 0, DateTimeKind.Utc);
+                int haciaViernes = ((int)DayOfWeek.Friday - (int)d1.DayOfWeek + 7) % 7;
+                var venc = d1.AddDays(haciaViernes + 14).AddHours(13.5);
+                if (venc > desdeUtc) return venc;
+            }
+            return default(DateTime);
+        }
+    }
+
+    /// <summary>El zero de la clasica: GammaHoyNucleo.Cruce (PythiaGexNiveles) port 1:1, sobre una cadena de CBOE de la 5.0.</summary>
     public static class CruceClasica
     {
         public const int PASOS = 60;                     // 61 precios
@@ -82,12 +178,12 @@ namespace PythiaGexCinco.Familia
 
         /// <summary>El zero por volumen (porVolumen) o por OI en el EJE DEL INDICE (NaN si no hay cruce en +-3 %). La cadena se envejece desde su
         /// 'generado' hasta ahoraUtc (como la clasica: el 0DTE vencido sale solo). filas = cuantas filas entraron en el horizonte Hoy.</summary>
-        public static double Cruce(FotoCadena c, double S, DateTime ahoraUtc, out int filas, double r = Nucleo20.TASA, bool porVolumen = true)
+        public static double Cruce(FotoCadena c, double S, DateTime ahoraUtc, out int filas, double r = NucleoClasica.TASA, bool porVolumen = true)
         {
             filas = 0;
             if (c?.Filas == null || c.Filas.Length == 0 || c.Dias == null || c.Dias.Length == 0 || !(S > 0)) return double.NaN;
             // CalcularAdentro: los dias de la cadena son de cuando se genero: se envejecen a la hora de la cuenta
-            double envejecer = Nucleo20.Envejecer(c.GeneradoUtc, ahoraUtc);
+            double envejecer = NucleoClasica.Envejecer(c.GeneradoUtc, ahoraUtc);
             double masCerca = double.MaxValue;
             foreach (var d in c.Dias) { double dd = Z(d) - envejecer; if (dd >= 0 && dd < masCerca) masCerca = dd; }
             if (masCerca == double.MaxValue) masCerca = 0;
@@ -98,7 +194,7 @@ namespace PythiaGexCinco.Familia
                 if (f.V < 0 || f.V >= c.Dias.Length) continue;
                 double dias = Z(c.Dias[f.V]) - envejecer;
                 if (!(dias >= 0 && dias <= Math.Max(1.0, masCerca + 0.01))) continue;
-                fs.Add(f); ts.Add(Math.Max(dias, Nucleo20.PISO_DIAS) / 365.0);
+                fs.Add(f); ts.Add(Math.Max(dias, NucleoClasica.PISO_DIAS) / 365.0);
             }
             filas = fs.Count;
             double amp = AMP; double lo = S * (1 - amp), hi = S * (1 + amp); const int pasos = PASOS;
@@ -106,7 +202,7 @@ namespace PythiaGexCinco.Familia
             for (int i = 0; i <= pasos; i++)
             {
                 double x = lo + (hi - lo) * i / pasos, t = 0;
-                for (int k = 0; k < fs.Count; k++) t += Nucleo20.Gex(fs[k], x, ts[k], r, porVolumen);
+                for (int k = 0; k < fs.Count; k++) t += NucleoClasica.Gex(fs[k], x, ts[k], r, porVolumen);
                 if (!double.IsNaN(ant) && ((ant < 0 && t >= 0) || (ant > 0 && t <= 0)))
                     return (t != ant) ? xAnt + (x - xAnt) * (-ant) / (t - ant) : x;
                 ant = t; xAnt = x;
@@ -139,7 +235,7 @@ namespace PythiaGexCinco.Familia
             libroDom = "";
             var res = new List<DomClasica>(3);
             if (c?.Filas == null || c.Filas.Length == 0 || c.Dias == null || c.Dias.Length == 0 || !(S > 0) || !(fut > 0) || double.IsNaN(b)) return res;
-            double envejecer = Nucleo20.Envejecer(c.GeneradoUtc, ahoraUtc);
+            double envejecer = NucleoClasica.Envejecer(c.GeneradoUtc, ahoraUtc);
             double masCerca = double.MaxValue;
             foreach (var d in c.Dias) { double dd = (double.IsNaN(d) ? 0 : d) - envejecer; if (dd >= 0 && dd < masCerca) masCerca = dd; }
             if (masCerca == double.MaxValue) masCerca = 0;
@@ -150,8 +246,8 @@ namespace PythiaGexCinco.Familia
                 if (f.V < 0 || f.V >= c.Dias.Length) continue;
                 double dias = (double.IsNaN(c.Dias[f.V]) ? 0 : c.Dias[f.V]) - envejecer;
                 if (!(dias >= 0 && dias <= Math.Max(1.0, masCerca + 0.01))) continue;
-                double T = Math.Max(dias, Nucleo20.PISO_DIAS) / 365.0;
-                double v = Nucleo20.Gex(f, S, T, r, true), o = Nucleo20.Gex(f, S, T, r, false);
+                double T = Math.Max(dias, NucleoClasica.PISO_DIAS) / 365.0;
+                double v = NucleoClasica.Gex(f, S, T, r, true), o = NucleoClasica.Gex(f, S, T, r, false);
                 if (v == 0 && o == 0) continue;
                 double k = f.K;
                 gv[k] = (gv.TryGetValue(k, out var a) ? a : 0) + v;
@@ -238,21 +334,27 @@ namespace PythiaGexCinco.Familia
     {
         /// <summary>Codigo del grafico (MESZ6): el vencimiento del futuro para la cota del carry (como la clasica con el codigo del instrumento).</summary>
         public string Contrato = "";
-        public double Tasa = Nucleo20.TASA, Dividendo = BaseSpx20.DIVIDENDO_ES;
+        /// <summary>5.0: tasa 3,75 % y dividendo 1,2 % = los de la clasica en un grafico de ES (en NQ el dividendo era 0,8 %).</summary>
+        public double Tasa = NucleoClasica.TASA, Dividendo = NucleoClasica.DIVIDENDO_ES;
         /// <summary>RetrasoCboeSeg de la clasica (960 en el .ws del operador): la vela de la muestra es la que contiene (sello - esto).</summary>
         public int RetrasoCboeSeg = 960;
         /// <summary>El marco (en minutos) de la vela "del grafico" con que se mide la base: 2 (default) = la vela m2 de la cinta de la 4.1 = el grafico de
         /// 2 min donde corria la clasica el 08-10 cuando midio la base de 243,06 que dibujo todo el 09-10 (medido en su log: las 92 muestras del 08-10
         /// caen en velas de minuto par); 1 = una vela de 1 min (el grafico de la clasica el 09-10 desde las 19:32 UTC y en el .ws "MES liviano"). El cierre
         /// de una vela es el ultimo tick hasta su fin. Medido (arnes clasica 2e, cinta solo de ticks): rueda del 08-10 243,06 con 2 / 242,45 con 1; rueda
-        /// del 09-10 229,98 con 2 / 230,23 con 1 (la clasica: 230,16). Ningun marco fijo replica los dos dias: queda 2 y la pestaña lo dice.</summary>
-        public int VelaMin = 2;
+        /// del 09-10 229,98 con 2 / 230,23 con 1 (la clasica: 230,16). Ningun marco fijo replica los dos dias: queda 2 y la pestaña lo dice.
+        /// 5.0 (27-10-2026): en ES la clasica corre en el grafico de 1 min (sus "base muestra" de ES del 05-10 caen en minutos consecutivos 15:58,
+        /// 15:59, 16:01...; MEDICIONES_ES §6): VelaMin = 1. Todo lo de arriba es de NQ.</summary>
+        public int VelaMin = 1;
         /// <summary>La base de la rueda vale 24 h desde su ultima adopcion (BaseRuedaEdadMin &lt;= 24 x 60 de la clasica).</summary>
         public double EdadBaseRuedaMaxMin = 24 * 60;
         /// <summary>true (default) = durante la ventana de la rueda (13:50-20:11 UTC) la base queda CONGELADA en la que el dia tenia al empezar (la de la rueda
         /// anterior), como la clasica con su primaria en Rithmic (el 09-10 hasta las 19:32 UTC); false = la clasica con la primaria en CBOE (mide y cambia en
-        /// la rueda; el 09-10 desde las 19:32 UTC, tras los reinicios de ATAS). Cual de las dos tiene la clasica no se sabe desde aca (independencia).</summary>
-        public bool CongelarEnLaRueda = true;
+        /// la rueda; el 09-10 desde las 19:32 UTC, tras los reinicios de ATAS). Cual de las dos tiene la clasica no se sabe desde aca (independencia).
+        /// 5.0 (27-10-2026): en ES la primaria de la clasica ES el libro de SPX de CBOE (no arma capas): mide y cambia la base en la rueda => false.</summary>
+        public bool CongelarEnLaRueda = false;
+        /// <summary>5.0: la "medida reciente" de la clasica vale hasta 360 min (BaseUltimaBuenaEdad &lt;= 360, GammaHoyNucleo.cs:283).</summary>
+        public double EdadMedidaRecienteMaxMin = 360;
         /// <summary>4.1.5d: carpeta de datos (%APPDATA%\ATAS\PythiaGex5). Con ella las muestras de la regla medidas con una vela completa se guardan en
         /// familia\muestras-clasica-SPX-&lt;dia UTC del sello&gt;.jsonl y al reiniciar se usan las guardadas (la rueda cerrada no cambia). null/"" = no
         /// guarda ni lee nada (el arnes).</summary>
@@ -313,7 +415,7 @@ namespace PythiaGexCinco.Familia
         public FotoCadena Foto; public DateTime GeneradoUtc;
         public double Fut = double.NaN, Base = double.NaN, S = double.NaN, ZeroIdx = double.NaN, Zero = double.NaN, Carry = double.NaN;
         public int Filas;
-        /// <summary>"de la rueda" | "CRUDA" | "TEORICA" | "CRUDA sin cota".</summary>
+        /// <summary>"medida" | "medida hace N min" (5.0) | "de la rueda" | "CRUDA" | "TEORICA" | "CRUDA sin cota".</summary>
         public string Origen = "";
         public EstadoBaseClasica Rueda;                  // la base de la rueda que mira la cascada (congelada en la rueda)
         public EstadoBaseClasica Hoy;                    // la regla de la clasica SIN congelar a esta hora (la rueda de hoy, para comparar)
@@ -325,7 +427,10 @@ namespace PythiaGexCinco.Familia
         /// <summary>"vol" | "OI" (ningun strike del radio con GEX por volumen) | "" (sin dominantes). 4.1.5d: va al texto ("dominantes por OI") y a la etiqueta.</summary>
         public string LibroDom = "";
         /// <summary>4.1.5d: el marco de la vela con que se mide la base (OpcionesClasicaSpx.VelaMin), para el texto.</summary>
-        public int VelaMin = 2;
+        public int VelaMin = 1;
+        /// <summary>5.0: de que cadena salio la base "medida" / "medida hace N min" (su generado) y su error de la recta (solo "medida").</summary>
+        public DateTime MedidaUtc;
+        public double MedidaErrTicks = double.NaN;
         /// <summary>4.1.5d: el marcador que pone Texto cuando las dominantes salen del interes abierto (ArmadoPantalla lo lee para la etiqueta).</summary>
         public const string MARCA_DOM_OI = "dominantes por OI";
     }
@@ -346,6 +451,7 @@ namespace PythiaGexCinco.Familia
 
         private readonly List<FotoCadena> _fn = new List<FotoCadena>();          // cadenas SPX (orden de generado)
         private readonly List<long> _gn = new List<long>();                       // generado al segundo (ms)
+        private readonly List<double> _mb = new List<double>();                   // 5.0: la base MEDIDA (confiable) de cada cadena, NaN si no tiene
         private List<MuestraClasica> _m = new List<MuestraClasica>();            // las muestras (con vela) en orden de generado
         private List<long> _mg = new List<long>();                                // su generado (ms) para buscar
         private List<MuestraClasica> _sinVela = new List<MuestraClasica>();      // sin vela: no entran (se vuelven a mirar)
@@ -452,13 +558,16 @@ namespace PythiaGexCinco.Familia
             }
             _ver = ver; _desde = desde;
             var ln = _cboe.Fotos("SPX", desde, DateTime.MaxValue) ?? Array.Empty<FotoCadena>();
-            _fn.Clear(); _gn.Clear();
+            var fm = _cboe as Cboe.IMedidaCboe;          // 5.0: la base medida de cada cadena (la tabla de la descarga propia)
+            _fn.Clear(); _gn.Clear(); _mb.Clear();
             foreach (var f in ln)
             {
                 if (f == null) continue;
                 long g = TiempoFam.Ms(Seg(f.GeneradoUtc));
                 if (_gn.Count > 0 && g < _gn[_gn.Count - 1]) continue;
                 _fn.Add(f); _gn.Add(g);
+                MedidaCboeDe(fm, f, out double mb);
+                _mb.Add(mb);
             }
             var viejas = _m;
             Muestrear();
@@ -605,21 +714,51 @@ namespace PythiaGexCinco.Familia
         /// <summary>Vencimiento del futuro del grafico (13:30 UTC del tercer viernes), como la clasica: del codigo; si no trae mes, el trimestral mas cercano.</summary>
         public DateTime Expiracion(DateTime tUtc)
         {
-            var e = BaseSpx20.ExpiracionDeCodigo(_op.Contrato, tUtc);
-            return e != default(DateTime) ? e : BaseSpx20.TrimestralDesde(tUtc.AddDays(1));
+            var e = NucleoClasica.ExpiracionDeCodigo(_op.Contrato, tUtc);
+            return e != default(DateTime) ? e : NucleoClasica.TrimestralDesde(tUtc.AddDays(1));
         }
 
-        /// <summary>La cascada de la clasica (sin "medida" ni "medida reciente": las cadenas no las traen). NaN = sin base (no se dibuja).</summary>
+        /// <summary>5.0: el vencimiento ALTERNATIVO de la clasica (_expAlt, GammaHoy.cs:1368-1373): solo si el codigo no trae mes, el trimestral que sigue al
+        /// supuesto (la "medida" puede parecerse al trimestre siguiente si el grafico ya rolo). default si el codigo trae mes.</summary>
+        public DateTime ExpiracionAlternativa(DateTime tUtc)
+        {
+            if (NucleoClasica.ExpiracionDeCodigo(_op.Contrato, tUtc) != default(DateTime)) return default(DateTime);
+            var e = NucleoClasica.TrimestralDesde(tUtc.AddDays(1));
+            return e == default(DateTime) ? e : NucleoClasica.TrimestralDesde(e.AddDays(1));
+        }
+
+        /// <summary>5.0: la base medida (confiable, distinta de 0) que la descarga anoto para la cadena; NaN si no hay.</summary>
+        private static void MedidaCboeDe(Cboe.IMedidaCboe fm, FotoCadena f, out double b)
+        {
+            b = double.NaN;
+            if (fm == null || f == null) return;
+            try { var m = fm.Medida(f); if (m != null && m.Confiable && !double.IsNaN(m.Base) && m.Base != 0) b = m.Base; } catch { }
+        }
+
+        /// <summary>La cascada de la clasica SIN "medida" ni "medida reciente" (la de la 4.1: en NDX las cadenas nunca las traen). NaN = sin base.</summary>
         public static double BaseCascada(FotoCadena c, double futuro, DateTime ahoraUtc, DateTime expUtc, EstadoBaseClasica rueda, double edadMaxMin,
+                                         double tasa, double dividendo, out string origen, out double carry)
+            => BaseCascada(c, futuro, ahoraUtc, expUtc, default(DateTime), double.NaN, double.NaN, double.NaN, 360, rueda, edadMaxMin, tasa, dividendo, out origen, out carry);
+
+        /// <summary>5.0 (27-10-2026): la cascada ENTERA de la clasica (GammaHoyNucleo.cs:282-287 de PythiaGexNiveles): medida (la base de forwards
+        /// confiable de esta cadena, cota del carry o del trimestral alternativo) &gt; medida reciente (la ultima confiable de &lt;= 360 min, misma cota) &gt;
+        /// de la rueda (&lt;= 24 h, cota del carry) &gt; CRUDA (cota) &gt; TEORICA (el carry) &gt; CRUDA sin cota. NaN = sin base (no se dibuja).</summary>
+        public static double BaseCascada(FotoCadena c, double futuro, DateTime ahoraUtc, DateTime expUtc, DateTime expAltUtc, double medida, double reciente,
+                                         double recienteEdadMin, double recienteMaxMin, EstadoBaseClasica rueda, double edadMaxMin,
                                          double tasa, double dividendo, out string origen, out double carry)
         {
             var iv0 = Inv;
-            carry = BaseSpx20.Carry(futuro, ahoraUtc, expUtc, tasa, dividendo);
+            carry = NucleoClasica.Carry(futuro, ahoraUtc, expUtc, tasa, dividendo);
             double k0 = carry;
+            double kAlt = NucleoClasica.Carry(futuro, ahoraUtc, expAltUtc, tasa, dividendo);
             bool Cerca(double b, double k) => Math.Abs(b - k) <= Math.Max(Math.Abs(k) * 0.6, futuro * 0.0006);
             bool Razonable(double b) => double.IsNaN(k0) || Cerca(b, k0);
+            bool RazonableMedida(double b) => double.IsNaN(k0) || Cerca(b, k0) || (!double.IsNaN(kAlt) && Cerca(b, kAlt));
             double cruda = c == null || double.IsNaN(c.BaseCruda) ? 0 : c.BaseCruda;
             double err = c == null || double.IsNaN(c.BaseErrorTicks) ? 0 : c.BaseErrorTicks;
+            if (!double.IsNaN(medida) && medida != 0 && RazonableMedida(medida)) { origen = "medida"; return medida; }
+            if (!double.IsNaN(reciente) && reciente != 0 && recienteEdadMin <= recienteMaxMin && RazonableMedida(reciente))
+            { origen = "medida hace " + recienteEdadMin.ToString("0", iv0) + " min"; return reciente; }
             double edad = rueda != null && rueda.Hay ? rueda.EdadMin(ahoraUtc) : double.NaN;
             if (rueda != null && rueda.Hay && edad <= edadMaxMin && Razonable(rueda.Base)) { origen = "de la rueda"; return rueda.Base; }
             if (cruda != 0 && Razonable(cruda)) { origen = "CRUDA " + err.ToString("0", iv0) + " ticks"; return cruda; }
@@ -643,7 +782,16 @@ namespace PythiaGexCinco.Familia
                 var rueda = BaseRuedaSinRefrescar(tUtc);
                 var hoy = _op.CongelarEnLaRueda && rueda.Congelada ? EstadoHasta(tUtc, false) : null;
                 var exp = Expiracion(tUtc);
-                double b = BaseCascada(f, fut, tUtc, exp, rueda, _op.EdadBaseRuedaMaxMin, _op.Tasa, _op.Dividendo, out var origen, out var carry);
+                // 5.0: medida = la de esta cadena; medida reciente = la ultima cadena confiable de <= 360 min (la base_ultima_buena del radar)
+                double med = k < _mb.Count ? _mb[k] : double.NaN, rec = double.NaN, recEdad = double.NaN; DateTime recUtc = default;
+                for (int j = Math.Min(k, _mb.Count - 1); j >= 0; j--)
+                {
+                    double ed = (tUtc - _fn[j].GeneradoUtc).TotalMinutes;
+                    if (ed > _op.EdadMedidaRecienteMaxMin) break;
+                    if (!double.IsNaN(_mb[j])) { rec = _mb[j]; recEdad = Math.Max(0, ed); recUtc = _fn[j].GeneradoUtc; break; }
+                }
+                double b = BaseCascada(f, fut, tUtc, exp, ExpiracionAlternativa(tUtc), med, rec, recEdad, _op.EdadMedidaRecienteMaxMin, rueda, _op.EdadBaseRuedaMaxMin,
+                                       _op.Tasa, _op.Dividendo, out var origen, out var carry);
                 if (double.IsNaN(b)) return null;
                 double S = fut - b;
                 if (!(S > 0)) return null;
@@ -654,7 +802,8 @@ namespace PythiaGexCinco.Familia
                 bool cong = f.DatoUtc.Year >= 2000 && TiempoFam.ANy(f.DatoUtc).TimeOfDay >= new TimeSpan(15, 59, 0);
                 var r = new ResultadoClasica { Foto = f, GeneradoUtc = TiempoFam.DeMs(_gn[k]), Fut = fut, Base = b, S = S, ZeroIdx = z, Zero = double.IsNaN(z) ? double.NaN : z + b,
                                                Carry = carry, Filas = filas, Origen = origen, Rueda = rueda, Hoy = hoy, BaseAhora = baseAhora, Congelada = cong,
-                                               Doms = doms, LibroDom = ld, VelaMin = _op.VelaMin };
+                                               Doms = doms, LibroDom = ld, VelaMin = _op.VelaMin,
+                                               MedidaUtc = origen == "medida" ? f.GeneradoUtc : recUtc, MedidaErrTicks = origen == "medida" ? f.BaseErrorTicks : double.NaN };
                 r.Texto = Texto(r, tUtc, _op.EdadBaseRuedaMaxMin);
                 return r;
             }
@@ -672,7 +821,15 @@ namespace PythiaGexCinco.Familia
             var sb = new System.Text.StringBuilder(220);
             sb.Append("base clasica ").Append(r.Base.ToString("0.00", Inv)).Append(" = ");
             var ru = r.Rueda;
-            if (r.Origen == "de la rueda")
+            if (r.Origen == "medida" || r.Origen.StartsWith("medida hace", StringComparison.Ordinal))
+            {   // 5.0: la base de forwards confiable (de esta cadena o la ultima de <= 360 min), como la clasica en ES
+                sb.Append(r.Origen).Append(" (forwards de la cadena de las ").Append(r.MedidaUtc.ToString("HH:mm:ss", Inv)).Append("Z");
+                if (!double.IsNaN(r.MedidaErrTicks)) sb.Append(", ").Append(r.MedidaErrTicks.ToString("0.0", Inv)).Append(" ticks de error");
+                sb.Append(", confiable)");
+                if (ru != null && ru.Hay)
+                    sb.Append("; la de la rueda ").Append(ru.BaseDia.ToString("yyyy-MM-dd", Inv)).Append(" ").Append(ru.Base.ToString("0.00", Inv)).Append(" (").Append(ru.MuestrasDia).Append(" muestras)");
+            }
+            else if (r.Origen == "de la rueda")
             {
                 sb.Append("de la rueda ").Append(ru.BaseDia.ToString("yyyy-MM-dd", Inv)).Append(" (").Append(ru.Buenas).Append(" buenas de ").Append(ru.N)
                   .Append(", ").Append(ru.MuestrasDia).Append(" muestras, vela de ").Append(r.VelaMin.ToString(Inv)).Append(" min, adoptada ").Append(ru.BaseUtc.ToString("HH:mm:ss", Inv)).Append("Z, hace ")

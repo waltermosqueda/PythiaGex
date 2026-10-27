@@ -16,6 +16,10 @@
 //     es dueno no baja nada y sigue ultima-*.json cada 30 s.
 // 5.0 (27-10-2026): sin TQQQ (la 4.1 bajaba SPX -> SPY -> TQQQ): Libros = SPX, SPY y Describir ya no conoce "TQQQ". Cada ticker conserva
 // su cadencia (75 s / 300 s) y la pausa de 3 s entre SPX y SPY; solo desaparece la tercera bajada de cada vuelta.
+// 5.0 (27-10-2026, P2): _SPX pesa 1,73 MB gz / 13,1 MB JSON / 29.424 opciones (medido): el tope de 1250 KB/s y los trozos de 64 KB quedan
+// (~2,4 s por bajada, rafaga maxima un trozo). Todo el parseo (CrudoCboe.Leer + Construir + Medir + linea + relectura) corre en ESTE hilo
+// (BelowNormal) y el log anota cuanto tardo ("parseo N ms"). La base medida ("base"/"base_confiable" de la linea, que FotoCadena no tiene) y
+// los vencimientos AM quedan en una tabla aparte por foto (Medida, IMedidaCboe): la usa la replica de la clasica ("medida" y "medida reciente").
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -62,6 +66,21 @@ namespace PythiaGexCinco.Cboe
         public Func<DateTime, DateTime> HoyLocal = u => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(u, DateTimeKind.Utc), TimeZoneInfo.Local).Date;  // base.medir usa dt.date.today()
     }
 
+    /// <summary>5.0 (27-10-2026): lo que la linea flaca dice de la base por forwards y de la raiz AM, que FotoCadena (contrato comun) no lleva.
+    /// Base = "base" de la linea (= base_cruda cuando es confiable; NaN si null); DiasAm[j] = el vencimiento j es la SPX AM (null = ninguno).</summary>
+    public sealed class MedidaCboe
+    {
+        public double Base = double.NaN;
+        public bool Confiable;
+        public bool[] DiasAm;
+    }
+
+    /// <summary>5.0: quien guarda la MedidaCboe de cada foto (BajadorCboe, ManijaCboe; un arnes puede implementarla). null = sin dato.</summary>
+    public interface IMedidaCboe
+    {
+        MedidaCboe Medida(FotoCadena f);
+    }
+
     /// <summary>La ultima linea aceptada de un libro: el texto flaco (lo que lee el clon de la 3.0 en sus capas) y su foto.</summary>
     public sealed class RegistroCboe
     {
@@ -72,7 +91,7 @@ namespace PythiaGexCinco.Cboe
         public long Version;
     }
 
-    public sealed class BajadorCboe : IFuenteCboe, IDisposable
+    public sealed class BajadorCboe : IFuenteCboe, IMedidaCboe, IDisposable
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
@@ -104,6 +123,7 @@ namespace PythiaGexCinco.Cboe
         private readonly LibroCboe[] _libros;
         private readonly Dictionary<string, LibroCboe> _porNombre = new Dictionary<string, LibroCboe>(StringComparer.OrdinalIgnoreCase);
         private readonly ConditionalWeakTable<FotoCadena, SubCboe> _subs = new ConditionalWeakTable<FotoCadena, SubCboe>();
+        private readonly ConditionalWeakTable<FotoCadena, MedidaCboe> _medidas = new ConditionalWeakTable<FotoCadena, MedidaCboe>();   // 5.0
         private readonly CierresCboe _cierres = new CierresCboe();
         private readonly object _llaveArranque = new object();
         private readonly ManualResetEventSlim _despertar = new ManualResetEventSlim(false);
@@ -229,6 +249,9 @@ namespace PythiaGexCinco.Cboe
 
         /// <summary>data.* de la foto (null si vino de una linea sin bloque "sub", p. ej. cboe-local).</summary>
         public SubCboe Sub(FotoCadena f) => f != null && _subs.TryGetValue(f, out var s) ? s : null;
+
+        /// <summary>5.0: la base medida y la AM de la foto (null si la linea no traia base confiable ni vencimientos AM).</summary>
+        public MedidaCboe Medida(FotoCadena f) => f != null && _medidas.TryGetValue(f, out var m) ? m : null;
 
         /// <summary>Lo observado del cierre de un subyacente para una fecha NY (cierres.json). null si no hay nada.
         /// 5.0 (27-10-2026): ningun calculo lo lee (lo leia la s de TQQQ); cierres.json se sigue anotando para SPX y SPY (dato, sin interpretar).</summary>
@@ -432,9 +455,11 @@ namespace PythiaGexCinco.Cboe
             if (!r.Ok) { Fallo(L, r.Http, r.Error, gen); return; }
             try { _o.AlBajarCrudo?.Invoke(L.Simbolo, r.Gz, r.GzLargo, gen); } catch { }
             string cab = L.Nombre + " http " + r.Http + (r.UsoRespaldo ? " (host de respaldo)" : "") + " gz " + r.GzLargo + " B json " + r.JsonLargo + " B " + r.Ms + " ms" + (r.SinGzip ? " SIN GZIP" : "");
+            var reloj = System.Diagnostics.Stopwatch.StartNew();       // 5.0: cuanto tarda el parseo (13 MB en SPX) en este hilo
             CrudoCboe cr;
             try { cr = CrudoCboe.Leer(new ReadOnlySpan<byte>(r.Json, 0, r.JsonLargo)); }
             catch (Exception e) { Fallo(L, r.Http, "JSON ilegible: " + e.Message, gen); return; }
+            long msLeer = reloj.ElapsedMilliseconds;
             if (!CboeCadena.ParsearTs(cr.Timestamp, out var tsUtc)) { Fallo(L, r.Http, "timestamp ilegible '" + cr.Timestamp + "'", gen); return; }
             if (!(cr.CurrentPrice.V > 0)) { Fallo(L, r.Http, "current_price " + cr.CurrentPrice, gen); return; }
             if (cr.N <= 100) { Fallo(L, r.Http, "solo " + cr.N + " contratos", gen); return; }
@@ -456,6 +481,14 @@ namespace PythiaGexCinco.Cboe
             var info = new InfoBajada { Url = r.Url, Http = r.Http, BytesGz = r.GzLargo, Bytes = r.JsonLargo, Ms = r.Ms };
             string texto = CboeCadena.LineaFlaca(cad, cr, b, gen, info);
             var linea = CboeCadena.DeLinea(texto);
+            long msParseo = reloj.ElapsedMilliseconds;
+            // 5.0: lo nuevo de la cadena en una linea corta: AM aparte/afuera, series vencidas excluidas de la base, base confiable
+            int amEnCadena = 0; foreach (var x in cad.VencAm) if (x) amEnCadena++;
+            string extra50 = " | parseo " + msParseo + " ms (json " + msLeer + ")"
+                             + (cr.ContratosAm > 0 ? " | AM " + cr.ContratosAm + " contratos: " + amEnCadena + " serie(s) en la cadena, " + cad.AmFuera + " afuera (al alcance del Hoy)" : "")
+                             + (b != null ? " | base: " + b.Vencidas + " serie(s) vencidas fuera, cercano " + b.Cercano + (b.XRef != 0 ? " (x " + b.XRef.ToString("0.00", Inv) + " d)" : "")
+                                            + ", trimestral " + b.Venc + (b.FutAm ? " AM" : " PM") + ", " + (b.Confiable ? "CONFIABLE" : "no confiable") + " (q " + (double.IsNaN(b.Q) ? "?" : (b.Q * 100).ToString("0.00", Inv) + " %")
+                                            + ", disp " + (double.IsNaN(b.DispersionTicks) ? "?" : b.DispersionTicks.ToString("0.0", Inv)) + " tk, " + b.Puntos + " vtos, " + b.MuestrasFut + " strikes)" : "");
             if (linea == null)
             {
                 _log.Linea(cab + " | ts " + cr.Timestamp + " | cadena sin filas a <= 8 dias (" + cad.Filas.Length + " en 14 dias), no se anota");
@@ -475,7 +508,7 @@ namespace PythiaGexCinco.Cboe
             var edad = gen - linea.DatoUtc;
             _log.Linea(cab + " | ts " + cr.Timestamp + " | dato " + Edad(edad) + " (ultimo_trade " + (cad.UltimoTrade.Length > 0 ? cad.UltimoTrade : "?") + " NY) | spot "
                        + cad.SpotIdx + " | filas " + linea.NFilas + " (<= 8 d) de " + cad.Filas.Length + " | base_cruda " + (b != null ? PyCboe.Repr(b.Base) + " err " + PyCboe.Repr(b.ResiduoTicks) + " tk" : "null")
-                       + " | aceptada" + disco);
+                       + extra50 + " | aceptada" + disco);
         }
 
         private void Fallo(LibroCboe L, int http, string error, DateTime ahora)
@@ -538,6 +571,8 @@ namespace PythiaGexCinco.Cboe
                 if (!L.Sellos.Add(x.CadenaTs)) continue;
                 var f = x.AFoto(L.Nombre);
                 if (x.Sub != null) _subs.AddOrUpdate(f, x.Sub);
+                if (x.BaseConfiable || x.DiasAm != null)      // 5.0: la base medida y la AM (FotoCadena no las lleva)
+                    _medidas.AddOrUpdate(f, new MedidaCboe { Base = x.BaseConfiable ? x.BaseMedida : double.NaN, Confiable = x.BaseConfiable && !double.IsNaN(x.BaseMedida), DiasAm = x.DiasAm });
                 // la noche repite el contenido con otro sello: se comparte el arreglo de filas (misma memoria, mismo dato)
                 var prev = lista.Count > 0 ? lista[lista.Count - 1] : null;
                 if (prev != null && prev.Filas.Length > 0 && MismasFilas(prev.Filas, f.Filas)) f.Filas = prev.Filas;
@@ -587,6 +622,7 @@ namespace PythiaGexCinco.Cboe
                 if (f.Filas.Length == 0) continue;
                 var liv = Liviana(f);
                 if (_subs.TryGetValue(f, out var s)) _subs.AddOrUpdate(liv, s);
+                if (_medidas.TryGetValue(f, out var md)) _medidas.AddOrUpdate(liv, md);   // 5.0: la liviana sigue sabiendo su base medida
                 arr[i] = liv;
             }
             if (j > L.PodadoHasta) L.PodadoHasta = j;
@@ -789,7 +825,7 @@ namespace PythiaGexCinco.Cboe
     }
 
     /// <summary>La IFuenteCboe que usa cada instancia del indicador.</summary>
-    public sealed class ManijaCboe : IFuenteCboe
+    public sealed class ManijaCboe : IFuenteCboe, IMedidaCboe
     {
         private readonly OpcionesCboe _o;
         private BajadorCboe _m;
@@ -805,6 +841,7 @@ namespace PythiaGexCinco.Cboe
         public string Estado => _m?.Estado ?? "cboe: sin arrancar";
         public RegistroCboe UltimoRegistro(string libro) => _m?.UltimoRegistro(libro);
         public SubCboe Sub(FotoCadena f) => _m?.Sub(f);
+        public MedidaCboe Medida(FotoCadena f) => _m?.Medida(f);                // 5.0
         public CierreCboe Cierre(string libro, DateTime fechaNy) => _m?.Cierre(libro, fechaNy);
         public bool Bajar { get => _m?.Bajar ?? false; set { var m = _m; if (m != null) m.Bajar = value; } }
         public int TopeKBps { get => _m?.TopeKBps ?? 0; set { var m = _m; if (m != null) m.TopeKBps = value; } }

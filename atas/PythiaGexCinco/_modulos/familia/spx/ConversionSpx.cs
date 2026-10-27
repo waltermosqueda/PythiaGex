@@ -14,6 +14,21 @@
 //   esa rueda); nada si el contrato de la rueda no es el de t (roll).
 // C9: vigencia = generado + 1500 s; si la cadena esta congelada (t_dato NY >= 15:59) vale hasta max(eso, proxima apertura 13:30 UTC).
 // oi_fresco: el OI de CBOE es 'de dos sesiones' desde la noche hasta que la suma de OI salta > 5 % de madrugada (solo rotula).
+//
+// 5.0 (27-10-2026, P2): COTAS (la 4.1 no tenia ninguna: una cadena equivocada daba una base de -21.600 y se usaba igual). MEDICIONES_ES §3:
+//   * sanidad: 0 < base <= 150 pts (medido con ESZ6: 35-72; un trimestral recien rolado ~65-75);
+//   * carry: |base - fut x 0,034 x dias/365| <= max(25 % de eso, 3 pts), dias = hasta el vencimiento del contrato del grafico (ESZ6: 18-12-2026
+//     09:30 NY). 3,4 % es el (r - q) IMPLICITO medido en 30 dias de Z6 (p05 3,3 %, p95 3,6 %); la formula de los indicadores (3,75 % - 1,2 %)
+//     queda 25-43 % corta. Las 30 ruedas Z6 caen dentro de +-6 % de este carry: la cota solo ataja basura (contrato o cadena equivocados);
+//   * las dos cotas se aplican a cada MUESTRA (no entra a la rueda ni a las 24) y a la base del minuto (fuera de cota -> SPX no se dibuja);
+//   * forwards de la cadena (base_cruda): sirven si su error es <= 8 ticks, son del contrato del grafico (el trimestral que eligio base.medir,
+//     ContratoVigente de la fecha local de 'generado', es el del grafico) y pasan las dos cotas. Con base sincronizada: control, a <= 3 pts en
+//     la rueda y <= 4 de noche (medido: forwards - sincronizada p05 -2,44 / p95 +1,39 de dia; con error <= 8 tk de noche p05 -1,70 / p95 +3,80);
+//     si difieren mas, la pestaña lo dice y manda la sincronizada (ruido 0,48 pt contra 1-2 de los forwards). Sin base sincronizada (sin rueda,
+//     roll, o fuera de cota) la base es la de forwards y la pestaña lo dice.
+//   * retraso 900 s (el minimo de ruido medido: MAD 0,49 contra 0,86 con 960 s) y PISO 0,5 de la mediana robusta quedan: con 3 MAD medido
+//     1,45 pts el piso no muerde (§3.8). SPX se congela a las 16:00 NY como NDX (medido 23 y 27-10): de noche, la rueda anterior con su carry.
+//   Opciones.Cotas = false las apaga (arnes de paridad con backtest_familia, que no las tiene).
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -46,7 +61,7 @@ namespace PythiaGexCinco.Familia.Spx
         /// <summary>Si el motor arranca a mitad de una tanda (reinicio), rehacer la cache del zero con los minutos previos de la tanda (paridad
         /// con la corrida historica tambien despues de un reinicio). Cuesta como mucho 240 minutos de cuenta, una vez.</summary>
         public bool CalentarCacheZero = true;
-        /// <summary>false (paridad): la clave de la cache del zero es la de la vista previa (foto, tramo de 900 s, round(S/50)). true: ademas
+        /// <summary>false (paridad): la clave de la cache del zero es la de la vista previa (foto, tramo de 900 s, round(S/12,5); la 4.1 en NDX S/50). true: ademas
         /// cuantas filas entran en el horizonte, asi el 0DTE que vence a las 16:00 NY no queda adentro del zero por la cache (en la vista
         /// previa historica pasa hasta 15 min: medido 07-10 20:00-20:01 UTC, ZEST_SPX_vol 58 pts corrido). Decide el integrador.</summary>
         public bool ZeroCacheConHorizonte = false;
@@ -60,6 +75,11 @@ namespace PythiaGexCinco.Familia.Spx
         /// sesion). Sin esto el pasado no es reproducible y el operador leeria un zero que no rigio.</summary>
         public bool ZeroCadaMinuto = true;
         public Action<string> Log;
+        /// <summary>5.0 (27-10-2026): las cotas de la base (cabecera). false = sin cotas (paridad con backtest_familia).</summary>
+        public bool Cotas = true;
+        /// <summary>5.0: la fecha LOCAL de la PC en un instante (base.medir elige el trimestral con dt.date.today(); OpcionesCboe.HoyLocal es lo mismo).
+        /// Sirve para saber de que contrato es la base de forwards de una foto.</summary>
+        public Func<DateTime, DateTime> HoyLocal = u => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(u, DateTimeKind.Utc), TimeZoneInfo.Local).Date;
 
         public string Contrato(DateTime utc)
         {
@@ -97,6 +117,9 @@ namespace PythiaGexCinco.Familia.Spx
         public bool OiViejo, Congelada;
         public DateTime Vigencia;
         public string Modo => ModoDia ? "dia" : "noche";
+        /// <summary>5.0: la muestra no paso las cotas (sanidad o carry): no entro a la rueda ni a las 24. Por que, en Cota.</summary>
+        public bool FueraDeCota;
+        public string Cota = "";
     }
 
     /// <summary>Una muestra guardada en familia/muestras-SPX-&lt;sesion&gt;.jsonl (para rehacer C7 al reiniciar sin la cinta de los dias previos).</summary>
@@ -113,6 +136,11 @@ namespace PythiaGexCinco.Familia.Spx
         public const double RETRASO_S = 900, VIVO_S = 600, VIDA_CBOE_S = 1500;
         public const int MIN_DIA = 5, MIN_RUEDA = 20, VENTANA = 24;
         public const double PISO = 0.5;
+        // 5.0 (27-10-2026): cotas de la base ES - SPX (cabecera; MEDICIONES_ES §3.6 y §3.8)
+        public const double BASE_MAX = 150.0;
+        public const double CARRY_IMPLICITO = 0.034;          // (r - q) implicito medido, 30 dias de ESZ6
+        public const double CARRY_TOL_REL = 0.25, CARRY_TOL_MIN = 3.0;
+        public const double FWD_ERR_MAX_TICKS = 8.0, FWD_TOL_RUEDA = 3.0, FWD_TOL_NOCHE = 4.0;
 
         private readonly OpcionesSpx _op;
         private List<EstadoFotoSpx> _estados = new List<EstadoFotoSpx>();
@@ -154,10 +182,13 @@ namespace PythiaGexCinco.Familia.Spx
                 else
                 { e.Precio = pc.Precio; e.PrecioDeTick = pc.Tick; e.Contrato = _op.Contrato(e.TSpotUtc); }
                 if (e.Vivo && !double.IsNaN(e.Precio) && f.Spot > 0) e.Muestra = e.Precio - f.Spot;
+                // 5.0: una muestra fuera de cota (sanidad o carry del contrato de la muestra) no entra ni a la rueda ni a las 24
+                if (_op.Cotas && !double.IsNaN(e.Muestra) && !DentroDeCota(e.Muestra, Carry(e.Precio, e.TSpotUtc, _op.Vencimiento(e.Contrato)), out var porque))
+                { e.FueraDeCota = true; e.Cota = porque; }
                 var ny = CalendarioSpx.ANy(e.TSpotUtc);
                 var diaNy = ny.Date;
                 e.EnHora = CalendarioSpx.EnHora(e.TSpotUtc, par ? null : _op.EsHabilNy);
-                if (e.Vivo && e.EnHora && !double.IsNaN(e.Muestra))
+                if (e.Vivo && e.EnHora && !double.IsNaN(e.Muestra) && !e.FueraDeCota)
                 {
                     if (!ruedas.TryGetValue(diaNy, out var r)) { r = (new List<double>(), e.Contrato); ruedas[diaNy] = r; }
                     r.M.Add(e.Muestra);
@@ -207,7 +238,82 @@ namespace PythiaGexCinco.Familia.Spx
             _estados = est;
         }
 
-        /// <summary>backtest_familia.base_spx(f, t, 'sync'): la base vigente en el minuto t con la foto e. NaN si no hay. texto = para la pestaña.</summary>
+        // ------------------------------------------------------------------ 5.0: cotas
+        /// <summary>carry = fut x 0,034 x dias al vencimiento / 365 (NaN sin fut o sin vencimiento posterior a t).</summary>
+        public static double Carry(double fut, DateTime tUtc, DateTime expUtc)
+            => fut > 0 && expUtc != default(DateTime) && expUtc > tUtc ? fut * CARRY_IMPLICITO * (expUtc - tUtc).TotalDays / 365.0 : double.NaN;
+
+        /// <summary>0 &lt; b &lt;= 150 y, si hay carry, |b - carry| &lt;= max(25 % del carry, 3 pts). porque = el texto si no pasa.</summary>
+        public static bool DentroDeCota(double b, double carry, out string porque)
+        {
+            var inv = CultureInfo.InvariantCulture;
+            porque = "";
+            if (double.IsNaN(b)) { porque = "sin base"; return false; }
+            if (!(b > 0) || b > BASE_MAX) { porque = "fuera de (0, " + BASE_MAX.ToString("0", inv) + "] pts"; return false; }
+            if (double.IsNaN(carry)) return true;
+            double tol = Math.Max(CARRY_TOL_REL * Math.Abs(carry), CARRY_TOL_MIN);
+            if (Math.Abs(b - carry) <= tol) return true;
+            porque = "a " + Math.Abs(b - carry).ToString("0.0", inv) + " pts del carry " + carry.ToString("0.0", inv) + " (3,4 % anual; tope " + tol.ToString("0.0", inv) + ")";
+            return false;
+        }
+
+        /// <summary>La base de forwards de la foto si sirve (error &lt;= 8 ticks, del contrato del grafico, dentro de las cotas); NaN si no, con el porque.</summary>
+        public double Forwards(EstadoFotoSpx e, string contrato, double carry, out string texto)
+        {
+            var inv = CultureInfo.InvariantCulture;
+            texto = "";
+            var f = e?.Foto;
+            if (f == null || double.IsNaN(f.BaseCruda)) { texto = "sin base de forwards en la cadena"; return double.NaN; }
+            string err = double.IsNaN(f.BaseErrorTicks) ? "?" : f.BaseErrorTicks.ToString("0.0", inv);
+            if (double.IsNaN(f.BaseErrorTicks) || f.BaseErrorTicks > FWD_ERR_MAX_TICKS) { texto = "forwards " + f.BaseCruda.ToString("0.00", inv) + " con " + err + " ticks de error (tope " + FWD_ERR_MAX_TICKS.ToString("0", inv) + ")"; return double.NaN; }
+            // de que trimestral es: base.medir lo elige con la fecha local de la PC al bajar (ContratoVigente: el que no llego a su roll)
+            try
+            {
+                var tv = Cboe.CboeCadena.ContratoVigente(_op.HoyLocal(f.GeneradoUtc));
+                var exp = _op.Vencimiento(contrato);
+                if (tv == DateTime.MinValue || exp == default(DateTime) || tv.Date != CalendarioSpx.ANy(exp).Date)
+                { texto = "forwards " + f.BaseCruda.ToString("0.00", inv) + " del trimestral " + (tv == DateTime.MinValue ? "?" : tv.ToString("yyyy-MM-dd", inv)) + ", no del contrato del grafico (" + contrato + ")"; return double.NaN; }
+            }
+            catch (Exception ex) { texto = "forwards: " + ex.Message; return double.NaN; }
+            if (!DentroDeCota(f.BaseCruda, carry, out var porque)) { texto = "forwards " + f.BaseCruda.ToString("0.00", inv) + " " + porque; return double.NaN; }
+            texto = "forwards " + f.BaseCruda.ToString("0.00", inv) + " (" + err + " ticks)";
+            return f.BaseCruda;
+        }
+
+        /// <summary>5.0: la base del minuto con las cotas (cabecera). fut = el precio del MES del minuto (para el carry; NaN = sin la cota del carry).</summary>
+        public double Base(EstadoFotoSpx e, DateTime tUtc, double fut, out string texto)
+        {
+            var inv = CultureInfo.InvariantCulture;
+            double b = Base(e, tUtc, out texto);
+            if (!_op.Cotas) return b;
+            string k = _op.Contrato(tUtc);
+            double carry = Carry(fut, tUtc, _op.Vencimiento(k));
+            if (!double.IsNaN(b) && !DentroDeCota(b, carry, out var porque))
+            {
+                texto = "base sincronizada " + b.ToString("0.00", inv) + " FUERA DE COTA (" + porque + ")";
+                b = double.NaN;
+            }
+            double fw = Forwards(e, k, carry, out var tf);
+            if (!double.IsNaN(b))
+            {
+                if (!double.IsNaN(fw))
+                {
+                    double d = fw - b, tol = e.ModoDia ? FWD_TOL_RUEDA : FWD_TOL_NOCHE;
+                    texto += " · " + tf + (Math.Abs(d) <= tol ? ": coinciden (" : ": DIFIEREN (") + (d >= 0 ? "+" : "") + d.ToString("0.00", inv) + " pts, tope " + tol.ToString("0", inv) + ")";
+                }
+                return b;
+            }
+            if (!double.IsNaN(fw))
+            {
+                texto = "base " + fw.ToString("0.00", inv) + " de FORWARDS de la cadena (" + tf.Replace("forwards ", "") + "; sin base sincronizada: " + texto + ")";
+                return fw;
+            }
+            texto += " · " + tf + ": SPX no se dibuja";
+            return double.NaN;
+        }
+
+        /// <summary>backtest_familia.base_spx(f, t, 'sync'): la base vigente en el minuto t con la foto e. NaN si no hay. texto = para la pestaña.
+        /// 5.0: sin las cotas (las agrega Base(e, t, fut, out texto), que es la que usa el libro).</summary>
         public double Base(EstadoFotoSpx e, DateTime tUtc, out string texto)
         {
             var inv = CultureInfo.InvariantCulture;

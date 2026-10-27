@@ -175,6 +175,14 @@ namespace PythiaGexCinco.Cboe
             return f.AddHours(DstEeuu(f) ? 20 : 21);
         }
 
+        /// <summary>5.0 (27-10-2026): 09:30 de Nueva York de esa fecha, en UTC (13:30 en verano, 14:30 en invierno). Es la hora a la que vence la
+        /// SPX mensual AM (raiz "SPX", liquida con la apertura del tercer viernes: SOQ), igual que el futuro ES trimestral.</summary>
+        public static DateTime AperturaUtc(int anio, int mes, int dia)
+        {
+            var f = new DateTime(anio, mes, dia, 0, 0, 0, DateTimeKind.Utc);
+            return f.AddHours(DstEeuu(f) ? 13.5 : 14.5);
+        }
+
         /// <summary>Hora de NY sin zona -> UTC (Kind Utc).</summary>
         public static DateTime AUtc(DateTime ny)
         {

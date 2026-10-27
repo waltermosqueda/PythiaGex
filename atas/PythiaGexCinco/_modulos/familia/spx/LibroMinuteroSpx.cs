@@ -5,8 +5,16 @@
 //   filas_hoy (C10) -> perfil_cp (Black-Scholes r 3,75 %) -> zero estandar C5 -> LibroMinuto con Fut = K + base y el filtro +-3 %.
 // La cuenta usa el codigo comun de B3a (FilasHoy, PerfilLado, ZeroEstandarFam, CacheZero, ArmadoLibroMinuto, NumFam).
 // Las series (MUROS/MAJORS/ZTP/ZEST, montos) las elige SeriesLibroFam (comun) en el motor sobre el LibroMinuto.
+// 5.0 (27-10-2026, P2), lo que cambia contra la 4.1 en NDX (P2_SPX.md):
+//   * MULT 100 (SPX, igual que NDX: USD por punto del indice, seguro). Black-Scholes r 3,75 % sin dividendo (comun/Gamma.cs) como la 4.1.
+//   * zero estandar con ZeroEstandarFam.SPX = paso 0,5 / +-75 / centro 12,5 (la 4.1 en NDX 2,5 / 300 / 50: distancias / 4, el paso a 2
+//     ticks; lo dejo P1 en comun/ZeroEstandar). La clave de la cache usa round(S / 12,5) (solo pesa con ZeroCadaMinuto = false).
+//   * radio de seleccion del libro: SeleccionFam.RadioDe("SPX") = 20 (comun/Seleccion; se aplica en SeriesLibroFam por b.Libro = "SPX").
+//   * la base del minuto pasa por las COTAS de ConversionSpx (sanidad 0-150, carry 3,4 %, forwards): fuera de cota SPX no se dibuja.
+//   * la cadena ya trae la SPX AM aparte (vence 09:30 NY, nunca en el horizonte Hoy) y sin series vencidas en la base (CboeCadena).
+//   * lo que queda igual a NDX: TANDA 240, tramo de 900 s, reintentos 300/120/120 s, poda de muestras 14 dias, filtro +-3 % (relativo).
 //
-// CACHE DEL ZERO (C5). La vista previa calcula el zero con el S del PRIMER minuto de cada clave (foto, tramo de 900 s, round(S/50)) y lo
+// CACHE DEL ZERO (C5). La vista previa calcula el zero con el S del PRIMER minuto de cada clave (foto, tramo de 900 s, round(S/cp)) y lo
 // reutiliza dentro de cada llamada a minutos_cboe:
 //   * historico (la referencia de paridad): tandas de 240 minutos alineadas al inicio de la sesion;
 //   * en vivo (ciclo): una llamada por minuto nuevo, o sea cache nueva cada minuto.
@@ -177,7 +185,7 @@ namespace PythiaGexCinco.Familia.Spx
                            + e.Vigencia.ToString("MM-dd HH:mm", CultureInfo.InvariantCulture) + "Z)";
                 return null;
             }
-            double b = _conv.Base(e, t, out string texto);
+            double b = _conv.Base(e, t, fut, out string texto);      // 5.0: con las cotas (sanidad, carry 3,4 %, forwards)
             d.Base = b; d.TextoBase = texto;
             if (double.IsNaN(b)) { d.Motivo = texto; return null; }
             double S = fut - b;
@@ -186,7 +194,7 @@ namespace PythiaGexCinco.Familia.Spx
             PerfilLado.CargaPorStrike(e.Foto, t, S, false, out var kCg, out var oiCg, out var oiCgC, out var oiCgP, out var gxCg);   // 4.1.7: TODOS los vencimientos
             var r = PerfilLado.Armar(fl, S, false);
             if (r == null) { d.Motivo = "la cadena de SPX no aporta gamma en el horizonte Hoy"; return null; }
-            // C5: clave (foto, tramo de 900 s desde generado, round(S/50)); se calcula con el S del PRIMER minuto de la clave
+            // C5: clave (foto, tramo de 900 s desde generado, round(S/12,5)); se calcula con el S del PRIMER minuto de la clave (4.1 NDX: S/50)
             long envB = (long)Math.Floor((t - e.Foto.GeneradoUtc).TotalSeconds / 900.0);
             long sr = (long)Math.Round(S / ZeroEstandarFam.SPX.CentroPaso, MidpointRounding.ToEven);
             object fotoKey = _op.ZeroCacheConHorizonte ? (object)(e.Foto.GeneradoUtc.Ticks, e.Foto.TsUtc.Ticks, fl.N) : (e.Foto.GeneradoUtc.Ticks, e.Foto.TsUtc.Ticks);
