@@ -21,6 +21,7 @@
 // R10_SPX_dom llevan sus strikes a ES con la base SPX del minuto de la 5.0 (la de MUROS_SPX) en vez de su cascada (medido 27-10: 1,17 pts abajo y
 // saltos de 1,1-1,7 pts en la 2.0). Uno por proceso y contrato como la bajada (prendido si cualquier instancia lo pide); el host lo pasa al crear las
 // replicas y en cada latido (AjustarConversion50: si cambia, el motor rehace la sesion entera de esas series).
+// 5.0.3 (27-10-2026): el motor recibe tambien GammalitoFam (las series estilo Gammalito: amarillos de SPX y SPY y el zero de SPX), al final del compuesto.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -229,7 +230,9 @@ namespace PythiaGexCinco
                     ConversionDeLa50 = conv50                                               // 5.0.1: el zero y las D1-D3 con la base SPX del minuto de la 5.0
                 });
                 Escribir("replicas", "conversion de R20_SPX_vol / R10_SPX_zero / R10_SPX_dom: " + (conv50 ? "la de la 5.0 (base SPX del minuto del libro SPX)" : "la cascada original de la 2.0 y de la clasica"));
-                var extras = new ExtrasCompuestos(_replica20, _clasica) { Error = (donde, e) => Escribir("extras", "ERROR en " + donde + ": " + e.GetType().Name + ": " + e.Message) };
+                // 5.0.3: + las series estilo Gammalito (GL_SPX_dom, GL_SPY_dom, GL_SPX_zero) sobre los libros SPX/SPY del minuto de la 5.0. Va AL FINAL:
+                // agrega sus series sin tocar las de la Replica20 (que reemplaza las extras al guardar) ni las de la clasica
+                var extras = new ExtrasCompuestos(_replica20, _clasica, new GammalitoFam()) { Error = (donde, e) => Escribir("extras", "ERROR en " + donde + ": " + e.GetType().Name + ": " + e.Message) };
                 _motor = new MotorFamilia(new OpcionesMotorFamilia
                 {
                     Carpeta = carpeta, Corregida = corregida,

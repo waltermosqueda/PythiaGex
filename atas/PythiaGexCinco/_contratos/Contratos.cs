@@ -188,6 +188,32 @@ namespace PythiaGexCinco.Familia
         /// La pantalla solo hace foto.Rebobinar?.Invoke(clave): toda la regla de fidelidad vive en el motor, y aca no
         /// entra ningun tipo del modulo fam (Contratos.cs se compila en cuatro proyectos).</summary>
         public Func<long, RebobinadoFam> Rebobinar;
+
+        /// <summary>5.0.3 (27-10-2026): el perfil "estilo Gammalito" del ULTIMO minuto calculado con libros (gamma x (vol calls - vol puts) por strike de
+        /// SPX y de SPY, ya en precio de ES y con el largo relativo a la barra mas larga de SU libro). Lo arma el motor (GammalitoFam.Perfil) en su hilo:
+        /// la pantalla solo pone coordenadas. null = sin perfil (todavia ningun minuto calculado en esta corrida, o el minuto sin SPX ni SPY).</summary>
+        public PerfilGl PerfilGl;
+    }
+
+    /// <summary>5.0.3: una barra del perfil estilo Gammalito. Precio = el strike ya en ES (SPX: K + base C7 del minuto; SPY: K x razon C8);
+    /// Valor = gamma BS x (vol calls - vol puts) del strike en M USD por 1 % (calls con su gamma +, puts con la suya -); Rel = Valor / max |Valor| de
+    /// SU libro (-1..1: el signo es el color, |Rel| el largo); K = el strike en la unidad de su libro (trazabilidad).</summary>
+    public readonly struct BarraGl
+    {
+        public readonly double Precio, Valor, Rel, K;
+        public readonly bool Spy;
+        public BarraGl(double precio, double valor, double rel, double k, bool spy) { Precio = precio; Valor = valor; Rel = rel; K = k; Spy = spy; }
+    }
+
+    /// <summary>5.0.3: el perfil estilo Gammalito de un minuto. Inmutable despues de publicado.</summary>
+    public sealed class PerfilGl
+    {
+        public long Clave;                                   // el minuto (ms UTC / 60000)
+        /// <summary>Primero las de SPY y despues las de SPX: el orden de dibujo (SPX encima, como Gammalito).</summary>
+        public BarraGl[] Barras = Array.Empty<BarraGl>();
+        public double MaxSpx = double.NaN, MaxSpy = double.NaN;   // la barra mas larga de cada libro (|Valor|, M USD por 1 %): el 100 %
+        public double ConvSpx = double.NaN, ConvSpy = double.NaN; // base ES - SPX y razon ES/SPY con que se llevaron a ES
+        public DateTime DatoSpx, DatoSpy;                    // hora del dato de cada cadena (CBOE ultimo_trade)
     }
 
     /// <summary>4.1.8: lo que regia en un minuto del pasado. Mismos campos que lee la pantalla del vivo, para que el

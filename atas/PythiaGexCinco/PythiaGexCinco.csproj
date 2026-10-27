@@ -7,12 +7,12 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>PythiaGexCinco</AssemblyName>
     <RootNamespace>PythiaGexCinco</RootNamespace>
-    <Version>5.0.2.0</Version>
+    <Version>5.0.3.0</Version>
     <!-- 5.0.1 (27-10-2026): AssemblyVersion FIJA en 5.0.0.0 (como la 4.1 con 4.0.0.0: el .ws guarda el tipo con su Version=); la version
          real va en FileVersion / InformationalVersion. -->
     <AssemblyVersion>5.0.0.0</AssemblyVersion>
-    <FileVersion>5.0.2.0</FileVersion>
-    <InformationalVersion>5.0.2</InformationalVersion>
+    <FileVersion>5.0.3.0</FileVersion>
+    <InformationalVersion>5.0.3</InformationalVersion>
     <Company>PythiaGex</Company>
     <Product>PythiaGex 5.0 - Gamma ES</Product>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -88,6 +88,8 @@
     <Compile Include="_modulos\familia\clasica\ClasicaSpx.cs" />
     <Compile Include="_modulos\familia\clasica\MuestrasClasica.cs" />
     <Compile Include="_modulos\familia\fam\ExtrasCompuestos.cs" />
+    <!-- 5.0.3: las series y las barras estilo Gammalito (gamma x (vol calls - vol puts) de SPX y SPY, amarillos y zero). -->
+    <Compile Include="_modulos\familia\gammalito\GammalitoFam.cs" />
     <!-- 4.1.2 (B-pos): cambios por nivel (volumen de 5/15/30 min y OI contra la publicacion anterior, con la gamma de ahora). -->
     <Compile Include="_modulos\familia\posiciones\ClavesCambios.cs" />
     <Compile Include="_modulos\familia\posiciones\RegimenesOi.cs" />

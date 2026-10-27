@@ -34,6 +34,10 @@
 // ReglasFam.Minuto (las 21 no cambian); los minutos del archivo sin extras se completan en memoria al recorrerlos. Sin Extras = 4.1.2 exacto.
 // 4.1.5 (09-10-2026): el indicador pasa ExtrasCompuestos (Replica20 + ClasicaSpx, la R10 "Clasica SPX 0Γ"); IExtrasParciales (opcional) deja
 // completar en memoria un minuto del archivo que ya trae las R20 pero no la R10. Con la Replica20 sola, el motor es el de la 4.1.4.
+// 5.0.3 (27-10-2026): el perfil estilo Gammalito (GammalitoFam.Perfil: barras por strike de SPX y SPY ya en ES) del ULTIMO minuto calculado con libros
+// va en la foto (FotoFamilia.PerfilGl) para que la pantalla lo dibuje sin calcular. Se arma con los libros del minuto (bk) DESPUES de la cuenta y de las
+// extras, en su propio try: no toca ni la cuenta ni las series. Un minuto del archivo no lo trae (sus libros ya no estan): hasta el primer minuto
+// calculado en esta corrida no hay barras. Cambia de sesion -> null.
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -138,6 +142,8 @@ namespace PythiaGexCinco.Familia
         private ImmutableDictionary<long, RegRebob> _rebob = ImmutableDictionary<long, RegRebob>.Empty;
         private ImmutableDictionary<long, RegRebob> _rebobPrevias = ImmutableDictionary<long, RegRebob>.Empty;
         private long _tresVersion;
+        /// <summary>5.0.3: el perfil estilo Gammalito del ultimo minuto calculado con libros (solo lo toca el hilo del motor; se publica en la foto).</summary>
+        private PerfilGl _perfilGl;
         private FotoFamilia _foto = new FotoFamilia { CalculadoUtc = DateTime.MinValue, HistoriaM2 = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty,
                                                        Actuales = Array.Empty<NivelActual>(), Fuentes = Array.Empty<FuenteEstado>(), Aviso = "sin configurar" };
 
@@ -213,6 +219,7 @@ namespace PythiaGexCinco.Familia
             int lt = 0;
             try { lt = _tres.LeerArchivos(CarpetaEstela, s.Dia); } catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "Estelas", e); }
             _tresVersion = -1;
+            _perfilGl = null;                                                       // 5.0.3: el perfil de la otra sesion no se muestra
             _siguiente = s.IniClave; _finTanda = long.MinValue;
             _hist = ImmutableDictionary<long, IReadOnlyDictionary<string, double[]>>.Empty;
             string previas = "";
@@ -465,6 +472,12 @@ namespace PythiaGexCinco.Familia
                 try { _op.Extras.Calcular(r, t, fut, bk); }
                 catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "Extras", e); r.Extra = null; r.ExtraStrikes = null; r.MetaExtra = Array.Empty<MetaLibro>(); }
             }
+            // 5.0.3: el perfil estilo Gammalito del minuto (solo lee bk); el del ultimo minuto con libros es el que se publica
+            if (r != null && r.TieneLibros)
+            {
+                try { _perfilGl = GammalitoFam.Perfil(clave, bk); }
+                catch (Exception e) { BitacoraFam.Error(_op.RutaLog, "PerfilGl", e); _perfilGl = null; }
+            }
             return r;
         }
 
@@ -529,7 +542,8 @@ namespace PythiaGexCinco.Familia
                 Sesion = _ses.Dia, CalculadoUtc = ahoraUtc, HistoriaM2 = _hist,
                 Actuales = SalidaFamilia.Actuales(ultimo, _tres).AsReadOnly(),
                 Fuentes = SalidaFamilia.Fuentes(ultimo, estCboe, tick, ahoraUtc).AsReadOnly(),
-                Instrumento = _contrato, Aviso = string.Join(" · ", avisos)
+                Instrumento = _contrato, Aviso = string.Join(" · ", avisos),
+                PerfilGl = _perfilGl                                                // 5.0.3: inmutable (se arma uno nuevo por minuto)
             };
             // 4.1.8 REBOBINADO: clausura sobre la instantanea INMUTABLE de este instante. El hilo de dibujo no toca
             // estado vivo del motor: solo consulta este diccionario congelado de clones. Si el minuto no esta, devuelve

@@ -26,6 +26,9 @@
 // NUEVO en ATAS (ningun .ws tiene sus S_*): estos defaults son lo que se ve al ponerla. Respaldo: banda de SPY +-5 (era +-20), igual que CatalogoFamilia.
 // Ademas: un catalogo de RESPALDO (id, corto, libro, fuente, tipo, grupo, color, banda) por si el motor todavia no publico el suyo
 // (IMotorFamilia.Catalogo manda; el arnes compara este respaldo campo por campo contra CatalogoFamilia de B3d).
+// 5.0.3 (27-10-2026): + 3 casillas NUEVAS estilo Gammalito (GL_SPX_dom "GL amar. SPX", GL_SPY_dom "GL amar. SPY", GL_SPX_zero "GL zero SPX"), PRENDIDAS,
+// Orden 101-103 (al final del grupo: el ultimo ocupado era 98); las barras (GlBarrasSpx/GlBarrasSpy, 99-100) no son series y no van en esta lista.
+// Lo de antes (nombres, orden, defaults, colores) no cambia.
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -91,6 +94,10 @@ namespace PythiaGexCinco.Familia
             C("TRES_ES",        "3.0 ES rayas",  27, false),
             C("TRES_SPX",       "3.0 SPX rayas", 28, true),
             C("TRES_SPY",       "3.0 SPY rayas", 29, false),
+            // ---- 5.0.3: estilo Gammalito (amarillos y zero; las barras no son series: GlBarrasSpx/GlBarrasSpy en 99-100). Propiedades NUEVAS, prendidas.
+            C("GL_SPX_dom",     "GL amar. SPX", 101, true),
+            C("GL_SPY_dom",     "GL amar. SPY", 102, true),
+            C("GL_SPX_zero",    "GL zero SPX",  103, true),
         };
 
         /// <summary>4.1.3: grupo de las casillas "como la 2.0" en la 4.1 (historico: desde la 4.1.5c todas van en el grupo de arriba).</summary>
@@ -103,7 +110,8 @@ namespace PythiaGexCinco.Familia
         /// dom, + 4.1.5 Clasica SPX 0Γ, + 4.1.5b Clasica SPX D1-D3; 5.0: sin TQQQ. 5.0 (P5, decision del coordinador 27-10): sin 2.0 SPY (la 2.0 no dibuja
         /// SPY en un grafico de ES). Quedan 6.</summary>
         public static readonly string[] PrendidasPorDefecto = { "MUROS_ES_oi", "MUROS_SPX_vol", "TRES_SPX",
-                                                                "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 5.0 (P5): sin R20_SPY_vol
+                                                                "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom",     // 5.0 (P5): sin R20_SPY_vol
+                                                                "GL_SPX_dom", "GL_SPY_dom", "GL_SPX_zero" };      // 5.0.3: casillas NUEVAS, prendidas
 
         private static Casilla C(string id, string nombre, int orden, bool def) => new Casilla { Id = id, Nombre = nombre, Grupo = GRUPO_DIALOGO, Orden = orden, Default = def };
 
@@ -147,6 +155,9 @@ namespace PythiaGexCinco.Familia
             R("DOMS_SPX_vol", "SPX dom", "SPX", "vol", "DOMS", "2.0", "#a9c4ff", 0),
             R("R10_SPX_zero", "Clasica SPX 0Γ", "SPX", "vol", "ZEST", "Clasica", "#ffffff", 0),   // 4.1.5
             R("R10_SPX_dom", "Clasica SPX", "SPX", "vol", "DOMS", "Clasica", "#b8f8d8", 0),       // 4.1.5b; 4.1.5d: #b8f8d8 (antes #9dffd2, a 11,4 del 2.0 SPX)
+            R("GL_SPX_dom", "GL SPX", "SPX", "vol", "GL", "Gammalito", "#FFD700", 0),             // 5.0.3: estilo Gammalito (los de CatalogoFamilia)
+            R("GL_SPY_dom", "GL SPY", "SPY", "vol", "GL", "Gammalito", "#FFD700", 0),
+            R("GL_SPX_zero", "GL SPX 0Γ", "SPX", "vol", "GL", "Gammalito", "#D1D4DC", 0),
         };
 
         private static SerieInfo R(string id, string corto, string libro, string fuente, string tipo, string grupo, string color, double banda)

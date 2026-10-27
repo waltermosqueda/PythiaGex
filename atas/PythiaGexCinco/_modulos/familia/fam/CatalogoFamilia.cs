@@ -35,6 +35,10 @@
 // Ids, orden, colores, Calc y Extra NO cambian (verificado volcando el catalogo antes y despues, _diseno/P5_PANTALLA.md).
 // 5.0.1 (27-10-2026): textos de R20_SPX_vol, R10_SPX_zero y R10_SPX_dom: formula y seleccion de la 2.0/clasica, CONVERSION DE LA 5.0 (ajuste
 //   Replicas50Conversion, default; medido 27-10: la base original corre ~1,2 pts abajo y la de la 2.0 salta 1,1-1,7 pts). Ids, orden y colores igual.
+// 5.0.3 (27-10-2026, pedido del operador: "las barras por strike al estilo Gammalito ... amarillos y zero"): + 3 series AL FINAL de la lista y de Extra
+//   (GL_SPX_dom, GL_SPY_dom, GL_SPX_zero; _modulos/familia/gammalito/GammalitoFam.cs), tipo NUEVO "GL" (sin lado: sin cambio ▲▼), PRENDIDAS por defecto
+//   (casillas nuevas). Amarillo oro #FFD700 (el de las capturas, informe §1) en las dos de dominantes (D1 opaca, D2 al 50 %: ArmadoPantalla) y gris
+//   claro #D1D4DC en el zero. Las 35 de antes, su orden, sus colores, Calc y los indices 0-5 de Extra NO cambian.
 // Sin referencias a ATAS.
 using System;
 using System.Collections.Generic;
@@ -45,7 +49,7 @@ namespace PythiaGexCinco.Familia
     public static class CatalogoFamilia
     {
         /// <summary>Las 35 series: las 24 de la vista previa en su orden, (4.1.3) las 4 "como la 2.0", (4.1.5/4.1.5b) las 2 de la clasica y (4.1.7/4.1.8)
-        /// las 2 TOPN y las 3 CARGA. 5.0: sin las de TQQQ (iban despues de las 24).</summary>
+        /// las 2 TOPN y las 3 CARGA. 5.0: sin las de TQQQ (iban despues de las 24). 5.0.3: + las 3 estilo Gammalito al final (38).</summary>
         public static readonly IReadOnlyList<SerieInfo> Series;
         /// <summary>id -> serie.</summary>
         public static readonly IReadOnlyDictionary<string, SerieInfo> PorId;
@@ -64,7 +68,8 @@ namespace PythiaGexCinco.Familia
         // 5.0 (27-10-2026): aca iba SeriesTqqq (T_DOMS_vol, T_MUROS_vol, T_MUROS_oi, T_ZERO_oi, T_DOMS_raz, T_ZERO_vol_pm).
         /// <summary>4.1.3: las series "como la 2.0" (fuera de Calc) y (4.1.5) la de la clasica, AL FINAL (un archivo de la 4.1.4 se lee igual). El indice
         /// es el de RegistroMinuto.Extra / ExtraStrikes.</summary>
-        public static readonly string[] Extra = { "R20_SPY_vol", "R20_SPX_vol", "DOMS_SPY_vol", "DOMS_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 4.1.5b: + R10_SPX_dom al final
+        public static readonly string[] Extra = { "R20_SPY_vol", "R20_SPX_vol", "DOMS_SPY_vol", "DOMS_SPX_vol", "R10_SPX_zero", "R10_SPX_dom",   // 4.1.5b: + R10_SPX_dom al final
+                                                  "GL_SPX_dom", "GL_SPY_dom", "GL_SPX_zero" };                                                   // 5.0.3: estilo Gammalito, al final
         /// <summary>id -> indice en Extra (o -1).</summary>
         public static int IndiceExtra(string id) { for (int i = 0; i < Extra.Length; i++) if (Extra[i] == id) return i; return -1; }
         /// <summary>4.1.3: el MetaLibro de donde sale la edad y la conversion de una serie extra: las replicas de la 2.0 tienen el suyo
@@ -77,7 +82,8 @@ namespace PythiaGexCinco.Familia
         /// R20_NDX_vol, R10_NDX_zero, R10_NDX_dom) SIN R20_SPY_vol (el analogo de R20_QQQ_vol): en un grafico de ES la 2.0 no dibuja SPY, su unico libro es
         /// SPX (MEDICIONES_ES.md §6). Quedan 6. Ninguna esta medida en ES: son las que se ven al poner la 5.0, nada mas.</summary>
         public static readonly string[] PrendidasPorDefecto = { "MUROS_ES_oi", "MUROS_SPX_vol", "TRES_SPX",
-                                                                "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 5.0 (P5): sin R20_SPY_vol
+                                                                "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom",     // 5.0 (P5): sin R20_SPY_vol
+                                                                "GL_SPX_dom", "GL_SPY_dom", "GL_SPX_zero" };      // 5.0.3: casillas NUEVAS, prendidas (pedido del operador)
         /// <summary>preview_niveles.PRESETS (5.0: sin los de tqqq_vivo). 5.0 (P5): sin "Recomendadas" (era la recomendacion del verificador en NQ: en ES no
         /// hay nada medido); "Por defecto" = las prendidas de fabrica; "2.0/Clasica contra 5.0" (antes "contra 4.1"). No los usa el codigo de la DLL.</summary>
         public static readonly IReadOnlyDictionary<string, string[]> Presets = new Dictionary<string, string[]>
@@ -267,6 +273,21 @@ namespace PythiaGexCinco.Familia
               "Los strikes de SPY con mas INTERES ABIERTO " + RADIO_CBOE_TXT + " (umbral y tope: ajustes '↳ carga' del grupo 3.0). Horizonte REAL: CBOE hasta 14 dias en vivo y 8 desde el archivo, strikes a +-5 % del spot; sin el contrato sin punta (iv <= 0). Es un piso, no el total de la cadena",
               "donde hay mas papel puesto cerca del precio en SPY; la etiqueta lleva el strike de SPY y la raya va " + CONV_SPY,
               EnNq("con QQQ: sin validar como nivel; es cobertura"), l, est);
+
+            // --- 5.0.3 (27-10-2026): estilo Gammalito (GammalitoFam.cs). Valor de un strike = gamma Black-Scholes x (vol calls - vol puts) (MEDIDO contra la
+            //     captura de Gammalito de las 12:33 NY: R2 0,998 y 14/14 colores en SPX; informe _referencia/2026-10-27-gammalito-ES). Rol D1/D2 y Z.
+            S("GL_SPX_dom", "GL SPX", "SPX", "vol", "GL", "Gammalito", "#FFD700", 0,
+              "Estilo Gammalito, amarillos de SPX: las 2 barras de mayor |gamma x (vol calls - vol puts)| del 0DTE de SPX (CBOE, 15 min tarde), sin importar el lado ni la distancia al precio (D1 la mas larga, opaca; D2 al 50 %)",
+              "los dos strikes de SPX donde HOY se negocio mas gamma neta (calls menos puts), " + CONV_SPX + "; Gammalito tiene el dato en vivo, la 5.0 lo ve 15 min despues",
+              SIN_MEDIR + " como nivel (contra Gammalito a la misma hora, 27-10, 192 minutos: 80 % de los amarillos visibles a <= 0,9 pt, brillo 59 %; con el dato en vivo la regla daba 92 %)", l, est);
+            S("GL_SPY_dom", "GL SPY", "SPY", "vol", "GL", "Gammalito", "#FFD700", 0,
+              "Estilo Gammalito, amarillos de SPY: las 2 barras de mayor |gamma x (vol calls - vol puts)| de SPY (CBOE, 15 min tarde), sin importar el lado (D1 opaca, D2 al 50 %)",
+              "los dos strikes de SPY donde HOY se negocio mas gamma neta, " + CONV_SPY + "; Gammalito tiene el dato en vivo, la 5.0 lo ve 15 min despues",
+              SIN_MEDIR + " como nivel (contra Gammalito a la misma hora, 27-10, 192 minutos: 80 % de los amarillos visibles a <= 0,9 pt, brillo 59 %; con el dato en vivo la regla daba 92 %)", l, est);
+            S("GL_SPX_zero", "GL SPX 0Γ", "SPX", "vol", "GL", "Gammalito", "#D1D4DC", 0,
+              "Estilo Gammalito, zero gris: el cambio de signo de gamma x (vol calls - vol puts) del 0DTE de SPX entre dos strikes, interpolado, el cruce mas cercano al precio",
+              "donde el perfil de SPX de hoy pasa de calls a puts mas cerca del precio, " + CONV_SPX + "; describe el regimen, nunca la direccion",
+              SIN_MEDIR + " como nivel (contra el gris de Gammalito a la misma hora, 27-10: mediana 1,55 pts, 8 % a <= 0,5 pt, por los 15 min de atraso de CBOE; con la misma foto, mediana 0,51 pt)", l, est);
 
             Series = l.AsReadOnly();
             PorId = l.ToDictionary(x => x.Id, StringComparer.Ordinal);

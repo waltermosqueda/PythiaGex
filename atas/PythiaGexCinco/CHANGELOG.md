@@ -1,5 +1,35 @@
 # CHANGELOG — PythiaGex 5.0 (Gamma ES)
 
+## 5.0.3 (27-10-2026) — estilo Gammalito: barras por strike, amarillos y zero (compilada; SIN instalar)
+- Pedido del operador (textual): "agregá a la 5.0 las barras por strike al estilo Gammalito (izquierda gamma x volumen neto de SPX y SPY, amarillos y
+  zero), bien convertidas a ES". Formula del informe `_referencia/2026-10-27-gammalito-ES/INFORME.md` (ingenieria inversa de 10 capturas): valor de un
+  strike = gamma Black-Scholes x (vol calls - vol puts), cada lado con su IV = `Gv` del libro del minuto de la 5.0 (Perfil.cs). Modulo nuevo
+  `_modulos/familia/gammalito/GammalitoFam.cs`.
+- **Barras** (casillas nuevas "GL barras SPX" / "GL barras SPY", Order 99-100): SPX 0DTE en K + base C7 del minuto y SPY en K x razon C8 (los mismos
+  precios que MUROS_SPX_vol / MUROS_SPY_vol: 15.481 de 15.481 comparaciones iguales), pegadas al borde izquierdo, verde #089981 / rojo #F23645 al 65 %,
+  la mas larga de cada libro = 30 % del ancho, alto 11 px (medido 10-11 px en las capturas a 9,7 y ~32 px/pt; tope 0,6 del paso de 5 pts de SPX, minimo
+  3), SPY debajo y SPX encima, solo las que caen en pantalla. El motor arma el perfil del ultimo minuto con libros (`FotoFamilia.PerfilGl`, tipos nuevos
+  `PerfilGl`/`BarraGl` en Contratos.cs) y la pantalla solo pone coordenadas. Sin barras hasta el primer minuto calculado despues de abrir ATAS (un minuto
+  del archivo no trae los libros); no se rebobinan.
+- **Series extra nuevas** AL FINAL de `CatalogoFamilia.Extra` (tipo nuevo "GL", sin cambio ▲▼), casillas "GL amar. SPX", "GL amar. SPY", "GL zero SPX"
+  (Order 101-103), todas PRENDIDAS (nombres nuevos): `GL_SPX_dom` / `GL_SPY_dom` = las 2 barras de mayor |valor| de cada libro (D1 amarillo #FFD700
+  opaco, D2 al 50 % en la estela); `GL_SPX_zero` = cruce de signo interpolado del perfil SPX, el mas cercano al precio (gris #D1D4DC, 1 px). Se guardan
+  en el niv con sus ids; etiquetas "GL SPX D1 95,0B", "GL SPX 0Γ"; en un grupo que no encabezan van nombradas (" · GL SPX D1"). Sin cambiar ningun
+  default ni nombre existente.
+- **Probado** (arnes P8: el motor entero con los datos reales del 27-10, DLL 5.0.2 contra 5.0.3, misma secuencia de pasos): (a) las 1.319 lineas del niv
+  sin las GL y la foto final (historia m2, actuales y fuentes sin las GL) IDENTICAS byte a byte a la 5.0.2; (b) recalculo independiente en Python desde la
+  cadena cruda, 250 minutos 13:01-17:10Z: 34.598 barras con error 0, zero 250/250, amarillos SPY 250/250 y SPX 250/250 (20 con 0,01 pt de diferencia de
+  redondeo del precio); (c) contra la captura de Gammalito de las 12:33 NY, a la misma hora (16:30-16:35Z): R2 0,987-0,991 y 14/14 colores en SPX,
+  0,977-0,983 y 7/7 en SPY (la foto del MISMO dato que Gammalito, que la 5.0 recien tiene a las 16:49Z, da 0,876: la gamma al precio y la hora del minuto
+  pesa mas que los 15 min de volumen); (d) contra las capturas por minuto (192 min 09:30-12:42 NY, a la misma hora): amarillos 80 % de los visibles a
+  <= 0,9 pt (brillo D1/D2 59 %; la regla con el dato en vivo daba 92 %); zero mediana 1,55 pts, 8 % a <= 0,5 pt (con la misma foto de CBOE: 0,51 pt):
+  el zero llega 15 min tarde; (e) la pantalla (ArmadoPantalla sin ATAS, 21 minutos 16:30-16:50Z): 441 barras recalculadas por fuera (color, x, largo,
+  alto, y) iguales a lo dibujado, primero las barras y SPY antes que SPX; estela GL D1 alfa 255, D2 128, zero 1 px; las demas series sin cambios.
+- **Falta**: instalar y la comprobacion en la pantalla real de ATAS (regla 09-10); el auditor (`herramientas/auditar_familia.py`) no tiene las GL en su
+  catalogo (no las audita); los amarillos y el zero se calculan tambien fuera de la rueda (como las demas series por volumen: de noche con la cadena
+  congelada y su edad en naranja; Gammalito empieza a las 09:30 NY). SIN MEDIR EN ES como nivel.
+- Version: FileVersion 5.0.3.0, InformationalVersion 5.0.3, `VERSION` "5.0.3"; AssemblyVersion queda 5.0.0.0.
+
 ## 5.0.2 (27-10-2026) — sin la pestaña de detalle
 - Pedido del operador (textual): "elimina este cuadro, es poco profesional, no hace falta" / "no lo escondas, elimina". Se ELIMINO del codigo la pestaña
   "PythiaGex 5.0 ▸/▾" (titulo, panel desplegable con fuentes y detalle por nivel, su clic y la casilla "Pestaña 5.0" / Cabecera4). Queda la edad del dato

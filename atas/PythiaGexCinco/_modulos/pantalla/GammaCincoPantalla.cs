@@ -42,6 +42,8 @@
 //   OnInitialize (log de arranque): AjustesPantalla4Texto()
 // 5.0.1 (27-10-2026): solo las DESCRIPCIONES de S_R20_SPX_vol, S_R10_SPX_zero y S_R10_SPX_dom (la conversion de la 5.0 por defecto, ajuste
 //   Replicas50Conversion de IntegracionFamilia.cs); nombres, grupos, orden y defaults igual.
+// 5.0.3 (27-10-2026): 5 casillas NUEVAS estilo Gammalito al final del grupo (Order 99-103, PRENDIDAS): GlBarrasSpx "GL barras SPX", GlBarrasSpy "GL barras
+//   SPY", S_GL_SPX_dom "GL amar. SPX", S_GL_SPY_dom "GL amar. SPY", S_GL_SPX_zero "GL zero SPX". Ninguna propiedad existente cambia.
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -153,6 +155,23 @@ namespace PythiaGexCinco
         [Display(Name = "3.0 SPY rayas", GroupName = G0, Order = 29, Description = SERIE + "D1/D2 de la capa SPY del motor 3.0 interno (CBOE, 15 min tarde; aproximada a la 3.0, sin arnes propio en ES), llevadas a ES con la razon de ESA capa: puede no ser la de la Familia y la pestaña no la muestra. No es la llave '3.0 capas▸': es la serie de la Familia que sale de la capa SPY que el motor 3.0 calcula siempre. Estado: SIN MEDIR EN ES (en NQ, con QQQ: nunca validado).")]
         public bool S_TRES_SPY { get; set; } = false;
 
+        // ---- 5.0.3 (27-10-2026): estilo Gammalito (pedido del operador: "las barras por strike al estilo Gammalito (izquierda gamma x volumen neto de SPX y
+        //      SPY, amarillos y zero), bien convertidas a ES"). Propiedades NUEVAS (ningun .ws las tiene: toman estos defaults, PRENDIDAS). Order 99-103: al
+        //      final del grupo (el ultimo ocupado era 98, "↳ carga: rayas minimas"). La formula: _referencia/2026-10-27-gammalito-ES/INFORME.md.
+        private const string GL_ATRASO = "con CBOE va 15 min atrasado respecto de Gammalito, que tiene el dato en vivo; SIN MEDIR EN ES. ";
+        private const string GL_SPX_A_ES = "llevado a ES sumando la base ES - SPX sincronizada del minuto (C7: la de los muros de SPX y el eje)";
+        private const string GL_SPY_A_ES = "llevado a ES multiplicando por la razon ES/SPY sincronizada del minuto (C8, ~10,08: un strike de SPY = 1 USD ~ 10 pts de ES)";
+        [Display(Name = "GL barras SPX", GroupName = G0, Order = 99, Description = "No necesita ninguna llave: estilo Gammalito, barras por strike de SPX pegadas al borde IZQUIERDO del grafico, largo = gamma x (vol calls - vol puts) del 0DTE de SPX; " + GL_ATRASO + "Verde si es positivo (pesan las calls), rojo si es negativo (pesan las puts), al 65 %; la mas larga del libro mide el 30 % del ancho del grafico. Cada barra va en su strike de SPX " + GL_SPX_A_ES + "; es el perfil del ultimo minuto calculado (sin barras hasta el primer minuto calculado despues de abrir ATAS). Va encima de las de SPY. MEDIDO el 27-10 contra la captura de Gammalito de las 12:33 NY, a la misma hora (16:30-16:35Z): R2 0,987-0,991 de los largos y 14/14 colores (la gamma se evalua al precio y la hora del minuto; el volumen es el de CBOE de 15 min antes). Describe donde se negocio la gamma de hoy, nunca la direccion.")]
+        public bool GlBarrasSpx { get; set; } = true;
+        [Display(Name = "GL barras SPY", GroupName = G0, Order = 100, Description = "No necesita ninguna llave: estilo Gammalito, barras por strike de SPY pegadas al borde IZQUIERDO del grafico, largo = gamma x (vol calls - vol puts) de SPY; " + GL_ATRASO + "Mismos colores y escala propia (la mas larga de SPY = 30 % del ancho). Cada barra va en su strike de SPY " + GL_SPY_A_ES + "; las de SPX van encima. MEDIDO el 27-10 contra la captura de Gammalito de las 12:33 NY, a la misma hora: R2 0,977-0,983 y 7/7 colores.")]
+        public bool GlBarrasSpy { get; set; } = true;
+        [Display(Name = "GL amar. SPX", GroupName = G0, Order = 101, Description = "No necesita ninguna llave: estilo Gammalito, los amarillos de SPX = las 2 barras de SPX mas largas de cada minuto, sin importar el lado ni la distancia al precio (D1 amarillo opaco, D2 al 50 %); " + GL_ATRASO + "Es una serie de la Familia: rayitas con 'Estela▸' (una por vela de 2 min) y etiqueta 'GL SPX D1' con 'Etiquetas▸' (monto = gamma x volumen neto del strike en M USD por 1 %). " + GL_SPX_A_ES + ". MEDIDO el 27-10 (192 minutos 09:30-12:42 NY contra las capturas de Gammalito, a la misma hora): el 80 % de los amarillos visibles de la 5.0 (SPX y SPY) cae a <= 0,9 pt de uno de Gammalito y el brillo D1/D2 coincide en el 59 %; con el dato en vivo la misma regla daba 92 % (informe).")]
+        public bool S_GL_SPX_dom { get; set; } = true;
+        [Display(Name = "GL amar. SPY", GroupName = G0, Order = 102, Description = "No necesita ninguna llave: estilo Gammalito, los amarillos de SPY = las 2 barras de SPY mas largas de cada minuto, sin importar el lado (D1 amarillo opaco, D2 al 50 %); " + GL_ATRASO + "Serie de la Familia como 'GL amar. SPX' (etiqueta 'GL SPY D1'); " + GL_SPY_A_ES + ".")]
+        public bool S_GL_SPY_dom { get; set; } = true;
+        [Display(Name = "GL zero SPX", GroupName = G0, Order = 103, Description = "No necesita ninguna llave: estilo Gammalito, el zero gris = donde el perfil de SPX (gamma x (vol calls - vol puts) del 0DTE) cambia de signo entre dos strikes, interpolado, el cruce mas cercano al precio; " + GL_ATRASO + "Serie de la Familia: rayitas finas grises con 'Estela▸' y etiqueta 'GL SPX 0Γ'; " + GL_SPX_A_ES + ". No es el zero gamma estandar (ese reevalua la gamma a cada precio): este se pega al precio y salta de cruce en cruce. MEDIDO el 27-10 contra el gris de Gammalito a la MISMA hora (183 minutos): mediana 1,55 pts de diferencia, 8 % a <= 0,5 pt (el cruce se mueve con el volumen al dinero y la 5.0 lo ve 15 min tarde); con la misma foto de CBOE que Gammalito, mediana 0,51 pt. Describe el regimen, nunca la direccion.")]
+        public bool S_GL_SPX_zero { get; set; } = true;
+
         // ------------------------------------------------------------------ pantalla (mismos nombres que la 4.0.6; Order 30-36 del clon)
         [Display(Name = "Doble eje izq.", GroupName = G0, Order = 30, Description = "No necesita ninguna llave. Marcas a la izquierda con el precio del libro elegido en cada altura: SPX = ES - base sincronizada (ES - SPX); SPY = ES / razon sincronizada (ES/SPY, ~10,1). Es la MISMA conversion que usan las rayas de SPX y SPY de la Familia. Ninguno = sin marcas. Default SPX: el indice que publican los tableros de GEX (sus marcas fuertes caen cada 25 pts del indice); con SPY la marca fuerte es cada dolar entero (un strike). Si la conversion no esta vigente o sale de su cota (base ES - SPX en (0, 150] pts; razon ES/SPY entre 9,95 y 10,25; MEDICIONES_ES.md §3.8) no se dibuja y la pestaña dice por que.")]
         public EjeFamilia4 Eje4Libro { get; set; } = EjeFamilia4.SPX;   // 5.0: Ninguno/SPX/SPY; default SPX (en la 4.1 era TQQQ, que ya no existe; 5.0 P5: confirmado)
@@ -245,6 +264,9 @@ namespace PythiaGexCinco
                 case "DOMS_SPX_vol": return S_DOMS_SPX_vol;
                 case "R10_SPX_zero": return S_R10_SPX_zero;     // 4.1.5
                 case "R10_SPX_dom": return S_R10_SPX_dom;       // 4.1.5b
+                case "GL_SPX_dom": return S_GL_SPX_dom;         // 5.0.3: estilo Gammalito
+                case "GL_SPY_dom": return S_GL_SPY_dom;
+                case "GL_SPX_zero": return S_GL_SPX_zero;
                 default: return false;
             }
         }
@@ -268,6 +290,7 @@ namespace PythiaGexCinco
             a.Letra = Letra4; a.MargenSup = MargenSup4;
             a.Montos = Monto41Rotulos; a.Cambios = Cambio41Rotulos; a.Ventana = Cambio41Ventana;      // 4.1.2
             a.Tramos = Tramos41Rotulos;                                                               // 4.1.4
+            a.GlBarrasSpx = GlBarrasSpx; a.GlBarrasSpy = GlBarrasSpy;                                 // 5.0.3: barras estilo Gammalito
         }
 
         bool IGraficoPantalla.PanelAbierto { get => _pantallaAbierta4; set => _pantallaAbierta4 = value; }

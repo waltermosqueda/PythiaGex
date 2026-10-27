@@ -77,6 +77,14 @@
 //   de cada raya dice "conversion de la 5.0: base X sincronizada; eleccion con la base de la 2.0|clasica Y (origen): la raya va +-Z pts de donde la
 //   ponia la 2.0|clasica" (DetalleConv50); la fuente dice "formula y seleccion de la 2.0|clasica en ES con la conversion de la 5.0" y la salvedad de
 //   la clasica es AVISO_CLASICA_50. Con el ajuste apagado, todo como en la 5.0.0.
+// 5.0.3 (27-10-2026, pedido del operador: "las barras por strike al estilo Gammalito ... amarillos y zero, bien convertidas a ES"):
+//   * BARRAS a la izquierda (casillas GlBarrasSpx / GlBarrasSpy): el perfil del ultimo minuto que publica el motor (FotoFamilia.PerfilGl, ya en ES y con
+//     el largo relativo); aca solo coordenadas: x desde area.Left, largo = |Rel| x 30 % del ancho visible, alto 10-11 px como en las capturas (tope
+//     0,6 del paso de un strike de SPX, minimo 3), verde/rojo al 65 %, primero SPY y despues SPX (SPX encima), solo las que caen en pantalla; se
+//     agregan ANTES que todo lo demas (quedan debajo de la estela, las etiquetas y el eje doble).
+//   * ESTELA de las series GL_*: D1 amarillo opaco y D2 al 50 % (el indice del precio en la vela: SalidaFamilia guarda D1, D2 en ese orden); el zero
+//     GL_SPX_zero en 1 px. El resto de las series, igual que antes (mismo color, alfa y alto).
+//   * ETIQUETAS: "GL SPX D1 417M", "GL SPY D2 -88M", "GL SPX 0Γ" (sin rol, como la clasica); en un grupo que no encabezan van nombradas como las de la 2.0.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -114,6 +122,8 @@ namespace PythiaGexCinco.Familia
         /// <summary>4.1.4: Tramos41Rotulos (rotulos chicos al final de cada tramo de historia que ya no es el vigente).</summary>
         public bool Tramos = true;
         public VentanaCambio41 Ventana = VentanaCambio41.M15;
+        /// <summary>5.0.3: GlBarrasSpx / GlBarrasSpy (las barras por strike estilo Gammalito a la izquierda).</summary>
+        public bool GlBarrasSpx = true, GlBarrasSpy = true;
         public int VentanaMin => Ventana == VentanaCambio41.M5 ? 5 : Ventana == VentanaCambio41.M30 ? 30 : 15;
         public bool Visible(string id) => id != null && Visibles.Contains(id);
         public void Limpiar() { Visibles.Clear(); }
@@ -201,12 +211,15 @@ namespace PythiaGexCinco.Familia
         /// <summary>Revision 4.1.4 (diagnostico, arnes): las rayas que no se rotularon (Txt = por que: "tope", "columna" o "sin lugar"; Series, Precio,
         /// VelaIni/VelaFin y XFin como en un rotulo puesto; Caja vacia).</summary>
         public readonly List<RotuloTramo> TramosNoPuestos = new List<RotuloTramo>();
+        /// <summary>5.0.3 (diagnostico, arnes): las barras estilo Gammalito que se dibujaron (en el orden de dibujo: SPY y despues SPX). X0 = area.Left.</summary>
+        public readonly List<(double Precio, double Rel, int Y, int Largo, int Alto, bool Spy)> BarrasGl = new List<(double, double, int, int, int, bool)>(256);
 
         public void Limpiar()
         {
             Prims.Clear(); Pestana = Rectangle.Empty; Recuadro2E = Rectangle.Empty; Cartel = ""; Titulo = ""; EjeTitulo = ""; EdadColumna = "";
             ColorTitulo = Color.Empty; ColorCartel = Color.Empty; Etiquetas.Clear(); Rotulos.Clear(); Panel.Clear(); Marcas.Clear(); Rayitas = 0;
             RotulosTramos.Clear(); TramosNoPuestos.Clear(); TramosLargos = 0; TramosVigentes = 0; TramosGrupos = 0; TramosDescartados = 0; TramosRecortados = 0;
+            BarrasGl.Clear();
         }
         internal void Relleno(Color c, Rectangle r) => Prims.Add(new PrimPantalla(TipoPrimPantalla.Relleno, c, r, 0, 0, 0, null));
         internal void Borde(Color c, float grosor, Rectangle r) => Prims.Add(new PrimPantalla(TipoPrimPantalla.Borde, c, r, 0, 0, grosor, null));
@@ -302,6 +315,15 @@ namespace PythiaGexCinco.Familia
         // revision 4.1.4: el juntar y el agrupar comparan tramos de a pares: antes de eso quedan los TRAMO_CAND no vigentes mas largos en pantalla
         // (alcanza de sobra para 14 rotulos; con niveles que saltan cada 16 velas habia 8.200-16.400 tramos y el render tardaba 220-570 ms)
         public const int TRAMO_CAND = 200;
+        // 5.0.3 (27-10-2026): las barras estilo Gammalito (informe _referencia/2026-10-27-gammalito-ES §1-2, medido en sus capturas): verde #089981 si el valor
+        // es positivo, rojo #F23645 si es negativo, al 65 % de opacidad; la mas larga de cada libro = 30 % del ancho; alto MEDIDO 10-11 px en las 10 capturas
+        // (a 9,7 y a ~32 px por punto: no depende del zoom), con tope 0,6 del paso de un strike de SPX en px (5 pts) para que no se encimen al alejar, minimo 3.
+        public static readonly Color ColGlVerde = Color.FromArgb(166, 0x08, 0x99, 0x81);
+        public static readonly Color ColGlRojo = Color.FromArgb(166, 0xF2, 0x36, 0x45);
+        public const double GL_ANCHO = 0.3, GL_ALTO_PASO = 0.6, GL_PASO_SPX = 5.0;
+        public const int GL_ALTO_MAX = 11, GL_ALTO_MIN = 3;
+        /// <summary>5.0.3: las series estilo Gammalito (GL_*): D2 al 50 % en la estela, el zero en 1 px, nombradas en un grupo de etiquetas.</summary>
+        public static bool EsGl(string serie) => serie != null && serie.StartsWith("GL_", StringComparison.Ordinal);
         private static readonly Regex ReVencEs = new Regex(@"ES\s*([FGHJKMNQUVXZ])\s*(\d{1,4})", RegexOptions.Compiled);
         private static readonly Regex ReVencSolo = new Regex(@"^([FGHJKMNQUVXZ])(\d{1,4})$", RegexOptions.Compiled);
 
@@ -795,7 +817,7 @@ namespace PythiaGexCinco.Familia
             var vistos = new List<string>(2);
             foreach (var x in grupo)
             {
-                if (ReferenceEquals(x, cab) || x.Partes == null || x.Partes.Length == 0 || !(EsSerie20(x.Partes[0].Serie) || EsClasica(x.Partes[0].Serie))) continue;   // 4.1.5: + la clasica
+                if (ReferenceEquals(x, cab) || x.Partes == null || x.Partes.Length == 0 || !(EsSerie20(x.Partes[0].Serie) || EsClasica(x.Partes[0].Serie) || EsGl(x.Partes[0].Serie))) continue;   // 4.1.5: + la clasica; 5.0.3: + las GL
                 string t = Unir(x.LibroTxt, x.RolTxt);
                 if (t == "" || vistos.Contains(t)) continue;
                 vistos.Add(t);
@@ -943,6 +965,26 @@ namespace PythiaGexCinco.Familia
             }
             bool EnPantalla(int y) => y != int.MinValue && y >= area.Top && y <= area.Bottom;
 
+            // ---- 5.0.3: barras por strike estilo Gammalito, pegadas al borde IZQUIERDO (debajo de todo lo demas: van primero). El perfil viene armado del
+            //      motor (FotoFamilia.PerfilGl: precio en ES y largo relativo a la mas larga de su libro, SPY primero y SPX despues = SPX encima): aca
+            //      solo coordenadas, sin listas nuevas. Solo los strikes que caen en la pantalla.
+            var pg = F.PerfilGl;
+            if (pg?.Barras != null && pg.Barras.Length > 0 && (aj.GlBarrasSpx || aj.GlBarrasSpy))
+            {
+                double largoMax = GL_ANCHO * Math.Max(0, xr - area.Left);
+                int alto = double.IsNaN(mY) ? GL_ALTO_MAX : (int)Math.Max(GL_ALTO_MIN, Math.Min(GL_ALTO_MAX, Math.Round(GL_ALTO_PASO * GL_PASO_SPX * Math.Abs(mY))));
+                var barras = pg.Barras;
+                for (int i = 0; i < barras.Length; i++)
+                {
+                    var b = barras[i];
+                    if (b.Spy ? !aj.GlBarrasSpy : !aj.GlBarrasSpx) continue;
+                    int y = Yr(b.Precio); if (!EnPantalla(y)) continue;
+                    int largo = Math.Max(1, (int)Math.Round(Math.Abs(b.Rel) * largoMax));
+                    d.Relleno(b.Rel > 0 ? ColGlVerde : ColGlRojo, new Rectangle(area.Left, y - alto / 2, largo, alto));
+                    d.BarrasGl.Add((b.Precio, b.Rel, y, largo, alto, b.Spy));
+                }
+            }
+
             var vis = new List<SerieInfo>();
             foreach (var s in cat.Lista) if (aj.Visible(s.Id)) vis.Add(s);
             var hist = F.HistoriaM2;
@@ -961,10 +1003,16 @@ namespace PythiaGexCinco.Familia
             {
                 int w = Math.Max(2, (int)Math.Round(v.AnchoVela * 0.9)); wEst = w;
                 var colEst = new Color[vis.Count]; var tres = new bool[vis.Count];
+                // 5.0.3: las GL como Gammalito: D1 amarillo opaco y D2 (y siguientes) al 50 % (colEst2), el zero en 1 px (alto); el resto igual que antes
+                var colEst2 = new Color[vis.Count]; var alto = new int[vis.Count];
                 for (int j = 0; j < vis.Count; j++)
                 {
                     tres[j] = vis[j].Tipo == "TRES";
-                    colEst[j] = Color.FromArgb(tres[j] ? 190 : 240, cat.Colores.TryGetValue(vis[j].Id, out var cc) ? cc : ColTexto);
+                    var c0 = cat.Colores.TryGetValue(vis[j].Id, out var cc) ? cc : ColTexto;
+                    bool gl = EsGl(vis[j].Id);
+                    colEst[j] = Color.FromArgb(gl ? 255 : tres[j] ? 190 : 240, c0);
+                    colEst2[j] = gl ? Color.FromArgb(128, c0) : colEst[j];
+                    alto[j] = tres[j] || vis[j].Id == "GL_SPX_zero" ? 1 : 2;
                 }
                 bool conTramos = aj.Tramos;
                 var abiertos = conTramos ? new List<TramoH>[vis.Count] : null;
@@ -981,10 +1029,10 @@ namespace PythiaGexCinco.Familia
                     {
                         if (!porSerie.TryGetValue(vis[j].Id, out var ps)) ps = null;
                         if (ps != null)
-                            foreach (var p in ps)
+                            for (int k = 0; k < ps.Length; k++)
                             {
-                                int y = Yr(p); if (!EnPantalla(y)) continue;
-                                d.Relleno(colEst[j], new Rectangle(x - w / 2, y - 1, w, tres[j] ? 1 : 2));
+                                int y = Yr(ps[k]); if (!EnPantalla(y)) continue;
+                                d.Relleno(k == 0 ? colEst[j] : colEst2[j], new Rectangle(x - w / 2, y - 1, w, alto[j]));
                                 d.Rayitas++;
                             }
                         if (conTramos && (ps != null && ps.Length > 0 || abiertos[j] != null)) SeguirTramos(ref abiertos[j], ps, j, iv0, x, largos, v.Velas);
@@ -1108,7 +1156,7 @@ namespace PythiaGexCinco.Familia
                              : esCarga && !double.IsNaN(a.Strike) && Math.Abs(a.Strike - a.Precio) >= 0.005
                                  ? (corto0 == "" ? a.Libro : corto0) + " " + Strike(a.Strike)
                              : (corto0 == "" ? a.Libro : corto0);
-                bool clasica = a.Serie == "R10_SPX_zero";          // 4.1.5: "Clasica SPX 0Γ" ya dice que es el zero: sin rol (4.1.5b: las D1-D3 de la clasica SI llevan rol)
+                bool clasica = a.Serie == "R10_SPX_zero" || a.Serie == "GL_SPX_zero";   // 4.1.5: "Clasica SPX 0Γ" ya dice que es el zero: sin rol (4.1.5b: las D1-D3 de la clasica SI llevan rol; 5.0.3: "GL SPX 0Γ" igual)
                 string nom = esConf ? "CONF" + fu : clasica ? libro + fu : libro + " " + rol + fu;
                 string rolCorto = clasica ? "" : rol.Replace("muro C/muro P", "C/P").Replace("muro P/muro C", "C/P").Replace("muro C", "C").Replace("muro P", "P").Replace(" est.", "");
                 string corto = esConf ? "CONF" : libro + (clasica ? "" : " " + rolCorto) + (fuA == "3.0" ? "" : (fuA == "oi" ? " OI" : " v"));
@@ -1189,7 +1237,7 @@ namespace PythiaGexCinco.Familia
                             var extra = new List<string>(); var otros = new List<string>();
                             foreach (var x in l)
                             {
-                                if (ReferenceEquals(x, a0) || x.Partes == null || x.Partes.Length == 0 || !(EsSerie20(x.Partes[0].Serie) || EsClasica(x.Partes[0].Serie))) continue;
+                                if (ReferenceEquals(x, a0) || x.Partes == null || x.Partes.Length == 0 || !(EsSerie20(x.Partes[0].Serie) || EsClasica(x.Partes[0].Serie) || EsGl(x.Partes[0].Serie))) continue;   // 5.0.3: + las GL
                                 if (x.LibroTxt == a0.LibroTxt || x.LibroTxt.StartsWith(a0.LibroTxt + " ", StringComparison.Ordinal))
                                 { if (x.RolTxt != "" && x.RolTxt != a0.RolTxt && !extra.Contains(x.RolTxt)) extra.Add(x.RolTxt); }
                                 else { string t = Unir(x.LibroTxt, x.RolTxt); if (t != "" && !otros.Contains(t) && otros.Count < 2) otros.Add(t); }
