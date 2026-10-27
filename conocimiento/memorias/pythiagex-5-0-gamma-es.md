@@ -60,3 +60,9 @@ captura de la referencia de las 12:33 NY R2 0,98-0,99 y colores 14/14 SPX, 7/7 S
 el zero llega 15 min tarde, mediana 1,55 pt). En pantalla 20:58Z: etiquetas GL = niv (GL SPY D1 1,10B 7771,2; GL SPX 0Γ 7753,5). Despues del cierre
 el "Hoy" pasa al vencimiento siguiente y los GL quedan lejos (SPX 7770 = 7805,7): la referencia arranca 9:30 NY; recortar a la rueda lo decide el operador.
 Pendientes: auditor sin las GL; reparar NDX en la 4.1; "X-Ray Key Levels" quedo cargado en "MES 1m Chart" y "GEX Profile" en el grafico nuevo "MESZ6 5m Chart".
+
+**5.0.4 INSTALADA 27-10 18:29 ART (git 7b7a8f1d5, DLL 6d07212e…):** perfil estilo la referencia tambien con el LIBRO ES de Rithmic EN VIVO (barras a la
+DERECHA pegadas a la columna de etiquetas, amarillos GL_ES_dom, zero GL_ES_zero; casillas "GL barras ES", "GL amar. ES", "GL zero ES" prendidas).
+Auditado en pantalla al abrir la sesion nocturna (22:03Z): GL ES D1 7755 −12M y zero 7760 = recalculo propio desde viva3-ES. Las barras aparecen
+recien con el primer minuto calculado en vivo: en la pausa de CME (17-18 NY) no hay. Trampa: reiniciar ATAS en la pausa de CME → Rithmic no conecta
+("Connect attempt did not complete within 00:01:00"): reconectar con conectar_atas.ps1 + fila_en_y.ps1 -Nombre Connect -Y 355.
