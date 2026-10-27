@@ -1,0 +1,74 @@
+============================================================================================================================================
+auditar_familia 1.0 (27-10-2026) — PythiaGex 5.0 Gamma ES (ES/MES)
+datos: C:\Users\wmx_7\AppData\Roaming\ATAS\PythiaGex5 (solo lectura) | sesion 2026-10-27 [10-26 22:00, 10-27 21:00) UTC (NY, corregida) | contrato MESZ6 | prioridad 0x4000 | carga 15.5 s
+cinta: seg-MES-2026-10-27.bin (4 tramos escuchados) | ES: 73 fotos viva3 | C2: sin fotos de noche
+CBOE SPX: propia 1981 fotos, extra 1991 fotos | muestras (con todo lo archivado): 82 por tick, 0 por vela, 1584 con el precio guardado por el indicador (velas del grafico: NO VERIFICABLE), 354 sin precio; verificables distintas de las guardadas por el indicador: 0
+CBOE SPY: propia 1804 fotos, extra 1814 fotos | muestras (con todo lo archivado): 73 por tick, 0 por vela, 1703 con el precio guardado por el indicador (velas del grafico: NO VERIFICABLE), 55 sin precio; verificables distintas de las guardadas por el indicador: 0
+arranques del indicador (pythiagex5-cboe.log): 10-27 14:31:55, 10-27 15:19:20, 10-27 15:35:53, 10-27 15:53:55
+ruedas C7 de SPX (con todas las fotos): 2026-10-23 278 muestras, mediana robusta 37.2933, 2026-10-26 303 muestras, mediana robusta 36.3823, 2026-10-27 136 muestras, mediana robusta 36.2900
+niv: C:\Users\wmx_7\AppData\Roaming\ATAS\PythiaGex5\familia\niv-2026-10-27-MESZ6.jsonl (cabecera {'v': 'fam-4.1', 'sesion': '2026-10-27', 'contrato': 'MESZ6', 'modo': 'corregida'})
+--------------------------------------------------------------------------------------------------------------------------------------------
+INSUMOS POR MINUTO (indicador / recalculado)
+  10-27 15:56 UTC (11:56 NY) en vivo, arranque 10-27 15:53:55 | fut 7765.25/7765.25 | ES corr 0.0000/0.0000 foto 15:55:46 | SPX base 36.1100/36.1100 foto 10-27 15:55:13 (propia) | SPY razon 10.079946/10.079946 foto 10-27 15:55:15 (propia)
+  10-27 15:57 UTC (11:57 NY) en vivo, arranque 10-27 15:53:55 | fut 7765.25/7765.25 | ES corr 0.0000/0.0000 foto 15:56:51 | SPX base 36.1200/36.1200 foto 10-27 15:56:28 (propia) | SPY razon 10.079935/10.079935 foto 10-27 15:56:15 (propia)
+  10-27 15:58 UTC (11:58 NY) en vivo, arranque 10-27 15:53:55 | fut 7765.50/7765.50 | ES corr 0.0000/0.0000 foto 15:57:51 | SPX base 36.1200/36.1200 foto 10-27 15:56:28 (propia) | SPY razon 10.079935/10.079935 foto 10-27 15:56:15 (propia)
+  10-27 15:59 UTC (11:59 NY) en vivo, arranque 10-27 15:53:55 | fut 7765.50/7765.50 | ES corr 0.0000/0.0000 foto 15:58:51 | SPX base 36.1300/36.1300 foto 10-27 15:57:28 (propia) | SPY razon 10.079935/10.079935 foto 10-27 15:57:15 (propia)
+--------------------------------------------------------------------------------------------------------------------------------------------
+serie                       minutos  iguales        %   diferencias por motivo (filas)
+CONGELADA ES                      4        4   100.0%   -
+CONGELADA SPX                     4        4   100.0%   -
+CONGELADA SPY                     4        4   100.0%   -
+CONV ES                           4        4   100.0%   -
+CONV SPX                          4        4   100.0%   iguales con un insumo NO verificable (precio de muestra guardado por el indicador): 4
+CONV SPY                          4        4   100.0%   iguales con un insumo NO verificable (precio de muestra guardado por el indicador): 4
+FOTO ES                           4        4   100.0%   -
+FOTO SPX                          4        4   100.0%   -
+FOTO SPY                          4        4   100.0%   -
+INSUMO fut                        4        4   100.0%   -
+OI ES                             4        4   100.0%   -
+OI SPX                            4        4   100.0%   -
+OI SPY                            4        4   100.0%   -
+CONF_vol                          4        4   100.0%   -
+FAM_MUROS_oi                      4        4   100.0%   -
+FAM_MUROS_vol                     4        4   100.0%   -
+MAJORS_ES_oi                      4        4   100.0%   -
+MAJORS_ES_vol                     4        4   100.0%   -
+MAJORS_SPX_oi                     4        4   100.0%   -
+MAJORS_SPX_vol                    4        4   100.0%   -
+MAJORS_SPY_oi                     4        4   100.0%   -
+MAJORS_SPY_vol                    4        4   100.0%   -
+MUROS_ES_oi                       4        4   100.0%   -
+MUROS_ES_vol                      4        4   100.0%   -
+MUROS_SPX_oi                      4        4   100.0%   -
+MUROS_SPX_vol                     4        4   100.0%   -
+MUROS_SPY_oi                      4        4   100.0%   -
+MUROS_SPY_vol                     4        4   100.0%   -
+TOPN_ES_oi                        4        4   100.0%   -
+TOPN_ES_vol                       4        4   100.0%   -
+ZEST_ES_oi                        4        4   100.0%   -
+ZEST_ES_vol                       4        4   100.0%   -
+ZEST_SPX_vol                      4        4   100.0%   -
+ZEST_SPY_vol                      4        4   100.0%   -
+--------------------------------------------------------------------------------------------------------------------------------------------
+DIFERENCIAS (indicador / recalculado / diferencia / MOTIVO; tambien las iguales dentro de tolerancia con dif > 0)
+  10-27 15:56 CONV SPX             base conversion ind 36.1100                        rec 36.1100                        dif 0.0000    [igual, insumo NO verificable] 3 de las 24 muestras de la mediana usan el precio del futuro GUARDADO por el indicador (vela del grafico, no esta en la cinta): la cuenta coincide pero ese insumo NO es verificable
+  10-27 15:56 CONV SPY             razon conversion ind 10.079946                      rec 10.079946                      dif 0.0000    [igual, insumo NO verificable] 3 de las 24 muestras de la mediana usan el precio del futuro GUARDADO por el indicador (vela del grafico, no esta en la cinta): la cuenta coincide pero ese insumo NO es verificable
+  10-27 15:57 CONV SPX             base conversion ind 36.1200                        rec 36.1200                        dif 0.0000    [igual, insumo NO verificable] 2 de las 24 muestras de la mediana usan el precio del futuro GUARDADO por el indicador (vela del grafico, no esta en la cinta): la cuenta coincide pero ese insumo NO es verificable
+  10-27 15:57 CONV SPY             razon conversion ind 10.079935                      rec 10.079935                      dif 0.0000    [igual, insumo NO verificable] 3 de las 24 muestras de la mediana usan el precio del futuro GUARDADO por el indicador (vela del grafico, no esta en la cinta): la cuenta coincide pero ese insumo NO es verificable
+  10-27 15:58 CONV SPX             base conversion ind 36.1200                        rec 36.1200                        dif 0.0000    [igual, insumo NO verificable] 2 de las 24 muestras de la mediana usan el precio del futuro GUARDADO por el indicador (vela del grafico, no esta en la cinta): la cuenta coincide pero ese insumo NO es verificable
+  10-27 15:58 CONV SPY             razon conversion ind 10.079935                      rec 10.079935                      dif 0.0000    [igual, insumo NO verificable] 3 de las 24 muestras de la mediana usan el precio del futuro GUARDADO por el indicador (vela del grafico, no esta en la cinta): la cuenta coincide pero ese insumo NO es verificable
+  10-27 15:59 CONV SPX             base conversion ind 36.1300                        rec 36.1300                        dif 0.0000    [igual, insumo NO verificable] 2 de las 24 muestras de la mediana usan el precio del futuro GUARDADO por el indicador (vela del grafico, no esta en la cinta): la cuenta coincide pero ese insumo NO es verificable
+  10-27 15:59 CONV SPY             razon conversion ind 10.079935                      rec 10.079935                      dif 0.0000    [igual, insumo NO verificable] 3 de las 24 muestras de la mediana usan el precio del futuro GUARDADO por el indicador (vela del grafico, no esta en la cinta): la cuenta coincide pero ese insumo NO es verificable
+--------------------------------------------------------------------------------------------------------------------------------------------
+DECISIONES DEL C# (no estan en la especificacion; se modelaron para poder comparar al centavo):
+  - FUENTES de CBOE: la 4.1 suma la carpeta extra PythiaGex\cboe-local (BajadorCboe.CarpetaExtra, 4.1.9 del 13-10) a la propia, con dedup por cadena_ts (gana la bajada mas temprana, como libros.fotos_cboe), pero la extra se lee SOLO AL ARRANCAR. La especificacion (libros.fotos_cboe) ya une varias carpetas; lo que es del C# es el CUANDO: el auditor modela que fotos conocia en cada minuto. Lo leido de la extra en un arranque llega hasta la ULTIMA foto que dice el log ('historia <libro>: ... a Y'), no hasta la hora de la linea (27-10 15:19: cboe_local escribio una foto mientras la 5.0 leia). Lo que la Familia DEBIA tener y no tuvo sale en 'CONV <libro> espec.'.
+  - ES (5.0, P2_SPX.md) BASE DE FORWARDS: sin base sincronizada (sin rueda, roll o fuera de cota) la 5.0 dibuja SPX con la base de forwards de la foto (error <= 8 ticks y dentro de las cotas). No esta en backtest_familia ni en el DISENO §4 (ahi el indice no se dibuja): si pasa, el auditor lo marca 'decision C#'.
+  - CIERRE DE VELA en vivo: el minuto T se calcula a T + 6 s y espera hasta T + 60 s el tick que cierra la vela m2 (MotorFamilia.RetrasoMinutoS y EsperaCierreS). La especificacion (vista previa en vivo) usaba el ultimo tick a T + ~6 s; la del backtest, la cinta entera.
+  - CINTA: la 4.1 guarda la cinta compacta (ultimo tick por segundo, velas m2 de ticks y tramos escuchados). Un tick vale si [tick, ts] esta escuchado; una vela, si su balde se escucho entero; si no, la 4.1 usa la vela del grafico de ATAS, que no se guarda. La especificacion no tiene tramos (su cinta CSV tenia todos los ticks).
+  - ZERO ESTANDAR (C5) sin cache: la 4.1.8 lo recalcula cada minuto (ZeroCadaMinuto = true, MinuteroNq/ConversionNdx/ConversionQqq), que es lo que hacia la vista previa EN VIVO (su cache vivia dentro de la llamada de un minuto). Si el niv no coincide, el auditor prueba la cache de la especificacion (primer minuto de la misma foto y clave) y lo dice.
+  - TOPN_<fut>_vol/oi: la especificacion no tiene TOPN. Regla del texto del catalogo (CatalogoFamilia: 'los N strikes con mas |gamma neta| dentro del radio min(2 %, 100 pts), de mayor a menor, D1..DN'), N = 6 (ReglasFam.TopNCantidad), monto neto como MAJORS. Desempate a igual |gamma|: el de menor strike primero (SUPUESTO).
+  - ES (5.0) RADIO DE LA FAMILIA: FAM_MUROS y CONF usan 20 pts (SeleccionFam.RADIO_FAMILIA); el DISENO_5_0 §4 fija el radio por libro (ES 25, SPX 20, SPY 20) pero no el de la familia. En NQ es el RADIO 100 de la especificacion para todo.
+  - ES (5.0) TOPN: N = 6 (TopNCantidad), radio del libro ES (25), misma regla que en NQ.
+  - ES (5.0) INTERPRETACION DEL AUDITOR de las reglas del DISENO_5_0 §4 (el DISENO dice la regla, no donde se aplica): la cota de la base (0 < b <= 150 y |b - fut x 3,4 % x dias/365| <= max(25 %, 3)), las horas de SPY (spot NY 04:00-20:00) y el rango de la razon (9,95-10,25) se aplican A CADA MUESTRA (la que no cumple no entra en ninguna mediana) y a la base/razon del minuto; el reinicio trimestral corta la ventana de 24 de SPY a las 04:00 NY del tercer viernes de mar/jun/sep/dic; el vencido se excluye ademas por su fecha (16:00 NY). Si la 5.0 lo aplica distinto, aparece como diferencia de CONV con el motivo.
+  - MODO CORREGIDO (default de la 4.1): sesion de CME en hora de NY (18:00 de la vispera a 17:00) y las horas fijas de C2/C7/C9/oi_fresco en hora de NY (DISENO_4_1 §A.8; ConversionQqq.Vigencia: congelada hasta las 09:30 NY siguientes). En horario de verano de EE.UU. es identico a la especificacion (UTC fijo); desde el 01-11 no. Vencimiento del contrato: tercer viernes 09:30 NY (velas.EXPIRA da igual para Z6). C2 'posferiado' con el calendario de NYSE (la especificacion: fijo '2026-09-08').
+CODIGO 0: todo coincide

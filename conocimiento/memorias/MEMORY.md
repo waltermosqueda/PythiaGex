@@ -120,3 +120,6 @@
 - [Agentes con esfuerzo maximo (09-10)](agentes-esfuerzo-maximo.md) — siempre effort 'max' en constructores, revisores, verificadores e investigadores.
 - [Orden de los grupos en los ajustes de ATAS (09-10)](atas-orden-grupos-ajustes.md) — por el MENOR Order de sus casillas; negativos al final; grupo_arriba_415c.py; cambios en vivo sin Apply.
 - [Respaldar al terminar cada tanda (09-10)](respaldar-al-terminar.md) — estable = instalada+verificada+verde y sin agentes editando: push publico + privado + espejo Inversiones (Drive).
+- [Estudio toques EMA 9/20 en 45 s (15-10)](estudio-toques-ema-45s.md) — su grafico es MNQZ6 45 s; reglas v3 verificadas; reiniciar_atas.ps1 le borro el espacio (corregido)
+- [Arranque automatico de ATAS (16-10)](arranque-automatico-atas.md) — tarea \PythiaGex\ATAS - arranque lun-vie 10:00 AR; probada en vivo 58 s; log pythiagex-arranque.log
+- [PythiaGex 5.0 Gamma ES (27-10)](pythiagex-5-0-gamma-es.md) — INSTALADA en MES 1m, auditor codigo 0; tipo nuevo se agrega por el dialogo; vigia de suscripciones mudas; pendientes

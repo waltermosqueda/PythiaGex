@@ -82,3 +82,22 @@ solo CME; IB pide OPRA pago). La clase principal es PythiaGexCuatro.FamiliaCuatr
   Medido con la vara de 20 pts (15-18 sesiones): ninguna dominante de la clasica le gana al azar; NDX D1 de dia peor que el azar.
 - **Trampa:** las casillas de la 3.0 (Raya3*, capas, formulas, recuadro, apoyo) no dibujan sin su llave Tres41*; 4.1.5e (workflow
   wkb0f7pma) las pone debajo de su llave con "↳".
+- **4.1.6 (instalada 09-10 21:09, respaldada: publico 89eed142a, privado 7adb1f9, Inversiones):** etiquetas estilo 2E (ESTILO_2E en
+  ArmadoPantalla: barrita LINEAL de peso, sin precio ni fuente). **INCOMPLETA respecto de la maqueta elegida** (el operador lo marco:
+  "por que no respetaste"): falta recuadro desplegable, roles juntos "QQQ C/M+/D1", sin "+", definir la flecha de cambio y sin cajita de
+  precio. Lista exacta en atas/PythiaGexCuatro/_previews_etiquetas/PENDIENTE_2E.md. Regla: comparar LADO A LADO con la maqueta antes de
+  entregar y decir lo que falta en el mismo mensaje de la instalacion. 4.1.5e (workflow wkb0f7pma) detenida en el arreglador.
+- **4.1.6c (instalada 09-10 21:22, respaldada: publico bd8d9be9c, privado 3c9d01b, Inversiones):** roles juntos ("QQQ M+/D1 1,31B"),
+  montos sin "+", recuadro desplegable debajo de la pestaña (arranca cerrado; clic en el titulo; estado en ArmadoPantalla.Recuadro2EAbierto,
+  estatico). Comprobado en pantalla 21:24. Falta: definir la flecha de cambio con el operador, probar el clic del recuadro (no clickeo el
+  lienzo), terminar la 4.1.5e, grabar las T_* en el niv, y arneses de pantalla al dia con 2E (no corridos).
+- **4.1.6d (instalada 09-10 21:30, comprobada 21:33, respaldada: publico bd8303786, privado 359d3cc, Inversiones):** recuadro desplegable
+  arriba a la DERECHA en renglon propio de la columna, sin palitos (conectores) en las etiquetas, rotulos de tramos ("etiquetas del medio")
+  apagados (Tramos41Rotulos default false + .ws con herramientas/ws_tramos_apagar_0910.py). **Trampa mia:** al mover el bloque del recuadro
+  borre por error la pestaña (busque una llave de cierre generica): restaurado desde git y reaplicado con reemplazos EXACTOS; antes de instalar,
+  mirar `git diff --stat` (un cambio chico no puede borrar 200 lineas). Pendiente: flecha de cambio, clic del recuadro, 4.1.5e, T_* en el niv,
+  arneses de pantalla al dia con 2E.
+- **4.1.6g (instalada 11-10 22:02, comprobada, respaldada: publico 3cf39c1b2, privado 3196b37):** memoria de 2 sesiones. MotorFamilia.HistoriaPrevia
+  (SESIONES_PREVIAS = 2, busca hasta 10 dias atras) carga del disco los niv + estelas de las sesiones anteriores y los pone en HistoriaM2 antes de la
+  sesion en curso. Log: "historia previa: 2026-10-09 (1378 min, 690 velas m2)". Verificado: la estela de NDX muros OI del viernes en 31.187,6.
+  Solo hay niv desde la sesion 10-09 (la 4.1 nacio el 08-10 a la noche): la 2da sesion previa aparece cuando se acumule. Sin TQQQ en lo previo.
