@@ -2,11 +2,13 @@
 // preview_niveles.Motor.niv (minuto -> {serie: [(precio, etq, monto)]}) mas lo que hace falta para los actuales, con persistencia propia:
 //   %APPDATA%\ATAS\PythiaGex5\familia\niv-<sesion>-<contrato>.jsonl   (4.1.0: en modo paridad, niv-<sesion>-<contrato>-paridad.jsonl;
 //   un archivo cuya cabecera es de OTRO modo se aparta como .otro-modo-<hora> y no se carga ni se mezcla)
-//   linea 1: {"v":"fam-4.1","sesion":"2026-10-08","contrato":"MESZ6","modo":"corregida"}
-//   despues una por minuto calculado CON libros: {"k":29856842,"f":31403.75,"b":["ES","SPX","SPY"],
-//      "m":[{"l":"SPX","c":241.62,"s":31162.1,"d":"2026-10-08T13:41:00Z","o":1,"z":0,"t":"base 241.62 (...)"}, ...],
-//      "s":{"MUROS_SPX_vol":[[31444.03,"D1",252.9,31202.41],[31384.03,"D2",-62.7,31142.41]], ...}}
+//   linea 1: {"v":"fam-4.1","sesion":"2026-10-27","contrato":"MESZ6","modo":"corregida"}
+//   despues una por minuto calculado CON libros (5.0: numeros ILUSTRATIVOS en la escala de ES): {"k":29884262,"f":7725.25,"b":["ES","SPX","SPY"],
+//      "m":[{"l":"SPX","c":36.38,"s":7688.87,"d":"2026-10-27T14:41:00Z","o":1,"z":0,"t":"base 36.38 (...)"}, ...],
+//      "s":{"MUROS_SPX_vol":[[7731.38,"D1",252.9,7695],[7716.38,"D2",-62.7,7680]], ...}}
 //   (precio ES round 2, etiqueta, monto M USD round 1 o null, strike de su libro round 2 o null)
+//   5.0 (27-10-2026): el FORMATO es el mismo de la 4.1 (cabecera "fam-4.1" incluida: herramientas/auditar_familia.py la lee asi); solo cambia
+//   la escala de los numeros (montos de ES con x0,5). Los archivos viven en PythiaGex5\familia: no se mezclan con los de NQ de PythiaGex4.
 //   4.1.3: si el motor calcula las series extra (CatalogoFamilia.Extra), van en el mismo "s" con claves nuevas (R20_SPY_vol, R20_SPX_vol,
 //   DOMS_SPY_vol, DOMS_SPX_vol) despues de las 21, y la conversion de las replicas de la 2.0 en "mx" (mismo formato que "m") al final de la
 //   linea. Un minuto sin extras queda byte a byte como en la 4.1.2.

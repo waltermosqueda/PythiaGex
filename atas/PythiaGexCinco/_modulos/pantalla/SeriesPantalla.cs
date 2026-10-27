@@ -17,6 +17,12 @@
 // orden y con el nombre de siempre, y su descripcion dice que no necesitan ninguna llave). Esta lista no cambia.
 // 5.0 (27-10-2026): sin TQQQ: fuera las 6 casillas del grupo "5. TQQQ x3", sus 6 series del respaldo y T_MUROS_oi de PrendidasPorDefecto.
 // El orden relativo de lo que queda no cambia.
+// 5.0 (27-10-2026, P5): esta lista pasa a ser el ESPEJO del dialogo de la 5.0 (GammaCincoPantalla.cs): Nombre = el nombre corto que se ve, Grupo =
+// "0. PRENDER / APAGAR (todo lo que se dibuja)" y Orden = su Display.Order (0..34, sin huecos ni repetidos: por libro ES, SPX, SPY, despues la
+// familia, la clasica, la 2.0 y la 3.0). Default = el de la propiedad: las 6 que decidio el coordinador (el analogo de las que eligio el operador en
+// NQ, sin R20_SPY_vol: la 2.0 no dibuja SPY en un grafico de ES). TOPN_ES_vol y CARGA_ES pasan a APAGADAS (en la 4.1 venian prendidas de fabrica;
+// el operador las tiene apagadas en su .ws del 27-10 y no estan en la lista del coordinador). La 5.0 es un tipo NUEVO en ATAS (ningun .ws tiene
+// sus S_*): estos defaults son lo que se ve al ponerla. Respaldo: banda de SPY +-5 (era +-20), igual que CatalogoFamilia.
 // Ademas: un catalogo de RESPALDO (id, corto, libro, fuente, tipo, grupo, color, banda) por si el motor todavia no publico el suyo
 // (IMotorFamilia.Catalogo manda; el arnes compara este respaldo campo por campo contra CatalogoFamilia de B3d).
 using System;
@@ -28,86 +34,96 @@ namespace PythiaGexCinco.Familia
 {
     public static class SeriesPantalla
     {
-        /// <summary>Una casilla: id de la serie, nombre visible (el de la 4.0.6), grupo, orden y default.</summary>
+        /// <summary>Una casilla: id de la serie, nombre visible (el del dialogo de la 5.0), grupo, orden (su Display.Order) y default.</summary>
         public sealed class Casilla
         {
             public string Id, Nombre, Grupo; public int Orden; public bool Default;
             public string Propiedad => "S_" + Id;
         }
 
+        /// <summary>5.0 (P5): el grupo de arriba del dialogo (el mismo de GammaCincoPantalla.cs y GammaHoyTresCasillas.GRUPO_CASILLAS).</summary>
+        public const string GRUPO_DIALOGO = "0. PRENDER / APAGAR (todo lo que se dibuja)";
+
+        /// <summary>5.0 (P5): en el orden del dialogo (Orden = Display.Order de la propiedad S_ID). Las propiedades de pantalla (doble eje, llaves,
+        /// pestaña) siguen en 35..41 y las de la 3.0 (GammaHoyTres*.cs, paquete P4) desde 42.</summary>
         public static readonly IReadOnlyList<Casilla> Casillas = new[]
         {
-            C("MUROS_ES_vol",   "ES muros vol",                 "1. Recomendadas", 10, false),
-            C("MAJORS_SPY_oi",  "SPY majors OI",                "1. Recomendadas", 20, false),   // 4.1.4: apagada
-            C("CONF_vol",       "CONF vol (confluencia)",       "1. Recomendadas", 30, false),
-            C("MAJORS_ES_vol",  "ES majors vol",                "1. Recomendadas", 40, false),
-            C("MUROS_ES_oi",    "ES muros OI",                  "2. Familia", 10, true),
-            C("MUROS_SPX_vol",  "SPX muros vol",                "2. Familia", 20, true),
-            C("MUROS_SPX_oi",   "SPX muros OI",                 "2. Familia", 30, false),
-            C("MUROS_SPY_vol",  "SPY muros vol",                "2. Familia", 40, false),
-            C("MUROS_SPY_oi",   "SPY muros OI",                 "2. Familia", 50, false),   // 4.1.4: apagada
-            C("MAJORS_ES_oi",   "ES majors OI",                 "2. Familia", 60, false),
-            C("MAJORS_SPX_vol", "SPX majors vol",               "2. Familia", 70, false),
-            C("MAJORS_SPX_oi",  "SPX majors OI",                "2. Familia", 80, false),
-            C("MAJORS_SPY_vol", "SPY majors vol",               "2. Familia", 90, false),
-            C("FAM_MUROS_vol",  "FAM muros vol (familia sumada)", "2. Familia", 100, false),
-            C("FAM_MUROS_oi",   "FAM muros OI (familia sumada)",  "2. Familia", 110, false),   // 4.1.4: apagada
-            C("ZEST_ES_vol",    "ES zero est. vol",             "3. Zero", 10, false),
-            C("ZEST_ES_oi",     "ES zero est. OI",              "3. Zero", 20, false),
-            C("ZEST_SPX_vol",   "SPX zero est. vol",            "3. Zero", 30, false),
-            C("ZEST_SPY_vol",   "SPY zero est. vol",            "3. Zero", 40, false),
-            C("ZTP_ES_vol",     "ES cruces vol",                "3. Zero", 50, false),
-            C("ZTP_SPX_vol",    "SPX cruces vol",               "3. Zero", 60, false),
-            C("TRES_ES",        "3.0 (ES)",                     "4. Lo que dibujo la 3.0", 10, false),
-            C("TRES_SPX",       "3.0 SPX",                      "4. Lo que dibujo la 3.0", 20, true),
-            C("TRES_SPY",       "3.0 SPY",                      "4. Lo que dibujo la 3.0", 30, false),
-            C("CARGA_ES",       "ES carga (strikes abiertos)",       "1. ES", 9, true),
-            C("CARGA_SPX",      "SPX carga (strikes abiertos)",      "2. SPX", 9, false),
-            C("CARGA_SPY",      "SPY carga (strikes abiertos)",      "3. SPY", 9, false),
-            C("TOPN_ES_vol",    "ES top-N vol",                 "1. ES", 7, true),
-            C("TOPN_ES_oi",     "ES top-N OI",                  "1. ES", 8, false),
-            // 4.1.3 (09-10-2026): las dominantes como la 2.0. Propiedades NUEVAS (ningun .ws las tiene: toman estos defaults).
-            C("R20_SPY_vol",    "2.0 SPY (dominantes y conversion de la 2.0)",   GRUPO_20, 10, true),
-            C("R20_SPX_vol",    "2.0 SPX (capa SPX de la 2.0)",                  GRUPO_20, 20, true),
-            C("DOMS_SPY_vol",   "SPY dom (seleccion 2.0, razon sincronizada)",   GRUPO_20, 30, false),   // 4.1.4: apagada
-            C("DOMS_SPX_vol",   "SPX dom (seleccion 2.0, base sincronizada; sin medir)", GRUPO_20, 40, false),
-            // 4.1.5 (09-10-2026): como la clasica. Propiedad NUEVA (ningun .ws la tiene: toma este default).
-            C("R10_SPX_zero",   "Clasica SPX 0Γ (zero de SPX con la base de la rueda anterior, como la clasica)", GRUPO_CLASICA, 10, true),
-            C("R10_SPX_dom",    "Clasica SPX D1-D3 (dominantes de la capa SPX con la base de la rueda anterior, como la clasica)", GRUPO_CLASICA, 20, true),   // 4.1.5b
+            // ---- libro ES (opciones sobre el futuro, Rithmic)
+            C("MUROS_ES_vol",   "ES muros vol",   0, false),
+            C("MUROS_ES_oi",    "ES muros OI",    1, true),
+            C("MAJORS_ES_vol",  "ES majors vol",  2, false),
+            C("MAJORS_ES_oi",   "ES majors OI",   3, false),
+            C("ZEST_ES_vol",    "ES 0Γ est vol",  4, false),
+            C("ZEST_ES_oi",     "ES 0Γ est OI",   5, false),
+            C("ZTP_ES_vol",     "ES cruces vol",  6, false),
+            C("TOPN_ES_vol",    "ES top-N vol",   7, false),   // 5.0 (P5): apagada (en la 4.1 venia prendida)
+            C("TOPN_ES_oi",     "ES top-N OI",    8, false),
+            C("CARGA_ES",       "ES carga OI",    9, false),   // 5.0 (P5): apagada (en la 4.1 venia prendida)
+            // ---- SPX (CBOE, a ES por la base)
+            C("MUROS_SPX_vol",  "SPX muros vol", 10, true),
+            C("MUROS_SPX_oi",   "SPX muros OI",  11, false),
+            C("MAJORS_SPX_vol", "SPX majors vol", 12, false),
+            C("MAJORS_SPX_oi",  "SPX majors OI", 13, false),
+            C("ZEST_SPX_vol",   "SPX 0Γ est vol", 14, false),
+            C("ZTP_SPX_vol",    "SPX cruces vol", 15, false),
+            C("CARGA_SPX",      "SPX carga OI",  16, false),
+            // ---- SPY (CBOE, a ES por la razon)
+            C("MUROS_SPY_vol",  "SPY muros vol", 17, false),
+            C("MUROS_SPY_oi",   "SPY muros OI",  18, false),   // 4.1.4: apagada
+            C("MAJORS_SPY_vol", "SPY majors vol", 19, false),
+            C("MAJORS_SPY_oi",  "SPY majors OI", 20, false),   // 4.1.4: apagada
+            C("ZEST_SPY_vol",   "SPY 0Γ est vol", 21, false),
+            C("CARGA_SPY",      "SPY carga OI",  22, false),
+            // ---- la familia sumada y la confluencia
+            C("FAM_MUROS_vol",  "FAM muros vol", 23, false),
+            C("FAM_MUROS_oi",   "FAM muros OI",  24, false),   // 4.1.4: apagada
+            C("CONF_vol",       "CONF vol",      25, false),
+            // ---- 4.1.5/4.1.5b: como la clasica (en ES: su libro SPX). Propiedades NUEVAS (ningun .ws las tiene: toman estos defaults).
+            C("R10_SPX_dom",    "Clas SPX D1-3", 26, true),
+            C("R10_SPX_zero",   "Clas SPX 0Γ",   27, true),
+            // ---- 4.1.3: como la 2.0 (en ES: su libro SPX; R20_SPY_vol no tiene equivalente en la 2.0 en ES)
+            C("R20_SPY_vol",    "2.0 SPY D1-D2", 28, false),   // 5.0 (P5): apagada (la 2.0 no dibuja SPY en ES)
+            C("R20_SPX_vol",    "2.0 SPX D1-D2", 29, true),
+            C("DOMS_SPY_vol",   "SPY dom (2.0)", 30, false),   // 4.1.4: apagada
+            C("DOMS_SPX_vol",   "SPX dom (2.0)", 31, false),
+            // ---- lo que dibuja el motor 3.0 que corre adentro
+            C("TRES_ES",        "3.0 ES rayas",  32, false),
+            C("TRES_SPX",       "3.0 SPX rayas", 33, true),
+            C("TRES_SPY",       "3.0 SPY rayas", 34, false),
         };
 
-        /// <summary>4.1.3: grupo de las casillas "como la 2.0" (en la 4.1 iba entre "4. Lo que dibujo la 3.0" y "5. TQQQ x3").</summary>
+        /// <summary>4.1.3: grupo de las casillas "como la 2.0" en la 4.1 (historico: desde la 4.1.5c todas van en el grupo de arriba).</summary>
         public const string GRUPO_20 = "4b. Dominantes como la 2.0";
-        /// <summary>4.1.5: grupo de la casilla "como la clasica" (en la 4.1 iba entre "4b. Dominantes como la 2.0" y "5. TQQQ x3"; 5.0: sin TQQQ).</summary>
+        /// <summary>4.1.5: grupo de la casilla "como la clasica" en la 4.1 (historico; 5.0: sin TQQQ).</summary>
         public const string GRUPO_CLASICA = "4c. Como la clasica";
 
-        /// <summary>Las prendidas por defecto (mismo orden que CatalogoFamilia.PrendidasPorDefecto): las 8 del operador del 08-10 + (4.1.3) 2.0 SPY,
-        /// 2.0 SPX y SPY dom, MENOS (4.1.4, pedido del operador 09-10: "suman ruido al ser ya superadas por la formula de la 2.0 spy") SPY majors OI,
-        /// SPY muros OI, FAM muros OI y SPY dom (SPY muros vol ya estaba apagada). Quedaban 6; 4.1.5: + Clasica SPX 0Γ (pedido del operador); 4.1.5b: + Clasica
-        /// SPX D1-D3. Quedaban 8; 5.0 (27-10-2026): sin T_MUROS_oi (TQQQ), quedan 7.</summary>
+        /// <summary>Las prendidas por defecto (mismo orden que CatalogoFamilia.PrendidasPorDefecto). Historia en NQ: las 8 del operador del 08-10, + 4.1.3
+        /// 2.0 SPY/SPX y SPY dom, - 4.1.4 ("suman ruido al ser ya superadas por la formula de la 2.0 spy") SPY majors OI, SPY muros OI, FAM muros OI y SPY
+        /// dom, + 4.1.5 Clasica SPX 0Γ, + 4.1.5b Clasica SPX D1-D3; 5.0: sin TQQQ. 5.0 (P5, decision del coordinador 27-10): sin 2.0 SPY (la 2.0 no dibuja
+        /// SPY en un grafico de ES). Quedan 6.</summary>
         public static readonly string[] PrendidasPorDefecto = { "MUROS_ES_oi", "MUROS_SPX_vol", "TRES_SPX",
-                                                                "R20_SPY_vol", "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 4.1.5b: + Clasica SPX D1-D3
+                                                                "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 5.0 (P5): sin R20_SPY_vol
 
-        private static Casilla C(string id, string nombre, string grupo, int orden, bool def) => new Casilla { Id = id, Nombre = nombre, Grupo = grupo, Orden = orden, Default = def };
+        private static Casilla C(string id, string nombre, int orden, bool def) => new Casilla { Id = id, Nombre = nombre, Grupo = GRUPO_DIALOGO, Orden = orden, Default = def };
 
         // ------------------------------------------------------------------ catalogo de respaldo (los mismos valores que CatalogoFamilia de B3d)
         /// <summary>Respaldo de dibujo si el motor no paso su catalogo. Mismo orden que la vista previa (24) + carga y top-N + como la 2.0 (4) + la clasica (2)
-        /// (5.0: sin las 6 de TQQQ).</summary>
+        /// (5.0: sin las 6 de TQQQ; 5.0 P5: banda de SPY +-5).</summary>
         public static readonly IReadOnlyList<SerieInfo> Respaldo = new[]
         {
             R("MUROS_ES_vol", "ES", "ES", "vol", "MUROS", "Recomendadas", "#4db5e4", 0),
-            R("MAJORS_SPY_oi", "SPY", "SPY", "oi", "MAJORS", "Recomendadas", "#e2b872", 20),
+            R("MAJORS_SPY_oi", "SPY", "SPY", "oi", "MAJORS", "Recomendadas", "#e2b872", 5),    // 5.0 (P5): +-5 (era +-20)
             R("CONF_vol", "CONF", "familia", "vol", "CONF", "Recomendadas", "#f3d35a", 0),
             R("MAJORS_ES_vol", "ES", "ES", "vol", "MAJORS", "Recomendadas", "#6cc3ff", 0),
             R("MUROS_ES_oi", "ES", "ES", "oi", "MUROS", "Familia", "#9a98d6", 0),
             R("MUROS_SPX_vol", "SPX", "SPX", "vol", "MUROS", "Familia", "#2fb3a8", 0),
             R("MUROS_SPX_oi", "SPX", "SPX", "oi", "MUROS", "Familia", "#8de031", 0),
-            R("MUROS_SPY_vol", "SPY", "SPY", "vol", "MUROS", "Familia", "#dabe6f", 20),
-            R("MUROS_SPY_oi", "SPY", "SPY", "oi", "MUROS", "Familia", "#ff9f43", 20),
+            R("MUROS_SPY_vol", "SPY", "SPY", "vol", "MUROS", "Familia", "#dabe6f", 5),        // 5.0 (P5): +-5
+            R("MUROS_SPY_oi", "SPY", "SPY", "oi", "MUROS", "Familia", "#ff9f43", 5),          // 5.0 (P5): +-5
             R("MAJORS_ES_oi", "ES", "ES", "oi", "MAJORS", "Familia", "#b9a4ff", 0),
             R("MAJORS_SPX_vol", "SPX", "SPX", "vol", "MAJORS", "Familia", "#4fd1c5", 0),
             R("MAJORS_SPX_oi", "SPX", "SPX", "oi", "MAJORS", "Familia", "#a3e635", 0),
-            R("MAJORS_SPY_vol", "SPY", "SPY", "vol", "MAJORS", "Familia", "#f6c177", 20),
+            R("MAJORS_SPY_vol", "SPY", "SPY", "vol", "MAJORS", "Familia", "#f6c177", 5),      // 5.0 (P5): +-5
             R("FAM_MUROS_vol", "FAM", "familia", "vol", "MUROS", "Familia", "#d04ad0", 0),
             R("FAM_MUROS_oi", "FAM", "familia", "oi", "MUROS", "Familia", "#e879f9", 0),
             R("ZEST_ES_vol", "ES", "ES", "vol", "ZEST", "Zero", "#c9d4e3", 0),

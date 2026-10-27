@@ -7,6 +7,10 @@
 // Redondeos como Python: round() de Python (correcto sobre el valor binario exacto, empate a par), np.round (empate a par), np.mean
 // (suma por pares de numpy, empezando en 0.0, dividida por n: medido contra numpy 2.4.3 en 114.000 arreglos, 0 diferencias).
 // Sin referencias a ATAS. Sin estado: se puede llamar desde cualquier hilo.
+// 5.0 (27-10-2026, P1): constantes en puntos de NQ pasadas a ES (DISENO_5_0 §4; detalle en _diseno/P1_LIBRO_ES.md):
+//   radio POR LIBRO (SeleccionFam.RadioDe: ES 25, SPX 20, SPY 20, familia 20; la 4.1: 100 para todo), CONF_PTS 3 (igual: paso de strike 5 como NQ),
+//   FAM_GRILLA 5 (igual: un strike de ES/SPXW), ZEST_MAX 300 -> 75, techo del radio de la carga
+//   300 -> 75 y el multiplicador de ES 20 -> 50 (C1). ISLA, los porcentajes y las cantidades (top-N, carga) quedan.
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -64,34 +68,45 @@ namespace PythiaGexCinco.Familia
     public sealed class PerfilFamilia
     {
         public double Fut;                                // el precio del minuto
-        public double[] K, GvC, GvP, GoC, GoP, Gv, Go;    // K = grilla de 5 pts en precio de ES, ascendente
+        public double[] K, GvC, GvP, GoC, GoP, Gv, Go;    // K = grilla de FAM_GRILLA (5.0: 5, como la 4.1) pts en precio de ES, ascendente
     }
 
     public static class ReglasFam
     {
-        public const double RADIO = 100.0;                // backtest_familia.RADIO (ZTP y CONF)
-        public const double ISLA = 0.10;                  // C3
+        /// <summary>backtest_familia.RADIO (4.1: 100 pts de NQ). 5.0: el del libro ES (25); cada libro usa el suyo (SeleccionFam.RadioDe).</summary>
+        public const double RADIO = SeleccionFam.RADIO;
+        public const double ISLA = SeleccionFam.ISLA;     // C3 (relativo: queda 0,10)
+        /// <summary>5.0 (27-10, corregido por el agente principal): 3, IGUAL que la 4.1. La confluencia junta niveles de libros distintos a <= esto; lo
+        /// que la decide es el PASO DE STRIKE, que en ES y SPX es 5 como en NQ (medido: NQ lista 29270/29275/29280). Con 0,75 un nivel de ES (multiplo
+        /// de 5) y uno de SPX llevado a ES (corrido por la base: hoy ~1,4 mod 5, y se mueve 0..2,5 con la base) casi nunca coincidirian.</summary>
         public const double CONF_PTS = 3.0;
+        /// <summary>5.0 (27-10, corregido por el agente principal): 5, IGUAL que la 4.1: un strike de ES/SPXW (paso 5, como NQ). La fusion junta en el
+        /// mismo balde el strike de ES y el de SPX corrido por la base (en NQ, el de NDX corrido 1,83 caia en el balde del strike de NQ); con 2,5 se separaban.</summary>
         public const double FAM_GRILLA = 5.0;
-        public const double ZEST_MAX = 300.0;
+        public const double ZEST_MAX = SeleccionFam.ZEST_MAX;   // 5.0: 75 (4.1: 300)
+        /// <summary>5.0: techo del radio propio de la carga (CargaRadioPts). La cadena de ES de Rithmic (CadenaApi) trae TODOS los strikes hasta
+        /// el 1 % del precio (VentanaDensaPct; +-77 pts con ES en 7.700) y uno de cada dos hasta el 2 %: mas lejos el numero deja de ser
+        /// trazable. La 4.1 tenia 300 (el 1 % de NQ en 31.000).</summary>
+        public const double CARGA_RADIO_TECHO = 75.0;
 
-        /// <summary>backtest_familia.MULT / 100 (C1): ES 0,2; SPX y SPY 1.</summary>
+        /// <summary>backtest_familia.MULT / 100 (C1): ES 0,5 (5.0: 50 USD por punto; la 4.1 tenia NQ 20 -> 0,2); SPX y SPY 1.</summary>
         public static double Escala(LibroMinuto b)
         {
             if (b.Mult > 0) return b.Mult / 100.0;
-            return b.Libro == "ES" ? 20.0 / 100.0 : 100.0 / 100.0;
+            return b.Libro == "ES" ? MinuteroEs.MULT / 100.0 : 100.0 / 100.0;
         }
 
         /// <summary>backtest_familia.oi_vale(b) con los defaults (fecha=True, fresco=False): ES -> oi_ok (C2); CBOE -> siempre.</summary>
         public static bool OiVale(LibroMinuto b) => b.Libro != "ES" || b.OiOk;
 
         // ------------------------------------------------------------------ formulas por libro (extremos_rebote.f_muros / f_majors)
-        private static double R(double fut) => Math.Min(fut * 0.02, 100.0);
+        /// <summary>extremos_rebote._R = min(2 % de fut, radio). 5.0: radio del libro (SeleccionFam.RadioDe); el 2 % (154 pts en ES) nunca manda.</summary>
+        private static double R(double fut, double radio) => Math.Min(fut * 0.02, radio);
 
-        /// <summary>f_muros: D1 = argmax C (C > 0) y D2 = argmin P (P < 0) entre |Fut - fut| <= R; primera ocurrencia.</summary>
-        public static void Muros(double[] Fut, double fut, double[] C, double[] P, List<(double P, string E)> sal)
+        /// <summary>f_muros: D1 = argmax C (C > 0) y D2 = argmin P (P < 0) entre |Fut - fut| <= R; primera ocurrencia. 5.0: radio del libro.</summary>
+        public static void Muros(double[] Fut, double fut, double[] C, double[] P, List<(double P, string E)> sal, double radio = RADIO)
         {
-            double r = R(fut); int i = -1, j = -1;
+            double r = R(fut, radio); int i = -1, j = -1;
             for (int k = 0; k < Fut.Length; k++)
             {
                 if (!(Math.Abs(Fut[k] - fut) <= r)) continue;
@@ -103,41 +118,46 @@ namespace PythiaGexCinco.Familia
         }
 
         /// <summary>f_majors: D1 = argmax g (g > 0), D2 = argmin g (g < 0) entre |Fut - fut| <= R.</summary>
-        public static void Majors(double[] Fut, double fut, double[] g, List<(double P, string E)> sal) => Muros(Fut, fut, g, g, sal);
+        public static void Majors(double[] Fut, double fut, double[] g, List<(double P, string E)> sal, double radio = RADIO) => Muros(Fut, fut, g, g, sal, radio);
 
-        /// <summary>backtest_familia.ztp(b, oi, isla=0.10, fuerza=0): cruces sin islas (C3) a <= 100 pts; D1 el menor por encima, D2 el mayor por debajo.</summary>
         /// <summary>4.1.7: los N strikes con mas |valor| dentro del radio R, de mayor a menor (D1..DN).
-        /// MUROS y MAJORS marcan UNO por lado; medido el 12-10 habia 24 strikes con gamma en +-100 pts y se dibujaban 2.</summary>
+        /// MUROS y MAJORS marcan UNO por lado; medido en la 4.1 el 12-10 (NQ): 24 strikes con gamma en +-100 pts y se dibujaban 2.
+        /// 5.0: N queda 6 (cantidad, no distancia; mismo valor que SeleccionFam.TopNCantidad). En ES el radio de 25 tiene ~10 strikes.</summary>
         public static int TopNCantidad = 6;
-        private static double Radio(double fut) => Math.Min(fut * 0.02, 100.0);
+        private static double Radio(double fut, double radio) => Math.Min(fut * 0.02, radio);
 
         /// <summary>4.1.8 (12-10-2026): TODOS los strikes con carga >= umbral dentro del radio, de mayor a menor.
         /// Pedido del operador: "si hay mas de 50 contratos tiene MINIMO que estar marcado, pase lo que pase".
         /// Un top-N fijo deja afuera los dias con muchos strikes cargados; el umbral no.
-        /// El tope solo evita que un dia raro llene la pantalla.</summary>
+        /// El tope solo evita que un dia raro llene la pantalla.
+        /// 5.0 (27-10-2026): CargaMinima, CargaTope, CargaMinimaRayas y CargaRadioPts los PISA el ajuste de ATAS (GammaHoyTresRayas.cs:
+        /// CargaMinimaOi / CargaTopeRayas / CargaMinimaRayas / CargaRadioPts): los defaults de aca quedan iguales a los de alla (50 / 12 / 10 / 0)
+        /// para que el panel diga la verdad. OJO, medido 27-10 04:00 UTC: en ES TODOS los strikes del radio de 25 tienen >= 528 contratos
+        /// (mediana 1.008, 10 de 10 >= 50; NQ en +-100: mediana 37, 11 de 24 >= 50): con 50 la carga de ES marca el radio entero. La escala
+        /// equivalente esta en P1_LIBRO_ES.md (umbral ~1.000, tope 6, minimas 5): la decide quien es dueño de esos ajustes, con el operador.</summary>
         public static double CargaMinima = 50.0;
         public static int CargaTope = 12;
-        /// <summary>4.1.8: radio propio de la carga, en puntos. 0 = usar Radio(fut), que con MES en 31.000 es la
-        /// CONSTANTE 100 (el termino del 2 % son 620 y nunca manda). Un strike cargado no deja de existir porque el
-        /// precio se corrio 4 puntos: medido el 12-10, el 30800 se caia con el futuro en 30904 y volvia en 30890.
-        /// Techo 300: pasando los +-309 pts la cadena de ES llega con un strike de cada dos (CadenaApi.cs:687) y el
-        /// numero dejaria de ser trazable.</summary>
+        /// <summary>4.1.8: radio propio de la carga, en puntos. 0 = usar el radio del libro (5.0: ES 25, SPX/SPY 20; en la 4.1 con MNQ en
+        /// 31.000 era la CONSTANTE 100: el termino del 2 % nunca manda). Un strike cargado no deja de existir porque el precio se corrio
+        /// 4 puntos: medido en la 4.1 el 12-10, el NQ 30800 se caia con el futuro en 30904 y volvia en 30890.
+        /// Techo CARGA_RADIO_TECHO (5.0: 75; la 4.1: 300 = el 1 % de NQ): pasando el 1 % del precio la cadena de Rithmic llega con un strike
+        /// de cada dos (CadenaApi.Ventana, VentanaDensaPct) y el numero dejaria de ser trazable.</summary>
         public static int CargaRadioPts = 0;
         /// <summary>4.1.8: cuantos strikes cargados se marcan SIEMPRE, aunque no lleguen al umbral de contratos.
-        /// Medido el 12-10-2026: el umbral absoluto de 50 borra medio libro en cuanto vence el 0DTE, porque TODOS los
-        /// strikes pierden sus contratos del dia a la vez. Caso del operador: el strike SPX 30675 (30.904 en el eje
-        /// MES) venia marcado con 51 contratos y a las 20:01Z desaparecio con 32 — pero 25 de esos 32 estaban en el
+        /// Medido en la 4.1 el 12-10-2026: el umbral absoluto de 50 borra medio libro en cuanto vence el 0DTE, porque TODOS los
+        /// strikes pierden sus contratos del dia a la vez. Caso del operador: el strike NDX 30675 (30.904 en el eje
+        /// MNQ) venia marcado con 51 contratos y a las 20:01Z desaparecio con 32 — pero 25 de esos 32 estaban en el
         /// vencimiento a 4 dias, o sea una posicion abierta de verdad, y el precio siguio respetando ese nivel. Un
         /// numero fijo no puede decidir que es significativo cuando el libro entero se achica tres veces.</summary>
-        public static int CargaMinimaRayas = 10;  // MEDIDO sobre el caso del operador (12-10): ordenando por carga los
-                                                 // 22 strikes de SPX con OI>0 en el radio, el 30675 (30.904 en el eje
-                                                 // MES, 32 contratos, 25 de ellos a 4 dias) queda NOVENO. Con 8 entraba
-                                                 // el 30625 y no el suyo.
+        public static int CargaMinimaRayas = 10;  // MEDIDO en la 4.1 sobre el caso del operador (12-10): ordenando por carga
+                                                 // los 22 strikes de NDX con OI>0 en el radio, el 30675 (30.904 en el eje
+                                                 // MNQ, 32 contratos, 25 de ellos a 4 dias) queda NOVENO. Con 8 entraba
+                                                 // el 30625 y no el suyo. SIN MEDIR EN ES.
 
-        public static void CargaPorUmbral(double[] Fut, double fut, double[] v, List<(double P, string E)> sal, double umbral, int tope, double[] vC = null, double[] vP = null)
+        public static void CargaPorUmbral(double[] Fut, double fut, double[] v, List<(double P, string E)> sal, double umbral, int tope, double[] vC = null, double[] vP = null, double radio = RADIO)
         {
             if (Fut == null || v == null || Fut.Length == 0) return;
-            double r = CargaRadioPts > 0 ? Math.Min(CargaRadioPts, 300) : Radio(fut);
+            double r = CargaRadioPts > 0 ? Math.Min(CargaRadioPts, CARGA_RADIO_TECHO) : Radio(fut, radio);
             // Todos los del radio, ordenados por carga: primero se aplica el umbral y, si quedan menos de
             // CargaMinimaRayas, se completa con los que siguen en carga aunque no lleguen. Asi el libro nunca queda
             // vacio ni se borra de golpe al vencer el 0DTE: lo que cambia es CUANTOS contratos dice la etiqueta.
@@ -170,10 +190,10 @@ namespace PythiaGexCinco.Familia
             }
         }
 
-        public static void TopNPeso(double[] Fut, double fut, double[] v, List<(double P, string E)> sal, int n)
+        public static void TopNPeso(double[] Fut, double fut, double[] v, List<(double P, string E)> sal, int n, double radio = RADIO)
         {
             if (Fut == null || v == null || Fut.Length == 0) return;
-            double r = Radio(fut);
+            double r = Radio(fut, radio);
             var idx = new List<int>();
             for (int i = 0; i < Fut.Length && i < v.Length; i++)
                 if (Math.Abs(Fut[i] - fut) <= r && v[i] != 0) idx.Add(i);
@@ -184,7 +204,9 @@ namespace PythiaGexCinco.Familia
                 sal.Add((Fut[idx[j]], "D" + (j + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)));
         }
 
-        public static void Ztp(double[] Fut, double fut, double[] g, List<(double P, string E)> sal)
+        /// <summary>backtest_familia.ztp(b, oi, isla=0.10, fuerza=0): cruces sin islas (C3) a <= radio del libro (5.0: ES 25, SPX/SPY 20; la 4.1:
+        /// 100); D1 el menor por encima, D2 el mayor por debajo.</summary>
+        public static void Ztp(double[] Fut, double fut, double[] g, List<(double P, string E)> sal, double radio = RADIO)
         {
             int n = g.Length;
             var nz = new List<int>(n);
@@ -211,7 +233,7 @@ namespace PythiaGexCinco.Familia
                 int i0 = nz[m], i1 = nz[m + 1];
                 if (!(g[i0] * g[i1] < 0)) continue;
                 double z = Fut[i0] + (Fut[i1] - Fut[i0]) * (-g[i0]) / (g[i1] - g[i0]);
-                if (!(Math.Abs(z - fut) <= RADIO)) continue;
+                if (!(Math.Abs(z - fut) <= radio)) continue;
                 if (z > fut && (double.IsNaN(arriba) || z < arriba)) arriba = z;
                 if (z < fut && (double.IsNaN(abajo) || z > abajo)) abajo = z;
             }
@@ -222,14 +244,15 @@ namespace PythiaGexCinco.Familia
         /// <summary>np.sign: -1, 0, 1 (NaN -> NaN).</summary>
         private static double Signo(double x) => double.IsNaN(x) ? double.NaN : x > 0 ? 1.0 : x < 0 ? -1.0 : 0.0;
 
-        /// <summary>backtest_familia.zest: una raya "Z" si el zero no es NaN y |z - fut| <= 300.</summary>
+        /// <summary>backtest_familia.zest: una raya "Z" si el zero no es NaN y |z - fut| <= ZEST_MAX (5.0: 75; la 4.1: 300).</summary>
         public static void Zest(double z, double fut, List<(double P, string E)> sal)
         {
             if (!double.IsNaN(z) && Math.Abs(z - fut) <= ZEST_MAX) sal.Add((z, "Z"));
         }
 
         // ------------------------------------------------------------------ familia
-        /// <summary>backtest_familia.confluencia: niveles de 2 o mas libros a <= 3 pts del primero del grupo; la raya es el promedio (np.mean).</summary>
+        /// <summary>backtest_familia.confluencia: niveles de 2 o mas libros a <= CONF_PTS (3, como la 4.1) del primero del grupo; la raya es
+        /// el promedio (np.mean), solo si queda a <= el radio de la familia (5.0: 20) del precio.</summary>
         public static void Confluencia(List<(string Libro, List<double> Ps)> pools, double fut, List<(double P, string E)> sal)
         {
             var items = new List<(double P, string Lb)>();
@@ -248,14 +271,15 @@ namespace PythiaGexCinco.Familia
                     var xs = new double[j - i + 1];
                     for (int k = i; k <= j; k++) xs[k - i] = items[k].P;
                     double p = NumPy.Media(xs);
-                    if (Math.Abs(p - fut) <= RADIO) { n++; sal.Add((p, "D" + n)); }
+                    if (Math.Abs(p - fut) <= SeleccionFam.RADIO_FAMILIA) { n++; sal.Add((p, "D" + n)); }
                     i = j + 1;
                 }
                 else i += 1;
             }
         }
 
-        /// <summary>backtest_familia.fusion (C1): Fut redondeado a 5 pts (np.round, empate a par), escalado por MULT/100 y sumado (np.bincount, en orden).</summary>
+        /// <summary>backtest_familia.fusion (C1): Fut redondeado a FAM_GRILLA (5 pts, como la 4.1) (np.round, empate a par), escalado por
+        /// MULT/100 (ES 0,5, SPX y SPY 1) y sumado (np.bincount, en orden).</summary>
         public static PerfilFamilia Fusion(IReadOnlyList<LibroMinuto> bms, double fut)
         {
             int tot = 0; foreach (var b in bms) tot += b.Fut.Length;
@@ -297,22 +321,23 @@ namespace PythiaGexCinco.Familia
             {
                 porLibro[b.Libro] = b;
                 double fut = b.FutMnq;
+                double rb = SeleccionFam.RadioDe(b.Libro);     // 5.0: el radio de SU libro (ES 25, SPX/SPY 20)
                 // 4.1.7: CARGA = los N strikes con mas interes abierto TOTAL de TODOS los vencimientos (el mapa de calor de CME).
                 if (b.FutCarga != null && b.Carga != null)
-                { var cg = new List<(double, string)>(); CargaPorUmbral(b.FutCarga, fut, b.Carga, cg, CargaMinima, CargaTope, b.CargaC, b.CargaP); Poner(crudo, "CARGA_" + b.Libro, cg); }
+                { var cg = new List<(double, string)>(); CargaPorUmbral(b.FutCarga, fut, b.Carga, cg, CargaMinima, CargaTope, b.CargaC, b.CargaP, rb); Poner(crudo, "CARGA_" + b.Libro, cg); }
                 foreach (var oi in new[] { false, true })
                 {
                     if (oi && !OiVale(b)) continue;
                     string fu = oi ? "oi" : "vol";
-                    var mu = new List<(double, string)>(); Muros(b.Fut, fut, oi ? b.GoC : b.GvC, oi ? b.GoP : b.GvP, mu);
-                    var ma = new List<(double, string)>(); Majors(b.Fut, fut, oi ? b.Go : b.Gv, ma);
-                    var zt = new List<(double, string)>(); Ztp(b.Fut, fut, oi ? b.Go : b.Gv, zt);
+                    var mu = new List<(double, string)>(); Muros(b.Fut, fut, oi ? b.GoC : b.GvC, oi ? b.GoP : b.GvP, mu, rb);
+                    var ma = new List<(double, string)>(); Majors(b.Fut, fut, oi ? b.Go : b.Gv, ma, rb);
+                    var zt = new List<(double, string)>(); Ztp(b.Fut, fut, oi ? b.Go : b.Gv, zt, rb);
                     var ze = new List<(double, string)>(); Zest(oi ? b.ZeroOi : b.ZeroVol, fut, ze);
                     Poner(crudo, "MUROS_" + b.Libro + "_" + fu, mu);
                     Poner(crudo, "MAJORS_" + b.Libro + "_" + fu, ma);
                     Poner(crudo, "ZTP_" + b.Libro + "_" + fu, zt);
                     Poner(crudo, "ZEST_" + b.Libro + "_" + fu, ze);
-                    var tn = new List<(double, string)>(); TopNPeso(b.Fut, fut, oi ? b.Go : b.Gv, tn, TopNCantidad);
+                    var tn = new List<(double, string)>(); TopNPeso(b.Fut, fut, oi ? b.Go : b.Gv, tn, TopNCantidad, rb);
                     Poner(crudo, "TOPN_" + b.Libro + "_" + fu, tn);
                     if (!oi)
                     {
@@ -332,9 +357,10 @@ namespace PythiaGexCinco.Familia
             {
                 var orden = new[] { porLibro["ES"], porLibro["SPX"], porLibro["SPY"] };
                 fam = Fusion(orden, fut0);
-                var fv = new List<(double, string)>(); Muros(fam.K, fam.Fut, fam.GvC, fam.GvP, fv); Poner(crudo, "FAM_MUROS_vol", fv);
+                double rf = SeleccionFam.RADIO_FAMILIA;        // 5.0: la suma la mueven SPX/SPY en USD: su radio (20)
+                var fv = new List<(double, string)>(); Muros(fam.K, fam.Fut, fam.GvC, fam.GvP, fv, rf); Poner(crudo, "FAM_MUROS_vol", fv);
                 if (OiVale(orden[0]) && OiVale(orden[1]) && OiVale(orden[2]))
-                { var fo = new List<(double, string)>(); Muros(fam.K, fam.Fut, fam.GoC, fam.GoP, fo); Poner(crudo, "FAM_MUROS_oi", fo); }
+                { var fo = new List<(double, string)>(); Muros(fam.K, fam.Fut, fam.GoC, fam.GoP, fo, rf); Poner(crudo, "FAM_MUROS_oi", fo); }
             }
             // reg[sid] = [(round(p, 2), e, monto)] en el orden de CALC
             var reg = new RegistroMinuto { Clave = clave, Series = new Nivel[calc.Length][], Strikes = new double[calc.Length][], Crudo = new double[calc.Length][], FutMnq = fut0 };
@@ -356,7 +382,7 @@ namespace PythiaGexCinco.Familia
                     double pr = NumPy.RoundPy(p, 2); cru[k] = p;
                     arr[k] = new Nivel(pr, e, monto);
                     // 4.1.8: para la carga el strike CRUDO del libro, no la inversa de la conversion sobre el precio ya
-                    // redondeado (daba 30599,99 / 30600,01 en el 8 % de los renglones de SPX y el operador cruza ese
+                    // redondeado (en la 4.1 daba 30599,99 / 30600,01 en el 8 % de los renglones de NDX y el operador cruza ese
                     // numero contra CBOE/CME).
                     double stkCarga = double.NaN;
                     if (!esFam && b?.FutCarga != null && b.CargaK != null && si.Id != null && si.Id.StartsWith("CARGA", StringComparison.Ordinal))

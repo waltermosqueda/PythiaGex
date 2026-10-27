@@ -6,10 +6,14 @@
 //   Co(x) = lo mismo con oi
 //   cruce donde sign(C_i)*sign(C_i+1) < 0 (estricto); z = x_i + (x_i+1 - x_i)*(-C_i)/(C_i+1 - C_i); el z que minimiza |z - S| (el primero)
 // Devuelve (zv, zo) en el EJE DEL LIBRO (NaN si no hay); quien llama lo pasa a ES (ES z + corr, SPX z + base, SPY z * razon).
-// Parametros: ES y SPX paso 2.5 / semi 300 / cp 50; SPY 0.05 / 7.5 / 1.0.
+// Parametros (5.0, 27-10-2026; la 4.1 en NQ/NDX: paso 2.5 / semi 300 / cp 50, QQQ 0.05 / 7.5 / 1.0):
+//   ES y SPX: paso 0.5 (2 ticks) / semi 75 / cp 12.5   (DISENO_5_0 §4: distancias de NQ / 4; 2.5/4 = 0,625 no es tick: 0,5)
+//   SPY:      paso 0.05 USD / semi 7.5 USD / cp 1.0 USD (0,05 USD de SPY = 0,5 pt de ES y 7,5 USD = 75 pts con la razon ~10,08: igual que ES)
+//   cp 12.5 = 50 / 4: el centro c0 queda a <= 6,25 pts de S (la grilla cubre >= 68,75 pts de cada lado) y los nodos siguen en multiplos de
+//   0,5. Cuesta 301 nodos por foto (NQ 241): ~1,25 veces la 4.1 por libro.
 //
 // CACHE (CacheZero): la vista previa calcula el zero con el S y el envejecimiento del PRIMER minuto de cada clave y lo reutiliza:
-//   ES  (foto, round(S/50))       CBOE (foto, floor((t - generado)/900 s), round(S/50) SPX | round(S/1) SPY)
+//   ES  (foto, round(S/cp))       CBOE (foto, floor((t - generado)/900 s), round(S/cp) SPX | round(S/1) SPY)   (en la 4.1 cp = 50 en NQ/NDX)
 // y el diccionario es LOCAL a cada llamada de minutos_es/minutos_cboe: en el historico de preview_niveles eso es una TANDA de 240 minutos
 // desde el inicio de la sesion (preview_niveles.historico). CacheZero reproduce eso con la tanda = (clave - claveIni) / 240: determinista,
 // igual en vivo y al reiniciar, y en paridad con la referencia (que es el historico).
@@ -26,8 +30,9 @@ namespace PythiaGexCinco.Familia
 
     public static class ZeroEstandarFam
     {
-        public static readonly ParamZero ES = new ParamZero(2.5, 300.0, 50.0);
-        public static readonly ParamZero SPX = new ParamZero(2.5, 300.0, 50.0);
+        // 5.0 (27-10-2026): ES y SPX en la escala de ES (la 4.1: 2.5, 300, 50 en puntos de NQ/NDX); SPY igual que QQQ (en USD ya es la escala).
+        public static readonly ParamZero ES = new ParamZero(0.5, 75.0, 12.5);
+        public static readonly ParamZero SPX = new ParamZero(0.5, 75.0, 12.5);
         public static readonly ParamZero SPY = new ParamZero(0.05, 7.5, 1.0);
 
         /// <summary>(zv, zo) en el eje del libro. NaN, NaN si fl es null o S &lt;= 0.</summary>

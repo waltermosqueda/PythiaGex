@@ -1,0 +1,2313 @@
+{
+ "_meta": {
+  "generado_utc": "2026-10-27T04:02:50+00:00",
+  "sesion": "2026-10-27 (madrugada AR), mediciones del subagente",
+  "convencion": "pts ES = pts NQ / factor, salvo excepcion indicada. ESTADO: MEDIDO (esta sesion, con archivo/fechas/n), CODIGO (leido del codigo, archivo:linea), MEMORIA (de la memoria del proyecto, sin re-medir), SUPUESTO / PROPUESTA (sin medir).",
+  "scripts": "C:\\Users\\wmx_7\\AppData\\Local\\Temp\\claude\\C--Users-wmx-7-OneDrive-Escritorio-ATAS-nada\\404dab2f-b5f6-48fa-ba08-3ab764cbbdd8\\scratchpad\\mediciones_es",
+  "salidas": "C:\\Users\\wmx_7\\AppData\\Local\\Temp\\claude\\C--Users-wmx-7-OneDrive-Escritorio-ATAS-nada\\404dab2f-b5f6-48fa-ba08-3ab764cbbdd8\\scratchpad\\mediciones_es\\salidas",
+  "detalle": "MEDICIONES_ES.md (misma carpeta)"
+ },
+ "factor_escala": {
+  "propuesto_unico": {
+   "valor": 6.0,
+   "estado": "PROPUESTA",
+   "regla": "constante_ES = constante_NQ / 6, redondeada a multiplo de 0.25 (tick ES) con piso 0.5 (2 ticks)",
+   "respaldo": "rango de sesion MNQ/MES 6.14 y de 30 min 6.63 (58 sesiones); cobertura SPX vs NDX 5.81 (34 dias); SPX vs libro NQ 5.67-6.43"
+  },
+  "medido": {
+   "precio_NQ_sobre_ES": {
+    "n": 58,
+    "mediana": 3.8622,
+    "p25": 3.8331,
+    "p75": 3.9313,
+    "min": 3.7699,
+    "max": 4.0024,
+    "media": 3.8786,
+    "fuente": "Cache_v2 de ATAS decodificada: laboratorio/dom/ronda3/velas (MES m5, MNQ m5, MNQZ6 m5; export viejo, solo lectura) + export de hoy al scratchpad (MES m1 07-09..26-10, MNQZ6 m1/m5, MNQ m5)",
+    "fechas": "2026-07-31..2026-10-26",
+    "estado": "MEDIDO"
+   },
+   "rango_sesion_MNQ_sobre_MES": {
+    "n": 58,
+    "mediana": 6.1356,
+    "p25": 5.3062,
+    "p75": 7.2582,
+    "min": 3.9141,
+    "max": 10.9816,
+    "media": 6.5043,
+    "estado": "MEDIDO",
+    "nota": "sesion CME 18:00-17:00 NY; sesiones con >=90 % de velas de 5 min en los dos y sin salto de roll (>0,4 %)"
+   },
+   "rango_rth": {
+    "n": 58,
+    "mediana": 5.911,
+    "p25": 5.2569,
+    "p75": 6.9257,
+    "min": 3.128,
+    "max": 11.6442,
+    "media": 6.2593,
+    "estado": "MEDIDO"
+   },
+   "rango_noche_18_a_0930": {
+    "n": 58,
+    "mediana": 6.7862,
+    "p25": 6.0525,
+    "p75": 7.681,
+    "min": 4.5495,
+    "max": 14.9468,
+    "media": 7.2395,
+    "estado": "MEDIDO"
+   },
+   "rango_30min_todo": {
+    "n": 58,
+    "mediana": 6.6324,
+    "p25": 5.8731,
+    "p75": 7.3714,
+    "min": 5.1759,
+    "max": 8.875,
+    "media": 6.7042,
+    "estado": "MEDIDO",
+    "nota": "mediana por sesion de los rangos de bloques fijos de 30 min NY"
+   },
+   "rango_30min_rth": {
+    "n": 58,
+    "mediana": 5.5921,
+    "p25": 4.9208,
+    "p75": 6.4123,
+    "min": 4.1471,
+    "max": 7.5,
+    "media": 5.6749,
+    "estado": "MEDIDO"
+   },
+   "rango_30min_noche": {
+    "n": 58,
+    "mediana": 7.0417,
+    "p25": 6.3215,
+    "p75": 7.7739,
+    "min": 5.5517,
+    "max": 9.6,
+    "media": 7.1966,
+    "estado": "MEDIDO"
+   },
+   "rango_relativo_(vol_realizada_NQ/ES)": {
+    "n": 58,
+    "mediana": 1.7304,
+    "p25": 1.5226,
+    "p75": 1.9232,
+    "min": 1.2994,
+    "max": 2.3139,
+    "media": 1.7301,
+    "estado": "MEDIDO"
+   },
+   "rango_por_mes": {
+    "2026-07": {
+     "n": 1,
+     "q_ses": 5.692,
+     "q30": 8.012,
+     "q_precio": 3.77
+    },
+    "2026-08": {
+     "n": 20,
+     "q_ses": 6.929,
+     "q30": 7.314,
+     "q_precio": 3.836
+    },
+    "2026-09": {
+     "n": 20,
+     "q_ses": 5.302,
+     "q30": 5.873,
+     "q_precio": 3.881
+    },
+    "2026-10": {
+     "n": 17,
+     "q_ses": 6.242,
+     "q30": 6.644,
+     "q_precio": 3.918
+    }
+   },
+   "rangos_absolutos_pts": {
+    "MES_sesion": {
+     "n": 58,
+     "mediana": 68.625,
+     "p25": 53.8125,
+     "p75": 87.375,
+     "min": 29.75,
+     "max": 157.25,
+     "media": 73.9914
+    },
+    "MNQ_sesion": {
+     "n": 58,
+     "mediana": 412.25,
+     "p25": 338.625,
+     "p75": 538.0,
+     "min": 235.0,
+     "max": 1125.0,
+     "media": 466.3362
+    },
+    "MES_30m_rth": {
+     "n": 58,
+     "mediana": 12.125,
+     "p25": 9.8125,
+     "p75": 15.4375,
+     "min": 7.0,
+     "max": 21.75,
+     "media": 12.9397
+    },
+    "MNQ_30m_rth": {
+     "n": 58,
+     "mediana": 68.125,
+     "p25": 54.0625,
+     "p75": 84.5625,
+     "min": 42.0,
+     "max": 128.75,
+     "media": 72.7931
+    },
+    "MES_30m_noche": {
+     "n": 58,
+     "mediana": 6.8125,
+     "p25": 5.75,
+     "p75": 7.75,
+     "min": 3.25,
+     "max": 11.25,
+     "media": 6.7629
+    },
+    "MNQ_30m_noche": {
+     "n": 58,
+     "mediana": 45.8125,
+     "p25": 39.3125,
+     "p75": 52.25,
+     "min": 28.25,
+     "max": 82.0,
+     "media": 47.7392
+    }
+   },
+   "cobertura_libroES_vs_libroNQ_vol_rueda": {
+    "k": {
+     "n": 107,
+     "mediana": 4.148,
+     "p25": 3.33,
+     "p75": 4.84,
+     "p05": 1.101,
+     "p95": 6.733,
+     "min": 0.838,
+     "max": 12.278
+    },
+    "R_es_pts": {
+     "n": 107,
+     "mediana": 24.1,
+     "p25": 20.7,
+     "p75": 30.0,
+     "p05": 14.9,
+     "p95": 91.3,
+     "min": 8.1,
+     "max": 119.4
+    },
+    "f_nq_en_100": {
+     "n": 107,
+     "mediana": 0.656,
+     "p25": 0.474,
+     "p75": 0.81,
+     "p05": 0.308,
+     "p95": 0.918,
+     "min": 0.146,
+     "max": 0.977
+    },
+    "dias": 11,
+    "fuente": "viva-ES/viva-NQ (PythiaGex/viva) 07-09..05-10, bloques de 30 min NY",
+    "estado": "MEDIDO"
+   },
+   "cobertura_libroES_vs_libroNQ_vol_noche": {
+    "k": {
+     "n": 196,
+     "mediana": 3.878,
+     "p25": 2.966,
+     "p75": 4.748,
+     "p05": 1.501,
+     "p95": 12.287,
+     "min": 0.601,
+     "max": 100.0
+    },
+    "R_es_pts": {
+     "n": 196,
+     "mediana": 25.8,
+     "p25": 21.1,
+     "p75": 33.7,
+     "p05": 8.2,
+     "p95": 66.6,
+     "min": 1.0,
+     "max": 166.5
+    },
+    "f_nq_en_100": {
+     "n": 196,
+     "mediana": 0.567,
+     "p25": 0.43,
+     "p75": 0.628,
+     "p05": 0.21,
+     "p95": 0.799,
+     "min": 0.0,
+     "max": 1.0
+    },
+    "dias": 14,
+    "estado": "MEDIDO"
+   },
+   "cobertura_libroES_vs_libroNQ_oi_rueda": {
+    "k": {
+     "n": 107,
+     "mediana": 3.77,
+     "p25": 3.184,
+     "p75": 4.736,
+     "p05": 1.303,
+     "p95": 8.363,
+     "min": 0.694,
+     "max": 100.0
+    },
+    "R_es_pts": {
+     "n": 107,
+     "mediana": 26.5,
+     "p25": 21.1,
+     "p75": 31.4,
+     "p05": 12.0,
+     "p95": 76.8,
+     "min": 1.0,
+     "max": 144.1
+    },
+    "f_nq_en_100": {
+     "n": 107,
+     "mediana": 0.57,
+     "p25": 0.415,
+     "p75": 0.732,
+     "p05": 0.219,
+     "p95": 0.889,
+     "min": 0.055,
+     "max": 0.959
+    },
+    "dias": 11,
+    "estado": "MEDIDO"
+   },
+   "cobertura_libroES_vs_libroNQ_oi_noche": {
+    "k": {
+     "n": 200,
+     "mediana": 3.73,
+     "p25": 2.844,
+     "p75": 4.816,
+     "p05": 1.712,
+     "p95": 21.627,
+     "min": 1.171,
+     "max": 100.0
+    },
+    "R_es_pts": {
+     "n": 200,
+     "mediana": 26.8,
+     "p25": 20.8,
+     "p75": 35.2,
+     "p05": 4.6,
+     "p95": 58.4,
+     "min": 1.0,
+     "max": 85.4
+    },
+    "f_nq_en_100": {
+     "n": 200,
+     "mediana": 0.422,
+     "p25": 0.329,
+     "p75": 0.492,
+     "p05": 0.075,
+     "p95": 0.703,
+     "min": 0.0,
+     "max": 0.966
+    },
+    "dias": 14,
+    "estado": "MEDIDO"
+   },
+   "cobertura_SPX_vs_NDX_vol_rueda": {
+    "k": {
+     "n": 419,
+     "mediana": 5.813,
+     "p25": 5.276,
+     "p75": 6.552,
+     "p05": 4.491,
+     "p95": 7.962,
+     "min": 2.485,
+     "max": 9.893
+    },
+    "R_es_pts": {
+     "n": 419,
+     "mediana": 17.2,
+     "p25": 15.3,
+     "p75": 19.0,
+     "p05": 12.6,
+     "p95": 22.3,
+     "min": 10.1,
+     "max": 40.2
+    },
+    "f_nq_en_100": {
+     "n": 419,
+     "mediana": 0.643,
+     "p25": 0.52,
+     "p75": 0.799,
+     "p05": 0.371,
+     "p95": 0.936,
+     "min": 0.252,
+     "max": 0.986
+    },
+    "dias": 34,
+    "fuente": "cadenas CBOE archivadas (cboe-local + PythiaGex/cadenas + PythiaGex4/cboe) 08-09..26-10, rueda 09:45-16:00 NY",
+    "estado": "MEDIDO"
+   },
+   "cobertura_SPX_vs_NDX_oi_rueda": {
+    "k": {
+     "n": 419,
+     "mediana": 5.028,
+     "p25": 4.123,
+     "p75": 6.369,
+     "p05": 2.867,
+     "p95": 9.569,
+     "min": 1.625,
+     "max": 18.564
+    },
+    "R_es_pts": {
+     "n": 419,
+     "mediana": 19.9,
+     "p25": 15.7,
+     "p75": 24.3,
+     "p05": 10.5,
+     "p95": 34.9,
+     "min": 5.4,
+     "max": 61.5
+    },
+    "f_nq_en_100": {
+     "n": 419,
+     "mediana": 0.548,
+     "p25": 0.434,
+     "p75": 0.735,
+     "p05": 0.302,
+     "p95": 0.916,
+     "min": 0.161,
+     "max": 0.989
+    },
+    "dias": 34,
+    "estado": "MEDIDO"
+   },
+   "cobertura_SPX_vs_libroNQ_viva_vol_rueda": {
+    "k": {
+     "n": 198,
+     "mediana": 5.673,
+     "p25": 4.632,
+     "p75": 6.573,
+     "p05": 3.867,
+     "p95": 13.977,
+     "min": 3.045,
+     "max": 40.557
+    },
+    "R_es_pts": {
+     "n": 198,
+     "mediana": 17.6,
+     "p25": 15.2,
+     "p75": 21.6,
+     "p05": 7.2,
+     "p95": 25.9,
+     "min": 2.5,
+     "max": 32.8
+    },
+    "f_nq_en_100": {
+     "n": 198,
+     "mediana": 0.654,
+     "p25": 0.526,
+     "p75": 0.79,
+     "p05": 0.342,
+     "p95": 0.913,
+     "min": 0.146,
+     "max": 0.977
+    },
+    "dias": 19,
+    "estado": "MEDIDO"
+   },
+   "cobertura_SPX_vs_libroNQ_viva3_vol_rueda": {
+    "k": {
+     "n": 166,
+     "mediana": 6.427,
+     "p25": 5.78,
+     "p75": 7.472,
+     "p05": 4.625,
+     "p95": 9.186,
+     "min": 3.754,
+     "max": 15.606
+    },
+    "R_es_pts": {
+     "n": 166,
+     "mediana": 15.6,
+     "p25": 13.4,
+     "p75": 17.3,
+     "p05": 10.9,
+     "p95": 21.6,
+     "min": 6.4,
+     "max": 26.6
+    },
+    "f_nq_en_100": {
+     "n": 166,
+     "mediana": 0.597,
+     "p25": 0.473,
+     "p75": 0.737,
+     "p05": 0.365,
+     "p95": 0.882,
+     "min": 0.253,
+     "max": 0.958
+    },
+    "dias": 14,
+    "estado": "MEDIDO"
+   },
+   "dispersion_volumen_0DTE_libroES_sobre_SPX_R50": {
+    "mediana": 1.317,
+    "p25": 1.133,
+    "p75": 1.586,
+    "n": 108,
+    "dias": 11,
+    "estado": "MEDIDO",
+    "nota": "el volumen 0DTE del libro de ES (Rithmic) esta ~30 % mas abierto que el de SPX; el del libro NQ es igual al de NDX (0,98-1,02)"
+   },
+   "ruido_conversion": {
+    "NDX_C7_MAD_muestra_ptsNQ": 1.79,
+    "QQQ_C8_MAD_muestra_ptsNQ": 1.07,
+    "SPX_C7_MAD_muestra_ptsES": 0.483,
+    "SPY_C8_MAD_muestra_ptsES": 0.44647,
+    "cociente_NDX_SPX": 3.71,
+    "cociente_QQQ_SPY": 2.4,
+    "fuente": "PythiaGex4/familia/muestras-NDX|QQQ-* (13..26-10, 10 y 13 dias) y m31 (SPX/SPY 14-09..26-10)",
+    "estado": "MEDIDO"
+   }
+  },
+  "excepciones": [
+   {
+    "que": "radio de busqueda en el libro ES de Rithmic (muros/majors/dominantes)",
+    "factor": 4.0,
+    "valor_ES": 25.0,
+    "porque": "cobertura medida libro ES vs libro NQ k=4,15 rueda / 3,88 noche (vol), 3,77/3,73 (OI)",
+    "estado": "MEDIDO+PROPUESTA",
+    "coincide_con_codigo": "GammaHoyTres.cs:401 RadioDominantes ES = 25 (motor 3.0 de la 4.1)"
+   },
+   {
+    "que": "radio de busqueda en SPX y SPY (CBOE)",
+    "factor": 6.0,
+    "valor_ES": 17.0,
+    "porque": "cobertura SPX vs NDX k=5,81 vol (R 17,2) / 5,03 OI (R 19,9)",
+    "estado": "MEDIDO+PROPUESTA"
+   },
+   {
+    "que": "si la 5.0 necesita UN solo radio para los tres libros",
+    "factor": 5.0,
+    "valor_ES": 20.0,
+    "porque": "con R=20 el libro ES cubre ~0,60 del vol 0DTE en la rueda y SPX ~0,69; NQ con 100 cubre 0,59-0,66",
+    "estado": "PROPUESTA"
+   },
+   {
+    "que": "tolerancias atadas al ruido de la conversion (confluencias entre libros, aceptar una muestra)",
+    "factor": 3.7,
+    "porque": "MAD de muestra NDX 1,79 vs SPX 0,48; QQQ 1,07 vs SPY 0,45 (cociente 2,4)",
+    "estado": "MEDIDO+PROPUESTA"
+   },
+   {
+    "que": "constantes atadas al paso de strike (centroide, 'a N strikes')",
+    "factor": 1.67,
+    "porque": "NQ: grilla de 10 + x25/x75 = 12 strikes/100 pts (8,33 de paso medio); NDX 10; ES y SPX 5; SPY 1 USD = ~10,08 pts ES",
+    "estado": "MEDIDO+PROPUESTA"
+   },
+   {
+    "que": "constantes que se separan por franja",
+    "factor_rueda": 5.5,
+    "factor_noche": 7.0,
+    "porque": "rango de 30 min rueda 5,59 / noche 7,04",
+    "estado": "MEDIDO+PROPUESTA"
+   },
+   {
+    "que": "constantes relativas (%, fracciones: ISLA 0,10, FUERZA 0,25, FILTRO 3 %, TolStrike 0,006, empate 20 %)",
+    "factor": 1.0,
+    "estado": "PROPUESTA"
+   },
+   {
+    "que": "replicas de paridad de la clasica / 2.0 en ES",
+    "factor": 1.0,
+    "porque": "en ES esas versiones usan los MISMOS numeros que en NQ (min(2 %,100), centroide 12, 960 s): para paridad se copian tal cual",
+    "estado": "CODIGO"
+   }
+  ]
+ },
+ "radios_pts_ES": {
+  "dominantes_libro_ES": {
+   "propuesto": 25.0,
+   "estado": "PROPUESTA (medido k=4)"
+  },
+  "dominantes_SPX_SPY": {
+   "propuesto": 17.0,
+   "estado": "PROPUESTA (medido k=5,8 vol; con OI 20)"
+  },
+  "radio_unico_si_hace_falta": {
+   "propuesto": 20.0,
+   "estado": "PROPUESTA"
+  },
+  "cobertura_con_R100_en_ES": {
+   "libro_ES_vol_rueda": 0.99,
+   "libro_ES_vol_noche": 0.97,
+   "SPX_vol_rueda": 1.0,
+   "SPX_oi_rueda": 0.96,
+   "nota": "lo que hacen hoy la clasica y la 2.0 en ES (min(2 %,100) = 100 pts): toman practicamente TODO el 0DTE",
+   "estado": "MEDIDO"
+  },
+  "cobertura_NQ_con_R100": {
+   "libro_NQ_vol_rueda": [
+    0.66,
+    0.59
+   ],
+   "libro_NQ_vol_noche": [
+    0.53,
+    0.44
+   ],
+   "libro_NQ_oi_rueda": [
+    0.6,
+    0.54
+   ],
+   "libro_NQ_oi_noche": [
+    0.41,
+    0.33
+   ],
+   "NDX_vol_rueda": 0.64,
+   "NDX_oi_rueda": 0.54,
+   "nota": "[viva sept, viva3 oct] medianas",
+   "estado": "MEDIDO"
+  },
+  "dibujo_motor_3_0": {
+   "NQ": 150.0,
+   "ES": 40.0,
+   "estado": "CODIGO GammaHoyTres.cs:402 (factor implicito 3,75)"
+  }
+ },
+ "grillas_pts_ES": {
+  "zero_estandar_paso": {
+   "NQ": 2.5,
+   "propuesto_ES": 0.5,
+   "nota": "SPY: 0,05 USD = ~0,50 pts ES (igual que QQQ 0,05 = ~2,07 pts NQ)",
+   "estado": "PROPUESTA"
+  },
+  "zero_estandar_semiancho": {
+   "NQ": 300.0,
+   "propuesto_ES": 50.0,
+   "estado": "PROPUESTA"
+  },
+  "ZEST_MAX": {
+   "NQ": 300.0,
+   "propuesto_ES": 50.0,
+   "estado": "PROPUESTA"
+  },
+  "FAM_GRILLA": {
+   "NQ": 5.0,
+   "propuesto_ES": 1.0,
+   "nota": "divide el paso de strike 5 de ES/SPX",
+   "estado": "PROPUESTA"
+  }
+ },
+ "bandas_tolerancias_pts_ES": {
+  "CONF_PTS": {
+   "NQ": 3.0,
+   "propuesto_ES": 0.75,
+   "porque": "ruido de conversion (factor 3,7)",
+   "estado": "PROPUESTA"
+  },
+  "TUNEL": {
+   "NQ": 40.0,
+   "propuesto_ES": 6.5,
+   "estado": "PROPUESTA (factor 6)"
+  },
+  "juez_toque": {
+   "NQ": 2.0,
+   "propuesto_ES": 0.5,
+   "nota": "factor 6 da 0,33 < 2 ticks: piso",
+   "estado": "PROPUESTA"
+  },
+  "juez_rebote": {
+   "NQ": 6.0,
+   "propuesto_ES": 1.0,
+   "estado": "PROPUESTA"
+  },
+  "vara_extremo": {
+   "NQ": 20.0,
+   "propuesto_ES": 3.5,
+   "estado": "PROPUESTA"
+  },
+  "motor_3_0_zona_toque": {
+   "NQ": 2.5,
+   "ES": 0.75,
+   "estado": "CODIGO GammaHoyTres.cs:403"
+  },
+  "motor_3_0_lejos": {
+   "NQ": 15.0,
+   "ES": 4.0,
+   "estado": "CODIGO GammaHoyTres.cs:404"
+  },
+  "centroide_clasica": {
+   "NQ": 12.0,
+   "ES_paridad_clasica": 12.0,
+   "ES_por_paso_de_strike": 7.5,
+   "estado": "CODIGO (clasica usa 12 en ES) / PROPUESTA"
+  },
+  "rotulos_juntar": {
+   "NQ": 1.5,
+   "propuesto_ES": 0.25,
+   "estado": "PROPUESTA (factor 6)"
+  }
+ },
+ "pasos_strike": {
+  "fuente": "bajada unica _SPX.json y SPY.json del 27-10 03:29 UTC (sello 02:48:38 / 00:04:56) + libros vivos + archivo CBOE (34 dias de rueda)",
+  "SPXW_0DTE_y_1_3_dias": {
+   "paso_pts": 5,
+   "hasta_arriba_pts": "258-318",
+   "hasta_abajo_pts": 512,
+   "despues": "10, 25, 100, 200",
+   "estado": "MEDIDO (S 7676,77)"
+  },
+  "SPXW_viernes_semanal": {
+   "paso_pts": 5,
+   "hasta_arriba_pts": 538,
+   "hasta_abajo_pts": 822,
+   "estado": "MEDIDO (vence 30-10)"
+  },
+  "SPX_AM_mensual_trimestral": {
+   "paso_pts": 5,
+   "hasta_arriba_pts": 388,
+   "hasta_abajo_pts": 642,
+   "estado": "MEDIDO (18-12; 20-11: +468/-812)"
+  },
+  "SPX_archivo_0DTE_rueda": {
+   "paso_modal": 5,
+   "ensancha_arriba": {
+    "n": 357,
+    "mediana": 284.6,
+    "p10": 199.7,
+    "p25": 252.1,
+    "p75": 317.9,
+    "p90": 340.1,
+    "min": 110.1,
+    "max": 365.8
+   },
+   "ensancha_abajo": "no se ensancha dentro de -5 %",
+   "estado": "MEDIDO (archivo: solo strikes con OI o volumen, +-5 %)"
+  },
+  "SPY_diario": {
+   "paso_usd": 1,
+   "hasta_arriba_usd": 46,
+   "hasta_abajo_usd": 44,
+   "despues_usd": 5,
+   "en_pts_ES_por_strike": 10.08,
+   "estado": "MEDIDO (S 766,28)"
+  },
+  "SPY_viernes": {
+   "paso_usd": 1,
+   "hasta_arriba_usd": 71,
+   "hasta_abajo_usd": 129,
+   "estado": "MEDIDO (vence 30-10)"
+  },
+  "ES_Rithmic_0DTE_y_siguiente": {
+   "paso_pts": 5,
+   "ventana_libro_4_1": "+-1 % densa (5 pts) / +-2 % rala (10 pts): se ensancha a +-77..85 pts",
+   "ventana_libro_clasica": "+-~130 pts a 5 pts, despues 20 pts hasta +-480",
+   "listado_Rithmic": "714-890 contratos por serie semanal (log de la clasica 17-09)",
+   "estado": "MEDIDO (lo que se ensancha es la VENTANA suscripta, no el listado)"
+  },
+  "NQ_Rithmic": {
+   "paso": "grilla de 10 + x25/x75 (12 strikes cada 100 pts, paso medio 8,33)",
+   "estado": "MEDIDO"
+  },
+  "NDX_0DTE": {
+   "paso_pts": 10,
+   "ensancha": {
+    "n": 399,
+    "mediana": 837.4,
+    "p10": 425.7,
+    "p25": 650.5,
+    "p75": 1117.8,
+    "p90": 1266.9,
+    "min": 1.4,
+    "max": 1476.0
+   },
+   "estado": "MEDIDO (archivo)"
+  }
+ },
+ "conversion_SPX_a_ES": {
+  "regla": "C7 de backtest_familia aplicada a SPX: muestra = MES(cadena_ts - 900 s) - spot, spot vivo (cambio en 600 s), 09:35-15:59 NY; robusta 3 MAD piso 0,5; >= 5 de 24 de dia; noche = robusta de la rueda (>= 20) x (EXP - t)/(EXP - 16:00 NY de esa rueda)",
+  "retraso_optimo_s": {
+   "valor": 900,
+   "MAD_900": 0.4898,
+   "MAD_960": 0.8633,
+   "estado": "MEDIDO (lag que minimiza la dispersion intradia, 30 dias Z6)"
+  },
+  "ruedas_por_dia": [
+   {
+    "dia": "2026-09-08",
+    "contrato": "U6",
+    "n": 13,
+    "rueda": 5.45,
+    "mad": 0.512,
+    "fwd_mediana": 5.64,
+    "carry_tesoro_q12": 5.27,
+    "carry_indic": 5.29,
+    "dias_exp": 9.85
+   },
+   {
+    "dia": "2026-09-09",
+    "contrato": "U6",
+    "n": 16,
+    "rueda": 5.374,
+    "mad": 0.377,
+    "fwd_mediana": 5.24,
+    "carry_tesoro_q12": 4.69,
+    "carry_indic": 4.71,
+    "dias_exp": 8.82
+   },
+   {
+    "dia": "2026-09-10",
+    "contrato": "U6",
+    "n": 15,
+    "rueda": 6.365,
+    "mad": 0.85,
+    "fwd_mediana": 70.885,
+    "carry_tesoro_q12": 56.3,
+    "carry_indic": 52.48,
+    "dias_exp": 98.88
+   },
+   {
+    "dia": "2026-09-11",
+    "contrato": "U6",
+    "n": 13,
+    "rueda": 3.617,
+    "mad": 0.07,
+    "fwd_mediana": 72.97,
+    "carry_tesoro_q12": 56.18,
+    "carry_indic": 52.43,
+    "dias_exp": 97.9
+   },
+   {
+    "dia": "2026-09-14",
+    "contrato": "Z6",
+    "n": 9,
+    "rueda": 70.034,
+    "mad": 0.26,
+    "fwd_mediana": 71.19,
+    "carry_tesoro_q12": 53.97,
+    "carry_indic": 50.54,
+    "dias_exp": 94.94
+   },
+   {
+    "dia": "2026-09-15",
+    "contrato": "Z6",
+    "n": 13,
+    "rueda": 70.965,
+    "mad": 0.416,
+    "fwd_mediana": 69.56,
+    "carry_tesoro_q12": 56.11,
+    "carry_indic": 49.76,
+    "dias_exp": 93.9
+   },
+   {
+    "dia": "2026-09-16",
+    "contrato": "Z6",
+    "n": 177,
+    "rueda": 70.243,
+    "mad": 0.724,
+    "fwd_mediana": 68.8,
+    "carry_tesoro_q12": 55.61,
+    "carry_indic": 49.35,
+    "dias_exp": 92.84
+   },
+   {
+    "dia": "2026-09-17",
+    "contrato": "Z6",
+    "n": 11,
+    "rueda": 69.828,
+    "mad": 0.47,
+    "fwd_mediana": 68.77,
+    "carry_tesoro_q12": 55.18,
+    "carry_indic": 49.0,
+    "dias_exp": 91.9
+   },
+   {
+    "dia": "2026-09-18",
+    "contrato": "Z6",
+    "n": 14,
+    "rueda": 65.688,
+    "mad": 0.693,
+    "fwd_mediana": 67.385,
+    "carry_tesoro_q12": 54.7,
+    "carry_indic": 48.44,
+    "dias_exp": 90.89
+   },
+   {
+    "dia": "2026-09-21",
+    "contrato": "Z6",
+    "n": 308,
+    "rueda": 67.504,
+    "mad": 0.35,
+    "fwd_mediana": 67.18,
+    "carry_tesoro_q12": 54.31,
+    "carry_indic": 47.6,
+    "dias_exp": 87.89
+   },
+   {
+    "dia": "2026-09-22",
+    "contrato": "Z6",
+    "n": 185,
+    "rueda": 66.303,
+    "mad": 0.361,
+    "fwd_mediana": 65.18,
+    "carry_tesoro_q12": 53.71,
+    "carry_indic": 47.13,
+    "dias_exp": 86.84
+   },
+   {
+    "dia": "2026-09-24",
+    "contrato": "Z6",
+    "n": 118,
+    "rueda": 63.3,
+    "mad": 0.421,
+    "fwd_mediana": 62.66,
+    "carry_tesoro_q12": 51.89,
+    "carry_indic": 45.64,
+    "dias_exp": 84.81
+   },
+   {
+    "dia": "2026-09-25",
+    "contrato": "Z6",
+    "n": 11,
+    "rueda": 61.052,
+    "mad": 0.884,
+    "fwd_mediana": 61.63,
+    "carry_tesoro_q12": 51.98,
+    "carry_indic": 45.31,
+    "dias_exp": 83.9
+   },
+   {
+    "dia": "2026-09-28",
+    "contrato": "Z6",
+    "n": 308,
+    "rueda": 60.955,
+    "mad": 0.65,
+    "fwd_mediana": 59.925,
+    "carry_tesoro_q12": 49.71,
+    "carry_indic": 43.48,
+    "dias_exp": 80.89
+   },
+   {
+    "dia": "2026-09-29",
+    "contrato": "Z6",
+    "n": 310,
+    "rueda": 59.321,
+    "mad": 0.457,
+    "fwd_mediana": 58.52,
+    "carry_tesoro_q12": 49.63,
+    "carry_indic": 42.78,
+    "dias_exp": 79.89
+   },
+   {
+    "dia": "2026-09-30",
+    "contrato": "Z6",
+    "n": 276,
+    "rueda": 58.356,
+    "mad": 0.51,
+    "fwd_mediana": 57.76,
+    "carry_tesoro_q12": 49.24,
+    "carry_indic": 42.49,
+    "dias_exp": 78.88
+   },
+   {
+    "dia": "2026-10-01",
+    "contrato": "Z6",
+    "n": 306,
+    "rueda": 56.037,
+    "mad": 0.599,
+    "fwd_mediana": 55.715,
+    "carry_tesoro_q12": 48.22,
+    "carry_indic": 41.64,
+    "dias_exp": 77.89
+   },
+   {
+    "dia": "2026-10-02",
+    "contrato": "Z6",
+    "n": 314,
+    "rueda": 54.166,
+    "mad": 0.449,
+    "fwd_mediana": 55.425,
+    "carry_tesoro_q12": 46.94,
+    "carry_indic": 41.48,
+    "dias_exp": 76.89
+   },
+   {
+    "dia": "2026-10-05",
+    "contrato": "Z6",
+    "n": 315,
+    "rueda": 52.443,
+    "mad": 0.278,
+    "fwd_mediana": 53.26,
+    "carry_tesoro_q12": 45.3,
+    "carry_indic": 40.1,
+    "dias_exp": 73.9
+   },
+   {
+    "dia": "2026-10-06",
+    "contrato": "Z6",
+    "n": 323,
+    "rueda": 52.749,
+    "mad": 0.36,
+    "fwd_mediana": 53.03,
+    "carry_tesoro_q12": 45.01,
+    "carry_indic": 39.87,
+    "dias_exp": 72.89
+   },
+   {
+    "dia": "2026-10-07",
+    "contrato": "Z6",
+    "n": 305,
+    "rueda": 52.283,
+    "mad": 0.417,
+    "fwd_mediana": 52.02,
+    "carry_tesoro_q12": 44.44,
+    "carry_indic": 39.14,
+    "dias_exp": 71.9
+   },
+   {
+    "dia": "2026-10-08",
+    "contrato": "Z6",
+    "n": 300,
+    "rueda": 51.053,
+    "mad": 0.604,
+    "fwd_mediana": 50.5,
+    "carry_tesoro_q12": 43.68,
+    "carry_indic": 38.5,
+    "dias_exp": 70.89
+   },
+   {
+    "dia": "2026-10-09",
+    "contrato": "Z6",
+    "n": 302,
+    "rueda": 49.184,
+    "mad": 0.476,
+    "fwd_mediana": 50.66,
+    "carry_tesoro_q12": 43.18,
+    "carry_indic": 38.11,
+    "dias_exp": 69.89
+   },
+   {
+    "dia": "2026-10-12",
+    "contrato": "Z6",
+    "n": 304,
+    "rueda": 49.074,
+    "mad": 0.326,
+    "fwd_mediana": 48.01,
+    "carry_tesoro_q12": 41.23,
+    "carry_indic": 36.49,
+    "dias_exp": 66.89
+   },
+   {
+    "dia": "2026-10-13",
+    "contrato": "Z6",
+    "n": 287,
+    "rueda": 48.245,
+    "mad": 0.352,
+    "fwd_mediana": 47.37,
+    "carry_tesoro_q12": 40.68,
+    "carry_indic": 35.9,
+    "dias_exp": 65.9
+   },
+   {
+    "dia": "2026-10-14",
+    "contrato": "Z6",
+    "n": 301,
+    "rueda": 48.592,
+    "mad": 0.504,
+    "fwd_mediana": 46.22,
+    "carry_tesoro_q12": 39.75,
+    "carry_indic": 35.01,
+    "dias_exp": 64.89
+   },
+   {
+    "dia": "2026-10-15",
+    "contrato": "Z6",
+    "n": 165,
+    "rueda": 46.988,
+    "mad": 0.52,
+    "fwd_mediana": 45.465,
+    "carry_tesoro_q12": 39.1,
+    "carry_indic": 34.48,
+    "dias_exp": 63.83
+   },
+   {
+    "dia": "2026-10-16",
+    "contrato": "Z6",
+    "n": 299,
+    "rueda": 44.342,
+    "mad": 0.669,
+    "fwd_mediana": 43.49,
+    "carry_tesoro_q12": 38.45,
+    "carry_indic": 33.79,
+    "dias_exp": 62.89
+   },
+   {
+    "dia": "2026-10-19",
+    "contrato": "Z6",
+    "n": 300,
+    "rueda": 42.14,
+    "mad": 0.418,
+    "fwd_mediana": 41.49,
+    "carry_tesoro_q12": 36.56,
+    "carry_indic": 32.24,
+    "dias_exp": 59.89
+   },
+   {
+    "dia": "2026-10-20",
+    "contrato": "Z6",
+    "n": 276,
+    "rueda": 41.955,
+    "mad": 0.737,
+    "fwd_mediana": 40.78,
+    "carry_tesoro_q12": 36.09,
+    "carry_indic": 31.75,
+    "dias_exp": 58.9
+   },
+   {
+    "dia": "2026-10-21",
+    "contrato": "Z6",
+    "n": 293,
+    "rueda": 41.357,
+    "mad": 0.517,
+    "fwd_mediana": 40.35,
+    "carry_tesoro_q12": 35.61,
+    "carry_indic": 31.35,
+    "dias_exp": 57.89
+   },
+   {
+    "dia": "2026-10-22",
+    "contrato": "Z6",
+    "n": 298,
+    "rueda": 40.286,
+    "mad": 0.582,
+    "fwd_mediana": 37.72,
+    "carry_tesoro_q12": 34.4,
+    "carry_indic": 30.44,
+    "dias_exp": 56.89
+   },
+   {
+    "dia": "2026-10-23",
+    "contrato": "Z6",
+    "n": 278,
+    "rueda": 37.203,
+    "mad": 0.569,
+    "fwd_mediana": 36.56,
+    "carry_tesoro_q12": 33.68,
+    "carry_indic": 29.82,
+    "dias_exp": 55.9
+   },
+   {
+    "dia": "2026-10-26",
+    "contrato": "Z6",
+    "n": 303,
+    "rueda": 36.378,
+    "mad": 0.49,
+    "fwd_mediana": 35.11,
+    "carry_tesoro_q12": 31.9,
+    "carry_indic": 28.37,
+    "dias_exp": 52.89
+   }
+  ],
+  "resumen_Z6": {
+   "n": {
+    "n": 30,
+    "mediana": 298.5,
+    "p05": 11.0,
+    "p25": 179.0,
+    "p75": 304.75,
+    "p95": 314.55,
+    "min": 9.0,
+    "max": 323.0,
+    "mad": 13.5
+   },
+   "mad": {
+    "n": 30,
+    "mediana": 0.483,
+    "p05": 0.3,
+    "p25": 0.416,
+    "p75": 0.595,
+    "p95": 0.731,
+    "min": 0.26,
+    "max": 0.884,
+    "mad": 0.107
+   },
+   "dif_fwd_menos_rueda": {
+    "n": 30,
+    "mediana": -0.725,
+    "p05": -1.99,
+    "p25": -1.108,
+    "p75": -0.278,
+    "p95": 1.378,
+    "min": -2.566,
+    "max": 1.697,
+    "mad": 0.427
+   },
+   "dif_fwd_err8_menos_rueda": {
+    "n": 30,
+    "mediana": -0.725,
+    "p05": -1.988,
+    "p25": -1.082,
+    "p75": -0.276,
+    "p95": 1.22,
+    "min": -2.566,
+    "max": 2.062,
+    "mad": 0.405
+   },
+   "dif_rueda_menos_carry_tesoro": {
+    "n": 30,
+    "mediana": 7.844,
+    "p05": 4.974,
+    "p25": 6.289,
+    "p75": 11.181,
+    "p95": 14.762,
+    "min": 3.523,
+    "max": 16.064,
+    "mad": 1.955
+   },
+   "dif_rueda_menos_carry_indic": {
+    "n": 30,
+    "mediana": 13.011,
+    "p05": 8.835,
+    "p25": 11.391,
+    "p75": 17.418,
+    "p95": 20.864,
+    "min": 7.383,
+    "max": 21.205,
+    "mad": 2.93
+   },
+   "rel_rueda_sobre_carry_indic": {
+    "n": 30,
+    "mediana": 1.345,
+    "p05": 1.286,
+    "p25": 1.32,
+    "p75": 1.387,
+    "p95": 1.424,
+    "min": 1.248,
+    "max": 1.426,
+    "mad": 0.038
+   },
+   "implicito_r_menos_q": {
+    "n": 30,
+    "mediana": 0.034,
+    "p05": 0.033,
+    "p25": 0.034,
+    "p75": 0.035,
+    "p95": 0.036,
+    "min": 0.032,
+    "max": 0.036,
+    "mad": 0.001
+   },
+   "rango_b24_en_el_dia": {
+    "n": 30,
+    "mediana": 1.445,
+    "p05": 0.287,
+    "p25": 1.168,
+    "p75": 1.83,
+    "p95": 2.686,
+    "min": 0.05,
+    "max": 3.19,
+    "mad": 0.295
+   },
+   "ultima_hora_menos_primera": {
+    "n": 29,
+    "mediana": 0.02,
+    "p05": -0.916,
+    "p25": -0.66,
+    "p75": 0.64,
+    "p95": 1.98,
+    "min": -1.57,
+    "max": 3.25,
+    "mad": 0.66
+   }
+  },
+  "muestra_menos_mediana24": {
+   "n": 6903,
+   "mediana": 0.0,
+   "p05": -1.3,
+   "p25": -0.386,
+   "p75": 0.387,
+   "p95": 1.248,
+   "min": -9.583,
+   "max": 6.359,
+   "mad": 0.387
+  },
+  "forwards_menos_sincronizada_rueda": {
+   "n": 6903,
+   "mediana": -0.723,
+   "p05": -2.443,
+   "p25": -1.21,
+   "p75": -0.14,
+   "p95": 1.39,
+   "min": -10.18,
+   "max": 69.614,
+   "mad": 0.527
+  },
+  "forwards_error_ticks_rueda": {
+   "n": 6903,
+   "mediana": 6.4,
+   "p05": 5.2,
+   "p25": 5.8,
+   "p75": 7.1,
+   "p95": 8.3,
+   "min": 4.3,
+   "max": 40.8,
+   "mad": 0.6
+  },
+  "forwards_confiable_rueda_fraccion": 0.919,
+  "noche_forwards_menos_rueda_decaida": {
+   "n": 4018,
+   "mediana": 0.305,
+   "p05": -4.106,
+   "p25": -1.062,
+   "p75": 1.689,
+   "p95": 5.239,
+   "min": -36.115,
+   "max": 39.555,
+   "mad": 1.377
+  },
+  "noche_idem_con_err_hasta_8_ticks": {
+   "n": 1224,
+   "mediana": -0.369,
+   "p05": -1.7,
+   "p25": -0.958,
+   "p75": 0.834,
+   "p95": 3.802,
+   "min": -3.83,
+   "max": 4.296,
+   "mad": 0.892
+  },
+  "noche_error_ticks": {
+   "n": 4227,
+   "mediana": 19.5,
+   "p05": 5.0,
+   "p25": 7.3,
+   "p75": 51.9,
+   "p95": 132.5,
+   "min": 4.3,
+   "max": 347.9,
+   "mad": 13.6
+  },
+  "noche_por_hora_NY": {
+   "0": {
+    "n": 14,
+    "err_ticks_mediana": 31.3,
+    "fwd_menos_ref_mediana": 0.36,
+    "fwd_menos_ref_p95abs": 6.33,
+    "fracc_confiable": 0.286
+   },
+   "1": {
+    "n": 5,
+    "err_ticks_mediana": 86.6,
+    "fwd_menos_ref_mediana": 3.32,
+    "fwd_menos_ref_p95abs": 4.4,
+    "fracc_confiable": 0.0
+   },
+   "2": {
+    "n": 8,
+    "err_ticks_mediana": 26.6,
+    "fwd_menos_ref_mediana": 0.41,
+    "fwd_menos_ref_p95abs": 8.37,
+    "fracc_confiable": 0.5
+   },
+   "3": {
+    "n": 301,
+    "err_ticks_mediana": 28.5,
+    "fwd_menos_ref_mediana": 0.5,
+    "fwd_menos_ref_p95abs": 6.67,
+    "fracc_confiable": 0.319
+   },
+   "4": {
+    "n": 244,
+    "err_ticks_mediana": 17.4,
+    "fwd_menos_ref_mediana": 0.78,
+    "fwd_menos_ref_p95abs": 6.29,
+    "fracc_confiable": 0.41
+   },
+   "5": {
+    "n": 237,
+    "err_ticks_mediana": 18.6,
+    "fwd_menos_ref_mediana": 0.88,
+    "fwd_menos_ref_p95abs": 6.45,
+    "fracc_confiable": 0.338
+   },
+   "6": {
+    "n": 227,
+    "err_ticks_mediana": 39.4,
+    "fwd_menos_ref_mediana": 0.91,
+    "fwd_menos_ref_p95abs": 6.7,
+    "fracc_confiable": 0.273
+   },
+   "7": {
+    "n": 229,
+    "err_ticks_mediana": 47.1,
+    "fwd_menos_ref_mediana": 0.84,
+    "fwd_menos_ref_p95abs": 7.07,
+    "fracc_confiable": 0.258
+   },
+   "8": {
+    "n": 180,
+    "err_ticks_mediana": 83.5,
+    "fwd_menos_ref_mediana": 0.94,
+    "fwd_menos_ref_p95abs": 7.97,
+    "fracc_confiable": 0.222
+   },
+   "9": {
+    "n": 525,
+    "err_ticks_mediana": 24.7,
+    "fwd_menos_ref_mediana": 0.43,
+    "fwd_menos_ref_p95abs": 12.78,
+    "fracc_confiable": 0.293
+   },
+   "16": {
+    "n": 294,
+    "err_ticks_mediana": 11.1,
+    "fwd_menos_ref_mediana": -0.52,
+    "fwd_menos_ref_p95abs": 2.58,
+    "fracc_confiable": 0.381
+   },
+   "17": {
+    "n": 378,
+    "err_ticks_mediana": 11.1,
+    "fwd_menos_ref_mediana": -0.53,
+    "fwd_menos_ref_p95abs": 2.56,
+    "fracc_confiable": 0.399
+   },
+   "18": {
+    "n": 382,
+    "err_ticks_mediana": 11.2,
+    "fwd_menos_ref_mediana": -0.35,
+    "fwd_menos_ref_p95abs": 2.53,
+    "fracc_confiable": 0.377
+   },
+   "19": {
+    "n": 357,
+    "err_ticks_mediana": 11.8,
+    "fwd_menos_ref_mediana": -0.07,
+    "fwd_menos_ref_p95abs": 2.5,
+    "fracc_confiable": 0.378
+   },
+   "20": {
+    "n": 216,
+    "err_ticks_mediana": 20.8,
+    "fwd_menos_ref_mediana": 0.34,
+    "fwd_menos_ref_p95abs": 3.39,
+    "fracc_confiable": 0.259
+   },
+   "21": {
+    "n": 213,
+    "err_ticks_mediana": 30.9,
+    "fwd_menos_ref_mediana": 1.12,
+    "fwd_menos_ref_p95abs": 4.31,
+    "fracc_confiable": 0.113
+   },
+   "22": {
+    "n": 217,
+    "err_ticks_mediana": 30.7,
+    "fwd_menos_ref_mediana": 1.16,
+    "fwd_menos_ref_p95abs": 4.45,
+    "fracc_confiable": 0.152
+   },
+   "23": {
+    "n": 200,
+    "err_ticks_mediana": 42.1,
+    "fwd_menos_ref_mediana": 1.19,
+    "fwd_menos_ref_p95abs": 4.79,
+    "fracc_confiable": 0.13
+   }
+  },
+  "rueda_siguiente_menos_decaida": {
+   "n": 32,
+   "mediana": -0.085,
+   "p05": -2.123,
+   "p25": -1.15,
+   "p75": 0.645,
+   "p95": 2.04,
+   "min": -3.38,
+   "max": 3.99,
+   "mad": 1.065
+  },
+  "base_rueda_archivo_clasica": {
+   "base": 52.42,
+   "utc": "2026-10-05T17:20:10",
+   "muestras": 23
+  },
+  "base_rueda_archivo_2_0": {
+   "base": 52.1,
+   "utc": "2026-10-05T16:15:52",
+   "muestras": 5
+  },
+  "mi_b24_en_ese_momento": {
+   "2026-10-05T17:19Z": 52.63,
+   "2026-10-05T16:15Z": 52.51,
+   "rueda_del_dia": 52.443
+  },
+  "carry": {
+   "implicito_r_menos_q": {
+    "n": 30,
+    "mediana": 0.034,
+    "p05": 0.033,
+    "p25": 0.034,
+    "p75": 0.035,
+    "p95": 0.036,
+    "min": 0.032,
+    "max": 0.036,
+    "mad": 0.001
+   },
+   "rueda_sobre_carry_indicadores(3,75%-1,2%)": {
+    "n": 30,
+    "mediana": 1.345,
+    "p05": 1.286,
+    "p25": 1.32,
+    "p75": 1.387,
+    "p95": 1.424,
+    "min": 1.248,
+    "max": 1.426,
+    "mad": 0.038
+   },
+   "rueda_menos_carry_tesoro_q1,2%": {
+    "n": 30,
+    "mediana": 7.844,
+    "p05": 4.974,
+    "p25": 6.289,
+    "p75": 11.181,
+    "p95": 14.762,
+    "min": 3.523,
+    "max": 16.064,
+    "mad": 1.955
+   },
+   "tasas": "datos/cache/tasas-*.json (letras del Tesoro); 23-10: 28 d 4,00 %, 56 d 4,08 %, 91 d 4,17 %"
+  },
+  "cotas_propuestas": {
+   "muestra": "|m - mediana| <= max(3 MAD, 0,5) (medido: 3 MAD = 1,45; muestra - mediana24 p05/p95 = -1,30/+1,25)",
+   "sanidad": "0 < base <= 150 (medido Z6 35..72; el trimestral nuevo tras el roll ~65-75)",
+   "carry": "|base - fut x 0,034 x dias/365| <= max(0,25 x eso, 3 pts) (medido: (r-q) implicito 3,2-3,6 % en 30 dias; la formula de los indicadores 3,75 %-1,2 % queda 25-43 % corta)",
+   "forwards_vs_sincronizada": "rueda: |d| <= 3 (p05/p95 -2,44/+1,39); noche: solo con error <= 8 ticks y |d| <= 4 (p05/p95 -1,7/+3,8)",
+   "roll": "descartar si el contrato de la muestra no es el del grafico (09-10/09-11: U6 6,4/3,6 contra forwards Z6 70,9/73,0)",
+   "estado": "PROPUESTA sobre lo MEDIDO"
+  }
+ },
+ "conversion_SPY_a_ES": {
+  "regla": "C8 de backtest_familia aplicada a SPY: muestra = MES(cadena_ts - 900 s) / spot SPY con spot vivo; ultimas 24, robusta 3 MAD piso 0,0002 x mediana, >= 5; se reinicia si cambia el contrato",
+  "retraso_optimo_s": {
+   "valor": 900,
+   "MAD_900_ptsES": 0.4784,
+   "MAD_960_ptsES": 0.9229,
+   "estado": "MEDIDO"
+  },
+  "razon_por_dia": [
+   {
+    "dia": "2026-09-15",
+    "razon_rueda": 10.10859,
+    "mad_rueda": 0.00059,
+    "razon_after": 10.10917,
+    "razon_pre": 10.10917,
+    "spy": 757.17
+   },
+   {
+    "dia": "2026-09-16",
+    "razon_rueda": 10.1076,
+    "mad_rueda": 0.00066,
+    "razon_after": 10.10786,
+    "razon_pre": 10.10779,
+    "spy": 759.74
+   },
+   {
+    "dia": "2026-09-17",
+    "razon_rueda": 10.10645,
+    "mad_rueda": 0.00057,
+    "razon_after": 10.10566,
+    "razon_pre": 10.10725,
+    "spy": 762.15
+   },
+   {
+    "dia": "2026-09-18",
+    "razon_rueda": 10.12614,
+    "mad_rueda": 0.00044,
+    "razon_after": NaN,
+    "razon_pre": 10.12715,
+    "spy": 759.26
+   },
+   {
+    "dia": "2026-09-21",
+    "razon_rueda": 10.12688,
+    "mad_rueda": 0.00027,
+    "razon_after": 10.12618,
+    "razon_pre": 10.12749,
+    "spy": 772.25
+   },
+   {
+    "dia": "2026-09-22",
+    "razon_rueda": 10.12461,
+    "mad_rueda": 0.00039,
+    "razon_after": 10.1249,
+    "razon_pre": 10.12515,
+    "spy": 774.01
+   },
+   {
+    "dia": "2026-09-24",
+    "razon_rueda": 10.1217,
+    "mad_rueda": 0.00074,
+    "razon_after": 10.12063,
+    "razon_pre": NaN,
+    "spy": 767.46
+   },
+   {
+    "dia": "2026-09-28",
+    "razon_rueda": 10.11777,
+    "mad_rueda": 0.00096,
+    "razon_after": 10.11865,
+    "razon_pre": 10.11617,
+    "spy": 766.87
+   },
+   {
+    "dia": "2026-09-29",
+    "razon_rueda": 10.1164,
+    "mad_rueda": 0.00063,
+    "razon_after": 10.11672,
+    "razon_pre": NaN,
+    "spy": 763.9
+   },
+   {
+    "dia": "2026-09-30",
+    "razon_rueda": 10.11392,
+    "mad_rueda": 0.00057,
+    "razon_after": 10.11568,
+    "razon_pre": NaN,
+    "spy": 767.77
+   },
+   {
+    "dia": "2026-10-01",
+    "razon_rueda": 10.11147,
+    "mad_rueda": 0.00073,
+    "razon_after": 10.1121,
+    "razon_pre": 10.11346,
+    "spy": 762.11
+   },
+   {
+    "dia": "2026-10-02",
+    "razon_rueda": 10.10751,
+    "mad_rueda": 0.00084,
+    "razon_after": 10.10785,
+    "razon_pre": 10.10862,
+    "spy": 769.28
+   },
+   {
+    "dia": "2026-10-05",
+    "razon_rueda": 10.10503,
+    "mad_rueda": 0.00038,
+    "razon_after": 10.10558,
+    "razon_pre": 10.10629,
+    "spy": 774.04
+   },
+   {
+    "dia": "2026-10-06",
+    "razon_rueda": 10.10388,
+    "mad_rueda": 0.00042,
+    "razon_after": 10.10481,
+    "razon_pre": 10.1048,
+    "spy": 779.99
+   },
+   {
+    "dia": "2026-10-07",
+    "razon_rueda": 10.1032,
+    "mad_rueda": 0.00042,
+    "razon_after": 10.10286,
+    "razon_pre": 10.10362,
+    "spy": 776.63
+   },
+   {
+    "dia": "2026-10-08",
+    "razon_rueda": 10.10155,
+    "mad_rueda": 0.00055,
+    "razon_after": 10.10236,
+    "razon_pre": 10.10148,
+    "spy": 774.19
+   },
+   {
+    "dia": "2026-10-09",
+    "razon_rueda": 10.09776,
+    "mad_rueda": 0.00039,
+    "razon_after": 10.09741,
+    "razon_pre": 10.09777,
+    "spy": 777.95
+   },
+   {
+    "dia": "2026-10-12",
+    "razon_rueda": 10.09743,
+    "mad_rueda": 0.00039,
+    "razon_after": 10.09859,
+    "razon_pre": 10.0977,
+    "spy": 777.88
+   },
+   {
+    "dia": "2026-10-13",
+    "razon_rueda": 10.09645,
+    "mad_rueda": 0.00031,
+    "razon_after": 10.09657,
+    "razon_pre": 10.09693,
+    "spy": 777.43
+   },
+   {
+    "dia": "2026-10-14",
+    "razon_rueda": 10.09669,
+    "mad_rueda": 0.00075,
+    "razon_after": 10.09708,
+    "razon_pre": 10.09577,
+    "spy": 769.53
+   },
+   {
+    "dia": "2026-10-15",
+    "razon_rueda": 10.09483,
+    "mad_rueda": 0.00049,
+    "razon_after": 10.0945,
+    "razon_pre": NaN,
+    "spy": 770.37
+   },
+   {
+    "dia": "2026-10-16",
+    "razon_rueda": 10.09122,
+    "mad_rueda": 0.00104,
+    "razon_after": 10.09152,
+    "razon_pre": 10.09097,
+    "spy": 766.08
+   },
+   {
+    "dia": "2026-10-19",
+    "razon_rueda": 10.08927,
+    "mad_rueda": 0.00077,
+    "razon_after": 10.09025,
+    "razon_pre": 10.0902,
+    "spy": 767.79
+   },
+   {
+    "dia": "2026-10-20",
+    "razon_rueda": 10.08828,
+    "mad_rueda": 0.00058,
+    "razon_after": 10.08852,
+    "razon_pre": 10.08882,
+    "spy": 769.31
+   },
+   {
+    "dia": "2026-10-21",
+    "razon_rueda": 10.08703,
+    "mad_rueda": 0.00063,
+    "razon_after": 10.0869,
+    "razon_pre": 10.08778,
+    "spy": 772.65
+   },
+   {
+    "dia": "2026-10-22",
+    "razon_rueda": 10.08552,
+    "mad_rueda": 0.00068,
+    "razon_after": 10.08609,
+    "razon_pre": 10.08531,
+    "spy": 762.96
+   },
+   {
+    "dia": "2026-10-23",
+    "razon_rueda": 10.08167,
+    "mad_rueda": 0.00077,
+    "razon_after": 10.08123,
+    "razon_pre": 10.08161,
+    "spy": 760.93
+   },
+   {
+    "dia": "2026-10-26",
+    "razon_rueda": 10.0806,
+    "mad_rueda": 0.0007,
+    "razon_after": 10.08102,
+    "razon_pre": 10.07941,
+    "spy": 765.51
+   }
+  ],
+  "resumen_Z6": {
+   "razon_rueda": {
+    "n": 28,
+    "mediana": 10.10354,
+    "p05": 10.08302,
+    "p25": 10.09393,
+    "p75": 10.11208,
+    "p95": 10.1256,
+    "min": 10.0806,
+    "max": 10.12688,
+    "mad": 0.00955
+   },
+   "mad_rueda": {
+    "n": 28,
+    "mediana": 0.00059,
+    "p05": 0.00033,
+    "p25": 0.00042,
+    "p75": 0.00073,
+    "p95": 0.00092,
+    "min": 0.00027,
+    "max": 0.00104,
+    "mad": 0.00016
+   },
+   "mad_rueda_en_pts_ES": {
+    "n": 28,
+    "mediana": 0.44647,
+    "p05": 0.2596,
+    "p25": 0.32724,
+    "p75": 0.55924,
+    "p95": 0.7047,
+    "min": 0.20851,
+    "max": 0.79672,
+    "mad": 0.11957
+   },
+   "after_menos_rueda_pts_ES": {
+    "n": 27,
+    "mediana": 0.24445,
+    "p05": -0.58364,
+    "p25": -0.17733,
+    "p75": 0.45964,
+    "p95": 0.85737,
+    "min": -0.82118,
+    "max": 1.35128,
+    "mad": 0.34489
+   }
+  },
+  "error_C8_siguiente_muestra_ptsES_por_franja": {
+   "after": {
+    "n": 706,
+    "mediana": 0.06,
+    "p05": -0.9,
+    "p25": -0.32,
+    "p75": 0.47,
+    "p95": 1.32,
+    "min": -4.2,
+    "max": 4.27,
+    "mad": 0.4
+   },
+   "otra": {
+    "n": 23,
+    "mediana": 5.96,
+    "p05": -12.55,
+    "p25": 0.08,
+    "p75": 15.64,
+    "p95": 34.89,
+    "min": -22.91,
+    "max": 36.77,
+    "mad": 6.03
+   },
+   "pre": {
+    "n": 651,
+    "mediana": -0.33,
+    "p05": -3.12,
+    "p25": -0.98,
+    "p75": 0.15,
+    "p95": 1.15,
+    "min": -5.24,
+    "max": 17.62,
+    "mad": 0.54
+   },
+   "rueda": {
+    "n": 6798,
+    "mediana": -0.02,
+    "p05": -1.42,
+    "p25": -0.45,
+    "p75": 0.39,
+    "p95": 1.29,
+    "min": -11.37,
+    "max": 15.52,
+    "mad": 0.42
+   }
+  },
+  "cambio_dia_a_dia_ptsES": {
+   "n": 27,
+   "mediana": -1.15,
+   "p05": -2.99,
+   "p25": -1.91,
+   "p75": -0.76,
+   "p95": 0.46,
+   "min": -3.05,
+   "max": 14.95,
+   "mad": 0.62
+  },
+  "noche_razon_de_la_tarde_vs_1030_ptsES": {
+   "n": 26,
+   "mediana": -1.01,
+   "p10": -2.9,
+   "p90": -0.08,
+   "max_abs": 4.21,
+   "estado": "MEDIDO (sin el ex-dividendo)"
+  },
+  "trampa_20h_NY": "a las 20:00 NY el spot de SPY vuelve al cierre oficial: muestras con error de hasta 35 pts (abs p95 35,4, n 23): descartar t_spot NY fuera de [04:00, 20:00)",
+  "ex_dividendo": {
+   "fecha_medida": "2026-09-18 (tercer viernes)",
+   "salto_SPX_sobre_SPY": 0.02387,
+   "salto_ES_sobre_SPY_17_a_21": 0.02043,
+   "en_pts_ES": "~+18 (dividendo) - 2,7 (carry de 2 ruedas) = +15,6",
+   "demora_C8": "el C8 sin reinicio siguio con la razon vieja hasta 15:58-16:50 UTC del 18-09 (las muestras nuevas aparecen 09:47 UTC): ~16 pts corrido de 05:47 a ~12:00 NY (dia con pocas fotos)",
+   "diciembre": "SUPUESTO: SPY ex-dividendo 2026-12-18 (tercer viernes, mismo dia que vence ESZ6 a las 09:30 NY), salto del mismo orden (+0,024 en SPX/SPY)",
+   "estado": "MEDIDO (sept) / SUPUESTO (dic)"
+  },
+  "SPX_sobre_SPY_por_dia": [
+   {
+    "dia": "2026-09-14",
+    "spx_spy": 10.01747,
+    "n": 4,
+    "mad": 0.00054
+   },
+   {
+    "dia": "2026-09-15",
+    "spx_spy": 10.01508,
+    "n": 12,
+    "mad": 0.00062
+   },
+   {
+    "dia": "2026-09-16",
+    "spx_spy": 10.01473,
+    "n": 175,
+    "mad": 0.00067
+   },
+   {
+    "dia": "2026-09-17",
+    "spx_spy": 10.01547,
+    "n": 11,
+    "mad": 0.00026
+   },
+   {
+    "dia": "2026-09-18",
+    "spx_spy": 10.04013,
+    "n": 10,
+    "mad": 0.0004
+   },
+   {
+    "dia": "2026-09-21",
+    "spx_spy": 10.03934,
+    "n": 308,
+    "mad": 0.00049
+   },
+   {
+    "dia": "2026-09-22",
+    "spx_spy": 10.03887,
+    "n": 179,
+    "mad": 0.0003
+   },
+   {
+    "dia": "2026-09-24",
+    "spx_spy": 10.03925,
+    "n": 118,
+    "mad": 0.00063
+   },
+   {
+    "dia": "2026-09-28",
+    "spx_spy": 10.03813,
+    "n": 308,
+    "mad": 0.00056
+   },
+   {
+    "dia": "2026-09-29",
+    "spx_spy": 10.03881,
+    "n": 309,
+    "mad": 0.00051
+   },
+   {
+    "dia": "2026-09-30",
+    "spx_spy": 10.03797,
+    "n": 275,
+    "mad": 0.00038
+   },
+   {
+    "dia": "2026-10-01",
+    "spx_spy": 10.03794,
+    "n": 301,
+    "mad": 0.0009
+   },
+   {
+    "dia": "2026-10-02",
+    "spx_spy": 10.03714,
+    "n": 310,
+    "mad": 0.00058
+   },
+   {
+    "dia": "2026-10-05",
+    "spx_spy": 10.03728,
+    "n": 315,
+    "mad": 0.00048
+   },
+   {
+    "dia": "2026-10-06",
+    "spx_spy": 10.03631,
+    "n": 323,
+    "mad": 0.00051
+   },
+   {
+    "dia": "2026-10-07",
+    "spx_spy": 10.03594,
+    "n": 305,
+    "mad": 0.00062
+   },
+   {
+    "dia": "2026-10-08",
+    "spx_spy": 10.03558,
+    "n": 300,
+    "mad": 0.00062
+   },
+   {
+    "dia": "2026-10-09",
+    "spx_spy": 10.03456,
+    "n": 302,
+    "mad": 0.00043
+   },
+   {
+    "dia": "2026-10-12",
+    "spx_spy": 10.03434,
+    "n": 304,
+    "mad": 0.00046
+   },
+   {
+    "dia": "2026-10-13",
+    "spx_spy": 10.03437,
+    "n": 285,
+    "mad": 0.00035
+   },
+   {
+    "dia": "2026-10-14",
+    "spx_spy": 10.03339,
+    "n": 303,
+    "mad": 0.0004
+   },
+   {
+    "dia": "2026-10-15",
+    "spx_spy": 10.03378,
+    "n": 161,
+    "mad": 0.00076
+   },
+   {
+    "dia": "2026-10-16",
+    "spx_spy": 10.03325,
+    "n": 299,
+    "mad": 0.00061
+   },
+   {
+    "dia": "2026-10-19",
+    "spx_spy": 10.03428,
+    "n": 300,
+    "mad": 0.00077
+   },
+   {
+    "dia": "2026-10-20",
+    "spx_spy": 10.0338,
+    "n": 275,
+    "mad": 0.0008
+   },
+   {
+    "dia": "2026-10-21",
+    "spx_spy": 10.03351,
+    "n": 292,
+    "mad": 0.00055
+   },
+   {
+    "dia": "2026-10-22",
+    "spx_spy": 10.03272,
+    "n": 294,
+    "mad": 0.00058
+   },
+   {
+    "dia": "2026-10-23",
+    "spx_spy": 10.03279,
+    "n": 275,
+    "mad": 0.00071
+   },
+   {
+    "dia": "2026-10-26",
+    "spx_spy": 10.03312,
+    "n": 303,
+    "mad": 0.00046
+   }
+  ],
+  "cotas_propuestas": {
+   "muestra": "|m - mediana| <= max(3 MAD, 0,0002 x mediana) (medido 3 MAD = 0,0018 ~ el piso 0,0020)",
+   "sanidad": "9,95 <= razon <= 10,25 (medido 10,081..10,127; SPX/SPY 10,015..10,040)",
+   "horas": "solo t_spot NY en [04:00, 20:00)",
+   "ex_div": "el tercer viernes de mar/jun/sep/dic: reiniciar la ventana a las 04:00 NY",
+   "estado": "PROPUESTA sobre lo MEDIDO"
+  }
+ },
+ "cboe": {
+  "SPX": {
+   "bytes_gz": 1725155,
+   "bytes_json": 13088116,
+   "razon_compresion": 7.59,
+   "ms_descomprimir": 17.3,
+   "ms_json_loads": 199.3,
+   "timestamp": "2026-10-27 02:48:38",
+   "n_opciones": 29424,
+   "raices": {
+    "SPX": 9394,
+    "SPXW": 20030
+   },
+   "n_vencimientos": 55,
+   "n_series_venc_raiz": 60,
+   "vencimiento_ultimo": "2031-12-19"
+  },
+  "SPX_fechas_con_SPX_y_SPXW": [
+   "2026-11-20",
+   "2026-12-18",
+   "2027-01-15",
+   "2027-02-19",
+   "2027-03-19"
+  ],
+  "SPX_bajada": {
+   "simbolo": "_SPX",
+   "url": "https://cdn-api.cboe.com/api/global/delayed_quotes/options/_SPX.json",
+   "http": 200,
+   "inicio_utc": "2026-10-27T03:29:04+00:00",
+   "bytes_recibidos": 1725155,
+   "gzip": true,
+   "duracion_s": 2.467,
+   "cabeceras_s": 0.578,
+   "trozos": 27,
+   "tope_kBps": 900,
+   "trozo_kB": 64,
+   "so_rcvbuf_kB": 64,
+   "tasa_media_kBps": 683.0,
+   "cabeceras": {
+    "Date": "Tue, 27 Oct 2026 03:29:05 GMT",
+    "Content-Type": "application/json",
+    "Transfer-Encoding": "chunked",
+    "Connection": "keep-alive",
+    "CF-Ray": "a50e9d46ade21a7a-EZE",
+    "CF-Cache-Status": "HIT",
+    "ETag": "W/\"e6eaad4c38f90bbbb23ef6cc0fa6a2a4-2\"",
+    "Age": "1",
+    "Cache-Control": "max-age=0, s-maxage=5, stale-while-revalidate=5",
+    "set-cookie": "__cf_bm=foatbXRcyVLHJWKHplwfs5YamqkEgQQw407EbmFCt7c-1793071745.0712888-1.0.1.1-pkxMDg0PeRgtuoomkXiCJ2gfyQZCuhTh4jIW3tCWfpX4Fa3Y5tyo5DGhS6.aSqEUG47tpzFCdNzHekvvsE4pvY11BgwsMesqODdgRS4HSnA7tMRQfu6xBtq.YiXtWYgy; HttpOnly; SameSite=None; Secure; Path=/; Domain=cboe.com; Expires=Tue, 27 Oct 2026 03:59:05 GMT",
+    "Last-Modified": "Tue, 27 Oct 2026 02:48:41 GMT",
+    "Server": "cloudflare",
+    "Strict-Transport-Security": "max-age=15552000; includeSubDomains; preload",
+    "Vary": "Origin",
+    "Via": "1.1 0633183bc8a7a616d500096f2c54e9fe.cloudfront.net (CloudFront)",
+    "x-amz-cf-id": "2do_eMEf-HBRoelwg1C46f0I57lmDo28DDqTPA34LxZd2MnkcNNb0A==",
+    "x-amz-cf-pop": "FOR50-P6",
+    "x-amz-server-side-encryption": "AES256",
+    "x-cache": "Miss from cloudfront",
+    "Content-Encoding": "gzip"
+   },
+   "archivo": "C:/Users/wmx_7/AppData/Local/Temp/claude/C--Users-wmx-7-OneDrive-Escritorio-ATAS-nada/404dab2f-b5f6-48fa-ba08-3ab764cbbdd8/scratchpad/mediciones_es/bajadas_spx\\_SPX.json.gz"
+  },
+  "SPX_vencido_presente_de_noche": "a las 22:48 NY del 26-10 la foto trae la serie 26-10 vencida (504 opciones, bid/ask 0, IV basura) y base.medir la usa como 'cercano': base_cruda 37,18 con 51,9 ticks de error",
+  "SPY": {
+   "bytes_gz": 826247,
+   "bytes_json": 5673948,
+   "razon_compresion": 6.87,
+   "ms_descomprimir": 7.5,
+   "ms_json_loads": 74.6,
+   "timestamp": "2026-10-27 00:04:56",
+   "n_opciones": 12746,
+   "n_vencimientos": 34,
+   "vencimiento_ultimo": "2029-01-19"
+  },
+  "SPY_bajada": {
+   "simbolo": "SPY",
+   "url": "https://cdn-api.cboe.com/api/global/delayed_quotes/options/SPY.json",
+   "http": 200,
+   "inicio_utc": "2026-10-27T03:29:13+00:00",
+   "bytes_recibidos": 826247,
+   "gzip": true,
+   "duracion_s": 1.121,
+   "cabeceras_s": 0.239,
+   "trozos": 13,
+   "tope_kBps": 900,
+   "trozo_kB": 64,
+   "so_rcvbuf_kB": 64,
+   "tasa_media_kBps": 719.9,
+   "cabeceras": {
+    "Date": "Tue, 27 Oct 2026 03:29:13 GMT",
+    "Content-Type": "application/json",
+    "Transfer-Encoding": "chunked",
+    "Connection": "keep-alive",
+    "CF-Ray": "a50e9d7b8b21203e-EZE",
+    "CF-Cache-Status": "HIT",
+    "Age": "1",
+    "Cache-Control": "max-age=0, s-maxage=5, stale-while-revalidate=5",
+    "Content-Encoding": "gzip",
+    "ETag": "W/\"722932b959cb55df2078b8001718a306\"",
+    "Last-Modified": "Tue, 27 Oct 2026 00:05:03 GMT",
+    "Server": "cloudflare",
+    "Strict-Transport-Security": "max-age=15552000; includeSubDomains; preload",
+    "Vary": "Accept-Encoding, Origin",
+    "Via": "1.1 8753a5890eda67f9db56cde3f25f5a28.cloudfront.net (CloudFront)",
+    "x-amz-cf-id": "UPxIA2JK8RglKKhTQ4ijqbyj5p8zrYEvZCwfh_yLr_ZrddMaNJ90sw==",
+    "x-amz-cf-pop": "LIM50-P1",
+    "x-amz-server-side-encryption": "AES256",
+    "x-cache": "Miss from cloudfront",
+    "set-cookie": "__cf_bm=zWYX4x02mgipDU2cioBBRwfCyMuIFuJGsjewZRWYlTU-1793071753.5240848-1.0.1.1-QYlfhEsqi5mkoE74xGIP5pJ28k.K01kq7P.u__KUDpxUucQmIe_6dE2jPcJeoAbZUawXZObCD.3lx3vsIsMKv2HptGGRLuj3_7ukFmhe3_6hFzDDD4dhyhzEvtl3ATd5; HttpOnly; SameSite=None; Secure; Path=/; Domain=cboe.com; Expires=Tue, 27 Oct 2026 03:59:13 GMT"
+   },
+   "archivo": "C:/Users/wmx_7/AppData/Local/Temp/claude/C--Users-wmx-7-OneDrive-Escritorio-ATAS-nada/404dab2f-b5f6-48fa-ba08-3ab764cbbdd8/scratchpad/mediciones_es/bajadas_spy\\SPY.json.gz"
+  },
+  "bajador_4_1_NDX_QQQ_TQQQ": {
+   "log": "C:\\Users\\wmx_7\\AppData\\Roaming\\ATAS\\pythiagex4-cboe.log",
+   "desde": "2026-10-09 01:05:16",
+   "hasta": "2026-10-27 03:27:49",
+   "fallos_por_tk_aprox": {
+    "NDX:": 11,
+    "QQQ:": 6,
+    "TQQQ": 7
+   },
+   "tickers": {
+    "NDX": {
+     "fuera": {
+      "n": 1221,
+      "gz_mediana": 880828,
+      "gz_p95": 920169.0,
+      "gz_max": 928646,
+      "json_mediana": 6928589,
+      "json_max": 7502155,
+      "ms_mediana": 1421,
+      "ms_p95": 5397.0,
+      "ms_max": 35497,
+      "kBps_mediana": 608.7,
+      "razon_json_gz": 7.87
+     },
+     "rueda": {
+      "n": 3383,
+      "gz_mediana": 881272,
+      "gz_p95": 924839.8,
+      "gz_max": 935996,
+      "json_mediana": 6941038,
+      "json_max": 7665284,
+      "ms_mediana": 1182,
+      "ms_p95": 8388.799999999967,
+      "ms_max": 51283,
+      "kBps_mediana": 727.3,
+      "razon_json_gz": 7.88
+     }
+    },
+    "QQQ": {
+     "fuera": {
+      "n": 1222,
+      "gz_mediana": 739483.0,
+      "gz_p95": 771522.0,
+      "gz_max": 776915,
+      "json_mediana": 4952176.0,
+      "json_max": 5273110,
+      "ms_mediana": 914.0,
+      "ms_p95": 4779.900000000005,
+      "ms_max": 47134,
+      "kBps_mediana": 782.9,
+      "razon_json_gz": 6.7
+     },
+     "rueda": {
+      "n": 3370,
+      "gz_mediana": 726664.0,
+      "gz_p95": 764822.4,
+      "gz_max": 773814,
+      "json_mediana": 4850129.5,
+      "json_max": 5273108,
+      "ms_mediana": 918.0,
+      "ms_p95": 6780.749999999998,
+      "ms_max": 59238,
+      "kBps_mediana": 767.0,
+      "razon_json_gz": 6.67
+     }
+    },
+    "TQQQ": {
+     "fuera": {
+      "n": 1220,
+      "gz_mediana": 145997.0,
+      "gz_p95": 172474.05,
+      "gz_max": 172533,
+      "json_mediana": 873931.0,
+      "json_max": 1116586,
+      "ms_mediana": 796.0,
+      "ms_p95": 2153.6499999999996,
+      "ms_max": 17624,
+      "kBps_mediana": 179.5,
+      "razon_json_gz": 5.99
+     },
+     "rueda": {
+      "n": 3355,
+      "gz_mediana": 147589,
+      "gz_p95": 173586.3,
+      "gz_max": 177349,
+      "json_mediana": 899343,
+      "json_max": 1120288,
+      "ms_mediana": 1140,
+      "ms_p95": 2533.4999999999986,
+      "ms_max": 39021,
+      "kBps_mediana": 129.1,
+      "razon_json_gz": 6.09
+     }
+    }
+   }
+  },
+  "estimacion_SPX_con_bajador_4_1": {
+   "pausas_minimas_s": 1.33,
+   "mediana_estimada_s": 2.4,
+   "p95_estimado_s": "10-16",
+   "riesgo_tope_60_s": "~0,2 % (NDX > 30 s: 8 de 4.604)",
+   "ciclo_5_tickers_MB": 4.31,
+   "promedio_KBps_cada_75_s": 57,
+   "rafaga_max": "64 KB por trozo (SO_RCVBUF 64 KB)",
+   "estado": "ESTIMADO a partir de lo MEDIDO"
+  },
+  "cadencia_sellos_rueda_s": {
+   "SPX": 60,
+   "SPY": 60,
+   "generado_menos_sello_p50_s": {
+    "SPX": 32,
+    "SPY": 44
+   },
+   "estado": "MEDIDO (cboe-local, rueda)"
+  },
+  "archivo_flaco": {
+   "SPX_filas_mediana": 865,
+   "SPY_filas_mediana": 456,
+   "NDX_filas_mediana": 1035,
+   "QQQ_filas_mediana": 362,
+   "SPX_bytes_linea": 38449,
+   "SPY_bytes_linea": 20815,
+   "SPX_archivo_dia_gz_26_10": 4631626,
+   "SPY_archivo_dia_gz_26_10": 2480814,
+   "estado": "MEDIDO (cboe-local 26-10)"
+  },
+  "spot_vivo_por_hora": "SPX: spot vivo solo 09:30-16:15 NY (fuera 0 %); SPY: pre-mercado 04:00-09:30 (25-75 %), after 16:00-19:59 (96-99 %), nada de 20:00 a 04:00"
+ },
+ "clasica_y_2_0_en_ES": {
+  "capas_en_ES": "ninguna: CapaActiva devuelve false si la raiz no es NQ (clasica GammaHoyCapas.cs:376-380, 2.0 :434-438). En ES hay un solo libro: la primaria",
+  "primaria": {
+   "clasica": "Libro = CBOE_SPX por defecto (GammaHoy.cs:81); CBOE_ETF = SPY por razon; Rithmic_ES",
+   "2_0": "LibroAuto = true -> en ES siempre CBOE_SPX (GammaHoy.cs:88)"
+  },
+  "radio_dominantes": "min(2 % del futuro, 100 pts) -> 100 en ES (GammaHoyNucleo.cs:353-354)",
+  "regla": "clasica: 2 (en su .ws: 3) por |GexVol| en el radio, una por lado con empate 20 %, centroide +-12; 2.0: las 2 mayores sin lado ni centroide",
+  "base_SPX": "cascada medida > medida hace <=360 min > de la rueda (<=24 h) > cruda > TEORICA; cota |b-carry| <= max(0,6|carry|, 0,0006 fut) con carry = fut x (0,0375-0,012) x dias/365; base de la rueda = 24 muestras vela(ts-960 s) - spot, 13:50-20:10 UTC, tope max(3 MAD, 0,0002 x precio), >= 5",
+  "razon_SPY": "clasica: Close(vela ts-960 s)/spot sin persistir; 2.0: vela del ultimo_trade, razon-ES-SPY.txt (no existe en disco)",
+  "porBeta": "solo en capas de NQ (apalancamiento = 1/beta de retornos NQ/ES de 90 min); en ES no se usa",
+  "multiplicador": "MULT_INDICE = 100 para todos los libros, tambien Rithmic ES (real 50)",
+  "logs_referencia": {
+   "clasica_AUDIT_ES": {
+    "n": 13472,
+    "desde": "2026-09-07T14:23:25",
+    "hasta": "2026-10-05T21:32:45",
+    "ultima": "base 52.42 origen de_la_rueda_hace_433_min, zeroVol 7808.37, doms 7853.45/7834.96/7860.23"
+   },
+   "2_0_AUDIT_ES": {
+    "n": 5,
+    "fecha": "2026-10-05 13:11-13:15 (hora AR)"
+   },
+   "4_1_motor_3_0_en_MESZ6_AUDIT3": {
+    "n": 119,
+    "desde": "2026-10-26 22:50",
+    "hasta": "2026-10-27 00:55 (hora AR)",
+    "capas_SPX_SPY": 0
+   },
+   "nota": "las lineas 'capa=SPX/SPY' de la clasica son todas de graficos de NQ; no hay salidas de ES de la clasica ni de la 2.0 despues del 05-10"
+  },
+  "estado": "CODIGO (reporte de lectura verificado en 4 citas) + MEDIDO (conteos de log)"
+ },
+ "faltantes": [
+  "SPX de noche: el indice congelado no deja medir cobertura ni base sincronizada; solo forwards (con error alto) y la rueda decaida",
+  "libro ES de Rithmic en octubre: solo la noche del 27-10 (5 bloques); el grueso es septiembre (15 dias, con la semana del roll)",
+  "listado completo de strikes de ES en CME mas alla de la ventana suscripta (solo el conteo de contratos por serie)",
+  "ex-dividendo de diciembre (supuesto por analogia con septiembre)",
+  "precio del MES con hora antes del 07-09 en m1 (hay m5 hasta el 21-09)"
+ ]
+}

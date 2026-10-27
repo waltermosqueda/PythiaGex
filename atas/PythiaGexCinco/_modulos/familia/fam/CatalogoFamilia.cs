@@ -16,6 +16,20 @@
 // 5.0 (27-10-2026): sin TQQQ. Fuera las 6 series T_* (estaban DESPUES de las 24 de la vista previa: Calc y Extra, que son indices de
 // RegistroMinuto.Series/Extra, no cambian), SeriesTqqq, los presets "TQQQ x3" y "TQQQ vs Gammalito" y T_MUROS_oi de PrendidasPorDefecto.
 // Quedan 35 series: 24 de la vista previa + 4 como la 2.0 + 2 de la clasica + 2 TOPN (4.1.7) + 3 CARGA (4.1.8).
+// 5.0 (27-10-2026, P5): TEXTOS DE ES. Tecnico (nombre de los tableros, en ingles), criollo (que hace) y estado reescritos para ES/SPX/SPY:
+//   * el ESTADO de TODAS dice "SIN MEDIR EN ES"; lo que la 4.1 midio en NQ va entre parentesis como "en NQ, otro producto: ..." (los porcentajes
+//     de rebote, Holm y "candidata principal" eran de NQ/NDX/QQQ: el clon solo cambio los nombres de los tickers en el texto);
+//   * conversion explicada: SPX -> ES sumando la base ES - SPX sincronizada; SPY -> ES multiplicando por la razon ES/SPY sincronizada
+//     (MEDIDO en Z6, MEDICIONES_ES.md §3.7: 10,08-10,13; un strike de SPY = 1 USD ~ 10,08 pts de ES, §2);
+//   * BANDA de SPY +-5 (era +-20): en NQ un strike de QQQ son ~41 pts de NQ y la banda era medio strike; un strike de SPY son ~10,08 pts de ES
+//     (MEDICIONES_ES.md §2): medio strike = +-5 (confirmado por el coordinador 27-10). Solo cambia el texto "±5" y el redondeo del precio de la
+//     etiqueta (ArmadoPantalla): no cambia ninguna cuenta;
+//   * las replicas de la 2.0 y de la clasica en ES: en un grafico de ES ninguna de las dos arma capas, usan UN libro, SPX, con radio
+//     min(2 %, 100) = 100 pts y retraso 960 s (MEDICIONES_ES.md §6). R20_SPX_vol = el libro SPX de la 2.0 en ES; R10_* = el libro SPX de la
+//     clasica en ES; R20_SPY_vol NO tiene equivalente (la 2.0 no dibuja SPY en ES): es una seleccion estilo 2.0 sobre SPY, APAGADA por defecto;
+//   * PrendidasPorDefecto = las 6 del coordinador (el analogo de las que eligio el operador en NQ, sin R20_SPY_vol);
+//   * presets sin "Recomendadas" (era la recomendacion del verificador en NQ); "2.0/Clasica contra 5.0".
+// Ids, orden, colores, Calc y Extra NO cambian (verificado volcando el catalogo antes y despues, _diseno/P5_PANTALLA.md).
 // Sin referencias a ATAS.
 using System;
 using System.Collections.Generic;
@@ -30,7 +44,8 @@ namespace PythiaGexCinco.Familia
         public static readonly IReadOnlyList<SerieInfo> Series;
         /// <summary>id -> serie.</summary>
         public static readonly IReadOnlyDictionary<string, SerieInfo> PorId;
-        /// <summary>id -> texto 'estado' de la vista previa (SIN VALIDAR, etc.). SerieInfo no tiene ese campo: va aparte.</summary>
+        /// <summary>id -> texto 'estado'. 5.0 (P5): TODAS empiezan con "SIN MEDIR EN ES" (lo medido en NQ va entre parentesis, como dato de otro
+        /// producto). SerieInfo no tiene ese campo: va aparte.</summary>
         public static readonly IReadOnlyDictionary<string, string> Estado;
         /// <summary>preview_niveles.CALC: las 21 series que calcula la cuenta (las 24 de la vista previa menos TRES; en la 4.1 tampoco entraba TQQQ)
         /// + (4.1.7/4.1.8) TOPN y CARGA al final, en orden. El indice es el de RegistroMinuto.Series.</summary>
@@ -48,27 +63,27 @@ namespace PythiaGexCinco.Familia
         /// <summary>id -> indice en Extra (o -1).</summary>
         public static int IndiceExtra(string id) { for (int i = 0; i < Extra.Length; i++) if (Extra[i] == id) return i; return -1; }
         /// <summary>4.1.3: el MetaLibro de donde sale la edad y la conversion de una serie extra: las replicas de la 2.0 tienen el suyo
-        /// (RegistroMinuto.MetaExtra, "2.0 SPY" / "2.0 SPX"); las DOMS_* usan el de su libro de la 4.1 (RegistroMinuto.Meta). null = el del libro.
+        /// (RegistroMinuto.MetaExtra, "2.0 SPY" / "2.0 SPX"); las DOMS_* usan el de su libro de la 5.0 (RegistroMinuto.Meta). null = el del libro.
         /// 4.1.5: la replica de la clasica, "Clasica SPX" (su base y su origen).</summary>
         public static string MetaExtraDe(string id) => id == "R20_SPY_vol" ? "2.0 SPY" : id == "R20_SPX_vol" ? "2.0 SPX" : (id == "R10_SPX_zero" || id == "R10_SPX_dom") ? "Clasica SPX" : null;
-        /// <summary>Default de las casillas: las 8 que eligio el operador (captura del 08-10 17:5x) + 4.1.3: las dominantes de la 2.0 (SPY y SPX) y
-        /// la seleccion 2.0 sobre el libro SPY de la 4.1 (pedido del operador 09-10: verlas PRENDIDAS junto a las de la 4.1).
-        /// 4.1.4 (pedido del operador 09-10: "suman ruido al ser ya superadas por la formula de la 2.0 spy"): fuera SPY majors OI, SPY muros OI,
-        /// FAM muros OI y SPY dom. Quedan 6 (mismo orden que SeriesPantalla.PrendidasPorDefecto).
-        /// 4.1.5 (pedido del operador 09-10: "copiarla ahora para nuestro 4.0"): + R10_SPX_zero, la estela 'SPX 0Γ' de la clasica. Quedaban 7;
-        /// 4.1.5b: + R10_SPX_dom (las D1-D3 de la clasica). Quedaban 8; 5.0 (27-10-2026): sin T_MUROS_oi (TQQQ), quedan 7.</summary>
+        /// <summary>Default de las casillas (mismo orden que SeriesPantalla.PrendidasPorDefecto). Historia en NQ: las 8 que eligio el operador (captura del
+        /// 08-10 17:5x), + 4.1.3 las dominantes de la 2.0, - 4.1.4 SPY/QQQ majors OI, muros OI, FAM muros OI y dom ("suman ruido"), + 4.1.5/4.1.5b la clasica.
+        /// 5.0 (27-10-2026, P5, decision del coordinador): el analogo en ES de las que eligio el operador en NQ (MUROS_NQ_oi, MUROS_NDX_vol, TRES_NDX,
+        /// R20_NDX_vol, R10_NDX_zero, R10_NDX_dom) SIN R20_SPY_vol (el analogo de R20_QQQ_vol): en un grafico de ES la 2.0 no dibuja SPY, su unico libro es
+        /// SPX (MEDICIONES_ES.md §6). Quedan 6. Ninguna esta medida en ES: son las que se ven al poner la 5.0, nada mas.</summary>
         public static readonly string[] PrendidasPorDefecto = { "MUROS_ES_oi", "MUROS_SPX_vol", "TRES_SPX",
-                                                                "R20_SPY_vol", "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 4.1.5b: + Clasica SPX D1-D3 (pedido del operador)
-        /// <summary>preview_niveles.PRESETS (5.0: sin los de tqqq_vivo, "TQQQ x3" y "TQQQ vs Gammalito").</summary>
+                                                                "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom" };   // 5.0 (P5): sin R20_SPY_vol
+        /// <summary>preview_niveles.PRESETS (5.0: sin los de tqqq_vivo). 5.0 (P5): sin "Recomendadas" (era la recomendacion del verificador en NQ: en ES no
+        /// hay nada medido); "Por defecto" = las prendidas de fabrica; "2.0/Clasica contra 5.0" (antes "contra 4.1"). No los usa el codigo de la DLL.</summary>
         public static readonly IReadOnlyDictionary<string, string[]> Presets = new Dictionary<string, string[]>
         {
-            ["Recomendadas"] = new[] { "MUROS_ES_vol", "MAJORS_SPY_oi", "CONF_vol", "TRES_ES" },
+            ["Por defecto"] = PrendidasPorDefecto,
             ["Familia vol"] = new[] { "MUROS_ES_vol", "MUROS_SPX_vol", "MUROS_SPY_vol", "FAM_MUROS_vol", "TRES_ES" },
             ["Familia OI"] = new[] { "MUROS_ES_oi", "MUROS_SPX_oi", "MUROS_SPY_oi", "MAJORS_SPY_oi", "FAM_MUROS_oi", "TRES_ES" },
             ["Zero y cruces"] = new[] { "ZEST_ES_vol", "ZEST_SPX_vol", "ZEST_SPY_vol", "ZTP_ES_vol", "TRES_ES" },
             ["3.0 actual"] = new[] { "TRES_ES", "TRES_SPX", "TRES_SPY" },
-            ["2.0 contra 4.1"] = new[] { "R20_SPY_vol", "R20_SPX_vol", "DOMS_SPY_vol", "DOMS_SPX_vol" },
-            ["Clasica contra 4.1"] = new[] { "R10_SPX_zero", "R10_SPX_dom", "ZEST_SPX_vol", "ZTP_SPX_vol" },
+            ["2.0 contra 5.0"] = new[] { "R20_SPX_vol", "DOMS_SPX_vol", "R20_SPY_vol", "DOMS_SPY_vol" },
+            ["Clasica contra 5.0"] = new[] { "R10_SPX_zero", "R10_SPX_dom", "ZEST_SPX_vol", "ZTP_SPX_vol" },
         };
 
         /// <summary>preview_niveles.ROLES: lo que significa D1/D2/Z segun el tipo. CONF -> "conf"; sin rol -> la etiqueta.</summary>
@@ -87,6 +102,15 @@ namespace PythiaGexCinco.Familia
             }
         }
 
+        /// <summary>5.0 (P5): el estado de una serie en ES. Nada esta medido en ES todavia (regla del operador: lo que se midio en NQ NO se presenta
+        /// como medido en ES); lo que decia la 4.1 va entre parentesis, como dato de OTRO producto.</summary>
+        public const string SIN_MEDIR = "SIN MEDIR EN ES";
+        private static string EnNq(string loQueDeciaLa41) => SIN_MEDIR + (string.IsNullOrEmpty(loQueDeciaLa41) ? "" : " (en NQ, otro producto: " + loQueDeciaLa41 + ")");
+
+        /// <summary>5.0 (P5): como llega un nivel de cada libro al precio de ES (se repite en el criollo de cada serie).</summary>
+        public const string CONV_SPX = "llevado a ES sumando la base ES - SPX sincronizada (la pestaña dice la base y su edad)";
+        public const string CONV_SPY = "llevado a ES multiplicando por la razon ES/SPY sincronizada (~10,1; un strike de SPY = 1 USD ~ 10 pts de ES; la pestaña dice la razon y su edad)";
+
         private static SerieInfo S(string id, string corto, string libro, string fuente, string tipo, string grupo, string color, double banda,
                                    string tecnico, string criollo, string estado, List<SerieInfo> l, Dictionary<string, string> est)
         {
@@ -97,130 +121,142 @@ namespace PythiaGexCinco.Familia
         static CatalogoFamilia()
         {
             var l = new List<SerieInfo>(); var est = new Dictionary<string, string>(StringComparer.Ordinal);
-            // --- recomendadas por el verificador (candidatas SIN VALIDAR)
+            // --- las "recomendadas" de la 4.1 (en NQ: candidatas SIN VALIDAR del verificador; en ES no hay nada medido). El grupo queda con su nombre de
+            //     siempre (es un identificador de la vista previa: no se muestra)
             S("MUROS_ES_vol", "ES", "ES", "vol", "MUROS", "Recomendadas", "#4db5e4", 0,
-              "Call wall / put wall del 0DTE de ES por volumen",
-              "el strike del 0DTE de ES donde HOY se negocio mas gamma de calls (muro C, arriba) y de puts (muro P, abajo), a +-100 pts",
-              "candidata principal de noche, SIN VALIDAR: punta de mecha 60,6 % contra 50,9 % del azar (20 sesiones), Holm 0,135; contra la raya corrida 53,8 %", l, est);
-            S("MAJORS_SPY_oi", "SPY", "SPY", "oi", "MAJORS", "Recomendadas", "#e2b872", 20,
-              "Major positivo / negativo de SPY por interes abierto (banda +-20)",
-              "el strike de SPY con mas gamma neta acumulada (posiciones de ayer); un strike de SPY son 41 pts de ES, por eso es una banda de +-20",
-              "opcional de noche, SIN VALIDAR: rebote 68,2 % contra 63,9 % del azar y 62,9 % de la raya corrida, Holm 0,84", l, est);
+              "Call Wall / Put Wall del 0DTE de ES por volumen (opciones sobre el futuro ES de CME, por Rithmic, en vivo)",
+              "el strike del 0DTE de ES donde HOY se negocio mas gamma de calls (muro C) y el de mas gamma de puts (muro P), dentro del radio de la Familia; los dos pueden caer del mismo lado del precio",
+              EnNq("candidata principal de noche, sin validar: punta de mecha 60,6 % contra 50,9 % del azar en 20 sesiones, Holm 0,135; contra la raya corrida 53,8 %"), l, est);
+            S("MAJORS_SPY_oi", "SPY", "SPY", "oi", "MAJORS", "Recomendadas", "#e2b872", 5,   // 5.0 (P5): banda +-5 (era +-20, medio strike de QQQ en NQ)
+              "Major Positive / Major Negative de SPY por interes abierto (banda +-5)",
+              "el strike de SPY con mas gamma neta de las posiciones de ayer, positiva (M+) y negativa (M-), " + CONV_SPY + "; la banda +-5 es medio strike de SPY",
+              EnNq("con QQQ: opcional de noche, sin validar: rebote 68,2 % contra 63,9 % del azar y 62,9 % de la raya corrida, Holm 0,84"), l, est);
             S("CONF_vol", "CONF", "familia", "vol", "CONF", "Recomendadas", "#f3d35a", 0,
-              "Confluencia por volumen (muros, majors o cruces de 2 o mas libros a <= 3 pts)",
-              "un precio donde dos libros distintos (ES, SPX, SPY) ponen un nivel casi en el mismo lugar",
-              "de dia, SIN VALIDAR: rebote 66,1 % contra 62,3 % del azar, Holm 0,67", l, est);
+              "Confluencia por volumen (muros, majors o cruces de 2 o mas libros casi en el mismo precio)",
+              "un precio donde dos libros distintos (ES, SPX y SPY, ya llevados a ES) ponen un nivel casi en el mismo lugar",
+              EnNq("de dia, sin validar: rebote 66,1 % contra 62,3 % del azar, Holm 0,67"), l, est);
             S("MAJORS_ES_vol", "ES", "ES", "vol", "MAJORS", "Recomendadas", "#6cc3ff", 0,
-              "Major positivo / negativo del 0DTE de ES por volumen",
-              "el strike de ES con mas gamma neta de hoy, positiva (M+) y negativa (M-)",
-              "de noche, SIN VALIDAR: punta de mecha 60,4 % contra 50,9 % del azar, Holm 0,117", l, est);
+              "Major Positive / Major Negative del 0DTE de ES por volumen",
+              "el strike de ES con mas gamma neta de hoy, positiva (M+) y negativa (M-), dentro del radio de la Familia",
+              EnNq("de noche, sin validar: punta de mecha 60,4 % contra 50,9 % del azar, Holm 0,117"), l, est);
             // --- la familia por libro, por volumen y por OI
             S("MUROS_ES_oi", "ES", "ES", "oi", "MUROS", "Familia", "#9a98d6", 0,
-              "Call wall / put wall de ES por interes abierto",
-              "donde estan las posiciones abiertas de ayer en el 0DTE de ES (calls arriba, puts abajo)",
-              "sin ventaja medida (rebote 68,1 % contra 64,0 % del azar, Holm 1,0); sin dibujar mientras el OI es de anteayer", l, est);
+              "Call Wall / Put Wall del 0DTE de ES por interes abierto",
+              "donde estan las posiciones abiertas de ayer en el 0DTE de ES (el strike con mas gamma de calls y el de mas gamma de puts); el OI lo publica CME una vez por noche; con el OI de anteayer no se dibuja",
+              EnNq("sin ventaja medida: rebote 68,1 % contra 64,0 % del azar, Holm 1,0"), l, est);
             S("MUROS_SPX_vol", "SPX", "SPX", "vol", "MUROS", "Familia", "#2fb3a8", 0,
-              "Call wall / put wall de SPX por volumen (a precio de ES por la base sincronizada)",
-              "lo mismo en las opciones del indice SPX de CBOE, corrido a precio del futuro", "sin ventaja medida", l, est);
+              "Call Wall / Put Wall de SPX por volumen (opciones del indice SPX de CBOE, 15 min tarde)",
+              "lo mismo en las opciones del indice SPX, " + CONV_SPX, EnNq("con NDX: sin ventaja medida"), l, est);
             S("MUROS_SPX_oi", "SPX", "SPX", "oi", "MUROS", "Familia", "#8de031", 0,
-              "Call wall / put wall de SPX por interes abierto", "posiciones abiertas en SPX", "sin ventaja medida", l, est);
-            S("MUROS_SPY_vol", "SPY", "SPY", "vol", "MUROS", "Familia", "#dabe6f", 20,
-              "Call wall / put wall de SPY por volumen (banda +-20)", "lo mismo en el ETF SPY (strikes cada 41 pts de ES)",
-              "sin ventaja medida", l, est);
-            S("MUROS_SPY_oi", "SPY", "SPY", "oi", "MUROS", "Familia", "#ff9f43", 20,
-              "Call wall / put wall de SPY por interes abierto (banda +-20)", "posiciones abiertas en SPY",
-              "sin ventaja medida (rebote 68,0 % contra 63,9 % del azar, Holm 1,0)", l, est);
+              "Call Wall / Put Wall de SPX por interes abierto", "posiciones abiertas de ayer en SPX, " + CONV_SPX, EnNq("con NDX: sin ventaja medida"), l, est);
+            S("MUROS_SPY_vol", "SPY", "SPY", "vol", "MUROS", "Familia", "#dabe6f", 5,       // 5.0 (P5): banda +-5
+              "Call Wall / Put Wall de SPY por volumen (banda +-5)", "lo mismo en el ETF SPY (CBOE, 15 min tarde), " + CONV_SPY,
+              EnNq("con QQQ: sin ventaja medida"), l, est);
+            S("MUROS_SPY_oi", "SPY", "SPY", "oi", "MUROS", "Familia", "#ff9f43", 5,         // 5.0 (P5): banda +-5
+              "Call Wall / Put Wall de SPY por interes abierto (banda +-5)", "posiciones abiertas de ayer en SPY, " + CONV_SPY,
+              EnNq("con QQQ: sin ventaja medida, rebote 68,0 % contra 63,9 % del azar, Holm 1,0"), l, est);
             S("MAJORS_ES_oi", "ES", "ES", "oi", "MAJORS", "Familia", "#b9a4ff", 0,
-              "Major +/- de ES por interes abierto", "gamma neta de las posiciones de ayer en ES", "sin ventaja medida", l, est);
+              "Major Positive / Major Negative del 0DTE de ES por interes abierto", "gamma neta de las posiciones de ayer en ES (con el OI de anteayer no se dibuja)",
+              EnNq("sin ventaja medida"), l, est);
             S("MAJORS_SPX_vol", "SPX", "SPX", "vol", "MAJORS", "Familia", "#4fd1c5", 0,
-              "Major +/- de SPX por volumen", "gamma neta de hoy en SPX", "sin ventaja medida", l, est);
+              "Major Positive / Major Negative de SPX por volumen", "gamma neta de hoy en SPX, " + CONV_SPX, EnNq("con NDX: sin ventaja medida"), l, est);
             S("MAJORS_SPX_oi", "SPX", "SPX", "oi", "MAJORS", "Familia", "#a3e635", 0,
-              "Major +/- de SPX por interes abierto", "gamma neta de las posiciones de ayer en SPX", "sin ventaja medida", l, est);
-            S("MAJORS_SPY_vol", "SPY", "SPY", "vol", "MAJORS", "Familia", "#f6c177", 20,
-              "Major +/- de SPY por volumen (banda +-20)", "gamma neta de hoy en SPY", "sin ventaja medida", l, est);
+              "Major Positive / Major Negative de SPX por interes abierto", "gamma neta de las posiciones de ayer en SPX, " + CONV_SPX, EnNq("con NDX: sin ventaja medida"), l, est);
+            S("MAJORS_SPY_vol", "SPY", "SPY", "vol", "MAJORS", "Familia", "#f6c177", 5,      // 5.0 (P5): banda +-5
+              "Major Positive / Major Negative de SPY por volumen (banda +-5)", "gamma neta de hoy en SPY, " + CONV_SPY, EnNq("con QQQ: sin ventaja medida"), l, est);
             S("FAM_MUROS_vol", "FAM", "familia", "vol", "MUROS", "Familia", "#d04ad0", 0,
-              "Muros de la familia sumada en USD por 1 % (ES x20, SPX y SPY x100), grilla de 5 pts",
-              "los tres libros sumados en dolares; los domina SPY",
-              "NO dibujar como muro: su efecto es estar cerca del precio (contra la raya corrida: igual)", l, est);
+              "Call Wall / Put Wall de la familia sumada por volumen (USD de cobertura por 1 %: ES x50, SPX y SPY x100), en baldes de la grilla de la Familia",
+              "los tres libros (ES, SPX, SPY) sumados en dolares en el precio de ES; en ES no esta medido cual libro pesa mas (en NQ los dominaba QQQ)",
+              EnNq("NO dibujar como muro: su efecto era estar cerca del precio (contra la raya corrida: igual)"), l, est);
             S("FAM_MUROS_oi", "FAM", "familia", "oi", "MUROS", "Familia", "#e879f9", 0,
-              "Muros de la familia sumada por interes abierto", "posiciones abiertas de los tres libros sumadas en dolares",
-              "NO dibujar como muro (extremo 59,1 % contra 58,6 % de la raya corrida)", l, est);
+              "Call Wall / Put Wall de la familia sumada por interes abierto", "posiciones abiertas de ayer de los tres libros sumadas en dolares (solo si los tres tienen el OI de la misma noche)",
+              EnNq("NO dibujar como muro: extremo 59,1 % contra 58,6 % de la raya corrida"), l, est);
             // --- zero y cruces (informativo)
             S("ZEST_ES_vol", "ES", "ES", "vol", "ZEST", "Zero", "#c9d4e3", 0,
-              "Zero gamma estandar de ES por volumen (la suma de todo el libro reevaluada a cada precio)",
-              "el precio donde la gamma total del libro pasa de positiva a negativa; queda lejos y casi no salta",
-              "no es la raya '0G' de la 3.0 (esa es un cruce por strike); rebota igual que el azar", l, est);
+              "Zero Gamma (Gamma Flip) estandar de ES por volumen: la gamma de todo el libro reevaluada a cada precio",
+              "el precio donde la gamma total del libro pasa de positiva a negativa; describe el regimen (de un lado se amortigua, del otro se acelera), no la direccion",
+              EnNq("no es la raya '0G' de la 3.0 (esa es un cruce por strike); quedaba lejos, casi no saltaba y rebotaba igual que el azar"), l, est);
             S("ZEST_ES_oi", "ES", "ES", "oi", "ZEST", "Zero", "#94a3b8", 0,
-              "Zero gamma estandar de ES por OI", "lo mismo con las posiciones de ayer", "53 toques en 20 sesiones: no alcanza", l, est);
+              "Zero Gamma estandar de ES por interes abierto", "lo mismo con las posiciones de ayer (con el OI de anteayer no se dibuja)",
+              EnNq("53 toques en 20 sesiones: no alcanzaba para medir"), l, est);
             S("ZEST_SPX_vol", "SPX", "SPX", "vol", "ZEST", "Zero", "#7dd3fc", 0,
-              "Zero gamma estandar de SPX por volumen", "zero del indice", "sin ventaja medida", l, est);
+              "Zero Gamma estandar de SPX por volumen", "el zero del indice SPX, " + CONV_SPX, EnNq("con NDX: sin ventaja medida"), l, est);
             S("ZEST_SPY_vol", "SPY", "SPY", "vol", "ZEST", "Zero", "#fcd34d", 0,
-              "Zero gamma estandar de SPY por volumen", "zero del ETF", "sin ventaja medida", l, est);
+              "Zero Gamma estandar de SPY por volumen", "el zero del ETF SPY, " + CONV_SPY, EnNq("con QQQ: sin ventaja medida"), l, est);
             S("ZTP_ES_vol", "ES", "ES", "vol", "ZTP", "Zero", "#f472b6", 0,
-              "Cruces de signo limpios (sin islas) mas cercanos arriba y abajo, ES por volumen",
-              "el tunel de la 3.0 pero sin los strikes 'isla' de 2-4 contratos y sin sostener cruces muertos",
-              "NO es muro: el tunel no retiene mas que uno puesto al azar (vuelve 41,3 % contra 43,6 %)", l, est);
+              "Cruces de signo de la gamma por strike, limpios (sin islas), el mas cercano arriba y abajo del precio, ES por volumen",
+              "el tunel de la 3.0 sin los strikes 'isla' (signo distinto a sus dos vecinos y menos del 10 % del menor de ellos) y sin sostener cruces muertos",
+              EnNq("NO es muro: el tunel no retenia mas que uno puesto al azar (vuelve 41,3 % contra 43,6 %)"), l, est);
             S("ZTP_SPX_vol", "SPX", "SPX", "vol", "ZTP", "Zero", "#fb7185", 0,
-              "Cruces de signo limpios de SPX por volumen", "techo y piso del zero de SPX sin islas", "NO es muro", l, est);
-            // --- lo que dibujo la 3.0 (en la 4.1: el motor 3.0 que corre adentro, sus estelas en PythiaGex5\estela)
+              "Cruces de signo limpios de SPX por volumen", "el cruce de SPX mas cercano arriba y abajo, sin islas, " + CONV_SPX, EnNq("con NDX: NO es muro"), l, est);
+            // --- lo que dibuja la 3.0 (en la 5.0: el motor 3.0 que corre adentro, sus estelas en PythiaGex5\estela)
             S("TRES_ES", "3.0", "ES", "3.0", "TRES", "3.0", "#8a96a8", 0,
-              "D1/D2 que dibujo la 3.0 (estela-ES)", "las rayas de su grafico de ATAS, para comparar", "lo que hay hoy", l, est);
+              "D1/D2 del motor 3.0 que corre adentro de la 5.0 (estela-ES: libro ES por Rithmic)", "las rayas que dibujaria la 3.0 en este grafico, para comparar",
+              EnNq("lo que habia; nunca validado"), l, est);
             S("TRES_SPX", "3.0 SPX", "SPX", "3.0", "TRES", "3.0", "#5f6b7d", 0,
-              "D1/D2 de la capa SPX del motor 3.0 interno (aprox. a la 3.0: spot al sello - 900 s, base por forwards; sin arnes propio)", "la capa SPX de su grafico, calculada adentro", "lo que hay hoy", l, est);
+              "D1/D2 de la capa SPX del motor 3.0 interno (CBOE, 15 min tarde; aproximada a la 3.0, sin arnes propio en ES)",
+              "la capa SPX calculada adentro y llevada a ES con la conversion de ESA capa (puede no ser la base de la Familia: la pestaña no la muestra)",
+              EnNq("con NDX: lo que habia; nunca validado"), l, est);
             S("TRES_SPY", "3.0 SPY", "SPY", "3.0", "TRES", "3.0", "#7c6f57", 0,
-              "D1/D2 de la capa SPY del motor 3.0 interno (aprox. a la 3.0: spot al sello - 900 s; sin arnes propio)", "la capa SPY de su grafico, calculada adentro", "lo que hay hoy", l, est);
+              "D1/D2 de la capa SPY del motor 3.0 interno (CBOE, 15 min tarde; aproximada a la 3.0, sin arnes propio en ES)",
+              "la capa SPY calculada adentro y llevada a ES con la razon de ESA capa (puede no ser la de la Familia: la pestaña no la muestra)",
+              EnNq("con QQQ: lo que habia; nunca validado"), l, est);
             // --- 5.0 (27-10-2026): aca iban las 6 de TQQQ x3 (tqqq_vivo.py 1.0). Se sacaron: la 5.0 es del S&P y no tiene un equivalente pedido.
             // --- 4.1.3 (09-10-2026): como la 2.0 (Replica20.cs). Rol D1 = la de mayor |GEX|, D2 la segunda; monto con signo (escala 1).
+            //     5.0 (P5): en un grafico de ES la 2.0 no arma capas: dibuja UN libro, SPX ('Libro automatico'), con radio min(2 %, 100) = 100 pts y
+            //     retraso 960 s (MEDICIONES_ES.md §6). R20_SPY_vol no tiene equivalente en la 2.0 en ES.
             S("R20_SPY_vol", "2.0 SPY", "SPY", "vol", "DOMS", "2.0", "#cc8800", 0,   // 4.1.4: ambar oscuro (el #e8c83c no se distinguia del SPY 0G #fcd34d)
-              "Dominantes de la 2.0 (SPY 0DTE por volumen: las 2 barras de mayor |GEX| a <= min(2 % del futuro, 100 pts)) con SU conversion: razon = cierre de la vela de 1 min del MES del ultimo trade de la cadena / spot de SPY",
-              "la raya ambar de la 2.0, calculada adentro igual que ella; de noche junta el MES de las 16:14 NY con el SPY del after-hours y queda corrida unos puntos",
-              "replica para comparar y calibrar; la conversion de la 2.0 tiene error medido (|err| mediano 24 pts de noche en 16 noches)", l, est);
+              "Seleccion estilo 2.0 sobre SPY: las 2 barras de mayor |GEX| por volumen del 0DTE de SPY a <= min(2 % del futuro, 100 pts), con la conversion de la 2.0 para un ETF (razon = MES de la vela de 1 min del ultimo trade de la cadena / spot de SPY). La 2.0 NO dibuja SPY en un grafico de ES (alli su unico libro es SPX)",
+              "la formula de la 2.0 aplicada a SPY, para comparar; no replica nada que la 2.0 muestre en ES; de noche la razon junta el MES de las 16:14 NY con el SPY del after-hours",
+              EnNq("con QQQ era la raya ambar de la 2.0; su razon erro 24 pts de mediana de noche en 16 noches"), l, est);
             S("R20_SPX_vol", "2.0 SPX", "SPX", "vol", "DOMS", "2.0", "#3ddc97", 0,
-              "Capa SPX de la 2.0: la misma seleccion sobre la cadena _SPX de CBOE con base = base cruda de forwards de la cadena (si pasa la cota del carry)",
-              "las rayas verdes de SPX de la 2.0, calculadas adentro igual que ella",
-              "replica para comparar; base cruda de la 2.0: |err| mediano 5,1 pts en 17 noches", l, est);
+              "Dominantes del libro SPX de la 2.0 en un grafico de ES: las 2 de mayor |GEX| por volumen del 0DTE de SPX a <= min(2 % del futuro, 100 pts) (= 100 pts en ES), sin lado ni centroide, con la base de la 2.0",
+              "lo que la 2.0 dibuja en ES (su unico libro alli es SPX), calculado adentro con su formula; la pestaña dice que base uso y de donde salio",
+              EnNq("con NDX, la base cruda de forwards de la 2.0 erro 5,1 pts de mediana en 17 noches; en ES SIN VERIFICAR contra la 2.0 corriendo en ES"), l, est);
             S("DOMS_SPY_vol", "SPY dom", "SPY", "vol", "DOMS", "2.0", "#5b8cff", 0,
-              "Seleccion de la 2.0 (2 de mayor |GEX| por volumen a <= min(2 %, 100 pts)) sobre el libro SPY de la 4.1 (razon sincronizada C8)",
-              "las dominantes de la 2.0 pero puestas con la conversion de la 4.1",
-              "medida en 18 noches como la mejor combinacion conocida (seleccion 2.0 + conversion sincronizada); describe, no anticipa", l, est);
+              "Seleccion de la 2.0 (2 de mayor |GEX| por volumen a <= min(2 %, 100 pts)) sobre el libro SPY de la 5.0 (razon sincronizada C8)",
+              "las dominantes estilo 2.0 de SPY pero puestas con la conversion de la 5.0",
+              EnNq("con QQQ, medida en 18 noches como la mejor combinacion conocida (seleccion 2.0 + conversion sincronizada); describe, no anticipa"), l, est);
             S("DOMS_SPX_vol", "SPX dom", "SPX", "vol", "DOMS", "2.0", "#a9c4ff", 0,
-              "Seleccion de la 2.0 sobre el libro SPX de la 4.1 (base sincronizada C7)",
-              "las dominantes de SPX de la 2.0 con la base de la 4.1",
-              "SIN MEDIR: apagada por defecto", l, est);
+              "Seleccion de la 2.0 sobre el libro SPX de la 5.0 (base sincronizada C7)",
+              "las dominantes de SPX estilo 2.0 con la base de la 5.0 (no la de la 2.0)",
+              EnNq("con NDX tampoco se midio: apagada por defecto"), l, est);
             // --- 4.1.5 (09-10-2026): como la clasica (ClasicaSpx.cs). Rol "Z" (zero, sin monto); el strike guardado es el zero en el eje del indice.
+            //     5.0 (P5): en ES la clasica tampoco arma capas: su libro primario es CBOE_SPX (MEDICIONES_ES.md §6). R10_* = ese libro.
             S("R10_SPX_zero", "Clasica SPX 0Γ", "SPX", "vol", "ZEST", "Clasica", "#ffffff", 0,
-              "Zero gamma por volumen del 0DTE de SPX como la clasica (Gamma Hoy, capa SPX: grilla de 61 precios en +-3 %, el PRIMER cruce de abajo hacia arriba) llevado al futuro con SU base: la de la rueda ANTERIOR (su regla MedirBaseRueda sobre las cadenas y la cinta de la 4.1), congelada durante la rueda; con mas de 24 h, la cruda de forwards y despues el carry",
-              "los puntitos blancos 'SPX 0Γ' de la clasica, calculados adentro; la formula es la del zero estandar de SPX (ZEST, a -0,14 pt con la misma base): lo que la corre 13-15 pts es la base de la rueda anterior",
-              "replica para comparar y calibrar; SIN VALIDAR: el 09-10 la base vieja (243,06 contra ~228 real) la puso 13-15 pts arriba y el precio la toco 2 veces (mirado despues). SALVEDAD (medida el 09-10): copia a la clasica cuando dibuja con la base de la rueda anterior (su primaria en Rithmic); si la clasica la pierde (p. ej. al reiniciar ATAS) re-mide su base en la rueda y la replica deja de coincidir: de 16:48 a 17:11 ART quedo ~13 pts corrida", l, est);
+              "Zero Gamma por volumen del 0DTE de SPX como lo calcula la clasica (Gamma Hoy) en un grafico de ES, donde su libro es SPX: grilla de 61 precios en +-3 %, el PRIMER cruce de abajo hacia arriba, llevado al futuro con SU base (la de la rueda con su regla sobre las cadenas y la cinta de la 5.0; con mas de 24 h, la cruda de forwards y despues el carry)",
+              "el zero de SPX de la clasica en ES, calculado adentro; la formula es la del zero estandar de SPX: lo que lo separa de 'SPX 0Γ est' es la base",
+              EnNq("con NDX: el 09-10 la base vieja lo puso 13-15 pts arriba; si la clasica pierde Rithmic re-mide su base y la replica deja de coincidir (~13 pts). En ES SIN VERIFICAR contra la clasica: no hay salidas de la clasica en ES desde el 05-10"), l, est);
             // --- 4.1.5b (09-10-2026, pedido del operador: "replicar la clasica su formula ... SPX D1 en 31141"): las dominantes de la capa SPX de la clasica
+            //     5.0 (P5): en ES son las dominantes del libro primario (SPX) de la clasica.
             S("R10_SPX_dom", "Clasica SPX", "SPX", "vol", "DOMS", "Clasica", "#b8f8d8", 0,   // 4.1.5d: menta palido (el #9dffd2 quedaba a 11,4 del 2.0 SPX)
-              "Dominantes D1-D3 de la capa SPX de la clasica (Gamma Hoy): GEX por volumen del 0DTE de SPX, radio min(2 %, 100 pts), una por lado con empate 20 % (la mas cercana), D3 = la siguiente mas fuerte, en el centroide +-12 pts; llevadas al futuro con SU base (la de la rueda anterior, como el 0Γ)",
-              "las rayas 'SPX D1/D2/D3' de la clasica, calculadas adentro con su formula (misma cadena, base y fut que la Clasica SPX 0Γ); a diferencia de la clasica, que solo deja estela de D1 y D2, aca D3 tambien deja estela",
-              "replica para comparar y calibrar; SIN VALIDAR; sin histeresis (cada minuto elige de cero, como la clasica); sin cambio ▲▼ (su base no es la del libro de la 4.1). SALVEDAD (medida el 09-10): si la clasica pierde Rithmic (p. ej. al reiniciar ATAS) re-mide su base en la rueda y estas rayas dejan de coincidir con las suyas: de 16:48 a 17:11 ART quedaron ~13 pts corridas, en varios minutos con otro strike ganador", l, est);
+              "Dominantes D1-D3 del libro SPX de la clasica en un grafico de ES: GEX por volumen del 0DTE de SPX, radio min(2 %, 100 pts) (= 100 en ES), una por lado con empate 20 % (la mas cercana), D3 = la siguiente mas fuerte, en el centroide +-12 pts; con la misma base que la Clasica SPX 0Γ",
+              "las rayas D1/D2/D3 de la clasica en ES, calculadas adentro con su formula (misma cadena, base y fut que la Clasica SPX 0Γ); a diferencia de la clasica, que solo deja estela de D1 y D2, aca D3 tambien deja estela",
+              EnNq("con NDX: replica para comparar, sin validar; sin histeresis y sin cambio ▲▼; si la clasica pierde Rithmic re-mide su base y la replica deja de coincidir (~13 pts). En ES SIN VERIFICAR contra la clasica"), l, est);
 
-            // --- 4.1.7 (12-10-2026): TOP-N del libro de ES. MUROS/MAJORS marcan UN strike por lado; medido hoy,
-            // en la ventana de +-100 pts habia 24 strikes con gamma y se dibujaban 2.
+            // --- 4.1.7 (12-10-2026): TOP-N del libro de ES. MUROS/MAJORS marcan UN strike por lado (en NQ, el 12-10: 24 strikes con gamma en la ventana
+            //     y 2 dibujados).
             S("TOPN_ES_vol", "ES top", "ES", "vol", "TOPN", "Recomendadas", "#7cf5c4", 0,
-              "Los N strikes de ES con mas |gamma neta| por volumen dentro del radio (min(2 %, 100 pts)), de mayor a menor (D1..DN)",
+              "Los N strikes de ES con mas |gamma neta| por volumen dentro del radio de la Familia, de mayor a menor (D1..DN)",
               "los strikes de ES donde HOY se negocio mas gamma, no solo el mayor: se recalculan cada minuto y se mueven con el libro",
-              "SIN VALIDAR como nivel. Es cobertura, no seleccion: marca lo que MUROS y MAJORS dejan afuera (medido 12-10: 24 strikes con gamma, 2 dibujados)", l, est);
+              EnNq("sin validar como nivel; es cobertura, no seleccion (el 12-10: 24 strikes con gamma en la ventana, 2 dibujados)"), l, est);
             S("TOPN_ES_oi", "ES top OI", "ES", "oi", "TOPN", "Recomendadas", "#4fb98a", 0,
-              "Los N strikes de ES con mas |gamma neta| por interes abierto dentro del radio, de mayor a menor (D1..DN)",
-              "los strikes de ES con mas posiciones abiertas de ayer, los N mas pesados y no solo el mayor",
-              "SIN VALIDAR como nivel; misma logica que TOPN_ES_vol con el OI de la OCC", l, est);
+              "Los N strikes de ES con mas |gamma neta| por interes abierto dentro del radio de la Familia, de mayor a menor (D1..DN)",
+              "los strikes de ES con mas posiciones abiertas de ayer, los N mas pesados y no solo el mayor (con el OI de anteayer no se dibuja)",
+              EnNq("sin validar como nivel; misma logica que TOPN_ES_vol con el OI de la OCC"), l, est);
 
             S("CARGA_ES", "ES", "ES", "oi", "TOPN", "Recomendadas", "#ffb74d", 0,
-              "Los strikes de ES con mas INTERES ABIERTO dentro del radio. Horizonte REAL: ES solo los 2 vencimientos suscritos, CBOE hasta 14 dias en vivo y 8 del archivo; sin el contrato sin punta (iv <= 0). Es un piso, no el total de CME",
-              "donde hay mas papel puesto cerca del precio: en CME los strikes redondos llevan su carga en 4, 11, 18 y 25 dias, y el calculo normal de la Familia solo mira el vencimiento de hoy",
-              "SIN VALIDAR como nivel. Es COBERTURA: marca lo que el horizonte del frente deja afuera", l, est);
+              "Los strikes de ES con mas INTERES ABIERTO dentro del radio. Horizonte REAL: el libro ES suscribe solo los 2 vencimientos mas cercanos; sin el contrato sin punta (iv <= 0). Es un piso, no el total de CME",
+              "donde hay mas papel puesto cerca del precio, sumando los vencimientos que se ven (el calculo normal de la Familia solo mira el vencimiento de hoy)",
+              EnNq("sin validar como nivel; es cobertura: marca lo que el horizonte del frente deja afuera"), l, est);
             S("CARGA_SPX", "SPX", "SPX", "oi", "TOPN", "Recomendadas", "#ce93d8", 0,
-              "Los strikes de SPX con mas INTERES ABIERTO dentro del radio. Horizonte REAL: ES solo los 2 vencimientos suscritos, CBOE hasta 14 dias en vivo y 8 del archivo; sin el contrato sin punta (iv <= 0). Es un piso, no el total de CME",
-              "donde hay mas papel puesto cerca del precio: en CME los strikes redondos llevan su carga en 4, 11, 18 y 25 dias, y el calculo normal de la Familia solo mira el vencimiento de hoy",
-              "SIN VALIDAR como nivel. Es COBERTURA: marca lo que el horizonte del frente deja afuera", l, est);
+              "Los strikes de SPX con mas INTERES ABIERTO dentro del radio. Horizonte REAL: CBOE hasta 14 dias en vivo y 8 desde el archivo, strikes a +-5 % del spot; sin el contrato sin punta (iv <= 0). Es un piso, no el total de la cadena",
+              "donde hay mas papel puesto cerca del precio en SPX; la etiqueta lleva el strike de SPX (el que se cruza contra CBOE) y la raya va " + CONV_SPX,
+              EnNq("con NDX: sin validar como nivel; es cobertura"), l, est);
             S("CARGA_SPY", "SPY", "SPY", "oi", "TOPN", "Recomendadas", "#80cbc4", 0,
-              "Los strikes de SPY con mas INTERES ABIERTO dentro del radio. Horizonte REAL: ES solo los 2 vencimientos suscritos, CBOE hasta 14 dias en vivo y 8 del archivo; sin el contrato sin punta (iv <= 0). Es un piso, no el total de CME",
-              "donde hay mas papel puesto cerca del precio: en CME los strikes redondos llevan su carga en 4, 11, 18 y 25 dias, y el calculo normal de la Familia solo mira el vencimiento de hoy",
-              "SIN VALIDAR como nivel. Es COBERTURA: marca lo que el horizonte del frente deja afuera", l, est);
+              "Los strikes de SPY con mas INTERES ABIERTO dentro del radio. Horizonte REAL: CBOE hasta 14 dias en vivo y 8 desde el archivo, strikes a +-5 % del spot; sin el contrato sin punta (iv <= 0). Es un piso, no el total de la cadena",
+              "donde hay mas papel puesto cerca del precio en SPY; la etiqueta lleva el strike de SPY y la raya va " + CONV_SPY,
+              EnNq("con QQQ: sin validar como nivel; es cobertura"), l, est);
 
             Series = l.AsReadOnly();
             PorId = l.ToDictionary(x => x.Id, StringComparer.Ordinal);

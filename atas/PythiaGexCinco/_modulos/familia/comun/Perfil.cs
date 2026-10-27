@@ -91,8 +91,8 @@ namespace PythiaGexCinco.Familia
         /// <summary>null si fl es null, S &lt;= 0 o ninguna fila aporta (Python: None -> el libro no vale en ese minuto).
         /// porLado (4.1.4, solo para los CAMBIOS de posiciones/CambiosFamilia): una fila aporta si CUALQUIER lado es distinto de 0, no el neto. Las
         /// series (vista previa, paridad) usan el neto (false, el default): una fila con calls y puts que se anulan no entra. En una fotoΔ eso perdia
-        /// el cambio de cada lado cuando los dos cambian igual con la misma IV (ES OI 10-09 05:59:55Z, K 31.160: +9 calls y +9 puts, IV 0,206258
-        /// las dos: el cambio del muro C y del muro P de ese strike salia 0).</summary>
+        /// el cambio de cada lado cuando los dos cambian igual con la misma IV (medido en la 4.1 sobre el libro NQ: OI 10-09 05:59:55Z, K 31.160:
+        /// +9 calls y +9 puts, IV 0,206258 las dos: el cambio del muro C y del muro P de ese strike salia 0).</summary>
         /// <summary>4.1.7: interes abierto TOTAL por strike sumando TODOS los vencimientos (lo que muestra el mapa de calor de CME).
         /// No usa gamma: es "cuanto papel hay puesto ahi", que es lo que el operador ve cargado y donde el precio reacciona.</summary>
         /// <summary>4.1.8: ademas del OI por strike devuelve la GAMMA de ese strike sumando LOS MISMOS vencimientos.

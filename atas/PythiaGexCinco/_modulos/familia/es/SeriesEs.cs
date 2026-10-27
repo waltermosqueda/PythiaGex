@@ -1,7 +1,7 @@
 // SeriesEs.cs — PythiaGex 4.1, modulo Familia, libro ES (B3a, 08-10-2026).
 // Las 7 series VISIBLES del libro ES en la vista previa (preview_niveles.SERIES): MUROS_ES_vol, MAJORS_ES_vol, MUROS_ES_oi, MAJORS_ES_oi,
 // ZEST_ES_vol, ZEST_ES_oi, ZTP_ES_vol (ZTP_ES_oi se calcula para CONF_oi pero no es serie visible). Las de OI solo si oi_ok (C2).
-// El monto (C1) usa el multiplicador de ES: 20 USD/pt -> x0.2 sobre la escala de la 3.0.
+// El monto (C1) usa el multiplicador de ES: 50 USD/pt -> x0.5 sobre la escala de la 3.0 (5.0, 27-10-2026; la 4.1: NQ 20 USD/pt -> x0.2).
 using System.Collections.Generic;
 
 namespace PythiaGexCinco.Familia

@@ -11,6 +11,13 @@
 //   * oi_ok(t) = !(viejo_hasta != null && dia - 2 h <= t < viejo_hasta). Sin fotos de noche: sin supresion.
 // Con 'ahora' >= dia + 3:30 da EXACTAMENTE lo mismo que la version de backtest (la de la referencia historica); antes es la version en vivo
 // (conservadora). Los minutos ya calculados no se recalculan (eso lo decide el motor).
+// 5.0 (27-10-2026), libro ES: CME y Rithmic son los mismos que en NQ y la regla no depende de la escala (>= 20 claves y >= 50 % son
+// relativos al libro; ES trae ~180 claves comunes por par de fotos). MEDIDO una noche (27-10, viva3-ES de la 4.1 sobre MES): primera foto
+// 01:51:04 UTC, salto 01:53:09 UTC (168 de 182 claves con OI distinto); el libro NQ la misma noche salto a las 01:52:48 UTC: el mismo
+// evento. Ojo: 01:53 queda a 2 min del corte '01:55' (primera foto despues de eso = OI supuesto actualizado), igual que en NQ.
+// Ventanas: con iniSesionUtc (el minutero en sesion de NY) se cuentan desde las 18:00 NY de la vispera: Ini = 18:00, umbral 21:55,
+// DosAm 22:00 y Lim 23:30 NY = exactamente 22:00 / 01:55 / 02:00 / 03:30 UTC en horario de verano. SUPUESTO (sin medir en invierno): que
+// desde el 01-11 el salto de Rithmic siga la hora local (pasaria a ~02:53 UTC); si siguiera fijo en UTC esta version solo suprime de mas.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -21,6 +28,9 @@ namespace PythiaGexCinco.Familia
     {
         public readonly string Dia;
         public readonly DateTime Ini, Lim, DosAm;
+        /// <summary>5.0: con la sesion en hora de NY, la primera foto desde aca (21:55 NY de la vispera) supone el OI ya actualizado.
+        /// null = la regla de texto de la 4.1 ("01:55" &lt;= HH:mm UTC &lt; "13:30").</summary>
+        public readonly DateTime? Umbral;
         private readonly bool _sinSupresion;
         private int _idx;
         private Dictionary<(double, string, int), double> _prev;
@@ -28,11 +38,18 @@ namespace PythiaGexCinco.Familia
         public DateTime? Primera { get; private set; }
 
         /// <param name="posferiados">null: calendario de feriados (TiempoFam.EsPosferiado); si no, la lista explicita ("yyyy-MM-dd").</param>
-        public OiEs(string dia, IReadOnlyCollection<string> posferiados = null)
+        /// <param name="iniSesionUtc">5.0: el inicio de la sesion en hora de NY (18:00 NY de la vispera, SesionFamilia corregida). null = la 4.1:
+        /// ventanas en UTC fijo desde las 22:00 UTC de la vispera.</param>
+        public OiEs(string dia, IReadOnlyCollection<string> posferiados = null, DateTime? iniSesionUtc = null)
         {
             Dia = dia;
             var d = TiempoFam.DiaSesion(dia);
-            Ini = d.AddHours(-2); Lim = d.AddHours(3.5); DosAm = d.AddHours(2);
+            if (iniSesionUtc.HasValue)
+            {
+                var i0 = DateTime.SpecifyKind(iniSesionUtc.Value, DateTimeKind.Utc);
+                Ini = i0; Lim = i0.AddHours(5.5); DosAm = i0.AddHours(4); Umbral = i0.AddHours(3).AddMinutes(55);
+            }
+            else { Ini = d.AddHours(-2); Lim = d.AddHours(3.5); DosAm = d.AddHours(2); }
             bool posf = posferiados != null ? Contiene(posferiados, dia) : TiempoFam.EsPosferiado(dia);
             _sinSupresion = d.DayOfWeek == DayOfWeek.Monday || posf;
         }
@@ -87,10 +104,13 @@ namespace PythiaGexCinco.Familia
             if (Primera == null) return (null, "sin fotos de noche");
             if (Salto != null) return (Salto, "salto de OI medido a las " + Salto.Value.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC");
             string hm = TiempoFam.HM(Primera.Value);
-            if (string.CompareOrdinal(hm, "01:55") >= 0 && string.CompareOrdinal(hm, "13:30") < 0)
+            bool despues = Umbral.HasValue
+                ? Primera.Value >= Umbral.Value
+                : string.CompareOrdinal(hm, "01:55") >= 0 && string.CompareOrdinal(hm, "13:30") < 0;
+            if (despues)
                 return (null, "primera foto " + hm + " UTC (despues del salto habitual): OI supuesto actualizado");
-            if (ahoraUtc < Lim) return (Lim, "esperando el salto de OI de Rithmic (medido 01:24-01:52 UTC en 11 noches): OI de anteayer");
-            return (DosAm, "sin salto visible: suprimido hasta 02:00 UTC (conservador)");
+            if (ahoraUtc < Lim) return (Lim, "esperando el salto de OI de Rithmic (medido 01:24-01:52 UTC en 11 noches de NQ; ES 27-10: 01:53): OI de anteayer");
+            return (DosAm, "sin salto visible: suprimido hasta " + TiempoFam.HM(DosAm) + " UTC (conservador)");
         }
 
         public bool OiOk(DateTime tUtc, DateTime ahoraUtc)

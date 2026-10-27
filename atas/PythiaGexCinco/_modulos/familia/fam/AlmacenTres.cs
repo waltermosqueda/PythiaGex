@@ -6,12 +6,14 @@
 // Este almacen lee ESAS lineas (las del propio indicador, nunca las de PythiaGex3) de dos maneras que se pisan sin conflicto:
 //   * el gancho del clon: Agregar(capa, linea) con el mismo texto que va al archivo (DISENO_4_1 §2.4.2), y
 //   * la cola del archivo (LeerArchivos): al arrancar lee los dos archivos de la sesion y despues solo los bytes nuevos.
-// La cuenta es la de la vista previa: extremos_rebote.leer_estela + niveles_estela (vida 300 s ES, 1500 s SPX/SPY; d > 15000; la ultima
+// La cuenta es la de la vista previa: extremos_rebote.leer_estela + niveles_estela (vida 300 s ES, 1500 s SPX/SPY; d > PISO_ESTELA; la ultima
 // linea con t <= minuto; duplicados por t: gana la ultima). Sin referencias a ATAS.
+// 5.0 (27-10-2026): el piso de leer_estela era 15000 (NQ en 20-31 mil): con ES/MES en ~7.700 descartaba TODAS las rayas TRES_*. Pasa a
+// 3750 (15000 / 4, cociente de precios NQ/ES 3,82-3,86): sigue tirando los 0 y los rellenos chicos, ninguna raya de ES.
 //
 // 4.1.2 (08-10-2026, montos en las etiquetas): la linea trae un campo NUEVO "gm":[m1,m2] alineado con d[0]/d[1] = el GEX NETO con signo
-// del strike elegido para D1/D2 en M USD por 1 % EN UNIDADES DE LA FAMILIA (la 3.0 cuenta todo con multiplicador 100: ES x0,2 para llevarlo
-// al 20 del ES, SPX/SPY x1), con null donde la dominante no es un strike con monto (relleno +-1e6 del tunel por cruces de noche, vigente
+// del strike elegido para D1/D2 en M USD por 1 % EN UNIDADES DE LA FAMILIA (la 3.0 cuenta todo con multiplicador 100: ES x0,5 para llevarlo
+// al 50 del ES (5.0; la 4.1: NQ x0,2), SPX/SPY x1), con null donde la dominante no es un strike con monto (relleno +-1e6 del tunel por cruces de noche, vigente
 // de la histeresis sin strike en el perfil). Lo escribe GammaHoyTres.GuardarEstela con MontosDominantes3/CampoGm de ESTE archivo (la
 // convencion de escritura y de lectura en un solo lugar). Las lineas viejas (sin "gm") o con null dan GexM NaN: la paridad con la vista
 // previa (que solo mira t y d) no cambia. "g" (|gex| sin signo, x100 en ES, relleno 1 de noche) NO se usa.
@@ -27,6 +29,10 @@ namespace PythiaGexCinco.Familia
     public sealed class AlmacenTres
     {
         public static readonly IReadOnlyDictionary<string, int> VidaS = new Dictionary<string, int> { ["ES"] = 300, ["SPX"] = 1500, ["SPY"] = 1500 };
+
+        /// <summary>5.0 (27-10-2026): una dominante de la estela vale solo si es &gt; esto (extremos_rebote.leer_estela: 'x and x &gt; 15000', pensado
+        /// para NQ). 3750 = 15000 / 4. Las tres capas escriben en el eje del grafico (MES), asi que el piso es el mismo para ES, SPX y SPY.</summary>
+        public const double PISO_ESTELA = 3750.0;
 
         private sealed class Capa
         {
@@ -110,7 +116,7 @@ namespace PythiaGexCinco.Familia
             return n;
         }
 
-        /// <summary>extremos_rebote.leer_estela, una linea: t (UTC) y d[0], d[1] con 'x if (x and x > 15000) else NaN'.</summary>
+        /// <summary>extremos_rebote.leer_estela, una linea: t (UTC) y d[0], d[1] con 'x if (x and x > PISO_ESTELA) else NaN' (5.0: 3750; la 4.1: 15000).</summary>
         public static bool Parsear(string linea, out DateTime t, out double d1, out double d2) => Parsear(linea, out t, out d1, out d2, out _, out _);
 
         /// <summary>Lo mismo + 4.1.2: gm[0], gm[1] ALINEADOS con d[0], d[1] (si d[i] se descarta, gm[i] tambien). Sin "gm", null, no numero o
@@ -133,7 +139,7 @@ namespace PythiaGexCinco.Familia
                         foreach (var x in d.EnumerateArray())
                         {
                             double v = x.ValueKind == JsonValueKind.Number ? x.GetDouble() : double.NaN;
-                            v = (v != 0 && v > 15000) ? v : double.NaN;
+                            v = (v != 0 && v > PISO_ESTELA) ? v : double.NaN;
                             if (i == 0) d1 = v; else if (i == 1) d2 = v; else break;
                             i++;
                         }
@@ -175,11 +181,12 @@ namespace PythiaGexCinco.Familia
         /// son strikes, ese numero no es un monto.</summary>
         public const double RellenoTunel3 = 1e6;
 
-        /// <summary>De la cuenta de la 3.0 (GammaHoyNucleo.MULT_INDICE = 100 para todo) a las unidades de la familia (C1: ES 20, SPX 100, SPY 100,
-        /// ReglasFam.Escala): ES 0,2; SPX y SPY 1. NaN para cualquier otra raiz (ES/RTY de la 3.0: la familia no tiene unidad para ellas).</summary>
+        /// <summary>De la cuenta de la 3.0 (GammaHoyNucleo.MULT_INDICE = 100 para todo) a las unidades de la familia (C1: ES 50, SPX 100, SPY 100,
+        /// ReglasFam.Escala): ES 0,5 (5.0; la 4.1: NQ 0,2); SPX y SPY 1. NaN para cualquier otra raiz (NQ/RTY de la 3.0: la familia de ES no
+        /// tiene unidad para ellas).</summary>
         public static double FactorMonto3(string raiz)
         {
-            if (string.Equals(raiz, "ES", StringComparison.OrdinalIgnoreCase)) return 20.0 / 100.0;
+            if (string.Equals(raiz, "ES", StringComparison.OrdinalIgnoreCase)) return MinuteroEs.MULT / 100.0;
             if (string.Equals(raiz, "SPX", StringComparison.OrdinalIgnoreCase) || string.Equals(raiz, "SPY", StringComparison.OrdinalIgnoreCase)) return 1.0;
             return double.NaN;
         }
