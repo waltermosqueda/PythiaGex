@@ -1,5 +1,24 @@
 # CHANGELOG — PythiaGex 5.0 (Gamma ES)
 
+## 5.0.5 (27-10-2026) — pantalla profesional: barras ES en su franja del borde, nada se superpone (INSTALADA 19:32 ART, DLL 5E214D3B…)
+- Pedido del operador (textual): "la barra derecha me roba espacio, ponele en el borde como corresponde un trabajo profesional, fijate que no se
+  superpongan con otros, hace todo profesional visual, audita visualmente como para que un trader entienda".
+- **Barras ES en una FRANJA PROPIA pegada al borde derecho** (contra el eje de precios de ATAS): 10 % del ancho, 56-100 px (`GL_FRANJA_ES/MIN/MAX`),
+  separada por una rayita vertical tenue; la mas larga llena la franja menos 6 px. Antes la mas larga medía el 25 % del ancho y entraba en las velas
+  (captura `capturas/2026-10-27_1923_antes_5_0_5_franja_es.jpg`: la barra de 7755 iba de x 432 a 718). La franja se reserva siempre que la casilla este
+  prendida (la columna no salta cuando el libro ES aparece o se va); la columna de etiquetas, el renglon de arriba, las ↑/↓, los rotulos de tramos y
+  las punteadas terminan a su izquierda (`xr` = borde de la columna, `xBorde` = el del grafico).
+- **Barras de la izquierda** (SPX/SPY): arrancan a la derecha de la columna de numeros del eje doble (antes los numeros quedaban encima) y nunca entran
+  en la columna. Mismo largo maximo (30 % del ancho del grafico).
+- **Fondos** (color del grafico al 84 %, sin borde: sigue siendo el estilo 2E "sin caja" del 09-10) detras de las etiquetas, las ↑/↓, la edad y los
+  numeros del eje doble: las rayas propias y las de otros indicadores (el VWAP de la sesion anterior de PythiaVWAP, gris) ya no pasan por encima del
+  texto ("3.0 SPX D1 1,60B" se leia tachado).
+- **Auditoria de solapes** en cada render (`DibujoPantalla.SolapesEs/SolapesIzq`, `FranjaEs`, `ColumnaIzq/Der`, `XIzqGl`, `EjeAncho`), escrita en
+  `pythiagex5-pantalla.log` cada 10 min ("auditoria de pantalla: ... SOLAPES ES/columna=0 izq/eje=0").
+- Verificado en pantalla 19:34 ART: franja ES 7755 −25M la mas larga, 7750 la segunda; etiquetas a la izquierda sin tocar la franja ni la ultima vela
+  (~5 px de aire); barras ES recalculadas por fuera desde viva3-ES (D1 7755 −24,7M / D2 7775 +16,0M; el zero GL ES del minuto k = el de la foto del
+  minuto k−1 al centavo).
+
 ## 5.0.4 (27-10-2026) — estilo Gammalito con el libro ES de Rithmic: barras a la derecha, amarillos y zero (compilada; SIN instalar)
 - Pedido del operador (textual): "agregá el perfil estilo Gammalito también con el libro de ES de Rithmic (barras, amarillos y zero), en vivo las 24
   horas". La MISMA cuenta de la 5.0.3 (`GammalitoFam`) sobre el LibroMinuto ES de la 5.0 (opciones sobre el futuro ES de CME por Rithmic, una foto por

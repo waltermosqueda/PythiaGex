@@ -20,7 +20,7 @@ namespace PythiaGexCinco.Familia
 {
     public sealed class PantallaFamilia : IPantallaFamilia
     {
-        public const string VERSION = "pantalla 5.0.4 (27-10-2026, Gamma ES: solo graficos ES/MES; eje doble Ninguno/SPX/SPY, default SPX, cotas de ES; grupo de etiquetas 0,25 pt; barras y series estilo Gammalito; barras del libro ES a la derecha)";
+        public const string VERSION = "pantalla 5.0.5 (27-10-2026, Gamma ES: solo graficos ES/MES; eje doble Ninguno/SPX/SPY, default SPX, cotas de ES; grupo de etiquetas 0,25 pt; barras y series estilo Gammalito; barras del libro ES en su franja del borde derecho; auditoria de solapes)";
         private const long M2 = 120_000;
         private const int TOPE_VELAS = 20000;      // con el grafico muy alejado no se recorren mas velas que esto (la 4.0.6 no tenia tope)
 
@@ -144,10 +144,30 @@ namespace PythiaGexCinco.Familia
                         + " | rotulos de tramos " + _d.RotulosTramos.Count + " (tramos " + _d.TramosLargos + ", vigentes " + _d.TramosVigentes + ", sin lugar o tope " + _d.TramosDescartados
                         + ", recortados " + _d.TramosRecortados + ")" + (_d.RotulosTramos.Count > 0 ? ": " + string.Join(" | ", _d.RotulosTramos.Select(r => r.Txt)) : "")
                         + " | barras GL " + _d.BarrasGl.Count + (foto?.PerfilGl == null ? " (sin perfil todavia)" : " de " + foto.PerfilGl.Barras.Length + " del minuto " + DateTime.UnixEpoch.AddMinutes(foto.PerfilGl.Clave).ToString("HH:mm", CultureInfo.InvariantCulture) + "Z")   // 5.0.3
-                        + " | barras GL ES " + _d.BarrasGlEs.Count + (foto?.PerfilGl == null ? "" : " de " + (foto.PerfilGl.BarrasEs?.Length ?? 0)) + (_d.GlEsXFin == int.MinValue ? "" : ", borde derecho x=" + _d.GlEsXFin));   // 5.0.4
+                        + " | barras GL ES " + _d.BarrasGlEs.Count + (foto?.PerfilGl == null ? "" : " de " + (foto.PerfilGl.BarrasEs?.Length ?? 0)) + (_d.GlEsXFin == int.MinValue ? "" : ", borde derecho x=" + _d.GlEsXFin)   // 5.0.4
+                        + " | " + Solapes(_d));   // 5.0.5
+                // 5.0.5: la auditoria de solapes cada 10 min (y enseguida si aparece un solape): que la pantalla diga sola si algo se pisa
+                var ahoraA = DateTime.UtcNow;
+                if (_renders > 1 && (ahoraA - _ultAuditoria > TimeSpan.FromMinutes(10) || ((_d.SolapesEs > 0 || _d.SolapesIzq > 0) && ahoraA - _ultAuditoria > TimeSpan.FromMinutes(1))))
+                {
+                    _ultAuditoria = ahoraA;
+                    BitacoraPantalla.Linea("auditoria de pantalla: area=" + area + " velas visibles=" + (hasta - desde + 1) + " | " + Solapes(_d));
+                }
             }
             catch (Exception e) { Error("Pintar", e); }
             finally { _gActual = null; }
+        }
+
+        private DateTime _ultAuditoria = DateTime.MinValue;   // 5.0.5
+
+        /// <summary>5.0.5: el renglon de la auditoria de solapes (donde quedo cada cosa y cuantas barras se pisan con algo).</summary>
+        public static string Solapes(DibujoPantalla d)
+        {
+            string fr = d.FranjaEs.IsEmpty ? "sin franja ES" : "franja ES x=" + d.FranjaEs.Left + ".." + d.FranjaEs.Right;
+            string col = d.ColumnaIzq == int.MaxValue ? "sin columna" : "columna x=" + d.ColumnaIzq + ".." + d.ColumnaDer;
+            return fr + " (" + d.BarrasGlEs.Count + " barras ES" + (d.BarrasGlEs.Count == 0 ? "" : ", la mas larga " + d.BarrasGlEs.Max(b => b.Largo) + " px") + ") · " + col
+                 + " · barras izq " + d.BarrasGl.Count + (d.XIzqGl == int.MinValue ? "" : " desde x=" + d.XIzqGl) + " · eje " + d.EjeAncho + " px"
+                 + " · SOLAPES ES/columna=" + d.SolapesEs + " izq/eje=" + d.SolapesIzq;
         }
 
         private CajaRect _recuadro;   // 4.1.6
