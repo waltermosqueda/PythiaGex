@@ -1,5 +1,42 @@
 # CHANGELOG — PythiaGex 5.0 (Gamma ES)
 
+## 5.0.4 (27-10-2026) — estilo Gammalito con el libro ES de Rithmic: barras a la derecha, amarillos y zero (compilada; SIN instalar)
+- Pedido del operador (textual): "agregá el perfil estilo Gammalito también con el libro de ES de Rithmic (barras, amarillos y zero), en vivo las 24
+  horas". La MISMA cuenta de la 5.0.3 (`GammalitoFam`) sobre el LibroMinuto ES de la 5.0 (opciones sobre el futuro ES de CME por Rithmic, una foto por
+  minuto, sin el atraso de CBOE): valor de un strike = `Gv` del libro ES (gamma Black-76 sin descuento x (vol calls - vol puts), el vencimiento del
+  horizonte Hoy de ESE libro) x 0,5 (50 USD por punto) / 1e6, en M USD por 1 %; precio = K + corrimiento de contrato de la 5.0 (medido 0 en los 380
+  minutos: libro ESZ6, grafico MESZ6).
+- **Barras ES** (casilla nueva "GL barras ES", Order 104, PRENDIDA): `PerfilGl.BarrasEs` (+ `MaxEs`, `ConvEs`, `DatoEs`; Contratos.cs), ANCLADAS A LA
+  DERECHA: terminan en `colIzq`, el borde izquierdo de la columna de la derecha (etiquetas, renglones ↑/↓ y el renglon de arriba con la edad y el
+  recuadro: el mismo borde que ya respetaban los rotulos de tramos) y crecen hacia la izquierda; la mas larga = 25 % del ancho visible (`GL_ANCHO_ES`),
+  mismo alto (0,6 del paso de 5 pts, 3-11 px) y colores que las de SPX (#089981 / #F23645 al 65 %). Choques, resueltos asi: la columna no se tapa ni
+  se corre, y el recuadro y la edad tampoco (son parte de ese borde); si la columna se ensancha (rebobinado "◀ …", "MOTOR PARADO …") las barras se
+  corren con ella; sin columna (etiquetas apagadas o el grafico corrido hacia atras) terminan en el borde derecho visible; si el grafico es tan angosto
+  que una barra llegaria al borde izquierdo, se corta ahi. Como `colIzq` recien se sabe despues de las etiquetas, sus rellenos se INSERTAN en la lista
+  de primitivas justo despues de las barras de SPX/SPY: quedan debajo de la estela, las etiquetas y el eje, como esas. Como las de SPX/SPY, son el
+  perfil del ultimo minuto calculado y no se rebobinan. Un minuto con SOLO el libro ES ahora publica perfil (`Barras` vacio): la izquierda se ve igual.
+- **Series extra nuevas** AL FINAL de `CatalogoFamilia.Extra` (indices 9-10; 0-8 sin cambio): `GL_ES_dom` (las 2 barras de mayor |valor| del libro
+  ES: D1 amarillo opaco, D2 al 50 %) y `GL_ES_zero` (cruce de signo interpolado mas cercano a S = fut - corrimiento, gris, 1 px); casillas "GL amar.
+  ES" / "GL zero ES" (Order 105-106), PRENDIDAS (nombres nuevos); etiquetas "GL ES D1 7,42B", "GL ES 0Γ". Se calculan y se guardan en el niv cada
+  minuto; la estela, como la de todas las series, va una rayita por vela de 2 min.
+- **Probado** (arnes P9 = el P8 de la 5.0.3 con los datos copiados de %APPDATA% a las 21:20Z; DLL 5.0.3 contra 5.0.4, 13:01-21:00Z de a un minuto):
+  (a) las 1.378 lineas del niv sin las GL_ES IDENTICAS byte a byte a la 5.0.3 (Calc y las 9 extras previas, GL SPX/SPY incluidas); la foto final
+  (historia m2, actuales y fuentes sin las GL_ES) identica; 42 de 42 pantallas con las barras ES apagadas con las MISMAS primitivas; (b) recalculo
+  independiente en Python desde viva3 crudo (la copia es prefijo byte a byte del archivo de %APPDATA%), 380 minutos con libro ES (320 de dia,
+  14:33-19:59Z, con el 0DTE del 27-10; 60 de noche, 20:00-20:59Z, con el vencimiento del 28-10 20:00Z): 16.684 barras con diferencia relativa maxima
+  2e-13, amarillos 380/380 y zero 380/380 iguales al redondeo de 2 decimales; (c) pantalla (ArmadoPantalla sin ATAS, 42 minutos 16:30-16:50Z y
+  20:10-20:30Z, 1350x660, 9,7 px/pt): 578 barras ES recalculadas por fuera (color, x0, y, largo, alto y lugar en la lista de primitivas) sin
+  diferencias; el borde (x = 1185-1190) es el de la columna recalculado desde lo dibujado y ninguna barra pisa una etiqueta, la edad ni el recuadro;
+  sin etiquetas, 42 minutos con el borde en x = 1350 sin diferencias; 126 etiquetas GL ES con precio y monto recalculados (34 nombradas dentro de otra
+  del mismo precio, p. ej. "ES C 9,21B · GL ES D1").
+- **Ojo**: (1) "de noche" en estos datos es solo 20:00-21:00Z (16:00-17:00 NY, con el volumen del dia de la serie del 28-10): la primera noche de
+  verdad (sesion 28-10 desde las 22:00Z, volumen desde cero) todavia no esta en el archivo; (2) la cadena de Rithmic trae todos los strikes hasta el 1 %
+  y uno de cada dos hasta el 2 % (medido: mediana 45 barras por minuto, de -149 a +145,5 pts del precio): mas lejos no hay barras; (3) un minuto con
+  SOLO el libro ES (sin ninguna extra de CBOE) pasa a tener `TieneExtra` y su vela m2 ya no toma las extras del minuto anterior (lo mismo que ya
+  hacian las GL de SPX/SPY en la 5.0.3): en los datos del 27-10, 0 minutos asi.
+- **Falta**: instalar y la comprobacion en la pantalla real de ATAS (regla 09-10). SIN MEDIR EN ES como nivel.
+- Version: FileVersion 5.0.4.0, InformationalVersion 5.0.4, `VERSION` "5.0.4"; AssemblyVersion queda 5.0.0.0.
+
 ## 5.0.3 (27-10-2026) — estilo Gammalito: barras por strike, amarillos y zero (compilada; SIN instalar)
 - Pedido del operador (textual): "agregá a la 5.0 las barras por strike al estilo Gammalito (izquierda gamma x volumen neto de SPX y SPY, amarillos y
   zero), bien convertidas a ES". Formula del informe `_referencia/2026-10-27-gammalito-ES/INFORME.md` (ingenieria inversa de 10 capturas): valor de un

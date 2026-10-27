@@ -1,6 +1,7 @@
 // PantallaFamilia.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1 (modulo pantalla B5, 08-10-2026). Implementa IPantallaFamilia (ContratosPantalla.cs).
 // 5.0 (27-10-2026, P5): solo cambia la VERSION que va al log (el armado de ES esta en ArmadoPantalla).
 // 5.0.3 (27-10-2026): la VERSION y el resumen del log dicen las barras estilo Gammalito (el dibujo esta en ArmadoPantalla).
+// 5.0.4 (27-10-2026): la VERSION, el resumen y la linea del primer render dicen tambien las barras del libro ES (a la derecha).
 // Arma la vista desde el grafico (IGraficoPantalla), llama al armado puro (ArmadoPantalla) y pinta las primitivas en el RenderContext de
 // ATAS. Hilo de dibujo: lee la FotoFamilia publicada (inmutable) y nada mas; sin E/S (el log va por el ThreadPool, 1 linea por minuto
 // y lugar como maximo); sin llaves del motor. Nunca tira: ATAS se traga las excepciones del render.
@@ -19,7 +20,7 @@ namespace PythiaGexCinco.Familia
 {
     public sealed class PantallaFamilia : IPantallaFamilia
     {
-        public const string VERSION = "pantalla 5.0.3 (27-10-2026, Gamma ES: solo graficos ES/MES; eje doble Ninguno/SPX/SPY, default SPX, cotas de ES; grupo de etiquetas 0,25 pt; barras y series estilo Gammalito)";
+        public const string VERSION = "pantalla 5.0.4 (27-10-2026, Gamma ES: solo graficos ES/MES; eje doble Ninguno/SPX/SPY, default SPX, cotas de ES; grupo de etiquetas 0,25 pt; barras y series estilo Gammalito; barras del libro ES a la derecha)";
         private const long M2 = 120_000;
         private const int TOPE_VELAS = 20000;      // con el grafico muy alejado no se recorren mas velas que esto (la 4.0.6 no tenia tope)
 
@@ -142,7 +143,8 @@ namespace PythiaGexCinco.Familia
                         + " | " + Resumen(_aj) + (_d.Cartel != "" ? " | cartel: " + _d.Cartel : "")
                         + " | rotulos de tramos " + _d.RotulosTramos.Count + " (tramos " + _d.TramosLargos + ", vigentes " + _d.TramosVigentes + ", sin lugar o tope " + _d.TramosDescartados
                         + ", recortados " + _d.TramosRecortados + ")" + (_d.RotulosTramos.Count > 0 ? ": " + string.Join(" | ", _d.RotulosTramos.Select(r => r.Txt)) : "")
-                        + " | barras GL " + _d.BarrasGl.Count + (foto?.PerfilGl == null ? " (sin perfil todavia)" : " de " + foto.PerfilGl.Barras.Length + " del minuto " + DateTime.UnixEpoch.AddMinutes(foto.PerfilGl.Clave).ToString("HH:mm", CultureInfo.InvariantCulture) + "Z"));   // 5.0.3
+                        + " | barras GL " + _d.BarrasGl.Count + (foto?.PerfilGl == null ? " (sin perfil todavia)" : " de " + foto.PerfilGl.Barras.Length + " del minuto " + DateTime.UnixEpoch.AddMinutes(foto.PerfilGl.Clave).ToString("HH:mm", CultureInfo.InvariantCulture) + "Z")   // 5.0.3
+                        + " | barras GL ES " + _d.BarrasGlEs.Count + (foto?.PerfilGl == null ? "" : " de " + (foto.PerfilGl.BarrasEs?.Length ?? 0)) + (_d.GlEsXFin == int.MinValue ? "" : ", borde derecho x=" + _d.GlEsXFin));   // 5.0.4
             }
             catch (Exception e) { Error("Pintar", e); }
             finally { _gActual = null; }
@@ -164,7 +166,8 @@ namespace PythiaGexCinco.Familia
             return "casillas prendidas (" + on.Length + "): " + (on.Length == 0 ? "ninguna" : string.Join(",", on)) + " · eje=" + a.Eje + " estela=" + a.Estela
                  + " etiquetas=" + a.Rotulos + " letra=" + a.Letra + " margen=" + a.MargenSup
                  + " montos=" + a.Montos + " cambios=" + a.Cambios + " ventana=" + a.VentanaMin + " min" + " tramos=" + a.Tramos
-                 + " barrasGL=" + (a.GlBarrasSpx ? "SPX" : "") + (a.GlBarrasSpx && a.GlBarrasSpy ? "+" : "") + (a.GlBarrasSpy ? "SPY" : "") + (a.GlBarrasSpx || a.GlBarrasSpy ? "" : "no");   // 5.0.3
+                 + " barrasGL=" + (a.GlBarrasSpx ? "SPX" : "") + (a.GlBarrasSpx && a.GlBarrasSpy ? "+" : "") + (a.GlBarrasSpy ? "SPY" : "") + (a.GlBarrasSpx || a.GlBarrasSpy ? "" : "no")   // 5.0.3
+                 + " barrasGLES=" + (a.GlBarrasEs ? "si" : "no");                                                                                                                 // 5.0.4
         }
 
         // ------------------------------------------------------------------ pintar

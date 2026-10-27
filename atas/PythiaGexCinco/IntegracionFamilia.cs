@@ -22,6 +22,7 @@
 // saltos de 1,1-1,7 pts en la 2.0). Uno por proceso y contrato como la bajada (prendido si cualquier instancia lo pide); el host lo pasa al crear las
 // replicas y en cada latido (AjustarConversion50: si cambia, el motor rehace la sesion entera de esas series).
 // 5.0.3 (27-10-2026): el motor recibe tambien GammalitoFam (las series estilo Gammalito: amarillos de SPX y SPY y el zero de SPX), al final del compuesto.
+// 5.0.4 (27-10-2026): el mismo GammalitoFam arma tambien las del libro ES de Rithmic (GL_ES_dom, GL_ES_zero y las barras ES): aca no cambia nada.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

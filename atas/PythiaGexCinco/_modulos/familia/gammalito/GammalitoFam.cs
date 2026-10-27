@@ -23,6 +23,14 @@
 // Series EXTRA (CatalogoFamilia.Extra, AL FINAL): no entran en Calc ni en CONF/FAM; se guardan en el niv con sus ids. Va DESPUES de la Replica20 y de
 // la clasica en ExtrasCompuestos y AGREGA sus series sin tocar las demas (como ClasicaSpx.Guardar). Un minuto del archivo sin estas series no se
 // completa: el perfil necesita los libros del minuto, que ya no estan (Completar = false). Sin referencias a ATAS.
+// 5.0.4 (27-10-2026), pedido del operador (textual): "agregá el perfil estilo Gammalito también con el libro de ES de Rithmic (barras, amarillos y
+// zero), en vivo las 24 horas". La MISMA cuenta sobre el LibroMinuto ES de la 5.0 (opciones sobre el futuro ES de CME por Rithmic, una foto por
+// minuto, sin el atraso de CBOE): valor = Gv del libro ES (gamma Black-76 sin descuento x (vol calls - vol puts), el horizonte Hoy de ESE libro) x
+// ReglasFam.Escala (ES 0,5: 50 USD por punto) / 1e6; precio = Fut = K + corrimiento de contrato de la 5.0 (0 con el libro del mismo trimestre que el
+// grafico). BARRAS en PerfilGl.BarrasEs (la pantalla las ancla a la DERECHA, contra la columna de etiquetas); series GL_ES_dom (top-2 |valor|, D1 y
+// D2) y GL_ES_zero (el cruce mas cercano a S = fut - corrimiento, + corrimiento) AL FINAL de CatalogoFamilia.Extra. Lo de SPX/SPY no cambia (mismas
+// series, mismas barras, mismo orden); un minuto con SOLO el libro ES ahora tambien publica perfil (Barras vacio, BarrasEs con las de ES). De noche,
+// despues del vencimiento de las 16:00 NY, el horizonte Hoy es el vencimiento siguiente, con el volumen que lleva la sesion. SIN MEDIR EN ES.
 using System;
 using System.Collections.Generic;
 
@@ -31,20 +39,24 @@ namespace PythiaGexCinco.Familia
     public sealed class GammalitoFam : IExtrasMinuto
     {
         public const string SERIE_SPX_DOM = "GL_SPX_dom", SERIE_SPY_DOM = "GL_SPY_dom", SERIE_SPX_ZERO = "GL_SPX_zero";
+        /// <summary>5.0.4: las del libro ES de Rithmic.</summary>
+        public const string SERIE_ES_DOM = "GL_ES_dom", SERIE_ES_ZERO = "GL_ES_zero";
 
-        /// <summary>El minuto recien calculado: los amarillos de SPX y de SPY y el zero de SPX, con los libros del minuto (bk). No toca r.Series ni bk.</summary>
+        /// <summary>El minuto recien calculado: los amarillos de SPX y de SPY y el zero de SPX, con los libros del minuto (bk). No toca r.Series ni bk.
+        /// 5.0.4: + los amarillos y el zero del libro ES (las mismas funciones: el libro ES ya esta en precio del futuro, Conv = corrimiento).</summary>
         public void Calcular(RegistroMinuto r, DateTime tUtc, double fut, IReadOnlyList<LibroMinuto> bk)
         {
             if (r == null || bk == null) return;
-            Nivel[] dSpx = null, dSpy = null, z = null; double[] kSpx = null, kSpy = null, kz = null;
+            Nivel[] dSpx = null, dSpy = null, z = null, dEs = null, zEs = null; double[] kSpx = null, kSpy = null, kz = null, kEs = null, kzEs = null;
             foreach (var b in bk)
             {
                 if (b == null) continue;
                 if (b.Libro == "SPX") { (dSpx, kSpx) = Dominantes(b); (z, kz) = ZeroNivel(b); }
                 else if (b.Libro == "SPY") (dSpy, kSpy) = Dominantes(b);
+                else if (b.Libro == "ES") { (dEs, kEs) = Dominantes(b); (zEs, kzEs) = ZeroNivel(b); }   // 5.0.4
             }
-            if (dSpx == null && dSpy == null && z == null) return;
-            Guardar(r, (SERIE_SPX_DOM, dSpx, kSpx), (SERIE_SPY_DOM, dSpy, kSpy), (SERIE_SPX_ZERO, z, kz));
+            if (dSpx == null && dSpy == null && z == null && dEs == null && zEs == null) return;
+            Guardar(r, (SERIE_SPX_DOM, dSpx, kSpx), (SERIE_SPY_DOM, dSpy, kSpy), (SERIE_SPX_ZERO, z, kz), (SERIE_ES_DOM, dEs, kEs), (SERIE_ES_ZERO, zEs, kzEs));
         }
 
         /// <summary>Un minuto del archivo: sin los libros del minuto no hay perfil (no se inventa). false.</summary>
@@ -101,7 +113,8 @@ namespace PythiaGexCinco.Familia
             return (lv, ks);
         }
 
-        /// <summary>El zero como nivel "Z": precio round(zero en ES, 2) (SPX: zero + base; SPY: zero x razon), sin monto; strike = el zero en el eje del libro, round 2.</summary>
+        /// <summary>El zero como nivel "Z": precio round(zero en ES, 2) (SPX: zero + base; SPY: zero x razon; 5.0.4, ES: zero + corrimiento), sin monto;
+        /// strike = el zero en el eje del libro, round 2.</summary>
         public static (Nivel[] Lv, double[] Ks) ZeroNivel(LibroMinuto b)
         {
             double z = Zero(b);
@@ -110,21 +123,25 @@ namespace PythiaGexCinco.Familia
             return (new[] { new Nivel(NumPy.RoundPy(p, 2), "Z", double.NaN) }, new[] { NumPy.RoundPy(z, 2) });
         }
 
-        /// <summary>El perfil de las barras del minuto (SPY primero, despues SPX: el orden de dibujo). null si no hay ni SPX ni SPY con valores.</summary>
+        /// <summary>El perfil de las barras del minuto (SPY primero, despues SPX: el orden de dibujo). null si no hay ni SPX ni SPY con valores.
+        /// 5.0.4: + las del libro ES en BarrasEs (aparte: la pantalla las ancla a la derecha); null solo si no hay barras de NINGUN libro.</summary>
         public static PerfilGl Perfil(long clave, IReadOnlyList<LibroMinuto> bk)
         {
             if (bk == null) return null;
-            LibroMinuto spx = null, spy = null;
-            foreach (var b in bk) { if (b == null) continue; if (b.Libro == "SPX") spx = b; else if (b.Libro == "SPY") spy = b; }
-            if (spx == null && spy == null) return null;
+            LibroMinuto spx = null, spy = null, es = null;
+            foreach (var b in bk) { if (b == null) continue; if (b.Libro == "SPX") spx = b; else if (b.Libro == "SPY") spy = b; else if (b.Libro == "ES") es = b; }
+            if (spx == null && spy == null && es == null) return null;
             var l = new List<BarraGl>((spx?.Fut?.Length ?? 0) + (spy?.Fut?.Length ?? 0));
             double mSpy = Agregar(l, spy, true), mSpx = Agregar(l, spx, false);
-            if (l.Count == 0) return null;
+            var le = new List<BarraGl>(es?.Fut?.Length ?? 0);                                         // 5.0.4: el libro ES de Rithmic
+            double mEs = Agregar(le, es, false);
+            if (l.Count == 0 && le.Count == 0) return null;
             return new PerfilGl
             {
                 Clave = clave, Barras = l.ToArray(), MaxSpx = mSpx, MaxSpy = mSpy,
                 ConvSpx = spx?.Conv ?? double.NaN, ConvSpy = spy?.Conv ?? double.NaN,
                 DatoSpx = spx?.DatoUtc ?? default, DatoSpy = spy?.DatoUtc ?? default,
+                BarrasEs = le.ToArray(), MaxEs = mEs, ConvEs = es?.Conv ?? double.NaN, DatoEs = es?.DatoUtc ?? default,   // 5.0.4
             };
         }
 

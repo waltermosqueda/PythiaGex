@@ -191,13 +191,15 @@ namespace PythiaGexCinco.Familia
 
         /// <summary>5.0.3 (27-10-2026): el perfil "estilo Gammalito" del ULTIMO minuto calculado con libros (gamma x (vol calls - vol puts) por strike de
         /// SPX y de SPY, ya en precio de ES y con el largo relativo a la barra mas larga de SU libro). Lo arma el motor (GammalitoFam.Perfil) en su hilo:
-        /// la pantalla solo pone coordenadas. null = sin perfil (todavia ningun minuto calculado en esta corrida, o el minuto sin SPX ni SPY).</summary>
+        /// la pantalla solo pone coordenadas. null = sin perfil (todavia ningun minuto calculado en esta corrida, o el minuto sin SPX ni SPY).
+        /// 5.0.4: tambien las del libro ES de Rithmic (PerfilGl.BarrasEs); null = el minuto sin barras de ningun libro.</summary>
         public PerfilGl PerfilGl;
     }
 
     /// <summary>5.0.3: una barra del perfil estilo Gammalito. Precio = el strike ya en ES (SPX: K + base C7 del minuto; SPY: K x razon C8);
     /// Valor = gamma BS x (vol calls - vol puts) del strike en M USD por 1 % (calls con su gamma +, puts con la suya -); Rel = Valor / max |Valor| de
-    /// SU libro (-1..1: el signo es el color, |Rel| el largo); K = el strike en la unidad de su libro (trazabilidad).</summary>
+    /// SU libro (-1..1: el signo es el color, |Rel| el largo); K = el strike en la unidad de su libro (trazabilidad).
+    /// 5.0.4: en PerfilGl.BarrasEs, las del libro ES (Precio = K + corrimiento de contrato; Spy = false).</summary>
     public readonly struct BarraGl
     {
         public readonly double Precio, Valor, Rel, K;
@@ -214,6 +216,11 @@ namespace PythiaGexCinco.Familia
         public double MaxSpx = double.NaN, MaxSpy = double.NaN;   // la barra mas larga de cada libro (|Valor|, M USD por 1 %): el 100 %
         public double ConvSpx = double.NaN, ConvSpy = double.NaN; // base ES - SPX y razon ES/SPY con que se llevaron a ES
         public DateTime DatoSpx, DatoSpy;                    // hora del dato de cada cadena (CBOE ultimo_trade)
+        /// <summary>5.0.4 (27-10-2026): las del libro ES de Rithmic (opciones sobre el futuro, en vivo), en orden de K, con el largo relativo a la mas larga
+        /// del libro ES (MaxEs). Van aparte: la pantalla las ancla a la DERECHA. Vacio = el minuto sin libro ES.</summary>
+        public BarraGl[] BarrasEs = Array.Empty<BarraGl>();
+        public double MaxEs = double.NaN, ConvEs = double.NaN;   // la barra mas larga de ES (M USD por 1 %) y el corrimiento de contrato (0 = mismo contrato)
+        public DateTime DatoEs;                              // hora de la foto de Rithmic (ts de viva3)
     }
 
     /// <summary>4.1.8: lo que regia en un minuto del pasado. Mismos campos que lee la pantalla del vivo, para que el

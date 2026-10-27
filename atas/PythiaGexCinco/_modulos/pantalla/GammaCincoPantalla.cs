@@ -44,6 +44,8 @@
 //   Replicas50Conversion de IntegracionFamilia.cs); nombres, grupos, orden y defaults igual.
 // 5.0.3 (27-10-2026): 5 casillas NUEVAS estilo Gammalito al final del grupo (Order 99-103, PRENDIDAS): GlBarrasSpx "GL barras SPX", GlBarrasSpy "GL barras
 //   SPY", S_GL_SPX_dom "GL amar. SPX", S_GL_SPY_dom "GL amar. SPY", S_GL_SPX_zero "GL zero SPX". Ninguna propiedad existente cambia.
+// 5.0.4 (27-10-2026): 3 casillas NUEVAS con el libro ES de Rithmic al final del grupo (Order 104-106, PRENDIDAS): GlBarrasEs "GL barras ES",
+//   S_GL_ES_dom "GL amar. ES", S_GL_ES_zero "GL zero ES". Ninguna propiedad existente cambia.
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -172,6 +174,17 @@ namespace PythiaGexCinco
         [Display(Name = "GL zero SPX", GroupName = G0, Order = 103, Description = "No necesita ninguna llave: estilo Gammalito, el zero gris = donde el perfil de SPX (gamma x (vol calls - vol puts) del 0DTE) cambia de signo entre dos strikes, interpolado, el cruce mas cercano al precio; " + GL_ATRASO + "Serie de la Familia: rayitas finas grises con 'Estela▸' y etiqueta 'GL SPX 0Γ'; " + GL_SPX_A_ES + ". No es el zero gamma estandar (ese reevalua la gamma a cada precio): este se pega al precio y salta de cruce en cruce. MEDIDO el 27-10 contra el gris de Gammalito a la MISMA hora (183 minutos): mediana 1,55 pts de diferencia, 8 % a <= 0,5 pt (el cruce se mueve con el volumen al dinero y la 5.0 lo ve 15 min tarde); con la misma foto de CBOE que Gammalito, mediana 0,51 pt. Describe el regimen, nunca la direccion.")]
         public bool S_GL_SPX_zero { get; set; } = true;
 
+        // ---- 5.0.4 (27-10-2026): estilo Gammalito con el libro ES de Rithmic (pedido del operador: "agregá el perfil estilo Gammalito también con el libro
+        //      de ES de Rithmic (barras, amarillos y zero), en vivo las 24 horas"). Propiedades NUEVAS (ningun .ws las tiene: PRENDIDAS), Order 104-106.
+        private const string GL_ES_VIVO = "No necesita ninguna llave; libro ES de Rithmic EN VIVO (sin el atraso de CBOE), de noche con menos volumen; SIN MEDIR EN ES. ";
+        private const string GL_ES_PRECIO = "cada una en su strike de ES (el libro ES ya esta en precio del futuro: sin conversion; si el libro fuera de otro trimestre que el grafico, corrido por el corrimiento de contrato de la 5.0)";
+        [Display(Name = "GL barras ES", GroupName = G0, Order = 104, Description = GL_ES_VIVO + "Estilo Gammalito, barras por strike de las opciones sobre el futuro ES ancladas a la DERECHA: terminan donde empieza la columna de etiquetas (no la tapan ni la corren) y crecen hacia la izquierda; largo = gamma Black-76 x (vol calls - vol puts) del vencimiento del horizonte Hoy del libro ES (de dia el 0DTE; despues de las 16:00 NY, el siguiente). Verde si es positivo (pesan las calls), rojo si es negativo (pesan las puts), al 65 %; la mas larga del libro ES mide el 25 % del ancho del grafico; mismo alto que las de SPX; " + GL_ES_PRECIO + ". Es el perfil del ultimo minuto calculado (una foto de Rithmic por minuto; sin foto de menos de 5 min no hay barras). La cadena de Rithmic trae todos los strikes hasta el 1 % del precio y uno de cada dos hasta el 2 %: mas lejos no hay barras. Describe donde se negocio la gamma de hoy, nunca la direccion.")]
+        public bool GlBarrasEs { get; set; } = true;
+        [Display(Name = "GL amar. ES", GroupName = G0, Order = 105, Description = GL_ES_VIVO + "Estilo Gammalito, los amarillos del libro ES = las 2 barras de ES mas largas de cada minuto, sin importar el lado ni la distancia al precio (D1 amarillo opaco, D2 al 50 %). Es una serie de la Familia: se calcula cada minuto, rayitas con 'Estela▸' (una por vela de 2 min, como las demas) y etiqueta 'GL ES D1' con 'Etiquetas▸' (monto = gamma x volumen neto del strike en M USD por 1 %, 50 USD por punto); " + GL_ES_PRECIO + ".")]
+        public bool S_GL_ES_dom { get; set; } = true;
+        [Display(Name = "GL zero ES", GroupName = G0, Order = 106, Description = GL_ES_VIVO + "Estilo Gammalito, el zero gris del libro ES = donde el perfil de ES (gamma x (vol calls - vol puts) del horizonte Hoy) cambia de signo entre dos strikes, interpolado, el cruce mas cercano al precio. Serie de la Familia: rayitas finas grises con 'Estela▸' y etiqueta 'GL ES 0Γ'; " + GL_ES_PRECIO + ". No es el zero gamma estandar (ese reevalua la gamma a cada precio): este se pega al precio y salta de cruce en cruce. Describe el regimen, nunca la direccion.")]
+        public bool S_GL_ES_zero { get; set; } = true;
+
         // ------------------------------------------------------------------ pantalla (mismos nombres que la 4.0.6; Order 30-36 del clon)
         [Display(Name = "Doble eje izq.", GroupName = G0, Order = 30, Description = "No necesita ninguna llave. Marcas a la izquierda con el precio del libro elegido en cada altura: SPX = ES - base sincronizada (ES - SPX); SPY = ES / razon sincronizada (ES/SPY, ~10,1). Es la MISMA conversion que usan las rayas de SPX y SPY de la Familia. Ninguno = sin marcas. Default SPX: el indice que publican los tableros de GEX (sus marcas fuertes caen cada 25 pts del indice); con SPY la marca fuerte es cada dolar entero (un strike). Si la conversion no esta vigente o sale de su cota (base ES - SPX en (0, 150] pts; razon ES/SPY entre 9,95 y 10,25; MEDICIONES_ES.md §3.8) no se dibuja y la pestaña dice por que.")]
         public EjeFamilia4 Eje4Libro { get; set; } = EjeFamilia4.SPX;   // 5.0: Ninguno/SPX/SPY; default SPX (en la 4.1 era TQQQ, que ya no existe; 5.0 P5: confirmado)
@@ -267,6 +280,8 @@ namespace PythiaGexCinco
                 case "GL_SPX_dom": return S_GL_SPX_dom;         // 5.0.3: estilo Gammalito
                 case "GL_SPY_dom": return S_GL_SPY_dom;
                 case "GL_SPX_zero": return S_GL_SPX_zero;
+                case "GL_ES_dom": return S_GL_ES_dom;           // 5.0.4: con el libro ES de Rithmic
+                case "GL_ES_zero": return S_GL_ES_zero;
                 default: return false;
             }
         }
@@ -291,6 +306,7 @@ namespace PythiaGexCinco
             a.Montos = Monto41Rotulos; a.Cambios = Cambio41Rotulos; a.Ventana = Cambio41Ventana;      // 4.1.2
             a.Tramos = Tramos41Rotulos;                                                               // 4.1.4
             a.GlBarrasSpx = GlBarrasSpx; a.GlBarrasSpy = GlBarrasSpy;                                 // 5.0.3: barras estilo Gammalito
+            a.GlBarrasEs = GlBarrasEs;                                                                // 5.0.4: las del libro ES, a la derecha
         }
 
         bool IGraficoPantalla.PanelAbierto { get => _pantallaAbierta4; set => _pantallaAbierta4 = value; }

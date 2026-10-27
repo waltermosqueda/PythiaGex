@@ -29,6 +29,8 @@
 // 5.0.3 (27-10-2026): + 3 casillas NUEVAS estilo Gammalito (GL_SPX_dom "GL amar. SPX", GL_SPY_dom "GL amar. SPY", GL_SPX_zero "GL zero SPX"), PRENDIDAS,
 // Orden 101-103 (al final del grupo: el ultimo ocupado era 98); las barras (GlBarrasSpx/GlBarrasSpy, 99-100) no son series y no van en esta lista.
 // Lo de antes (nombres, orden, defaults, colores) no cambia.
+// 5.0.4 (27-10-2026): + 2 casillas NUEVAS con el libro ES de Rithmic (GL_ES_dom "GL amar. ES", GL_ES_zero "GL zero ES"), PRENDIDAS, Orden 105-106 (las
+// barras ES, GlBarrasEs, en 104, no son series). Lo de antes no cambia.
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -98,6 +100,9 @@ namespace PythiaGexCinco.Familia
             C("GL_SPX_dom",     "GL amar. SPX", 101, true),
             C("GL_SPY_dom",     "GL amar. SPY", 102, true),
             C("GL_SPX_zero",    "GL zero SPX",  103, true),
+            // ---- 5.0.4: estilo Gammalito con el libro ES de Rithmic (las barras ES no son series: GlBarrasEs en 104). Propiedades NUEVAS, prendidas.
+            C("GL_ES_dom",      "GL amar. ES",  105, true),
+            C("GL_ES_zero",     "GL zero ES",   106, true),
         };
 
         /// <summary>4.1.3: grupo de las casillas "como la 2.0" en la 4.1 (historico: desde la 4.1.5c todas van en el grupo de arriba).</summary>
@@ -111,7 +116,8 @@ namespace PythiaGexCinco.Familia
         /// SPY en un grafico de ES). Quedan 6.</summary>
         public static readonly string[] PrendidasPorDefecto = { "MUROS_ES_oi", "MUROS_SPX_vol", "TRES_SPX",
                                                                 "R20_SPX_vol", "R10_SPX_zero", "R10_SPX_dom",     // 5.0 (P5): sin R20_SPY_vol
-                                                                "GL_SPX_dom", "GL_SPY_dom", "GL_SPX_zero" };      // 5.0.3: casillas NUEVAS, prendidas
+                                                                "GL_SPX_dom", "GL_SPY_dom", "GL_SPX_zero",        // 5.0.3: casillas NUEVAS, prendidas
+                                                                "GL_ES_dom", "GL_ES_zero" };                      // 5.0.4: casillas NUEVAS, prendidas
 
         private static Casilla C(string id, string nombre, int orden, bool def) => new Casilla { Id = id, Nombre = nombre, Grupo = GRUPO_DIALOGO, Orden = orden, Default = def };
 
@@ -158,6 +164,8 @@ namespace PythiaGexCinco.Familia
             R("GL_SPX_dom", "GL SPX", "SPX", "vol", "GL", "Gammalito", "#FFD700", 0),             // 5.0.3: estilo Gammalito (los de CatalogoFamilia)
             R("GL_SPY_dom", "GL SPY", "SPY", "vol", "GL", "Gammalito", "#FFD700", 0),
             R("GL_SPX_zero", "GL SPX 0Γ", "SPX", "vol", "GL", "Gammalito", "#D1D4DC", 0),
+            R("GL_ES_dom", "GL ES", "ES", "vol", "GL", "Gammalito", "#FFD700", 0),                // 5.0.4: con el libro ES de Rithmic
+            R("GL_ES_zero", "GL ES 0Γ", "ES", "vol", "GL", "Gammalito", "#D1D4DC", 0),
         };
 
         private static SerieInfo R(string id, string corto, string libro, string fuente, string tipo, string grupo, string color, double banda)

@@ -85,6 +85,16 @@
 //   * ESTELA de las series GL_*: D1 amarillo opaco y D2 al 50 % (el indice del precio en la vela: SalidaFamilia guarda D1, D2 en ese orden); el zero
 //     GL_SPX_zero en 1 px. El resto de las series, igual que antes (mismo color, alfa y alto).
 //   * ETIQUETAS: "GL SPX D1 417M", "GL SPY D2 -88M", "GL SPX 0Γ" (sin rol, como la clasica); en un grupo que no encabezan van nombradas como las de la 2.0.
+// 5.0.4 (27-10-2026, pedido del operador: "agregá el perfil estilo Gammalito también con el libro de ES de Rithmic (barras, amarillos y zero), en vivo
+//   las 24 horas"):
+//   * BARRAS ES ancladas a la DERECHA (casilla GlBarrasEs; FotoFamilia.PerfilGl.BarrasEs, ya en precio del futuro): terminan en colIzq, el borde izquierdo
+//     de la columna de la derecha (etiquetas, renglones ↑/↓ y el renglon de arriba con la edad y el recuadro: el MISMO borde que respetan los rotulos de
+//     tramos), y crecen hacia la izquierda; la mas larga = 25 % del ancho visible (GL_ANCHO_ES), mismo alto y colores que las de SPX. Asi nada de la
+//     columna queda tapado ni se corre, y el recuadro de arriba tampoco (es parte de ese borde). Sin columna (etiquetas apagadas o el grafico corrido
+//     hacia atras) terminan en el borde derecho visible. Como colIzq recien se sabe despues de las etiquetas, sus rellenos se INSERTAN en la lista de
+//     primitivas justo despues de las barras de SPX/SPY: quedan debajo de todo lo demas, como esas. Solo los strikes que caen en pantalla; si el grafico
+//     es tan angosto que una barra llegaria al borde izquierdo, se corta ahi.
+//   * ESTELA y ETIQUETAS de GL_ES_dom / GL_ES_zero como las de SPX ("GL ES D1 12,3M", "GL ES 0Γ"; el zero en 1 px).
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -124,6 +134,8 @@ namespace PythiaGexCinco.Familia
         public VentanaCambio41 Ventana = VentanaCambio41.M15;
         /// <summary>5.0.3: GlBarrasSpx / GlBarrasSpy (las barras por strike estilo Gammalito a la izquierda).</summary>
         public bool GlBarrasSpx = true, GlBarrasSpy = true;
+        /// <summary>5.0.4: GlBarrasEs (las barras por strike del libro ES de Rithmic, ancladas a la derecha).</summary>
+        public bool GlBarrasEs = true;
         public int VentanaMin => Ventana == VentanaCambio41.M5 ? 5 : Ventana == VentanaCambio41.M30 ? 30 : 15;
         public bool Visible(string id) => id != null && Visibles.Contains(id);
         public void Limpiar() { Visibles.Clear(); }
@@ -213,13 +225,17 @@ namespace PythiaGexCinco.Familia
         public readonly List<RotuloTramo> TramosNoPuestos = new List<RotuloTramo>();
         /// <summary>5.0.3 (diagnostico, arnes): las barras estilo Gammalito que se dibujaron (en el orden de dibujo: SPY y despues SPX). X0 = area.Left.</summary>
         public readonly List<(double Precio, double Rel, int Y, int Largo, int Alto, bool Spy)> BarrasGl = new List<(double, double, int, int, int, bool)>(256);
+        /// <summary>5.0.4 (diagnostico, arnes): las barras del libro ES que se dibujaron (orden de K). X0 = su borde izquierdo (termina en GlEsXFin - 1).</summary>
+        public readonly List<(double Precio, double Rel, int X0, int Y, int Largo, int Alto)> BarrasGlEs = new List<(double, double, int, int, int, int)>(128);
+        /// <summary>5.0.4 (diagnostico): donde terminan las barras ES (colIzq, o el borde derecho visible sin columna); int.MinValue = no se dibujaron.</summary>
+        public int GlEsXFin = int.MinValue;
 
         public void Limpiar()
         {
             Prims.Clear(); Pestana = Rectangle.Empty; Recuadro2E = Rectangle.Empty; Cartel = ""; Titulo = ""; EjeTitulo = ""; EdadColumna = "";
             ColorTitulo = Color.Empty; ColorCartel = Color.Empty; Etiquetas.Clear(); Rotulos.Clear(); Panel.Clear(); Marcas.Clear(); Rayitas = 0;
             RotulosTramos.Clear(); TramosNoPuestos.Clear(); TramosLargos = 0; TramosVigentes = 0; TramosGrupos = 0; TramosDescartados = 0; TramosRecortados = 0;
-            BarrasGl.Clear();
+            BarrasGl.Clear(); BarrasGlEs.Clear(); GlEsXFin = int.MinValue;
         }
         internal void Relleno(Color c, Rectangle r) => Prims.Add(new PrimPantalla(TipoPrimPantalla.Relleno, c, r, 0, 0, 0, null));
         internal void Borde(Color c, float grosor, Rectangle r) => Prims.Add(new PrimPantalla(TipoPrimPantalla.Borde, c, r, 0, 0, grosor, null));
@@ -324,6 +340,10 @@ namespace PythiaGexCinco.Familia
         public const int GL_ALTO_MAX = 11, GL_ALTO_MIN = 3;
         /// <summary>5.0.3: las series estilo Gammalito (GL_*): D2 al 50 % en la estela, el zero en 1 px, nombradas en un grupo de etiquetas.</summary>
         public static bool EsGl(string serie) => serie != null && serie.StartsWith("GL_", StringComparison.Ordinal);
+        /// <summary>5.0.4: los zeros estilo Gammalito (SPX y, desde la 5.0.4, ES): 1 px en la estela y etiqueta sin rol.</summary>
+        public static bool EsGlZero(string serie) => serie == "GL_SPX_zero" || serie == "GL_ES_zero";
+        /// <summary>5.0.4: la barra mas larga del libro ES = este tanto del ancho visible (pedido del operador: 25 %; las de SPX/SPY, 30 %).</summary>
+        public const double GL_ANCHO_ES = 0.25;
         private static readonly Regex ReVencEs = new Regex(@"ES\s*([FGHJKMNQUVXZ])\s*(\d{1,4})", RegexOptions.Compiled);
         private static readonly Regex ReVencSolo = new Regex(@"^([FGHJKMNQUVXZ])(\d{1,4})$", RegexOptions.Compiled);
 
@@ -984,6 +1004,7 @@ namespace PythiaGexCinco.Familia
                     d.BarrasGl.Add((b.Precio, b.Rel, y, largo, alto, b.Spy));
                 }
             }
+            int iPrimsEs = d.Prims.Count;   // 5.0.4: aca se insertan las barras del libro ES (debajo de todo lo demas), al final, cuando se sabe colIzq
 
             var vis = new List<SerieInfo>();
             foreach (var s in cat.Lista) if (aj.Visible(s.Id)) vis.Add(s);
@@ -1012,7 +1033,7 @@ namespace PythiaGexCinco.Familia
                     bool gl = EsGl(vis[j].Id);
                     colEst[j] = Color.FromArgb(gl ? 255 : tres[j] ? 190 : 240, c0);
                     colEst2[j] = gl ? Color.FromArgb(128, c0) : colEst[j];
-                    alto[j] = tres[j] || vis[j].Id == "GL_SPX_zero" ? 1 : 2;
+                    alto[j] = tres[j] || EsGlZero(vis[j].Id) ? 1 : 2;   // 5.0.4: + GL_ES_zero
                 }
                 bool conTramos = aj.Tramos;
                 var abiertos = conTramos ? new List<TramoH>[vis.Count] : null;
@@ -1156,7 +1177,7 @@ namespace PythiaGexCinco.Familia
                              : esCarga && !double.IsNaN(a.Strike) && Math.Abs(a.Strike - a.Precio) >= 0.005
                                  ? (corto0 == "" ? a.Libro : corto0) + " " + Strike(a.Strike)
                              : (corto0 == "" ? a.Libro : corto0);
-                bool clasica = a.Serie == "R10_SPX_zero" || a.Serie == "GL_SPX_zero";   // 4.1.5: "Clasica SPX 0Γ" ya dice que es el zero: sin rol (4.1.5b: las D1-D3 de la clasica SI llevan rol; 5.0.3: "GL SPX 0Γ" igual)
+                bool clasica = a.Serie == "R10_SPX_zero" || EsGlZero(a.Serie);   // 5.0.4: + GL_ES_zero ("GL ES 0Γ"). 4.1.5: "Clasica SPX 0Γ" ya dice que es el zero: sin rol (4.1.5b: las D1-D3 de la clasica SI llevan rol; 5.0.3: "GL SPX 0Γ" igual)
                 string nom = esConf ? "CONF" + fu : clasica ? libro + fu : libro + " " + rol + fu;
                 string rolCorto = clasica ? "" : rol.Replace("muro C/muro P", "C/P").Replace("muro P/muro C", "C/P").Replace("muro C", "C").Replace("muro P", "P").Replace(" est.", "");
                 string corto = esConf ? "CONF" : libro + (clasica ? "" : " " + rolCorto) + (fuA == "3.0" ? "" : (fuA == "oi" ? " OI" : " v"));
@@ -1415,6 +1436,29 @@ namespace PythiaGexCinco.Familia
             if (largos != null && largos.Count > 0)
                 RotularTramos(d, largos, vis, cat, actuales, v, area, xr, colIzq, ocupado, wEst, tamC, medir, Yr, EnPantalla, area.Top + Math.Max(0, aj.MargenSup));
 
+            // ---- 5.0.4: barras por strike del libro ES de Rithmic, ancladas a la DERECHA: terminan en colIzq (el borde izquierdo de la columna de la derecha,
+            //      con su renglon de arriba) y crecen hacia la izquierda; la mas larga = GL_ANCHO_ES del ancho visible; mismo alto y colores que las de SPX.
+            //      Se insertan en iPrimsEs: debajo de la estela, las etiquetas y el eje, como las de SPX/SPY.
+            var pgE = F.PerfilGl;
+            if (aj.GlBarrasEs && pgE?.BarrasEs != null && pgE.BarrasEs.Length > 0)
+            {
+                int xFin = colIzq == int.MaxValue ? xr : Math.Min(xr, colIzq);
+                double largoMaxE = GL_ANCHO_ES * Math.Max(0, xr - area.Left);
+                int altoE = double.IsNaN(mY) ? GL_ALTO_MAX : (int)Math.Max(GL_ALTO_MIN, Math.Min(GL_ALTO_MAX, Math.Round(GL_ALTO_PASO * GL_PASO_SPX * Math.Abs(mY))));
+                var barrasE = pgE.BarrasEs;
+                var prE = new List<PrimPantalla>(barrasE.Length);
+                for (int i = 0; i < barrasE.Length; i++)
+                {
+                    var b = barrasE[i];
+                    int y = Yr(b.Precio); if (!EnPantalla(y)) continue;
+                    int largo = Math.Max(1, (int)Math.Round(Math.Abs(b.Rel) * largoMaxE));
+                    int x0 = xFin - largo;
+                    if (x0 < area.Left) { largo = xFin - area.Left; x0 = area.Left; if (largo <= 0) continue; }
+                    prE.Add(new PrimPantalla(TipoPrimPantalla.Relleno, b.Rel > 0 ? ColGlVerde : ColGlRojo, new Rectangle(x0, y - altoE / 2, largo, altoE), 0, 0, 0, null));
+                    d.BarrasGlEs.Add((b.Precio, b.Rel, x0, y, largo, altoE));
+                }
+                if (prE.Count > 0) { d.Prims.InsertRange(Math.Min(iPrimsEs, d.Prims.Count), prE); d.GlEsXFin = xFin; }
+            }
         }
 
         /// <summary>4.1.4: un rotulo de tramos (una o varias rayas de la misma altura que terminan juntas).</summary>

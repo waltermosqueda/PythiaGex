@@ -38,6 +38,8 @@
 // va en la foto (FotoFamilia.PerfilGl) para que la pantalla lo dibuje sin calcular. Se arma con los libros del minuto (bk) DESPUES de la cuenta y de las
 // extras, en su propio try: no toca ni la cuenta ni las series. Un minuto del archivo no lo trae (sus libros ya no estan): hasta el primer minuto
 // calculado en esta corrida no hay barras. Cambia de sesion -> null.
+// 5.0.4 (27-10-2026): el perfil trae tambien las barras del libro ES de Rithmic (PerfilGl.BarrasEs); un minuto con SOLO el libro ES ya publica perfil.
+// El motor no cambia: GammalitoFam.Perfil recibe los mismos libros del minuto.
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
