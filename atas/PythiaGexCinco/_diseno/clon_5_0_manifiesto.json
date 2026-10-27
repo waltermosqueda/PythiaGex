@@ -1,0 +1,469 @@
+{
+ "origen": "atas/PythiaGexCuatro",
+ "dll_origen_sha256": "8cb1c5cb2ff2294b42c24b09c5ba6bcd9d629396815abf369516231e773109fa",
+ "archivos": [
+  {
+   "origen": "Black76.cs",
+   "destino": "Black76.cs",
+   "sha256_origen": "4e12496ed11f96d8e0f761aeaf2852c432d6cd2716e1edd5c371287033e2eb8a",
+   "familia": false
+  },
+  {
+   "origen": "CadenaApi.cs",
+   "destino": "CadenaApi.cs",
+   "sha256_origen": "3619a46356f1cdef328f7735f322bd470694bc3e2e77a799efdedd46675e14f4",
+   "familia": false
+  },
+  {
+   "origen": "Centinela.cs",
+   "destino": "Centinela.cs",
+   "sha256_origen": "66c6d7f2da7323a43f7d982b8d9db0449e44d2907390ee63471e0d0c93dc597a",
+   "familia": false
+  },
+  {
+   "origen": "Feed.cs",
+   "destino": "Feed.cs",
+   "sha256_origen": "227132386255423bf5cf6881c19842734df9744e6ef82fdc6c9eb1d01e8bd24f",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyNucleo.cs",
+   "destino": "GammaHoyNucleo.cs",
+   "sha256_origen": "0ce607024ec5252aab3dbf9bc9394abbbb8795a5bf8671e7d8b6748c59f62349",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTres.cs",
+   "destino": "GammaHoyTres.cs",
+   "sha256_origen": "266f22aaeea90058533ffc8d83f23da669459f5d9aa7b63d552f81f7767ef0e1",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresMemoria.cs",
+   "destino": "GammaHoyTresMemoria.cs",
+   "sha256_origen": "287a9f2778b92f957c45f86c79493c8b2c7a5b5422c4a785b43f3d6f11c7c5b6",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresCapas.cs",
+   "destino": "GammaHoyTresCapas.cs",
+   "sha256_origen": "e70f59f5e3d2833559c17e32e9bc2c204a1c7c829212668d93e9f227af8502d9",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresHisteresis.cs",
+   "destino": "GammaHoyTresHisteresis.cs",
+   "sha256_origen": "06d5713d88c2ec33e91d640336941db2164da8ab25b50c3ec4ea2307db8f0764",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresCaja.cs",
+   "destino": "GammaHoyTresCaja.cs",
+   "sha256_origen": "91d7e6a048983bc9598609d9e821f6f6945f8f27570f0fa8e6fd8ac4466a6ccd",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresCinta.cs",
+   "destino": "GammaHoyTresCinta.cs",
+   "sha256_origen": "53b73f1b0388ea0cb0ec1e4b1ee18aa303c722807f15aaea3738b6dd87dbb396",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresApoyo.cs",
+   "destino": "GammaHoyTresApoyo.cs",
+   "sha256_origen": "0301637040f42a0915fc1b6ebd355011934209cc9056d2191f3acbaecb14a1e7",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresRayas.cs",
+   "destino": "GammaHoyTresRayas.cs",
+   "sha256_origen": "5f4b328fa16eb8a739973fc0127527ff7d37771e5e4daed40f788d7ad2035335",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresRecuadro.cs",
+   "destino": "GammaHoyTresRecuadro.cs",
+   "sha256_origen": "67ce6ba4743bd01639dff5fd227235d26072660fe21db9354ae13aeb808878cf",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresFormula.cs",
+   "destino": "GammaHoyTresFormula.cs",
+   "sha256_origen": "dcb025156d094abb17e1f6e34218bfc52c374a0521166b12be458dad67808b91",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresMajorOi.cs",
+   "destino": "GammaHoyTresMajorOi.cs",
+   "sha256_origen": "f6f4d01ad602a374775c8299eb78c845cc0219cb7353dd127e342cda322bf62f",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresAtravesadas.cs",
+   "destino": "GammaHoyTresAtravesadas.cs",
+   "sha256_origen": "318879c2d66110202d672438ee1f8639b97aac02d2278c4884628b935121cfa7",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresTunel.cs",
+   "destino": "GammaHoyTresTunel.cs",
+   "sha256_origen": "e5186344b91d12780c76c7269162f7d81de4174778f90bffd2c59b4ba4361313",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresEstado.cs",
+   "destino": "GammaHoyTresEstado.cs",
+   "sha256_origen": "4222fe7cd72503ebf41199385741e3a29e22b95b6e3aee640a3afddf1c35fab0",
+   "familia": false
+  },
+  {
+   "origen": "GammaHoyTresCasillas.cs",
+   "destino": "GammaHoyTresCasillas.cs",
+   "sha256_origen": "c7f6356797e460eb9c6d37873624e342726c5ad82c300de5d865c16a5ce88675",
+   "familia": false
+  },
+  {
+   "origen": "Registro.cs",
+   "destino": "Registro.cs",
+   "sha256_origen": "ede1533fa3efc6e801c965629bcbd61a46f64f50227c50b56b75b281564cf1ca",
+   "familia": false
+  },
+  {
+   "origen": "RelojNy.cs",
+   "destino": "RelojNy.cs",
+   "sha256_origen": "553e556fdfc5c0c242ede3b0bca2477e064210a69209f09e80eb5538e6fc57c5",
+   "familia": false
+  },
+  {
+   "origen": "Viva3.cs",
+   "destino": "Viva3.cs",
+   "sha256_origen": "e08cc62a7e824fc1992cb009c5484de279b0427ced16572a1c8fb146c3729941",
+   "familia": false
+  },
+  {
+   "origen": "_contratos/Contratos.cs",
+   "destino": "_contratos/Contratos.cs",
+   "sha256_origen": "3d115598a0051778a55867c65bbb72f7a9ed5ba89e55ff4876215a082798806e",
+   "familia": true
+  },
+  {
+   "origen": "AdaptadoresFamilia.cs",
+   "destino": "AdaptadoresFamilia.cs",
+   "sha256_origen": "103e57c2613b20276e148b57973057d6e9cbfec01365181800932d76e491ad47",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/cboe/BajadorCboe.cs",
+   "destino": "_modulos/cboe/BajadorCboe.cs",
+   "sha256_origen": "e2732a7e5b93bace85cadedabeeaebf1b63ba745368a66301c6c6f7e4b22dda9",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/cboe/CboeArchivo.cs",
+   "destino": "_modulos/cboe/CboeArchivo.cs",
+   "sha256_origen": "4afc0d5c6aa5e7cdcdee051772c32ff4c735c5988c14dab632ec208a62f0d8ad",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/cboe/CboeCadena.cs",
+   "destino": "_modulos/cboe/CboeCadena.cs",
+   "sha256_origen": "0c97c0b96077e896e6378c8e28cd21a83f91ad15175df1c7298effcf1c4178e3",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/cboe/CboeCrudo.cs",
+   "destino": "_modulos/cboe/CboeCrudo.cs",
+   "sha256_origen": "5295660df1410eb72fd2e070c90194373842efc60ecc8271574621cb765717af",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/cboe/CboeUtil.cs",
+   "destino": "_modulos/cboe/CboeUtil.cs",
+   "sha256_origen": "8b9be3ae1088e3aab5907e66d860bce95aa633e0e1c13451a32ac1a15265ac80",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/cboe/HttpCboe.cs",
+   "destino": "_modulos/cboe/HttpCboe.cs",
+   "sha256_origen": "bf9837ecd7736aee6f3911b3b86d0a9b22959a1f1240bd1ea57732e0e97845ab",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/comun/Gamma.cs",
+   "destino": "_modulos/familia/comun/Gamma.cs",
+   "sha256_origen": "5b85fd61d6d98367b91aeb5f67a817bde08eaa0a9811dbd4d4268ad0e50ef80d",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/comun/LibroMinutoArmado.cs",
+   "destino": "_modulos/familia/comun/LibroMinutoArmado.cs",
+   "sha256_origen": "555032aac310d501a53369bd745a00c7bd5d5a0256b9f3ca4748b2b21bdbafca",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/comun/NumFam.cs",
+   "destino": "_modulos/familia/comun/NumFam.cs",
+   "sha256_origen": "10ac96bb9f8fdac94f0aa8fa6ae89deda902282233032c7877e9e7f45ac9d6c7",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/comun/Perfil.cs",
+   "destino": "_modulos/familia/comun/Perfil.cs",
+   "sha256_origen": "331d5be47d335ea8996e5742c9d20e78a6541c321d1018e80abc008b251ae35f",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/comun/Seleccion.cs",
+   "destino": "_modulos/familia/comun/Seleccion.cs",
+   "sha256_origen": "a4db11e58859b7accb6b788a0bcbcd0f5c61c50d855ee52e912687c249dc4445",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/comun/TiempoFam.cs",
+   "destino": "_modulos/familia/comun/TiempoFam.cs",
+   "sha256_origen": "22ba71afd925f64426773d8f4f7b50a9018c866d24e7bc616347fc0c37bd958b",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/comun/ZeroEstandar.cs",
+   "destino": "_modulos/familia/comun/ZeroEstandar.cs",
+   "sha256_origen": "3296b2bc545ee86a8bde27c3a71ad41edff854da06d2ea059ca94e4b42f85e4a",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/fam/AlmacenNiveles.cs",
+   "destino": "_modulos/familia/fam/AlmacenNiveles.cs",
+   "sha256_origen": "73bf30e9cc349a9f4782a438f9692bdb3351bdb497cc49d9a1f6878b47c59653",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/fam/AlmacenTres.cs",
+   "destino": "_modulos/familia/fam/AlmacenTres.cs",
+   "sha256_origen": "8da48cb96bce979d203b5acb5bb2eb6310a42816516145233ddd4fdb92d6ffd3",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/fam/CatalogoFamilia.cs",
+   "destino": "_modulos/familia/fam/CatalogoFamilia.cs",
+   "sha256_origen": "68baebbc35fa735ae9ec75265eace12ac410611b5ecf3d9dee34a2d875310d06",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/fam/MotorFamilia.cs",
+   "destino": "_modulos/familia/fam/MotorFamilia.cs",
+   "sha256_origen": "c655109a0b008c84ea7ba2cb2768e8e3defd5e97bc1b5af8639057a84a7796c8",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/fam/ReglasFam.cs",
+   "destino": "_modulos/familia/fam/ReglasFam.cs",
+   "sha256_origen": "1a4ae17c9c16d8e9149309551d55e12fa349afb35db6cf606cda5c5adc47a69a",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/fam/SalidaFamilia.cs",
+   "destino": "_modulos/familia/fam/SalidaFamilia.cs",
+   "sha256_origen": "a03f814866d1bc56e62305b1a5fda03e33a940692f0567072d1df07557905935",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/fam/SesionFamilia.cs",
+   "destino": "_modulos/familia/fam/SesionFamilia.cs",
+   "sha256_origen": "90266c042a5a635c1bd7ab135d87336ceab11d6e0d054ad0baf23cf602d6c761",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/ndx/CalendarioNdx.cs",
+   "destino": "_modulos/familia/spx/CalendarioSpx.cs",
+   "sha256_origen": "ae6a7b32abc28279c20bf9d1bc15ee36a0396831a7aef07be5922b64b329ca5c",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/ndx/ConversionNdx.cs",
+   "destino": "_modulos/familia/spx/ConversionSpx.cs",
+   "sha256_origen": "661de7b1955892a43da15beef68de055b9534b9e18ac5d00c503832b1441877f",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/ndx/LibroMinuteroNdx.cs",
+   "destino": "_modulos/familia/spx/LibroMinuteroSpx.cs",
+   "sha256_origen": "e548bd9d2f1b52413836adacba391c4fb66537d35e3ba918e15f7f7c3dea77c2",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/nq/FotoNq.cs",
+   "destino": "_modulos/familia/es/FotoEs.cs",
+   "sha256_origen": "eaa5541cfdd4384a190122ef684ba350c9f2715baeebe6922883ff2d715d68d8",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/nq/MinuteroNq.cs",
+   "destino": "_modulos/familia/es/MinuteroEs.cs",
+   "sha256_origen": "6cf3e5aa9d6fbcb404e0ccd0652cd4c672e0d9d76f83d9852446d1077cfc9711",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/nq/OiNq.cs",
+   "destino": "_modulos/familia/es/OiEs.cs",
+   "sha256_origen": "e9bef5cd1ea4530caa1b6c2860b82f3c158aa0d89f81e29a4453a255be3743aa",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/nq/SeriesNq.cs",
+   "destino": "_modulos/familia/es/SeriesEs.cs",
+   "sha256_origen": "1000f05f7ca063cbc49a88d632e70551db16285acb07e71731476da15f1840fe",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/qqq/ConversionQqq.cs",
+   "destino": "_modulos/familia/spy/ConversionSpy.cs",
+   "sha256_origen": "9fb976d1433a078d5c4ff439f60f337b39544f4e5f72fabf7fe5af5f1f4f2764",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/qqq/MinuteroQqq.cs",
+   "destino": "_modulos/familia/spy/MinuteroSpy.cs",
+   "sha256_origen": "30534ea018e815f9bc76b05616a874977dc01718e1e123d6f0ae7857b73cfb7b",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/qqq/SeriesQqq.cs",
+   "destino": "_modulos/familia/spy/SeriesSpy.cs",
+   "sha256_origen": "7fc9e941f80b6628e77d70939d3481c0ba33960c27dd3e2f9441b5a47355add3",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/replica20/Replica20.cs",
+   "destino": "_modulos/familia/replica20/Replica20.cs",
+   "sha256_origen": "7f3411308660a89e2800fc3c1c9b63b8cdd6d08cb6d576fd3425c7fe4d718c08",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/clasica/ClasicaNdx.cs",
+   "destino": "_modulos/familia/clasica/ClasicaSpx.cs",
+   "sha256_origen": "54d25219396504b0d0300d12f7603cf12441f493d4094378634877cb96d9969b",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/clasica/MuestrasClasica.cs",
+   "destino": "_modulos/familia/clasica/MuestrasClasica.cs",
+   "sha256_origen": "72c89c9df7ccb2828bc46de4fa73ab4744dd57fbf89bbe7c31f4406f28dce140",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/fam/ExtrasCompuestos.cs",
+   "destino": "_modulos/familia/fam/ExtrasCompuestos.cs",
+   "sha256_origen": "4824b091b306b6e75823d9e4913397fc9049ebc0df0bc24ee9e54a27e5bf89f8",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/posiciones/ClavesCambios.cs",
+   "destino": "_modulos/familia/posiciones/ClavesCambios.cs",
+   "sha256_origen": "4b8feebc52b0e01bb6b28db1a8423a90f0ff8a902f6b6c09cb4d38109c6e1f5e",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/posiciones/RegimenesOi.cs",
+   "destino": "_modulos/familia/posiciones/RegimenesOi.cs",
+   "sha256_origen": "3c568dc6efa16f5d16efbe2b26343e773cac46bd35c1f967125031ec2cc96bae",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/posiciones/FotosCambios.cs",
+   "destino": "_modulos/familia/posiciones/FotosCambios.cs",
+   "sha256_origen": "8866c8c6e78f114b13cddc5b3e111393e3e87377d81d20d9b181d3c6868c75e4",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/familia/posiciones/CambiosFamilia.cs",
+   "destino": "_modulos/familia/posiciones/CambiosFamilia.cs",
+   "sha256_origen": "4d94a9d8ea4934b3401c715d97c1597f8bed22329f437087d890bd8802722251",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/pantalla/ArmadoPantalla.cs",
+   "destino": "_modulos/pantalla/ArmadoPantalla.cs",
+   "sha256_origen": "5ca735882ce68f1f70a5d04502e6223c5a9f49248390869282c72f0eaac75092",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/pantalla/ContratosPantalla.cs",
+   "destino": "_modulos/pantalla/ContratosPantalla.cs",
+   "sha256_origen": "2842e68825035d9d0e225b50ecfbe1a548dead8f7b2ef90d6770078fca355ad2",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/pantalla/FamiliaCuatroPantalla.cs",
+   "destino": "_modulos/pantalla/GammaCincoPantalla.cs",
+   "sha256_origen": "6f6ec9a1100ec823041db4a938befe1a89fdbe8757e63dae34314ed810161909",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/pantalla/PantallaFamilia.cs",
+   "destino": "_modulos/pantalla/PantallaFamilia.cs",
+   "sha256_origen": "620c682ebba7d41669ab6bcd92b1b6b2c8dcec29795d291e7cc62c277d24e66d",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/pantalla/SeriesPantalla.cs",
+   "destino": "_modulos/pantalla/SeriesPantalla.cs",
+   "sha256_origen": "7eb1881fe1cb591fbd4335878e02be1b14446f5b5e6c10b93ac5004fc1e3d670",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/tqqq/CalculoTqqq.cs",
+   "destino": "_modulos/tqqq/CalculoTqqq.cs",
+   "sha256_origen": "4dae416da3b44a12cde33af36eec8127fbd96b010f84d984b75d350cad35521a",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/tqqq/TqqqArchivo.cs",
+   "destino": "_modulos/tqqq/TqqqArchivo.cs",
+   "sha256_origen": "c49fa7f276e6077ecca549c255ecff7ebee19a5787b497a4eda803d76d28cc09",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/tqqq/TqqqNoche.cs",
+   "destino": "_modulos/tqqq/TqqqNoche.cs",
+   "sha256_origen": "de46b5ad109567a9b6e4426ba4ab2379e38961602350677df0f3d2a444e9d3f8",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/tqqq/TqqqPerfil.cs",
+   "destino": "_modulos/tqqq/TqqqPerfil.cs",
+   "sha256_origen": "fb997b1713d4b95c481f463b4f626786341f876746304b1ffc6dcdb38a23c96a",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/tqqq/TqqqSesion.cs",
+   "destino": "_modulos/tqqq/TqqqSesion.cs",
+   "sha256_origen": "d2a2f88ab4ea0bbaa19ec829885d868e3704b89a5b59fb17bc9927bde26e3b10",
+   "familia": true
+  },
+  {
+   "origen": "_modulos/tqqq/TqqqUtil.cs",
+   "destino": "_modulos/tqqq/TqqqUtil.cs",
+   "sha256_origen": "45d897b48a056f7041d83e55a3134a21c7896e9bab1926eba48166227a0e7c00",
+   "familia": true
+  },
+  {
+   "origen": "IntegracionFamilia.cs",
+   "destino": "IntegracionFamilia.cs",
+   "sha256_origen": "b7140fae76a5a33fe24bd19ba8251d147e020f76ebd297faf4fcd2d17b0fa577",
+   "familia": true
+  }
+ ],
+ "identificadores_nucleo": {
+  "Capa3NDX": 2,
+  "Capa3QQQ": 2,
+  "ILibroNq": 13,
+  "LibroNqFamilia": 4,
+  "MNQZ6": 5,
+  "NQZ6": 4,
+  "NQ_1600": 1,
+  "TRES_NDX": 3,
+  "TRES_NQ": 1,
+  "TRES_QQQ": 3,
+  "_NDX": 1
+ }
+}
