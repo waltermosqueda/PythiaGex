@@ -23,7 +23,7 @@ SRC = os.path.join(RAIZ, "atas", "PythiaGexCuatro")
 DST = os.path.join(RAIZ, "atas", "PythiaGexCinco")
 
 def leer(p):
-    with open(p, "r", encoding="utf-8-sig") as f:
+    with open(p, "r", encoding="utf-8-sig", newline="") as f:    # newline="": conserva los CRLF de la 4.1
         return f.read()
 
 def escribir(p, t):
