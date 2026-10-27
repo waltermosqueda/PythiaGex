@@ -1,4 +1,4 @@
-// ArmadoPantalla.cs — PythiaGex 4.1, modulo pantalla (B5), 08-10-2026. SIN referencias a ATAS (el arnes lo prueba solo).
+// ArmadoPantalla.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1 (modulo pantalla B5, 08-10-2026). SIN referencias a ATAS (el arnes lo prueba solo).
 // Port del dibujo del visor 4.0.6 (atas/PythiaGexCinco/_visor_4_0_6/GammaCinco.cs, Pintar) sobre la FotoFamilia del contrato (sin json):
 // decide QUE se dibuja y DONDE (lista de primitivas); PantallaFamilia.cs lo pinta en el RenderContext de ATAS.
 // Lo que el operador aprobo y se conserva tal cual:
@@ -57,6 +57,21 @@
 //   etiqueta con el strike de TQQQ, la linea "TQQQ sin dato", el "por 1 % de TQQQ" del detalle y los roles/tipos de TQQQ (dom, dom (razon),
 //   RAZON). El color de las marcas del eje (antes ColTqqq) se llama ColEje y es el MISMO. Las demas series se dibujan igual.
 //   Carteles y pestaña: "PythiaGex 5.0" en vez de "la Familia" como nombre del producto; la base de la clasica se rotula "5.0 sincronizada".
+// 5.0 (27-10-2026, P5): la pantalla en ES/MES.
+//   * Cartel en un grafico que no es ES/MES: "PythiaGex 5.0 es para ES/MES: este gráfico es X, no dibujo", con la MISMA regla de raiz que el nucleo
+//     (CadenaApi.RaizGrande: el codigo empieza con MES o ES, sin el '#' de la continua). La 4.1 buscaba "NQ" en cualquier lugar del codigo y el
+//     clon lo habia dejado en "ES" en cualquier lugar (lo aceptaba, p. ej., en FESX).
+//   * Doble eje: cotas de ES (MEDICIONES_ES.md §3.8): razon ES/SPY entre 9,95 y 10,25 (la 4.1 heredaba 30-60 de NQ/QQQ ~41 y con SPY ~10,08 el
+//     eje no se dibujaba NUNCA) y base ES - SPX en (0, 150] (la 4.1: |base| < 2000); fuera de cota la pestaña dice el valor y la cota. Marcas
+//     fuertes de SPX cada 25 pts del indice (las de NDX cada 100: ~0,33 % del indice en los dos); en SPY cada dolar entero (un strike).
+//   * Distancias en PUNTOS que dependen de la escala del grafico (ES se mueve ~4 veces menos en puntos que NQ: precio NQ/ES 3,86, rangos 6,1-6,6,
+//     MEDICIONES_ES.md §1): grupo de etiquetas 1 -> 0,25 pt (GRUPO_PTS), rotulos de tramos juntos 1,5 -> 0,25 pt (TRAMO_JUNTAR_PTS) y su precio al
+//     tick (antes al punto). TRAMO_TOL queda 0,5 (no es una distancia de pantalla: absorbe la deriva de la conversion, y en ES un salto de strike
+//     es >= 5 pts). Lo que esta en pixeles, velas, segundos o letras no cambia.
+//   * Textos: la salvedad de la clasica (AVISO_CLASICA) sin la medicion de NDX presentada como de SPX; "2.0 SPY" dice que la 2.0 no dibuja SPY en
+//     ES; "precio"/"cinta" con la raiz del grafico (MES o ES); el pie dice SIN MEDIR EN ES.
+//   * Los ejemplos de los comentarios de arriba con precios 30.xxx-31.xxx son de la 4.1 (NQ/NDX/QQQ): el clon solo cambio los nombres de los
+//     libros; no son mediciones de ES.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -125,7 +140,7 @@ namespace PythiaGexCinco.Familia
         public bool CambioCrece, CambioVuelta;
         public Color Col, ColCambio;
         public double Precio = double.NaN;
-        /// <summary>X0/Ancho: la caja (las de fuera de pantalla no tienen caja: X0 = x del texto). EnGrupo: cuantos niveles caen a &lt;= 1 pt.</summary>
+        /// <summary>X0/Ancho: la caja (las de fuera de pantalla no tienen caja: X0 = x del texto). EnGrupo: cuantos niveles caen a &lt;= GRUPO_PTS (5.0: 0,25 pt; la 4.1: 1 pt de NQ).</summary>
         public int X0, Ancho, Y, YNivel, Fuera, EnGrupo;
         /// <summary>4.1.4 (revision 4.1.3): las series "como la 2.0" del grupo que no son la cabeza y van nombradas en la etiqueta
         /// (" · SPY dom D1"); vacio si no hay.</summary>
@@ -250,14 +265,32 @@ namespace PythiaGexCinco.Familia
         /// <summary>4.1.6: el recuadro desplegable arranca CERRADO ("que no moleste"); el clic en su titulo lo abre/cierra.</summary>
         public static volatile bool Recuadro2EAbierto = false;
         public const double MOTOR_PARADO_S = 150;     // el motor publica cada ~5 s: 150 s sin foto nueva = parado
+        // 5.0 (27-10-2026, P5): tolerancias en PUNTOS de ES. ES se mueve ~4 veces menos en puntos que NQ (precio NQ/ES 3,86; rangos de sesion y de
+        // 30 min 6,1-6,6: MEDICIONES_ES.md §1.1-1.2): con el zoom de siempre, 1 pt de NQ son ~2 px y 1 pt de ES ~10 px. Lo que es "la misma altura
+        // en pantalla" se divide por 4 y se redondea al tick (0,25); lo que sale de la estructura de strikes (ES y SPX listan cada 5, como NQ) o del
+        // ruido de la conversion no se escala por precio.
+        /// <summary>5.0 (P5): el tick de ES/MES. El precio de un rotulo que junta series distintas va redondeado a esto (la 4.1: al punto, 4 ticks).</summary>
+        public const double TICK_ES = 0.25;
+        /// <summary>5.0 (P5): niveles a &lt;= esto van en UNA etiqueta (el grupo de la columna y del detalle). La 4.1: 1 pt de NQ (~2 px). En ES 1/4 = 0,25:
+        /// un tick (~2-3 px). Con 1 pt en ES se esconderian niveles que se ven separados (~10 px). Un nivel de ES (multiplo de 5) y uno de SPX llevado a
+        /// ES (corrido por la base) casi nunca caen a &lt;= 0,25: cada uno lleva su etiqueta; dos series del MISMO strike con la MISMA conversion si.</summary>
+        public const double GRUPO_PTS = 0.25;
+        /// <summary>5.0 (P5): cotas del doble eje (MEDICIONES_ES.md §3.8, sanidad). Razon ES/SPY: medido 10,081-10,127 del 15-09 al 26-10 (la 4.1: 30-60
+        /// para NQ/QQQ ~41; con SPY el eje no se dibujaba nunca). Base ES - SPX: medido 35-72 en Z6, recien rolado ~65-75 (la 4.1: |base| &lt; 2000).</summary>
+        public const double RAZON_SPY_MIN = 9.95, RAZON_SPY_MAX = 10.25, BASE_SPX_MAX = 150.0;
+        /// <summary>5.0 (P5): marcas fuertes del eje SPX cada esto (pts del indice): ~0,33 % de SPX, como las de 100 de NDX en la 4.1. SPX lista cada 5.</summary>
+        public const double SPX_FUERTE = 25.0;
         // 4.1.4 (pedido del operador 09-10: "la doble o triple raya no tiene rotulo/etiqueta y es importante"): rotulos de los tramos de historia
+        // 5.0 (P5): TRAMO_TOL queda 0,5: no es una distancia de pantalla sino la tolerancia para seguir la MISMA raya mientras su conversion deriva (en
+        // NDX 31.041,47 -> 31.040,42 en 7 h). En ES la deriva es menor (ruido de la conversion SPX 0,48 y SPY 0,45 pts contra NDX 1,79: MEDICIONES_ES.md
+        // §1.4) y un salto de strike es >= 5 pts (SPY >= 10): con 0,5 nunca se juntan dos strikes y una raya que deriva no se parte en pedazos.
         public const double TRAMO_TOL = 0.5;          // mismo tramo: a <= 0,5 pt del ultimo precio del tramo
         public const int TRAMO_HUECO = 3;             // velas seguidas sin ese precio que se toleran adentro de un tramo
         public const int TRAMO_MIN = 15;              // velas del grafico (del principio al final del tramo) para rotularlo
         // revision 4.1.4: Y al menos 8 velas m2 de la historia (unos 15 min): la historia cambia de a 2 min, y en un grafico de segundos cada
         // escalon de 2 min ya pasaba las 15 velas (5 s: 24 velas) y llenaba el tope con escalones. En 1 min, 15 velas seguidas son siempre 8 m2.
         public const int TRAMO_MIN_M2 = 8;
-        public const double TRAMO_JUNTAR_PTS = 1.5;   // tramos a <= 1,5 pt ...
+        public const double TRAMO_JUNTAR_PTS = 0.25;  // tramos a <= 0,25 pt (5.0 P5: la 4.1 tenia 1,5 pt de NQ, ~3 px; en ES esos ~3 px son un tick) ...
         public const int TRAMO_JUNTAR_PX = 40;        // ... con el final a <= 40 px: un solo rotulo
         public const int TRAMO_TOPE = 14;             // rotulos de tramos por pantalla (los de los tramos mas largos)
         public const int TRAMO_PIEZAS = 4;            // nombres por rotulo como mucho (los de las series que mas velas dibujaron en esa raya)
@@ -278,6 +311,24 @@ namespace PythiaGexCinco.Familia
             var y = m.Groups[2].Value;
             return m.Groups[1].Value + y[y.Length - 1];
         }
+
+        /// <summary>5.0 (P5): el grafico es de ES o de MES, con la MISMA regla que el nucleo (CadenaApi.RaizGrande: "MES..." o "ES..." despues de
+        /// sacar el '#' de la continua). La 4.1 aceptaba cualquier codigo que tuviera "NQ" en cualquier lugar; el clon, "ES" en cualquier lugar.</summary>
+        public static bool EsGraficoEs(string instr)
+        {
+            var s = (instr ?? "").ToUpperInvariant().TrimStart('#').Trim();
+            return s.StartsWith("MES", StringComparison.Ordinal) || s.StartsWith("ES", StringComparison.Ordinal);
+        }
+
+        /// <summary>5.0 (P5): la raiz del grafico para los textos ("precio MES", "cinta ES"): MES si el codigo empieza con MES, ES si empieza con ES.</summary>
+        public static string RaizGrafico(string instr)
+        {
+            var s = (instr ?? "").ToUpperInvariant().TrimStart('#').Trim();
+            return s.StartsWith("ES", StringComparison.Ordinal) ? "ES" : "MES";
+        }
+
+        /// <summary>5.0 (P5): un precio redondeado al tick de ES (0,25).</summary>
+        public static double AlTick(double p) => double.IsNaN(p) || double.IsInfinity(p) ? p : Math.Round(p / TICK_ES, MidpointRounding.AwayFromZero) * TICK_ES;
 
         /// <summary>Edad legible (la de la 4.0.6): 40 s, 12 min, 1,5 h, 14 h.</summary>
         public static string Edad(double s)
@@ -446,15 +497,23 @@ namespace PythiaGexCinco.Familia
         /// <summary>4.1.4 (revision 4.1.3): de donde salio la conversion de una replica de la 2.0, leido del texto de su fuente ("2.0 SPY": Replica20
         /// TextoRazon = "razon 2.0 X[ = MES ... / spot SPY Y] · ORIGEN[ · ...]"; "2.0 SPX": "base 2.0 X (ORIGEN ...; cota ...)"). Normal = la conversion
         /// de siempre de la 2.0 (la vela de 1 min del ultimo trade con sus ticks; la base cruda de forwards que paso la cota del carry); si no,
-        /// es un respaldo y el detalle lo dice en naranja. Texto vacio o desconocido: no normal ("origen sin dato").</summary>
+        /// es un respaldo y el detalle lo dice en naranja. Texto vacio o desconocido: no normal ("origen sin dato").
+        /// 5.0 (P5): en ES lo normal de la base de la 2.0 es "medida", "medida hace N min" o "de la rueda"; la CRUDA pasa a respaldo.</summary>
         public static (string Txt, bool Normal) OrigenConv20(string serie, string texto)
         {
             texto = texto ?? "";
             if (serie == "R20_SPX_vol")
             {
-                if (texto.IndexOf("(TEORICA", StringComparison.Ordinal) >= 0) return ("TEORICA: el carry (la cruda de forwards no paso la cota)", false);
+                // 5.0 (P5): la cascada de la 2.0 en ES (Replica20.BaseSpx20.Cascada, paquete P3; "base 2.0 X (ORIGEN...; cota ...)"): medida > medida hace
+                // N min > de la rueda > CRUDA > TEORICA > CRUDA sin cota. Los tres primeros son lo que la 2.0 usa en ES (normal); CRUDA, TEORICA y sin
+                // cota son su respaldo (en NDX la cadena nunca traia "medida" y la CRUDA era lo normal de la 4.1). Orden: "medida hace" antes que
+                // "medida" y "(sin cota)" antes que CRUDA (lo pide P3).
+                string o = OrigenBase20(texto);
+                if (o.StartsWith("medida hace", StringComparison.Ordinal) || o.StartsWith("medida", StringComparison.Ordinal) || o.StartsWith("de la rueda", StringComparison.Ordinal))
+                    return (Recortar(o, 90), true);
+                if (texto.IndexOf("(TEORICA", StringComparison.Ordinal) >= 0) return ("TEORICA: el carry (ni medida ni de la rueda, y la cruda de forwards no paso la cota)", false);
                 if (texto.IndexOf("(sin cota)", StringComparison.Ordinal) >= 0) return ("cruda de forwards SIN cota (no hay carry para comparar)", false);
-                if (texto.IndexOf("(CRUDA", StringComparison.Ordinal) >= 0) return ("cruda de forwards", true);
+                if (texto.IndexOf("(CRUDA", StringComparison.Ordinal) >= 0) return ("cruda de forwards (sin base medida ni de la rueda)", false);
                 return ("origen sin dato", false);
             }
             if (serie != "R20_SPY_vol") return ("", true);
@@ -477,25 +536,53 @@ namespace PythiaGexCinco.Familia
             return (origen == "" ? "origen sin dato" : "origen: " + Recortar(origen, 70), false);
         }
 
+        /// <summary>5.0 (P5): el origen de la base de la 2.0 en su texto: lo que va entre "base 2.0 X (" y su "; cota" o su ")" (con los parentesis de
+        /// adentro balanceados: "medida hace 12 min (la ultima cadena ...)"). "" si no se entiende.</summary>
+        public static string OrigenBase20(string texto)
+        {
+            texto = texto ?? "";
+            int i = texto.IndexOf("base 2.0 ", StringComparison.Ordinal); if (i < 0) return "";
+            int a = texto.IndexOf('(', i); if (a < 0) return "";
+            int prof = 1, j = a + 1;
+            for (; j < texto.Length; j++)
+            {
+                char c = texto[j];
+                if (c == '(') prof++;
+                else if (c == ')') { if (--prof == 0) break; }
+                else if (prof == 1 && string.CompareOrdinal(texto, j, "; cota", 0, 6) == 0) break;
+            }
+            return texto.Substring(a + 1, Math.Min(j, texto.Length) - a - 1).Trim();
+        }
+
         /// <summary>4.1.4: las series "como la 2.0" (R20_* y DOMS_*).</summary>
         public static bool EsSerie20(string serie) => serie != null && (serie.StartsWith("R20_", StringComparison.Ordinal) || serie.StartsWith("DOMS_", StringComparison.Ordinal));
 
         /// <summary>4.1.5: la replica de la clasica (R10_SPX_zero "Clasica SPX 0Γ"): su nombre corto ya dice el rol (el zero), no se repite.</summary>
         public static bool EsClasica(string serie) => serie != null && serie.StartsWith("R10_", StringComparison.Ordinal);
 
-        /// <summary>4.1.5d (revision 4.1.5b/c): la salvedad de la replica de la clasica, debajo de su fuente en la pestaña. MEDIDO el 09-10: tras los
-        /// reinicios de ATAS la clasica cayo a CBOE y re-midio su base en la rueda (229,88 -> 230,16) mientras la replica seguia con la del 08-10
-        /// (243,06): de 19:48 a 20:11 UTC (16:48-17:11 ART) el 0Γ y las D1-D3 quedaron ~13 pts corridos de los de la clasica.</summary>
-        public const string AVISO_CLASICA = "    Clasica SPX: copia a la clasica cuando dibuja con la base de la rueda anterior; si la clasica pierde Rithmic (p. ej. al reiniciar ATAS) "
-                                          + "re-mide su base en la rueda y esta replica deja de coincidir (09-10 16:48-17:11 ART: ~13 pts)";
+        /// <summary>4.1.5d (revision 4.1.5b/c): la salvedad de la replica de la clasica, debajo de su fuente en la pestaña. MEDIDO el 09-10 EN NQ (capa NDX
+        /// de la clasica; el clon renombro NDX por SPX en este comentario): tras los reinicios de ATAS la clasica cayo a CBOE y re-midio su base en la rueda
+        /// (229,88 -> 230,16) mientras la replica seguia con la del 08-10 (243,06): de 19:48 a 20:11 UTC el 0Γ y las D1-D3 quedaron ~13 pts corridos.
+        /// 5.0 (P5, con el pedido de P2 del 27-10): la salvedad es la de ES. En ES la clasica no arma capas: su primaria es SPX (radio min(2 %, 100) =
+        /// 100, cadena 960 s atras) con la cascada de base medida &gt; medida hace &lt;= 360 min &gt; de la rueda &gt; cruda &gt; teorica, y la replica sigue la
+        /// misma (ClasicaSpx, paquete P2). MEDIDO por P2 (_diseno/P2_SPX.md §3 T7) contra los 131 AUDIT de la clasica en ES del 05-10: de dia (las dos
+        /// en "medida") base con mediana 0,00 de diferencia; esa noche la clasica estaba en "de la rueda" 52,42 y la replica en "medida hace 185 min"
+        /// 53,69 (+1,27). La medicion de NDX del 09-10 (~13 pts) era de la capa de NQ y no vale aca.</summary>
+        public const string AVISO_CLASICA = "    Clasica SPX: replica a la clasica en ES (libro SPX, radio 100, cadena 960 s atras, su cascada de base). Contra la clasica en ES solo se "
+                                          + "comparo el 05-10 (131 salidas): de dia la misma base; esa noche +1,27 pts (ella en la de la rueda, la replica en la medida de hace "
+                                          + "185 min). Como nivel, SIN MEDIR EN ES";
 
         private static readonly Regex ReRuedaClasica = new Regex(@"= de la rueda (\d{4})-(\d{2})-(\d{2})", RegexOptions.Compiled);
         private static readonly Regex ReAhoraClasica = new Regex(@"5\.0 sincronizada (-?\d+(?:\.\d+)?)", RegexOptions.Compiled);   // 5.0: ClasicaSpx.Texto dice "5.0 sincronizada" (antes "4.1")
         private static readonly Regex ReHoyClasica = new Regex(@"rueda de hoy (-?\d+(?:\.\d+)?) \((\d+) muestras\)", RegexOptions.Compiled);
+        /// <summary>5.0 (P5): los dos primeros escalones de la cascada de la clasica en ES (ClasicaSpx.Texto, paquete P2): "= medida (forwards de la cadena
+        /// de las HH:MM:SSZ, X ticks de error, confiable)" y "= medida hace N min (forwards de la cadena de las HH:MM:SSZ, confiable)".</summary>
+        private static readonly Regex ReMedidaClasica = new Regex(@"= (medida(?: hace \d+ min)?) \(forwards de la cadena de las (\d{2}:\d{2}:\d{2})Z(?:, (-?\d+(?:\.\d+)?) ticks de error)?", RegexOptions.Compiled);
 
         /// <summary>4.1.5: de donde salio la base de la replica de la clasica, leido del texto de su fuente ("Clasica SPX", ClasicaSpx.Texto:
         /// "base clasica X = ORIGEN (...) · ahora: 5.0 sincronizada Y; regla de la clasica con la rueda de hoy Z (n muestras) · zero en el indice W").
         /// Normal = la base de la rueda (la de la clasica); si no (CRUDA, TEORICA, sin cota) es un respaldo y el detalle lo dice en naranja.
+        /// 5.0 (P5): tambien normal la "medida" y la "medida hace N min" (los dos primeros escalones de la clasica en ES).
         /// Ahora = la base sincronizada de la 4.1 del mismo minuto (NaN si no esta); Hoy = la regla de la clasica con la rueda de hoy (NaN si no hay).</summary>
         public static (string Txt, bool Normal, double Ahora, double Hoy) OrigenClasica(string texto)
         {
@@ -503,6 +590,20 @@ namespace PythiaGexCinco.Familia
             double ahora = double.NaN, hoy = double.NaN;
             var ma = ReAhoraClasica.Match(texto); if (ma.Success && !double.TryParse(ma.Groups[1].Value, NumberStyles.Float, Inv, out ahora)) ahora = double.NaN;
             var mh = ReHoyClasica.Match(texto); if (mh.Success && !double.TryParse(mh.Groups[1].Value, NumberStyles.Float, Inv, out hoy)) hoy = double.NaN;
+            // 5.0 (P5): en ES la cascada de la clasica empieza con la base MEDIDA (forwards confiables de esta cadena) y la medida de hace <= 360 min: son
+            // lo que la clasica usa en ES (normal), antes que la de la rueda. Se mira antes que la rueda (su texto trae "; la de la rueda ..." al final).
+            var mm = ReMedidaClasica.Match(texto);
+            if (mm.Success)
+            {
+                string err = mm.Groups[3].Success && double.TryParse(mm.Groups[3].Value, NumberStyles.Float, Inv, out var et) ? ", " + et.ToString("0.0", Es) + " ticks de error" : "";
+                return (mm.Groups[1].Value + " (forwards de la cadena de las " + mm.Groups[2].Value + "Z" + err + ")", true, ahora, hoy);
+            }
+            int im = texto.IndexOf("= medida", StringComparison.Ordinal);
+            if (im >= 0)
+            {   // respaldo del regex: si P2 cambia el detalle del parentesis, sigue siendo la base medida (normal): se muestra lo que dice hasta el " · "
+                int fin = texto.IndexOf(" · ", im, StringComparison.Ordinal);
+                return (Recortar(texto.Substring(im + 2, (fin < 0 ? texto.Length : fin) - im - 2), 90), true, ahora, hoy);
+            }
             var mr = ReRuedaClasica.Match(texto);
             if (mr.Success)
                 return ("de la rueda del " + mr.Groups[3].Value + "-" + mr.Groups[2].Value + (texto.IndexOf("congelada", StringComparison.Ordinal) >= 0 ? ", congelada" : ""), true, ahora, hoy);
@@ -599,7 +700,7 @@ namespace PythiaGexCinco.Familia
             public NivelActual[] Partes;      // el nivel; dos (o mas) si la misma serie trae varios roles al mismo precio ("C/P": el muro C primero)
         }
 
-        /// <summary>4.1.2: la etiqueta de un grupo (&lt;= 1 pt) es la del item con mayor |GexM|; los sin monto al final; empate: el de precio mas
+        /// <summary>4.1.2: la etiqueta de un grupo (&lt;= GRUPO_PTS; 5.0: 0,25 pt) es la del item con mayor |GexM|; los sin monto al final; empate: el de precio mas
         /// alto (el grupo viene ordenado por precio de mayor a menor, como hoy).</summary>
         private static Item Cabeza(List<Item> l)
         {
@@ -748,8 +849,10 @@ namespace PythiaGexCinco.Familia
             int hf = medir("X", tam).Height + 1;
 
             string instr = v.Instrumento ?? "";
-            if (instr.IndexOf("ES", StringComparison.OrdinalIgnoreCase) < 0)
-            { Cartel(d, tam, area, "PythiaGex 5.0: los niveles estan en precio de ES/MES; este grafico es " + instr + ": no dibujo nada", ColNaranja); return; }
+            // 5.0 (P5): la misma regla de raiz que el nucleo (EsGraficoEs); en otro grafico (p. ej. MNQZ6) no se dibuja nada: los niveles estan en precio de ES
+            if (!EsGraficoEs(instr))
+            { Cartel(d, tam, area, "PythiaGex 5.0 es para ES/MES: este gráfico es " + (instr.Trim() == "" ? "?" : instr.Trim()) + ", no dibujo", ColNaranja); return; }
+            string raizG = RaizGrafico(instr);                // "MES" o "ES": para "precio MES" y "cinta MES" de la pestaña
             if (F == null)
             { Cartel(d, tam, area, "PythiaGex 5.0: esperando el primer calculo (todo adentro: libro ES por Rithmic, SPX/SPY bajados de CBOE)", ColNaranja); return; }
             // los niveles son del contrato de la Familia (el del grafico donde corre el motor): en el roll, otro vencimiento quedaria corrido por el spread
@@ -834,16 +937,37 @@ namespace PythiaGexCinco.Familia
             {
                 Func<double, double> aLibro = null, aEs = null; string tituloEje = "", fmtEje = "0.00"; DateTime datoEje = DateTime.MinValue; double fuerte = 1;
                 var fSpx = Fuente(fuentes, "SPX"); var fSpy = Fuente(fuentes, "SPY");
-                // 5.0 (27-10-2026): aca iba el eje "TQQQ x3" (ES = s x TQQQ + c); quedan SPY y SPX con las mismas cotas que en la 4.1
-                if (aj.Eje == EjeFamilia4.SPY && fSpy != null && !double.IsNaN(fSpy.ConvValor) && fSpy.ConvValor > 30 && fSpy.ConvValor < 60)
+                // 5.0 (27-10-2026): aca iba el eje "TQQQ x3" (ES = s x TQQQ + c). 5.0 (P5): las cotas de SPY y SPX son las de ES (RAZON_SPY_*, BASE_SPX_MAX);
+                // con una conversion fuera de cota el eje no se dibuja y el titulo dice el valor, la cota y su edad (protocolo: nada sin fuente ni edad)
+                bool fueraCota = false;
+                if (aj.Eje == EjeFamilia4.SPY && fSpy != null && Fin(fSpy.ConvValor))
                 {
-                    double r0 = fSpy.ConvValor; aLibro = q => q / r0; aEs = x => x * r0; datoEje = fSpy.DatoUtc;
-                    tituloEje = "eje SPY: ES = SPY x " + r0.ToString("0.0000", Es) + " (razon sincronizada)";
+                    double r0 = fSpy.ConvValor; datoEje = fSpy.DatoUtc;
+                    if (r0 >= RAZON_SPY_MIN && r0 <= RAZON_SPY_MAX)
+                    {
+                        aLibro = q => q / r0; aEs = x => x * r0;
+                        tituloEje = "eje SPY: ES = SPY x " + r0.ToString("0.0000", Es) + " (razon sincronizada)";
+                    }
+                    else
+                    {
+                        fueraCota = true;
+                        tituloEje = "eje SPY: razon ES/SPY " + r0.ToString("0.0000", Es) + " fuera de su cota (" + RAZON_SPY_MIN.ToString("0.00", Es) + "-"
+                                  + RAZON_SPY_MAX.ToString("0.00", Es) + "): no dibujo el eje";
+                    }
                 }
-                else if (aj.Eje == EjeFamilia4.SPX && fSpx != null && !double.IsNaN(fSpx.ConvValor) && Math.Abs(fSpx.ConvValor) < 2000)
+                else if (aj.Eje == EjeFamilia4.SPX && fSpx != null && Fin(fSpx.ConvValor))
                 {
-                    double b0 = fSpx.ConvValor; aLibro = q => q - b0; aEs = x => x + b0; datoEje = fSpx.DatoUtc; fmtEje = "#,##0"; fuerte = 100;
-                    tituloEje = "eje SPX: ES = SPX + " + b0.ToString("0.00", Es) + " (base sincronizada)";
+                    double b0 = fSpx.ConvValor; datoEje = fSpx.DatoUtc;
+                    if (b0 > 0 && b0 <= BASE_SPX_MAX)
+                    {
+                        aLibro = q => q - b0; aEs = x => x + b0; fmtEje = "#,##0"; fuerte = SPX_FUERTE;
+                        tituloEje = "eje SPX: ES = SPX + " + b0.ToString("0.00", Es) + " (base sincronizada)";
+                    }
+                    else
+                    {
+                        fueraCota = true;
+                        tituloEje = "eje SPX: base ES - SPX " + b0.ToString("0.00", Es) + " fuera de su cota (0-" + BASE_SPX_MAX.ToString("0", Es) + " pts): no dibujo el eje";
+                    }
                 }
                 else if (aj.Eje != EjeFamilia4.Ninguno) tituloEje = "eje " + aj.Eje + ": sin conversion vigente (no dibujo el eje)";
                 if (aLibro != null && !double.IsNaN(pA) && !double.IsNaN(pB))
@@ -859,7 +983,7 @@ namespace PythiaGexCinco.Familia
                     {
                         double K = Math.Round(kk / paso) * paso;
                         int y = Y(aEs(K)); if (!EnPantalla(y)) continue;     // GetYByPrice exacto por marca
-                        bool f2 = Math.Abs(K / fuerte - Math.Round(K / fuerte)) < 1e-6;    // dolares enteros (strikes) / SPX cada 100
+                        bool f2 = Math.Abs(K / fuerte - Math.Round(K / fuerte)) < 1e-6;    // SPY: dolares enteros (strikes) / SPX: cada 25 pts (5.0 P5)
                         d.Linea(Color.FromArgb(f2 ? 170 : 90, ColEje), 1f, area.Left, y, area.Left + (f2 ? 8 : 5), y);
                         string tk = K.ToString(fmtEje, Es);
                         d.Texto(tk, tam, Color.FromArgb(f2 ? 235 : 150, ColEje), area.Left + 10, y - hf / 2);
@@ -872,13 +996,13 @@ namespace PythiaGexCinco.Familia
                     double ee = datoEje == DateTime.MinValue ? double.NaN : (ahora - datoEje).TotalSeconds;
                     bool vj2 = !double.IsNaN(ee) && ee > VIEJO_S;
                     ejeLargo = (vj2 ? "DATO DE HACE " + Edad(ee) + " · " : "") + tituloEje + (!vj2 && !double.IsNaN(ee) ? " · dato " + Edad(ee) : "");
-                    ejeCorto = aLibro != null ? "eje " + aj.Eje.ToString() : "eje " + aj.Eje + " SIN DATO";
+                    ejeCorto = aLibro != null ? "eje " + aj.Eje.ToString() : "eje " + aj.Eje + (fueraCota ? " FUERA DE COTA" : " SIN DATO");
                     ejeColor = vj2 ? ColNaranja : Color.FromArgb(220, ColEje);
                     d.EjeTitulo = ejeLargo;
                 }
             }
 
-            // ---- niveles actuales agrupados por cercania (a 1 pt): los usan las etiquetas y el detalle de la pestaña
+            // ---- niveles actuales agrupados por cercania (a <= GRUPO_PTS; 5.0 P5: 0,25 pt, la 4.1 1 pt de NQ): los usan las etiquetas y el detalle de la pestaña
             var act = new List<(NivelActual A, string Rol, List<NivelActual> Partes)>();
             {
                 var claves = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -950,7 +1074,7 @@ namespace PythiaGexCinco.Familia
             var grupos = new List<List<Item>>();
             foreach (var x in items.OrderByDescending(x => x.Precio))
             {
-                if (grupos.Count > 0 && grupos[grupos.Count - 1][0].Precio - x.Precio <= 1.0) grupos[grupos.Count - 1].Add(x);
+                if (grupos.Count > 0 && grupos[grupos.Count - 1][0].Precio - x.Precio <= GRUPO_PTS + 1e-9) grupos[grupos.Count - 1].Add(x);
                 else grupos.Add(new List<Item> { x });
             }
             double edadMax = items.Where(x => !double.IsNaN(x.E)).Select(x => x.E).DefaultIfEmpty(double.NaN).Max();
@@ -1234,26 +1358,29 @@ namespace PythiaGexCinco.Familia
                             case "2.0 SPY": case "2.0 SPX":
                             {   // 4.1.3: la conversion de cada replica de la 2.0, solo si su serie esta prendida (edad ANTES del numero si es vieja)
                                 if (!vis.Any(s => s.Corto == fu.Libro)) continue;
-                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro + " (replica, CBOE)" + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
+                                // 5.0 (P5): en un grafico de ES la 2.0 solo dibuja SPX: "2.0 SPX" es su replica; "2.0 SPY" es su formula aplicada a SPY (no replica nada)
+                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro
+                                         + (fu.Libro == "2.0 SPY" ? " (estilo 2.0, CBOE: la 2.0 no dibuja SPY en ES)" : " (replica de la 2.0 en ES, CBOE)")
+                                         + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
                                          + (fu.Congelada ? " · cadena congelada" : "") + (string.IsNullOrEmpty(fu.Texto) ? "" : " · " + fu.Texto)
-                                         // 4.1.4 (revision 4.1.3): la razon de la 2.0 depende del marco del grafico donde corre la 2.0 (su vela del ultimo trade)
-                                         + (fu.Libro == "2.0 SPY" ? " · replica a la 2.0 en un grafico de 1 min (en otro marco su vela, y su razon, cambian)" : "");
+                                         // 4.1.4 (revision 4.1.3): la razon de la 2.0 depende del marco del grafico donde corre (su vela del ultimo trade)
+                                         + (fu.Libro == "2.0 SPY" ? " · su razon sale de la vela de 1 min del ultimo trade (en otro marco la vela, y la razon, cambian)" : "");
                                 lineas.Add((t, vv ? ColNaranja : Color.FromArgb(180, ColTexto)));
                                 break;
                             }
                             case "Clasica SPX":
                             {   // 4.1.5: la base de la replica de la clasica (de cuando es y la de ahora), solo si su serie esta prendida
                                 if (!vis.Any(s => EsClasica(s.Id))) continue;
-                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro + " (replica, CBOE)" + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
+                                string t = (vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro + " (replica de la clasica en ES, CBOE)" + (vv || double.IsNaN(e) ? "" : " (" + Edad(e) + ")")
                                          + (fu.Congelada ? " · cadena congelada" : "") + (string.IsNullOrEmpty(fu.Texto) ? "" : " · " + fu.Texto);
                                 lineas.Add((t, vv ? ColNaranja : Color.FromArgb(180, ColTexto)));
-                                // 4.1.5d (revision 4.1.5b/c, MEDIDO el 09-10): la replica supone a la clasica dibujando con la base de la rueda ANTERIOR (su primaria
-                                // en Rithmic); si la clasica la pierde (p. ej. al reiniciar ATAS) vuelve a medir su base en la rueda y la replica deja de coincidir
+                                // 4.1.5d (revision 4.1.5b/c): la salvedad de la replica debajo de su fuente. 5.0 (P5): la de ES (lo que P2 comparo contra la
+                                // clasica en ES el 05-10; AVISO_CLASICA)
                                 lineas.Add((AVISO_CLASICA, Color.FromArgb(160, ColTexto)));
                                 break;
                             }
                             case "cinta":
-                                lineas.Add(("cinta MES: ultimo tick hace " + Edad(e), !double.IsNaN(e) && e > 120 ? ColNaranja : Color.FromArgb(160, ColTexto)));
+                                lineas.Add(("cinta " + raizG + ": ultimo tick hace " + Edad(e), !double.IsNaN(e) && e > 120 ? ColNaranja : Color.FromArgb(160, ColTexto)));
                                 break;
                             default:
                                 lineas.Add(((vv ? "DATO DE HACE " + Edad(e) + " · " : "") + fu.Libro + (string.IsNullOrEmpty(fu.Texto) ? "" : ": " + fu.Texto), Color.FromArgb(160, ColTexto)));
@@ -1281,7 +1408,7 @@ namespace PythiaGexCinco.Familia
                     foreach (var l in grupos)
                     {
                         var a0 = l[0];
-                        if (!puesto && a0.Precio < px) { lineas.Add(("— precio MES " + P(px) + " —", ColPrecio)); puesto = true; }
+                        if (!puesto && a0.Precio < px) { lineas.Add(("— precio " + raizG + " " + P(px) + " —", ColPrecio)); puesto = true; }
                         double e = l.Where(x => !double.IsNaN(x.E)).Select(x => x.E).DefaultIfEmpty(double.NaN).Max();
                         bool viejo = !double.IsNaN(e) && e > VIEJO_S;
                         // 4.1.2: el monto de cada nivel va pegado a su nombre (5.0: sin el "por 1 % de TQQQ")
@@ -1332,8 +1459,8 @@ namespace PythiaGexCinco.Familia
                                 lineas.Add(("    " + (quien != "" ? quien + ": " : "") + sub, colSub));
                             }
                     }
-                    if (!puesto) lineas.Add(("— precio MES " + P(px) + " —", ColPrecio));
-                    lineas.Add(("sin validar: describe, no anticipa · clic en la pestaña para cerrar", Color.FromArgb(140, ColTexto)));
+                    if (!puesto) lineas.Add(("— precio " + raizG + " " + P(px) + " —", ColPrecio));
+                    lineas.Add(("SIN MEDIR EN ES: describe el regimen, no anticipa la direccion · clic en la pestaña para cerrar", Color.FromArgb(140, ColTexto)));
                     // revision 4.1.2: cada renglon se parte en el ancho VISIBLE (xr = min(area.Right, clip.Right)), no en el del area: en el grafico
                     // del operador (area 852 px, clip 781) entran ~115 letras y la leyenda, los grupos y las notas de OI de la FAM se cortaban.
                     // Consolas es monoespaciada: letras que entran = ancho visible / ancho de '0' medido con medir().
@@ -1371,8 +1498,8 @@ namespace PythiaGexCinco.Familia
         ///    al final). Un tramo de OTRA serie (o de la misma a mas de 0,5 pt) lleva su rotulo en SU final aunque otra raya siga a su lado (antes
         ///    se absorbia en cualquier raya a &lt;= 1,5 pt: si esa raya era la vigente quedaba sin nombre en toda la pantalla, y si no, nombrado al
         ///    final de la otra raya, horas y cientos de px despues);
-        ///  * rayas a &lt;= 1,5 pt cuyo final queda a &lt;= 40 px van en un solo rotulo ("SPX muro V/OI · 2.0 SPX 31.041", el precio redondeado si junta
-        ///    series distintas); cada nombre en el color de su serie;
+        ///  * rayas a &lt;= TRAMO_JUNTAR_PTS (5.0 P5: 0,25 pt; la 4.1: 1,5 pt de NQ) cuyo final queda a &lt;= 40 px van en un solo rotulo ("SPX muro V/OI ·
+        ///    2.0 SPX 6.886,25", el precio al tick si junta series distintas; la 4.1 lo redondeaba al punto); cada nombre en el color de su serie;
         ///  * el rotulo va al final de la raya, arriba (si choca, abajo; despues un renglon mas arriba o mas abajo), letra tamC - 1, sombra y caja
         ///    tenue; nunca sobre la columna de etiquetas de la derecha ni sobre la pestaña ni sobre otro rotulo ni en la franja de arriba (yMin =
         ///    area.Top + MargenSup4: la leyenda y el cartel rojo de ATAS); tope TRAMO_TOPE (los mas largos primero; el que no entra se descarta);
@@ -1434,7 +1561,7 @@ namespace PythiaGexCinco.Familia
             }
             var rayas = porRaiz.Where(kv => !kv.Key.Vigente).Select(kv => (R: kv.Key, M: kv.Value, Largo: kv.Value.Max(x => x.Largo)))
                                .OrderByDescending(x => x.Largo).ThenByDescending(x => x.R.Fin).ThenBy(x => x.R.P).ThenBy(x => x.R.J).ThenBy(x => x.R.Ini).ToList();
-            // 4. rayas a <= 1,5 pt con el final a <= 40 px: un solo rotulo (contra la raya mas larga del rotulo)
+            // 4. rayas a <= TRAMO_JUNTAR_PTS (5.0: 0,25 pt) con el final a <= 40 px: un solo rotulo (contra la raya mas larga del rotulo)
             var grupos = new List<GrupoTramos>();
             foreach (var (r, m, largo) in rayas)
             {
@@ -1485,7 +1612,7 @@ namespace PythiaGexCinco.Familia
                               cat.Colores.TryGetValue(piezas[q].Id, out var cc) ? cc : ColTexto));
                 }
                 var colCab = cat.Colores.TryGetValue(vis[g.Cab.J].Id, out var c0) ? c0 : ColTexto;
-                segs.Add((" " + (ids.Count > 1 ? P(Math.Round(g.Cab.P)) : P(g.Cab.P)), colCab));
+                segs.Add((" " + (ids.Count > 1 ? P(AlTick(g.Cab.P)) : P(g.Cab.P)), colCab));   // 5.0 (P5): series distintas -> al tick (la 4.1: al punto)
                 string txt = string.Concat(segs.Select(s => s.T));
                 int wT = Math.Max(medir(txt, tamR).Width, (int)Math.Ceiling(cwR * txt.Length));
                 int xFin = g.Raices.Max(t => t.XFin) + wEst / 2 + 1;

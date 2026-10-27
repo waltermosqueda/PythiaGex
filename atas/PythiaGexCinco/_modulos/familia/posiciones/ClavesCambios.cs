@@ -1,4 +1,5 @@
-// ClavesCambios.cs — PythiaGex 4.1.2 (08-10-2026), modulo posiciones (B-pos).
+// ClavesCambios.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1.2 (08-10-2026, modulo posiciones B-pos). 5.0 (P5): sin cambios (la clave usa K en
+// milesimas: sirve igual para los strikes de ES/SPX cada 5 y los de SPY cada 1 USD).
 // La CLAVE de una fila de cadena para comparar dos fotos del mismo libro:
 //   (K del libro, vencimiento UTC = GeneradoUtc + Dias[V] redondeado a 30 min, lado C/P).
 // Un lado esta PRESENTE solo si su IV > 0 en esa foto (ES: foto_viva3 descarta el lado con iv <= 0 y deja OI/IV/vol en 0; CBOE: construir

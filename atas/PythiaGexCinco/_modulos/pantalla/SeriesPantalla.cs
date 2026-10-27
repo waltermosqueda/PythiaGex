@@ -1,4 +1,4 @@
-// SeriesPantalla.cs — PythiaGex 4.1, modulo pantalla (B5), 08-10-2026. Sin referencias a ATAS.
+// SeriesPantalla.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1 (modulo pantalla B5, 08-10-2026). Sin referencias a ATAS.
 // Las 29 casillas de la pantalla (una por serie), con los MISMOS nombres de propiedad que el visor 4.0.6 (S_<id>): ATAS guarda cada ajuste
 // POR NOMBRE en el workspace, asi el grafico donde estaba el visor conserva lo que eligio el operador. Defaults = los 8 del operador
 // (captura 08-10 17:5x). Para cambiar un default ya guardado hay que RENOMBRAR la propiedad (regla del proyecto).
@@ -18,11 +18,12 @@
 // 5.0 (27-10-2026): sin TQQQ: fuera las 6 casillas del grupo "5. TQQQ x3", sus 6 series del respaldo y T_MUROS_oi de PrendidasPorDefecto.
 // El orden relativo de lo que queda no cambia.
 // 5.0 (27-10-2026, P5): esta lista pasa a ser el ESPEJO del dialogo de la 5.0 (GammaCincoPantalla.cs): Nombre = el nombre corto que se ve, Grupo =
-// "0. PRENDER / APAGAR (todo lo que se dibuja)" y Orden = su Display.Order (0..34, sin huecos ni repetidos: por libro ES, SPX, SPY, despues la
-// familia, la clasica, la 2.0 y la 3.0). Default = el de la propiedad: las 6 que decidio el coordinador (el analogo de las que eligio el operador en
-// NQ, sin R20_SPY_vol: la 2.0 no dibuja SPY en un grafico de ES). TOPN_ES_vol y CARGA_ES pasan a APAGADAS (en la 4.1 venian prendidas de fabrica;
-// el operador las tiene apagadas en su .ws del 27-10 y no estan en la lista del coordinador). La 5.0 es un tipo NUEVO en ATAS (ningun .ws tiene
-// sus S_*): estos defaults son lo que se ve al ponerla. Respaldo: banda de SPY +-5 (era +-20), igual que CatalogoFamilia.
+// "0. PRENDER / APAGAR (todo lo que se dibuja)" y Orden = su Display.Order, que es el DEL CLON SIN TQQQ (0..29; no se renumera: el nucleo 3.0 sigue
+// desde 37, paquete P4). Repetidos heredados de la 4.1: top-N/carga de ES 7-9 y carga de SPX/SPY 10-11 contra SPX 7-12. La lista va por libro
+// (ES, SPX, SPY, la familia, la clasica, la 2.0 y la 3.0); el orden de la lista solo lo usa el log (Visibles es un conjunto). Default = el de la
+// propiedad: las 6 que decidio el coordinador (el analogo de las que eligio el operador en NQ, sin R20_SPY_vol: la 2.0 no dibuja SPY en un grafico
+// de ES). TOPN_ES_vol y CARGA_ES pasan a APAGADAS (en la 4.1 venian prendidas de fabrica; no estan en la lista del coordinador). La 5.0 es un tipo
+// NUEVO en ATAS (ningun .ws tiene sus S_*): estos defaults son lo que se ve al ponerla. Respaldo: banda de SPY +-5 (era +-20), igual que CatalogoFamilia.
 // Ademas: un catalogo de RESPALDO (id, corto, libro, fuente, tipo, grupo, color, banda) por si el motor todavia no publico el suyo
 // (IMotorFamilia.Catalogo manda; el arnes compara este respaldo campo por campo contra CatalogoFamilia de B3d).
 using System;
@@ -44,8 +45,8 @@ namespace PythiaGexCinco.Familia
         /// <summary>5.0 (P5): el grupo de arriba del dialogo (el mismo de GammaCincoPantalla.cs y GammaHoyTresCasillas.GRUPO_CASILLAS).</summary>
         public const string GRUPO_DIALOGO = "0. PRENDER / APAGAR (todo lo que se dibuja)";
 
-        /// <summary>5.0 (P5): en el orden del dialogo (Orden = Display.Order de la propiedad S_ID). Las propiedades de pantalla (doble eje, llaves,
-        /// pestaña) siguen en 35..41 y las de la 3.0 (GammaHoyTres*.cs, paquete P4) desde 42.</summary>
+        /// <summary>5.0 (P5): una por serie, agrupadas por libro (Orden = Display.Order de la propiedad S_ID, el del clon). Las propiedades de pantalla
+        /// (doble eje, llaves, pestaña) siguen en 30..36 y las de la 3.0 (GammaHoyTres*.cs, paquete P4) desde 37.</summary>
         public static readonly IReadOnlyList<Casilla> Casillas = new[]
         {
             // ---- libro ES (opciones sobre el futuro, Rithmic)
@@ -56,40 +57,40 @@ namespace PythiaGexCinco.Familia
             C("ZEST_ES_vol",    "ES 0Γ est vol",  4, false),
             C("ZEST_ES_oi",     "ES 0Γ est OI",   5, false),
             C("ZTP_ES_vol",     "ES cruces vol",  6, false),
-            C("TOPN_ES_vol",    "ES top-N vol",   7, false),   // 5.0 (P5): apagada (en la 4.1 venia prendida)
+            C("TOPN_ES_vol",    "ES top-N vol",   7, false),   // 5.0 (P5): apagada (en la 4.1 venia prendida); Orden 7 repetido con SPX muros vol (4.1)
             C("TOPN_ES_oi",     "ES top-N OI",    8, false),
             C("CARGA_ES",       "ES carga OI",    9, false),   // 5.0 (P5): apagada (en la 4.1 venia prendida)
             // ---- SPX (CBOE, a ES por la base)
-            C("MUROS_SPX_vol",  "SPX muros vol", 10, true),
-            C("MUROS_SPX_oi",   "SPX muros OI",  11, false),
-            C("MAJORS_SPX_vol", "SPX majors vol", 12, false),
-            C("MAJORS_SPX_oi",  "SPX majors OI", 13, false),
-            C("ZEST_SPX_vol",   "SPX 0Γ est vol", 14, false),
-            C("ZTP_SPX_vol",    "SPX cruces vol", 15, false),
-            C("CARGA_SPX",      "SPX carga OI",  16, false),
+            C("MUROS_SPX_vol",  "SPX muros vol",  7, true),
+            C("MUROS_SPX_oi",   "SPX muros OI",   8, false),
+            C("MAJORS_SPX_vol", "SPX majors vol", 9, false),
+            C("MAJORS_SPX_oi",  "SPX majors OI", 10, false),
+            C("ZEST_SPX_vol",   "SPX 0Γ est vol", 11, false),
+            C("ZTP_SPX_vol",    "SPX cruces vol", 12, false),
+            C("CARGA_SPX",      "SPX carga OI",  10, false),
             // ---- SPY (CBOE, a ES por la razon)
-            C("MUROS_SPY_vol",  "SPY muros vol", 17, false),
-            C("MUROS_SPY_oi",   "SPY muros OI",  18, false),   // 4.1.4: apagada
-            C("MAJORS_SPY_vol", "SPY majors vol", 19, false),
-            C("MAJORS_SPY_oi",  "SPY majors OI", 20, false),   // 4.1.4: apagada
-            C("ZEST_SPY_vol",   "SPY 0Γ est vol", 21, false),
-            C("CARGA_SPY",      "SPY carga OI",  22, false),
+            C("MUROS_SPY_vol",  "SPY muros vol", 13, false),
+            C("MUROS_SPY_oi",   "SPY muros OI",  14, false),   // 4.1.4: apagada
+            C("MAJORS_SPY_vol", "SPY majors vol", 15, false),
+            C("MAJORS_SPY_oi",  "SPY majors OI", 16, false),   // 4.1.4: apagada
+            C("ZEST_SPY_vol",   "SPY 0Γ est vol", 17, false),
+            C("CARGA_SPY",      "SPY carga OI",  11, false),
             // ---- la familia sumada y la confluencia
-            C("FAM_MUROS_vol",  "FAM muros vol", 23, false),
-            C("FAM_MUROS_oi",   "FAM muros OI",  24, false),   // 4.1.4: apagada
-            C("CONF_vol",       "CONF vol",      25, false),
+            C("FAM_MUROS_vol",  "FAM muros vol", 18, false),
+            C("FAM_MUROS_oi",   "FAM muros OI",  19, false),   // 4.1.4: apagada
+            C("CONF_vol",       "CONF vol",      20, false),
             // ---- 4.1.5/4.1.5b: como la clasica (en ES: su libro SPX). Propiedades NUEVAS (ningun .ws las tiene: toman estos defaults).
-            C("R10_SPX_dom",    "Clas SPX D1-3", 26, true),
-            C("R10_SPX_zero",   "Clas SPX 0Γ",   27, true),
+            C("R10_SPX_dom",    "Clas SPX D1-3", 21, true),
+            C("R10_SPX_zero",   "Clas SPX 0Γ",   22, true),
             // ---- 4.1.3: como la 2.0 (en ES: su libro SPX; R20_SPY_vol no tiene equivalente en la 2.0 en ES)
-            C("R20_SPY_vol",    "2.0 SPY D1-D2", 28, false),   // 5.0 (P5): apagada (la 2.0 no dibuja SPY en ES)
-            C("R20_SPX_vol",    "2.0 SPX D1-D2", 29, true),
-            C("DOMS_SPY_vol",   "SPY dom (2.0)", 30, false),   // 4.1.4: apagada
-            C("DOMS_SPX_vol",   "SPX dom (2.0)", 31, false),
+            C("R20_SPY_vol",    "2.0 SPY D1-D2", 23, false),   // 5.0 (P5): apagada (la 2.0 no dibuja SPY en ES)
+            C("R20_SPX_vol",    "2.0 SPX D1-D2", 24, true),
+            C("DOMS_SPY_vol",   "SPY dom (2.0)", 25, false),   // 4.1.4: apagada
+            C("DOMS_SPX_vol",   "SPX dom (2.0)", 26, false),
             // ---- lo que dibuja el motor 3.0 que corre adentro
-            C("TRES_ES",        "3.0 ES rayas",  32, false),
-            C("TRES_SPX",       "3.0 SPX rayas", 33, true),
-            C("TRES_SPY",       "3.0 SPY rayas", 34, false),
+            C("TRES_ES",        "3.0 ES rayas",  27, false),
+            C("TRES_SPX",       "3.0 SPX rayas", 28, true),
+            C("TRES_SPY",       "3.0 SPY rayas", 29, false),
         };
 
         /// <summary>4.1.3: grupo de las casillas "como la 2.0" en la 4.1 (historico: desde la 4.1.5c todas van en el grupo de arriba).</summary>
@@ -138,8 +139,8 @@ namespace PythiaGexCinco.Familia
             R("CARGA_ES", "ES", "ES", "oi", "TOPN", "Recomendadas", "#ffb74d", 0),
             R("CARGA_SPX", "SPX", "SPX", "oi", "TOPN", "Recomendadas", "#ce93d8", 0),
             R("CARGA_SPY", "SPY", "SPY", "oi", "TOPN", "Recomendadas", "#80cbc4", 0),
-            R("TOPN_ES_vol", "ES", "ES", "vol", "TOPN", "Recomendadas", "#7cf5c4", 0),
-            R("TOPN_ES_oi", "ES", "ES", "oi", "TOPN", "Recomendadas", "#4fb98a", 0),
+            R("TOPN_ES_vol", "ES top", "ES", "vol", "TOPN", "Recomendadas", "#7cf5c4", 0),      // 5.0 (P5): "ES top" como el catalogo (la 4.1 decia "NQ" aca y "NQ top" alla)
+            R("TOPN_ES_oi", "ES top OI", "ES", "oi", "TOPN", "Recomendadas", "#4fb98a", 0),    // 5.0 (P5): "ES top OI" como el catalogo
             R("R20_SPY_vol", "2.0 SPY", "SPY", "vol", "DOMS", "2.0", "#cc8800", 0),     // 4.1.4: ambar oscuro (antes #e8c83c, igual al SPY 0G)
             R("R20_SPX_vol", "2.0 SPX", "SPX", "vol", "DOMS", "2.0", "#3ddc97", 0),
             R("DOMS_SPY_vol", "SPY dom", "SPY", "vol", "DOMS", "2.0", "#5b8cff", 0),

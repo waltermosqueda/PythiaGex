@@ -1,4 +1,5 @@
-// RegimenesOi.cs — PythiaGex 4.1.2 (08-10-2026), modulo posiciones (B-pos).
+// RegimenesOi.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1.2 (08-10-2026, modulo posiciones B-pos). 5.0 (P5): sin cambios de logica (ver la nota
+// del 27-10 al final de este encabezado: las horas y fracciones citadas se midieron en NQ/NDX/QQQ).
 // Detector de REGIMENES de interes abierto de un libro, incremental (como OiEs._idx), sobre la historia de fotos en orden.
 // El OI lo consolida la OCC una vez por noche: dentro de un regimen no cambia (medido: ES salta una vez por noche 01:24/01:30/01:48 UTC;
 // SPX 06:26-06:36 UTC; SPY 07:31-09:12 UTC; fuera de esos saltos 0 cambios reales). Entre fotos CONSECUTIVAS con filas:

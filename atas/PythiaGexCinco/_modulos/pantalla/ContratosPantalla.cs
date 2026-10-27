@@ -1,4 +1,5 @@
-// ContratosPantalla.cs — PythiaGex 4.1, modulo pantalla (B5), 08-10-2026. PROPUESTA de B5 (no estaba en _contratos/Contratos.cs).
+// ContratosPantalla.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1 (modulo pantalla B5, 08-10-2026). PROPUESTA de B5 (no estaba en _contratos/Contratos.cs).
+// 5.0 (27-10-2026, P5): sin cambios de contrato (solo comentarios: 35 series, "la 5.0").
 // IPantallaFamilia: lo que el indicador llama desde OnRender y ProcessMouseClick (ganchos de B1: GammaHoyTres.cs "GANCHO-4.1 pantalla" y
 // GammaHoyTresRecuadro.cs). IGraficoPantalla: lo que la pantalla necesita del grafico de ATAS; lo implementa la propia GammaCinco
 // (GammaCincoPantalla.cs, implementacion explicita) porque ChartArea, GetCandle, FirstVisibleBarNumber, InstrumentInfo y RedrawChart
@@ -11,9 +12,9 @@ namespace PythiaGexCinco.Familia
 {
     public interface IPantallaFamilia
     {
-        /// <summary>El catalogo de las 29 series (IMotorFamilia.Catalogo). null = el respaldo de SeriesPantalla (mismos valores).</summary>
+        /// <summary>El catalogo de las 35 series (IMotorFamilia.Catalogo). null = el respaldo de SeriesPantalla (mismos valores).</summary>
         IReadOnlyList<SerieInfo> Catalogo { get; set; }
-        /// <summary>Dibuja la 4.0 sobre la foto publicada por el motor. Hilo de dibujo: sin E/S, sin llaves del motor. Nunca tira (log propio 1/min).</summary>
+        /// <summary>Dibuja la 5.0 sobre la foto publicada por el motor. Hilo de dibujo: sin E/S, sin llaves del motor. Nunca tira (log propio 1/min).</summary>
         void Pintar(RenderContext g, FotoFamilia foto);
         /// <summary>true = el clic cayo en la pestaña (la abrio o la cerro y pidio redibujar): el clic no sigue al grafico.</summary>
         bool Clic(int x, int y);

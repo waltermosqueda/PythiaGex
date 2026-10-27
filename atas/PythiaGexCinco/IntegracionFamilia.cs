@@ -1,4 +1,4 @@
-// IntegracionFamilia.cs — PythiaGex 4.1 (08-10-2026), integracion del agente principal. Une los modulos de los constructores con el clon:
+// IntegracionFamilia.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1 (08-10-2026, integracion del agente principal). Une los modulos de los constructores con el clon:
 //   descargador propio de CBOE (B2) + minuteros ES/SPX/SPY (B3a/b/c) + motor de la familia (B3d) + pantalla (B5),
 //   sobre los adaptadores del clon (B1: ICinta = cinta del MES, ILibroEs = libro ES por Rithmic).
 // UN host por proceso y contrato (dos graficos con la 4.0 comparten el mismo calculo y la misma bajada). El motor corre en SU hilo
@@ -14,6 +14,9 @@
 // recibe de la cinta si la vela de cada muestra esta completa (CintaFamilia.VelaM2Completa): la rueda cerrada no cambia segun como arranque la cinta.
 // 5.0 (27-10-2026): sin TQQQ (era el B4): fuera CalculoTqqq, el ajuste Tqqq41AnclaNoche ("TQQQ de noche") y su paso al motor y a los cambios;
 // la descarga de CBOE baja SPX y SPY solamente.
+// 5.0 (27-10-2026, P5): solo los textos de los ajustes de "7. Datos" (para ES: SPX = _SPX de CBOE con SPXW y SPX mensual, SPY; el tamaño de la
+// bajada de SPX; sin "la vista previa" de la 4.1 como unica referencia). Nombres de propiedad, tipos, defaults y la logica del host NO cambian.
+// Las muestras de la historia de este encabezado (4.1.x) se refieren a la 4.1 sobre NQ/NDX/QQQ (el clon cambio los nombres de los libros).
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -33,15 +36,15 @@ namespace PythiaGexCinco
     {
         // ------------------------------------------------------------------ ajustes de datos (nombres NUEVOS: no hay valores guardados)
         [Display(Name = "Sesion y ventanas en hora de Nueva York", GroupName = "7. Datos", Order = 1010,
-                 Description = "Corregida (recomendado): la sesion va de 18:00 NY a 17:00 NY y no se rompe con el cambio de hora del 01-11. Apagado = paridad exacta con la vista previa (22:00-21:00 UTC fijo).")]
+                 Description = "Corregida (recomendado): la sesion de CME del ES/MES va de 18:00 NY a 17:00 NY (pausa diaria 17:00-18:00) y no se rompe con el cambio de hora de EE.UU. del 01-11. Apagado = la regla vieja de la 4.1 (22:00-21:00 UTC fijo, la de su vista previa en Python; en ES no hay paridad medida).")]
         public bool Familia41Corregida { get; set; } = true;
 
         [Display(Name = "Bajar las cadenas de CBOE (SPX, SPY)", GroupName = "7. Datos", Order = 1020,
-                 Description = "El propio indicador baja la cadena publica de CBOE (15 min de atraso), comprimida, de a un ticker, sin rafagas: cada 75 s en la rueda y cada 300 s fuera. Apagado = usa solo lo ya guardado en PythiaGex5\\cboe.")]
+                 Description = "El propio indicador baja la cadena publica de CBOE de SPX (el indice: series SPXW diarias y SPX mensuales) y de SPY (el ETF), con 15 min de atraso, comprimida, de a un ticker, sin rafagas: cada 75 s en la rueda y cada 300 s fuera. Una foto de SPX pesa ~1,7 MB comprimida (MEDIDO 27-10: unas 2 veces lo que pesaba NDX en la 4.1). Rithmic no transmite estas opciones (son OPRA, no CME). Apagado = usa solo lo ya guardado en PythiaGex5\\cboe: SPX y SPY quedan congelados y la pestaña lo avisa.")]
         public bool Cboe41Bajar { get; set; } = true;
 
         [Display(Name = "Tope de la bajada (KB/s)", GroupName = "7. Datos", Order = 1030,
-                 Description = "Limite de velocidad de la bajada de CBOE para no competir con Rithmic (la pausa entre trozos se calcula con esto).")]
+                 Description = "Limite de velocidad de la bajada de CBOE para no competir con Rithmic (la pausa entre trozos se calcula con esto). Si dos graficos piden topes distintos, manda el mas alto.")]
         [Range(16, 20000)]
         public int Cboe41TopeKBps { get; set; } = 1250;
 

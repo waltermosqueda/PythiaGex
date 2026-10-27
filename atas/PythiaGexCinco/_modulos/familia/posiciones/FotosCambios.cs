@@ -1,4 +1,5 @@
-// FotosCambios.cs — PythiaGex 4.1.2 (08-10-2026), modulo posiciones (B-pos).
+// FotosCambios.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1.2 (08-10-2026, modulo posiciones B-pos). 5.0 (P5): sin cambios de logica; las vidas
+// (ES 300 s, CBOE 1500 s) y las reglas de congelada son las de los minuteros (P1/P2/P3), no dependen de la escala.
 // Que foto es la "de ahora" de cada libro en el minuto t, con la MISMA regla de su minutero (sin llamar a los minuteros, que tienen estado):
 //   ES  (MinuteroEs:117-120): fotos de la sesion de t (TiempoFam, 22:00 UTC); la ultima con TsUtc <= t; vale si t - ts < 300 s.
 //   SPX (LibroMinuteroSpx:170-179 + ConversionSpx:187-195): generado al segundo; sin las de la pausa de CME (CalendarioSpx.EntreSesiones);

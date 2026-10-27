@@ -1,4 +1,4 @@
-// CambiosFamilia.cs — PythiaGex 4.1.2 (08-10-2026), modulo posiciones (B-pos). Pedido del operador: ver en la etiqueta si en un strike o muro
+// CambiosFamilia.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1.2 (08-10-2026, modulo posiciones B-pos). Pedido del operador: ver en la etiqueta si en un strike o muro
 // "estan aumentando o sacando posiciones en vivo". Lo que se puede medir y lo que no (DISENO_4_1_2_MONTOS.md, NO negociable):
 //   * Series por VOLUMEN: el cambio es el volumen operado en la ventana (5/15/30 min) en el MISMO (strike, vencimiento, lado), valuado con la
 //     gamma de AHORA (el efecto del precio, el tiempo y la IV queda afuera). No dice si abren o cierran: cerrar tambien suma volumen.
@@ -7,9 +7,15 @@
 //     ahora. Es cambio de POSICIONES entre dos noches (la OCC consolida una vez por noche), no actividad de hoy.
 //   * Nada de restar montos entre minutos: el perfil es lineal en VolC/VolP/OiC/OiP, asi que el cambio = PerfilLado(fotoΔ), con fotoΔ = la foto
 //     de ahora con esas columnas reemplazadas por las diferencias (mismo S, misma t, misma IV).
-// Unidades = las de NivelActual.GexM del mismo nivel (ES x0,2; SPX/SPY x1; familia = suma escalada), SIN redondear.
+// Unidades = las de NivelActual.GexM del mismo nivel (ES x0,5 = 50 USD por punto / 100; SPX/SPY x1; familia = suma escalada), SIN redondear.
 // 5.0 (27-10-2026): sin TQQQ (CalcularTqqq, CambiosLibro.EsTqqq, PerfilK.De(TqqqPerfil), OpcionesCambios.TqqqNoche, el regimen de OI "TQQQ"
 // y su parte de la clave del cache). ES, SPX, SPY y FAM se calculan igual: TQQQ iba DESPUES de los tres libros y con su propio resultado.
+// 5.0 (27-10-2026, P5): el MULTIPLICADOR de cada libro va EXPLICITO (EscalaDe: ES x50 = MinuteroEs.MULT -> 0,5; SPX y SPY x100 -> 1). En la 4.1
+//   CalcularLibro llamaba a ReglasFam.Escala con un LibroMinuto sin Mult y caia SIEMPRE en el default del libro (NQ 20/100 = 0,2): en el clon ese
+//   default quedaba 0,2 para "ES" y los ▲▼ y los montos del cambio de ES hubieran salido x0,4 contra el GexM del nivel (que el motor escala con el Mult
+//   del libro). P1 ya corrigio el default (ReglasFam.Escala de "ES" = MinuteroEs.MULT / 100); con el Mult explicito no depende de eso.
+//   Los textos de los comentarios con mediciones (horas de publicacion de OI, segundos de retraso, claves, precios 31.xxx) son de la 4.1 sobre
+//   NQ/NDX/QQQ: el clon cambio los nombres de los libros, no las mediciones (SIN MEDIR EN ES). Las reglas son relativas y valen igual.
 // 4.1.4 (09-10-2026): la fotoΔ se valua con "aporta si CUALQUIER lado es distinto de 0" (PerfilLado.Armar porLado). Con el neto (la regla de las
 //   series, que no cambia) un cambio igual de calls y puts con la misma IV se anulaba y el cambio del muro C y del muro P salia 0. Visto en el arnes
 //   posiciones (P3 linealidad) con los datos de esta noche: ES OI 10-09 05:59:55Z, K 31.160 (+9 calls, +9 puts, IV 0,206258 en los dos lados).
@@ -118,8 +124,13 @@ namespace PythiaGexCinco.Familia
 
     public sealed class CambiosFamilia
     {
-        public const string VERSION = "cambios 5.0 (27-10-2026, la 4.1.5d sin TQQQ)";
+        public const string VERSION = "cambios 5.0.0 (27-10-2026, Gamma ES: la 4.1.5d sin TQQQ; ES x50 explicito)";
         public static readonly string[] Libros = { "ES", "SPX", "SPY" };
+
+        /// <summary>5.0 (P5): el multiplicador / 100 de un libro, EXPLICITO: ES x50 (MinuteroEs.MULT, lo que manda el minutero de ES al motor) -> 0,5;
+        /// SPX y SPY x100 -> 1. Es el mismo que usa el motor para el GexM del nivel (ReglasFam.Escala con el Mult del libro), asi el cambio y el monto
+        /// de la etiqueta estan en las mismas unidades. En la 4.1 la llamada iba sin Mult y caia en el default del libro (NQ 0,2).</summary>
+        public static double EscalaDe(string libro) => ReglasFam.Escala(new LibroMinuto { Libro = libro, Mult = libro == "ES" ? MinuteroEs.MULT : 100.0 });
         /// <summary>Hasta cuanto antes de (ahora - W) se busca la foto de "antes" para reconocer una cadena congelada.</summary>
         public const double MIRAR_ATRAS_CONGELADA_S = 7200;
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
@@ -238,7 +249,7 @@ namespace PythiaGexCinco.Familia
 
         private CambiosLibro CalcularLibro(string lb, MetaLibro m, DateTime t, bool listo, Stopwatch sw)
         {
-            var r = new CambiosLibro { Libro = lb, TUtc = t, S = m.S, Conv = m.Conv, PorRazon = lb == "SPY", Escala = ReglasFam.Escala(new LibroMinuto { Libro = lb }) };
+            var r = new CambiosLibro { Libro = lb, TUtc = t, S = m.S, Conv = m.Conv, PorRazon = lb == "SPY", Escala = EscalaDe(lb) };   // 5.0 (P5): Mult explicito
             string motivo;
             if (lb == "ES") { r.Ahora = r.AhoraOriginal = FotosCambios.AhoraEs(_es, t, out motivo); }
             else { var (o, us) = FotosCambios.AhoraCboe(_cboe, lb, t, _op.Corregida, _convSpy, out motivo); r.AhoraOriginal = o; r.Ahora = us; }
@@ -476,13 +487,14 @@ namespace PythiaGexCinco.Familia
             }
         }
 
-        /// <summary>4.1.3: las replicas de la 2.0 (R20_*): su S y su conversion no son las del libro de la 4.1, asi que no se anotan cambios.</summary>
+        /// <summary>4.1.3: las replicas de la 2.0 (R20_*): su S y su conversion no son las del libro de la 5.0, asi que no se anotan cambios. 5.0 (P5): la
+        /// nota dice "estilo 2.0" porque R20_SPY_vol no replica nada en ES (la 2.0 no dibuja SPY ahi); R20_SPX_vol si es la replica de su libro SPX.</summary>
         public static bool EsReplica20(NivelActual n) => n?.Serie != null && n.Serie.StartsWith("R20_", StringComparison.Ordinal);
-        public const string NOTA_REPLICA20 = "replica de la 2.0: sin cambio por nivel (su conversion y su S no son las del libro de la 4.1)";
+        public const string NOTA_REPLICA20 = "estilo 2.0: sin cambio por nivel (su conversion y su S no son las del libro de la 5.0)";
         /// <summary>4.1.5d (revision 4.1.5b): las replicas de la clasica (R10_*): su base y su S (la de la rueda anterior) no son las del libro SPX de la 4.1
         /// (difieren de 1 a 15 pts), asi que tampoco se anotan cambios (antes D1/D2 de R10_SPX_dom tomaban el del libro SPX de la 4.1 y D3 ninguno).</summary>
         public static bool EsReplicaClasica(NivelActual n) => n?.Serie != null && n.Serie.StartsWith("R10_", StringComparison.Ordinal);
-        public const string NOTA_REPLICA_CLASICA = "replica de la clasica: sin cambio por nivel (su base y su S no son las del libro de la 4.1)";
+        public const string NOTA_REPLICA_CLASICA = "replica de la clasica: sin cambio por nivel (su base y su S no son las del libro SPX de la 5.0)";
 
         private NivelActual AnotarNivel(NivelActual n0, RegistroMinuto u)
         {
