@@ -360,13 +360,14 @@ namespace PythiaGexCinco.Familia
         public static bool EsGl(string serie) => serie != null && serie.StartsWith("GL_", StringComparison.Ordinal);
         /// <summary>5.0.4: los zeros estilo Gammalito (SPX y, desde la 5.0.4, ES): 1 px en la estela y etiqueta sin rol.</summary>
         public static bool EsGlZero(string serie) => serie == "GL_SPX_zero" || serie == "GL_ES_zero";
-        /// <summary>5.0.5 (27-10-2026, pedido del operador: "la barra derecha me roba espacio, ponele en el borde como corresponde un trabajo profesional,
-        /// fijate que no se superpongan con otros"): las barras del libro ES van en una FRANJA PROPIA pegada al borde derecho (contra el eje de precios de
-        /// ATAS), de GL_FRANJA_ES del ancho visible entre GL_FRANJA_MIN y GL_FRANJA_MAX px (antes: la mas larga = 25 % del ancho, entrando en las velas).
-        /// La franja se reserva siempre que la casilla este prendida (con o sin dato: la columna no salta cuando el libro ES aparece o se va) y la columna
-        /// de etiquetas (renglon de arriba, ↑/↓, rotulos de tramos, punteadas) termina a su izquierda. La mas larga llena la franja menos GL_FRANJA_SEP.</summary>
-        public const double GL_FRANJA_ES = 0.10;
-        public const int GL_FRANJA_MIN = 56, GL_FRANJA_MAX = 100, GL_FRANJA_SEP = 6;
+        /// <summary>Barras del libro ES. 5.0.5: iban en una FRANJA propia contra el borde (10 % del ancho) con la columna de etiquetas a su izquierda.
+        /// 5.0.6 (pedido del operador: "en una sola columna ... borra o pone fusionados"): la franja se elimino. Las barras ES van pegadas al borde
+        /// derecho, la mas larga = GL_ES_ANCHO del ancho (GL_ES_MIN_PX-GL_ES_MAX_PX), y cada renglon de texto de la columna termina GL_AIRE_ES px antes
+        /// de la barra ES de su altura (o en el borde si no hay).</summary>
+        public const double GL_ES_ANCHO = 0.08;
+        public const int GL_ES_MIN_PX = 40, GL_ES_MAX_PX = 80, GL_AIRE_ES = 4;
+        /// <summary>5.0.6: la barrita de peso de las etiquetas 2E (false = sin barrita: su carril vacio parecia otra columna).</summary>
+        public const bool BARRAS_2E = false;
         /// <summary>5.0.5: aire entre la columna de numeros del eje doble y las barras de la izquierda (antes los numeros quedaban encima de las barras).</summary>
         public const int GL_AIRE = 3;
         /// <summary>5.0.5: opacidad del fondo (color del grafico, sin borde) detras de las etiquetas de la columna, las ↑/↓ y la edad.</summary>
@@ -997,17 +998,12 @@ namespace PythiaGexCinco.Familia
             string vj = Venc(F.Instrumento), vg = Venc(instr);
             if (vj != "" && vg != "" && vj != vg)
             { Cartel(d, tam, area, "PythiaGex 5.0: los niveles son de " + F.Instrumento + " y este grafico es " + instr + " (otro vencimiento): no dibujo", ColRojo); return; }
-            // 5.0.5: la franja de las barras ES en el borde derecho. Desde aca xr es el borde derecho de la COLUMNA (etiquetas, renglon de arriba, ↑/↓,
-            // rotulos de tramos y punteadas terminan antes de la franja) y xBorde el del grafico. Con el grafico tan angosto que no entra (menos de 4 franjas),
-            // sin franja ni barras ES.
-            int xBorde = xr, franjaEs = 0;
-            if (aj.GlBarrasEs)
-            {
-                franjaEs = (int)Math.Max(GL_FRANJA_MIN, Math.Min(GL_FRANJA_MAX, Math.Round(GL_FRANJA_ES * Math.Max(0, xBorde - area.Left))));
-                if (xBorde - area.Left < 4 * franjaEs) franjaEs = 0;
-                xr = xBorde - franjaEs;
-                if (franjaEs > 0) d.FranjaEs = new Rectangle(xr, area.Top, franjaEs, area.Height);
-            }
+            // 5.0.6 (pedido del operador: "no quiero que las etiquetas y columnas esten robando espacio como si fueran cosas distintas, hace algo
+            // minimalista practico, en una sola columna ... borra o pone fusionados"): SIN franja reservada. Las barras ES y las etiquetas comparten UNA
+            // columna contra el borde derecho: las barras pegadas al borde (la mas larga = largoMaxEs) y cada renglon de texto termina donde empieza la
+            // barra ES de su altura (XDer, + GL_AIRE_ES); donde no hay barra llega al borde. xBorde = xr = el borde derecho del grafico.
+            int xBorde = xr;
+            double largoMaxEs = aj.GlBarrasEs ? Math.Max(GL_ES_MIN_PX, Math.Min(GL_ES_MAX_PX, Math.Round(GL_ES_ANCHO * Math.Max(0, xBorde - area.Left)))) : 0;
             // 5.0.5 (control de las 20:02 ART: el fondo de "SPX C" tapaba la punta de la ultima vela): los fondos de la columna se recortan a la derecha
             // de toda vela (de las VELAS_DER ultimas, con su maximo y minimo) que cae en su renglon: nunca tapan velas. Si el TEXTO igual cae sobre una
             // vela se cuenta en SolapesVelas (falta aire a la derecha del grafico: el desplazamiento de ATAS, no la 5.0).
@@ -1044,6 +1040,22 @@ namespace PythiaGexCinco.Familia
                 return yy > -1e6 && yy < 1e6 ? (int)Math.Round(yy) : int.MinValue;
             }
             bool EnPantalla(int y) => y != int.MinValue && y >= area.Top && y <= area.Bottom;
+            // 5.0.6: las barras ES (rectangulos ya en pantalla, pegados al borde) y el borde derecho libre para un renglon de texto [ya, ya + hh)
+            int altoEs = double.IsNaN(mY) ? GL_ALTO_MAX : (int)Math.Max(GL_ALTO_MIN, Math.Min(GL_ALTO_MAX, Math.Round(GL_ALTO_PASO * GL_PASO_SPX * Math.Abs(mY))));
+            var rectsEs = new List<(Rectangle R, double Precio, double Rel)>();
+            if (largoMaxEs > 0 && F.PerfilGl?.BarrasEs != null)
+                foreach (var b in F.PerfilGl.BarrasEs)
+                {
+                    int y = Yr(b.Precio); if (!EnPantalla(y)) continue;
+                    int largo = Math.Max(1, (int)Math.Round(Math.Abs(b.Rel) * largoMaxEs));
+                    rectsEs.Add((new Rectangle(xBorde - 2 - largo, y - altoEs / 2, largo, altoEs), b.Precio, b.Rel));
+                }
+            int XDer(int ya, int hh)
+            {
+                int x = xr;
+                foreach (var e in rectsEs) if (e.R.Top < ya + hh && e.R.Bottom > ya) x = Math.Min(x, e.R.Left - GL_AIRE_ES);
+                return x;
+            }
 
             // ---- 5.0.3: barras por strike estilo Gammalito a la IZQUIERDA, debajo de todo lo demas. 5.0.5: se arman DESPUES del eje doble (arrancan a la
             //      derecha de su columna de numeros) y se INSERTAN aca, en iPrimsGl; las del libro ES van justo despues de ellas (iPrimsEs).
@@ -1340,16 +1352,16 @@ namespace PythiaGexCinco.Familia
                             if (extra.Count > 0) roles = roles + "/" + string.Join("/", extra);
                             acomp2 = otros.Count == 0 ? "" : " · " + string.Join(" · ", otros);
                         }
-                        r.T1 = Unir(a0.LibroTxt, roles, aj.Montos ? (ESTILO_2E ? a0.MontoTxt.Replace("+", "") : a0.MontoTxt) : "");
+                        bool esCarga = a0.Partes != null && a0.Partes.Length > 0 && a0.Partes[0].Serie != null
+                                       && a0.Partes[0].Serie.StartsWith("CARGA", StringComparison.Ordinal);
+                        // 5.0.6 (pedido del operador: "minimalista practico"): la carga en 2E queda "SPX 7.715 C1.4k P1.1k" (strike y su interes abierto):
+                        // sin el monto de gamma ni el precio en ES (lo dicen la raya y el eje). Antes: "SPX 7.715 C1.4k P1.1k 87M 7.750,56".
+                        r.T1 = Unir(a0.LibroTxt, roles, aj.Montos && !(ESTILO_2E && esCarga) ? (ESTILO_2E ? a0.MontoTxt.Replace("+", "") : a0.MontoTxt) : "");
                         if (aj.Cambios && a0.CambioTxt != "") { r.T2 = " " + a0.CambioTxt; r.ColCambio = ColorSentido(a0.CambioSentido); }
                         // 4.1.6 (estilo 2E elegido por el operador 09-10: "una sola columna a la derecha, sin el precio", con barrita LINEAL de peso):
                         // sin precio ni fuente (el precio se lee en el eje y en la raya; la fuente esta en el detalle); quedan los acompañantes.
-                        // 4.1.8: la carga (strikes abiertos) SI lleva el precio aunque el estilo 2E lo saque del resto. Es la referencia
-                        // dura: con el grafico alejado el eje no alcanza para leer a que strike apunta la raya, y el operador decide sobre ese
-                        // numero. Las demas series siguen como las eligio el 09-10 ("una sola columna a la derecha, sin el precio").
-                        bool esCarga = a0.Partes != null && a0.Partes.Length > 0 && a0.Partes[0].Serie != null
-                                       && a0.Partes[0].Serie.StartsWith("CARGA", StringComparison.Ordinal);
-                        r.T3 = ESTILO_2E ? (esCarga ? " " + precio + acomp2 : acomp2)
+                        // 4.1.8 la carga llevaba el precio; 5.0.6 tampoco (pedido "minimalista" del 27-10, ver arriba).
+                        r.T3 = ESTILO_2E ? acomp2
                                          : " " + precio + (a0.FuenteTxt != "" ? " " + a0.FuenteTxt : "") + acomp;
                     }
                     r.Txt = r.T1 + r.T2 + r.T3;
@@ -1377,9 +1389,9 @@ namespace PythiaGexCinco.Familia
                                + (double.IsNaN(rb.FutMnq) ? "" : " · fut " + P(rb.FutMnq))
                                + (rb.Libros != null && rb.Libros.Length > 0 ? " · " + string.Join("/", rb.Libros) : "")
                                + (string.IsNullOrEmpty(rb.Nota) ? "" : " · " + rb.Nota);
-                    int wRb = medir(tRb, tamC).Width;
-                    Sombra(d, tamC, tRb, ColNaranja, xr - wRb - 6, topCol);
-                    ocupado.Add(new Rectangle(xr - wRb - 7, topCol, wRb + 8, hC)); colIzq = Math.Min(colIzq, xr - wRb - 7);
+                    int wRb = medir(tRb, tamC).Width, xdRb = XDer(topCol, hC);   // 5.0.6: termina donde empieza la barra ES de su altura
+                    Sombra(d, tamC, tRb, ColNaranja, xdRb - wRb - 6, topCol);
+                    ocupado.Add(new Rectangle(xdRb - wRb - 7, topCol, wRb + 8, hC)); colIzq = Math.Min(colIzq, xdRb - wRb - 7);
                     topCol += hC;
                 }
                 // la edad va ANTES de los numeros: una linea arriba de la columna
@@ -1388,10 +1400,10 @@ namespace PythiaGexCinco.Familia
                     bool viejo = edadMax > VIEJO_S;
                     bool congelada = fuentes.Any(x => x != null && x.Congelada);
                     string tEd = (viejo ? "DATO DE HACE " : "dato de hace ") + Edad(edadMax) + (congelada ? " · cadena congelada" : "");
-                    int wEd = medir(tEd, tamC).Width;
-                    Sombra(d, tamC, tEd, viejo ? ColNaranja : Color.FromArgb(170, ColTexto), xr - wEd - 6, topCol);
+                    int wEd = medir(tEd, tamC).Width, xdEd = XDer(topCol, hC);   // 5.0.6
+                    Sombra(d, tamC, tEd, viejo ? ColNaranja : Color.FromArgb(170, ColTexto), xdEd - wEd - 6, topCol);
                     d.EdadColumna = tEd;
-                    ocupado.Add(new Rectangle(xr - wEd - 7, topCol, wEd + 8, hC)); colIzq = Math.Min(colIzq, xr - wEd - 7);
+                    ocupado.Add(new Rectangle(xdEd - wEd - 7, topCol, wEd + 8, hC)); colIzq = Math.Min(colIzq, xdEd - wEd - 7);
                     topCol += hC;
                 }
                 // 4.1.6d: el RECUADRO desplegable arriba a la DERECHA (pedido del operador 09-10: "el recuadro choca, ponelo arriba a la derecha donde
@@ -1405,7 +1417,7 @@ namespace PythiaGexCinco.Familia
                     int wt = (int)Math.Ceiling(cw * tit.Length) + libs.Sum(z => 14 + (int)Math.Ceiling(cw * z.L.Length)) + 8;
                     var top5 = et.Where(r => Fin(r.Cab?.Peso ?? double.NaN)).OrderByDescending(r => r.Cab.Peso).Take(5).ToList();
                     int wb = Math.Max(wt, top5.Select(r => AnchoTexto(r.T1 + r.T2, r.T2 != "", tamC, cw, medir) + 12).DefaultIfEmpty(0).Max());
-                    int rx = xr - wb - 4, ry = area.Top + RECUADRO_Y;   // 4.1.6f: arriba de todo, apenas debajo del boton ▶| de ATAS
+                    int ry = area.Top + RECUADRO_Y, rx = XDer(ry, hC) - wb - 4;   // 4.1.6f: arriba de todo, apenas debajo del boton ▶| de ATAS (5.0.6: y de la barra ES)
                     if (!double.IsNaN(edadMax))
                     {   // 4.1.6f (pedido del operador 09-10: "este mensaje nunca me sirvio, recortalo al minimo"): solo la edad, p. ej. "5,1 h";
                         // en naranja si pasa de 30 min (protocolo: la edad va ANTES de los numeros). 5.0.2: la pestaña de detalle se elimino.
@@ -1453,18 +1465,21 @@ namespace PythiaGexCinco.Familia
                 double maxPeso = ESTILO_2E && nuevo ? en.Select(r => r.Cab?.Peso ?? double.NaN).Where(Fin).DefaultIfEmpty(double.NaN).Max() : double.NaN;
                 foreach (var r in (ESTILO_2E && nuevo) ? en : new List<Rot>())
                 {
-                    int bw = BARRA_2E, tw = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir), w = bw + 6 + tw, x0 = xr - w - 4, yb = r.Yl - hC / 2;
+                    // 5.0.6 (pedido del operador: "minimalista practico, en una sola columna ... borra o pone fusionados"): SIN la barrita de peso (su
+                    // carril vacio parecia otra columna); el renglon termina donde empieza la barra ES de su altura (XDer).
+                    int yb = r.Yl - hC / 2, xd = XDer(yb, hC);
+                    int bw = BARRAS_2E ? BARRA_2E : 0, tw = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir), w = (bw > 0 ? bw + 6 : 0) + tw, x0 = xd - w - 4;
                     // 5.0.5 (control de las 20:47 ART: con el precio en el nivel, "3.0 SPX D1 1,63B · Clasica SPX D2" caia encima de las ultimas velas y no
                     // se leia; el margen derecho del grafico es de ATAS): si la etiqueta choca con una vela, se COMPACTA. Primero los acompañantes pasan a
                     // " +N" (cuantas series mas hay en ese precio); si igual choca, sin la barrita de peso. Lo que no se puede achicar mas se cuenta en
-                    // SolapesVelas. La carga (con su precio en T3) no se compacta.
-                    if (CorteVelas(x0 - 3, xr, yb, hC) != int.MinValue && r.T3.Contains("·"))
+                    // SolapesVelas.
+                    if (CorteVelas(x0 - 3, xd, yb, hC) != int.MinValue && r.T3.Contains("·"))
                     {
                         int nAc = r.T3.Count(ch => ch == '·');
                         r.T3 = " +" + nAc; r.Txt = r.T1 + r.T2 + r.T3;
-                        tw = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir); w = bw + 6 + tw; x0 = xr - w - 4;
+                        tw = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir); w = (bw > 0 ? bw + 6 : 0) + tw; x0 = xd - w - 4;
                     }
-                    if (CorteVelas(x0 - 3, xr, yb, hC) != int.MinValue) { bw = 0; w = tw; x0 = xr - w - 4; }
+                    if (bw > 0 && CorteVelas(x0 - 3, xd, yb, hC) != int.MinValue) { bw = 0; w = tw; x0 = xd - w - 4; }
                     int bh = Math.Max(4, hC - 8), by = r.Yl - bh / 2;
                     // 5.0.5 (pedido del operador: "que no se superpongan con otros"): un fondo del color del grafico detras de la etiqueta. Sin borde (sigue
                     // siendo "sin caja", el estilo 2E del 09-10), pero las rayas, la estela y las punteadas ya no pasan POR ENCIMA del texto (se leia tachado)
@@ -1491,7 +1506,7 @@ namespace PythiaGexCinco.Familia
                 }
                 foreach (var r in (ESTILO_2E && nuevo) ? new List<Rot>() : en)
                 {
-                    int w = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir) + 10, x0 = xr - w - 2, yb = r.Yl - hC / 2;
+                    int yb = r.Yl - hC / 2, w = AnchoTexto(r.Txt, r.T2 != "", tamC, cw, medir) + 10, x0 = XDer(yb, hC) - w - 2;   // 5.0.6: XDer
                     d.Relleno(Color.FromArgb(225, ColFondo), new Rectangle(x0, yb, w, hC));
                     d.Borde(Color.FromArgb(200, r.Col), 1f, new Rectangle(x0, yb, w, hC));
                     d.Relleno(r.Col, new Rectangle(x0, yb, 3, hC));
@@ -1505,7 +1520,7 @@ namespace PythiaGexCinco.Familia
                 int yA = topCol, yB = area.Bottom - hC - 2;
                 foreach (var r in et.Where(r => r.Fuera > 0).OrderByDescending(r => r.Y).Take(2))
                 {
-                    var t = "↑ " + r.Txt; int w = AnchoTexto(t, r.T2 != "", tamC, cw, medir), x = xr - w - 6;
+                    var t = "↑ " + r.Txt; int w = AnchoTexto(t, r.T2 != "", tamC, cw, medir), x = XDer(yA, hC) - w - 6;   // 5.0.6: XDer
                     Fondo(x - 3, yA, x + w + 2, hC);   // 5.0.5: fondo (nada pasa por encima del texto; recortado en la ultima vela)
                     d.Texto(t, tamC, Color.FromArgb(200, ColFondo), x + 1, yA + 1);
                     Tramos(d, r, "↑ ", tamC, cw, r.Col, x, yA);
@@ -1514,7 +1529,7 @@ namespace PythiaGexCinco.Familia
                 }
                 foreach (var r in et.Where(r => r.Fuera < 0).OrderBy(r => r.Y).Take(2))
                 {
-                    var t = "↓ " + r.Txt; int w = AnchoTexto(t, r.T2 != "", tamC, cw, medir), x = xr - w - 6;
+                    var t = "↓ " + r.Txt; int w = AnchoTexto(t, r.T2 != "", tamC, cw, medir), x = XDer(yB, hC) - w - 6;   // 5.0.6: XDer
                     Fondo(x - 3, yB, x + w + 2, hC);   // 5.0.5: fondo
                     d.Texto(t, tamC, Color.FromArgb(200, ColFondo), x + 1, yB + 1);
                     Tramos(d, r, "↓ ", tamC, cw, r.Col, x, yB);
@@ -1535,38 +1550,24 @@ namespace PythiaGexCinco.Familia
             //      pegadas al borde derecho del grafico (contra el eje de precios de ATAS) y creciendo hacia la izquierda; la mas larga llena la franja menos
             //      GL_FRANJA_SEP (el aire que la separa de la columna). Una rayita vertical muy tenue marca el borde de la franja. Mismo alto y colores que
             //      las de SPX. Se insertan en iPrimsEs: debajo de la estela, las etiquetas y el eje, como las de SPX/SPY.
-            var pgE = F.PerfilGl;
-            if (franjaEs > 0)
+            //      5.0.6: sin franja ni rayita: las barras (rectsEs, armadas arriba) van pegadas al borde y las etiquetas ya se corrieron lo justo (XDer).
+            if (rectsEs.Count > 0)
             {
-                d.Linea(Color.FromArgb(34, ColTexto), 1f, xr + 1, area.Top + Math.Max(0, aj.MargenSup), xr + 1, area.Bottom);
-                if (pgE?.BarrasEs != null && pgE.BarrasEs.Length > 0)
+                var prE = new List<PrimPantalla>(rectsEs.Count);
+                foreach (var e in rectsEs)
                 {
-                    int xFin = xBorde - 2;
-                    double largoMaxE = Math.Max(4, franjaEs - GL_FRANJA_SEP - 2);
-                    int altoE = double.IsNaN(mY) ? GL_ALTO_MAX : (int)Math.Max(GL_ALTO_MIN, Math.Min(GL_ALTO_MAX, Math.Round(GL_ALTO_PASO * GL_PASO_SPX * Math.Abs(mY))));
-                    var barrasE = pgE.BarrasEs;
-                    var prE = new List<PrimPantalla>(barrasE.Length);
-                    for (int i = 0; i < barrasE.Length; i++)
-                    {
-                        var b = barrasE[i];
-                        int y = Yr(b.Precio); if (!EnPantalla(y)) continue;
-                        int largo = Math.Max(1, (int)Math.Round(Math.Abs(b.Rel) * largoMaxE));
-                        int x0 = xFin - largo;
-                        prE.Add(new PrimPantalla(TipoPrimPantalla.Relleno, b.Rel > 0 ? ColGlVerde : ColGlRojo, new Rectangle(x0, y - altoE / 2, largo, altoE), 0, 0, 0, null));
-                        d.BarrasGlEs.Add((b.Precio, b.Rel, x0, y, largo, altoE));
-                    }
-                    if (prE.Count > 0) { d.Prims.InsertRange(Math.Min(iPrimsEs, d.Prims.Count), prE); d.GlEsXFin = xFin; }
+                    prE.Add(new PrimPantalla(TipoPrimPantalla.Relleno, e.Rel > 0 ? ColGlVerde : ColGlRojo, e.R, 0, 0, 0, null));
+                    d.BarrasGlEs.Add((e.Precio, e.Rel, e.R.Left, e.R.Top + e.R.Height / 2, e.R.Width, e.R.Height));
                 }
+                d.Prims.InsertRange(Math.Min(iPrimsEs, d.Prims.Count), prE); d.GlEsXFin = xBorde - 2;
+                d.FranjaEs = new Rectangle(xBorde - 2 - (int)largoMaxEs, area.Top, (int)largoMaxEs, area.Height);   // diagnostico: hasta donde pueden llegar
             }
 
             // ---- 5.0.5: auditoria de solapes (diagnostico, va al log de la pantalla): las barras ES contra todo lo que ocupa lugar (columna de etiquetas,
             //      renglon de arriba, rotulos de tramos) y las de la izquierda contra los numeros del eje doble. Esperado: 0 y 0.
             d.ColumnaDer = xr; d.ColumnaIzq = colIzq;
-            foreach (var b in d.BarrasGlEs)
-            {
-                var rb = new Rectangle(b.X0, b.Y - b.Alto / 2, b.Largo, b.Alto);
-                if (ocupado.Any(o => o.IntersectsWith(rb)) || (colIzq != int.MaxValue && b.X0 < xr && rb.Right > colIzq)) d.SolapesEs++;
-            }
+            foreach (var e in rectsEs)
+                if (ocupado.Any(o => o.IntersectsWith(e.R))) d.SolapesEs++;   // 5.0.6: misma columna; esperado 0 (cada renglon termina antes de su barra)
             if (ejeAncho > 0)
                 foreach (var b in d.BarrasGl)
                 {

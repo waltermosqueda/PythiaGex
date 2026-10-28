@@ -1,4 +1,4 @@
-// PantallaFamilia.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1 (modulo pantalla B5, 08-10-2026). Implementa IPantallaFamilia (ContratosPantalla.cs).
+﻿// PantallaFamilia.cs — PythiaGex 5.0 (Gamma ES), clon de la 4.1 (modulo pantalla B5, 08-10-2026). Implementa IPantallaFamilia (ContratosPantalla.cs).
 // 5.0 (27-10-2026, P5): solo cambia la VERSION que va al log (el armado de ES esta en ArmadoPantalla).
 // 5.0.3 (27-10-2026): la VERSION y el resumen del log dicen las barras estilo Gammalito (el dibujo esta en ArmadoPantalla).
 // 5.0.4 (27-10-2026): la VERSION, el resumen y la linea del primer render dicen tambien las barras del libro ES (a la derecha).
@@ -20,7 +20,7 @@ namespace PythiaGexCinco.Familia
 {
     public sealed class PantallaFamilia : IPantallaFamilia
     {
-        public const string VERSION = "pantalla 5.0.5 (27-10-2026, Gamma ES: solo graficos ES/MES; eje doble Ninguno/SPX/SPY, default SPX, cotas de ES; grupo de etiquetas 0,25 pt; barras y series estilo Gammalito; barras del libro ES en su franja del borde derecho; auditoria de solapes)";
+        public const string VERSION = "pantalla 5.0.6 (27-10-2026, Gamma ES: solo graficos ES/MES; eje doble Ninguno/SPX/SPY, default SPX, cotas de ES; grupo de etiquetas 0,25 pt; barras y series estilo Gammalito; barras del libro ES y etiquetas en UNA columna contra el borde; auditoria de solapes)";
         private const long M2 = 120_000;
         private const int TOPE_VELAS = 20000;      // con el grafico muy alejado no se recorren mas velas que esto (la 4.0.6 no tenia tope)
 
@@ -171,7 +171,7 @@ namespace PythiaGexCinco.Familia
         /// <summary>5.0.5: el renglon de la auditoria de solapes (donde quedo cada cosa y cuantas barras se pisan con algo).</summary>
         public static string Solapes(DibujoPantalla d)
         {
-            string fr = d.FranjaEs.IsEmpty ? "sin franja ES" : "franja ES x=" + d.FranjaEs.Left + ".." + d.FranjaEs.Right;
+            string fr = d.FranjaEs.IsEmpty ? "sin barras ES" : "barras ES x=" + d.FranjaEs.Left + ".." + d.FranjaEs.Right;
             string col = d.ColumnaIzq == int.MaxValue ? "sin columna" : "columna x=" + d.ColumnaIzq + ".." + d.ColumnaDer;
             return fr + " (" + d.BarrasGlEs.Count + " barras ES" + (d.BarrasGlEs.Count == 0 ? "" : ", la mas larga " + d.BarrasGlEs.Max(b => b.Largo) + " px") + ") · " + col
                  + " · barras izq " + d.BarrasGl.Count + (d.XIzqGl == int.MinValue ? "" : " desde x=" + d.XIzqGl) + " · eje " + d.EjeAncho + " px"

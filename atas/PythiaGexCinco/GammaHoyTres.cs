@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -94,7 +94,7 @@ namespace PythiaGexCinco
     public partial class GammaCinco : Indicator
     {
         private const string LOG = "gammahoy";
-        private const string VERSION = "5.0.5";
+        private const string VERSION = "5.0.6";
         private const string MOTOR_TRES = "3.6.9";    // la version de la 3.0 que corre adentro (clonar_4_0.py)
         private const int MIN_STRIKES_UTILES = 8;     // strikes con IV en call y put para que la cuenta valga
 
