@@ -1,0 +1,12 @@
+bitacora de reacciones 5.0 — desde 2026-10-27 00:34 UTC, 646 minutos con precio, 1499 con niveles (regla en el encabezado del script)
+serie            | real: toques reb rup nada  %reb | corrido (placebo): toques %reb | real - placebo
+MUROS_ES_oi      |   11    5    5    1  45.5 |   58  39.7 |  +5.8
+MUROS_SPX_vol    |   44   10   21   13  22.7 |  122  41.0 | -18.3
+R20_SPX_vol      |   22    5   13    4  22.7 |   91  45.1 | -22.3
+R10_SPX_dom      |   60   16   34   10  26.7 |  160  38.1 | -11.5
+R10_SPX_zero     |    0    0    0    0   nan |    5  60.0 |  +nan
+GL_SPX_zero      |    2    1    0    1  50.0 |   14  28.6 | +21.4
+GL_ES_dom        |    5    3    1    1  60.0 |   21  23.8 | +36.2
+GL_ES_zero       |    6    0    4    2   0.0 |   28  39.3 | -39.3
+TODAS            |  150   40   78   32  26.7 |  499  39.7 | -13.0
+Ojo: con pocas decenas de toques la diferencia contra el placebo es ruido; recien con cientos (varias sesiones) dice algo. Describe, no anticipa.

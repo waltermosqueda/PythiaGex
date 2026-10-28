@@ -69,6 +69,7 @@
 - [Archivo de cadenas](archivo-cadenas-y-respaldo.md) — rama cadenas cada minuto; viva solo con ATAS abierto.
 - [Medir videos con OpenCV](medir-videos-con-opencv.md) — analizar_guiones.py y sus trampas.
 - [Reiniciar ATAS sin pedir permiso](no-reiniciar-atas-con-posicion.md) — regla 10-09: reiniciar cuando haga falta.
+- [Si opera, no tocar el mouse (27-10)](no-mover-mouse-si-opera.md) — con posicion/ordenes/panel visibles: solo capturas pasivas; nada de mouse, reinicios ni instalaciones.
 - [Gatillos de order flow en la banda](gatillos-order-flow-banda.md) — el order flow solo es una moneda.
 - [Vencimientos 0DTE auditados](vencimientos-0dte-auditados.md) — dias bien; arreglos del nucleo y del arranque.
 - [Traspaso 08-09](traspaso-2026-09-08.md) — estado al cortarse la cuota.
@@ -122,6 +123,6 @@
 - [Respaldar al terminar cada tanda (09-10)](respaldar-al-terminar.md) — estable = instalada+verificada+verde y sin agentes editando: push publico + privado + espejo Inversiones (Drive).
 - [Estudio toques EMA 9/20 en 45 s (15-10)](estudio-toques-ema-45s.md) — su grafico es MNQZ6 45 s; reglas v3 verificadas; reiniciar_atas.ps1 le borro el espacio (corregido)
 - [Arranque automatico de ATAS (16-10)](arranque-automatico-atas.md) — tarea \PythiaGex\ATAS - arranque lun-vie 10:00 AR; probada en vivo 58 s; log pythiagex-arranque.log
-- [PythiaGex 5.0 Gamma ES (27-10)](pythiagex-5-0-gamma-es.md) — INSTALADA en MES 1m, auditor codigo 0; tipo nuevo se agrega por el dialogo; vigia de suscripciones mudas; pendientes
+- [PythiaGex 5.0 Gamma ES (27-10)](pythiagex-5-0-gamma-es.md) — 5.0.5 instalada: barras ES en franja del borde, sin solapes; izq SPX/SPY 15 min tarde, der ES vivo; rayas grises = PythiaVWAP; rebotes 28,7 % vs placebo 42,3 %
 - [la referencia sobre ES: formula (27-10)](la referencia-es-formula.md) — amarillos 2 dominantes x 2 instancias por minuto; izq gamma x vol neto; zero cambio de signo; derecha convexidad ABIERTA
 - [SPX en vivo y X-Ray (27-10)](fuentes-tiempo-real-y-xray.md) — sin fuente gratis < 15 min; X-Ray = OptionsDepth sobre SPX sin API; boton X-Ray web desconecta ATAS

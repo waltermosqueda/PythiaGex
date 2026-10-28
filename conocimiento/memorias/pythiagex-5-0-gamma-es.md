@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 404dab2f-b5f6-48fa-ba08-3ab764cbbdd8
-  modified: 2026-10-27T16:06:07.387Z
+  modified: 2026-10-27T22:37:16.520Z
 ---
 
 Pedido 26-10 23:5x: "creame un indicador pythiagex gamma v5 como el de nq pero para es mes spx spy". `atas/PythiaGexCinco`
@@ -66,3 +66,17 @@ DERECHA pegadas a la columna de etiquetas, amarillos GL_ES_dom, zero GL_ES_zero;
 Auditado en pantalla al abrir la sesion nocturna (22:03Z): GL ES D1 7755 −12M y zero 7760 = recalculo propio desde viva3-ES. Las barras aparecen
 recien con el primer minuto calculado en vivo: en la pausa de CME (17-18 NY) no hay. Trampa: reiniciar ATAS en la pausa de CME → Rithmic no conecta
 ("Connect attempt did not complete within 00:01:00"): reconectar con conectar_atas.ps1 + fila_en_y.ps1 -Nombre Connect -Y 355.
+
+**5.0.5 INSTALADA 27-10 19:32 ART (git e135e73ff, DLL 5E214D3B…):** pedido "la barra derecha me roba espacio, ponele en el borde ... que no se
+superpongan". Barras ES en FRANJA PROPIA contra el eje de precios (10 % del ancho, 56-100 px, rayita tenue); la columna de etiquetas termina a su
+izquierda; barras SPX/SPY arrancan despues de los numeros del eje doble; fondo del color del grafico (sin borde) detras de etiquetas, ↑/↓, edad y
+numeros del eje; auditoria de solapes al log de pantalla cada 10 min ("SOLAPES ES/columna=0 izq/eje=0"). Las rayas GRISES gruesas planas que
+terminan en el corte de sesion son de **PythiaVWAP** (VWAP de la sesion anterior y sus bandas), NO de la 5.0 ni de X-Ray. Con el ChartOffset de
+30 velas queda ~5 px entre la ultima vela y la columna: si el operador quiere mas aire, subir ese desplazamiento de ATAS (no tocado).
+Que es cada lado (para explicarle): IZQUIERDA = SPX y SPY de CBOE (15 min tarde; de noche congelado en el dato de las 16:14 NY), DERECHA = opciones
+sobre el futuro ES por Rithmic EN VIVO 24 h; misma cuenta (gamma x (vol calls - vol puts)), cada lado escalado a SU barra mas larga (no comparar
+largos entre lados: SPX ~2,3B contra ES ~25M). OJO: en la referencia la derecha es otra cosa ("convexidad", sin descifrar).
+Bitacora de toques/rebotes (`herramientas/bitacora_reacciones_5_0.py`, 27-10 noche, 412 min con precio): 122 toques, rebote 28,7 % contra 42,3 % del
+placebo corrido ±2,5/±5: los niveles NO se respetan mas que el azar (una sesion: ruido). Control cada 15 min armado con CronCreate (sesion).
+Trampa: el renglon naranja "◀ MM-dd HH:mmZ" que queda pegado tras mover el mouse con computer-use es artefacto del salto del cursor: pasar el mouse
+por el grafico y sacarlo por arriba.

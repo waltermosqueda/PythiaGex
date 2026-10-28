@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: f5879819-e2a4-405b-87b0-959ace090d7b
-  modified: 2026-10-06T19:16:42.068Z
+  modified: 2026-10-27T22:37:20.505Z
 ---
 
 **LA CAUSA DE FONDO (captura del operador, 06-10 16:16):** la ventana del chat de Claude queda ENCIMA del lado derecho de los dialogos de ATAS
@@ -34,6 +34,11 @@ herramientas/atas_al_frente.ps1` (SetForegroundWindow con el truco Alt) y recien
    grafico -> M2 -> Apply (hover antes de cada clic).
 7. **Connect del login**: el clic en el boton no funciona; clic en un campo del cuadro y Enter si. El `Invocar "Connect"` por UIA del
    instalador da "candidatos 0" en 8.0.15 (la ventana nueva con publicidad): dejarlo y hacer clic+Enter desde computer-use.
+
+8. **27-10 19:28: quise apagar el OJO de "Options X-Ray: Key Levels" y clickeé el TACHO** (lo borre; lo volvi a agregar con buscar "Key Levels" +
+   UIA "Add to chart" + "Apply"). La imagen del zoom viene REESCALADA: no sacar coordenadas de iconos de 15 px de un zoom chico. En el dialogo del
+   MES 1m (fila 1 y≈398) los iconos de la fila con hover son: copiar ≈735, ojo ≈753, TACHO ≈770, estrella ≈790. Ante la duda, NO clickear iconos:
+   el borrado no se aplica hasta "Apply" (Cancel lo revierte).
 
 **Why:** cada reinicio + agregado de indicador se hace varias veces por sesion; sin esto se pierden 15-20 minutos cada vez.
 **How to apply:** seguir estos pasos tal cual; actualizar `herramientas/instalar_3_0.ps1` para que el login use clic en campo + Enter
