@@ -1,5 +1,15 @@
 # CHANGELOG — PythiaGex 5.0 (Gamma ES)
 
+## 5.0.6 (27-10-2026) — una sola columna: etiquetas y barras ES fusionadas (INSTALADA 23:43 ART, DLL 316DA52A…)
+- Pedido del operador (textual): "no quiero que las etiquetas y columnas esten robando espacio como si fueran cosas distintas, hace algo
+  minimalista practico, esto pone en una sola columna sino roba mucho espacio y controla que no superponga con nada, borra o pone fusionados".
+- Sin franja reservada ni rayita: las barras ES van pegadas al borde derecho (la mas larga 8 % del ancho, 40-80 px: `GL_ES_ANCHO/MIN/MAX`) y
+  cada renglon de texto (etiquetas, ↑/↓, rebobinado, edad, recuadro) termina 4 px antes de la barra ES de su altura (`XDer`); sin barra, en el borde.
+- Sin la barrita de peso de las etiquetas 2E (`BARRAS_2E = false`): su carril vacio parecia otra columna.
+- Carga en 2E: "SPX 7.715 C1.4k P1.1k" (strike + interes abierto); sin monto ni precio en ES.
+- Verificado en pantalla 23:43: "GL ES D1 −60M" pegado a la barra de 7755; SPX C 4,05B / P −2,81B, GL SPY D1 1,27B, cargas 7730 C1.9k P1.9k y
+  7710 C1.5k P2.1k = niv; auditor CODIGO 0. ATAS volvio con la posicion y las ordenes del operador intactas.
+
 ## 5.0.5 (27-10-2026) — pantalla profesional: barras ES en su franja del borde, nada se superpone (INSTALADA 19:32 ART, DLL 5E214D3B…)
 - Pedido del operador (textual): "la barra derecha me roba espacio, ponele en el borde como corresponde un trabajo profesional, fijate que no se
   superpongan con otros, hace todo profesional visual, audita visualmente como para que un trader entienda".
