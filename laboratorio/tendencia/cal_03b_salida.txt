@@ -1,0 +1,68 @@
+RONDA 2: eleccion y examen. SHA-256 PREREGISTRO_CALIBRACION_2.md: c7790c249b2a4db6195b23b3251f9590c619b8162754eca7473d8d3609894651
+
+BASE en DISEÑO: {'tarde': 13.0, 'tarde_vol': 15.38, 'cens': 0.0, 'tarde2': 9.0, 'cambios': 36.93, 'falsas5': 22.58, 'falsasN': 15.86, 'cambios_rueda': 9.79, 'falsas5_rueda': 4.26, 'falsasN_rueda': 4.42}
+curva F1 (cambios por sesion -> puntos tarde): 23.4->15.75, 24.0->13.38, 29.1->12.62, 37.2->12.00, 49.1->11.00, 67.0->10.62, 68.4->10.25, 96.2->8.75
+
+Mejor de cada familia por ganancia contra la curva (DISEÑO):
+  G1: G1 medTR60 x4 ganancia -0.11 | tarde 12.75, tarde_vol 16.00, cens 0.88, tarde2 9.25, cambios 28.98, falsas5 15.91, falsasN 10.23, cambios_rueda 7.81, falsas5_rueda 2.93, falsasN_rueda 2.79
+  G2: G2 n60 m3->1.5 a0.5 ganancia +1.06 | tarde 9.12, tarde_vol 10.75, cens 0.00, tarde2 7.25, cambios 69.65, falsas5 47.88, falsasN 34.88, cambios_rueda 19.02, falsas5_rueda 9.91, falsasN_rueda 9.63
+  G3: G3 ST(60,3.5) v1.5 j3 ganancia +2.75 | tarde 6.00, tarde_vol 6.75, cens 0.00, tarde2 5.25, cambios 104.65, falsas5 79.91, falsasN 62.72, cambios_rueda 29.65, falsas5_rueda 18.14, falsasN_rueda 18.00
+  G3d: G3d ST(60,3.5) v1.5 j8 ganancia +2.12 | tarde 6.62, tarde_vol 7.25, cens 0.00, tarde2 5.50, cambios 129.42, falsas5 102.35, falsasN 83.21, cambios_rueda 38.47, falsas5_rueda 25.60, falsasN_rueda 25.53
+
+Top 15 por ganancia contra la curva (DISEÑO):
+                        ganancia  tarde  tarde_vol  cens  tarde2  cambios  falsas5  falsasN  cambios_rueda  falsas5_rueda  falsasN_rueda
+cand                                                                                                                                    
+G3 ST(60,3.5) v1.5 j3       2.75   6.00       6.75  0.00    5.25   104.65    79.91    62.72          29.65          18.14          18.00
+G3 ST(60,3.5) v1.5 j5       2.75   6.00       6.75  0.00    5.00   131.63   104.47    84.26          36.98          23.95          23.91
+G3 ST(60,4) v1.5 j8         2.75   6.00       6.75  0.00    5.00   148.51   120.19    98.02          42.47          28.70          28.53
+G3 ST(60,3.5) v1.5 j8       2.75   6.00       6.75  0.00    5.00   150.28   121.81    99.28          42.79          29.00          28.79
+G3 ST(60,3) v1.5 j8         2.75   6.00       6.75  0.00    5.00   152.44   123.88   100.91          43.05          29.12          28.91
+G3 ST(60,4) v1.5 j3         2.62   6.12       6.75  0.88    5.25    98.84    75.12    58.84          28.30          17.33          17.19
+G3 ST(60,4) v1.5 j5         2.62   6.12       6.75  0.88    5.00   128.09   101.58    81.79          35.79          23.09          22.98
+G3 ST(60,3) v1.5 j5         2.50   6.25       6.75  0.00    5.00   135.72   108.09    87.07          37.95          24.60          24.58
+G3 ST(60,3) v1.5 j3         2.50   6.25       6.75  0.00    5.50   110.72    85.28    67.07          30.98          19.02          18.93
+G3 ST(60,3.5) v2 j3         2.31   8.50       8.75  0.00    6.75    58.09    38.42    28.40          16.65           8.51           8.23
+G3 ST(60,4) v2 j5           2.19   8.00       8.62  0.88    6.50    69.49    48.70    36.79          19.67          10.70          10.58
+G3 ST(60,3) v2 j3           2.16   8.50       8.75  0.00    7.00    65.51    44.65    33.44          18.19           9.33           9.30
+G3 ST(60,4) v2 j3           2.15   8.75       9.00  0.88    7.00    54.00    35.60    25.81          15.77           8.16           7.74
+G3d ST(60,3.5) v1.5 j8      2.12   6.62       7.25  0.00    5.50   129.42   102.35    83.21          38.47          25.60          25.53
+G3 ST(60,3.5) v2.5 j5       2.05   9.00      10.75  0.00    7.25    48.51    30.30    21.79          13.37           6.05           5.91
+
+DOMINAN a la base en DISEÑO (>= 1 pt antes y ruido <= en las tres medidas): 4
+                       ganancia  tarde  tarde_vol  cens  tarde2  cambios  falsas5  falsasN  cambios_rueda  falsas5_rueda  falsasN_rueda
+cand                                                                                                                                   
+G3 ST(60,4) v2.5 j3        1.02  11.00      11.50  0.88    8.00    36.93    21.60    14.74          10.33           4.40           4.09
+G2 n60 m4->2 a0.25         0.79  11.25      13.12  0.00    8.75    36.70    20.84    13.58          10.05           4.07           3.88
+G2 n60 m3.5->1.5 a0.1      0.63  11.50      13.62  0.00    9.00    35.47    20.12    13.60           9.70           3.74           3.77
+G2 n60 m3.5->2 a0.1        0.63  11.50      13.62  0.00    9.00    35.47    20.14    13.67           9.70           3.74           3.77
+
+ELEGIDO C = G3 ST(60,4) v2.5 j3
+  MES EXAMEN: antes en 24, despues en 16, igual 15 de 55; p 0.1341; media de la diferencia +1.57 pts (finitos) -> retraso NO PASA
+     base: tarde 13.50, tarde_vol 15.38, cens 1.82, tarde2 9.00, cambios 36.81, falsas5 19.62, falsasN 15.62, cambios_rueda 10.06, falsas5_rueda 3.62, falsasN_rueda 4.19
+     C   : tarde 12.00, tarde_vol 11.88, cens 0.00, tarde2 8.50, cambios 36.31, falsas5 18.81, falsasN 14.44, cambios_rueda 11.12, falsas5_rueda 4.62, falsasN_rueda 4.69
+     ruido <= 110 % en cambios, falsas 5 y normalizadas: PASA
+  MNQ MNQ: antes en 115, despues en 81, igual 42 de 238; p 0.0091; media de la diferencia +10.33 pts (finitos) -> retraso PASA
+     base: tarde 60.00, tarde_vol 59.75, cens 1.26, tarde2 39.75, cambios 35.50, falsas5 14.71, falsasN 14.65, cambios_rueda 9.09, falsas5_rueda 2.76, falsasN_rueda 3.79
+     C   : tarde 51.50, tarde_vol 50.00, cens 2.10, tarde2 36.25, cambios 37.35, falsas5 15.76, falsasN 16.03, cambios_rueda 11.32, falsas5_rueda 4.00, falsasN_rueda 5.09
+     ruido <= 110 % en cambios, falsas 5 y normalizadas: PASA
+
+VEREDICTO: NO PASA (MES no, MNQ si)
+
+Descriptivo: top 15 de DISEÑO por ganancia, en EXAMEN y en MNQ
+  G3 ST(60,3.5) v1.5 j3            EXAMEN tarde 7.00, cambios 103.12, falsas5 74.31, falsasN 61.19 | MNQ tarde 30.62, cambios 102.35, falsas5 60.65, falsasN 61.15
+  G3 ST(60,3.5) v1.5 j5            EXAMEN tarde 6.50, cambios 131.62, falsas5 99.50, falsasN 83.44 | MNQ tarde 28.00, cambios 129.12, falsas5 81.74, falsasN 82.88
+  G3 ST(60,4) v1.5 j8              EXAMEN tarde 5.75, cambios 149.69, falsas5 116.00, falsasN 97.81 | MNQ tarde 27.50, cambios 147.15, falsas5 95.82, falsasN 97.09
+  G3 ST(60,3.5) v1.5 j8            EXAMEN tarde 5.75, cambios 152.44, falsas5 118.31, falsasN 99.94 | MNQ tarde 27.50, cambios 149.21, falsas5 97.26, falsasN 98.65
+  G3 ST(60,3) v1.5 j8              EXAMEN tarde 5.75, cambios 154.94, falsas5 120.75, falsasN 102.00 | MNQ tarde 27.50, cambios 150.21, falsas5 97.88, falsasN 99.15
+  G3 ST(60,4) v1.5 j3              EXAMEN tarde 7.00, cambios 98.00, falsas5 70.19, falsasN 57.81 | MNQ tarde 30.38, cambios 97.38, falsas5 57.09, falsasN 57.56
+  G3 ST(60,4) v1.5 j5              EXAMEN tarde 6.50, cambios 127.00, falsas5 95.94, falsasN 80.06 | MNQ tarde 28.00, cambios 125.50, falsas5 78.97, falsasN 80.15
+  G3 ST(60,3) v1.5 j5              EXAMEN tarde 6.50, cambios 136.62, falsas5 104.12, falsasN 87.56 | MNQ tarde 28.25, cambios 132.76, falsas5 84.32, falsasN 85.24
+  G3 ST(60,3) v1.5 j3              EXAMEN tarde 7.00, cambios 109.62, falsas5 79.44, falsasN 65.62 | MNQ tarde 29.75, cambios 107.76, falsas5 64.09, falsasN 64.76
+  G3 ST(60,3.5) v2 j3              EXAMEN tarde 8.75, cambios 58.81, falsas5 36.62, falsasN 28.88 | MNQ tarde 40.50, cambios 59.56, falsas5 29.53, falsasN 29.50
+  G3 ST(60,4) v2 j5                EXAMEN tarde 8.25, cambios 71.19, falsas5 47.38, falsasN 37.94 | MNQ tarde 38.00, cambios 69.41, falsas5 36.32, falsasN 36.68
+  G3 ST(60,3) v2 j3                EXAMEN tarde 8.50, cambios 67.06, falsas5 43.38, falsasN 35.19 | MNQ tarde 39.75, cambios 64.97, falsas5 32.76, falsasN 33.00
+  G3 ST(60,4) v2 j3                EXAMEN tarde 9.25, cambios 54.56, falsas5 33.75, falsasN 26.31 | MNQ tarde 41.88, cambios 55.35, falsas5 27.21, falsasN 27.44
+  G3d ST(60,3.5) v1.5 j8           EXAMEN tarde 6.50, cambios 128.19, falsas5 95.44, falsasN 80.88 | MNQ tarde 30.00, cambios 133.91, falsas5 85.18, falsasN 86.44
+  G3 ST(60,3.5) v2.5 j5            EXAMEN tarde 11.50, cambios 46.81, falsas5 26.06, falsasN 20.44 | MNQ tarde 46.00, cambios 48.74, falsas5 22.94, falsasN 22.74
+  F1 ST(10,3)                      EXAMEN tarde 13.50, cambios 36.81, falsas5 19.62, falsasN 15.62 | MNQ tarde 60.00, cambios 35.50, falsas5 14.71, falsasN 14.65
+  F1 ST(60,3)                      EXAMEN tarde 14.00, cambios 37.19, falsas5 19.06, falsasN 14.94 | MNQ tarde 55.00, cambios 35.21, falsas5 14.62, falsasN 14.12

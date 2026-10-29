@@ -33,24 +33,50 @@ namespace Corriente
     ///
     /// AUDITORIA: cada 60 s, %APPDATA%\ATAS\PythiaGex\corriente\auditoria-AAAA-MM-DD.log con las ultimas velas (o h l c, ATR,
     /// SuperTrend, direccion, VWAP) para recalcularlas por fuera, y donde quedo la flecha. Ajustes con prefijo "Cor".
+    ///
+    /// 1.1 (29-10-2026) VUELTA RAPIDA. Pedido: "avisa demasiado tarde y te perdes las tendencias, mas en dias volatiles; sin sumar
+    /// ruido; llevalo a los limites". Medido en laboratorio/tendencia (PREREGISTRO_CALIBRACION y _2, CALIBRACION_INFORME.md):
+    ///   * Ronda 1 (80 versiones de un solo dial: ATR 5-60, multiplicador, cierre, eficiencia, Chandelier): todas caen en UNA curva
+    ///     retraso/ruido; avisar antes = mas cambios en falso en proporcion fija. El ATR(10) se infla con las velas del propio arranque.
+    ///   * Ronda 2 (114 de tres mecanismos): solo la VUELTA RAPIDA rompe la curva fuera de muestra (44 de 54 versiones en el examen de
+    ///     MES, 54 de 54 en MNQ). La elegida por las reglas (linea ATR 60 x 4 + vuelta si el precio retrocede 2,5 ATR desde el extremo
+    ///     del tramo en 3 velas o menos) tiene el mismo ruido que la 10 x 3 en la sesion entera y llega antes: MES diseño 57 contra 33
+    ///     movimientos (p 0,007), MNQ 115 contra 81 (p 0,009), MES examen 24 contra 16 (p 0,13: NO alcanzo la prueba fijada). En dias
+    ///     volatiles la mediana de puntos tarde baja de 15,4 a 11,5-11,9. En la rueda suma ~1 cambio por dia (10 -> 11). SIN VALIDAR del
+    ///     todo: el registro anota cada vuelta y su causa (linea o rapida) para seguir midiendo en vivo.
+    /// Ajustes NUEVOS (CorLinea*, CorRapida*): los viejos CorAtr / CorMult quedaron guardados en el .ws y lo pisarian (ATAS persiste por nombre).
     /// </summary>
     [DisplayName("PythiaGex - Corriente")]
     [Category("PythiaGex")]
     public class CorrienteIndicador : Indicator
     {
-        public const string Version = "1.0c";
+        public const string Version = "1.1";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ------------------------------------------------------------------ ajustes
-        [Display(Name = "ATR (velas)", GroupName = "Corriente", Order = 10)]
-        [Range(2, 200)]
-        public int CorAtr { get => _atrN; set { _atrN = Math.Max(2, value); RecalculateValues(); } }
-        private int _atrN = 10;
+        [Display(Name = "Linea: ATR (velas)", GroupName = "Corriente", Order = 10)]
+        [Range(2, 500)]
+        public int CorLineaAtr { get => _atrN; set { _atrN = Math.Max(2, value); RecalculateValues(); } }
+        private int _atrN = 60;
 
-        [Display(Name = "Multiplicador del ATR", GroupName = "Corriente", Order = 20)]
+        [Display(Name = "Linea: multiplicador del ATR", GroupName = "Corriente", Order = 20)]
         [Range(0.5, 20)]
-        public double CorMult { get => _mult; set { _mult = Math.Max(0.1, value); RecalculateValues(); } }
-        private double _mult = 3.0;
+        public double CorLineaMult { get => _mult; set { _mult = Math.Max(0.1, value); RecalculateValues(); } }
+        private double _mult = 4.0;
+
+        [Display(Name = "Vuelta rapida", GroupName = "Corriente", Order = 22)]
+        public bool CorRapida { get => _rapida; set { _rapida = value; RecalculateValues(); } }
+        private bool _rapida = true;
+
+        [Display(Name = "Vuelta rapida: retroceso (ATR)", GroupName = "Corriente", Order = 24)]
+        [Range(0.5, 20)]
+        public double CorRapidaAtr { get => _rapV; set { _rapV = Math.Max(0.1, value); RecalculateValues(); } }
+        private double _rapV = 2.5;
+
+        [Display(Name = "Vuelta rapida: en cuantas velas", GroupName = "Corriente", Order = 26)]
+        [Range(1, 60)]
+        public int CorRapidaVelas { get => _rapJ; set { _rapJ = Math.Max(1, value); RecalculateValues(); } }
+        private int _rapJ = 3;
 
         [Display(Name = "Tunel", GroupName = "Vista", Order = 30)]
         public bool CorTunel { get; set; } = true;
@@ -88,9 +114,15 @@ namespace Corriente
         private readonly List<double> _o = new List<double>(), _h = new List<double>(), _l = new List<double>(), _c = new List<double>();
         private readonly List<double> _atr = new List<double>(), _fu = new List<double>(), _fd = new List<double>(), _st = new List<double>();
         private readonly List<int> _dir = new List<int>();
+        // 1.1: extremo del tramo actual (maximo si la corriente va para arriba, minimo si va para abajo), la vela donde se hizo y
+        // si la vela dio vuelta la corriente por la via rapida
+        private readonly List<double> _ext = new List<double>();
+        private readonly List<int> _iext = new List<int>();
+        private readonly List<bool> _rap = new List<bool>();
         private readonly List<double> _pv = new List<double>(), _vv = new List<double>(), _vwap = new List<double>();
         private readonly List<DateTime> _hora = new List<DateTime>();
         private DateTime _ultAudit = DateTime.MinValue;
+        private bool _volcar = true;   // al primer registro despues de calcular: todas las velas, para la paridad con Python
         private bool _enContra;
         private readonly TimeSpan _periodo = TimeSpan.FromMilliseconds(500);
         private Action _latido;
@@ -135,8 +167,9 @@ namespace Corriente
         {
             lock (_llave)
             {
-                foreach (var x in new List<double>[] { _o, _h, _l, _c, _atr, _fu, _fd, _st, _pv, _vv, _vwap }) x.Clear();
-                _dir.Clear(); _hora.Clear();
+                foreach (var x in new List<double>[] { _o, _h, _l, _c, _atr, _fu, _fd, _st, _pv, _vv, _vwap, _ext }) x.Clear();
+                _dir.Clear(); _hora.Clear(); _iext.Clear(); _rap.Clear();
+                _volcar = true;
             }
         }
 
@@ -157,19 +190,33 @@ namespace Corriente
                     {
                         _o.Add(0); _h.Add(0); _l.Add(0); _c.Add(0); _atr.Add(0); _fu.Add(0); _fd.Add(0); _st.Add(0); _dir.Add(1);
                         _pv.Add(0); _vv.Add(0); _vwap.Add(0); _hora.Add(DateTime.MinValue);
+                        _ext.Add(0); _iext.Add(0); _rap.Add(false);
                     }
                     _o[bar] = o; _h[bar] = h; _l[bar] = l; _c[bar] = c; _hora[bar] = k.Time;
                     double cp = bar > 0 ? _c[bar - 1] : c;
                     double tr = Math.Max(h - l, Math.Max(Math.Abs(h - cp), Math.Abs(l - cp)));
                     _atr[bar] = bar == 0 ? tr : (_atr[bar - 1] * (_atrN - 1) + tr) / _atrN;
                     double hl2 = (h + l) / 2, up = hl2 - _mult * _atr[bar], dn = hl2 + _mult * _atr[bar];
-                    if (bar == 0) { _fu[bar] = up; _fd[bar] = dn; _dir[bar] = 1; }
+                    _rap[bar] = false;
+                    if (bar == 0) { _fu[bar] = up; _fd[bar] = dn; _dir[bar] = 1; _ext[bar] = h; _iext[bar] = 0; }
                     else
                     {
                         _fu[bar] = _c[bar - 1] > _fu[bar - 1] ? Math.Max(up, _fu[bar - 1]) : up;
                         _fd[bar] = _c[bar - 1] < _fd[bar - 1] ? Math.Min(dn, _fd[bar - 1]) : dn;
                         int d0 = _dir[bar - 1];
-                        _dir[bar] = d0 == 1 && c < _fu[bar] ? -1 : d0 == -1 && c > _fd[bar] ? 1 : d0;
+                        // extremo del tramo, incluida esta vela (todo sale de bar - 1: se puede recalcular la vela en curso tick a tick)
+                        double ext = _ext[bar - 1]; int iext = _iext[bar - 1];
+                        if (d0 == 1 && h > ext) { ext = h; iext = bar; }
+                        else if (d0 == -1 && l < ext) { ext = l; iext = bar; }
+                        int d = d0 == 1 && c < _fu[bar] ? -1 : d0 == -1 && c > _fd[bar] ? 1 : d0;
+                        // VUELTA RAPIDA (1.1): el precio retrocede CorRapidaAtr ATR desde el extremo del tramo en CorRapidaVelas velas o menos
+                        if (d == d0 && _rapida && bar - iext <= _rapJ)
+                        {
+                            if (d0 == 1 && ext - c >= _rapV * _atr[bar]) { d = -1; _rap[bar] = true; }
+                            else if (d0 == -1 && c - ext >= _rapV * _atr[bar]) { d = 1; _rap[bar] = true; }
+                        }
+                        if (d != d0) { ext = d == 1 ? h : l; iext = bar; }
+                        _dir[bar] = d; _ext[bar] = ext; _iext[bar] = iext;
                     }
                     _st[bar] = _dir[bar] == 1 ? _fu[bar] : _fd[bar];
                     double tp = (h + l + c) / 3;
@@ -298,17 +345,37 @@ namespace Corriente
                 string inst = "?"; try { inst = InstrumentInfo?.Instrument ?? "?"; } catch { }
                 string marco = "?"; try { marco = ChartInfo?.TimeFrame ?? "?"; } catch { }
                 sb.Append(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", Inv)).Append(" UTC v").Append(Version).Append(' ').Append(inst).Append(' ').Append(marco)
-                  .Append(" ATR ").Append(_atrN).Append(" x ").Append(_mult.ToString("0.##", Inv)).Append('\n');
+                  .Append(" ATR ").Append(_atrN).Append(" x ").Append(_mult.ToString("0.##", Inv))
+                  .Append(_rapida ? string.Format(Inv, " | rapida {0:0.##} ATR en {1} velas", _rapV, _rapJ) : " | rapida APAGADA").Append('\n');
                 sb.Append("  flecha: ").Append(flecha).Append(" | cinta y ").Append(yCinta).Append(" | velas visibles ").Append(desde).Append('-').Append(hasta).Append('\n');
+                StringBuilder volcado = null;
                 lock (_llave)
                 {
                     int ult = _c.Count - 1;
                     for (int i = Math.Max(0, ult - 14); i <= ult; i++)
-                        sb.Append(string.Format(Inv, "  vela {0:HH:mm} UTC o {1} h {2} l {3} c {4} | atr {5:0.0000} st {6:0.00} dir {7} vwap {8:0.00}\n",
-                            _hora[i], _o[i], _h[i], _l[i], _c[i], _atr[i], _st[i], _dir[i], _vwap[i]));
+                        sb.Append(string.Format(Inv, "  vela {0:HH:mm} UTC o {1} h {2} l {3} c {4} | atr {5:0.0000} st {6:0.00} dir {7} vwap {8:0.00} | ext {9} hace {10}{11}\n",
+                            _hora[i], _o[i], _h[i], _l[i], _c[i], _atr[i], _st[i], _dir[i], _vwap[i], _ext[i], i - _iext[i], _rap[i] ? " RAPIDA" : ""));
+                    // vueltas de las ultimas 3 horas, con su causa: lo que se sigue midiendo en vivo
+                    sb.Append("  vueltas (3 h):");
+                    for (int i = Math.Max(1, ult - 180); i <= ult; i++)
+                        if (_dir[i] != _dir[i - 1])
+                            sb.Append(string.Format(Inv, " {0:HH:mm}{1}{2}@{3}", _hora[i], _dir[i] > 0 ? "+" : "-", _rap[i] ? "R" : "L", _c[i]));
+                    sb.Append('\n');
+                    if (_volcar && ult > 0)
+                    {
+                        // VOLCADO (1.1): todas las velas cargadas con lo calculado, para recalcularlas en Python (paridad exacta)
+                        _volcar = false;
+                        volcado = new StringBuilder("hora_utc,o,h,l,c,atr,fu,fd,dir,ext,iext,rapida\n");
+                        for (int i = 0; i <= ult; i++)
+                            volcado.Append(string.Format(Inv, "{0:yyyy-MM-dd HH:mm:ss},{1},{2},{3},{4},{5:R},{6:R},{7:R},{8},{9},{10},{11}\n",
+                                _hora[i], _o[i], _h[i], _l[i], _c[i], _atr[i], _fu[i], _fd[i], _dir[i], _ext[i], _iext[i], _rap[i] ? 1 : 0));
+                    }
                 }
                 Directory.CreateDirectory(Carpeta());
                 File.AppendAllText(Path.Combine(Carpeta(), "auditoria-" + DateTime.UtcNow.ToString("yyyy-MM-dd", Inv) + ".log"), sb.ToString());
+                if (volcado != null)
+                    File.WriteAllText(Path.Combine(Carpeta(), string.Format(Inv, "volcado-{0:yyyy-MM-dd_HHmmss}-{1}-atr{2}x{3:0.##}-r{4}.csv",
+                        DateTime.UtcNow, inst, _atrN, _mult, _rapida ? _rapV.ToString("0.##", Inv) + "en" + _rapJ : "no")), volcado.ToString());
             }
             catch { }
         }

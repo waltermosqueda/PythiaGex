@@ -1,0 +1,34 @@
+DISENO curva F1: 23->15.75, 24->13.38, 29->12.62, 37->12.00, 49->11.00, 67->10.62, 68->10.25, 96->8.75
+EXAMEN curva F1: 23->14.75, 37->13.50, 47->12.50, 48->11.75, 63->11.00, 66->10.00, 93->7.75, 96->7.75
+MNQ curva F1: 23->65.38, 28->63.38, 28->59.88, 35->55.00, 46->54.00, 47->50.75, 61->47.75, 62->44.12, 90->40.12, 91->38.25
+
+ganancia contra la curva (pts; MNQ en pts de MNQ, /4 ~ MES):
+  G3 ST(60,3.5) v1.5 j3      DISENO +2.75  EXAMEN +0.75  MNQ +7.62 (+1.91 en MES) | cambios 105/103/102
+  G3 ST(60,3.5) v1.5 j5      DISENO +2.75  EXAMEN +1.25  MNQ +10.25 (+2.56 en MES) | cambios 132/132/129
+  G3 ST(60,4) v1.5 j8        DISENO +2.75  EXAMEN +2.00  MNQ +10.75 (+2.69 en MES) | cambios 149/150/147
+  G3 ST(60,3.5) v1.5 j8      DISENO +2.75  EXAMEN +2.00  MNQ +10.75 (+2.69 en MES) | cambios 150/152/149
+  G3 ST(60,3) v1.5 j8        DISENO +2.75  EXAMEN +2.00  MNQ +10.75 (+2.69 en MES) | cambios 152/155/150
+  G3 ST(60,4) v1.5 j3        DISENO +2.62  EXAMEN +0.75  MNQ +7.88 (+1.97 en MES) | cambios 99/98/97
+  G3 ST(60,4) v1.5 j5        DISENO +2.62  EXAMEN +1.25  MNQ +10.25 (+2.56 en MES) | cambios 128/127/126
+  G3 ST(60,3) v1.5 j5        DISENO +2.50  EXAMEN +1.25  MNQ +10.00 (+2.50 en MES) | cambios 136/137/133
+  G3 ST(60,3) v1.5 j3        DISENO +2.50  EXAMEN +0.75  MNQ +8.50 (+2.12 en MES) | cambios 111/110/108
+  G3 ST(60,3.5) v2 j3        DISENO +2.31  EXAMEN +2.46  MNQ +7.60 (+1.90 en MES) | cambios 58/59/60
+  G3 ST(60,4) v2 j5          DISENO +2.19  EXAMEN +1.34  MNQ +5.09 (+1.27 en MES) | cambios 69/71/69
+  G3 ST(60,3) v2 j3          DISENO +2.16  EXAMEN +1.44  MNQ +4.00 (+1.00 en MES) | cambios 66/67/65
+  G3 ST(60,4) v2 j3          DISENO +2.15  EXAMEN +2.18  MNQ +7.14 (+1.78 en MES) | cambios 54/55/55
+  G3d ST(60,3.5) v1.5 j8     DISENO +2.12  EXAMEN +1.25  MNQ +8.25 (+2.06 en MES) | cambios 129/128/134
+  G3 ST(60,3.5) v2.5 j5      DISENO +2.05  EXAMEN +1.05  MNQ +4.46 (+1.11 en MES) | cambios 49/47/49
+  G3 ST(60,4) v2.5 j3        DISENO +1.02  EXAMEN +1.55  MNQ +3.30 (+0.83 en MES) | cambios 37/36/37
+
+todas las G3 (54): ganancia media DISENO +1.34, EXAMEN +0.81, MNQ +5.12 (/4 +1.28); positivas en EXAMEN 44/54, en MNQ 54/54
+todas las G1 (20): DISENO -0.66, EXAMEN -0.28, MNQ/4 +0.32
+todas las G2 (36): DISENO +0.06, EXAMEN +0.08, MNQ/4 +0.39
+todas las G3d (4): DISENO +1.76, EXAMEN +1.15, MNQ/4 +1.49
+
+C = G3 ST(60,4) v2.5 j3 movimiento por movimiento contra la base:
+  MES DISENO todos: antes 57, despues 33, igual 24; p 0.0074; media +2.89; mediana base 13.00 -> C 11.00
+  MES DISENO volatiles: antes 28, despues 16, igual 8; p 0.0481; media +2.99; mediana base 15.38 -> C 11.50
+  MES EXAMEN todos: antes 24, despues 16, igual 15; p 0.1341; media +1.57; mediana base 13.50 -> C 12.00
+  MES EXAMEN volatiles: antes 11, despues 6, igual 5; p 0.1662; media +2.11; mediana base 15.38 -> C 11.88
+  MNQ MNQ todos: antes 115, despues 81, igual 42; p 0.0091; media +10.33; mediana base 60.00 -> C 51.50
+  MNQ MNQ volatiles: antes 42, despues 31, igual 11; p 0.1208; media +13.29; mediana base 59.75 -> C 50.00

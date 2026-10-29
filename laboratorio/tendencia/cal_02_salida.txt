@@ -1,0 +1,20 @@
+POST-HOC: frontera en la rueda y examen movimiento por movimiento
+DISENO F1 ST(10,3)     rueda: cambios/sesion  9.79, vueltas falsas (<5 pts)  4.26 | movimientos de 20: mediana tarde 13.00 pts, volatiles 15.38
+EXAMEN F1 ST(10,3)     rueda: cambios/sesion 10.06, vueltas falsas (<5 pts)  3.62 | movimientos de 20: mediana tarde 13.50 pts, volatiles 15.38
+DISENO F1 ST(60,3)     rueda: cambios/sesion 10.16, vueltas falsas (<5 pts)  4.16 | movimientos de 20: mediana tarde 12.00 pts, volatiles 14.75
+EXAMEN F1 ST(60,3)     rueda: cambios/sesion  9.88, vueltas falsas (<5 pts)  3.38 | movimientos de 20: mediana tarde 14.00 pts, volatiles 15.25
+DISENO F1 ST(10,2.5)   rueda: cambios/sesion 12.93, vueltas falsas (<5 pts)  6.40 | movimientos de 20: mediana tarde 12.38 pts, volatiles 13.88
+EXAMEN F1 ST(10,2.5)   rueda: cambios/sesion 12.62, vueltas falsas (<5 pts)  5.19 | movimientos de 20: mediana tarde 12.50 pts, volatiles 15.25
+DISENO F1 ST(60,2.5)   rueda: cambios/sesion 13.37, vueltas falsas (<5 pts)  6.44 | movimientos de 20: mediana tarde 11.00 pts, volatiles 12.00
+EXAMEN F1 ST(60,2.5)   rueda: cambios/sesion 12.94, vueltas falsas (<5 pts)  5.69 | movimientos de 20: mediana tarde 11.75 pts, volatiles 13.00
+DISENO F1 ST(60,2)     rueda: cambios/sesion 19.21, vueltas falsas (<5 pts) 10.67 | movimientos de 20: mediana tarde 10.25 pts, volatiles 11.25
+EXAMEN F1 ST(60,2)     rueda: cambios/sesion 17.94, vueltas falsas (<5 pts)  8.00 | movimientos de 20: mediana tarde 10.00 pts, volatiles 11.12
+DISENO F1 ST(10,2)     rueda: cambios/sesion 18.72, vueltas falsas (<5 pts) 10.93 | movimientos de 20: mediana tarde 10.62 pts, volatiles 11.25
+EXAMEN F1 ST(10,2)     rueda: cambios/sesion 16.12, vueltas falsas (<5 pts)  7.25 | movimientos de 20: mediana tarde 11.00 pts, volatiles 13.38
+
+EXAMEN movimiento por movimiento contra la base (puntos tarde base - candidato; >0 = el candidato llega antes):
+  F1 ST(60,3)     antes en 23, despues en 8, igual en 24 de 55; mediana de la diferencia +0.00 pts (finitos), en volatiles +0.00
+  F1 ST(10,2.5)   antes en 26, despues en 1, igual en 28 de 55; mediana de la diferencia +0.00 pts (finitos), en volatiles +0.00
+  F1 ST(60,2.5)   antes en 36, despues en 1, igual en 18 de 55; mediana de la diferencia +1.62 pts (finitos), en volatiles +2.00
+  F1 ST(60,2)     antes en 45, despues en 1, igual en 9 de 55; mediana de la diferencia +3.88 pts (finitos), en volatiles +4.00
+  F1 ST(10,2)     antes en 40, despues en 1, igual en 14 de 55; mediana de la diferencia +2.88 pts (finitos), en volatiles +2.88
