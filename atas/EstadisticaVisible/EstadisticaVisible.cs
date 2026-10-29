@@ -15,23 +15,24 @@ using OFT.Rendering.Tools;
 namespace EstadisticaVisible
 {
     /// <summary>
-    /// ESTADISTICA VISIBLE 1.4 (28-10-2026). Pedido del operador: "tengo que hacer recontra zoom para que se vean los numeros
-    /// del Cluster Statistic y ahi pierdo contexto del grafico"; despues: "que se vean siempre los ultimos sin zoom" y, con la 1.3
-    /// en pantalla: "esta mal partido, saca eso que esta vacio, se profesional y que persiga a las velas correctas". Eligio
-    /// (pregunta del 28-10 23:58) "cuadros bajo sus velas".
+    /// ESTADISTICA VISIBLE 1.5 (29-10-2026). Pedido del operador: "tengo que hacer recontra zoom para que se vean los numeros
+    /// del Cluster Statistic y ahi pierdo contexto del grafico"; despues: "que se vean siempre los ultimos sin zoom"; con la 1.3:
+    /// "que persiga a las velas correctas" (eligio "cuadros bajo sus velas"); y con la 1.4: "cuando estiras o contraes los numeros
+    /// cambian, desaparecen o se fusionan; debe ser integro siempre y corresponder a su vela siempre, sino despues malas decisiones".
     ///
-    /// EL PROBLEMA, MEDIDO. Con su zoom cada vela mide 6-9 px y un numero legible (letra 10-11) pide ~40 px. Un numero por vela
-    /// debajo de su vela no entra (ni turnando renglones: 1.0-1.2), y cuadros de una vela no quedan debajo de su vela (1.3).
+    /// EL PROBLEMA, MEDIDO. Con su zoom cada vela mide 6-9 px y un numero legible (letra 9-11) pide 33-41 px. Un numero por vela
+    /// debajo de su vela no entra (ni turnando renglones: 1.0-1.2), y cuadros de una vela no quedan debajo de su vela (1.3). La 1.4
+    /// elegia cuantas velas juntar segun el zoom: al estirar el grafico cambiaban los cortes y los numeros. ERROR, corregido aca.
     ///
-    /// LA SOLUCION. Todo el panel son CUADROS ALINEADOS: cada uno ocupa exactamente el ancho de las velas que resume y queda debajo
-    /// de ellas, asi el eje de tiempo del grafico vale para los cuadros. Cuantas velas por cuadro: las minimas para que el numero
-    /// entre (1, 2, 3, 5, 6, 10, 15...), y los cortes van a la hora redonda (con 6 velas de 1 min: 23:30, 23:36, 23:42...), asi no
-    /// saltan cuando entra una vela nueva. Delta y Volumen = suma de sus velas; Delta de la sesion = el valor al cierre del cuadro.
-    /// La vela EN CURSO va sola, en su propio cuadro con recuadro, pegada a su derecha (en el lugar vacio del futuro). Si el cuadro
-    /// que se esta llenando todavia es angosto, se junta con el anterior. Con zoom grande vuelve solo a una vela por cuadro.
+    /// LA SOLUCION. Todo el panel son CUADROS ALINEADOS, cada uno exactamente debajo de las velas que resume. El bloque es FIJO
+    /// (EstBloque, 5 velas: con 1 min, :00-:04, :05-:09...) y se corta a la hora redonda: el zoom no cambia ni los cortes ni los
+    /// numeros, y nada se junta. Delta y Volumen = suma exacta de sus velas; Delta de la sesion = el valor al cierre del bloque.
+    /// El zoom solo cambia el tamaño de la letra; si un bloque queda mas angosto que su numero con letra 7, queda pintado sin
+    /// numero (nunca con el de otro bloque). El bloque EN CURSO crece vela a vela, lleva recuadro y se estira hacia la derecha
+    /// (el futuro, vacio) para que su numero siempre se lea.
     ///
     /// LOS DATOS. Los mismos que el de fabrica: GetCandle(bar).Delta y .Volume; la sesion se reinicia con IsNewSession (la
-    /// sesion del grafico, el modo por defecto del Cluster Statistic). Los miles van con una decimal ("-1,4k").
+    /// sesion del grafico, el modo por defecto del Cluster Statistic). Numeros EXACTOS hasta 99.999 ("-2483", sin redondear).
     ///
     /// AUDITORIA. Cada 60 s anota en %APPDATA%\ATAS\PythiaGex\estadistica\auditoria-AAAA-MM-DD.log: ancho de vela, velas por cuadro,
     /// letra, cada cuadro (hora, cuantas velas, texto y suma cruda) y las velas sueltas de los ultimos cuadros para rehacer la suma.
@@ -42,9 +43,8 @@ namespace EstadisticaVisible
     [Category("PythiaGex")]
     public class EstadisticaVisibleIndicador : Indicator
     {
-        public const string Version = "1.4";
+        public const string Version = "1.5";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
-        private static readonly int[] Agrupaciones = { 1, 2, 3, 5, 6, 10, 15, 20, 30, 60, 120, 240 };
 
         // ------------------------------------------------------------------ ajustes
         [Display(Name = "Delta", GroupName = "Filas", Order = 10)]
@@ -59,9 +59,9 @@ namespace EstadisticaVisible
         public bool EstVolumen { get => _fVolumen; set { _fVolumen = value; RecalculateValues(); } }
         private bool _fVolumen = true;
 
-        [Display(Name = "Velas por cuadro (0 = automatico)", GroupName = "Numeros", Order = 35)]
-        [Range(0, 240)]
-        public int EstVelasPorCuadro { get; set; } = 0;
+        [Display(Name = "Velas por cuadro (fijo: no cambia con el zoom)", GroupName = "Numeros", Order = 35)]
+        [Range(1, 240)]
+        public int EstBloque { get; set; } = 5;
 
         [Display(Name = "Tamano de letra de los cuadros", GroupName = "Numeros", Order = 36)]
         [Range(7, 16)]
@@ -137,13 +137,13 @@ namespace EstadisticaVisible
         }
 
         // ------------------------------------------------------------------ formato
-        /// <summary>Hasta 999 entero; 1.000-9.999 con una decimal y "k"; 10k-999k entero con "k"; despues "M". Coma decimal.</summary>
+        /// <summary>EXACTO hasta 99.999 (sin separador de miles: "-2483" ocupa lo mismo que "-2,5k" y no redondea); despues "k"
+        /// entero y "M" con una decimal. Coma decimal.</summary>
         public static string Formato(double v)
         {
             double a = Math.Abs(v);
             string s;
-            if (a < 999.5) s = Math.Round(v).ToString("0", Inv);
-            else if (a < 9999.5) s = (v / 1000.0).ToString("0.0", Inv) + "k";
+            if (a < 99999.5) s = Math.Round(v).ToString("0", Inv);
             else if (a < 999500) s = Math.Round(v / 1000.0).ToString("0", Inv) + "k";
             else s = (v / 1e6).ToString("0.0", Inv) + "M";
             return s.Replace('.', ',');
@@ -159,30 +159,19 @@ namespace EstadisticaVisible
             public double Valor(Tipo t) => t == Tipo.Delta ? Delta : t == Tipo.Volumen ? Volumen : Sesion;
         }
 
-        /// <summary>Junta las velas cerradas visibles [0, nCerradas) en cuadros de k velas cortados a la hora redonda (clave = segundos
-        /// desde 1970 / (k x duracion de la vela)). El ultimo cuadro, si es el que se esta llenando y queda mas angosto que
-        /// <paramref name="anchoMin"/>, se junta con el anterior.</summary>
-        private static List<Cuadro> Agrupar(int k, int nCerradas, DateTime[] hora, double[] d, double[] v, double[] s, int[] x0, double segVela, int anchoMin, bool llenandose)
+        /// <summary>Junta las velas visibles [0, n) en bloques de k velas cortados a la hora redonda (clave = segundos desde 1970 /
+        /// (k x duracion de la vela)). Los cortes dependen solo de la hora de cada vela: el zoom no los mueve y nada se junta.</summary>
+        private static List<Cuadro> Agrupar(int k, int n, DateTime[] hora, double[] d, double[] v, double[] s, double segVela)
         {
             var res = new List<Cuadro>();
             long clavePrev = long.MinValue;
-            for (int i = 0; i < nCerradas; i++)
+            for (int i = 0; i < n; i++)
             {
                 long clave = (long)Math.Floor((hora[i] - DateTime.UnixEpoch).TotalSeconds / Math.Max(1.0, k * segVela));
                 if (res.Count == 0 || clave != clavePrev) res.Add(new Cuadro { Ini = i, Fin = i });
                 var c = res[res.Count - 1];
                 c.Fin = i; c.Delta += d[i]; c.Volumen += v[i]; c.Sesion = s[i];
                 clavePrev = clave;
-            }
-            if (llenandose && res.Count >= 2)
-            {
-                var u = res[res.Count - 1];
-                if (x0[u.Fin + 1] - x0[u.Ini] < anchoMin)
-                {
-                    var p = res[res.Count - 2];
-                    p.Fin = u.Fin; p.Delta += u.Delta; p.Volumen += u.Volumen; p.Sesion = u.Sesion;
-                    res.RemoveAt(res.Count - 1);
-                }
             }
             return res;
         }
@@ -234,38 +223,40 @@ namespace EstadisticaVisible
             var penGrilla = new RenderPen(cGrilla, 1);
             int altoFila = reg.Height / tipos.Count;
 
-            // letra de los cuadros: la mas grande que entra en el alto de la fila
-            RenderFont f = null; int altoTxt = 0, letra = 0;
+            // CUADROS FIJOS (1.5, pedido 29-10: "cuando estiras o contraes los numeros cambian, desaparecen o se fusionan; debe ser
+            // integro siempre y corresponder a su vela siempre"). Cada cuadro es SIEMPRE el mismo bloque de EstBloque velas cortado a
+            // la hora redonda (con 5 velas de 1 min: :00-:04, :05-:09...): el zoom no cambia ni los cortes ni los numeros, nada se
+            // junta. El zoom solo cambia el tamaño de la letra; si un cuadro queda mas angosto que su numero con letra 7, ese cuadro
+            // queda pintado sin numero (nunca un numero de otro bloque). El bloque EN CURSO (el que contiene la vela que se esta
+            // formando) crece vela a vela, lleva recuadro y se estira hacia la derecha (el futuro, vacio) para que su numero se lea.
+            int k = Math.Max(1, EstBloque);
+            var cuadros = Agrupar(k, n, hora, d, v, s, segVela);
+            bool enCurso = hasta == ult;
+            if (enCurso && cuadros.Count > 0) cuadros[cuadros.Count - 1].EnCurso = true;
+
+            // letra: la mas grande (hasta EstLetraCajas) que entra en el alto de la fila y en el ancho de un bloque entero
+            RenderFont f = null; int altoTxt = 0, letra = 0, anchoBloque = k * wCol - 1, anchoTexto = 0;
             for (int tam = Math.Max(7, EstLetraCajas); tam >= 7 && f == null; tam--)
             {
                 var ft = new RenderFont("Segoe UI", tam); int h = g.MeasureString("0", ft).Height;
-                if (h + 2 <= altoFila) { f = ft; altoTxt = h; letra = tam; }
+                if (h + 2 > altoFila) continue;
+                int aMax = 0;
+                foreach (var c in cuadros) if (!c.EnCurso) foreach (var t in tipos) aMax = Math.Max(aMax, g.MeasureString(Formato(c.Valor(t)), ft).Width);
+                if (aMax + 6 <= anchoBloque || tam == 7) { f = ft; altoTxt = h; letra = tam; anchoTexto = aMax; }
             }
             if (f == null) { f = new RenderFont("Segoe UI", 7); altoTxt = g.MeasureString("0", f).Height; letra = 7; }
 
-            bool enCurso = hasta == ult;
-            int nCerradas = enCurso ? n - 1 : n;
-            int Ancho(Cuadro c) { int a = 0; foreach (var t in tipos) a = Math.Max(a, g.MeasureString(Formato(c.Valor(t)), f).Width); return a + 8; }
-
-            // velas por cuadro: la menor agrupacion con la que el numero entra en el ancho de un cuadro entero
-            int k = 1; List<Cuadro> cuadros = null; int anchoNec = 0;
-            var opciones = EstVelasPorCuadro > 0 ? new[] { EstVelasPorCuadro } : Agrupaciones;
-            foreach (int kk in opciones)
+            // extension de cada cuadro en pantalla: el en curso se estira a la derecha hasta que entren sus numeros
+            int[] xa = new int[cuadros.Count], xb = new int[cuadros.Count];
+            for (int j = 0; j < cuadros.Count; j++)
             {
-                var prueba = Agrupar(kk, nCerradas, hora, d, v, s, x0, segVela, 0, false);
-                int nec = 0; foreach (var c in prueba) nec = Math.Max(nec, Ancho(c));
-                k = kk; cuadros = prueba; anchoNec = nec;
-                if (kk * wCol - 1 >= nec) break;
-            }
-            cuadros = Agrupar(k, nCerradas, hora, d, v, s, x0, segVela, anchoNec, enCurso);
-
-            // la vela en curso: su propio cuadro, desde su borde izquierdo hacia el futuro (a la derecha)
-            Cuadro actual = null; int xAct = xMax, anchoAct = 0;
-            if (enCurso)
-            {
-                actual = new Cuadro { Ini = n - 1, Fin = n - 1, Delta = d[n - 1], Volumen = v[n - 1], Sesion = s[n - 1], EnCurso = true };
-                anchoAct = Math.Max(Ancho(actual) + 2, x0[n] - x0[n - 1]);
-                xAct = Math.Min(x0[n - 1], xMax - anchoAct);
+                var c = cuadros[j];
+                xa[j] = x0[c.Ini]; xb[j] = x0[c.Fin + 1];
+                if (c.EnCurso)
+                {
+                    int nec = 0; foreach (var t in tipos) nec = Math.Max(nec, g.MeasureString(Formato(c.Valor(t)), f).Width);
+                    xb[j] = Math.Min(xMax, Math.Max(xb[j], xa[j] + nec + 10));
+                }
             }
 
             var fNom = new RenderFont("Segoe UI", Math.Max(7, EstLetra - 1));
@@ -279,40 +270,40 @@ namespace EstadisticaVisible
                 if (nota.Length > 0) anchoNom = Math.Max(anchoNom, g.MeasureString(nota, fNota).Width + 8);
             }
 
-            // maximos por fila para la intensidad del color: los cuadros contra los cuadros; la vela en curso contra las velas sueltas
             var audit = new StringBuilder();
             audit.Append("vela ").Append(wCol).Append(" px (").Append(segVela.ToString("0", Inv)).Append(" s), fila ").Append(altoFila)
-                 .Append(" px, letra ").Append(letra).Append(", ").Append(k).Append(" velas por cuadro (necesita ").Append(anchoNec).Append(" px), ")
-                 .Append(cuadros.Count).Append(" cuadros").Append(enCurso ? " + la vela en curso desde x " + xAct : " (corrido hacia atras)");
+                 .Append(" px, bloque fijo de ").Append(k).Append(" velas = ").Append(anchoBloque).Append(" px, letra ").Append(letra)
+                 .Append(" (texto mas ancho ").Append(anchoTexto).Append(" px), ").Append(cuadros.Count).Append(" cuadros")
+                 .Append(enCurso ? ", el ultimo en curso" : " (corrido hacia atras)");
+            int sinNumero = 0;
 
             for (int r = 0; r < tipos.Count; r++)
             {
                 var t = tipos[r]; int yF = reg.Top + r * altoFila;
-                double mxC = 1, mxV = 1;
-                foreach (var c in cuadros) mxC = Math.Max(mxC, Math.Abs(c.Valor(t)));
-                for (int i = 0; i < nCerradas; i++) mxV = Math.Max(mxV, Math.Abs(t == Tipo.Delta ? d[i] : t == Tipo.Volumen ? v[i] : s[i]));
-                if (t == Tipo.Sesion) mxV = mxC;
+                double mx = 1; foreach (var c in cuadros) if (!c.EnCurso) mx = Math.Max(mx, Math.Abs(c.Valor(t)));
                 if (r > 0) g.DrawLine(penGrilla, reg.Left, yF, xMax, yF);
-
-                var todos = new List<Cuadro>(cuadros); if (actual != null) todos.Add(actual);
-                foreach (var c in todos)
+                for (int j = 0; j < cuadros.Count; j++)
                 {
-                    int xa = c.EnCurso ? xAct : x0[c.Ini], xb = c.EnCurso ? xAct + anchoAct : x0[c.Fin + 1];
-                    if (!c.EnCurso && actual != null) xb = Math.Min(xb, xAct - 1);
-                    xa = Math.Max(xa, reg.Left); xb = Math.Min(xb, xMax);
-                    if (xb - xa < 2) continue;
+                    var c = cuadros[j];
+                    int a = Math.Max(xa[j], reg.Left), b = Math.Min(xb[j], xMax);
+                    if (b - a < 2) continue;
                     double val = c.Valor(t);
                     Color baseC = t == Tipo.Volumen ? cVol : (val >= 0 ? cMas : cMenos);
-                    int alfa = (int)(40 + 180 * Math.Sqrt(Math.Min(1.0, Math.Abs(val) / (c.EnCurso ? mxV : mxC))));
-                    var caja = new Rectangle(xa, yF + 1, xb - xa - 1, altoFila - 2);
+                    int alfa = (int)(40 + 180 * Math.Sqrt(Math.Min(1.0, Math.Abs(val) / mx)));
+                    var caja = new Rectangle(a, yF + 1, b - a - 1, altoFila - 2);
                     g.FillRectangle(Color.FromArgb(alfa, baseC.R, baseC.G, baseC.B), caja);
                     string txt = Formato(val); var sz = g.MeasureString(txt, f);
-                    if (sz.Width + 4 <= caja.Width && caja.Left + (caja.Width - sz.Width) / 2 >= reg.Left + anchoNom)
-                        g.DrawString(txt, f, cTxt, caja.Left + (caja.Width - sz.Width) / 2, yF + (altoFila - altoTxt) / 2);
+                    bool entra = sz.Width + 4 <= caja.Width && caja.Left + (caja.Width - sz.Width) / 2 >= reg.Left + anchoNom;
+                    if (entra) g.DrawString(txt, f, cTxt, caja.Left + (caja.Width - sz.Width) / 2, yF + (altoFila - altoTxt) / 2);
+                    else if (caja.Left >= reg.Left + anchoNom && x0[c.Ini] >= reg.Left) sinNumero++;
                 }
             }
-            if (actual != null)
-                g.DrawRectangle(new RenderPen(Color.FromArgb(220, cTxt.R, cTxt.G, cTxt.B), 1), new Rectangle(xAct, reg.Top + 1, anchoAct - 2, tipos.Count * altoFila - 3));
+            if (enCurso && cuadros.Count > 0)
+            {
+                int j = cuadros.Count - 1;
+                g.DrawRectangle(new RenderPen(Color.FromArgb(220, cTxt.R, cTxt.G, cTxt.B), 1), new Rectangle(xa[j], reg.Top + 1, xb[j] - xa[j] - 2, tipos.Count * altoFila - 3));
+            }
+            audit.Append(", cuadros enteros sin numero (no entra ni con letra 7): ").Append(sinNumero);
 
             // nombres de las filas, encima de todo, con fondo propio; debajo de "Delta", cuantas velas junta cada cuadro
             if (EstNombres)
@@ -333,11 +324,10 @@ namespace EstadisticaVisible
             {
                 _ultAudit = DateTime.UtcNow;
                 var lineas = new List<string>();
-                var todos = new List<Cuadro>(cuadros); if (actual != null) todos.Add(actual);
-                foreach (var c in todos.Skip(Math.Max(0, todos.Count - 6)))
+                foreach (var c in cuadros.Skip(Math.Max(0, cuadros.Count - 6)))
                 {
                     lineas.Add(string.Format(Inv, "cuadro {0} ({1} velas{2}) x {3}-{4}: Delta '{5}' crudo {6:0} | Sesion '{7}' crudo {8:0} | Volumen '{9}' crudo {10:0}",
-                        HoraLocal(hora[c.Ini]), c.Fin - c.Ini + 1, c.EnCurso ? ", EN CURSO" : "", c.EnCurso ? xAct : x0[c.Ini], c.EnCurso ? xAct + anchoAct : x0[c.Fin + 1],
+                        HoraLocal(hora[c.Ini]), c.Fin - c.Ini + 1, c.EnCurso ? ", EN CURSO" : "", x0[c.Ini], x0[c.Fin + 1],
                         Formato(c.Delta), c.Delta, Formato(c.Sesion), c.Sesion, Formato(c.Volumen), c.Volumen));
                     for (int i = c.Ini; i <= c.Fin; i++)
                         lineas.Add(string.Format(Inv, "    vela {0} x {1}: delta {2:0} sesion {3:0} volumen {4:0}", HoraLocal(hora[i]), x0[i], d[i], s[i], v[i]));
