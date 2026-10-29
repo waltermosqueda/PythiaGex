@@ -2,8 +2,11 @@
 """ws_alto_estadistica_visible.py — 28-10-2026. Da al panel de "PythiaGex - Estadistica Visible" del espacio "MNQ liviano" el MISMO alto
 que el panel del Cluster Statistic de fabrica del mismo grafico (ATAS lo crea con 60 y las filas quedan mas bajas que la letra: sin numeros).
 Correr con ATAS CERRADO (instalar_5_0.ps1 -SinDll -AntesDeLanzar). Respaldo previo junto al .ws (MNQ liviano.ws.antes-alto-<hora>).
-Uso: [--alto N] (por defecto, el del Cluster Statistic del mismo grafico)."""
+Uso: [--alto N] (por defecto ALTO; la 1.0 usaba el alto del Cluster Statistic del mismo grafico)."""
 import os, re, sys, json, shutil, datetime
+# 28-10 23:50 (1.2): 120 = tres renglones de letra angosta por fila: los numeros de las ultimas velas entran aun con el grafico
+# mas alejado. El operador ya saco el Cluster Statistic de fabrica (92), asi que el total sigue por debajo de lo que tenia.
+ALTO = 120
 p = os.path.join(os.environ["APPDATA"], "ATAS", "Workspaces_v3", "MNQ liviano.ws")
 b = open(p, "rb").read(); bom = b.startswith(b"\xef\xbb\xbf")
 t = b.decode("utf-8-sig")
@@ -27,7 +30,7 @@ mio = [(i, x) for i, (tt, x) in enumerate(ps) if any("EstadisticaVisible" in s f
 if len(mio) != 1: sys.exit("no encontre UN panel de Estadistica Visible (%d)" % len(mio))
 i_mio, pan = mio[0]; titulo = ps[i_mio][0]
 fab = [x for tt, x in ps if tt == titulo and any("ClusterStatistic" in s for s in x["SerializedIndicators"])]
-alto = int(sys.argv[sys.argv.index("--alto") + 1]) if "--alto" in sys.argv else (fab[0]["Height"] if fab else 92)
+alto = int(sys.argv[sys.argv.index("--alto") + 1]) if "--alto" in sys.argv else ALTO
 antes = pan["Height"]
 # el n-esimo "SerializedIndicators" del texto es el n-esimo panel; su "Height" es el primero que aparece despues
 ms = [m.start() for m in re.finditer(r'"SerializedIndicators"\s*:', t)]
