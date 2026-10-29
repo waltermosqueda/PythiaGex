@@ -53,12 +53,73 @@ def motor_atas(h, l, c, n=60, mult=4.0, rapida=True, v=2.5, j=3, retro=None):
     return dict(atr=atr, fu=fu, fd=fd, dir=d_, ext=ext_, iext=iext_, rapida=rap_, linea=linea)
 
 
+def motor_tramo(h, l, c, tramo=4.0, vivo=True, grande=10.0):
+    """Copia del modo TRAMO de la 1.3: tramo rapido (en vivo = toca la linea del extremo de la vela anterior; si no, al cierre)
+    y corriente grande (retroceso de `grande` pts al cierre)."""
+    N = len(c)
+    d_, ext_, iext_ = np.zeros(N, int), np.zeros(N), np.zeros(N, int)
+    g_, eg_ = np.zeros(N, int), np.zeros(N)
+    for b in range(N):
+        if b == 0:
+            d_[b], ext_[b], iext_[b], g_[b], eg_[b] = 1, h[b], 0, 1, h[b]
+            continue
+        g0, eg = g_[b - 1], eg_[b - 1]
+        if g0 == 1 and h[b] > eg:
+            eg = h[b]
+        elif g0 == -1 and l[b] < eg:
+            eg = l[b]
+        gd = -g0 if g0 * (eg - c[b]) >= grande else g0
+        if gd != g0:
+            eg = h[b] if gd == 1 else l[b]
+        g_[b], eg_[b] = gd, eg
+        d0, ext, iext = d_[b - 1], ext_[b - 1], iext_[b - 1]
+        if vivo:
+            if d0 == 1 and l[b] <= ext - tramo:
+                d = -1
+            elif d0 == -1 and h[b] >= ext + tramo:
+                d = 1
+            else:
+                d = d0
+                if d0 == 1 and h[b] > ext:
+                    ext, iext = h[b], b
+                elif d0 == -1 and l[b] < ext:
+                    ext, iext = l[b], b
+        else:
+            if d0 == 1 and h[b] > ext:
+                ext, iext = h[b], b
+            elif d0 == -1 and l[b] < ext:
+                ext, iext = l[b], b
+            d = -d0 if d0 * (ext - c[b]) >= tramo else d0
+        if d != d0:
+            ext, iext = (h[b] if d == 1 else l[b]), b
+        d_[b], ext_[b], iext_[b] = d, ext, iext
+    return dict(dir=d_, ext=ext_, iext=iext_, linea=ext_ - d_ * tramo, dir_g=g_, ext_g=eg_)
+
+
 def comparar_volcado(ruta):
     v = pd.read_csv(ruta)
     nombre = os.path.basename(ruta)
     # parametros desde el nombre: ...-atr60x4-r2.5en3.csv
     import re
+    mt = re.search(r"-tramo([\d.]+)(vivo|cierre)-g([\d.]+)\.csv$", nombre)
     mr = re.search(r"-retro([\d.]+)\.csv$", nombre)
+    if mt:
+        X, vivo, G_ = float(mt.group(1)), mt.group(2) == "vivo", float(mt.group(3))
+        rt = motor_tramo(v.h.values, v.l.values, v.c.values, X, vivo, G_)
+        print(f"{nombre}: {len(v)} velas ({v.hora_utc.iloc[0]} .. {v.hora_utc.iloc[-1]}), TRAMO {X} pts {'en vivo' if vivo else 'al cierre'}, grande {G_}")
+        ok = True
+        for k in ("dir", "iext", "dir_g"):
+            dif = int((rt[k] != v[k].values).sum())
+            print(f"  {k}: velas distintas {dif} de {len(v)}")
+            ok &= dif == 0
+        for k in ("ext", "linea", "ext_g"):
+            dm = np.abs(rt[k] - v[k].values).max()
+            print(f"  {k}: diferencia maxima {dm:.3e}")
+            ok &= dm < 1e-9
+        vu = np.nonzero(v.dir.values[1:] != v.dir.values[:-1])[0] + 1
+        print(f"  vueltas del tramo: {len(vu)}; ultimas 8: " + ", ".join(f"{v.hora_utc.iloc[i][11:16]}{'+' if v.dir.iloc[i] > 0 else '-'}@{v.c.iloc[i]}" for i in vu[-8:]))
+        print("PARIDAD", "EXACTA" if ok else "CON DIFERENCIAS")
+        return ok
     if mr:
         X = float(mr.group(1))
         r = motor_atas(v.h.values, v.l.values, v.c.values, 60, 4.0, False, retro=X)
