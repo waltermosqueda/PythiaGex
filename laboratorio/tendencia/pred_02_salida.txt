@@ -1,0 +1,56 @@
+
+==== MES DISEÑO (114 movimientos, 43 sesiones)
+  base ST(10,3)  tarde: mediana  13.00  media  13.81  p90  21.28 | rueda: cambios  9.79  falsas  4.26
+  1.1            tarde: mediana  11.00  media  10.98  p90  18.50 | rueda: cambios 10.33  falsas  4.40
+  R6             tarde: mediana   7.50  media   8.31  p90  11.25 | rueda: cambios 23.28  falsas 12.51
+  R7             tarde: mediana   8.50  media   8.96  p90  11.25 | rueda: cambios 17.84  falsas  8.88
+  R8             tarde: mediana   9.00  media   9.68  p90  12.43 | rueda: cambios 14.14  falsas  6.42
+  R9             tarde: mediana  10.38  media  10.35  p90  13.10 | rueda: cambios 11.14  falsas  4.65
+  R10            tarde: mediana  11.00  media  10.98  p90  13.75 | rueda: cambios  9.33  falsas  3.47
+  R11            tarde: mediana  11.88  media  11.66  p90  14.68 | rueda: cambios  7.51  falsas  2.42
+  R12            tarde: mediana  12.75  media  12.19  p90  15.43 | rueda: cambios  6.58  falsas  2.14
+  R14            tarde: mediana  14.75  media  13.52  p90  17.25 | rueda: cambios  5.21  falsas  1.70
+  X elegido en DISEÑO: 10 pts
+
+==== MES EXAMEN (55 movimientos, 16 sesiones)
+  base ST(10,3)  tarde: mediana  13.50  media  14.94  p90  22.00 | rueda: cambios 10.06  falsas  3.62
+  1.1            tarde: mediana  12.00  media  13.21  p90  20.80 | rueda: cambios 11.12  falsas  4.62
+  R6             tarde: mediana   7.50  media   8.92  p90  11.45 | rueda: cambios 25.94  falsas 14.00
+  R7             tarde: mediana   8.25  media   9.52  p90  12.50 | rueda: cambios 19.56  falsas  9.12
+  R8             tarde: mediana   9.75  media  11.06  p90  15.45 | rueda: cambios 16.38  falsas  6.94
+  R9             tarde: mediana  10.25  media  11.79  p90  15.45 | rueda: cambios 12.44  falsas  4.19
+  R10            tarde: mediana  11.50  media  12.58  p90  16.35 | rueda: cambios 10.50  falsas  3.31
+  R11            tarde: mediana  12.25  media  13.46  p90  16.65 | rueda: cambios  9.06  falsas  2.56
+  R12            tarde: mediana  13.50  media  14.44  p90  17.55 | rueda: cambios  8.25  falsas  2.62
+  R14            tarde: mediana  15.50  media  15.80  p90  18.55 | rueda: cambios  6.44  falsas  2.12
+  EXAMEN MES R10: antes 24, despues 10, p 1.22e-02 (volatiles 8 contra 6); p90 16.35 vs 22.00; rueda cambios 10.50 vs 10.06, falsas 3.31 vs 3.62 -> PASA
+
+==== MNQ primera mitad (129 movimientos, 16 sesiones)
+  base ST(10,3)  tarde: mediana  59.00  media  65.67  p90 117.35 | rueda: cambios  8.81  falsas  2.38
+  1.1            tarde: mediana  51.25  media  55.94  p90 100.55 | rueda: cambios 12.44  falsas  4.62
+  R30            tarde: mediana  36.75  media  40.53  p90  51.70 | rueda: cambios 33.12  falsas 13.50
+  R35            tarde: mediana  40.25  media  43.55  p90  54.90 | rueda: cambios 26.44  falsas  9.44
+  R40            tarde: mediana  46.25  media  47.51  p90  64.45 | rueda: cambios 20.38  falsas  6.19
+  R45            tarde: mediana  50.50  media  50.79  p90  66.85 | rueda: cambios 17.62  falsas  5.31
+  R50            tarde: mediana  55.00  media  54.83  p90  71.80 | rueda: cambios 14.62  falsas  4.25
+  R55            tarde: mediana  59.75  media  57.26  p90  73.05 | rueda: cambios 12.94  falsas  3.19
+  R60            tarde: mediana  64.50  media  59.12  p90  74.90 | rueda: cambios 10.88  falsas  2.94
+  R70            tarde: mediana  72.75  media  65.47  p90  85.30 | rueda: cambios  8.38  falsas  2.31
+  R80            tarde: mediana  82.50  media  69.93  p90  94.45 | rueda: cambios  5.94  falsas  1.19
+  X elegido en la primera mitad de MNQ: 70 pts
+
+==== MNQ segunda mitad (109 movimientos, 18 sesiones)
+  base ST(10,3)  tarde: mediana  60.75  media  64.56  p90 109.85 | rueda: cambios  9.33  falsas  3.11
+  1.1            tarde: mediana  51.75  media  53.40  p90  91.10 | rueda: cambios 10.33  falsas  3.44
+  R30            tarde: mediana  36.25  media  39.98  p90  54.60 | rueda: cambios 24.72  falsas 10.94
+  R35            tarde: mediana  39.50  media  43.32  p90  56.75 | rueda: cambios 18.56  falsas  7.11
+  R40            tarde: mediana  45.75  media  47.22  p90  58.75 | rueda: cambios 15.33  falsas  5.22
+  R45            tarde: mediana  49.50  media  50.81  p90  62.65 | rueda: cambios 13.06  falsas  4.00
+  R50            tarde: mediana  56.25  media  55.99  p90  68.55 | rueda: cambios 10.72  falsas  2.83
+  R55            tarde: mediana  58.25  media  56.95  p90  72.40 | rueda: cambios  9.11  falsas  2.17
+  R60            tarde: mediana  64.00  media  61.40  p90  80.55 | rueda: cambios  7.83  falsas  1.67
+  R70            tarde: mediana  73.75  media  65.11  p90  88.05 | rueda: cambios  6.06  falsas  1.06
+  R80            tarde: mediana  82.50  media  69.64  p90  94.35 | rueda: cambios  4.94  falsas  1.06
+  EXAMEN MNQ R70: antes 37, despues 50, p 9.34e-01 (volatiles 13 contra 13); p90 88.05 vs 109.85; rueda cambios 6.06 vs 9.33, falsas 1.06 vs 3.11 -> NO PASA
+
+VEREDICTO ENMIENDA 2: NO PASA (MES True, MNQ False)

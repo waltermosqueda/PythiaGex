@@ -15,7 +15,8 @@ import numpy as np
 import pandas as pd
 
 
-def motor_atas(h, l, c, n=60, mult=4.0, rapida=True, v=2.5, j=3):
+def motor_atas(h, l, c, n=60, mult=4.0, rapida=True, v=2.5, j=3, retro=None):
+    """retro = X pts: modo RETROCESO de la 1.2 (se da vuelta cuando el cierre retrocede X desde el extremo del tramo)."""
     N = len(c)
     atr, fu, fd = np.zeros(N), np.zeros(N), np.zeros(N)
     d_, ext_, iext_, rap_ = np.zeros(N, int), np.zeros(N), np.zeros(N, int), np.zeros(N, bool)
@@ -36,8 +37,11 @@ def motor_atas(h, l, c, n=60, mult=4.0, rapida=True, v=2.5, j=3):
             ext, iext = h[b], b
         elif d0 == -1 and l[b] < ext:
             ext, iext = l[b], b
-        d = -1 if (d0 == 1 and c[b] < fu[b]) else 1 if (d0 == -1 and c[b] > fd[b]) else d0
-        if d == d0 and rapida and b - iext <= j:
+        if retro is not None:
+            d = -d0 if d0 * (ext - c[b]) >= retro else d0
+        else:
+            d = -1 if (d0 == 1 and c[b] < fu[b]) else 1 if (d0 == -1 and c[b] > fd[b]) else d0
+        if retro is None and d == d0 and rapida and b - iext <= j:
             if d0 == 1 and ext - c[b] >= v * atr[b]:
                 d, rap_[b] = -1, True
             elif d0 == -1 and c[b] - ext >= v * atr[b]:
@@ -45,7 +49,8 @@ def motor_atas(h, l, c, n=60, mult=4.0, rapida=True, v=2.5, j=3):
         if d != d0:
             ext, iext = (h[b] if d == 1 else l[b]), b
         d_[b], ext_[b], iext_[b] = d, ext, iext
-    return dict(atr=atr, fu=fu, fd=fd, dir=d_, ext=ext_, iext=iext_, rapida=rap_)
+    linea = ext_ - d_ * retro if retro is not None else np.where(d_ == 1, fu, fd)
+    return dict(atr=atr, fu=fu, fd=fd, dir=d_, ext=ext_, iext=iext_, rapida=rap_, linea=linea)
 
 
 def comparar_volcado(ruta):
@@ -53,12 +58,18 @@ def comparar_volcado(ruta):
     nombre = os.path.basename(ruta)
     # parametros desde el nombre: ...-atr60x4-r2.5en3.csv
     import re
-    m = re.search(r"atr(\d+)x([\d.]+)-r(no|([\d.]+)en(\d+))\.csv$", nombre)
-    n, mult = int(m.group(1)), float(m.group(2))
-    rap = m.group(3) != "no"
-    vv, jj = (float(m.group(4)), int(m.group(5))) if rap else (2.5, 3)
-    r = motor_atas(v.h.values, v.l.values, v.c.values, n, mult, rap, vv, jj)
-    print(f"{nombre}: {len(v)} velas ({v.hora_utc.iloc[0]} .. {v.hora_utc.iloc[-1]}), ATR {n} x {mult}, rapida {rap} {vv} en {jj}")
+    mr = re.search(r"-retro([\d.]+)\.csv$", nombre)
+    if mr:
+        X = float(mr.group(1))
+        r = motor_atas(v.h.values, v.l.values, v.c.values, 60, 4.0, False, retro=X)
+        print(f"{nombre}: {len(v)} velas ({v.hora_utc.iloc[0]} .. {v.hora_utc.iloc[-1]}), RETROCESO {X} pts")
+    else:
+        m = re.search(r"atr(\d+)x([\d.]+)-r(no|([\d.]+)en(\d+))\.csv$", nombre)
+        n, mult = int(m.group(1)), float(m.group(2))
+        rap = m.group(3) != "no"
+        vv, jj = (float(m.group(4)), int(m.group(5))) if rap else (2.5, 3)
+        r = motor_atas(v.h.values, v.l.values, v.c.values, n, mult, rap, vv, jj)
+        print(f"{nombre}: {len(v)} velas ({v.hora_utc.iloc[0]} .. {v.hora_utc.iloc[-1]}), ATR {n} x {mult}, rapida {rap} {vv} en {jj}")
     ok = True
     for k in ("atr", "fu", "fd"):
         dmax = np.abs(r[k] - v[k].values).max()
@@ -71,6 +82,10 @@ def comparar_volcado(ruta):
     dmax = np.abs(r["ext"] - v.ext.values).max()
     print(f"  ext: diferencia maxima {dmax:.3e}")
     ok &= dmax < 1e-9
+    if "linea" in v.columns:
+        dmax = np.abs(r["linea"] - v.linea.values).max()
+        print(f"  linea del tunel: diferencia maxima {dmax:.3e}")
+        ok &= dmax < 1e-6
     vu = np.nonzero(v.dir.values[1:] != v.dir.values[:-1])[0] + 1
     print(f"  vueltas: {len(vu)}, rapidas {int(v.rapida.values[vu].sum())}; ultimas 8: " + ", ".join(
         f"{v.hora_utc.iloc[i][11:16]}{'+' if v.dir.iloc[i] > 0 else '-'}{'R' if v.rapida.iloc[i] else 'L'}@{v.c.iloc[i]}" for i in vu[-8:]))

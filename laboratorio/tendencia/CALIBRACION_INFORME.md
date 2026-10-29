@@ -58,3 +58,37 @@ examen en MNQ 1 min (35 sesiones, 238 movimientos de 80 pts). Salidas: `cal_03_s
   **marcada sin validar del todo**, con registro de cada vuelta (línea o rápida) para medirla hacia adelante (Enmienda 1).
 - Paridad: el motor del C# copiado a Python (`paridad_corriente.py`) da 0 velas distintas de 84.364 contra el motor del
   laboratorio; contra ATAS se compara con el volcado que escribe la 1.1 al cargar.
+
+---
+
+# Ronda 3 (29-10, 12:40-13:25 AR): el límite estadístico, con modelos de predicción
+
+Método en `PREREGISTRO_PREDICCION.md` (con las Enmiendas 1 y 2). Salidas: `pred_01_salida.txt` (filas, geometría y modelos),
+`pred_01b_salida.txt` (reglas), `pred_01c_salida.txt` (modelos con la geometría servida), `pred_02_salida.txt` (familia RX).
+
+**La pregunta.** Con la corriente para un lado y el precio r pts atrás del extremo del tramo, ¿qué probabilidad hay de que
+siga A pts más en contra antes de volver al extremo? Si el precio fuera azar puro, r/(r+A) (ruina del jugador).
+
+- **Geometría** (126.298 casos): MES real 4,0 / 10,3 / 17,5 / 22,4 / 26,2 % para r de 0-1 / 1-2 / 2-3 / 3-4 / 4-5 pts contra
+  azar 5,9 / 13,8 / 20,6 / 26,4 / 31,4 %. **Corrección del auditor independiente** (`auditoria_independiente/`, código propio):
+  la brecha que crece con r sale de contar como 0 los casos sin desenlace (de 2,1 % a 20,3 % de las filas según r); contando
+  solo los resueltos, MES queda entre +0,04 y -3,2 pp del azar. MNQ pegado al azar. Conclusión: paseo al azar, sin ventaja.
+- **Modelos** (20 datos en vivo: delta, volumen, VWAP, velocidad, hora, cuerpo, distancias...): la fórmula del azar sin
+  entrenar tiene el mejor AUC y log-loss en DISEÑO (0,732), EXAMEN (0,724) y MNQ (0,719); logística 0,70-0,71, árboles 0,68-0,70.
+  Con la geometría servida, la logística mejora 0,8 % en MES y empeora en MNQ; los árboles no cambian. **No hay predicción.**
+- **Consecuencia.** Sin predicción, la decisión óptima usa solo r: darse vuelta cuando el retroceso desde el extremo llega
+  a X pts. El SuperTrend usa (h+l)/2 ± ATR con trinquete y por eso tiene colas largas (p90 de 21-22 pts en MES).
+- **Familia RX** (Enmienda 2, ruido medido en la rueda): MES X = 10 elegido en DISEÑO; en EXAMEN antes que la base en 24
+  movimientos y después en 10 (p 0,012); mediana 13,5 -> 11,5, media 14,9 -> 12,6, p90 22,0 -> 16,4; cambios en la rueda
+  10,1 -> 10,5 y falsos 3,6 -> 3,3. **PASA.** También supera a la 1.1 en DISEÑO y EXAMEN (menos atraso, menos ruido, colas
+  más cortas). MNQ: el procedimiento eligió X = 70 y en la segunda mitad no pasó (37 antes contra 50 después).
+- **Hoy (29-10)**, 6 movimientos de 20 pts: peor atraso 1.2 12,75 pts, 1.1 22,25, 1.0c 20,5; en la suba de las 11:53 AR la
+  1.2 se da vuelta con 10 pts hechos (1.1 con 22,25). Costo: día muy volátil, 8 cambios en la rueda hasta las 12:48 contra 4
+  de la 1.0c. Un X fijo en puntos serrucha más en días volátiles y menos en días calmos: es el canje elegido.
+- **El límite, dicho simple:** para que "viene un tramo de A pts más" acierte más de la mitad de las veces, el precio ya
+  tiene que haber caminado A pts. Con lo que se ve en vivo, nada lo adelanta.
+- **Auditoría independiente** (agente aparte, sin abrir el código del laboratorio): reproduce exacto los movimientos (114 y
+  55), las medianas, medias y p90 de ST(10,3) y R10, el 24 contra 10 del examen (DISEÑO: 68 contra 20) y el ruido en la rueda.
+- **Corriente 1.2 instalada** 29-10 12:59:40 AR (operador plano): modo "Retroceso en puntos" 10 pts por defecto. Volcado de
+  ATAS contra Python: 27.224 velas, dirección, extremo y línea idénticos. Pantalla 13:01: línea verde medida 7751,87 contra
+  7751,75 calculada; flecha llena para arriba (precio sobre el VWAP).

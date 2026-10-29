@@ -1,0 +1,9 @@
+MES EXAMEN             M0 geometria               AUC 0.7235  log-loss 0.4190
+MES EXAMEN             M2+ logistica+geometria    AUC 0.7278  log-loss 0.4155
+MES EXAMEN             M3+ arboles+geometria      AUC 0.7041  log-loss 0.4433
+MNQ (modelo de MES)    M0 geometria               AUC 0.7187  log-loss 0.4821
+MNQ (modelo de MES)    M2+ logistica+geometria    AUC 0.7213  log-loss 0.4828
+MNQ (modelo de MES)    M3+ arboles+geometria      AUC 0.7043  log-loss 0.5090
+MNQ propio (CV)        M0 geometria               AUC 0.7187  log-loss 0.4821
+MNQ propio (CV)        M2+ propio                 AUC 0.7109  log-loss 0.4868
+MNQ propio (CV)        M3+ propio                 AUC 0.6786  log-loss 0.5223

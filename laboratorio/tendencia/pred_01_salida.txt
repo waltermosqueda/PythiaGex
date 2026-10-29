@@ -1,0 +1,75 @@
+PREDICCION. SHA-256 PREREGISTRO_PREDICCION.md: 55c05b144e509143c978cd7043603eb01f98a17cdaff8d9db6f7604221490813
+MES: 79801 filas, tasa de acierto (y=1) 15.4 %; por tramo: DISENO 57779 (14.7 %), EXAMEN 22022 (17.5 %)
+MNQ: 46497 filas, tasa de acierto (y=1) 22.8 %; por tramo: MNQ 46497 (22.8 %)
+
+MES: P(sigue 10 pts mas antes de volver al extremo | retroceso r)  real contra azar r/(r+A):
+  r (0, 1]       n  17621  real   4.0 %  azar   5.9 %  diferencia  -1.9
+  r (1, 2]       n  14335  real  10.3 %  azar  13.8 %  diferencia  -3.5
+  r (2, 3]       n   9336  real  17.5 %  azar  20.6 %  diferencia  -3.1
+  r (3, 4]       n   5888  real  22.4 %  azar  26.4 %  diferencia  -4.0
+  r (4, 5]       n   3709  real  26.2 %  azar  31.4 %  diferencia  -5.2
+  r (5, 6]       n   2169  real  28.2 %  azar  35.8 %  diferencia  -7.7
+  r (6, 8]       n   2525  real  34.7 %  azar  41.1 %  diferencia  -6.4
+  r (8, 10]      n   1160  real  37.5 %  azar  47.4 %  diferencia  -9.9
+  r (10, 12]     n    554  real  38.6 %  azar  52.4 %  diferencia -13.8
+  r (12, 15]     n    284  real  50.0 %  azar  57.1 %  diferencia  -7.1
+  r (15, 20]     n    171  real  53.2 %  azar  62.8 %  diferencia  -9.6
+  r (20, 30]     n     27  real  85.2 %  azar  70.3 %  diferencia +14.9
+
+MES: P(sigue 10 pts mas antes de volver al extremo | retroceso r)  real contra azar r/(r+A):
+  r (0, 1]       n   5866  real   4.5 %  azar   6.0 %  diferencia  -1.5
+  r (1, 2]       n   5337  real  11.8 %  azar  13.8 %  diferencia  -2.0
+  r (2, 3]       n   3819  real  20.1 %  azar  20.6 %  diferencia  -0.5
+  r (3, 4]       n   2521  real  25.1 %  azar  26.4 %  diferencia  -1.3
+  r (4, 5]       n   1610  real  30.2 %  azar  31.5 %  diferencia  -1.3
+  r (5, 6]       n    938  real  34.1 %  azar  35.8 %  diferencia  -1.7
+  r (6, 8]       n   1013  real  38.0 %  azar  41.3 %  diferencia  -3.3
+  r (8, 10]      n    479  real  40.5 %  azar  47.3 %  diferencia  -6.8
+  r (10, 12]     n    210  real  40.0 %  azar  52.3 %  diferencia -12.3
+  r (12, 15]     n    139  real  41.0 %  azar  57.3 %  diferencia -16.3
+  r (15, 20]     n     81  real  30.9 %  azar  62.8 %  diferencia -32.0
+  r (20, 30]     n      9  real  11.1 %  azar  67.9 %  diferencia -56.8
+
+MNQ: P(sigue 40 pts mas antes de volver al extremo | retroceso r)  real contra azar r/(r+A):
+  r (0, 4]       n   8240  real   5.2 %  azar   5.5 %  diferencia  -0.2
+  r (4, 8]       n   8643  real  12.7 %  azar  13.2 %  diferencia  -0.5
+  r (8, 12]      n   7432  real  18.5 %  azar  20.1 %  diferencia  -1.6
+  r (12, 16]     n   5790  real  26.4 %  azar  26.0 %  diferencia  +0.4
+  r (16, 20]     n   4279  real  29.1 %  azar  31.1 %  diferencia  -1.9
+  r (20, 24]     n   3131  real  30.0 %  azar  35.5 %  diferencia  -5.5
+  r (24, 32]     n   4251  real  38.4 %  azar  40.9 %  diferencia  -2.5
+  r (32, 40]     n   2108  real  45.7 %  azar  47.2 %  diferencia  -1.5
+  r (40, 48]     n   1099  real  49.0 %  azar  52.2 %  diferencia  -3.2
+  r (48, 60]     n    760  real  54.2 %  azar  57.0 %  diferencia  -2.8
+  r (60, 80]     n    512  real  52.3 %  azar  63.0 %  diferencia -10.7
+  r (80, 120]    n    185  real  56.2 %  azar  69.7 %  diferencia -13.4
+
+MES DISEÑO, validacion cruzada por sesiones (fuera de pliegue) (57779 filas, acierto 14.7 %):
+  M0: AUC 0.7323  log-loss 0.3783 | r 0-1 ATR AUC 0.7111 (n 21148) | r 1-2 ATR AUC 0.6625 (n 19236) | r 2-3 ATR AUC 0.6404 (n 11452)
+  M1: AUC 0.6740  log-loss 0.3910 | r 0-1 ATR AUC 0.6326 (n 21148) | r 1-2 ATR AUC 0.5319 (n 19236) | r 2-3 ATR AUC 0.4823 (n 11452)
+  M2: AUC 0.7005  log-loss 0.3865 | r 0-1 ATR AUC 0.6672 (n 21148) | r 1-2 ATR AUC 0.6241 (n 19236) | r 2-3 ATR AUC 0.5837 (n 11452)
+  M3: AUC 0.6842  log-loss 0.4194 | r 0-1 ATR AUC 0.6624 (n 21148) | r 1-2 ATR AUC 0.5998 (n 19236) | r 2-3 ATR AUC 0.5986 (n 11452)
+AUC condicional media en DISEÑO: M2 0.6250, M3 0.6203 -> se usa M2
+
+MES EXAMEN (modelo entrenado en todo DISEÑO) (22022 filas, acierto 17.5 %):
+  M0: AUC 0.7235  log-loss 0.4190 | r 0-1 ATR AUC 0.7031 (n 8302) | r 1-2 ATR AUC 0.6616 (n 7481) | r 2-3 ATR AUC 0.6260 (n 4248)
+  M1: AUC 0.6810  log-loss 0.4362 | r 0-1 ATR AUC 0.6613 (n 8302) | r 1-2 ATR AUC 0.5697 (n 7481) | r 2-3 ATR AUC 0.5147 (n 4248)
+  M2: AUC 0.7090  log-loss 0.4277 | r 0-1 ATR AUC 0.6669 (n 8302) | r 1-2 ATR AUC 0.6564 (n 7481) | r 2-3 ATR AUC 0.6220 (n 4248)
+  M3: AUC 0.7041  log-loss 0.4433 | r 0-1 ATR AUC 0.6727 (n 8302) | r 1-2 ATR AUC 0.6138 (n 7481) | r 2-3 ATR AUC 0.6490 (n 4248)
+
+MNQ con el modelo de MES (todo en ATR; r y ATR en pts / 4) (46497 filas, acierto 22.8 %):
+  M0: AUC 0.7187  log-loss 0.4821 | r 0-1 ATR AUC 0.6850 (n 19209) | r 1-2 ATR AUC 0.6295 (n 14806) | r 2-3 ATR AUC 0.6093 (n 8424)
+  M1: AUC 0.6924  log-loss 0.5245 | r 0-1 ATR AUC 0.6544 (n 19209) | r 1-2 ATR AUC 0.5524 (n 14806) | r 2-3 ATR AUC 0.5354 (n 8424)
+  M2: AUC 0.7008  log-loss 0.4962 | r 0-1 ATR AUC 0.6359 (n 19209) | r 1-2 ATR AUC 0.6276 (n 14806) | r 2-3 ATR AUC 0.6219 (n 8424)
+  M3: AUC 0.7043  log-loss 0.5090 | r 0-1 ATR AUC 0.6740 (n 19209) | r 1-2 ATR AUC 0.6170 (n 14806) | r 2-3 ATR AUC 0.6276 (n 8424)
+
+MNQ con modelo propio, validacion cruzada por sesiones (46497 filas, acierto 22.8 %):
+  M0: AUC 0.7187  log-loss 0.4821 | r 0-1 ATR AUC 0.6850 (n 19209) | r 1-2 ATR AUC 0.6295 (n 14806) | r 2-3 ATR AUC 0.6093 (n 8424)
+  M1: AUC 0.6885  log-loss 0.4942 | r 0-1 ATR AUC 0.6511 (n 19209) | r 1-2 ATR AUC 0.5409 (n 14806) | r 2-3 ATR AUC 0.5171 (n 8424)
+  M2: AUC 0.6997  log-loss 0.4949 | r 0-1 ATR AUC 0.6403 (n 19209) | r 1-2 ATR AUC 0.6008 (n 14806) | r 2-3 ATR AUC 0.5873 (n 8424)
+  M3: AUC 0.6786  log-loss 0.5223 | r 0-1 ATR AUC 0.6331 (n 19209) | r 1-2 ATR AUC 0.5880 (n 14806) | r 2-3 ATR AUC 0.6015 (n 8424)
+importancia en EXAMEN (caida del AUC al mezclar el rasgo): r_atr +0.1259, atr60_pts +0.0697, min_ses +0.0053, cierres_contra +0.0044, atr_ratio +0.0026, vol_desde +0.0022, vwap_pend +0.0016, cuerpo +0.0014, dist_max +0.0010, rueda +0.0009
+control arboles numba vs sklearn: diferencia maxima 5.55e-17
+control logistica plana vs sklearn: diferencia maxima 2.22e-16
+
+guardado pred_reglas.csv, pred_movs.csv y pred_modelos.pkl

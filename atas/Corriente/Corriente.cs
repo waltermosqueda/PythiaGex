@@ -45,15 +45,41 @@ namespace Corriente
     ///     volatiles la mediana de puntos tarde baja de 15,4 a 11,5-11,9. En la rueda suma ~1 cambio por dia (10 -> 11). SIN VALIDAR del
     ///     todo: el registro anota cada vuelta y su causa (linea o rapida) para seguir midiendo en vivo.
     /// Ajustes NUEVOS (CorLinea*, CorRapida*): los viejos CorAtr / CorMult quedaron guardados en el .ws y lo pisarian (ATAS persiste por nombre).
+    ///
+    /// 1.2 (29-10-2026) RETROCESO EN PUNTOS. "Sigue avisando muy tarde; calibrala hasta los limites reales de prediccion estadistica".
+    /// La 1.1 llego 22,25 pts tarde en la suba gradual de las 11:53-12:10 AR (la vuelta rapida no la ve; la linea 60x4 queda lejos).
+    /// Medido (PREREGISTRO_PREDICCION.md, pred_01/02): si la corriente va para un lado y el precio retrocedio r pts desde el extremo, la
+    /// probabilidad de que siga A pts mas antes de volver al extremo es la del azar puro r/(r+A) en MES y MNQ (126.000 casos; auditado
+    /// por separado); 20 datos en vivo (delta, volumen, VWAP, velocidad, hora...) con regresion y con arboles NO le ganan a esa formula fuera de
+    /// muestra. Sin prediccion, la decision optima usa solo r: darse vuelta cuando el retroceso desde el extremo del tramo llega a X pts.
+    /// X = 10 elegido en DISEÑO (mismo ruido en la rueda que la 10x3) y examinado en los 17 dias nuevos: antes en 24 movimientos, despues
+    /// en 10 (p 0,012); peor 10 % de atraso 22,0 -> 16,4 pts; cambios en la rueda 10,1 -> 10,5 y falsos 3,6 -> 3,3. Le gana a la 1.1 en
+    /// todo. En MNQ el mismo procedimiento NO paso (eligio 70 pts): no usar este X en MNQ (equivalente medido ~55-60, sin validar).
+    /// La LINEA del tunel es el punto exacto donde se da vuelta: X pts debajo del maximo del tramo (o encima del minimo).
     /// </summary>
     [DisplayName("PythiaGex - Corriente")]
     [Category("PythiaGex")]
     public class CorrienteIndicador : Indicator
     {
-        public const string Version = "1.1";
+        public const string Version = "1.2";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
+        public enum ModoCorriente
+        {
+            [Display(Name = "Retroceso en puntos (1.2)")] Retroceso,
+            [Display(Name = "Linea ATR + vuelta rapida (1.1)")] LineaAtr
+        }
+
         // ------------------------------------------------------------------ ajustes
+        [Display(Name = "Modo", GroupName = "Corriente", Order = 5)]
+        public ModoCorriente CorModo { get => _modo; set { _modo = value; RecalculateValues(); } }
+        private ModoCorriente _modo = ModoCorriente.Retroceso;
+
+        [Display(Name = "Retroceso para darse vuelta (pts)", GroupName = "Corriente", Order = 6)]
+        [Range(0.25, 1000)]
+        public double CorRetroceso { get => _retro; set { _retro = Math.Max(0.25, value); RecalculateValues(); } }
+        private double _retro = 10.0;
+
         [Display(Name = "Linea: ATR (velas)", GroupName = "Corriente", Order = 10)]
         [Range(2, 500)]
         public int CorLineaAtr { get => _atrN; set { _atrN = Math.Max(2, value); RecalculateValues(); } }
@@ -198,6 +224,7 @@ namespace Corriente
                     _atr[bar] = bar == 0 ? tr : (_atr[bar - 1] * (_atrN - 1) + tr) / _atrN;
                     double hl2 = (h + l) / 2, up = hl2 - _mult * _atr[bar], dn = hl2 + _mult * _atr[bar];
                     _rap[bar] = false;
+                    bool retro = _modo == ModoCorriente.Retroceso;
                     if (bar == 0) { _fu[bar] = up; _fd[bar] = dn; _dir[bar] = 1; _ext[bar] = h; _iext[bar] = 0; }
                     else
                     {
@@ -208,17 +235,25 @@ namespace Corriente
                         double ext = _ext[bar - 1]; int iext = _iext[bar - 1];
                         if (d0 == 1 && h > ext) { ext = h; iext = bar; }
                         else if (d0 == -1 && l < ext) { ext = l; iext = bar; }
-                        int d = d0 == 1 && c < _fu[bar] ? -1 : d0 == -1 && c > _fd[bar] ? 1 : d0;
-                        // VUELTA RAPIDA (1.1): el precio retrocede CorRapidaAtr ATR desde el extremo del tramo en CorRapidaVelas velas o menos
-                        if (d == d0 && _rapida && bar - iext <= _rapJ)
+                        int d;
+                        if (retro)
+                            // RETROCESO (1.2): se da vuelta cuando el cierre retrocede CorRetroceso pts desde el extremo del tramo
+                            d = d0 * (ext - c) >= _retro ? -d0 : d0;
+                        else
                         {
-                            if (d0 == 1 && ext - c >= _rapV * _atr[bar]) { d = -1; _rap[bar] = true; }
-                            else if (d0 == -1 && c - ext >= _rapV * _atr[bar]) { d = 1; _rap[bar] = true; }
+                            d = d0 == 1 && c < _fu[bar] ? -1 : d0 == -1 && c > _fd[bar] ? 1 : d0;
+                            // VUELTA RAPIDA (1.1): el precio retrocede CorRapidaAtr ATR desde el extremo del tramo en CorRapidaVelas velas o menos
+                            if (d == d0 && _rapida && bar - iext <= _rapJ)
+                            {
+                                if (d0 == 1 && ext - c >= _rapV * _atr[bar]) { d = -1; _rap[bar] = true; }
+                                else if (d0 == -1 && c - ext >= _rapV * _atr[bar]) { d = 1; _rap[bar] = true; }
+                            }
                         }
                         if (d != d0) { ext = d == 1 ? h : l; iext = bar; }
                         _dir[bar] = d; _ext[bar] = ext; _iext[bar] = iext;
                     }
-                    _st[bar] = _dir[bar] == 1 ? _fu[bar] : _fd[bar];
+                    // la linea del tunel: en RETROCESO es el punto exacto donde se da vuelta (X pts del extremo del tramo)
+                    _st[bar] = retro ? _ext[bar] - _dir[bar] * _retro : _dir[bar] == 1 ? _fu[bar] : _fd[bar];
                     double tp = (h + l + c) / 3;
                     _pv[bar] = (nueva ? 0 : _pv[bar - 1]) + tp * vol;
                     _vv[bar] = (nueva ? 0 : _vv[bar - 1]) + vol;
@@ -345,8 +380,9 @@ namespace Corriente
                 string inst = "?"; try { inst = InstrumentInfo?.Instrument ?? "?"; } catch { }
                 string marco = "?"; try { marco = ChartInfo?.TimeFrame ?? "?"; } catch { }
                 sb.Append(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss", Inv)).Append(" UTC v").Append(Version).Append(' ').Append(inst).Append(' ').Append(marco)
-                  .Append(" ATR ").Append(_atrN).Append(" x ").Append(_mult.ToString("0.##", Inv))
-                  .Append(_rapida ? string.Format(Inv, " | rapida {0:0.##} ATR en {1} velas", _rapV, _rapJ) : " | rapida APAGADA").Append('\n');
+                  .Append(_modo == ModoCorriente.Retroceso ? string.Format(Inv, " RETROCESO {0:0.##} pts", _retro)
+                      : string.Format(Inv, " ATR {0} x {1:0.##}", _atrN, _mult) + (_rapida ? string.Format(Inv, " | rapida {0:0.##} ATR en {1} velas", _rapV, _rapJ) : " | rapida APAGADA"))
+                  .Append('\n');
                 sb.Append("  flecha: ").Append(flecha).Append(" | cinta y ").Append(yCinta).Append(" | velas visibles ").Append(desde).Append('-').Append(hasta).Append('\n');
                 StringBuilder volcado = null;
                 lock (_llave)
@@ -363,19 +399,21 @@ namespace Corriente
                     sb.Append('\n');
                     if (_volcar && ult > 0)
                     {
-                        // VOLCADO (1.1): todas las velas cargadas con lo calculado, para recalcularlas en Python (paridad exacta)
+                        // VOLCADO (1.1; la 1.2 agrega la linea): todas las velas cargadas con lo calculado, para recalcularlas en Python
                         _volcar = false;
-                        volcado = new StringBuilder("hora_utc,o,h,l,c,atr,fu,fd,dir,ext,iext,rapida\n");
+                        volcado = new StringBuilder("hora_utc,o,h,l,c,atr,fu,fd,dir,ext,iext,rapida,linea\n");
                         for (int i = 0; i <= ult; i++)
-                            volcado.Append(string.Format(Inv, "{0:yyyy-MM-dd HH:mm:ss},{1},{2},{3},{4},{5:R},{6:R},{7:R},{8},{9},{10},{11}\n",
-                                _hora[i], _o[i], _h[i], _l[i], _c[i], _atr[i], _fu[i], _fd[i], _dir[i], _ext[i], _iext[i], _rap[i] ? 1 : 0));
+                            volcado.Append(string.Format(Inv, "{0:yyyy-MM-dd HH:mm:ss},{1},{2},{3},{4},{5:R},{6:R},{7:R},{8},{9},{10},{11},{12:R}\n",
+                                _hora[i], _o[i], _h[i], _l[i], _c[i], _atr[i], _fu[i], _fd[i], _dir[i], _ext[i], _iext[i], _rap[i] ? 1 : 0, _st[i]));
                     }
                 }
                 Directory.CreateDirectory(Carpeta());
                 File.AppendAllText(Path.Combine(Carpeta(), "auditoria-" + DateTime.UtcNow.ToString("yyyy-MM-dd", Inv) + ".log"), sb.ToString());
                 if (volcado != null)
-                    File.WriteAllText(Path.Combine(Carpeta(), string.Format(Inv, "volcado-{0:yyyy-MM-dd_HHmmss}-{1}-atr{2}x{3:0.##}-r{4}.csv",
-                        DateTime.UtcNow, inst, _atrN, _mult, _rapida ? _rapV.ToString("0.##", Inv) + "en" + _rapJ : "no")), volcado.ToString());
+                    File.WriteAllText(Path.Combine(Carpeta(), _modo == ModoCorriente.Retroceso
+                        ? string.Format(Inv, "volcado-{0:yyyy-MM-dd_HHmmss}-{1}-retro{2:0.##}.csv", DateTime.UtcNow, inst, _retro)
+                        : string.Format(Inv, "volcado-{0:yyyy-MM-dd_HHmmss}-{1}-atr{2}x{3:0.##}-r{4}.csv",
+                            DateTime.UtcNow, inst, _atrN, _mult, _rapida ? _rapV.ToString("0.##", Inv) + "en" + _rapJ : "no")), volcado.ToString());
             }
             catch { }
         }
