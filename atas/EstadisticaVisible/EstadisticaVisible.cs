@@ -15,7 +15,7 @@ using OFT.Rendering.Tools;
 namespace EstadisticaVisible
 {
     /// <summary>
-    /// ESTADISTICA VISIBLE 1.8 (29-10-2026). Pedido del operador: "tengo que hacer recontra zoom para que se vean los numeros
+    /// ESTADISTICA VISIBLE 2.0 (29-10-2026). Pedido del operador: "tengo que hacer recontra zoom para que se vean los numeros
     /// del Cluster Statistic y ahi pierdo contexto del grafico"; despues: "que se vean siempre los ultimos sin zoom"; con la 1.3:
     /// "que persiga a las velas correctas" (eligio "cuadros bajo sus velas"); y con la 1.4: "cuando estiras o contraes los numeros
     /// cambian, desaparecen o se fusionan; debe ser integro siempre y corresponder a su vela siempre, sino despues malas decisiones".
@@ -24,11 +24,12 @@ namespace EstadisticaVisible
     /// debajo de su vela no entra (ni turnando renglones: 1.0-1.2), y cuadros de una vela no quedan debajo de su vela (1.3). La 1.4
     /// elegia cuantas velas juntar segun el zoom: al estirar el grafico cambiaban los cortes y los numeros. ERROR, corregido aca.
     ///
-    /// LA SOLUCION (1.8). Todo el panel son CUADROS ALINEADOS, cada uno exactamente debajo de las velas que resume, con su numero
-    /// SIEMPRE ADENTRO (1.6-1.7 escalonaba y los numeros se salian del cuadro: "imaginate mañana con mas volumen"). El bloque es
-    /// FIJO (EstVelasCuadro, 4 velas, cortado a la hora redonda): el zoom no cambia ni los cortes ni los numeros, nada se junta,
-    /// solo cambia el tamaño de la letra. Delta y Volumen = suma de sus velas; Delta de la sesion = el valor al cierre del bloque.
-    /// El bloque EN CURSO crece vela a vela, lleva recuadro y se estira hacia la derecha (el futuro, vacio) hasta que entra su numero.
+    /// LA SOLUCION (2.0, eligio el operador "1 cuadro por vela": "que coincidan las velas si o si con sus cuadros, sino despues presta
+    /// a confusion si quiero analizar una vela y su delta en el pasado"). Cada vela tiene SU cuadro, exactamente debajo (EstVelas = 1;
+    /// se puede subir y queda fijo: el zoom nunca cambia cortes ni numeros). El numero va adentro, en negrita con sombra: acostado si
+    /// entra en todos los cuadros de la fila, si no parado (girado 90 grados), y si tampoco (zoom muy alejado) la fila queda solo con
+    /// colores. LUPA: con el mouse sobre una vela, su columna se marca y un cartel da su hora, delta, volumen y sesion EXACTOS, con
+    /// cualquier zoom. La vela EN CURSO lleva recuadro y se estira a la derecha (el futuro, vacio) para que su numero siempre se lea.
     ///
     /// LOS DATOS. Los mismos que el de fabrica: GetCandle(bar).Delta y .Volume; la sesion se reinicia con IsNewSession (la
     /// sesion del grafico, el modo por defecto del Cluster Statistic). Delta exacto hasta 999 y despues "-1,2k" (siempre igual,
@@ -43,7 +44,7 @@ namespace EstadisticaVisible
     [Category("PythiaGex")]
     public class EstadisticaVisibleIndicador : Indicator
     {
-        public const string Version = "1.8b";
+        public const string Version = "2.0";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ------------------------------------------------------------------ ajustes
@@ -59,11 +60,11 @@ namespace EstadisticaVisible
         public bool EstVolumen { get => _fVolumen; set { _fVolumen = value; RecalculateValues(); } }
         private bool _fVolumen = true;
 
-        // nombre nuevo en la 1.8b (EstVelasCuadro, y queda este): el .ws guarda EstVelasPorBloque = 2 de la 1.6-1.7 y le ganaria al
+        // 2.0: EstVelas = 1 (un cuadro por vela, lo eligio el operador). Nombres viejos (EstVelasCuadro = 4: el .ws guarda EstVelasPorBloque = 2 de la 1.6-1.7 y le ganaria al
         // default. 4 velas: con su zoom mas alejado (7 px por vela) el cuadro da 28 px y entra un numero de 4-5 caracteres adentro.
         [Display(Name = "Velas por cuadro (fijo: no cambia con el zoom)", GroupName = "Numeros", Order = 35)]
         [Range(1, 240)]
-        public int EstVelasCuadro { get; set; } = 4;
+        public int EstVelas { get; set; } = 1;
 
         [Display(Name = "Tamano de letra de los cuadros", GroupName = "Numeros", Order = 36)]
         [Range(7, 16)]
@@ -96,6 +97,45 @@ namespace EstadisticaVisible
         private readonly List<double> _delta = new List<double>(), _ses = new List<double>(), _vol = new List<double>();
         private readonly List<DateTime> _hora = new List<DateTime>();
         private DateTime _ultAudit = DateTime.MinValue;
+        private readonly Dictionary<string, Bitmap> _rotados = new Dictionary<string, Bitmap>();
+
+        /// <summary>El texto girado 90 grados (se lee de abajo hacia arriba) como imagen con fondo transparente, para cuadros angostos.
+        /// ATAS no gira texto (su RenderContext solo traslada); se dibuja con DrawStaticImage. Se guarda por texto, letra y color.</summary>
+        private Bitmap Rotado(string txt, int tam, Color col)
+        {
+            string clave = txt + "|" + tam + "|" + col.ToArgb();
+            if (_rotados.TryGetValue(clave, out var bm)) return bm;
+            if (_rotados.Count > 3000) { foreach (var x in _rotados.Values) x.Dispose(); _rotados.Clear(); }
+            using (var fnt = new Font("Segoe UI", tam, FontStyle.Bold, GraphicsUnit.Point))
+            using (var tmp = new Bitmap(1, 1))
+            using (var gt = Graphics.FromImage(tmp))
+            {
+                var sf = System.Drawing.StringFormat.GenericTypographic;
+                var sz = gt.MeasureString(txt, fnt, PointF.Empty, sf);
+                int largo = (int)Math.Ceiling(sz.Width) + 3, alto = (int)Math.Ceiling(fnt.GetHeight(gt)) + 2;
+                bm = new Bitmap(alto, largo, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using (var gb = Graphics.FromImage(bm))
+                using (var br = new SolidBrush(col))
+                using (var sombra = new SolidBrush(Color.FromArgb(190, 0, 0, 0)))
+                {
+                    gb.Clear(Color.Transparent);
+                    gb.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+                    gb.TranslateTransform(0, largo);
+                    gb.RotateTransform(-90);
+                    gb.DrawString(txt, fnt, sombra, 2, 1, sf);   // sombra abajo a la derecha: resalta sobre cualquier color
+                    gb.DrawString(txt, fnt, br, 1, 0, sf);
+                }
+            }
+            _rotados[clave] = bm;
+            return bm;
+        }
+
+        /// <summary>Texto acostado con sombra oscura abajo a la derecha: resalta sobre cualquier color de cuadro.</summary>
+        private static void Texto(RenderContext g, string txt, RenderFont f, Color col, int x, int y)
+        {
+            g.DrawString(txt, f, Color.FromArgb(190, 0, 0, 0), x + 1, y + 1);
+            g.DrawString(txt, f, col, x, y);
+        }
 
         private enum Tipo { Delta, Sesion, Volumen }
 
@@ -254,7 +294,7 @@ namespace EstadisticaVisible
             // numeros, nada se junta. La letra de cada fila es la mas grande con la que TODOS sus numeros entran en su cuadro; si con
             // letra 7 alguno no entra, ese cuadro queda pintado sin numero (nunca uno que se salga). El bloque EN CURSO lleva recuadro
             // y se estira hacia la derecha (el futuro, vacio) hasta que sus numeros entran en el.
-            int k = Math.Max(1, EstVelasCuadro);
+            int k = Math.Max(1, EstVelas);
             var cuadros = Agrupar(k, n, hora, d, v, s, segVela);
             bool enCurso = hasta == ult;
             if (enCurso && cuadros.Count > 0) cuadros[cuadros.Count - 1].EnCurso = true;
@@ -272,18 +312,18 @@ namespace EstadisticaVisible
                 int tope = t == Tipo.Delta ? Math.Max(7, EstLetraCajas) : Math.Max(7, Math.Min(EstLetraCajas, 9));
                 for (int tam = tope; tam >= 7 && !hay[r]; tam--)
                 {
-                    var ft = new RenderFont("Segoe UI", tam); int h = g.MeasureString("0", ft).Height;
+                    var ft = new RenderFont("Segoe UI", tam, FontStyle.Bold); int h = g.MeasureString("0", ft).Height;
                     if (h + 2 > altoF[r]) continue;
                     int mas = 0; foreach (var x in largos) mas = Math.Max(mas, g.MeasureString(x, ft).Width);
                     if (mas <= anchoCaja || tam == 7) { fuente[r] = ft; altoTxt[r] = h; letra[r] = tam; hay[r] = true; }
                 }
-                if (!hay[r]) { fuente[r] = new RenderFont("Segoe UI", 7); altoTxt[r] = g.MeasureString("0", fuente[r]).Height; letra[r] = 7; hay[r] = true; }
+                if (!hay[r]) { fuente[r] = new RenderFont("Segoe UI", 7, FontStyle.Bold); altoTxt[r] = g.MeasureString("0", fuente[r]).Height; letra[r] = 7; hay[r] = true; }
             }
 
             var fNom = new RenderFont("Segoe UI", Math.Max(7, EstLetra - 1));
             var fNota = new RenderFont("Segoe UI", 7);
             string[] nombres = tipos.Select(t => t == Tipo.Delta ? "Delta" : t == Tipo.Sesion ? "Delta sesion (miles)" : "Volumen").ToArray();
-            string nota = k > 1 ? "cuadro = " + k + " velas" : "cuadro = 1 vela";
+            string nota = k > 1 ? "cuadro = " + k + " velas" : "mouse = detalle";
             int anchoNom = 0;
             if (EstNombres)
             {
@@ -323,29 +363,77 @@ namespace EstadisticaVisible
                     int gap = b - a >= 4 ? 1 : 0;
                     g.FillRectangle(Color.FromArgb(alfa, baseC.R, baseC.G, baseC.B), new Rectangle(a, yF + 1, b - a - gap, hF - 2));
                 }
-                int sinNumero = 0, chicos = 0; var fChica = new RenderFont("Segoe UI", 6);
+                // NUMEROS (2.0, un cuadro por vela). Negrita con sombra. La fila entera va igual, para que se lea pareja:
+                // 1) ACOSTADOS si todos los cuadros enteros los dejan entrar adentro; 2) si no, PARADOS (girados 90 grados) si entran
+                // con letra 7 o mas; 3) si tampoco (zoom muy alejado), la fila queda solo con colores y el numero exacto de cada vela
+                // se ve con la LUPA del mouse. Nunca un numero afuera de su cuadro ni con el de otra vela. La vela en curso siempre
+                // muestra su numero (su cuadro se estira a la derecha, al futuro vacio).
+                var enteros = cuadros.Where(c => !c.EnCurso && c.Fin - c.Ini + 1 == k && x0[c.Ini] >= reg.Left + anchoNom).ToList();
+                string modo = "acostados"; int letraParado = 0;
+                foreach (var c in enteros)
+                    if (g.MeasureString(FormatoFila(t, c.Valor(t)), f).Width > x0[c.Fin + 1] - x0[c.Ini] - 5) { modo = "parados"; break; }
+                if (modo == "parados")
+                {
+                    int tope = t == Tipo.Delta ? Math.Max(7, EstLetraCajas) : Math.Max(7, Math.Min(EstLetraCajas, 9));
+                    for (int tam = tope; tam >= 7 && letraParado == 0; tam--)
+                    {
+                        bool ok = true;
+                        foreach (var c in enteros)
+                        {
+                            var bm = Rotado(FormatoFila(t, c.Valor(t)), tam, cTxt);
+                            if (bm.Width > x0[c.Fin + 1] - x0[c.Ini] - 2 || bm.Height > hF - 3) { ok = false; break; }
+                        }
+                        if (ok) letraParado = tam;
+                    }
+                    if (letraParado == 0) modo = "solo colores";
+                }
+                int escritos = 0;
                 foreach (var c in cuadros)
                 {
                     int a = x0[c.Ini], b = c.EnCurso ? xbCurso : x0[c.Fin + 1];
-                    string txt = FormatoFila(t, c.Valor(t)); var sz = g.MeasureString(txt, f);
-                    var fc = f; int xt = a + (b - 1 - a - sz.Width) / 2;
-                    if (xt < a + 2 || xt + sz.Width > b - 3)
+                    if (a < reg.Left + anchoNom || b > xMax + 1) continue;   // ni debajo de los nombres ni cortado por el borde
+                    string txt = FormatoFila(t, c.Valor(t));
+                    if (!c.EnCurso && modo == "solo colores") continue;
+                    if (!c.EnCurso && modo == "parados")
                     {
-                        // no entra con la letra de la fila: ese cuadro prueba con letra 6 antes de quedar sin numero (nunca afuera)
-                        fc = fChica; sz = g.MeasureString(txt, fc); xt = a + (b - 1 - a - sz.Width) / 2;
-                        if (xt < a + 2 || xt + sz.Width > b - 3) { if (a >= reg.Left + anchoNom) sinNumero++; continue; }
-                        chicos++;
+                        var bm = Rotado(txt, letraParado, cTxt);
+                        if (bm.Width <= b - a - 2 && bm.Height <= hF - 3)
+                        { g.DrawStaticImage(bm, new Rectangle(a + (b - a - bm.Width) / 2, yF + (hF - bm.Height) / 2, bm.Width, bm.Height)); escritos++; }
+                        continue;
                     }
-                    if (xt < reg.Left + anchoNom || xt + sz.Width > xMax) continue;   // ni debajo de los nombres ni cortado por el borde
-                    g.DrawString(txt, fc, cTxt, xt, yF + (hF - g.MeasureString("0", fc).Height) / 2);
+                    var sz = g.MeasureString(txt, f); int xt = a + (b - 1 - a - sz.Width) / 2;
+                    if (xt < a + 2 || xt + sz.Width > b - 3) continue;
+                    Texto(g, txt, f, cTxt, xt, yF + (hF - altoTxt[r]) / 2);
+                    escritos++;
                 }
-                audit.Append(" | ").Append(t).Append(": ").Append(chicos).Append(" con letra 6, sin numero (no entra ni con letra 6): ").Append(sinNumero);
+                audit.Append(" | ").Append(t).Append(": ").Append(modo).Append(modo == "parados" ? " letra " + letraParado : "").Append(", ").Append(escritos).Append(" numeros");
             }
             if (enCurso && cuadros.Count > 0)
             {
                 var c = cuadros[cuadros.Count - 1];
                 int a = x0[c.Ini], b = Math.Max(xbCurso, a + 3);
                 g.DrawRectangle(new RenderPen(Color.FromArgb(220, cTxt.R, cTxt.G, cTxt.B), 1), new Rectangle(a, reg.Top + 1, b - a - 1, reg.Height - 3));
+            }
+
+            // LUPA (2.0): con el mouse sobre una vela, su columna se marca en amarillo y un cartel muestra su hora y sus numeros EXACTOS
+            // (con cualquier zoom: para analizar una vela del pasado aunque su cuadro sea demasiado angosto para escribir el numero).
+            int bajo = -1; bool fuera = true;
+            try { var mi = MouseLocationInfo; if (mi != null) { fuera = mi.IsMouseLeave; bajo = mi.BarBelowMouse; } } catch { }
+            if (!fuera && bajo >= desde && bajo <= hasta)
+            {
+                int i = bajo - desde;
+                var cLupa = Color.FromArgb(255, 255, 214, 0);
+                g.DrawRectangle(new RenderPen(cLupa, 2), new Rectangle(x0[i], reg.Top + 1, Math.Max(2, x0[i + 1] - x0[i] - 1), reg.Height - 3));
+                string l1 = HoraLocal(hora[i]) + "   Delta " + (d[i] > 0 ? "+" : "") + Math.Round(d[i]).ToString("0", Inv);
+                string l2 = "Vol " + Math.Round(v[i]).ToString("0", Inv) + "   Sesion " + (s[i] > 0 ? "+" : "") + Math.Round(s[i]).ToString("0", Inv);
+                var f1 = new RenderFont("Segoe UI", 11, FontStyle.Bold); var f2 = new RenderFont("Segoe UI", 9, FontStyle.Bold);
+                var s1 = g.MeasureString(l1, f1); var s2 = g.MeasureString(l2, f2);
+                int w = Math.Max(s1.Width, s2.Width) + 14, h = s1.Height + s2.Height + 8;
+                int xl = Math.Max(reg.Left + 2, Math.Min(xMax - w - 2, (x0[i] + x0[i + 1]) / 2 - w / 2)), yl = reg.Top + 2;
+                g.FillRectangle(Color.FromArgb(240, cFondo.R, cFondo.G, cFondo.B), new Rectangle(xl, yl, w, h));
+                g.DrawRectangle(new RenderPen(cLupa, 1), new Rectangle(xl, yl, w, h));
+                Texto(g, l1, f1, d[i] >= 0 ? Color.FromArgb(255, 120, 230, 160) : Color.FromArgb(255, 255, 130, 130), xl + 7, yl + 4);
+                Texto(g, l2, f2, cTxt, xl + 7, yl + 4 + s1.Height);
             }
 
             // nombres de las filas, encima de todo, con fondo propio; debajo de "Delta", cuantas velas junta cada cuadro
