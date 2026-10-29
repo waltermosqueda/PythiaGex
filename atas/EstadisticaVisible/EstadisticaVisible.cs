@@ -15,7 +15,7 @@ using OFT.Rendering.Tools;
 namespace EstadisticaVisible
 {
     /// <summary>
-    /// ESTADISTICA VISIBLE 1.5 (29-10-2026). Pedido del operador: "tengo que hacer recontra zoom para que se vean los numeros
+    /// ESTADISTICA VISIBLE 1.8 (29-10-2026). Pedido del operador: "tengo que hacer recontra zoom para que se vean los numeros
     /// del Cluster Statistic y ahi pierdo contexto del grafico"; despues: "que se vean siempre los ultimos sin zoom"; con la 1.3:
     /// "que persiga a las velas correctas" (eligio "cuadros bajo sus velas"); y con la 1.4: "cuando estiras o contraes los numeros
     /// cambian, desaparecen o se fusionan; debe ser integro siempre y corresponder a su vela siempre, sino despues malas decisiones".
@@ -24,15 +24,15 @@ namespace EstadisticaVisible
     /// debajo de su vela no entra (ni turnando renglones: 1.0-1.2), y cuadros de una vela no quedan debajo de su vela (1.3). La 1.4
     /// elegia cuantas velas juntar segun el zoom: al estirar el grafico cambiaban los cortes y los numeros. ERROR, corregido aca.
     ///
-    /// LA SOLUCION. Todo el panel son CUADROS ALINEADOS, cada uno exactamente debajo de las velas que resume. El bloque es FIJO
-    /// (EstBloque, 5 velas: con 1 min, :00-:04, :05-:09...) y se corta a la hora redonda: el zoom no cambia ni los cortes ni los
-    /// numeros, y nada se junta. Delta y Volumen = suma exacta de sus velas; Delta de la sesion = el valor al cierre del bloque.
-    /// El zoom solo cambia el tamaño de la letra; si un bloque queda mas angosto que su numero con letra 7, queda pintado sin
-    /// numero (nunca con el de otro bloque). El bloque EN CURSO crece vela a vela, lleva recuadro y se estira hacia la derecha
-    /// (el futuro, vacio) para que su numero siempre se lea.
+    /// LA SOLUCION (1.8). Todo el panel son CUADROS ALINEADOS, cada uno exactamente debajo de las velas que resume, con su numero
+    /// SIEMPRE ADENTRO (1.6-1.7 escalonaba y los numeros se salian del cuadro: "imaginate mañana con mas volumen"). El bloque es
+    /// FIJO (EstVelasCuadro, 4 velas, cortado a la hora redonda): el zoom no cambia ni los cortes ni los numeros, nada se junta,
+    /// solo cambia el tamaño de la letra. Delta y Volumen = suma de sus velas; Delta de la sesion = el valor al cierre del bloque.
+    /// El bloque EN CURSO crece vela a vela, lleva recuadro y se estira hacia la derecha (el futuro, vacio) hasta que entra su numero.
     ///
     /// LOS DATOS. Los mismos que el de fabrica: GetCandle(bar).Delta y .Volume; la sesion se reinicia con IsNewSession (la
-    /// sesion del grafico, el modo por defecto del Cluster Statistic). Numeros EXACTOS hasta 99.999 ("-2483", sin redondear).
+    /// sesion del grafico, el modo por defecto del Cluster Statistic). Delta exacto hasta 999 y despues "-1,2k" (siempre igual,
+    /// no segun el zoom); Delta de la sesion en miles ("-2,3"); Volumen exacto hasta 999 y despues "1,2k".
     ///
     /// AUDITORIA. Cada 60 s anota en %APPDATA%\ATAS\PythiaGex\estadistica\auditoria-AAAA-MM-DD.log: ancho de vela, velas por cuadro,
     /// letra, cada cuadro (hora, cuantas velas, texto y suma cruda) y las velas sueltas de los ultimos cuadros para rehacer la suma.
@@ -43,7 +43,7 @@ namespace EstadisticaVisible
     [Category("PythiaGex")]
     public class EstadisticaVisibleIndicador : Indicator
     {
-        public const string Version = "1.7";
+        public const string Version = "1.8b";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ------------------------------------------------------------------ ajustes
@@ -59,10 +59,11 @@ namespace EstadisticaVisible
         public bool EstVolumen { get => _fVolumen; set { _fVolumen = value; RecalculateValues(); } }
         private bool _fVolumen = true;
 
-        // nombre nuevo en la 1.6: el .ws guarda EstBloque = 5 de la 1.5 y le ganaria al default
+        // nombre nuevo en la 1.8b (EstVelasCuadro, y queda este): el .ws guarda EstVelasPorBloque = 2 de la 1.6-1.7 y le ganaria al
+        // default. 4 velas: con su zoom mas alejado (7 px por vela) el cuadro da 28 px y entra un numero de 4-5 caracteres adentro.
         [Display(Name = "Velas por cuadro (fijo: no cambia con el zoom)", GroupName = "Numeros", Order = 35)]
         [Range(1, 240)]
-        public int EstVelasPorBloque { get; set; } = 2;
+        public int EstVelasCuadro { get; set; } = 4;
 
         [Display(Name = "Tamano de letra de los cuadros", GroupName = "Numeros", Order = 36)]
         [Range(7, 16)]
@@ -154,7 +155,7 @@ namespace EstadisticaVisible
         /// Volumen exacto hasta 999 y despues abreviado ("1,2k"; desde 100k, "123k"). Coma decimal. No dependen del zoom.</summary>
         private static string FormatoFila(Tipo t, double v)
         {
-            if (t == Tipo.Delta) return Formato(v);
+            if (t == Tipo.Delta) { if (Math.Abs(v) < 999.5) return Math.Round(v).ToString("0", Inv); double kd = v / 1000.0; return kd.ToString(Math.Abs(kd) < 99.95 ? "0.0" : "0", Inv).Replace('.', ',') + "k"; }
             if (t == Tipo.Sesion) { double m = v / 1000.0; return m.ToString(Math.Abs(m) < 99.95 ? "0.0" : "0", Inv).Replace('.', ','); }
             if (Math.Abs(v) < 999.5) return Math.Round(v).ToString("0", Inv);
             double kk = v / 1000.0; return kk.ToString(Math.Abs(kk) < 99.95 ? "0.0" : "0", Inv).Replace('.', ',') + "k";
@@ -246,40 +247,37 @@ namespace EstadisticaVisible
                 }
             }
 
-            // CUADROS FIJOS Y CHICOS (1.6, pedido 29-10: "mas chicos los cuadros y sus valores, que sigan legibles, que coincidan las
-            // velas con sus cuadros si o si"). El bloque es FIJO (EstVelasPorBloque, 2 velas, cortado a la hora redonda: el zoom no
-            // cambia ni los cortes ni los numeros, nada se junta). Para que el numero entre en un cuadro angosto, los numeros de una
-            // fila se ESCALONAN: el bloque con clave par escribe arriba y el impar abajo (o en tres renglones), asi cada numero puede
-            // usar el ancho de dos o tres cuadros sin tocar al vecino, centrado en SU cuadro. El renglon sale de la clave del bloque
-            // (la hora), no de la pantalla. Letra, fila por fila: primero una sola linea con letra 8 o mas; si no, dos renglones; si
-            // no, tres. Si ni asi entra, el cuadro queda pintado sin numero (nunca con el de otro bloque). El bloque EN CURSO lleva
-            // recuadro y se estira hacia la derecha (el futuro, vacio) para que sus numeros entren en una sola linea.
-            int k = Math.Max(1, EstVelasPorBloque);
+            // CUADROS FIJOS (1.8, pedido 29-10: "se salen los numeros de los cuadros, imaginate mañana con mas volumen"). Cada numero va
+            // SIEMPRE ADENTRO de su cuadro, en una sola linea y centrado (la 1.6-1.7 los escalonaba y un numero usaba el ancho de dos
+            // cuadros: quedaba encima del vecino). El bloque es FIJO (EstVelasCuadro, 4 velas cortadas a la hora redonda: con su
+            // zoom de 7-11 px por vela da 28-44 px, lo justo para 4-5 caracteres legibles); el zoom no cambia ni los cortes ni los
+            // numeros, nada se junta. La letra de cada fila es la mas grande con la que TODOS sus numeros entran en su cuadro; si con
+            // letra 7 alguno no entra, ese cuadro queda pintado sin numero (nunca uno que se salga). El bloque EN CURSO lleva recuadro
+            // y se estira hacia la derecha (el futuro, vacio) hasta que sus numeros entran en el.
+            int k = Math.Max(1, EstVelasCuadro);
             var cuadros = Agrupar(k, n, hora, d, v, s, segVela);
             bool enCurso = hasta == ult;
             if (enCurso && cuadros.Count > 0) cuadros[cuadros.Count - 1].EnCurso = true;
             int anchoBloque = k * wCol;
 
-            var fuente = new RenderFont[nFil]; var altoTxt = new int[nFil]; var letra = new int[nFil]; var renglones = new int[nFil]; var hay = new bool[nFil];
+            var fuente = new RenderFont[nFil]; var altoTxt = new int[nFil]; var letra = new int[nFil]; var hay = new bool[nFil];
+            int anchoCaja = Math.Max(1, anchoBloque - 1 - 4);   // lo que queda adentro del cuadro: 1 px de separacion y 2 de aire por lado
             for (int r = 0; r < nFil; r++)
             {
                 var t = tipos[r];
                 // (se miden solo los textos mas largos de la fila: ATAS redibuja en cada operacion y medir todos seria caro)
-                var txts = cuadros.Select(c => FormatoFila(t, c.Valor(t))).ToList();
+                var txts = cuadros.Where(c => !c.EnCurso).Select(c => FormatoFila(t, c.Valor(t))).ToList();
                 int lmax = txts.Count > 0 ? txts.Max(x => x.Length) : 0;
                 var largos = txts.Where(x => x.Length >= lmax - 1).Distinct().ToList();
                 int tope = t == Tipo.Delta ? Math.Max(7, EstLetraCajas) : Math.Max(7, Math.Min(EstLetraCajas, 9));
-                for (int pasada = 1; pasada <= 3 && !hay[r]; pasada++)
-                    for (int tam = tope; tam >= (pasada == 1 ? 8 : 7) && !hay[r]; tam--)
-                    {
-                        var ft = new RenderFont("Segoe UI", tam); int h = g.MeasureString("0", ft).Height;
-                        int caben = Math.Min(pasada, altoF[r] / Math.Max(1, h));
-                        if (caben < 1) continue;
-                        int mas = 0; foreach (var x in largos) mas = Math.Max(mas, g.MeasureString(x, ft).Width);
-                        int ren = (int)Math.Ceiling((mas + 5.0) / Math.Max(1, anchoBloque));
-                        if (ren >= 1 && ren <= caben) { fuente[r] = ft; altoTxt[r] = h; letra[r] = tam; renglones[r] = ren; hay[r] = true; }
-                    }
-                if (!hay[r]) { fuente[r] = new RenderFont("Segoe UI", 7); altoTxt[r] = g.MeasureString("0", fuente[r]).Height; letra[r] = 7; renglones[r] = 1; }
+                for (int tam = tope; tam >= 7 && !hay[r]; tam--)
+                {
+                    var ft = new RenderFont("Segoe UI", tam); int h = g.MeasureString("0", ft).Height;
+                    if (h + 2 > altoF[r]) continue;
+                    int mas = 0; foreach (var x in largos) mas = Math.Max(mas, g.MeasureString(x, ft).Width);
+                    if (mas <= anchoCaja || tam == 7) { fuente[r] = ft; altoTxt[r] = h; letra[r] = tam; hay[r] = true; }
+                }
+                if (!hay[r]) { fuente[r] = new RenderFont("Segoe UI", 7); altoTxt[r] = g.MeasureString("0", fuente[r]).Height; letra[r] = 7; hay[r] = true; }
             }
 
             var fNom = new RenderFont("Segoe UI", Math.Max(7, EstLetra - 1));
@@ -293,23 +291,13 @@ namespace EstadisticaVisible
                 anchoNom = Math.Max(anchoNom, g.MeasureString(nota, fNota).Width + 8);
             }
 
-            // el bloque en curso: su numero arranca despues del numero escalonado del bloque anterior, que puede asomar sobre su cuadro
-            int xbCurso = 0; int[] xtCurso = new int[nFil];
+            // el bloque en curso se estira hacia la derecha hasta que sus numeros entran adentro
+            int xbCurso = 0;
             if (enCurso && cuadros.Count > 0)
             {
-                var cc = cuadros[cuadros.Count - 1]; var cp = cuadros.Count >= 2 ? cuadros[cuadros.Count - 2] : null;
-                xbCurso = x0[cc.Fin + 1];
-                for (int r = 0; r < nFil; r++)
-                {
-                    int w = g.MeasureString(FormatoFila(tipos[r], cc.Valor(tipos[r])), fuente[r]).Width, x = x0[cc.Ini] + 4;
-                    if (cp != null)
-                    {
-                        int wp = g.MeasureString(FormatoFila(tipos[r], cp.Valor(tipos[r])), fuente[r]).Width;
-                        x = Math.Max(x, (x0[cp.Ini] + x0[cp.Fin + 1]) / 2 + wp / 2 + 4);
-                    }
-                    xtCurso[r] = x; xbCurso = Math.Max(xbCurso, x + w + 5);
-                }
-                xbCurso = Math.Min(xMax, xbCurso);
+                var cc = cuadros[cuadros.Count - 1]; int nec = 0;
+                for (int r = 0; r < nFil; r++) nec = Math.Max(nec, g.MeasureString(FormatoFila(tipos[r], cc.Valor(tipos[r])), fuente[r]).Width);
+                xbCurso = Math.Min(xMax, Math.Max(x0[cc.Fin + 1], x0[cc.Ini] + nec + 8));
             }
 
             var audit = new StringBuilder();
@@ -318,16 +306,13 @@ namespace EstadisticaVisible
                  .Append(enCurso ? ", el ultimo en curso" : " (corrido hacia atras)");
             for (int r = 0; r < nFil; r++)
                 audit.Append(" | ").Append(tipos[r]).Append(": fila ").Append(altoF[r]).Append(" px, ")
-                     .Append(hay[r] ? "letra " + letra[r] + ", " + renglones[r] + " renglon(es)" : "SIN NUMEROS (no entran ni con 3 renglones de letra 7)");
+                     .Append("letra ").Append(letra[r]).Append(" (adentro: ").Append(anchoCaja).Append(" px)");
 
             for (int r = 0; r < nFil; r++)
             {
                 var t = tipos[r]; int yF = topF[r], hF = altoF[r]; var f = fuente[r];
                 double mx = 1; foreach (var c in cuadros) if (!c.EnCurso) mx = Math.Max(mx, Math.Abs(c.Valor(t)));
                 if (r > 0) g.DrawLine(penGrilla, reg.Left, yF, xMax, yF);
-                int L = Math.Max(1, renglones[r]);
-                int yBase = yF + (hF - L * altoTxt[r]) / 2;
-                // celdas primero, numeros despues (un numero escalonado puede pasar por encima de la celda vecina)
                 foreach (var c in cuadros)
                 {
                     int a = Math.Max(x0[c.Ini], reg.Left), b = Math.Min(c.EnCurso ? xbCurso : x0[c.Fin + 1], xMax);
@@ -338,16 +323,23 @@ namespace EstadisticaVisible
                     int gap = b - a >= 4 ? 1 : 0;
                     g.FillRectangle(Color.FromArgb(alfa, baseC.R, baseC.G, baseC.B), new Rectangle(a, yF + 1, b - a - gap, hF - 2));
                 }
-                if (!hay[r]) continue;
+                int sinNumero = 0, chicos = 0; var fChica = new RenderFont("Segoe UI", 6);
                 foreach (var c in cuadros)
                 {
+                    int a = x0[c.Ini], b = c.EnCurso ? xbCurso : x0[c.Fin + 1];
                     string txt = FormatoFila(t, c.Valor(t)); var sz = g.MeasureString(txt, f);
-                    int xc = (x0[c.Ini] + x0[c.Fin + 1]) / 2, xt = c.EnCurso ? xtCurso[r] : xc - sz.Width / 2;
-                    if (xt < reg.Left + anchoNom || xt + sz.Width > xMax) continue;   // ni debajo de los nombres ni cortado
-                    // el en curso va en una sola linea, despues del numero del anterior; los demas, en el renglon de su clave
-                    int y = c.EnCurso ? yF + (hF - altoTxt[r]) / 2 : yBase + (int)(((c.Clave % L) + L) % L) * altoTxt[r];
-                    g.DrawString(txt, f, cTxt, xt, y);
+                    var fc = f; int xt = a + (b - 1 - a - sz.Width) / 2;
+                    if (xt < a + 2 || xt + sz.Width > b - 3)
+                    {
+                        // no entra con la letra de la fila: ese cuadro prueba con letra 6 antes de quedar sin numero (nunca afuera)
+                        fc = fChica; sz = g.MeasureString(txt, fc); xt = a + (b - 1 - a - sz.Width) / 2;
+                        if (xt < a + 2 || xt + sz.Width > b - 3) { if (a >= reg.Left + anchoNom) sinNumero++; continue; }
+                        chicos++;
+                    }
+                    if (xt < reg.Left + anchoNom || xt + sz.Width > xMax) continue;   // ni debajo de los nombres ni cortado por el borde
+                    g.DrawString(txt, fc, cTxt, xt, yF + (hF - g.MeasureString("0", fc).Height) / 2);
                 }
+                audit.Append(" | ").Append(t).Append(": ").Append(chicos).Append(" con letra 6, sin numero (no entra ni con letra 6): ").Append(sinNumero);
             }
             if (enCurso && cuadros.Count > 0)
             {
