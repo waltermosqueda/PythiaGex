@@ -1,0 +1,13 @@
+Z=4 pares de pivotes 7668 | violaciones: extremo del fin 0, primera vela del extremo 0, tamano<Z 0, etiqueta 0 | swing que pasa por debajo/encima de su pivote de inicio (velas enormes) 90
+Z=6 pares de pivotes 3688 | violaciones: extremo del fin 0, primera vela del extremo 0, tamano<Z 0, etiqueta 0 | swing que pasa por debajo/encima de su pivote de inicio (velas enormes) 22
+Z=8 pares de pivotes 2151 | violaciones: extremo del fin 0, primera vela del extremo 0, tamano<Z 0, etiqueta 0 | swing que pasa por debajo/encima de su pivote de inicio (velas enormes) 6
+Z=10 pares de pivotes 1353 | violaciones: extremo del fin 0, primera vela del extremo 0, tamano<Z 0, etiqueta 0 | swing que pasa por debajo/encima de su pivote de inicio (velas enormes) 2
+sesiones puntuables con RTH != 390 velas: [('2026-09-07', 210), ('2026-09-24', 389), ('2026-10-14', 388), ('2026-10-15', 380)]
+
+Z=6 (V3/first), exactitud media por sesion %:
+  DESIGN R4 live 76.11 | color de vela 64.65 | cierre vs cierre anterior 64.66
+  DESIGN giros al azar con la tasa de R4 live (0.189 por vela), 20 semillas: media 49.93, rango 47.92..51.12
+  DESIGN etiqueta retrospectiva atrasada j velas (oraculo con atraso): atraso 1: 91.59 | atraso 2: 84.87 | atraso 3: 79.19 | atraso 4: 74.51 | atraso 5: 71.19 | atraso 8: 64.65
+  EXAM R4 live 75.99 | color de vela 66.69 | cierre vs cierre anterior 66.82
+  EXAM giros al azar con la tasa de R4 live (0.189 por vela), 20 semillas: media 49.83, rango 47.61..52.55
+  EXAM etiqueta retrospectiva atrasada j velas (oraculo con atraso): atraso 1: 90.09 | atraso 2: 82.06 | atraso 3: 76.19 | atraso 4: 71.68 | atraso 5: 68.66 | atraso 8: 62.02

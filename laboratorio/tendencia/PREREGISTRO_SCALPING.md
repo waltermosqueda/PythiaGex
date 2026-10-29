@@ -47,3 +47,12 @@ contra 54,87 % de R10 (1.2) y 57,36 % de ST(10,3) (1.0c); gana en 16 de 16 sesio
 Z8 / Z10: 78,2 / 72,0 / 68,7 contra R10 51,7 / 57,8 / 64,4. Costo: 82 cambios por sesión en la rueda (falsos de 2,5 pts:
 39,6) contra 10,5 de R10. Su regla del 50 % (P 0,5) quedó por debajo de los retrocesos fijos chicos (60-68 %). Se instala
 Corriente 1.3 (tramo 4 pts en vivo + corriente grande de 10 pts en la cinta). Paridad del C# con la regla: 0 de 84.364 velas.
+
+**Auditoría independiente (14:20 AR, `auditoria_independiente/auditoria_zigzag*.py` y `salida_zigzag*.txt`, código propio):**
+reproduce exacto todos los números (EXAMEN Z 4/6/8/10: R4 en vivo 78,22/75,99/71,96/68,67; R10 51,71/54,87/57,84/64,45; 16 de
+16 sesiones, margen mínimo +5,64 pp; 82,06 cambios y 39,56 falsos por sesión). Con otras cinco convenciones de empates, Z = 6 va
+de 74,96 a 77,29 y el orden y el 16/16 se mantienen. **Advertencia del auditor:** la vara mide cuán bien la Corriente DESCRIBE el
+tramo en curso, no si se puede operar; no cobra los cambios de color, así que favorece a los detectores rápidos y es injusta con
+los lentos (R10, ST) por diseño. Referencias: color de la vela 64,65/66,69 %; cambios al azar con la misma frecuencia 49,9 %;
+el tramo verdadero con 3 velas de atraso 79,2/76,2 % (R4 en vivo es eso, aproximadamente). El borde sobre R10 sale casi todo
+del umbral más chico (R4 al cierre 75,8/75,5 %), no del toque.
