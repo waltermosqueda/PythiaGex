@@ -10,7 +10,7 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>EstadisticaVisible</AssemblyName>
     <RootNamespace>EstadisticaVisible</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>2.1.0</Version>
     <Company>PythiaGex</Company>
     <Product>Estadistica Visible</Product>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

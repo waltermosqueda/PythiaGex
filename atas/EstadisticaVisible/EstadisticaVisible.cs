@@ -38,13 +38,34 @@ namespace EstadisticaVisible
     /// AUDITORIA. Cada 60 s anota en %APPDATA%\ATAS\PythiaGex\estadistica\auditoria-AAAA-MM-DD.log: ancho de vela, velas por cuadro,
     /// letra, cada cuadro (hora, cuantas velas, texto y suma cruda) y las velas sueltas de los ultimos cuadros para rehacer la suma.
     ///
+    /// LUPA 2.1 (29-10, el operador: "cuando te posas se ve la etiqueta y no el color de las barras y eso te confunde; ademas
+    /// algunas veces queda frizada la etiqueta"). Dos fallas de la 2.0, corregidas:
+    /// 1) TAPABA: el cartel iba arriba del panel, centrado en la vela, y tapaba los colores de ~20 velas a cada lado. Ahora va en
+    ///    el espacio VACIO a la derecha de la vela en curso (el futuro), en tres renglones debajo de la barrita de botones que ATAS
+    ///    pone arriba a la derecha del panel; si no hay lugar ahi, sobre los nombres de la izquierda (que ya tapaban esas velas
+    ///    viejas). La vela marcada ya no se pinta encima: dos lineas amarillas afuera de ella y dos pestañas chicas arriba y abajo.
+    /// 2) SE CONGELABA: dependia de IsMouseLeave, que ATAS no siempre avisa (al ir al DOM, al panel de ordenes o a otra ventana el
+    ///    cartel quedaba con la ultima vela), y sin un redibujo no se borraba. Ahora se compara el cursor real de Windows con la
+    ///    ultima posicion que vio el grafico: si el cursor se mueve y el grafico no se entera, el mouse esta afuera y el cartel se va.
+    ///    Ademas se va si el mouse queda quieto EstLupaQuieto segundos (10: una vela vieja con el mouse dormido encima parecia un
+    ///    numero vivo trabado), y un temporizador de 250 ms redibuja cuando cambia, aunque no entren ticks.
+    /// Modos (EstLupa): al posar el mouse (con demora opcional), solo con clic sobre el panel (fija la vela; otro clic la suelta),
+    /// o apagada.
+    ///
     /// LOS AJUSTES LLEVAN EL PREFIJO "Est": ATAS guarda los ajustes POR NOMBRE en el workspace (.ws).
     /// </summary>
     [DisplayName("PythiaGex - Estadistica Visible")]
     [Category("PythiaGex")]
     public class EstadisticaVisibleIndicador : Indicator
     {
-        public const string Version = "2.0";
+        public const string Version = "2.1c";
+
+        public enum ModoLupa
+        {
+            [Display(Name = "Al posar el mouse")] Posar,
+            [Display(Name = "Solo con clic sobre el panel (otro clic la suelta)")] Clic,
+            [Display(Name = "Apagada")] Apagada
+        }
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ------------------------------------------------------------------ ajustes
@@ -77,6 +98,18 @@ namespace EstadisticaVisible
         [Range(7, 14)]
         public int EstLetra { get; set; } = 9;
 
+        [Display(Name = "Cartel del detalle", GroupName = "Lupa del mouse", Order = 55)]
+        public ModoLupa EstLupa { get => _modoLupa; set { _modoLupa = value; _fija = -1; } }
+        private ModoLupa _modoLupa = ModoLupa.Posar;
+
+        [Display(Name = "Aparece despues de (segundos sobre la misma vela; 0 = enseguida)", GroupName = "Lupa del mouse", Order = 56)]
+        [Range(0, 15)]
+        public double EstLupaDemora { get; set; } = 0;
+
+        [Display(Name = "Se va si el mouse queda quieto (segundos; 0 = nunca)", GroupName = "Lupa del mouse", Order = 57)]
+        [Range(0, 120)]
+        public double EstLupaQuieto { get; set; } = 10;
+
         [Display(Name = "Color positivo", GroupName = "Colores", Order = 70)]
         public System.Windows.Media.Color EstColorMas { get; set; } = System.Windows.Media.Color.FromRgb(38, 166, 91);
 
@@ -98,6 +131,109 @@ namespace EstadisticaVisible
         private readonly List<DateTime> _hora = new List<DateTime>();
         private DateTime _ultAudit = DateTime.MinValue;
         private readonly Dictionary<string, Bitmap> _rotados = new Dictionary<string, Bitmap>();
+
+        // ------------------------------------------------------------------ lupa (2.1)
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct PuntoW { public int X, Y; }
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool GetCursorPos(out PuntoW p);
+
+        private readonly object _llaveLupa = new object();
+        private Point _cursorUlt, _graficoUlt, _cursorEnGrafico;
+        private bool _hayMuestra, _graficoLoVio;
+        private DateTime _tMovio = DateTime.UtcNow, _tVela = DateTime.UtcNow, _tLogLupa = DateTime.MinValue;
+        private int _velaUlt = -1, _fija = -1;
+        private volatile int _lupaDibujada = -2;
+        private string _lupaEstado = "", _lupaLogUlt = "", _ultBorde = "";
+        private Action _latido;
+        private readonly TimeSpan _periodo = TimeSpan.FromMilliseconds(250);
+
+        /// <summary>La vela que muestra la lupa (numero absoluto) o -1, con el motivo. La llaman el dibujo y el temporizador.
+        /// "Afuera" no depende solo de IsMouseLeave (ATAS no siempre lo avisa): si el cursor real de Windows se mueve y la ultima
+        /// posicion que vio el grafico no, el mouse anda por otro lado (DOM, panel de ordenes, otro grafico, otra ventana).</summary>
+        private int VelaLupa(out string motivo)
+        {
+            motivo = "";
+            if (_modoLupa == ModoLupa.Apagada) { motivo = "apagada"; return -1; }
+            if (_modoLupa == ModoLupa.Clic) { motivo = _fija >= 0 ? "fijada con clic" : "sin clic"; return _fija; }
+            IMouseLocationInfo mi = null;
+            try { mi = MouseLocationInfo; } catch { }
+            if (mi == null) { motivo = "sin datos del mouse"; return -1; }
+            var ahora = DateTime.UtcNow;
+            lock (_llaveLupa)
+            {
+                Point pg = mi.LastPosition, pc = Point.Empty; bool hayCursor = false;
+                try { if (GetCursorPos(out var w)) { pc = new Point(w.X, w.Y); hayCursor = true; } } catch { }
+                if (hayCursor && pc != _cursorUlt) { _cursorUlt = pc; _tMovio = ahora; }
+                if (!_hayMuestra) { _graficoUlt = pg; _cursorEnGrafico = pc; _hayMuestra = true; }
+                else if (pg != _graficoUlt) { _graficoUlt = pg; _cursorEnGrafico = pc; _graficoLoVio = true; }
+                if (!_graficoLoVio) { motivo = "el mouse todavia no paso por el grafico"; return -1; }
+                if (mi.IsMouseLeave) { motivo = "el mouse salio del grafico"; return -1; }
+                if (mi.IsMovingChartUsingMouse) { motivo = "arrastrando el grafico"; return -1; }
+                if (hayCursor && (Math.Abs(pc.X - _cursorEnGrafico.X) > 4 || Math.Abs(pc.Y - _cursorEnGrafico.Y) > 4))
+                { motivo = "el mouse anda fuera del grafico"; return -1; }
+                // 2.1c (medido 29-10): con el mouse sobre OTRO grafico de la misma ventana (el heatmap de la derecha) ATAS le sigue
+                // pasando a este la posicion, FUERA de sus bordes, con IsMouseLeave = false y BarBelowMouse = la vela en curso: la lupa
+                // quedaba en la ultima vela. Si la posicion cae fuera del grafico (precio + paneles, con 80 px para el eje de precios y
+                // 30 para el de tiempo), el mouse esta afuera.
+                if (!DentroDelGrafico(pg, out string borde)) { motivo = "el mouse esta fuera del grafico"; _ultBorde = borde; return -1; }
+                int b = mi.BarBelowMouse;
+                if (b != _velaUlt) { _velaUlt = b; _tVela = ahora; }
+                if (EstLupaDemora > 0 && (ahora - _tVela).TotalSeconds < EstLupaDemora) { motivo = "esperando la demora"; return -1; }
+                if (EstLupaQuieto > 0 && (ahora - _tMovio).TotalSeconds >= EstLupaQuieto)
+                { motivo = "mouse quieto " + EstLupaQuieto.ToString("0.#", Inv) + " s o mas"; return -1; }
+                return b;
+            }
+        }
+
+        /// <summary>La posicion del mouse que tiene ATAS (coordenadas del grafico) cae dentro del grafico: el area de precios y este
+        /// panel, mas 80 px a la derecha (eje de precios) y 30 abajo (eje de tiempo).</summary>
+        private bool DentroDelGrafico(Point p, out string borde)
+        {
+            borde = "";
+            try
+            {
+                var r = Container?.Region ?? Rectangle.Empty;
+                var pr = ChartInfo?.PriceChartContainer?.Region ?? r;
+                if (r.IsEmpty) return true;
+                int x0 = Math.Min(r.Left, pr.Left) - 2, x1 = Math.Max(r.Right, pr.Right) + 80;
+                int y0 = Math.Min(r.Top, pr.Top) - 2, y1 = Math.Max(r.Bottom, pr.Bottom) + 30;
+                borde = "mouse " + p.X + "," + p.Y + " grafico x " + x0 + "-" + x1 + " y " + y0 + "-" + y1;
+                return p.X >= x0 && p.X <= x1 && p.Y >= y0 && p.Y <= y1;
+            }
+            catch { return true; }
+        }
+
+        protected override void OnInitialize()
+        {
+            // redibuja cuando la lupa tiene que cambiar (aparecer, irse, cambiar de vela) aunque no entren ticks
+            _latido = () => { try { if (VelaLupa(out _) != _lupaDibujada) RedrawChart(new RedrawArg(Container.Region)); } catch { } };
+            try { SubscribeToTimer(_periodo, _latido); } catch (Exception e) { Anotar(e); }
+        }
+
+        protected override void OnDispose()
+        {
+            try { if (_latido != null) UnsubscribeFromTimer(_periodo, _latido); } catch { }
+            base.OnDispose();
+        }
+
+        /// <summary>Modo clic: un clic sobre ESTE panel fija la vela de abajo; otro clic sobre la misma (o fuera de las velas) la
+        /// suelta. No se traga el clic: ATAS lo sigue recibiendo. Clics en el grafico de precios no hacen nada aca.</summary>
+        public override bool ProcessMouseClick(OFT.Rendering.Control.RenderControlMouseEventArgs e)
+        {
+            try
+            {
+                var c = Container;
+                if (_modoLupa == ModoLupa.Clic && c != null && c.Region.Contains(e.X, e.Y))
+                {
+                    int b = -1; try { b = MouseLocationInfo?.BarBelowMouse ?? -1; } catch { }
+                    _fija = (b < 0 || b >= CurrentBar || b == _fija) ? -1 : b;
+                    RedrawChart(new RedrawArg(c.Region));
+                }
+            }
+            catch (Exception ex) { Anotar(ex); }
+            return base.ProcessMouseClick(e);
+        }
 
         /// <summary>El texto girado 90 grados (se lee de abajo hacia arriba) como imagen con fondo transparente, para cuadros angostos.
         /// ATAS no gira texto (su RenderContext solo traslada); se dibuja con DrawStaticImage. Se guarda por texto, letra y color.</summary>
@@ -323,7 +459,7 @@ namespace EstadisticaVisible
             var fNom = new RenderFont("Segoe UI", Math.Max(7, EstLetra - 1));
             var fNota = new RenderFont("Segoe UI", 7);
             string[] nombres = tipos.Select(t => t == Tipo.Delta ? "Delta" : t == Tipo.Sesion ? "Delta sesion (miles)" : "Volumen").ToArray();
-            string nota = k > 1 ? "cuadro = " + k + " velas" : "mouse = detalle";
+            string nota = k > 1 ? "cuadro = " + k + " velas" : _modoLupa == ModoLupa.Posar ? "mouse = detalle" : _modoLupa == ModoLupa.Clic ? "clic = detalle" : "";
             int anchoNom = 0;
             if (EstNombres)
             {
@@ -415,27 +551,6 @@ namespace EstadisticaVisible
                 g.DrawRectangle(new RenderPen(Color.FromArgb(220, cTxt.R, cTxt.G, cTxt.B), 1), new Rectangle(a, reg.Top + 1, b - a - 1, reg.Height - 3));
             }
 
-            // LUPA (2.0): con el mouse sobre una vela, su columna se marca en amarillo y un cartel muestra su hora y sus numeros EXACTOS
-            // (con cualquier zoom: para analizar una vela del pasado aunque su cuadro sea demasiado angosto para escribir el numero).
-            int bajo = -1; bool fuera = true;
-            try { var mi = MouseLocationInfo; if (mi != null) { fuera = mi.IsMouseLeave; bajo = mi.BarBelowMouse; } } catch { }
-            if (!fuera && bajo >= desde && bajo <= hasta)
-            {
-                int i = bajo - desde;
-                var cLupa = Color.FromArgb(255, 255, 214, 0);
-                g.DrawRectangle(new RenderPen(cLupa, 2), new Rectangle(x0[i], reg.Top + 1, Math.Max(2, x0[i + 1] - x0[i] - 1), reg.Height - 3));
-                string l1 = HoraLocal(hora[i]) + "   Delta " + (d[i] > 0 ? "+" : "") + Math.Round(d[i]).ToString("0", Inv);
-                string l2 = "Vol " + Math.Round(v[i]).ToString("0", Inv) + "   Sesion " + (s[i] > 0 ? "+" : "") + Math.Round(s[i]).ToString("0", Inv);
-                var f1 = new RenderFont("Segoe UI", 11, FontStyle.Bold); var f2 = new RenderFont("Segoe UI", 9, FontStyle.Bold);
-                var s1 = g.MeasureString(l1, f1); var s2 = g.MeasureString(l2, f2);
-                int w = Math.Max(s1.Width, s2.Width) + 14, h = s1.Height + s2.Height + 8;
-                int xl = Math.Max(reg.Left + 2, Math.Min(xMax - w - 2, (x0[i] + x0[i + 1]) / 2 - w / 2)), yl = reg.Top + 2;
-                g.FillRectangle(Color.FromArgb(240, cFondo.R, cFondo.G, cFondo.B), new Rectangle(xl, yl, w, h));
-                g.DrawRectangle(new RenderPen(cLupa, 1), new Rectangle(xl, yl, w, h));
-                Texto(g, l1, f1, d[i] >= 0 ? Color.FromArgb(255, 120, 230, 160) : Color.FromArgb(255, 255, 130, 130), xl + 7, yl + 4);
-                Texto(g, l2, f2, cTxt, xl + 7, yl + 4 + s1.Height);
-            }
-
             // nombres de las filas, encima de todo, con fondo propio; debajo de "Delta", cuantas velas junta cada cuadro
             if (EstNombres)
                 for (int r = 0; r < nFil; r++)
@@ -451,6 +566,29 @@ namespace EstadisticaVisible
                     if (r > 0) g.DrawLine(penGrilla, rr.Left, rr.Top, rr.Right, rr.Top);
                 }
 
+            // LUPA (2.1): la vela marcada SIN pintarle encima y el detalle FUERA de las velas (ver la nota de la clase)
+            int bajo = VelaLupa(out string motivo);
+            _lupaDibujada = bajo;
+            string lupa;
+            if (bajo >= desde && bajo <= hasta)
+                lupa = Lupa(g, bajo - desde, reg, xMax, enCurso ? Math.Max(xbCurso, x0[n]) : x0[n], tipos,
+                            EstNombres ? anchoNom : 0, x0, hora, d, v, s, cFondo, cTxt);
+            else lupa = bajo >= 0 ? "vela " + bajo + " fuera de lo visible" : "oculta (" + motivo + ")";
+            _lupaEstado = lupa;
+            if (EstRegistrar && lupa != _lupaLogUlt && (DateTime.UtcNow - _tLogLupa).TotalMilliseconds >= 500)
+            {
+                _lupaLogUlt = lupa; _tLogLupa = DateTime.UtcNow;
+                try
+                {
+                    Directory.CreateDirectory(Carpeta());
+                    File.AppendAllText(Path.Combine(Carpeta(), "lupa-" + DateTime.UtcNow.ToString("yyyy-MM-dd", Inv) + ".log"),
+                        DateTime.UtcNow.ToString("HH:mm:ss.fff", Inv) + " UTC v" + Version + " " + _modoLupa + ": " + lupa
+                        + (bajo >= desde && bajo <= hasta ? " | " + Crudo(bajo) : motivo.StartsWith("el mouse esta fuera") ? " | " + _ultBorde : "")
+                        + " | panel x " + reg.Left + "-" + reg.Right + " y " + reg.Top + "-" + reg.Bottom + ", limite " + xMax + "\n");
+                }
+                catch { }
+            }
+
             if (EstRegistrar && (DateTime.UtcNow - _ultAudit).TotalSeconds >= 60)
             {
                 _ultAudit = DateTime.UtcNow;
@@ -463,8 +601,112 @@ namespace EstadisticaVisible
                     for (int i = c.Ini; i <= c.Fin; i++)
                         lineas.Add(string.Format(Inv, "    vela {0} x {1}: delta {2:0} sesion {3:0} volumen {4:0}", HoraLocal(hora[i]), x0[i], d[i], s[i], v[i]));
                 }
+                audit.Append(" | lupa ").Append(_modoLupa).Append(": ").Append(_lupaEstado);
                 Auditar(audit.ToString(), lineas);
             }
+        }
+
+        /// <summary>Dibuja la lupa de la vela local i y devuelve que dibujo y donde (para el registro).
+        /// MARCA: dos lineas amarillas de 1 px FUERA de la vela (en la rendija con la vecina, o en el borde de la vecina si las velas
+        /// son tan finas que no tienen rendija: nunca sobre un pixel de la vela marcada) y dos pestañas chicas arriba y abajo.
+        /// DETALLE: tres renglones ("HH:mm Delta", "Sesion", "Vol"), numeros EXACTOS, en el espacio vacio a la derecha de lo dibujado;
+        /// si no entra ahi, sobre los nombres de la izquierda; si la vela marcada esta debajo de los nombres, contra el borde derecho.
+        /// A la derecha arranca 25 px mas abajo: con el mouse sobre el panel ATAS pone ahi arriba su barrita de botones (ojo,
+        /// engranaje, X; medida 29-10: ~23 px de alto y los ultimos ~140 px del panel) y tapaba el renglon del Delta.</summary>
+        private string Lupa(RenderContext g, int i, Rectangle reg, int xMax, int xFinDatos, List<Tipo> tipos, int anchoNom, int[] x0,
+                            DateTime[] hora, double[] d, double[] v, double[] s, Color cFondo, Color cTxt)
+        {
+            var cLupa = Color.FromArgb(255, 255, 214, 0);
+            int xa = x0[i], xb = x0[i + 1];
+            if (xb <= xa) xb = xa + 1;
+            bool rendija = xb - xa >= 4;   // mismo criterio que el relleno: con 4 px o mas, el ultimo pixel de cada vela queda vacio
+            var pen = new RenderPen(cLupa, 1);
+            if (xa - 1 >= reg.Left) g.DrawLine(pen, xa - 1, reg.Top, xa - 1, reg.Bottom - 1);
+            int xDer = rendija ? xb - 1 : xb;
+            g.DrawLine(pen, xDer, reg.Top, xDer, reg.Bottom - 1);
+            int xc = (xa + xb - 1) / 2;
+            g.FillPolygon(cLupa, new[] { new Point(xc - 3, reg.Top), new Point(xc + 4, reg.Top), new Point(xc, reg.Top + 4) });
+            g.FillPolygon(cLupa, new[] { new Point(xc - 3, reg.Bottom), new Point(xc + 4, reg.Bottom), new Point(xc, reg.Bottom - 4) });
+
+            string Con(double x) => (x > 0 ? "+" : "") + Math.Round(x).ToString("0", Inv);
+            int nFil = tipos.Count;
+            var et = new string[nFil]; var val = new string[nFil]; var col = new Color[nFil];
+            for (int r = 0; r < nFil; r++)
+            {
+                var t = tipos[r];
+                et[r] = t == Tipo.Delta ? HoraLocal(hora[i]) + (_modoLupa == ModoLupa.Clic ? " fija" : "") + "  Delta" : t == Tipo.Sesion ? "Sesion" : "Vol";
+                val[r] = t == Tipo.Delta ? Con(d[i]) : t == Tipo.Sesion ? Con(s[i]) : Math.Round(v[i]).ToString("0", Inv);
+                col[r] = t == Tipo.Delta ? (d[i] >= 0 ? Color.FromArgb(255, 120, 230, 160) : Color.FromArgb(255, 255, 130, 130)) : cTxt;
+            }
+
+            // letras: Delta hasta 11 y las otras hasta 9, achicando hasta que los tres renglones entran en el alto que queda
+            const int BANDA = 25;
+            int altoDer = reg.Height - 3 - BANDA;
+            var fEt = new RenderFont("Segoe UI", 8);
+            var fV = new RenderFont[nFil]; var hRen = new int[nFil];
+            for (int baja = 0; ; baja++)
+            {
+                int tot = 4;
+                for (int r = 0; r < nFil; r++)
+                {
+                    int tam = Math.Max(7, (tipos[r] == Tipo.Delta ? 11 : 9) - baja);
+                    fV[r] = new RenderFont("Segoe UI", tam, FontStyle.Bold);
+                    hRen[r] = Math.Max(g.MeasureString(val[r], fV[r]).Height, g.MeasureString(et[r], fEt).Height);
+                    tot += hRen[r];
+                }
+                if (tot <= altoDer || baja >= 4) break;
+            }
+            int wEt = 0, wVal = 0;
+            for (int r = 0; r < nFil; r++) { wEt = Math.Max(wEt, g.MeasureString(et[r], fEt).Width); wVal = Math.Max(wVal, g.MeasureString(val[r], fV[r]).Width); }
+            int w = 7 + wEt + 8 + wVal + 7;
+
+            // donde: 1) el espacio vacio a la derecha (el futuro); 2) sobre los nombres; 3) contra el borde derecho. El panel termina
+            // donde empieza el eje de precios (medido 29-10: x 0-844 y el eje en ~838): 6 px de aire.
+            int xLim = xMax - 6, x; string donde; bool arriba;
+            if (xFinDatos + 10 + w <= xLim) { x = xFinDatos + 10; donde = "derecha, en el espacio vacio"; arriba = false; }
+            else if (xb > reg.Left + Math.Max(w, anchoNom) + 2) { x = reg.Left; w = Math.Max(w, anchoNom); donde = "izquierda, sobre los nombres"; arriba = true; }
+            else { x = Math.Max(reg.Left, xLim - w); donde = "borde derecho (la vela esta bajo los nombres)"; arriba = false; }
+
+            var caja = arriba ? new Rectangle(x, reg.Top + 1, w, reg.Height - 3) : new Rectangle(x, reg.Top + 1 + BANDA, w, altoDer);
+            g.FillRectangle(Color.FromArgb(250, cFondo.R, cFondo.G, cFondo.B), caja);
+            g.DrawRectangle(pen, caja);
+            var sb = new StringBuilder();
+            sb.Append("vela ").Append(HoraLocal(hora[i])).Append(" x ").Append(xa).Append('-').Append(xb).Append(" ->");
+            int hTot = 0; foreach (int h in hRen) hTot += h;
+            int y = caja.Top + Math.Max(1, (caja.Height - hTot) / 2);
+            for (int r = 0; r < nFil; r++)
+            {
+                int hE = g.MeasureString(et[r], fEt).Height, hV = g.MeasureString(val[r], fV[r]).Height;
+                g.DrawString(et[r], fEt, Color.FromArgb(185, cTxt.R, cTxt.G, cTxt.B), x + 7, y + (hRen[r] - hE) / 2);
+                Texto(g, val[r], fV[r], col[r], x + 7 + wEt + 8, y + (hRen[r] - hV) / 2);
+                y += hRen[r];
+                sb.Append(' ').Append(tipos[r]).Append(' ').Append(val[r]);
+            }
+            sb.Append(" | cartel ").Append(donde).Append(", x ").Append(caja.Left).Append('-').Append(caja.Right)
+              .Append(" y ").Append(caja.Top).Append('-').Append(caja.Bottom).Append(" | marca x ").Append(xa - 1).Append(" y ").Append(xDer);
+            return sb.ToString();
+        }
+
+        /// <summary>Los numeros de la vela b recalculados AHORA desde GetCandle, por otro camino que el dibujo (que usa las listas
+        /// llenadas en OnCalculate): delta y volumen de la vela, y la sesion sumando vela por vela desde el inicio de la sesion.</summary>
+        private string Crudo(int b)
+        {
+            try
+            {
+                var c = GetCandle(b); if (c == null) return "sin vela";
+                int k = b; double suma = 0;
+                while (k >= 0)
+                {
+                    var ck = GetCandle(k); if (ck == null) break;
+                    suma += (double)ck.Delta;
+                    bool ini = k == 0; if (!ini) { try { ini = IsNewSession(k); } catch { } }
+                    if (ini) break;
+                    k--;
+                }
+                return string.Format(Inv, "crudo GetCandle: delta {0:0} vol {1:0} sesion {2:0} (suma de {3} velas desde {4})",
+                    (double)c.Delta, (double)c.Volume, suma, b - Math.Max(k, 0) + 1, HoraLocal(GetCandle(Math.Max(k, 0)).Time));
+            }
+            catch (Exception e) { return "crudo: error " + e.Message; }
         }
 
         // ------------------------------------------------------------------ registro
