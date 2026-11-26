@@ -43,12 +43,20 @@ namespace PythiaSuper
     /// LUPA (mouse encima) da el valor exacto. Los ajustes llevan el prefijo "Sp" (ATAS guarda los ajustes POR NOMBRE en el .ws).
     /// Registro: %APPDATA%\ATAS\PythiaGex\superindicador\ (auditoria cada 60 s con lo dibujado y sus pixeles, footprint de cada vela
     /// cerrada y la cinta en vivo) para recalcular todo POR FUERA con herramientas/auditar_superindicador.py.
+    ///
+    /// 1.5 (26-11-2026) JORNADA ELEGIDA. Pedido del operador: "ver el indicador con los valores del dia anterior o de la sesion que
+    /// yo elija, con la data limpia SOLO de esa jornada; con el rango visible me suma la ultima sesion y la del dia donde estoy
+    /// parado"; y que sirva para analizar un dia pasado con el replay de ATAS. Columna y perfil tienen el periodo "Jornada elegida":
+    /// suman SOLO las velas de una jornada de CME (18:00 a 17:00 NY), completa, solo RTH (9:30-16:00 NY) o solo la noche
+    /// (18:00-9:30 NY). Cual jornada: la ultima (la de hoy o la del replay), la de una fecha elegida con los botones &lt; &gt; o la que
+    /// mas se ve en pantalla. Si el grafico no cargo la jornada desde su comienzo, o alguna vela vino sin footprint, lo dice en
+    /// amarillo: nunca muestra media jornada como si fuera entera.
     /// </summary>
     [DisplayName("PythiaGex - Superindicador (velas + delta + perfil)")]
     [Category("PythiaGex")]
     public class SuperindicadorOF : Indicator
     {
-        public const string Version = "1.4e";
+        public const string Version = "1.5";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -73,20 +81,37 @@ namespace PythiaSuper
             [Display(Name = "Gris (tercer color)")] Gris
         }
 
+        // 1.5: los valores nuevos van AL FINAL (ATAS guarda el ajuste elegido; asi los ya guardados no cambian de significado)
         public enum VentanaColumna
         {
             [Display(Name = "Vela en curso")] VelaEnCurso,
             [Display(Name = "Ultimas N velas")] UltimasN,
             [Display(Name = "Sesion (desde la apertura de la sesion de ATAS)")] Sesion,
-            [Display(Name = "Rango visible en pantalla")] Visible
+            [Display(Name = "Rango visible en pantalla (junta las jornadas que se vean)")] Visible,
+            [Display(Name = "Jornada elegida (solo esa jornada, ver grupo 6)")] Jornada
         }
 
         public enum VentanaPerfil
         {
             [Display(Name = "Sesion (desde la apertura de la sesion de ATAS)")] Sesion,
             [Display(Name = "RTH mas reciente (9:30-16:00 NY)")] Rth,
-            [Display(Name = "Rango visible en pantalla")] Visible,
-            [Display(Name = "Ultimas N velas")] UltimasN
+            [Display(Name = "Rango visible en pantalla (junta las jornadas que se vean)")] Visible,
+            [Display(Name = "Ultimas N velas")] UltimasN,
+            [Display(Name = "Jornada elegida (solo esa jornada, ver grupo 6)")] Jornada
+        }
+
+        public enum ParteJornada
+        {
+            [Display(Name = "Completa (18:00 de la vispera a 17:00 NY)")] Completa,
+            [Display(Name = "Solo RTH (9:30 a 16:00 NY)")] Rth,
+            [Display(Name = "Solo la noche (18:00 a 9:30 NY)")] Noche
+        }
+
+        public enum ModoJornada
+        {
+            [Display(Name = "La ultima (la de hoy, o la del replay)")] Ultima,
+            [Display(Name = "La de la fecha elegida (botones < > de la botonera)")] Fecha,
+            [Display(Name = "La que estoy mirando (la que mas se ve en pantalla)")] AlaVista
         }
 
         public enum DatoColumna
@@ -290,6 +315,23 @@ namespace PythiaSuper
             Description = "Escribe en %APPDATA%\\ATAS\\PythiaGex\\superindicador lo dibujado, el footprint y la cinta para recalcular por fuera.")]
         public bool SpRegistro { get => _registro; set { _registro = value; } }
 
+        // 6. Jornada (1.5)
+        private ModoJornada _jorModo = ModoJornada.Ultima;
+        [Display(Name = "Que jornada", GroupName = "6. Jornada a analizar (periodo 'Jornada elegida')", Order = 80,
+            Description = "La ultima (en el replay: la del dia que se reproduce), la de la fecha elegida, o la que mas se ve en pantalla.")]
+        public ModoJornada SpJornadaModo { get => _jorModo; set { _jorModo = value; Redibujar(); } }
+
+        private int _jorFecha = 0;
+        [Display(Name = "Fecha (aaaammdd; la cambian los botones < >)", GroupName = "6. Jornada a analizar (periodo 'Jornada elegida')", Order = 81,
+            Description = "Dia de la rueda de la jornada, por ejemplo 20261125. Solo cuenta si 'Que jornada' es 'La de la fecha elegida'.")]
+        [Range(0, 99991231)]
+        public int SpJornadaFecha { get => _jorFecha; set { _jorFecha = Math.Max(0, value); Redibujar(); } }
+
+        private ParteJornada _jorParte = ParteJornada.Completa;
+        [Display(Name = "Parte", GroupName = "6. Jornada a analizar (periodo 'Jornada elegida')", Order = 82,
+            Description = "Completa (18:00 a 17:00 NY), solo RTH (9:30 a 16:00 NY) o solo la noche (18:00 a 9:30 NY). Para RTH exacta, velas que abran a horario (1, 5, 15 o 30 min).")]
+        public ParteJornada SpJornadaParte { get => _jorParte; set { _jorParte = value; Redibujar(); } }
+
         // ================================================================== estado
         private readonly PaintbarsDataSeries _pintura = new PaintbarsDataSeries("SpPintura", "Velas en dos colores") { IsHidden = true };
         private readonly object _llave = new object();
@@ -297,6 +339,16 @@ namespace PythiaSuper
         private BarraFp _vivo; private int _vivoBar = -1; private long _version;
         private readonly List<int> _sesiones = new List<int>();
         private decimal _tick = 0.25m;
+        // 1.5: jornadas de CME de las velas cargadas (en orden) y la ultima elegida (para la botonera, la lupa y la auditoria)
+        private readonly List<Jornada> _jornadas = new List<Jornada>();
+        private int _jornadaUltBar = -1;
+        private int _carga;   // sube con cada recarga de datos (al arrancar, al cambiar de marco o al conectar el replay)
+        private sealed class EstadoJornada
+        {
+            public int Clave = -1, Parte, Indice = -1, Desde = -1, Hasta = -1, Total;
+            public bool Hay, Cortada, EnCurso, NoCargada; public DateTime PrimeraNy;
+        }
+        private EstadoJornada _ej = new EstadoJornada();
 
         private sealed class CacheVentana
         {
@@ -322,7 +374,9 @@ namespace PythiaSuper
         private DateTime _ultAudit = DateTime.MinValue, _ultError = DateTime.MinValue, _ultFlush = DateTime.MinValue;
         private readonly ConcurrentQueue<string> _cinta = new ConcurrentQueue<string>();
         private readonly object _llaveArchivo = new object();
-        private DateTime _velasVolcadasHasta = DateTime.MinValue;
+        // 1.5: lo volcado se recuerda vela por vela (antes era "hasta tal hora" y una jornada vieja elegida despues no se volcaba)
+        private readonly HashSet<DateTime> _velasVolcadas = new HashSet<DateTime>();
+        private string _velasVolcadasDia = "";
         private static TimeZoneInfo _ny;
 
         // ================================================================== ciclo de vida
@@ -360,9 +414,11 @@ namespace PythiaSuper
             lock (_llave)
             {
                 _fp.Clear(); _vivo = null; _vivoBar = -1; _version++; _sesiones.Clear();
+                _jornadas.Clear(); _jornadaUltBar = -1; _carga++;
             }
             _cCol.Firma = null; _cPer.Firma = null;
-            _velasVolcadasHasta = DateTime.MinValue;
+            lock (_llaveArchivo) _velasVolcadas.Clear();
+            AnotarLinea("recarga de datos -> carga " + _carga);
         }
 
         protected override void OnCalculate(int bar, decimal value)
@@ -375,10 +431,14 @@ namespace PythiaSuper
                 bool nueva = bar == 0;
                 if (!nueva) { try { nueva = IsNewSession(bar); } catch { } }
                 int ultima = CurrentBar - 1;
+                DateTime ny = HoraNyDe(c);
                 lock (_llave)
                 {
                     if (bar == 0) _sesiones.Clear();
                     if (nueva && (_sesiones.Count == 0 || _sesiones[_sesiones.Count - 1] < bar)) _sesiones.Add(bar);
+                    // 1.5: cada vela, una sola vez, a su jornada de CME (por la hora NY de su apertura)
+                    if (bar == 0) { _jornadas.Clear(); _jornadaUltBar = -1; }
+                    if (bar > _jornadaUltBar) { Jornadas.Agregar(_jornadas, bar, ny); _jornadaUltBar = bar; }
                 }
                 if (bar >= ultima)
                 {
@@ -544,10 +604,63 @@ namespace PythiaSuper
             return _ny;
         }
 
-        private DateTime HoraNy(int bar)
+        private DateTime HoraNy(int bar) => HoraNyDe(GetCandle(bar));
+
+        private static DateTime HoraNyDe(IndicatorCandle c)
+            => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(c.Time, DateTimeKind.Utc), Ny());
+
+        /// <summary>1.5: la jornada elegida (grupo 6) y su rango de velas de la parte pedida. Deja en _ej lo elegido para la botonera,
+        /// la lupa y la auditoria. false si esa jornada no tiene velas de esa parte (todavia no empezo la RTH, o el grafico no la cargo).</summary>
+        private bool VentanaJornada(out int desde, out int hasta, out string nombre)
         {
-            var c = GetCandle(bar);
-            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(c.Time, DateTimeKind.Utc), Ny());
+            desde = hasta = -1;
+            int ultima = CurrentBar - 1;
+            var e = new EstadoJornada { Parte = (int)_jorParte };
+            lock (_llave)
+            {
+                e.Total = _jornadas.Count;
+                int i = -1;
+                if (_jorModo == ModoJornada.Fecha && _jorFecha > 0)
+                {
+                    for (int k = 0; k < _jornadas.Count; k++) if (_jornadas[k].Clave == _jorFecha) { i = k; break; }
+                    if (i < 0) { e.Clave = _jorFecha; e.NoCargada = true; }
+                }
+                else if (_jorModo == ModoJornada.AlaVista)
+                    i = Jornadas.AlaVista(_jornadas, Math.Max(0, FirstVisibleBarNumber), Math.Min(ultima, LastVisibleBarNumber), e.Parte);
+                if (i < 0 && !e.NoCargada) i = Jornadas.PorAtras(_jornadas, 0);
+                if (i >= 0)
+                {
+                    var j = _jornadas[i];
+                    e.Indice = i; e.Clave = j.Clave;
+                    e.Hay = j.Rango(e.Parte, out e.Desde, out e.Hasta);
+                }
+            }
+            if (e.Hay)
+            {
+                desde = e.Desde; hasta = e.Hasta;
+                e.EnCurso = hasta >= ultima;
+                try
+                {
+                    e.PrimeraNy = HoraNy(desde);
+                    // la primera vela de la parte es la primera del grafico y abre despues de la hora en que empieza esa parte:
+                    // el grafico no cargo la jornada desde su comienzo
+                    e.Cortada = desde == 0 && e.PrimeraNy > Jornadas.InicioNominal(e.Clave, e.Parte);
+                }
+                catch { }
+            }
+            nombre = e.Clave > 0 ? Jornadas.Rotulo(e.Clave) + " " + Jornadas.NombreParte(e.Parte) : "sin jornadas";
+            _ej = e;
+            return e.Hay;
+        }
+
+        /// <summary>Aviso en amarillo cuando la suma no es la jornada entera o le falta footprint a alguna vela.</summary>
+        private string Aviso(Perfil p, bool esJornada, bool corto)
+        {
+            var partes = new List<string>();
+            if (esJornada && _ej.Cortada)
+                partes.Add(corto ? "INCOMPLETA" : "INCOMPLETA: el grafico carga desde " + _ej.PrimeraNy.ToString("dd-MM HH:mm", Inv) + " NY (cargar mas dias)");
+            if (p != null && p.VelasSinDatos > 0) partes.Add(p.VelasSinDatos + (corto ? " sin footprint" : " velas sin footprint"));
+            return string.Join(" | ", partes);
         }
 
         private static readonly TimeSpan Rth0 = new TimeSpan(9, 30, 0), Rth1 = new TimeSpan(16, 0, 0);
@@ -586,6 +699,7 @@ namespace PythiaSuper
                 case VentanaColumna.VelaEnCurso: desde = hasta = ultima; nombre = "vela"; break;
                 case VentanaColumna.UltimasN: desde = Math.Max(0, ultima - _colVelas + 1); hasta = ultima; nombre = _colVelas + "v"; break;
                 case VentanaColumna.Sesion: desde = InicioSesion(ultima); hasta = ultima; nombre = "sesion"; break;
+                case VentanaColumna.Jornada: if (!VentanaJornada(out desde, out hasta, out nombre)) return false; break;
                 default:
                     desde = Math.Max(0, FirstVisibleBarNumber); hasta = Math.Min(ultima, LastVisibleBarNumber);
                     if (hasta - desde > 20000) desde = hasta - 20000;
@@ -603,6 +717,7 @@ namespace PythiaSuper
                 case VentanaPerfil.Sesion: desde = InicioSesion(ultima); hasta = ultima; nombre = "sesion"; break;
                 case VentanaPerfil.Rth: if (!RangoRth(ultima, out desde, out hasta)) return false; nombre = "RTH"; break;
                 case VentanaPerfil.UltimasN: desde = Math.Max(0, ultima - _perVelas + 1); hasta = ultima; nombre = _perVelas + "v"; break;
+                case VentanaPerfil.Jornada: if (!VentanaJornada(out desde, out hasta, out nombre)) return false; break;
                 default:
                     desde = Math.Max(0, FirstVisibleBarNumber); hasta = Math.Min(ultima, LastVisibleBarNumber);
                     if (hasta - desde > 20000) desde = hasta - 20000;
@@ -681,18 +796,22 @@ namespace PythiaSuper
 
                 Dibujo dPer = null, dCol = null;
                 int xTopeCol = xDer - 6;
+                string avisoPer = "", avisoCol = "";
                 if (_perfil && VentanaPerfilActual(out int pd, out int ph, out string pn))
                 {
                     PctPaso(out int pct, out int paso);
                     var per = Calcular(_cPer, pd, ph, _perTicks, true, pct, paso);
                     dPer = DibujarPerfil(g, pc, reg, xDer, per, pn);
                     xTopeCol = xDer - _perAncho - 8;
+                    avisoPer = Aviso(per, _perVentana == VentanaPerfil.Jornada, false);
                 }
                 if (_columna && VentanaColumnaActual(out int cd, out int ch, out string cn))
                 {
                     var col = Calcular(_cCol, cd, ch, _colTicks, false, 0, 1);
-                    dCol = DibujarColumna(g, pc, reg, xTopeCol, xDer, col, cn);
+                    dCol = DibujarColumna(g, pc, reg, xTopeCol, xDer, col, cn, Aviso(col, _colVentana == VentanaColumna.Jornada, true));
+                    avisoCol = Aviso(col, _colVentana == VentanaColumna.Jornada, false);
                 }
+                _avisoBotonera = avisoPer.Length > 0 ? avisoPer : avisoCol;
                 if (dPer != null && _lugarBot == LugarBotonera.Oculta) RotuloPerfil(g, reg, xDer, dPer, dCol);   // 1.4: con botonera, va en su boton
                 lock (_llaveUi) { _dPer = dPer; _dCol = dCol; }
                 DibujarBotonera(g, reg);
@@ -762,7 +881,9 @@ namespace PythiaSuper
             g.DrawString(s, f, c, x, y);
         }
 
-        private Dibujo DibujarColumna(RenderContext g, IChartContainer pc, Rectangle reg, int xTope, int xDer, Perfil p, string nombreVentana)
+        private string _avisoBotonera = "";
+
+        private Dibujo DibujarColumna(RenderContext g, IChartContainer pc, Rectangle reg, int xTope, int xDer, Perfil p, string nombreVentana, string aviso)
         {
             var d = new Dibujo { P = p, Nombre = nombreVentana };
             if (p.Filas == 0) return d;
@@ -809,14 +930,15 @@ namespace PythiaSuper
             // panel gris (como el de los reels)
             BordesFila(pc, p, p.Filas - 1, out int yTop, out _);
             BordesFila(pc, p, 0, out _, out int yBot);
-            int lineasEnc = _colEncab ? (numeros ? 2 : 3) : 0;
+            int lineasEnc = _colEncab ? (numeros ? 2 : 3) + (aviso.Length > 0 ? 1 : 0) : 0;
             int yEnc = yTop - lineasEnc * 14 - (lineasEnc > 0 ? 4 : 0);
             var fondo = new Rectangle(x0, Math.Max(reg.Top, yEnc), ancho, Math.Max(2, Math.Min(reg.Bottom, yBot + 2) - Math.Max(reg.Top, yEnc)));
             if (fondo.Height > 0) g.FillRectangle(cPanel, fondo, 3);
             d.R = new Rectangle(x0, yTop, ancho, Math.Max(1, yBot - yTop));
 
+            // marca del ultimo precio DE LA VENTANA (1.5: en una jornada vieja, su cierre; en vivo, el precio actual)
             int tickUlt = int.MinValue;
-            try { var cu = GetCandle(CurrentBar - 1); if (cu != null) tickUlt = Tick(cu.Close); } catch { }
+            try { var cu = GetCandle(Math.Min(CurrentBar - 1, Math.Max(0, p.Hasta))); if (cu != null) tickUlt = Tick(cu.Close); } catch { }
             int aire = altoFila >= 14 ? 2 : altoFila >= 7 ? 1 : 0;   // aire entre cajas, como en los reels
             // 1.4b: con el encabezado fijo arriba, un numero que quedaria cortado debajo de el no se dibuja (nunca medio numero)
             int yTapa = (_colEncab && yEnc < reg.Top) ? reg.Top + lineasEnc * 14 + 5 : int.MinValue;
@@ -890,6 +1012,9 @@ namespace PythiaSuper
                     foreach (int k in TicksFila) if (k > p.K && k * pxTick >= 13) { kSug = k; break; }
                     Texto(g, "subi a fila " + Puntos(kSug) + " o acerca", Fuente(7, false), Color.FromArgb(230, 255, 214, 0), x0 + 5, ye + 28);
                 }
+                // 1.5: la suma no es la jornada entera o falta footprint: se dice en amarillo (el detalle va en la botonera)
+                if (aviso.Length > 0)
+                    Texto(g, aviso, Fuente(7, true), Color.FromArgb(240, 255, 214, 0), x0 + 5, ye + (numeros ? 28 : 42));
             }
             return d;
         }
@@ -1026,7 +1151,7 @@ namespace PythiaSuper
             x += 6;
             Boton(g, "columna", "DELTA", _columna, ref x, y, acento);
             string vc = _colVentana == VentanaColumna.VelaEnCurso ? "vela" : _colVentana == VentanaColumna.UltimasN ? _colVelas + " velas"
-                      : _colVentana == VentanaColumna.Sesion ? "sesion" : "visible";
+                      : _colVentana == VentanaColumna.Sesion ? "sesion" : _colVentana == VentanaColumna.Jornada ? "jornada" : "visible";
             Boton(g, "colventana", vc, _columna, ref x, y, Color.FromArgb(60, 64, 72));
             string dc = _colDato == DatoColumna.Delta ? "delta" : _colDato == DatoColumna.Volumen ? "vol" : "VxC";
             Boton(g, "coldato", dc, _columna, ref x, y, Color.FromArgb(60, 64, 72));
@@ -1037,9 +1162,62 @@ namespace PythiaSuper
             x += 6;
             Boton(g, "perfil", "PERFIL", _perfil, ref x, y, acento);
             string vp = _perVentana == VentanaPerfil.Sesion ? "sesion" : _perVentana == VentanaPerfil.Rth ? "RTH"
-                      : _perVentana == VentanaPerfil.UltimasN ? _perVelas + " velas" : "visible";
+                      : _perVentana == VentanaPerfil.UltimasN ? _perVelas + " velas" : _perVentana == VentanaPerfil.Jornada ? "jornada" : "visible";
             int pctAv = _perPct; if (pctAv <= 0) { PctPaso(out pctAv, out _); }
             Boton(g, "perventana", vp + " - AV " + pctAv + "%", _perfil, ref x, y, Color.FromArgb(60, 64, 72));
+
+            // 1.5: la jornada elegida, con un clic: < una mas vieja, > una mas nueva (al llegar a la ultima vuelve a "la ultima"),
+            // el rotulo cambia la parte (completa / RTH / noche; con Mayus para atras) y "a la vista" sigue lo que se mira
+            bool usaJornada = (_columna && _colVentana == VentanaColumna.Jornada) || (_perfil && _perVentana == VentanaPerfil.Jornada);
+            if (!usaJornada) return;
+            x += 6;
+            var e = _ej;
+            Color gris = Color.FromArgb(60, 64, 72);
+            Boton(g, "jor_atras", " < ", true, ref x, y, gris);
+            string etq = e.Clave > 0 ? Jornadas.Rotulo(e.Clave) + " " + Jornadas.NombreParte(e.Parte) : "sin jornadas";
+            if (e.NoCargada) etq += " (no cargada)";
+            else if (!e.Hay) etq += e.Parte == Jornadas.ParteRth ? " (todavia sin RTH)" : " (sin velas)";
+            else if (e.EnCurso) etq += " (en curso)";
+            if (_jorModo == ModoJornada.Ultima) etq = "ultima: " + etq;
+            int xEtq = x;
+            Boton(g, "jor_parte", etq, true, ref x, y, acento);
+            if (_avisoBotonera.Length > 0)
+                g.DrawRectangle(new RenderPen(Color.FromArgb(240, 255, 214, 0), 2), new Rectangle(xEtq - 1, y - 1, x - 4 - xEtq + 2, 20), 3);
+            Boton(g, "jor_adelante", " > ", true, ref x, y, gris);
+            Boton(g, "jor_vista", "a la vista", _jorModo == ModoJornada.AlaVista, ref x, y, acento);
+            if (_avisoBotonera.Length > 0)
+            {
+                var fa = Fuente(8, true);
+                var sz = g.MeasureString(_avisoBotonera, fa);
+                g.FillRectangle(Color.FromArgb(215, 20, 22, 28), new Rectangle(x + 2, y, sz.Width + 10, 18), 3);
+                g.DrawString(_avisoBotonera, fa, Color.FromArgb(250, 255, 214, 0), x + 7, y + (18 - sz.Height) / 2);
+            }
+        }
+
+        /// <summary>1.5: mueve la jornada elegida (-1 = una mas vieja, +1 = una mas nueva). Llegar a la ultima con '>' vuelve al modo
+        /// "la ultima" (asi en vivo y en el replay sigue sola al dia nuevo).</summary>
+        private void MoverJornada(int paso)
+        {
+            int clave = -1; bool esUltima = false;
+            lock (_llave)
+            {
+                int total = _jornadas.Count;
+                if (total == 0) return;
+                int idx = _ej.Indice;
+                if (idx < 0 || idx >= total || _jornadas[idx].Clave != _ej.Clave)
+                {
+                    // la fecha elegida no esta cargada: '<' va a la mas nueva anterior a esa fecha y '>' a la mas vieja posterior
+                    idx = -1;
+                    if (paso < 0) { for (int k = total - 1; k >= 0; k--) if (_jornadas[k].Clave < _ej.Clave) { idx = k; break; } if (idx < 0) idx = 0; }
+                    else { for (int k = 0; k < total; k++) if (_jornadas[k].Clave > _ej.Clave) { idx = k; break; } if (idx < 0) idx = total - 1; }
+                    paso = 0;
+                }
+                int n = Math.Max(0, Math.Min(total - 1, idx + paso));
+                clave = _jornadas[n].Clave; esUltima = n == total - 1;
+            }
+            if (esUltima && paso > 0) SpJornadaModo = ModoJornada.Ultima;
+            else { SpJornadaFecha = clave; SpJornadaModo = ModoJornada.Fecha; }
+            RaisePropertyChanged(nameof(SpJornadaFecha)); RaisePropertyChanged(nameof(SpJornadaModo));
         }
 
         /// <summary>Alto de una fila en puntos del instrumento ("1 pt", "0,5 pt", "1 tick").</summary>
@@ -1094,9 +1272,25 @@ namespace PythiaSuper
                         int n = Enum.GetValues(typeof(VentanaPerfil)).Length, i = (int)_perVentana;
                         SpPerVentana = (VentanaPerfil)(atras ? (i - 1 + n) % n : (i + 1) % n); RaisePropertyChanged(nameof(SpPerVentana)); break;
                     }
+                case "jor_atras": MoverJornada(-1); break;
+                case "jor_adelante": MoverJornada(+1); break;
+                case "jor_parte":
+                    {
+                        int n = Enum.GetValues(typeof(ParteJornada)).Length, i = (int)_jorParte;
+                        SpJornadaParte = (ParteJornada)(atras ? (i - 1 + n) % n : (i + 1) % n); RaisePropertyChanged(nameof(SpJornadaParte)); break;
+                    }
+                case "jor_vista":
+                    if (_jorModo == ModoJornada.AlaVista)
+                    {
+                        // se congela la que se estaba mirando
+                        if (_ej.Clave > 0 && !_ej.NoCargada) { SpJornadaFecha = _ej.Clave; RaisePropertyChanged(nameof(SpJornadaFecha)); }
+                        SpJornadaModo = ModoJornada.Fecha;
+                    }
+                    else SpJornadaModo = ModoJornada.AlaVista;
+                    RaisePropertyChanged(nameof(SpJornadaModo)); break;
             }
             AnotarLinea("boton " + id + (atras ? " (atras)" : "") + " -> velas " + _velas + ", paleta " + _paleta + ", columna " + _columna + " " + _colVentana + " " + _colTicks + "t"
-                        + " " + _colDato + ", perfil " + _perfil + " " + _perVentana);
+                        + " " + _colDato + ", perfil " + _perfil + " " + _perVentana + ", jornada " + _jorModo + " " + _jorFecha + " " + _jorParte);
             Redibujar();
         }
 
@@ -1329,6 +1523,24 @@ namespace PythiaSuper
                   .Append(",\"chartarea\":[").Append(area.X).Append(',').Append(area.Y).Append(',').Append(area.Width).Append(',').Append(area.Height).Append(']')
                   .Append(",\"xder\":").Append(xDer)
                   .Append(",\"visibles\":[").Append(FirstVisibleBarNumber).Append(',').Append(LastVisibleBarNumber).Append(']')
+                  .Append(",\"carga\":").Append(_carga);
+                // 1.5: la jornada elegida y la lista de jornadas con sus velas (para rehacer por fuera la division por jornada)
+                var ej = _ej;
+                sb.Append(",\"jornada\":{\"modo\":\"").Append(_jorModo).Append("\",\"fecha\":").Append(_jorFecha).Append(",\"parte\":\"").Append(_jorParte)
+                  .Append("\",\"clave\":").Append(ej.Clave).Append(",\"indice\":").Append(ej.Indice).Append(",\"hay\":").Append(ej.Hay ? "true" : "false")
+                  .Append(",\"desde\":").Append(ej.Desde).Append(",\"hasta\":").Append(ej.Hasta).Append(",\"cortada\":").Append(ej.Cortada ? "true" : "false")
+                  .Append(",\"en_curso\":").Append(ej.EnCurso ? "true" : "false").Append(",\"no_cargada\":").Append(ej.NoCargada ? "true" : "false")
+                  .Append(",\"primera_ny\":\"").Append(ej.PrimeraNy.ToString("yyyy-MM-ddTHH:mm:ss", Inv)).Append("\",\"aviso\":\"").Append(_avisoBotonera.Replace("\"", "'"))
+                  .Append("\",\"lista\":[");
+                lock (_llave)
+                    for (int k = 0; k < _jornadas.Count; k++)
+                    {
+                        var j = _jornadas[k];
+                        if (k > 0) sb.Append(',');
+                        sb.Append('[').Append(j.Clave).Append(',').Append(j.Primera).Append(',').Append(j.Ultima).Append(',').Append(j.NochePrimera).Append(',')
+                          .Append(j.NocheUltima).Append(',').Append(j.RthPrimera).Append(',').Append(j.RthUltima).Append(']');
+                    }
+                sb.Append("]}")
                   .Append(",\"velas\":{\"on\":").Append(_velas ? "true" : "false").Append(",\"paleta\":\"").Append(_paleta).Append("\",\"doji\":\"").Append(_doji).Append("\",\"ultimas\":[");
                 for (int b = Math.Max(0, ultima - 9), k = 0; b <= ultima; b++, k++)
                 {
@@ -1375,8 +1587,10 @@ namespace PythiaSuper
                   .Append(",\"velas_en_cache\":").Append(rev).Append("}}");
                 string ruta = Path.Combine(Carpeta(), "auditoria-" + Inst() + "-" + Marco() + "-" + DateTime.UtcNow.ToString("yyyyMMdd", Inv) + ".jsonl");
                 string linea = sb.ToString();
-                string velas = VolcadoVelas(Math.Min(dCol?.P?.Desde ?? ultima, dPer?.P?.Desde ?? ultima), ultima - 1);
-                string rutaV = Path.Combine(Carpeta(), "velas-" + Inst() + "-" + Marco() + "-" + DateTime.UtcNow.ToString("yyyyMMdd", Inv) + ".csv");
+                // 1.5: una vela ANTES de la ventana (para comprobar por fuera donde empieza la jornada) y archivo "velas2" con la carga
+                string diaArchivo = DateTime.UtcNow.ToString("yyyyMMdd", Inv);
+                string velas = VolcadoVelas(Math.Min(dCol?.P?.Desde ?? ultima, dPer?.P?.Desde ?? ultima) - 1, ultima - 1, diaArchivo);
+                string rutaV = Path.Combine(Carpeta(), "velas2-" + Inst() + "-" + Marco() + "-" + diaArchivo + ".csv");
                 Task.Run(() =>
                 {
                     try
@@ -1387,7 +1601,7 @@ namespace PythiaSuper
                             if (velas.Length > 0)
                             {
                                 bool nuevo = !File.Exists(rutaV);
-                                File.AppendAllText(rutaV, (nuevo ? "bar,hora_utc,hora_fin_utc,o,h,l,c,delta_atas,vol_atas,vah_atas,val_atas,poc_atas,tick,bid,ask,vol\n" : "") + velas);
+                                File.AppendAllText(rutaV, (nuevo ? "bar,hora_utc,hora_fin_utc,o,h,l,c,delta_atas,vol_atas,vah_atas,val_atas,poc_atas,tick,bid,ask,vol,carga\n" : "") + velas);
                             }
                         }
                     }
@@ -1448,17 +1662,24 @@ namespace PythiaSuper
             sb.Append("]}");
         }
 
-        /// <summary>Footprint de las velas cerradas [desde, hasta] que todavia no se escribieron hoy (por hora, no por numero de
-        /// vela: si ATAS recarga la historia los numeros cambian). Una fila por nivel.</summary>
-        private string VolcadoVelas(int desde, int hasta)
+        /// <summary>Footprint de las velas cerradas [desde, hasta] que todavia no se escribieron en el archivo de hoy en esta carga (por
+        /// hora de apertura, no por numero de vela: si ATAS recarga la historia los numeros cambian). Una fila por nivel; la ultima
+        /// columna es la carga (en el replay las mismas horas vuelven a llegar con otra carga y se escriben de nuevo).</summary>
+        private string VolcadoVelas(int desde, int hasta, string diaArchivo)
         {
             var sb = new StringBuilder();
-            if (hasta < desde || desde < 0) return "";
-            DateTime tope = _velasVolcadasHasta;
+            desde = Math.Max(0, desde);
+            if (hasta < desde) return "";
+            lock (_llaveArchivo)
+            {
+                if (_velasVolcadasDia != diaArchivo) { _velasVolcadas.Clear(); _velasVolcadasDia = diaArchivo; }
+            }
+            string cola = "," + _carga + "\n";
             for (int b = desde; b <= hasta; b++)
             {
                 IndicatorCandle c; try { c = GetCandle(b); } catch { continue; }
-                if (c == null || c.Time <= tope) continue;
+                if (c == null) continue;
+                lock (_llaveArchivo) { if (_velasVolcadas.Contains(c.Time)) continue; }
                 var x = Cerrada(b); if (x == null) continue;
                 decimal vah = 0, val = 0, poc = 0;
                 try { var va = c.ValueArea; if (va != null) { vah = va.ValueAreaHigh; val = va.ValueAreaLow; } } catch { }
@@ -1470,11 +1691,11 @@ namespace PythiaSuper
                 for (int i = 0; i < x.Vol.Length; i++)
                 {
                     if (x.Vol[i] == 0 && x.Bid[i] == 0 && x.Ask[i] == 0) continue;
-                    sb.Append(cab).Append(x.TickMin + i).Append(',').Append(F(x.Bid[i])).Append(',').Append(F(x.Ask[i])).Append(',').Append(F(x.Vol[i])).Append('\n');
+                    sb.Append(cab).Append(x.TickMin + i).Append(',').Append(F(x.Bid[i])).Append(',').Append(F(x.Ask[i])).Append(',').Append(F(x.Vol[i])).Append(cola);
                     alguno = true;
                 }
-                if (!alguno) sb.Append(cab).Append(",,,\n");
-                if (c.Time > _velasVolcadasHasta) _velasVolcadasHasta = c.Time;
+                if (!alguno) sb.Append(cab).Append(",,,").Append(cola);   // tick, bid, ask y vol vacios + la carga
+                lock (_llaveArchivo) _velasVolcadas.Add(c.Time);
             }
             return sb.ToString();
         }

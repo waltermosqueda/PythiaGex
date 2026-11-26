@@ -206,4 +206,128 @@ namespace PythiaSuper
             return v == decimal.Truncate(v) ? v.ToString("#,0", ar) : v.ToString("#,0.##", ar);
         }
     }
+
+    /// <summary>
+    /// 1.5 (26-11-2026) JORNADA DE CME, sin nada de ATAS. Pedido del operador: "ver el indicador con los valores del dia anterior o
+    /// de la sesion que yo elija, con la data limpia SOLO de esa jornada" (el rango visible juntaba dos dias) y que ande en el replay.
+    /// Una jornada de los futuros de CME va de las 18:00 NY de la vispera a las 17:00 NY (el domingo 18:00 abre la del lunes). La
+    /// jornada de una vela sale de la HORA NY DE SU APERTURA: desde las 18:00 cuenta para el dia siguiente. Partes: NOCHE = 18:00 a
+    /// 9:30, RTH = 9:30 a 16:00, y DESPUES DEL CIERRE = 16:00 a 17:00 (va en la completa, no en la RTH ni en la noche).
+    /// No depende de la plantilla de sesion del grafico ni del reloj de la PC: en el replay vale lo mismo.
+    /// Limite dicho: en velas que no abren a horario (rango, ticks, volumen, o de 1 hora) la vela va entera a la parte de su apertura.
+    /// </summary>
+    public sealed class Jornada
+    {
+        public int Clave;                                    // aaaammdd del dia de la rueda
+        public int Primera = -1, Ultima = -1;                // toda la jornada (velas, numeradas como en el grafico)
+        public int NochePrimera = -1, NocheUltima = -1;      // 18:00 a 9:30 NY
+        public int RthPrimera = -1, RthUltima = -1;          // 9:30 a 16:00 NY
+
+        public void Agregar(int bar, int tipo)
+        {
+            if (Primera < 0 || bar < Primera) Primera = bar;
+            if (bar > Ultima) Ultima = bar;
+            if (tipo == Jornadas.TipoNoche) { if (NochePrimera < 0 || bar < NochePrimera) NochePrimera = bar; if (bar > NocheUltima) NocheUltima = bar; }
+            else if (tipo == Jornadas.TipoRth) { if (RthPrimera < 0 || bar < RthPrimera) RthPrimera = bar; if (bar > RthUltima) RthUltima = bar; }
+        }
+
+        /// <summary>Velas de la parte pedida (Jornadas.ParteCompleta / ParteRth / ParteNoche); false si esa parte no tiene velas.</summary>
+        public bool Rango(int parte, out int desde, out int hasta)
+        {
+            if (parte == Jornadas.ParteRth) { desde = RthPrimera; hasta = RthUltima; }
+            else if (parte == Jornadas.ParteNoche) { desde = NochePrimera; hasta = NocheUltima; }
+            else { desde = Primera; hasta = Ultima; }
+            return desde >= 0 && hasta >= desde;
+        }
+    }
+
+    public static class Jornadas
+    {
+        public const int TipoNoche = 0, TipoRth = 1, TipoDespues = 2;           // de cada vela
+        public const int ParteCompleta = 0, ParteRth = 1, ParteNoche = 2;       // lo que se elige
+        public static readonly TimeSpan Rth0 = new TimeSpan(9, 30, 0), Rth1 = new TimeSpan(16, 0, 0), Corte = new TimeSpan(18, 0, 0);
+        private static readonly string[] Dias = { "dom", "lun", "mar", "mie", "jue", "vie", "sab" };
+
+        /// <summary>aaaammdd de la jornada de una vela por la hora NY de su apertura. Sabado o domingo (no deberia haber velas antes del
+        /// domingo 18:00) van al lunes.</summary>
+        public static int Clave(DateTime ny)
+        {
+            var d = ny.TimeOfDay >= Corte ? ny.Date.AddDays(1) : ny.Date;
+            if (d.DayOfWeek == DayOfWeek.Saturday) d = d.AddDays(2);
+            else if (d.DayOfWeek == DayOfWeek.Sunday) d = d.AddDays(1);
+            return d.Year * 10000 + d.Month * 100 + d.Day;
+        }
+
+        public static int Tipo(DateTime ny)
+        {
+            var t = ny.TimeOfDay;
+            if (t >= Rth0 && t < Rth1) return TipoRth;
+            if (t >= Rth1 && t < Corte) return TipoDespues;
+            return TipoNoche;
+        }
+
+        public static DateTime Fecha(int clave) => new DateTime(clave / 10000, clave / 100 % 100, clave % 100);
+
+        /// <summary>Hora NY en la que empieza la parte: la completa y la noche a las 18:00 de la vispera (el lunes: domingo), la RTH a las 9:30.</summary>
+        public static DateTime InicioNominal(int clave, int parte)
+            => parte == ParteRth ? Fecha(clave).Add(Rth0) : Fecha(clave).AddDays(-1).Add(Corte);
+
+        public static string Rotulo(int clave)
+        {
+            var d = Fecha(clave);
+            return Dias[(int)d.DayOfWeek] + " " + d.ToString("dd-MM", CultureInfo.InvariantCulture);
+        }
+
+        public static string NombreParte(int parte) => parte == ParteRth ? "RTH" : parte == ParteNoche ? "noche" : "completa";
+
+        /// <summary>Agrega una vela a la lista ordenada (las velas llegan en orden; una vela ya agregada no cambia de jornada).</summary>
+        public static void Agregar(List<Jornada> js, int bar, DateTime ny)
+        {
+            int clave = Clave(ny), tipo = Tipo(ny);
+            Jornada j = null;
+            for (int i = js.Count - 1; i >= 0 && i >= js.Count - 3; i--) if (js[i].Clave == clave) { j = js[i]; break; }
+            if (j == null)
+            {
+                j = new Jornada { Clave = clave };
+                int pos = js.Count;
+                while (pos > 0 && js[pos - 1].Clave > clave) pos--;   // por si una vela llega fuera de orden
+                js.Insert(pos, j);
+            }
+            j.Agregar(bar, tipo);
+        }
+
+        /// <summary>Indice de la jornada N lugares antes de la ultima (0 = la ultima); -1 si no hay.</summary>
+        public static int PorAtras(IList<Jornada> js, int atras)
+        {
+            if (js.Count == 0) return -1;
+            return Math.Max(0, js.Count - 1 - Math.Max(0, atras));
+        }
+
+        /// <summary>La jornada que se esta mirando: la que tiene MAS velas a la vista de la parte pedida (empate: la mas nueva); si
+        /// ninguna tiene esa parte a la vista, la que tiene mas velas a la vista en total. -1 si no hay nada a la vista.</summary>
+        public static int AlaVista(IList<Jornada> js, int primVis, int ultVis, int parte)
+        {
+            int mejor = -1, mejorN = 0, mejorTot = -1, mejorTotN = 0;
+            if (ultVis < primVis) return -1;
+            for (int i = 0; i < js.Count; i++)
+            {
+                var j = js[i];
+                int tot = Solape(j.Primera, j.Ultima, primVis, ultVis);
+                if (tot > 0 && tot >= mejorTotN) { mejorTotN = tot; mejorTot = i; }
+                if (j.Rango(parte, out int d, out int h))
+                {
+                    int n = Solape(d, h, primVis, ultVis);
+                    if (n > 0 && n >= mejorN) { mejorN = n; mejor = i; }
+                }
+            }
+            return mejor >= 0 ? mejor : mejorTot;
+        }
+
+        private static int Solape(int a0, int a1, int b0, int b1)
+        {
+            if (a0 < 0 || a1 < a0) return 0;
+            int x0 = Math.Max(a0, b0), x1 = Math.Min(a1, b1);
+            return x1 >= x0 ? x1 - x0 + 1 : 0;
+        }
+    }
 }

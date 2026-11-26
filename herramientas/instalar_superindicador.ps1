@@ -1,4 +1,4 @@
-# INSTALADOR EN CALIENTE del Superindicador (23-11-2026). NO reinicia ATAS.
+﻿# INSTALADOR EN CALIENTE del Superindicador (23-11-2026). NO reinicia ATAS.
 # Descubierto ese dia: ATAS 8.0.15.306 detecta el DLL nuevo o cambiado en %APPDATA%\ATAS\Indicators ("Created/Changed library",
 # "Debounce timer elapsed") y muestra en la barra de estado, a la izquierda del icono amarillo de la esquina, un boton azul (32x32,
 # sin nombre para UIA) que recarga los indicadores: "yModulesManager: Trying to reload indicator types" + un aviso modal
@@ -38,7 +38,8 @@ foreach ($w in $A::RootElement.FindAll($TS::Children, $c)) {
     }
 }
 Paso ("botones sin nombre en la esquina de la barra de estado: {0}" -f $cands.Count)
-if ($cands.Count -lt 2) { Paso "no aparecio el boton de recarga (ATAS no lo muestra si no hay cambios pendientes)"; exit 2 }
+# 26-11: a veces el boton de recarga es el UNICO sin nombre de la esquina (el otro icono no estaba): alcanza con uno
+if ($cands.Count -lt 1) { Paso "no aparecio el boton de recarga (ATAS no lo muestra si no hay cambios pendientes)"; exit 2 }
 $b = ($cands | Sort-Object { $_[1].X } | Select-Object -First 1)
 $b[0].GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
 Paso ("recarga invocada (boton en x={0:0} y={1:0})" -f $b[1].X, $b[1].Y)

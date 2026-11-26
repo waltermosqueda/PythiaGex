@@ -1,41 +1,30 @@
 ---
 name: market-replay-que-reproduce
-description: El Replay de ATAS reproduce la cinta del futuro pero NO la cadena de opciones; y el modo por defecto inventa las operaciones.
-metadata: 
+description: "Replay de ATAS 8.0.15.306 (medido 26-11-2026): bar replay desde una vela; el footprint de cada vela cerrada sale IDENTICO a la historia en vivo en modo Ticks y en modo Candles; se maneja por UIA; desconecta el dato en vivo y al cerrarlo reconecta solo. NO reproduce la cadena de opciones."
+metadata:
   node_type: memory
   type: project
-  originSessionId: 15e03ce1-51d8-43ea-8c35-a2fa1a4b8145
-  modified: 2026-09-04T22:06:29.344Z
+  originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
+  modified: 2026-11-26T22:12:56.106Z
 ---
 
-Probado el 2026-09-04 con una muestra chica de Market Replay sobre MES.
+**26-11-2026 (Thanksgiving, mercado parado), replay del 25-11 con el Superindicador 1.5 en el grafico limpio MES 1m:**
+- Boton "Replay" del ribbon (UIA `RibbonReplayButton`, InvokePattern) -> modo replay ("[In replay mode]"): DESCONECTA las
+  conexiones de trading/dato en vivo. Panel flotante "Replay - ...": Select module, **Select Bar** (bar replay: "Click the bar you
+  want to start the replay from"; clic real en la vela), velocidad (0,1x a 1000x; la lista abre con ExpandCollapse.Expand),
+  Reset to start, Play/Pausa, Step, Go to realtime, Settings, Close. Los clics de computer-use en ese panel NO llegan: todo por UIA.
+- Settings: tipo de dato Candles (de fabrica) / Ticks / Ticks and DOM, y "Auto replay" (al llegar al final RECOMIENZA solo; me
+  confundio una segunda pasada). Settings esta BLOQUEADO con el replay en marcha o en pausa: "Reset to start" lo libera.
+- "Close" del panel sale del replay y ATAS RECONECTA solas las dos conexiones Rithmic en ~2 s.
+- Medido vela por vela contra la historia en vivo del mismo dia: modo **Ticks 387 de 387 minutos identicos nivel por nivel** (y las
+  dos pasadas iguales entre si); modo **Candles 188 de 188 identicos** (mismo delta y volumen). Candles trae cada vela entera de
+  una; Ticks la arma operacion por operacion (para ver como se forma el delta). La cinta del replay (Ticks) calza exacta con el
+  footprint. Velocidad real con Ticks ~100x en la primera pasada (9:15 a 17:00 NY en ~4,7 min).
+- ATAS dejo mal SU area de valor de 1 vela de 387 en el replay (la del indicador sale del footprint y da igual).
+- Error mio corregido con el dato: yo habia dicho que el modo Candles "inventaba" el footprint; medido, no (ver arriba).
+- Quedo "Auto replay" APAGADO (estaba prendido): avisado al operador.
 
-**Lo que el Replay SI reproduce:** las velas y la cinta del futuro. Escribe
-timestamps en **UTC** en el centinela (puesto 23:30 con el huso en UTC-3, las
-filas salieron 02:28 UTC del dia siguiente). El campo del dialogo cambia de
-huso solo entre UTC+0 y UTC-3 segun el momento; no discutir con la pantalla,
-verificar contra el sello del archivo.
-
-**Lo que el Replay NO reproduce: la cadena de opciones.** El indicador sigue
-leyendo la cadena de HOY mientras las velas son de otro dia. Resultado: el
-mapa de hoy dibujado sobre el precio de ayer. El campo `niv` del centinela
-queda inservible en replay, y usarlo seria medir un placebo creyendo que es el
-nivel. Para analizar un dia pasado hay que tomar los niveles de las fotos
-archivadas de `datos/cache` de ESE dia. Ver [[laboratorio-formulas]].
-
-**Los tres modos de "Market data type", y cual importa:**
-
-1. `Candles and the generated best prices` — el que viene por defecto. ATAS
-   **genera** la cinta a partir de velas. El `Ticks` de la vela (o sea `ops`,
-   la velocidad del tape) es **sintetico**: no sirve para medir actividad.
-2. `Ticks and the generated best prices` — cinta **real**, operacion por
-   operacion, con puntas generadas. **Es el que hay que usar** para medir
-   velocidad de cinta.
-3. `Ticks and the DOM (Level2)` — agrega el libro completo. Es el mas pesado y
-   el sospechoso de haber tildado ATAS la vez anterior. No hace falta.
-
-**Costo medido:** 30 minutos de MES en modo 1, a 10x, tardaron ~2 minutos y
-escribieron 29 filas de un minuto sin trabar nada.
-
-Conectar el replay **desconecta el dato online**. De noche o fin de semana no
-cuesta nada; con el mercado abierto si. Ver [[cambios-atas-de-a-uno]].
+**Lo que NO reproduce (04-09, sigue valiendo): la cadena de opciones.** El indicador de gamma lee la cadena de HOY mientras las
+velas son de otro dia: para analizar un dia pasado, niveles de las fotos archivadas de ESE dia. Ver [[laboratorio-formulas]].
+La cinta grabada EN VIVO por el indicador pierde operaciones en rafagas (12 de 372 minutos del 25-11, siempre de menos; el
+footprint y el replay estan completos). Ver [[superindicador-velas-delta-perfil]], [[cambios-atas-de-a-uno]].

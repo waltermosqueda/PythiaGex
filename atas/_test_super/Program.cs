@@ -89,5 +89,69 @@ class Program
         // piso con negativos
         foreach (var (t, k) in new[] { (0, 4), (3, 4), (4, 4), (-1, 4), (-4, 4), (-5, 4), (27315, 4) })
             Console.WriteLine("PISO " + t + "/" + k + " = " + Acum.Piso(t, k));
+        Jornadas_(args.Length > 1 ? args[1] : "jornadas.json");
+    }
+
+    // 1.5: casos sinteticos de JORNADAS: velas en UTC (como las da ATAS) -> hora NY con la zona de Windows (igual que el
+    // indicador) -> lista de jornadas, rangos por parte, "a la vista" y "N atras". Python lo rehace con su propia base de husos.
+    static void Jornadas_(string salida)
+    {
+        var ny = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+        var sb = new StringBuilder("[");
+        int casos = 0;
+        int[] marcos = { 1, 1, 1, 5, 30, 60 };
+        var inicios = new[] { new DateTime(2026, 3, 5), new DateTime(2026, 10, 28), new DateTime(2026, 11, 23), new DateTime(2026, 11, 18), new DateTime(2026, 7, 1), new DateTime(2026, 12, 30) };
+        for (int semilla = 1; semilla <= 120; semilla++)
+        {
+            var r = new Random(1000 + semilla);
+            int marco = marcos[semilla % marcos.Length];
+            // arranque en UTC a cualquier minuto (multiplo del marco) de un dia de los de la lista + desplazamiento al azar
+            var t = inicios[semilla % inicios.Length].AddMinutes(r.Next(0, 3 * 24 * 60) / marco * marco);
+            int dias = 2 + r.Next(5);
+            var fin = t.AddDays(dias);
+            var horas = new List<DateTime>();
+            while (t < fin)
+            {
+                var h = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(t, DateTimeKind.Utc), ny);
+                bool cerrado = h.DayOfWeek == DayOfWeek.Saturday || (h.DayOfWeek == DayOfWeek.Friday && h.TimeOfDay >= new TimeSpan(17, 0, 0))
+                            || (h.DayOfWeek == DayOfWeek.Sunday && h.TimeOfDay < new TimeSpan(18, 0, 0))
+                            || (h.TimeOfDay >= new TimeSpan(17, 0, 0) && h.TimeOfDay < new TimeSpan(18, 0, 0));
+                // a veces una vela "imposible" (en el corte o en fin de semana) para probar las reglas de borde
+                bool rara = r.NextDouble() < 0.002;
+                if ((!cerrado || rara) && r.NextDouble() > 0.03) horas.Add(t);   // 3 % de minutos sin operaciones
+                t = t.AddMinutes(marco);
+            }
+            var js = new List<Jornada>();
+            for (int b = 0; b < horas.Count; b++)
+                Jornadas.Agregar(js, b, TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(horas[b], DateTimeKind.Utc), ny));
+            if (casos++ > 0) sb.Append(",\n");
+            sb.Append("{\"semilla\":").Append(semilla).Append(",\"marco\":").Append(marco).Append(",\"utc\":[");
+            for (int b = 0; b < horas.Count; b++) { if (b > 0) sb.Append(','); sb.Append('"').Append(horas[b].ToString("yyyy-MM-ddTHH:mm", Inv)).Append('"'); }
+            sb.Append("],\"lista\":[");
+            for (int k = 0; k < js.Count; k++)
+            {
+                var j = js[k];
+                if (k > 0) sb.Append(',');
+                sb.Append('[').Append(j.Clave).Append(',').Append(j.Primera).Append(',').Append(j.Ultima).Append(',').Append(j.NochePrimera).Append(',')
+                  .Append(j.NocheUltima).Append(',').Append(j.RthPrimera).Append(',').Append(j.RthUltima).Append(",\"").Append(Jornadas.Rotulo(j.Clave)).Append("\"")
+                  .Append(",\"").Append(Jornadas.InicioNominal(j.Clave, Jornadas.ParteCompleta).ToString("yyyy-MM-ddTHH:mm", Inv)).Append("\"")
+                  .Append(",\"").Append(Jornadas.InicioNominal(j.Clave, Jornadas.ParteRth).ToString("yyyy-MM-ddTHH:mm", Inv)).Append("\"]");
+            }
+            sb.Append("],\"vista\":[");
+            for (int q = 0; q < 40; q++)
+            {
+                int n = horas.Count; if (n == 0) break;
+                int a = r.Next(n), w = 1 + r.Next(Math.Max(1, n / 2)), parte = r.Next(3);
+                int b0 = Math.Max(0, a - w / 2), b1 = Math.Min(n - 1, b0 + w);
+                if (q > 0) sb.Append(',');
+                sb.Append('[').Append(b0).Append(',').Append(b1).Append(',').Append(parte).Append(',').Append(Jornadas.AlaVista(js, b0, b1, parte)).Append(']');
+            }
+            sb.Append("],\"atras\":[");
+            for (int q = 0; q <= js.Count + 1; q++) { if (q > 0) sb.Append(','); sb.Append(Jornadas.PorAtras(js, q)); }
+            sb.Append("]}");
+        }
+        sb.Append("]");
+        File.WriteAllText(salida, sb.ToString());
+        Console.WriteLine("jornadas: " + casos + " casos -> " + salida);
     }
 }

@@ -46,10 +46,13 @@ def numero(v, con_signo):
     return s
 
 
-def leer_velas(ruta):
+def leer_velas(ruta, carga=None):
+    """velas2 (1.5) trae la columna 'carga': en el replay las mismas horas llegan de nuevo con otra carga; se toma la pedida."""
     velas = {}
     with open(ruta, encoding="utf-8") as f:
         for r in csv.DictReader(f):
+            if carga is not None and "carga" in r and r["carga"] not in ("", None) and int(r["carga"]) != carga:
+                continue
             h = r["hora_utc"]
             v = velas.get(h)
             if v is None or v["bar"] != int(r["bar"]):
@@ -185,6 +188,66 @@ def auditar_ventana(nombre, w, velas, tick, informe):
     return ok
 
 
+def jornada_de(hora_utc):
+    """1.5, escrito de nuevo: jornada de CME por la hora NY de apertura (desde las 18:00 cuenta para el dia siguiente; sabado y
+    domingo al lunes) y tipo de vela (0 noche, 1 RTH 9:30-16:00, 2 despues del cierre)."""
+    from zoneinfo import ZoneInfo
+    from datetime import time as _t
+    h = datetime.strptime(hora_utc[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc).astimezone(ZoneInfo("America/New_York"))
+    d = h.date() + timedelta(days=1) if h.time() >= _t(18, 0) else h.date()
+    if d.weekday() == 5:
+        d += timedelta(days=2)
+    elif d.weekday() == 6:
+        d += timedelta(days=1)
+    tipo = 1 if _t(9, 30) <= h.time() < _t(16, 0) else (2 if _t(16, 0) <= h.time() < _t(18, 0) else 0)
+    return d.year * 10000 + d.month * 100 + d.day, tipo, h
+
+
+def auditar_jornada(au, velas, informe):
+    """1.5: la ventana 'Jornada elegida' tiene que ser exactamente las velas de esa jornada y esa parte (ni una mas ni una menos)."""
+    j = au.get("jornada")
+    ventanas = [(n, w) for n, w in (("COLUMNA", au["col"]), ("PERFIL", au["per"])) if w.get("ventana") == "Jornada"]
+    if not j or not ventanas:
+        informe.append("JORNADA: ninguna ventana usa 'Jornada elegida'")
+        return None
+    parte = {"Completa": 0, "Rth": 1, "Noche": 2}[j["parte"]]
+    entra = (lambda tipo: True) if parte == 0 else (lambda tipo: tipo == (1 if parte == 1 else 0))
+    horas = sorted(velas)
+    marca = {h: jornada_de(h) for h in horas}
+    sel = [h for h in horas if marca[h][0] == j["clave"] and entra(marca[h][1])]
+    informe.append(f"JORNADA elegida: {j['clave']} {j['parte']} (modo {j['modo']}, fecha {j['fecha']}) -> velas {j['desde']}..{j['hasta']}"
+                   f"{' EN CURSO' if j['en_curso'] else ''}{' CORTADA (el grafico no la cargo desde el comienzo)' if j['cortada'] else ''}"
+                   f"{' aviso: ' + j['aviso'] if j.get('aviso') else ''} | jornadas cargadas: {len(j['lista'])}")
+    ok = True
+    for nombre, w in ventanas:
+        if not w.get("dibujado"):
+            informe.append(f"   {nombre}: no dibujada"); continue
+        t0, t1 = w["t_desde"], w["t_hasta"]
+        viva = w.get("viva")
+        cerradas_sel = [h for h in sel if viva is None or h != viva["hora"]]
+        # el comienzo: la primera vela de la seleccion es la del indicador, y la vela anterior volcada NO es de esa jornada y parte
+        ok_ini = bool(cerradas_sel) and cerradas_sel[0] == t0
+        prev = [h for h in horas if h < t0]
+        frontera = "sin vela anterior volcada"
+        if prev:
+            cp, tp, hp = marca[prev[-1]]
+            ok_ini = ok_ini and not (cp == j["clave"] and entra(tp))
+            frontera = f"la anterior ({hp:%d-%m %H:%M} NY) es de {cp} tipo {tp}"
+        # el final: la ultima cerrada de la seleccion, o la vela en curso si la ventana la incluye
+        if viva is not None:
+            cv, tv, hv = jornada_de(viva["hora"])
+            ok_fin = viva["hora"] == t1 and cv == j["clave"] and entra(tv)
+        else:
+            ok_fin = bool(cerradas_sel) and cerradas_sel[-1] == t1
+        # nada de otra jornada o parte entre medio
+        intrusas = [h for h in horas if t0 <= h <= t1 and not (marca[h][0] == j["clave"] and entra(marca[h][1]))]
+        _, _, h0 = jornada_de(t0); _, _, h1 = jornada_de(t1)
+        informe.append(f"   {nombre}: {h0:%d-%m %H:%M} a {h1:%d-%m %H:%M} NY | comienzo {'OK' if ok_ini else 'MAL'} ({frontera}) | "
+                       f"final {'OK' if ok_fin else 'MAL'} | velas de otra jornada o parte adentro: {len(intrusas)}")
+        ok = ok and ok_ini and ok_fin and not intrusas
+    return ok
+
+
 def auditar_area_valor_velas(velas, pct, paso, tick, informe):
     """Valida la implementacion contra ATAS: area de valor y POC de CADA vela, 1 tick por fila."""
     n = iguales_va = iguales_poc = empates_poc = 0
@@ -234,10 +297,19 @@ def auditar_cinta(velas, ruta_cinta, tick, informe, minutos=1):
     horas = sorted(velas)
     cubiertas = iguales = 0
     malas = []
+    # 1.5: la cinta se graba solo mientras ATAS corre con el indicador: si ATAS estuvo cerrado hay HUECOS (medido el 26-11: 330
+    # minutos "sin cinta" entre las 7:30 y las 13:00 UTC, todos en un mismo corte). Solo se comparan velas con cinta en el
+    # minuto anterior, en el propio y en el siguiente (grabacion continua); los minutos del borde de un corte quedan afuera.
+    con_cinta = {t[:16] for t, _, _, _ in ops}
+    salteadas = 0
     for i, h in enumerate(horas):
         h_sig = (datetime.fromisoformat(h) + timedelta(minutes=minutos)).strftime("%Y-%m-%dT%H:%M:%S")
         # solo velas enteramente dentro de la cinta (con un minuto de margen a cada lado)
         if not (h > t_ini and h_sig < t_fin):
+            continue
+        h_ant = (datetime.fromisoformat(h) - timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M")
+        if not (h[:16] in con_cinta and h_ant in con_cinta and h_sig[:16] in con_cinta):
+            salteadas += 1
             continue
         hi = h + ".000"; hs = h_sig + ".000"
         niv = defaultdict(lambda: [D(0), D(0), D(0)])
@@ -258,7 +330,7 @@ def auditar_cinta(velas, ruta_cinta, tick, informe, minutos=1):
             d = [t for t in set(fp) | set(ci) if fp.get(t) != ci.get(t)]
             malas.append(f"{h}: {len(d)} niveles distintos, ej. {d[0] * tick}: footprint {fp.get(d[0])} vs cinta {ci.get(d[0])}")
     informe.append(f"CINTA en vivo ({len(ops)} operaciones, {t_ini}..{t_fin} UTC) contra el footprint de ATAS: {cubiertas} velas "
-                   f"enteramente cubiertas, {iguales} identicas nivel por nivel")
+                   f"enteramente cubiertas, {iguales} identicas nivel por nivel ({salteadas} salteadas por hueco de grabacion o borde)")
     for m in malas:
         informe.append("   " + m)
     return cubiertas > 0 and iguales == cubiertas
@@ -270,18 +342,21 @@ def main():
     ap.add_argument("--dia", default=datetime.now(timezone.utc).strftime("%Y%m%d")); ap.add_argument("--linea", type=int, default=-1)
     a = ap.parse_args()
     ra = os.path.join(CARP, f"auditoria-{a.inst}-{a.tf}-{a.dia}.jsonl")
-    rv = os.path.join(CARP, f"velas-{a.inst}-{a.tf}-{a.dia}.csv")
+    rv = os.path.join(CARP, f"velas2-{a.inst}-{a.tf}-{a.dia}.csv")
+    if not os.path.exists(rv):
+        rv = os.path.join(CARP, f"velas-{a.inst}-{a.tf}-{a.dia}.csv")   # anterior a la 1.5
     rc = os.path.join(CARP, f"cinta-{a.inst}-{a.dia}.csv")
     lineas = open(ra, encoding="utf-8").read().strip().splitlines()
     au = json.loads(lineas[a.linea])
     tick = D(str(au["tick"]))
-    velas = leer_velas(rv)
+    velas = leer_velas(rv, au.get("carga"))
     informe = [f"AUDITORIA {au['utc']} UTC (linea {a.linea if a.linea >= 0 else len(lineas) + a.linea} de {len(lineas)}) v{au['v']} {au['inst']} {au['tf']} "
-               f"tick {tick} | velas en el volcado: {len(velas)}"]
+               f"tick {tick} | carga {au.get('carga')} | velas en el volcado de esa carga: {len(velas)}"]
     malas_a = [(h, v) for h, v in velas.items() if v["niv"] and (sum(c[1] - c[0] for c in v["niv"].values()) != v["delta_atas"]
                                                                    or sum(c[2] for c in v["niv"].values()) != v["vol_atas"])]
     sin_agresor = sum(sum(c[2] - c[0] - c[1] for c in v["niv"].values()) for v in velas.values())
     informe.append(f"A) VELAS: {len(velas) - len(malas_a)} de {len(velas)} con delta y volumen de niveles == los de ATAS; volumen sin agresor {sin_agresor}")
+    ok_j = auditar_jornada(au, velas, informe)
     ok_b1 = auditar_ventana("COLUMNA", au["col"], velas, tick, informe)
     ok_b2 = auditar_ventana("PERFIL", au["per"], velas, tick, informe)
     pct, paso = au["va_plataforma"]
@@ -292,6 +367,8 @@ def main():
     pal = au["velas"]
     informe.append(f"VELAS PINTADAS ({pal['paleta']}, doji {pal['doji']}): " + ", ".join(f"{h} {o}->{c} {col}" for _, h, o, c, col in pal["ultimas"][-5:]))
     print("\n".join(informe))
+    print("RESULTADO JORNADA (velas de esa jornada y parte, ni una mas ni una menos):",
+          "no se usa" if ok_j is None else ("IGUAL" if ok_j else "DIFERENCIAS"))
     print("RESULTADO LO DIBUJADO (A+B):", "TODO IGUAL" if (not malas_a and ok_b1 and ok_b2) else "HAY DIFERENCIAS (ver arriba)")
     print("RESULTADO CONTRA ATAS (C):", "IGUAL" if ok_c else "DIFERENCIAS")
     print("RESULTADO CINTA (D):", "sin velas cubiertas todavia" if ok_d is None else ("IGUAL" if ok_d else "DIFERENCIAS"))
