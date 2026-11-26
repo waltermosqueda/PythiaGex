@@ -219,6 +219,31 @@ def auditar_jornada(au, velas, informe):
                    f"{' EN CURSO' if j['en_curso'] else ''}{' CORTADA (el grafico no la cargo desde el comienzo)' if j['cortada'] else ''}"
                    f"{' aviso: ' + j['aviso'] if j.get('aviso') else ''} | jornadas cargadas: {len(j['lista'])}")
     ok = True
+    # 1.6: en "a la vista" la jornada tiene que ser la que se ve: la que mas velas de esa parte tiene entre la primera y la ultima
+    # vela visibles (empate: la mas nueva); con la ultima vela del grafico a la vista, la ultima jornada que tiene esa parte
+    if j["modo"] == "AlaVista" and au.get("visibles"):
+        v0, v1 = au["visibles"]; ult = au["ultima"]
+        por_bar = {v["bar"]: h for h, v in velas.items()}
+        if v1 >= ult:
+            claves = [marca[h][0] for h in horas if entra(marca[h][1])]
+            esperada = claves[-1] if claves else None
+            como = "borde derecho: la ultima con esa parte"
+        else:
+            cuenta = defaultdict(int); total = defaultdict(int)
+            for b in range(v0, v1 + 1):
+                h = por_bar.get(b)
+                if h is None:
+                    continue
+                c, t, _ = marca[h]
+                total[c] += 1
+                if entra(t):
+                    cuenta[c] += 1
+            base = cuenta if cuenta else total
+            esperada = max(base, key=lambda c: (base[c], c)) if base else None
+            como = "la que mas velas tiene a la vista: " + ", ".join(f"{c} {base[c]}" for c in sorted(base))
+        okv = esperada == j["clave"]
+        informe.append(f"   A LA VISTA (velas {v0}..{v1}, ultima {ult}): esperada {esperada} ({como}) -> {'IGUAL' if okv else 'DISTINTA'}")
+        ok = ok and okv
     for nombre, w in ventanas:
         if not w.get("dibujado"):
             informe.append(f"   {nombre}: no dibujada"); continue

@@ -80,9 +80,23 @@ def a_la_vista(js, b0, b1, parte):
     return mejor if mejor >= 0 else tot_i
 
 
+def con_borde(js, b0, b1, ult, parte):
+    """1.6: con la ultima vela a la vista, la ultima jornada que tiene esa parte; si no, la que mas se ve."""
+    if not js:
+        return -1
+    if ult >= 0 and b1 >= ult:
+        for i in range(len(js) - 1, -1, -1):
+            d, h = rango(js[i], parte)
+            if d >= 0 and h >= d:
+                return i
+        return len(js) - 1
+    return a_la_vista(js, b0, b1, parte)
+
+
 def main(ruta):
     casos = json.load(open(ruta, encoding="utf-8"))
-    malos = {"lista": 0, "vista": 0, "atras": 0}
+    malos = {"lista": 0, "vista": 0, "borde": 0, "atras": 0}
+    bordes = 0
     velas = vistas = 0
     raras = 0
     for c in casos:
@@ -96,6 +110,10 @@ def main(ruta):
             vistas += 1
             if a_la_vista(mia, b0, b1, parte) != cs:
                 malos["vista"] += 1
+        for b0, b1, ult, parte, cs in c.get("borde", []):
+            bordes += 1
+            if con_borde(mia, b0, b1, ult, parte) != cs:
+                malos["borde"] += 1
         n = len(mia)
         esperado = [max(0, n - 1 - q) if n else -1 for q in range(n + 2)]
         if esperado != c["atras"]:
@@ -105,7 +123,7 @@ def main(ruta):
             if h.weekday() == 5 or (h.weekday() == 6 and h.time() < time(18, 0)) or time(17, 0) <= h.time() < time(18, 0):
                 raras += 1
     total = sum(malos.values())
-    print(f"casos {len(casos)} ({velas} velas, {raras} en horario cerrado a proposito, {vistas} consultas 'a la vista'): "
+    print(f"casos {len(casos)} ({velas} velas, {raras} en horario cerrado a proposito, {vistas} consultas 'a la vista', {bordes} con la regla del borde): "
           f"{'TODO IGUAL' if total == 0 else 'DIFERENCIAS'} {malos}")
     return 0 if total == 0 else 1
 

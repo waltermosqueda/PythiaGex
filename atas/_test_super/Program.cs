@@ -146,6 +146,17 @@ class Program
                 if (q > 0) sb.Append(',');
                 sb.Append('[').Append(b0).Append(',').Append(b1).Append(',').Append(parte).Append(',').Append(Jornadas.AlaVista(js, b0, b1, parte)).Append(']');
             }
+            // 1.6: "a la vista" con la regla del borde (la mitad de las consultas con la ultima vela a la vista)
+            sb.Append("],\"borde\":[");
+            for (int q = 0; q < 30; q++)
+            {
+                int n = horas.Count; if (n == 0) break;
+                int ult = n - 1, w = 1 + r.Next(Math.Max(1, n / 2)), parte = r.Next(3);
+                int b1 = q % 2 == 0 ? ult : r.Next(n), b0 = Math.Max(0, b1 - w);
+                if (q > 0) sb.Append(',');
+                sb.Append('[').Append(b0).Append(',').Append(b1).Append(',').Append(ult).Append(',').Append(parte).Append(',')
+                  .Append(Jornadas.AlaVistaConBorde(js, b0, b1, ult, parte)).Append(']');
+            }
             sb.Append("],\"atras\":[");
             for (int q = 0; q <= js.Count + 1; q++) { if (q > 0) sb.Append(','); sb.Append(Jornadas.PorAtras(js, q)); }
             sb.Append("]}");

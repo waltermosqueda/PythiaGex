@@ -1,6 +1,6 @@
----
+﻿---
 name: superindicador-velas-delta-perfil
-description: "PythiaGex - Superindicador 1.5 (26-11-2026): velas en 2 colores + columna de delta por precio + perfil con el area de valor de ATAS + JORNADA ELEGIDA (solo un dia: completa/RTH/noche, botones < >); auditado contra ATAS, la cinta y el replay"
+description: "PythiaGex - Superindicador 1.6 (26-11-2026): velas 2 colores + columna de delta + perfil (area de valor de ATAS) + JORNADA (un solo dia: completa/RTH/noche) SINCRONIZADA con la vista; auditado contra ATAS, la cinta y el replay"
 metadata:
   node_type: memory
   type: project
@@ -32,3 +32,13 @@ MAS ALTO; columna en filas FIJAS de K ticks con letra medida; nunca encima de ve
 vela vs ATAS, D cinta: saltea huecos de grabacion) + `test_superindicador.py` + `test_jornadas.py`. Archivo `velas2-*` con columna
 carga. **Pendiente chico:** la "carga" se numera por instancia (cada recarga/replay crea una instancia nueva y vuelve a 1): hacerla
 unica si hace falta separar pasadas; hoy se separan por numero de vela y orden en el archivo.
+
+**1.6 (26-11, mismo dia), pedido:** "si voy corriendo el grafico el perfil de volumen queda fijo y esta mal; tiene que ser dinamico,
+sincronizado segun la vista o fecha". Causa: con < > la jornada quedaba FIJA (modo fecha) y la columna estaba en "visible".
+Arreglo: por defecto columna Y perfil en "jornada" y "a la vista" (la que mas velas tiene en pantalla; con la ultima vela a la
+vista, la de hoy o la del replay); una fecha fijada con < > se SUELTA sola al mover el grafico y mientras no sea la de pantalla
+avisa en amarillo (renglon propio); con el grafico corrido hacia atras la columna va AL LADO del perfil (antes se encimaba).
+Propiedades RENOMBRADAS para pisar lo guardado en el .ws: SpColPeriodo (antes SpColVentana) y SpJornadaQue (antes SpJornadaModo).
+ATAS no expone desplazar el grafico en horizontal a un indicador (solo ScrollPrice/MoveChartUpAndDown): < > no puede llevar la vista.
+Verificado corriendo el grafico por la barra de desplazamiento: 24-11 a la vista (546 de 546 velas) +11.658, POC 7218, VAH 7230,50,
+VAL 7170,50; vuelta al borde 26-11 +1.529, POC 7250, VAH 7253, VAL 7227: todo igual al recalculo (auditor con control "a la vista").

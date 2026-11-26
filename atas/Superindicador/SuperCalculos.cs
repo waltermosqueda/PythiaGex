@@ -323,6 +323,21 @@ namespace PythiaSuper
             return mejor >= 0 ? mejor : mejorTot;
         }
 
+        /// <summary>1.6, pedido del operador ("si voy corriendo el grafico el perfil queda fijo; tiene que ser dinamico, sincronizado
+        /// segun la vista"): "a la vista" con la regla del BORDE. Si la ultima vela del grafico esta a la vista (grafico al dia, o el
+        /// replay corriendo), la jornada es la ULTIMA que tiene la parte pedida (la que se opera; antes de las 9:30 la RTH es la de
+        /// ayer); si el grafico esta corrido hacia atras, la que mas velas tiene a la vista (AlaVista).</summary>
+        public static int AlaVistaConBorde(IList<Jornada> js, int primVis, int ultVis, int ultima, int parte)
+        {
+            if (js.Count == 0) return -1;
+            if (ultima >= 0 && ultVis >= ultima)
+            {
+                for (int i = js.Count - 1; i >= 0; i--) if (js[i].Rango(parte, out _, out _)) return i;
+                return js.Count - 1;
+            }
+            return AlaVista(js, primVis, ultVis, parte);
+        }
+
         private static int Solape(int a0, int a1, int b0, int b1)
         {
             if (a0 < 0 || a1 < a0) return 0;
