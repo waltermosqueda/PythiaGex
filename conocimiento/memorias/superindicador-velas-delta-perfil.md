@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
-  modified: 2026-11-26T22:11:59.912Z
+  modified: 2026-11-27T01:00:54.201Z
 ---
 
 Pedido 23-11-2026 con 4 reels (todos del mismo trader, 3 en NinjaTrader y 1 en ATAS): "grafico en dos colores con paletas, el
@@ -59,3 +59,6 @@ sumada, renglon 3 el total. OJO: de noche la fecha es la del reloj ("jue 26-11 2
 un error. Auditor: control ENCABEZADO (LIVE = incluye la vela en curso; la hora = ultima operacion, al segundo). Verificado en vivo
 21:56:54 IGUAL; el rojo (rebobinado) quedo sin mirar en pantalla porque el operador estaba en la PC (no se toca ATAS).
 Instalador: ahora espera 20 s de teclado/mouse quietos y devuelve el foco a la ventana anterior (el aviso modal se lleva el foco).
+**1.8b (26-11, 22:00), "se ve feo, se profesional":** encabezado sobre banda oscura y sin sombras: pastilla redondeada con punto y
+LIVE (verde oscuro con borde verde / rojo apagado), el dato en gris a la derecha, fecha y hora en letra fina ("jue 26/11  22:00:05"),
+"total" y el total grande alineado a la derecha como las filas, linea fina de separacion. Verificado: encabezado y valores IGUALES.

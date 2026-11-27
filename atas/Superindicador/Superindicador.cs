@@ -66,7 +66,7 @@ namespace PythiaSuper
     [Category("PythiaGex")]
     public class SuperindicadorOF : Indicator
     {
-        public const string Version = "1.8";
+        public const string Version = "1.8b";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -995,9 +995,9 @@ namespace PythiaSuper
             // panel gris (como el de los reels)
             BordesFila(pc, p, p.Filas - 1, out int yTop, out _);
             BordesFila(pc, p, 0, out _, out int yBot);
-            // 1.8: tres renglones fijos (LIVE, fecha y hora del dato, total) + la pista de la fila y el aviso cuando hacen falta
-            int lineasEnc = _colEncab ? (numeros ? 3 : 4) + (aviso.Length > 0 ? 1 : 0) : 0;
-            int yEnc = yTop - lineasEnc * 14 - (lineasEnc > 0 ? 4 : 0);
+            // 1.8b: encabezado de alto fijo en pixeles (estado LIVE, fecha y hora del dato, total) + la pista de la fila y el aviso
+            int altoEnc = _colEncab ? 52 + (numeros ? 0 : 13) + (aviso.Length > 0 ? 13 : 0) : 0;
+            int yEnc = yTop - altoEnc - (altoEnc > 0 ? 2 : 0);
             var fondo = new Rectangle(x0, Math.Max(reg.Top, yEnc), ancho, Math.Max(2, Math.Min(reg.Bottom, yBot + 2) - Math.Max(reg.Top, yEnc)));
             if (fondo.Height > 0) g.FillRectangle(cPanel, fondo, 3);
             d.R = new Rectangle(x0, yTop, ancho, Math.Max(1, yBot - yTop));
@@ -1007,7 +1007,7 @@ namespace PythiaSuper
             try { var cu = GetCandle(Math.Min(CurrentBar - 1, Math.Max(0, p.Hasta))); if (cu != null) tickUlt = Tick(cu.Close); } catch { }
             int aire = altoFila >= 14 ? 2 : altoFila >= 7 ? 1 : 0;   // aire entre cajas, como en los reels
             // 1.4b: con el encabezado fijo arriba, un numero que quedaria cortado debajo de el no se dibuja (nunca medio numero)
-            int yTapa = (_colEncab && yEnc < reg.Top) ? reg.Top + lineasEnc * 14 + 5 : int.MinValue;
+            int yTapa = (_colEncab && yEnc < reg.Top) ? reg.Top + altoEnc + 3 : int.MinValue;
 
             for (int i = p.Filas - 1; i >= 0; i--)
             {
@@ -1054,10 +1054,12 @@ namespace PythiaSuper
             if (_colEncab)
             {
                 // 1.8, pedido del operador: "que diga la fecha y hora exacta a la que pertenece el dato mostrado, y un puntito con la
-                // palabra LIVE en verde luminoso, o rojo apagado si no es en vivo". Renglon 1: punto + LIVE (verde con halo si la suma
-                // incluye la vela en curso; rojo apagado si es un momento pasado) + el dato. Renglon 2: dia y hora con segundos (hora de
-                // la PC, la misma del eje del grafico) de la ULTIMA operacion que entro en la suma. Renglon 3: el total.
-                string pre = _colDato == DatoColumna.Delta ? "DELTA" : _colDato == DatoColumna.Volumen ? "VOL" : "V x C";
+                // palabra LIVE en verde luminoso, o rojo apagado si no es en vivo". 1.8b ("se ve feo, se profesional"): encabezado
+                // limpio de tres renglones sobre una banda mas oscura, sin sombras: (1) pastilla LIVE con punto (verde = la suma incluye
+                // la vela en curso; rojo apagado = momento pasado) y el dato a la derecha en gris; (2) dia y hora con segundos, letra
+                // fina, de la ULTIMA operacion sumada (hora de la PC, la del eje); (3) "total" y el total grande alineado a la derecha
+                // como los numeros de las filas. Una linea fina lo separa de las filas.
+                string pre = _colDato == DatoColumna.Delta ? "DELTA" : _colDato == DatoColumna.Volumen ? "VOLUMEN" : "V x C";
                 bool enVivo = p.Viva != null; d.Live = enVivo;
                 DateTime tDato = DateTime.MinValue;
                 try
@@ -1070,38 +1072,45 @@ namespace PythiaSuper
                           : _colDato == DatoColumna.Volumen ? Calculos.Numero(p.SumVol, false)
                           : Calculos.Numero(p.SumBid, false) + "x" + Calculos.Numero(p.SumAsk, false);
                 int ye = yEnc + 2;
-                if (yEnc < reg.Top)
-                {
-                    // 1.4: la columna empieza por encima del borde: encabezado FIJO arriba, con fondo propio que tapa las filas que
-                    // pasan por debajo (en la 1.3 se encimaba con los primeros numeros)
-                    ye = reg.Top + 2;
-                    g.FillRectangle(Color.FromArgb(250, 34, 38, 46), new Rectangle(x0, reg.Top, ancho, lineasEnc * 14 + 4), 3);
-                    g.DrawLine(new RenderPen(Color.FromArgb(160, 120, 126, 136), 1), x0 + 3, reg.Top + lineasEnc * 14 + 4, x1 - 3, reg.Top + lineasEnc * 14 + 4);
-                }
-                // renglon 1: el punto y LIVE
-                var f8 = Fuente(8, true);
-                Color cLive = enVivo ? Color.FromArgb(255, 0, 255, 118) : Color.FromArgb(230, 128, 48, 48);
-                int cy = ye + 7;
-                if (enVivo) g.FillEllipse(Color.FromArgb(70, 0, 255, 118), new Rectangle(x0 + 3, cy - 6, 12, 12));   // halo luminoso
-                g.FillEllipse(cLive, new Rectangle(x0 + 5, cy - 4, 8, 8));
-                var szLive = g.MeasureString("LIVE", f8);
-                g.DrawString("LIVE", f8, cLive, x0 + 17, ye);
-                if (x0 + 17 + szLive.Width + 4 + g.MeasureString(pre, Fuente(7, true)).Width <= x1 - 3)
-                    g.DrawString(pre, Fuente(7, true), Color.FromArgb(190, 200, 206, 216), x0 + 17 + szLive.Width + 4, ye + 1);
-                // renglon 2: fecha y hora exacta del dato (se achica la letra para que entre; si no, sin el dia de la semana)
+                if (yEnc < reg.Top) ye = reg.Top + 2;   // 1.4: encabezado FIJO arriba si la columna empieza por encima del borde
+                // banda del encabezado (tapa las filas que pasan por debajo cuando queda fijo arriba)
+                g.FillRectangle(Color.FromArgb(252, 24, 27, 33), new Rectangle(x0, ye - 2, ancho, altoEnc), 3);
+                int xi = x0 + 6, xd = x1 - 6;
+                // (1) pastilla LIVE
+                var fL = Fuente(7, true);
+                var szL = g.MeasureString("LIVE", fL);
+                int hP = 14, wP = 6 + 6 + 4 + szL.Width + 6;
+                var rP = new Rectangle(xi - 1, ye + 1, wP, hP);
+                Color fondoP = enVivo ? Color.FromArgb(255, 14, 58, 40) : Color.FromArgb(255, 52, 30, 33);
+                Color bordeP = enVivo ? Color.FromArgb(170, 0, 200, 110) : Color.FromArgb(150, 140, 62, 66);
+                Color puntoP = enVivo ? Color.FromArgb(255, 0, 230, 118) : Color.FromArgb(255, 150, 58, 62);
+                Color textoP = enVivo ? Color.FromArgb(255, 176, 255, 210) : Color.FromArgb(255, 196, 124, 128);
+                g.FillRectangle(fondoP, rP, 7);
+                g.DrawRectangle(new RenderPen(bordeP, 1), rP, 7);
+                g.FillEllipse(puntoP, new Rectangle(rP.X + 6, rP.Y + (hP - 6) / 2, 6, 6));
+                g.DrawString("LIVE", fL, textoP, rP.X + 16, rP.Y + (hP - szL.Height) / 2);
+                var fD = Fuente(7, true);
+                var szD = g.MeasureString(pre, fD);
+                if (rP.Right + 4 + szD.Width <= xd) g.DrawString(pre, fD, Color.FromArgb(255, 138, 145, 156), xd - szD.Width, rP.Y + (hP - szD.Height) / 2);
+                // (2) dia y hora exacta del dato
                 if (tDato > DateTime.MinValue)
                 {
                     var l = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(tDato, DateTimeKind.Utc), TimeZoneInfo.Local);
-                    string cuando = DiasCortos[(int)l.DayOfWeek] + " " + l.ToString("dd-MM HH:mm:ss", Inv);
-                    float fs = 7.5f; RenderFont fc = Fuente(fs, true);
-                    while (g.MeasureString(cuando, fc).Width > ancho - 8 && fs > 6.5f) { fs -= 0.5f; fc = Fuente(fs, true); }
-                    if (g.MeasureString(cuando, fc).Width > ancho - 8) cuando = l.ToString("dd-MM HH:mm:ss", Inv);
-                    Texto(g, cuando, fc, enVivo ? Color.FromArgb(235, 236, 239, 244) : Color.FromArgb(215, 214, 168, 168), x0 + 5, ye + 13);
+                    string cuando = DiasCortos[(int)l.DayOfWeek] + " " + l.ToString("dd/MM  HH:mm:ss", Inv);
+                    float fs = 7.5f; RenderFont fc = Fuente(fs, false);
+                    while (g.MeasureString(cuando, fc).Width > xd - xi && fs > 6.5f) { fs -= 0.5f; fc = Fuente(fs, false); }
+                    if (g.MeasureString(cuando, fc).Width > xd - xi) cuando = l.ToString("dd/MM HH:mm:ss", Inv);
+                    g.DrawString(cuando, fc, Color.FromArgb(255, 196, 202, 211), xi, ye + 19);
                     d.Cuando = cuando;
                 }
+                // (3) total, alineado a la derecha como los numeros de las filas
                 decimal tot = p.SumAsk - p.SumBid;
                 Color c2 = _colDato == DatoColumna.Delta ? (tot >= 0 ? cAlc : cBaj) : cTxt;
-                Texto(g, t2, Fuente(9, true), c2, x0 + 5, ye + 26);
+                var fT = Fuente(10, true);
+                var szT = g.MeasureString(t2, fT);
+                g.DrawString("total", Fuente(7, false), Color.FromArgb(255, 128, 135, 146), xi, ye + 35);
+                g.DrawString(t2, fT, c2, xd - szT.Width, ye + 32);
+                int yLin = ye + 50;
                 // sin alto para un numero legible: se dice cuanto subir la fila (el valor exacto sale igual con la lupa)
                 if (!numeros)
                 {
@@ -1109,14 +1118,14 @@ namespace PythiaSuper
                     int kSug = TicksFila[TicksFila.Length - 1];
                     foreach (int k in TicksFila) if (k > p.K && k * pxTick >= 13) { kSug = k; break; }
                     string pista = "subi a fila " + Puntos(kSug) + " o acerca";
-                    if (g.MeasureString(pista, Fuente(7, false)).Width > ancho - 8) pista = "subi a fila " + Puntos(kSug);   // 1.6: que entre
-                    Texto(g, pista, Fuente(7, false), Color.FromArgb(230, 255, 214, 0), x0 + 5, ye + 42);
+                    if (g.MeasureString(pista, Fuente(7, false)).Width > xd - xi) pista = "subi a fila " + Puntos(kSug);   // 1.6: que entre
+                    g.DrawString(pista, Fuente(7, false), Color.FromArgb(235, 255, 214, 0), xi, yLin);
+                    yLin += 13;
                 }
                 // 1.5: la suma no es la jornada entera o falta footprint: se dice en amarillo (el detalle va en la botonera)
-                if (aviso.Length > 0)
-                    Texto(g, aviso, Fuente(7, true), Color.FromArgb(240, 255, 214, 0), x0 + 5, ye + (numeros ? 42 : 56));
-            }
-            return d;
+                if (aviso.Length > 0) { g.DrawString(aviso, Fuente(7, true), Color.FromArgb(245, 255, 214, 0), xi, yLin); yLin += 13; }
+                g.DrawLine(new RenderPen(Color.FromArgb(255, 62, 68, 78), 1), x0 + 4, ye + altoEnc - 3, x1 - 4, ye + altoEnc - 3);
+            }            return d;
         }
 
         private bool _colSinNumeros;

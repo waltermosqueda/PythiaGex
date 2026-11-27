@@ -180,7 +180,9 @@ def auditar_ventana(nombre, w, velas, tick, informe):
         if fin:
             loc = datetime.fromisoformat(fin[:23]).replace(tzinfo=timezone.utc).astimezone()
             esperado_t = loc.strftime("%d-%m %H:%M:%S")
-        t_ok = bool(esperado_t) and w.get("cuando", "").endswith(esperado_t)
+        # 1.8b: el formato en pantalla es "jue 26/11  21:56:54" (o sin el dia si no entra): se comparan los digitos
+        solo_digitos = lambda s: "".join(ch for ch in s if ch.isdigit())
+        t_ok = bool(esperado_t) and solo_digitos(w.get("cuando", "")).endswith(solo_digitos(esperado_t))
         informe.append(f"   ENCABEZADO: LIVE {'verde' if w['live'] else 'rojo apagado'} ({'IGUAL' if live_ok else 'DISTINTO'} a "
                        f"{'incluye' if viva is not None else 'no incluye'} la vela en curso) | dice '{w.get('cuando', '')}', ultima operacion "
                        f"sumada {esperado_t} hora local -> {'IGUAL' if t_ok else 'DISTINTA'}")
