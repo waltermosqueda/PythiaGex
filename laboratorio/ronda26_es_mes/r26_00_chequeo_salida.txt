@@ -1,0 +1,19 @@
+﻿ES X: pivotes 45 (referencia independiente 45) -> IDENTICOS; cum del motor = cumsum numpy: True; verificacion interna: {'pivotes': 45, 'identicos': True}
+ES 4X: pivotes 3 (referencia independiente 3) -> IDENTICOS; cum del motor = cumsum numpy: True; verificacion interna: {'pivotes': 3, 'identicos': True}
+ES marea: minimos confirmados cerca de las 15:05 UTC: [('10:05:21', 7222.75)]
+ES marea al final del archivo: dir +1, extremo 7298.50, pivotes 3
+ES: orden del minimo 15:05:21 UTC = fila 157562, precio min 7222.75; delta desde ahi (sin contarla) hasta el final (16:48:59 UTC): -3052
+   por tamano: 1 +1295, 2-4 +122, 5-9 +1028, 10-19 -4342, 20-49 -1178, 50+ +23
+   ES 1-9 = +2445
+   hasta las 16:48:00 UTC (el corte del MES): -2970; 1-9 +2355, 10-19 -4234, 20-49 -1058, 50+ -33; desde las 15:47 -4537
+   primeras veces que el delta de la pierna cruzo a negativo: ['16:10:49', '16:10:49', '16:11:26']
+   desde las 15:47 UTC: -4619
+   delta de la pierna de ES: ultimas veces que cruzo a negativo: ['16:15:39', '16:15:42', '16:15:43']
+MES X: pivotes 45 (referencia independiente 45) -> IDENTICOS; cum del motor = cumsum numpy: True; verificacion interna: {'pivotes': 45, 'identicos': True}
+MES 4X: pivotes 3 (referencia independiente 3) -> IDENTICOS; cum del motor = cumsum numpy: True; verificacion interna: {'pivotes': 3, 'identicos': True}
+MES marea: minimos confirmados cerca de las 15:05 UTC: [('10:05:21', 7222.75)]
+MES marea al final del archivo: dir +1, extremo 7297.50, pivotes 3
+MES: orden del minimo 15:05:21 UTC = fila 213285, precio min 7222.75; delta desde ahi (sin contarla) hasta el final (16:47:59 UTC): +6441 (= +644 eq. ES)
+   por tamano: 1 +712, 2-4 +583, 5-9 +1759, 10-19 +1214, 20-49 +1676, 50-99 -194, 100-199 +1036, 200+ -345
+   desde las 15:47 UTC: -1217 (= -122 eq. ES)
+correlacion por minuto ES contra MES/10, 15:05-16:48 UTC: 0.61 (103 minutos)

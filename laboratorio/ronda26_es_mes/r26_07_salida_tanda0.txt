@@ -1,0 +1,25 @@
+RONDA 26 - contratos contra ordenes (descriptivo, Enmienda 4), tanda0: 3 ruedas 2026-11-13 2026-11-19 2026-11-23
+
+OLA (X): 373 piernas emparejadas (medias por pierna)
+   ES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con   330 |    1811 /    1733 (1.05)          |     6630 /     5961 (1.11)           |   3.66 /  3.44              |     1360 /    1328 (1.02)                       |  0.591 / 0.597
+       ES sin / MES con    35 |    2043 /    2026 (1.01)          |     6735 /     6892 (0.98)           |   3.30 /  3.40              |     1575 /    1549 (1.02)                       |  0.598 / 0.587
+       ES con / MES sin     7 |    1191 /    1120 (1.06)          |     3541 /     3165 (1.12)           |   2.97 /  2.83              |      953 /     893 (1.07)                       |  0.585 / 0.589
+       ES sin / MES sin     1 |    2049 /    1961 (1.04)          |     5087 /     5344 (0.95)           |   2.48 /  2.73              |     1789 /    1697 (1.05)                       |  0.665 / 0.643
+       en las piernas SC: 60 % con MAS ordenes a favor que en contra; 69 % con MAS ordenes que corrieron la punta a favor
+   MES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con   330 |    1752 /    1542 (1.14)          |     5568 /     4463 (1.25)           |   3.18 /  2.89              |      949 /     930 (1.02)                       |  0.445 / 0.490
+       ES sin / MES con    35 |    1907 /    1699 (1.12)          |     5859 /     4864 (1.20)           |   3.07 /  2.86              |     1090 /    1068 (1.02)                       |  0.474 / 0.510
+       ES con / MES sin     7 |    1161 /    1210 (0.96)          |     3202 /     3347 (0.96)           |   2.76 /  2.77              |      810 /     853 (0.95)                       |  0.578 / 0.581
+       ES sin / MES sin     1 |    1935 /    1930 (1.00)          |     5188 /     5445 (0.95)           |   2.68 /  2.82              |     1325 /    1471 (0.90)                       |  0.558 / 0.648
+       en las piernas SC: 86 % con MAS ordenes a favor que en contra; 66 % con MAS ordenes que corrieron la punta a favor
+
+MAREA (4X): 23 piernas emparejadas (medias por pierna)
+   ES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con    18 |   32047 /   31601 (1.01)          |   110439 /   106059 (1.04)           |   3.45 /  3.36              |    23948 /   23811 (1.01)                       |  0.585 / 0.587
+       ES sin / MES con     5 |   22042 /   21916 (1.01)          |    75030 /    76155 (0.99)           |   3.40 /  3.47              |    16719 /   16516 (1.01)                       |  0.597 / 0.581
+       en las piernas SC: 80 % con MAS ordenes a favor que en contra; 60 % con MAS ordenes que corrieron la punta a favor
+   MES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con    18 |   30442 /   29002 (1.05)          |    93672 /    86820 (1.08)           |   3.08 /  2.99              |    16866 /   16515 (1.02)                       |  0.450 / 0.462
+       ES sin / MES con     5 |   20852 /   20557 (1.01)          |    61956 /    58927 (1.05)           |   2.97 /  2.87              |    11978 /   11880 (1.01)                       |  0.470 / 0.464
+       en las piernas SC: 80 % con MAS ordenes a favor que en contra; 80 % con MAS ordenes que corrieron la punta a favor

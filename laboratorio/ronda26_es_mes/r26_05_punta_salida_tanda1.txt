@@ -1,0 +1,15 @@
+RONDA 26 - la punta (descriptivo, Enmienda 2), tanda1: 14 ruedas 2026-09-08 2026-09-09 2026-09-11 2026-09-14 2026-09-15 2026-09-16 2026-09-17 2026-11-12 2026-11-16 2026-11-17 2026-11-18 2026-11-20 2026-11-24 2026-11-25
+
+OLA (X): 1291 piernas emparejadas
+   clase               n  | ES: en contra aguanta  a favor mueve  (vol. contra / favor por pierna) | MES: en contra aguanta  a favor mueve  a favor contra nivel en pie (vol. contra / favor, eq. ES)
+   ES con / MES con  1150  |    17.5 % (med  16.2)    80.7 % (med  82.7)   (  5613 /   6330)        |    27.8 % (med  26.8)    68.1 % (med  69.5)    31.9 %   (   438 /    546)
+   ES sin / MES con   111  |    17.1 % (med  15.9)    82.9 % (med  84.0)   (  7224 /   6983)        |    27.1 % (med  27.7)    70.4 % (med  70.6)    29.6 %   (   496 /    571)
+   ES con / MES sin    17  |    22.5 % (med  16.5)    79.1 % (med  79.7)   (  6318 /   6600)        |    28.4 % (med  21.4)    75.1 % (med  74.2)    24.9 %   (   401 /    367)
+   ES sin / MES sin    13  |    19.7 % (med  15.2)    77.6 % (med  83.5)   (  6376 /   6127)        |    22.5 % (med  22.0)    75.5 % (med  75.5)    24.5 %   (   337 /    325)
+
+MAREA (4X): 76 piernas emparejadas
+   clase               n  | ES: en contra aguanta  a favor mueve  (vol. contra / favor por pierna) | MES: en contra aguanta  a favor mueve  a favor contra nivel en pie (vol. contra / favor, eq. ES)
+   ES con / MES con    64  |    16.9 % (med  16.9)    82.1 % (med  82.1)   ( 75188 /  78754)        |    28.3 % (med  28.5)    70.3 % (med  70.4)    29.7 %   (  6617 /   7134)
+   ES sin / MES con    10  |    16.4 % (med  15.5)    82.6 % (med  83.7)   (115988 / 113702)        |    29.6 % (med  30.5)    69.1 % (med  68.9)    30.9 %   (  9306 /   9672)
+   ES con / MES sin     1  |    16.5 % (med  16.5)    82.8 % (med  82.8)   (203639 / 206784)        |    26.2 % (med  26.2)    73.4 % (med  73.4)    26.6 %   ( 18819 /  18447)
+   ES sin / MES sin     1  |    16.5 % (med  16.5)    81.9 % (med  81.9)   ( 77878 /  74705)        |    27.1 % (med  27.1)    72.0 % (med  72.0)    28.0 %   (  7976 /   7966)

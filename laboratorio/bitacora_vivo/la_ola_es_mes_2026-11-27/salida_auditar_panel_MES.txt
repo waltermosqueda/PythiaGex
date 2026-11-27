@@ -1,0 +1,52 @@
+cinta: 323222 ordenes; lineas del panel con ola: 13; n pedidos [288294, 315204, 316080, 317665, 318388, 320309, 321629, 322427, 323050, 323688, 324300, 324846, 325668]
+  2026-11-27T16:37:18.236 n=315204 (orden 2026-11-27T16:37:18.144, ultimo 7291.75) ola   panel dir +1 raya 7285.75 faltan 6.00 delta +2092 | cinta dir +1 raya 7285.75 faltan 6.00 delta +2092  IGUAL
+  2026-11-27T16:37:18.236 n=315204 (orden 2026-11-27T16:37:18.144, ultimo 7291.75) marea panel dir +1 raya 7255.75 faltan 36.00 delta +6587 | cinta dir +1 raya 7255.75 faltan 36.00 delta +6587  IGUAL
+     textos: CLIMA ESTRECHO | 0,8× lo normal a esta hora (13:36) / MAREA ▲ con compradores | Δ +6.587 · faltan 36,00 / OLA ▲ con compradores | Δ +2.092 · faltan 6,00 | pie: X 10,00 (auto, 10 ruedas) · cinta en vivo
+     raya ola en pantalla: precio 7285.75 texto 'ola gira 7.285,75'
+     raya marea en pantalla: precio 7255.75 texto 'marea gira 7.255,75'
+  2026-11-27T16:38:18.265 n=316080 (orden 2026-11-27T16:38:18.148, ultimo 7289.00) ola   panel dir +1 raya 7285.75 faltan 3.25 delta +1873 | cinta dir +1 raya 7285.75 faltan 3.25 delta +1873  IGUAL
+  2026-11-27T16:38:18.265 n=316080 (orden 2026-11-27T16:38:18.148, ultimo 7289.00) marea panel dir +1 raya 7255.75 faltan 33.25 delta +6368 | cinta dir +1 raya 7255.75 faltan 33.25 delta +6368  IGUAL
+     textos: CLIMA ESTRECHO | 0,7× lo normal a esta hora (13:37) / MAREA ▲ con compradores | Δ +6.368 · faltan 33,25 / OLA ▲ con compradores | Δ +1.873 · faltan 3,25 | pie: X 10,00 (auto, 10 ruedas) · cinta en vivo
+     raya ola en pantalla: precio 7285.75 texto 'ola gira 7.285,75'
+     raya marea en pantalla: precio 7255.75 texto 'marea gira 7.255,75'
+  2026-11-27T16:39:18.273 n=288294 (orden 2026-11-27T16:03:59.985, ultimo 7281.00) ola   panel dir +1 raya 7275.00 faltan 6.00 delta +618 | cinta dir +1 raya 7275.00 faltan 6.00 delta +618  IGUAL
+  2026-11-27T16:39:18.273 n=288294 (orden 2026-11-27T16:03:59.985, ultimo 7281.00) marea panel dir +1 raya 7253.50 faltan 27.50 delta +5920 | cinta dir +1 raya 7253.50 faltan 27.50 delta +5920  IGUAL
+     textos: CLIMA ESTRECHO | 0,8× lo normal a esta hora (13:03) / MAREA ▲ con compradores | Δ +5.920 · faltan 27,50 / OLA ▲ con compradores | Δ +618 · faltan 6,00 | pie: X 10,00 (auto, 10 ruedas) · cinta en vivo
+     raya ola en pantalla: precio 7275.00 texto 'ola gira 7.275,00'
+     raya marea en pantalla: precio 7253.50 texto 'marea gira 7.253,50'
+  2026-11-27T16:40:18.324 n=317665 (orden 2026-11-27T16:40:17.773, ultimo 7280.75) ola   panel dir -1 raya 7289.25 faltan 8.50 delta -1301 | cinta dir -1 raya 7289.25 faltan 8.50 delta -1301  IGUAL
+  2026-11-27T16:40:18.324 n=317665 (orden 2026-11-27T16:40:17.773, ultimo 7280.75) marea panel dir +1 raya 7255.75 faltan 25.00 delta +5631 | cinta dir +1 raya 7255.75 faltan 25.00 delta +5631  IGUAL
+     textos: CLIMA ESTRECHO | 0,7× lo normal a esta hora (13:39) / MAREA ▲ con compradores | Δ +5.631 · faltan 25,00 / OLA ▼ con vendedores | Δ -1.301 · faltan 8,50 | pie: X 10,00 (auto, 10 ruedas) · cinta en vivo
+     raya ola en pantalla: precio 7289.25 texto 'ola gira 7.289,25'
+     raya marea en pantalla: precio 7255.75 texto 'marea gira 7.255,75'
+  2026-11-27T16:41:18.456 n=318388 (orden 2026-11-27T16:41:18.177, ultimo 7284.75) ola   panel dir -1 raya 7289.25 faltan 4.50 delta -1140 | cinta dir -1 raya 7289.25 faltan 4.50 delta -1140  IGUAL
+  2026-11-27T16:41:18.456 n=318388 (orden 2026-11-27T16:41:18.177, ultimo 7284.75) marea panel dir +1 raya 7255.75 faltan 29.00 delta +5792 | cinta dir +1 raya 7255.75 faltan 29.00 delta +5792  IGUAL
+     textos: CLIMA ESTRECHO | 0,7× lo normal a esta hora (13:40) / MAREA ▲ con compradores | Δ +5.792 · faltan 29,00 / OLA ▼ con vendedores | Δ -1.140 · faltan 4,50 | pie: X 10,00 (auto, 10 ruedas) · cinta en vivo
+     raya ola en pantalla: precio 7289.25 texto 'ola gira 7.289,25'
+     raya marea en pantalla: precio 7255.75 texto 'marea gira 7.255,75'
+  2026-11-27T16:44:19.273 n=320309 (orden 2026-11-27T16:44:19.062, ultimo 7288.50) ola   panel dir -1 raya 7289.25 faltan 0.75 delta -850 | cinta dir -1 raya 7289.25 faltan 0.75 delta -850  IGUAL
+  2026-11-27T16:44:19.273 n=320309 (orden 2026-11-27T16:44:19.062, ultimo 7288.50) marea panel dir +1 raya 7255.75 faltan 32.75 delta +6082 | cinta dir +1 raya 7255.75 faltan 32.75 delta +6082  IGUAL
+     textos: CLIMA ESTRECHO | 0,7× lo normal a esta hora (13:43) / MAREA ▲ con compradores | Δ +6.082 · faltan 32,75 / OLA ▼ con vendedores | Δ -850 · faltan 0,75 | pie: X 10,00 (auto, 10 ruedas) · cinta en vivo
+     raya ola en pantalla: precio 7289.25 texto 'ola gira 7.289,25'
+     raya marea en pantalla: precio 7255.75 texto 'marea gira 7.255,75'
+  2026-11-27T16:45:35.802 n=321629 (orden 2026-11-27T16:45:35.684, ultimo 7295.00) ola   panel dir +1 raya 7287.50 faltan 7.50 delta +1141 | cinta dir +1 raya 7287.50 faltan 7.50 delta +1141  IGUAL
+  2026-11-27T16:45:35.802 n=321629 (orden 2026-11-27T16:45:35.684, ultimo 7295.00) marea panel dir +1 raya 7257.50 faltan 37.50 delta +6718 | cinta dir +1 raya 7257.50 faltan 37.50 delta +6718  IGUAL
+     textos: CLIMA ESTRECHO | 0,7× lo normal a esta hora (13:44) / MAREA ▲ con compradores | Δ +6.718 · faltan 37,50 / OLA ▲ con compradores | Δ +1.141 · faltan 7,50 | pie: X 10,00 (auto, 10 ruedas) · cinta en vivo
+     raya ola en pantalla: precio 7287.50 texto 'ola gira 7.287,50'
+     raya marea en pantalla: precio 7257.50 texto 'marea gira 7.257,50'
+  2026-11-27T16:46:39.183 n=322427 (orden 2026-11-27T16:46:39.031, ultimo 7293.25) ola   panel dir +1 raya 7287.50 faltan 5.75 delta +983 | cinta dir +1 raya 7287.50 faltan 5.75 delta +983  IGUAL
+  2026-11-27T16:46:39.183 n=322427 (orden 2026-11-27T16:46:39.031, ultimo 7293.25) marea panel dir +1 raya 7257.50 faltan 35.75 delta +6560 | cinta dir +1 raya 7257.50 faltan 35.75 delta +6560  IGUAL
+     textos: CLIMA ESTRECHO | 0,7× lo normal a esta hora (13:45) / MAREA ▲ con compradores | Δ +6.560 · faltan 35,75 / OLA ▲ con compradores | Δ +983 · faltan 5,75 | pie: X 10,00 (auto, 10 ruedas) · cinta en vivo
+     raya ola en pantalla: precio 7287.50 texto 'ola gira 7.287,50'
+     raya marea en pantalla: precio 7257.50 texto 'marea gira 7.257,50'
+  2026-11-27T16:47:39.298 n=323050 (orden 2026-11-27T16:47:39.178, ultimo 7293.75) ola   panel dir +1 raya 7287.50 faltan 6.25 delta +882 | cinta dir +1 raya 7287.50 faltan 6.25 delta +882  IGUAL
+  2026-11-27T16:47:39.298 n=323050 (orden 2026-11-27T16:47:39.178, ultimo 7293.75) marea panel dir +1 raya 7257.50 faltan 36.25 delta +6459 | cinta dir +1 raya 7257.50 faltan 36.25 delta +6459  IGUAL
+     textos: CLIMA ESTRECHO | 0,7× lo normal a esta hora (13:46) / MAREA ▲ con compradores | Δ +6.459 · faltan 36,25 / OLA ▲ con compradores | Δ +882 · faltan 6,25 | pie: X 10,00 (auto, 10 ruedas) · cinta en vivo
+     raya ola en pantalla: precio 7287.50 texto 'ola gira 7.287,50'
+     raya marea en pantalla: precio 7257.50 texto 'marea gira 7.257,50'
+  2026-11-27T16:48:39.311 n=323688: la cinta no llega
+  2026-11-27T16:49:39.480 n=324300: la cinta no llega
+  2026-11-27T16:50:39.480 n=324846: la cinta no llega
+  2026-11-27T16:51:41.753 n=325668: la cinta no llega
+RESULTADO: 0 distintos
+salida 0

@@ -1,0 +1,5 @@
+ola-ESZ6-M1-20261127.csv | X 10.25 | en vivo | costura bufer | ordenes 293536 | pivotes 58, fotos 2310 (1154 tomadas), campos 44296 | difs 1 | 1.7 s
+    DIF actualizaciones viejas: 1
+  mediana por fuera con 10 ruedas previas: 126.625 (indicador 126.625) IGUAL
+  clima: 224 minutos cerrados en el csv, recalculados por fuera desde la cinta: 0 diferencias
+RESULTADO: 1 diferencias

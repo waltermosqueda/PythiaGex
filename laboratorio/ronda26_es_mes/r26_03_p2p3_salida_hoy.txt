@@ -1,0 +1,56 @@
+RONDA 26 - P2 y P3, hoy: 1 ruedas 2026-11-27
+Bonferroni: 22 pruebas, alfa 0.00227 por prueba, |t| >= 3.05; minimo 20 piernas
+
+==============================================================================================================
+OLA (X): minutos elegibles 138, resueltos 135 (censurados 3), piernas 28, ruedas 1
+==============================================================================================================
+P2. Tasa de SIGUE por caja de retroceso (r/Xs) y clase  [n minutos / piernas]
+   caja        base (todos)        formula paseo   ES con / MES con        ES sin / MES con        ES con / MES sin        ES sin / MES sin        
+   0-0,25      50.9 % [   55/  20]    53.7 %         40.0 % [   40/  18]      80.0 % [   15/   6]       nan % [    0/   0]       nan % [    0/   0]     
+   0,25-0,5    34.9 % [   43/  19]    37.4 %         20.7 % [   29/  16]      69.2 % [   13/   5]       0.0 % [    1/   1]       nan % [    0/   0]     
+   0,5-0,75    20.0 % [   35/  16]    24.3 %          5.3 % [   19/  12]      46.2 % [   13/   6]       0.0 % [    1/   1]       0.0 % [    2/   2]     
+   0,75-1       0.0 % [    2/   2]     7.4 %          0.0 % [    2/   2]       nan % [    0/   0]       nan % [    0/   0]       nan % [    0/   0]     
+   D = clase - base dentro de la caja, promediada (pp); IC 95 %% bootstrap por piernas; t con max(EE piernas, EE ruedas)
+   ES con / MES con   n    90 min /   25 piernas  tasa  25.6 %  D -12.53 pp [-26.38;  -1.09]  t -1.96 (EE pierna 6.40, rueda 0.00)  caja x rueda -12.53  placebo p 0.0005 (media +0.05)
+   ES sin / MES con   n    41 min /    9 piernas  tasa  65.9 %  D +29.83 pp [ +7.94; +50.47]  t +3.05 (EE pierna 9.79, rueda 0.00)  caja x rueda +29.83  placebo p 0.0005 (media -0.13)  [menos de 20 piernas: no se juzga]
+   ES con / MES sin   n     2 min /    1 piernas  tasa   0.0 %  D -27.44 pp [-46.66;  -6.45]  t -2.67 (EE pierna 10.28, rueda 0.00)  caja x rueda -27.44  placebo p 0.5787 (media +0.78)  [menos de 20 piernas: no se juzga]
+   ES sin / MES sin   n     2 min /    2 piernas  tasa   0.0 %  D -20.00 pp [-41.18;  +0.00]  t -1.86 (EE pierna 10.75, rueda 0.00)  caja x rueda -20.00  placebo p 1.0000 (media -0.22)  [menos de 20 piernas: no se juzga]
+
+P3. Rasgos: S = tasa de SIGUE con el rasgo - sin el rasgo, dentro de la caja (Mantel-Haenszel), pp
+   R0           color del ES (referencia)              si    92 min/  25 piernas, no    43/  10  S -41.43 pp [-63.38;  -9.24]  t -3.19  caja x rueda -41.43  placebo p 0.0005  |S|-|S(R0)|  +0.00 [ +0.00;  +0.00]  [menos de 20 piernas de un lado: no se juzga]
+   V1_comb      delta ES + MES/10 a favor              si    94 min/  25 piernas, no    41/   9  S -39.89 pp [-60.24;  -8.28]  t -3.16  caja x rueda -39.89  placebo p 0.0005  |S|-|S(R0)|  -1.54 [-12.01;  +5.45]  [menos de 20 piernas de un lado: no se juzga]
+   V2_medianos  ES 10-49 contratos a favor             si    64 min/  22 piernas, no    71/  13  S -18.59 pp [-51.93; +10.65]  t -1.16  caja x rueda -18.59  placebo p 0.0275  |S|-|S(R0)| -22.84 [-38.83;  +0.42]  [menos de 20 piernas de un lado: no se juzga]
+   V3_chicos    ES 1-9 contratos a favor               si   107 min/  21 piernas, no    28/  12  S +24.14 pp [ -2.13; +46.15]  t +1.97  caja x rueda +24.14  placebo p 0.0170  |S|-|S(R0)| -17.30 [-38.01;  +3.34]  [menos de 20 piernas de un lado: no se juzga]
+   V4_mes       color del MES                          si   131 min/  28 piernas, no     4/   2  S +25.51 pp [ +3.57; +46.35]  t +2.25  caja x rueda +25.51  placebo p 0.5552  |S|-|S(R0)| -15.92 [-39.18;  +8.96]  [menos de 20 piernas de un lado: no se juzga]
+   V5_brecha    MES/10 mas a favor que el ES           si    51 min/  10 piernas, no    84/  24  S +44.74 pp [+15.81; +65.90]  t +3.77  caja x rueda +44.74  placebo p 0.0005  |S|-|S(R0)|  +3.31 [ -1.52; +11.71]  [menos de 20 piernas de un lado: no se juzga]
+   V6_patron    ES chicos a favor y medianos en contra si    66 min/  11 piernas, no    69/  25  S +19.96 pp [ -9.44; +53.93]  t +1.23  caja x rueda +19.96  placebo p 0.0155  |S|-|S(R0)| -21.47 [-37.81;  +4.23]  [menos de 20 piernas de un lado: no se juzga]
+
+   (descriptivo) desenlace en el zigzag del MES: D por clase CC -11.86 pp (n 90) | SC +27.90 pp (n 41) | CS -29.09 pp (n 2) | SS -9.09 pp (n 2); acuerdo del desenlace ES/MES en los minutos resueltos en los dos: 98.5 %
+   (descriptivo) cuanto MAS siguio la pierna (en Xs, desde el extremo del minuto), mediana por clase: CC 0.04 | SC 1.10 | CS 0.27 | SS 0.13
+
+==============================================================================================================
+MAREA (4X): minutos elegibles 138, resueltos 67 (censurados 71), piernas 2, ruedas 1
+==============================================================================================================
+P2. Tasa de SIGUE por caja de retroceso (r/Xs) y clase  [n minutos / piernas]
+   caja        base (todos)        formula paseo   ES con / MES con        ES sin / MES con        ES con / MES sin        ES sin / MES sin        
+   0-0,25      52.5 % [   40/   2]    53.2 %         45.7 % [   35/   2]     100.0 % [    5/   1]       nan % [    0/   0]       nan % [    0/   0]     
+   0,25-0,5     7.7 % [   13/   1]    39.2 %          7.7 % [   13/   1]       nan % [    0/   0]       nan % [    0/   0]       nan % [    0/   0]     
+   0,5-0,75     0.0 % [   10/   1]    22.0 %          0.0 % [   10/   1]       nan % [    0/   0]       nan % [    0/   0]       nan % [    0/   0]     
+   0,75-1       0.0 % [    4/   1]    10.4 %          0.0 % [    4/   1]       nan % [    0/   0]       nan % [    0/   0]       nan % [    0/   0]     
+   D = clase - base dentro de la caja, promediada (pp); IC 95 %% bootstrap por piernas; t con max(EE piernas, EE ruedas)
+   ES con / MES con   n    62 min /    2 piernas  tasa  27.4 %  D  -3.83 pp [ -7.18;  +0.00]  t -1.49 (EE pierna 2.57, rueda 0.00)  caja x rueda  -3.83  placebo p 0.0535 (media +0.10)  [menos de 20 piernas: no se juzga]
+   ES sin / MES con   n     5 min /    1 piernas  tasa 100.0 %  D +47.50 pp [+47.50; +70.37]  t +4.43 (EE pierna 10.72, rueda 0.00)  caja x rueda +47.50  placebo p 0.0535 (media -1.25)  [menos de 20 piernas: no se juzga]
+   ES con / MES sin   n     0 min /    0 piernas  tasa   nan %  D   +nan pp [  +nan;   +nan]  t  +nan (EE pierna nan, rueda nan)  caja x rueda   +nan  placebo p 0.0005 (media +nan)  [menos de 20 piernas: no se juzga]
+   ES sin / MES sin   n     0 min /    0 piernas  tasa   nan %  D   +nan pp [  +nan;   +nan]  t  +nan (EE pierna nan, rueda nan)  caja x rueda   +nan  placebo p 0.0005 (media +nan)  [menos de 20 piernas: no se juzga]
+
+P3. Rasgos: S = tasa de SIGUE con el rasgo - sin el rasgo, dentro de la caja (Mantel-Haenszel), pp
+   R0           color del ES (referencia)              si    62 min/   2 piernas, no     5/   1  S -54.29 pp [-86.36; -54.29]  t -3.61  caja x rueda -54.29  placebo p 0.0535  |S|-|S(R0)|  +0.00 [ +0.00;  +0.00]  [menos de 20 piernas de un lado: no se juzga]
+   V1_comb      delta ES + MES/10 a favor              si    62 min/   2 piernas, no     5/   1  S -54.29 pp [-86.36; -54.29]  t -3.61  caja x rueda -54.29  placebo p 0.0535  |S|-|S(R0)|  +0.00 [ +0.00;  +0.00]  [menos de 20 piernas de un lado: no se juzga]
+   V2_medianos  ES 10-49 contratos a favor             si     0 min/   0 piernas, no    67/   2  S   +nan pp [  +nan;   +nan]  t  +nan  caja x rueda   +nan  placebo p 0.0005  |S|-|S(R0)|   +nan [  +nan;   +nan]  [menos de 20 piernas de un lado: no se juzga]
+   V3_chicos    ES 1-9 contratos a favor               si    67 min/   2 piernas, no     0/   0  S   +nan pp [  +nan;   +nan]  t  +nan  caja x rueda   +nan  placebo p 0.0005  |S|-|S(R0)|   +nan [  +nan;   +nan]  [menos de 20 piernas de un lado: no se juzga]
+   V4_mes       color del MES                          si    67 min/   2 piernas, no     0/   0  S   +nan pp [  +nan;   +nan]  t  +nan  caja x rueda   +nan  placebo p 0.0005  |S|-|S(R0)|   +nan [  +nan;   +nan]  [menos de 20 piernas de un lado: no se juzga]
+   V5_brecha    MES/10 mas a favor que el ES           si     5 min/   1 piernas, no    62/   2  S +54.29 pp [+54.29; +86.36]  t +3.61  caja x rueda +54.29  placebo p 0.0535  |S|-|S(R0)|  +0.00 [ +0.00;  +0.00]  [menos de 20 piernas de un lado: no se juzga]
+   V6_patron    ES chicos a favor y medianos en contra si    67 min/   2 piernas, no     0/   0  S   +nan pp [  +nan;   +nan]  t  +nan  caja x rueda   +nan  placebo p 0.0005  |S|-|S(R0)|   +nan [  +nan;   +nan]  [menos de 20 piernas de un lado: no se juzga]
+
+   (descriptivo) desenlace en el zigzag del MES: D por clase CC -3.83 pp (n 62) | SC +47.50 pp (n 5) | CS +nan pp (n 0) | SS +nan pp (n 0); acuerdo del desenlace ES/MES en los minutos resueltos en los dos: 100.0 %
+   (descriptivo) cuanto MAS siguio la pierna (en Xs, desde el extremo del minuto), mediana por clase: CC 0.22 | SC 1.15 | CS nan | SS nan

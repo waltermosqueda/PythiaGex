@@ -11,7 +11,7 @@
 #     tenia (nunca queda en ATAS).
 # Uso: powershell -ExecutionPolicy Bypass -File herramientas\instalar_pythiaola.ps1
 #      (-Dlls para elegir que copiar; por defecto las dos: atas\PythiaOla\bin\Release\PythiaOla.dll y atas\Superindicador\bin\Release\PythiaSuperindicador.dll)
-param([string[]]$Dlls = @(), [int]$EsperaLog = 40, [int]$QuietoSeg = 20, [int]$EsperaMaxSeg = 300)
+param([string[]]$Dlls = @(), [int]$EsperaLog = 40, [int]$QuietoSeg = 0, [int]$EsperaMaxSeg = 300)   # 27-11: QuietoSeg 0 por pedido del operador ("si yo te lo pido hacelo ahora")
 $ErrorActionPreference = "Continue"
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
@@ -45,6 +45,26 @@ if (-not $p) {
     Paso "ATAS no corre: copie los DLL y listo (los toma al arrancar)"; exit 0
 }
 $lineas0 = (Get-Content $log -ErrorAction SilentlyContinue | Measure-Object -Line).Lines
+# 27-11: el boton azul se identifica por DIFERENCIA. Antes de copiar se anotan los botones (habilitados, clase Button, sin nombre) de la
+# esquina inferior derecha de la ventana principal VISIBLE; despues del aviso de ATAS, el boton de recarga es el que aparecio NUEVO.
+# Ese dia el unico de la esquina era el icono naranja (no la recarga) y con ATAS minimizado la busqueda vieja apreto el scroll del MES.
+$c = New-Object System.Windows.Automation.PropertyCondition($A::ProcessIdProperty, $p.Id)
+function BotonesEsquina {
+    $res = @()
+    foreach ($w in $A::RootElement.FindAll($TS::Children, $c)) {
+        $wr = $w.Current.BoundingRectangle
+        if ($wr.Width -lt 400 -or $wr.Height -lt 300 -or $wr.X -lt -10000) { continue }   # minimizada o chica: ahi no se busca
+        foreach ($e in $w.FindAll($TS::Descendants, (New-Object System.Windows.Automation.PropertyCondition($A::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)))) {
+            $r = $e.Current.BoundingRectangle
+            if ($r.Width -le 0 -or $e.Current.Name -or -not $e.Current.IsEnabled -or $e.Current.ClassName -ne "Button") { continue }
+            if ($r.Y -lt ($wr.Bottom - 70) -or $r.X -lt ($wr.Right - 220) -or $r.Right -gt ($wr.Right + 1) -or $r.Bottom -gt ($wr.Bottom + 1)) { continue }
+            $res += ,@($e, $r, ("{0:0},{1:0},{2:0},{3:0}" -f $r.X, $r.Y, $r.Width, $r.Height))
+        }
+    }
+    return ,$res
+}
+$antes = BotonesEsquina
+Paso ("botones de la esquina ANTES de copiar: {0} ({1})" -f $antes.Count, (($antes | ForEach-Object { $_[2] }) -join " ; "))
 $nombres = @()
 foreach ($d in $Dlls) {
     $leaf = Split-Path $d -Leaf; $nombres += [regex]::Escape($leaf)
@@ -62,20 +82,18 @@ for ($i = 0; $i -lt $EsperaLog; $i++) {
 }
 Paso ("ATAS vio el cambio: {0}" -f $visto)
 Start-Sleep -Seconds 2
-# boton de recarga de la barra de estado: el boton sin nombre mas a la izquierda de los de la esquina inferior derecha
-$c = New-Object System.Windows.Automation.PropertyCondition($A::ProcessIdProperty, $p.Id)
+# boton de recarga de la barra de estado: el que aparecio NUEVO en la esquina despues del aviso (ver BotonesEsquina)
 $cands = @()
-foreach ($w in $A::RootElement.FindAll($TS::Children, $c)) {
-    $wr = $w.Current.BoundingRectangle
-    foreach ($e in $w.FindAll($TS::Descendants, (New-Object System.Windows.Automation.PropertyCondition($A::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)))) {
-        $r = $e.Current.BoundingRectangle
-        if ($r.Width -gt 0 -and $r.Y -ge ($wr.Bottom - 60) -and $r.X -ge ($wr.Right - 140) -and -not $e.Current.Name) { $cands += ,@($e, $r) }
-    }
+for ($i = 0; $i -lt 8 -and $cands.Count -eq 0; $i++) {
+    $despues = BotonesEsquina
+    $claves = @($antes | ForEach-Object { $_[2] })
+    $cands = @($despues | Where-Object { $claves -notcontains $_[2] })
+    if ($cands.Count -eq 0) { Start-Sleep -Seconds 1 }
 }
-Paso ("botones sin nombre en la esquina de la barra de estado: {0}" -f $cands.Count)
-# 26-11: a veces el boton de recarga es el UNICO sin nombre de la esquina (el otro icono no estaba): alcanza con uno
-if ($cands.Count -lt 1) { Paso "no aparecio el boton de recarga (ATAS no lo muestra si no hay cambios pendientes)"; exit 2 }
-$b = ($cands | Sort-Object { $_[1].X } | Select-Object -First 1)
+Paso ("botones de la esquina DESPUES: {0} ({1}); nuevos: {2}" -f $despues.Count, (($despues | ForEach-Object { $_[2] }) -join " ; "), $cands.Count)
+if ($cands.Count -lt 1) { Paso "no aparecio un boton NUEVO en la esquina: NO aprieto nada (el boton azul lo aprieta el operador)"; exit 2 }
+if ($cands.Count -gt 1) { Paso ("AMBIGUO: {0} botones nuevos en la esquina: NO aprieto nada (el boton azul de la barra de estado lo aprieta el operador)" -f $cands.Count); exit 5 }   # 27-11
+$b = $cands[0]
 $b[0].GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
 Paso ("recarga invocada (boton en x={0:0} y={1:0})" -f $b[1].X, $b[1].Y)
 # aviso modal con el OK cirilico

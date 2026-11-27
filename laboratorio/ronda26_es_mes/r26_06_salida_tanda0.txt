@@ -1,0 +1,15 @@
+RONDA 26 - quien movio el precio (descriptivo, Enmienda 3), tanda0: 3 ruedas 2026-11-13 2026-11-19 2026-11-23
+
+OLA (X): 373 piernas emparejadas
+   clase               n  recorr | ES: agresor  pasivo (pts por pierna)  parte agresor | absorcion real: en contra  a favor | MES: agresor  pasivo  parte agresor | absorcion real: en contra  a favor
+   ES con / MES con   330    16.6 |      +8.78   +6.95                      56 %    |           2.02 %    2.16 %   |     +5.99   +9.05       40 %     |           0.94 %    0.75 %
+   ES sin / MES con    35    15.7 |      +8.58   +6.61                      56 %    |           2.75 %    1.60 %   |     +9.20   +4.04       70 %     |           0.77 %    0.72 %
+   ES con / MES sin     7    12.0 |      +9.21   +2.38                      80 %    |           1.77 %    1.81 %   |     -7.96  +17.86      -81 %     |           0.91 %    1.20 %
+   ES sin / MES sin     1    15.0 |     +25.50   -9.50                     159 %    |           1.05 %    0.79 %   |    -42.62  +54.38     -363 %     |           0.66 %    1.20 %
+   control: agresor + pasivo contra el movimiento de la punta media de la pierna (ES): mediana de la diferencia -0.250 pts
+
+MAREA (4X): 23 piernas emparejadas
+   clase               n  recorr | ES: agresor  pasivo (pts por pierna)  parte agresor | absorcion real: en contra  a favor | MES: agresor  pasivo  parte agresor | absorcion real: en contra  a favor
+   ES con / MES con    18    86.4 |     +48.13  +35.15                      58 %    |           2.86 %    2.91 %   |    +78.92   +9.51       89 %     |           1.78 %    1.33 %
+   ES sin / MES con     5    52.9 |    +108.50  -56.15                     207 %    |           2.12 %    2.09 %   |    +62.20  -23.62      161 %     |           0.86 %    0.70 %
+   control: agresor + pasivo contra el movimiento de la punta media de la pierna (ES): mediana de la diferencia -2.375 pts

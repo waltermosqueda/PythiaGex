@@ -1,0 +1,17 @@
+RONDA 26 - contratos contra ordenes (descriptivo, Enmienda 4), hoy: 1 ruedas 2026-11-27
+
+OLA (X): 28 piernas emparejadas (medias por pierna)
+   ES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con    26 |    2145 /    2076 (1.03)          |     6512 /     5939 (1.10)           |   3.04 /  2.86              |     1619 /    1569 (1.03)                       |  0.564 / 0.561
+       ES sin / MES con     2 |    4754 /    4770 (1.00)          |    15480 /    16207 (0.96)           |   3.26 /  3.40              |     3567 /    3688 (0.97)                       |  0.571 / 0.579
+       en las piernas SC: 50 % con MAS ordenes a favor que en contra; 0 % con MAS ordenes que corrieron la punta a favor
+   MES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con    26 |    3003 /    2742 (1.10)          |     8596 /     7414 (1.16)           |   2.86 /  2.70              |     1776 /    1740 (1.02)                       |  0.490 / 0.524
+       ES sin / MES con     2 |    5870 /    5382 (1.09)          |    16938 /    15207 (1.11)           |   2.89 /  2.83              |     3580 /    3497 (1.02)                       |  0.513 / 0.557
+       en las piernas SC: 100 % con MAS ordenes a favor que en contra; 100 % con MAS ordenes que corrieron la punta a favor
+
+MAREA (4X): 1 piernas emparejadas (medias por pierna)
+   ES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con     1 |   55880 /   54318 (1.03)          |   165388 /   161583 (1.02)           |   2.96 /  2.97              |    42960 /   41510 (1.03)                       |  0.560 / 0.560
+   MES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con     1 |   68299 /   67861 (1.01)          |   201987 /   194724 (1.04)           |   2.96 /  2.87              |    42629 /   42398 (1.01)                       |  0.508 / 0.507

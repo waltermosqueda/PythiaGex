@@ -47,6 +47,7 @@ $c = New-Object System.Windows.Automation.PropertyCondition($A::ProcessIdPropert
 $cands = @()
 foreach ($w in $A::RootElement.FindAll($TS::Children, $c)) {
     $wr = $w.Current.BoundingRectangle
+    if ($wr.Width -lt 400 -or $wr.Height -lt 300 -or $wr.X -lt -10000) { Paso ("ventana de ATAS minimizada o chica ({0:0}x{1:0} en x={2:0}): ahi no se busca el boton" -f $wr.Width, $wr.Height, $wr.X); continue }   # 27-11: con ATAS minimizado eligio la flecha del scroll del grafico MES
     foreach ($e in $w.FindAll($TS::Descendants, (New-Object System.Windows.Automation.PropertyCondition($A::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)))) {
         $r = $e.Current.BoundingRectangle
         if ($r.Width -gt 0 -and $r.Y -ge ($wr.Bottom - 60) -and $r.X -ge ($wr.Right - 140) -and -not $e.Current.Name) { $cands += ,@($e, $r) }
@@ -55,6 +56,7 @@ foreach ($w in $A::RootElement.FindAll($TS::Children, $c)) {
 Paso ("botones sin nombre en la esquina de la barra de estado: {0}" -f $cands.Count)
 # 26-11: a veces el boton de recarga es el UNICO sin nombre de la esquina (el otro icono no estaba): alcanza con uno
 if ($cands.Count -lt 1) { Paso "no aparecio el boton de recarga (ATAS no lo muestra si no hay cambios pendientes)"; exit 2 }
+if ($cands.Count -gt 3) { Paso ("AMBIGUO: {0} botones sin nombre en la esquina: NO aprieto nada (el boton azul de la barra de estado lo aprieta el operador)" -f $cands.Count); exit 5 }   # 27-11
 $b = ($cands | Sort-Object { $_[1].X } | Select-Object -First 1)
 $b[0].GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
 Paso ("recarga invocada (boton en x={0:0} y={1:0})" -f $b[1].X, $b[1].Y)

@@ -1,0 +1,20 @@
+RONDA 26 - datos, tanda0: 2026-11-13 2026-11-19 2026-11-23  (RAM libre 4384 MB)
+A. rangos RTH previos
+  control: rango ES (r16) - rango MES (velas 5 min) en 4 ruedas comunes (2026-09-08..2026-09-21): mediana +0.00, max |dif| 0.00
+
+B. 2026-11-13: X del ES = 6.75 (mediana 85.750 de 10 ruedas: 10-30 111.75 [r16-niveles], 11-02 123.00 [r16-niveles], 11-03 47.25 [r16-niveles], 11-04 66.50 [r16-niveles], 11-05 335.25 [r16-niveles], 11-06 77.00 [r16-niveles], 11-09 144.75 [r16-niveles], 11-10 73.25 [r16-niveles], 11-11 78.25 [r16-niveles], 11-12 93.25 [r16-niveles])
+   ES 2026-11-13: cinta-ES-202611122300-202611132200.csv | ordenes 438806 (RTH 333448) | duplicados exactos 48 | fuera de orden 0 | RTH 09:30:00-15:59:59, hueco max 5 s | rango RTH 7519.25-7643.50 | pivotes X 154 / 4X 9 | identicos a test_ola.Maquina: X True, 4X True | 1.4 s
+   MES 2026-11-13: cinta-MES-202611122300-202611132200.csv | ordenes 435972 (RTH 317816) | duplicados exactos 15 | fuera de orden 0 | RTH 09:30:00-15:59:59, hueco max 4 s | rango RTH 7519.25-7643.50 | pivotes X 150 / 4X 9 | identicos a test_ola.Maquina: X True, 4X True | 1.4 s
+E. 2026-11-13 alineacion ES-MES: 22499 segundos, mediana +0.00, mediana |dif| 0.00, p95 |dif| 0.25, max 0.75 -> ALINEA
+
+B. 2026-11-19: X del ES = 8.50 (mediana 105.875 de 10 ruedas: 11-05 335.25 [r16-niveles], 11-06 77.00 [r16-niveles], 11-09 144.75 [r16-niveles], 11-10 73.25 [r16-niveles], 11-11 78.25 [r16-niveles], 11-12 93.25 [r16-niveles], 11-13 124.25 [r16-niveles], 11-16 118.50 [cinta-ES], 11-17 129.00 [cinta-ES], 11-18 83.50 [cinta-ES])
+   ES 2026-11-19: cinta-ES-202611182300-202611192200.csv | ordenes 750620 (RTH 625162) | duplicados exactos 78 | fuera de orden 0 | RTH 09:30:00-15:59:59, hueco max 1 s | rango RTH 7192.00-7436.50 | pivotes X 231 / 4X 12 | identicos a test_ola.Maquina: X True, 4X True | 2.6 s
+   MES 2026-11-19: cinta-MES-202611182300-202611192200.csv | ordenes 759395 (RTH 612733) | duplicados exactos 55 | fuera de orden 0 | RTH 09:30:00-15:59:59, hueco max 1 s | rango RTH 7192.00-7436.50 | pivotes X 237 / 4X 12 | identicos a test_ola.Maquina: X True, 4X True | 2.5 s
+E. 2026-11-19 alineacion ES-MES: 23396 segundos, mediana +0.00, mediana |dif| 0.00, p95 |dif| 0.25, max 0.75 -> ALINEA
+
+B. 2026-11-23: X del ES = 9.75 (mediana 121.375 de 10 ruedas: 11-09 144.75 [r16-niveles], 11-10 73.25 [r16-niveles], 11-11 78.25 [r16-niveles], 11-12 93.25 [r16-niveles], 11-13 124.25 [r16-niveles], 11-16 118.50 [cinta-ES], 11-17 129.00 [cinta-ES], 11-18 83.50 [cinta-ES], 11-19 244.50 [cinta-ES], 11-20 318.75 [cinta-ES])
+   ES 2026-11-23: cinta-ES-202611222300-202611232200.csv | ordenes 724840 (RTH 501196) | duplicados exactos 151 | fuera de orden 0 | RTH 09:30:00-15:59:59, hueco max 2 s | rango RTH 7167.00-7313.25 | pivotes X 216 / 4X 16 | identicos a test_ola.Maquina: X True, 4X True | 2.4 s
+   MES 2026-11-23: cinta-MES-202611222300-202611232200.csv | ordenes 657210 (RTH 418912) | duplicados exactos 40 | fuera de orden 0 | RTH 09:30:00-15:59:59, hueco max 3 s | rango RTH 7167.00-7313.50 | pivotes X 228 / 4X 16 | identicos a test_ola.Maquina: X True, 4X True | 2.3 s
+E. 2026-11-23 alineacion ES-MES: 23318 segundos, mediana +0.00, mediana |dif| 0.00, p95 |dif| 0.25, max 1.50 -> ALINEA
+
+Listo en 14 s (RAM libre 4157 MB)

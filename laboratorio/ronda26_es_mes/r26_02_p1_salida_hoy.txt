@@ -1,0 +1,71 @@
+RONDA 26 - P1 (mecanica), hoy: 1 ruedas 2026-11-27
+
+==============================================================================================================
+OLA (X)
+==============================================================================================================
+a. MINUTOS RTH: 138 cierres con pierna en los dos; direccion distinta en 0 (0.0 %) con la misma X; elegibles (misma direccion) 138; de esos, con el mismo origen (+-120 s, +-2 ticks) 95.7 %
+   color distinto en 46 de 138 minutos (33.3 %): ES sin / MES con 31.9 %, ES con / MES sin 1.4 % | ES con en 66.7 %, MES con en 97.1 %
+   por rueda: 11-27 33 % (n 138)
+   por hora NY:  hora       minutos  distinto   SC     CS    (solo con el mismo origen: distinto)
+                 09:30-10        30    36.7 %   36.7    0.0     25.0 % (n 24)
+                 10-11           60    11.7 %    8.3    3.3     11.7 % (n 60)
+                 11-12           48    58.3 %   58.3    0.0     58.3 % (n 48)
+                 12-13            0     nan %    nan    nan      nan % (n 0)
+                 13-14            0     nan %    nan    nan      nan % (n 0)
+                 14-15            0     nan %    nan    nan      nan % (n 0)
+                 15-16            0     nan %    nan    nan      nan % (n 0)
+d. delta de cada minuto RTH, ES contra MES/10 (correlacion; suma de la rueda ES y MES en eq. ES):
+   11-27 r 0.53 (ES -8244, MES +426)
+
+b. PIERNAS del ES que terminan en la rueda: 29; emparejadas con una pierna del MES: 28 (96.6 %)
+   color final: ES con / MES con 26 (92.9 %), ES sin / MES con 2 (7.1 %), ES con / MES sin 0 (0.0 %), ES sin / MES sin 0 (0.0 %)
+   ES con su delta a favor 92.9 %; MES 100.0 %; ES + MES/10 92.9 %
+   por hora del final: 09:30-10 8 % distinto (n 12) | 10-11 0 % distinto (n 13) | 11-12 33 % distinto (n 3)
+   desfase de los extremos MES - ES (s): origen mediana -0.0 (p90 |.| 0.7), final mediana -0.0 (p90 |.| 0.7)
+
+c. QUIEN HACE LA DIFERENCIA: delta por tamano de la orden agresora con el signo de la pierna (+ = a favor), media por pierna
+   clase               n    recorr      ES 1   ES 2-4   ES 5-9 ES 10-19 ES 20-49   ES 50+  ES tot |      M 1    M 2-4    M 5-9  M 10-19  M 20-49  M 50-99M 100-199   M 200+  MES/10 | ES+M/10
+   ES con / MES con    26    17.5       +13      +62     +110     +112     +160     +116    +573 |    +15.2    +11.7    +20.6    +21.8    +33.6     +9.9     +3.0     +2.5  +118.2 |  +691.2
+   ES sin / MES con     2    24.1       -19       +6     +142     -604     -348      +96    -727 |    +33.0     +7.7    +25.2    +32.9    +90.7    +18.5     +4.2    -39.0  +173.1 |  -553.9
+   mismo cuadro cada 10 pts de recorrido (suma de la clase / recorrido total x 10):
+   ES con / MES con    26    17.5        +7      +36      +63      +64      +92      +66    +328 |     +8.7     +6.7    +11.8    +12.4    +19.2     +5.7     +1.7     +1.4   +67.7 |  +395.6
+   ES sin / MES con     2    24.1        -8       +3      +59     -251     -144      +40    -301 |    +13.7     +3.2    +10.5    +13.6    +37.6     +7.7     +1.7    -16.1   +71.8 |  -229.6
+   piernas con cada tramo A FAVOR (%):
+   ES con / MES con    26                54       69       77       69       85       65     100 |       92       65       77       85      100       88       27        8     100 |     100
+   ES sin / MES con     2                50       50       50        0       50      100       0 |      100      100      100       50      100      100       50        0     100 |       0
+   diferencia SC - CC por pierna (que tramo se da vuelta cuando el ES queda sin agresores y el MES no):
+   ES 1 -32 | ES 2-4 -56 | ES 5-9 +33 | ES 10-19 -717 | ES 20-49 -509 | ES 50+ -20
+   MES 1 +17.7 | MES 2-4 -4.0 | MES 5-9 +4.7 | MES 10-19 +11.1 | MES 20-49 +57.1 | MES 50-99 +8.6 | MES 100-199 +1.2 | MES 200+ -41.5
+
+d. PRIMA del MES al cierre del minuto (punta media MES - ES, ticks, con el signo de la pierna): CC media -0.103 mediana +0.00 (n 87) | SC media -0.085 mediana +0.00 (n 41) | CS media -0.250 mediana -0.25 (n 2) | SS media -0.500 mediana -0.50 (n 2)
+
+==============================================================================================================
+MAREA (4X)
+==============================================================================================================
+a. MINUTOS RTH: 138 cierres con pierna en los dos; direccion distinta en 0 (0.0 %) con la misma X; elegibles (misma direccion) 138; de esos, con el mismo origen (+-120 s, +-2 ticks) 100.0 %
+   color distinto en 42 de 138 minutos (30.4 %): ES sin / MES con 30.4 %, ES con / MES sin 0.0 % | ES con en 69.6 %, MES con en 100.0 %
+   por rueda: 11-27 30 % (n 138)
+   por hora NY:  hora       minutos  distinto   SC     CS    (solo con el mismo origen: distinto)
+                 09:30-10        30    16.7 %   16.7    0.0     16.7 % (n 30)
+                 10-11           60     0.0 %    0.0    0.0      0.0 % (n 60)
+                 11-12           48    77.1 %   77.1    0.0     77.1 % (n 48)
+                 12-13            0     nan %    nan    nan      nan % (n 0)
+                 13-14            0     nan %    nan    nan      nan % (n 0)
+                 14-15            0     nan %    nan    nan      nan % (n 0)
+                 15-16            0     nan %    nan    nan      nan % (n 0)
+
+b. PIERNAS del ES que terminan en la rueda: 1; emparejadas con una pierna del MES: 1 (100.0 %)
+   color final: ES con / MES con 1 (100.0 %), ES sin / MES con 0 (0.0 %), ES con / MES sin 0 (0.0 %), ES sin / MES sin 0 (0.0 %)
+   ES con su delta a favor 100.0 %; MES 100.0 %; ES + MES/10 100.0 %
+   por hora del final: 10-11 0 % distinto (n 1)
+   desfase de los extremos MES - ES (s): origen mediana -0.5 (p90 |.| 0.5), final mediana -0.0 (p90 |.| 0.0)
+
+c. QUIEN HACE LA DIFERENCIA: delta por tamano de la orden agresora con el signo de la pierna (+ = a favor), media por pierna
+   clase               n    recorr      ES 1   ES 2-4   ES 5-9 ES 10-19 ES 20-49   ES 50+  ES tot |      M 1    M 2-4    M 5-9  M 10-19  M 20-49  M 50-99M 100-199   M 200+  MES/10 | ES+M/10
+   ES con / MES con     1   120.2     +1231     +361    +1931     -217     -375     +874   +3805 |    -33.3   +178.3    +87.1    -27.2   +359.2   +197.0   -108.2    +73.4  +726.3 | +4531.3
+   mismo cuadro cada 10 pts de recorrido (suma de la clase / recorrido total x 10):
+   ES con / MES con     1   120.2      +102      +30     +161      -18      -31      +73    +316 |     -2.8    +14.8     +7.2     -2.3    +29.9    +16.4     -9.0     +6.1   +60.4 |  +376.8
+   piernas con cada tramo A FAVOR (%):
+   ES con / MES con     1               100      100      100        0        0      100     100 |        0      100      100        0      100      100        0      100     100 |     100
+
+d. PRIMA del MES al cierre del minuto (punta media MES - ES, ticks, con el signo de la pierna): CC media +0.044 mediana +0.00 (n 91) | SC media +0.073 mediana +0.00 (n 41) | CS media +nan mediana +nan (n 0) | SS media +nan mediana +nan (n 0)

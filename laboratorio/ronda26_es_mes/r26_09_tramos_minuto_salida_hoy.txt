@@ -1,0 +1,13 @@
+RONDA 26 - quien acompana al precio minuto a minuto (descriptivo, post hoc), hoy: 1 ruedas
+   ES: correlacion de la variacion del precio del minuto con el delta del minuto (mediana de 1 ruedas [min; max])
+      total  +0.52  [+0.52; +0.52]
+      1-9    +0.29  [+0.29; +0.29]
+      10-49  +0.39  [+0.39; +0.39]
+      50+    +0.28  [+0.28; +0.28]
+   MES: correlacion de la variacion del precio del minuto con el delta del minuto (mediana de 1 ruedas [min; max])
+      total  +0.81  [+0.81; +0.81]
+      1-9    +0.71  [+0.71; +0.71]
+      10-49  +0.74  [+0.74; +0.74]
+      50+    +0.37  [+0.37; +0.37]
+   PREDICCION (a): correlacion precio-delta del MES > la del ES en 1 de 1 ruedas (100 %): SE CUMPLE (>= 80 %)
+   por rueda: 11-27 MES +0.81 / ES +0.52

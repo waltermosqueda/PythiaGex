@@ -1,0 +1,12 @@
+RONDA 26 - quien movio el precio (descriptivo, Enmienda 3), hoy: 1 ruedas 2026-11-27
+
+OLA (X): 28 piernas emparejadas
+   clase               n  recorr | ES: agresor  pasivo (pts por pierna)  parte agresor | absorcion real: en contra  a favor | MES: agresor  pasivo  parte agresor | absorcion real: en contra  a favor
+   ES con / MES con    26    17.5 |     +10.82   +6.63                      62 %    |           2.16 %    2.53 %   |     +8.32   +7.77       52 %     |           1.32 %    1.10 %
+   ES sin / MES con     2    24.1 |     -12.50  +38.12                     -49 %    |           3.16 %    1.50 %   |     +3.44  +22.31       13 %     |           1.29 %    1.61 %
+   control: agresor + pasivo contra el movimiento de la punta media de la pierna (ES): mediana de la diferencia 0.250 pts
+
+MAREA (4X): 1 piernas emparejadas
+   clase               n  recorr | ES: agresor  pasivo (pts por pierna)  parte agresor | absorcion real: en contra  a favor | MES: agresor  pasivo  parte agresor | absorcion real: en contra  a favor
+   ES con / MES con     1   120.2 |    +227.50 -106.00                     187 %    |           2.67 %    2.32 %   |    +65.25  +68.12       49 %     |           1.19 %    1.11 %
+   control: agresor + pasivo contra el movimiento de la punta media de la pierna (ES): mediana de la diferencia 1.625 pts

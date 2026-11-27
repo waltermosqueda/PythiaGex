@@ -1,0 +1,5 @@
+CIERRE DEL PRE-REGISTRO DE LA RONDA 26
+hora: 2026-11-27 14:22:15 -03:00 (reloj de la PC, AR)
+SHA-256 de PREREGISTRO.md al cerrar: a24d05ac432e8cceb87340a452f3c27afb08f0c7fdc908126614f15d05165caf
+Lo corrido antes del cierre: r26_00_seleccion.py (regla de la tanda 0, solo tablas diarias), r26_00_chequeo.py (mecanico, cintas de hoy) y la prueba de humo a ciegas (salidas borradas sin leer).
+Ninguna salida de r26_02_p1.py ni de r26_03_p2p3.py fue leida antes de esta hora.

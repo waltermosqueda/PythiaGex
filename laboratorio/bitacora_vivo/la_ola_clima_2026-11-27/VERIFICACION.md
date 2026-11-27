@@ -13,6 +13,11 @@ del clima de hoy no es comparable con el de otros días**; lo que se controla ac
   usuario quieto 349 s) lo destrabó al instante: a las 11:53:05 volvió la línea del jsonl. O sea, **no lo trabó ningún indicador**:
   ATAS dejó de pintar esa pestaña. La causa no está identificada (el apagado de pantalla por inactividad no cierra con la hora).
 - Queda `herramientas/vigia_dibujo_ola.py` (pasivo) para anotar cuándo vuelve a pasar.
+- **Corrección (27-11, 14:05 AR):** la causa probable es que ATAS NO PINTA los gráficos tapados por otra ventana. La PC tiene un solo
+  monitor (1600×900) y la ventana de Claude, maximizada, queda exactamente encima de ATAS; a las 14:02:48-49 los dos gráficos (ES y
+  MES) dejaron de escribir su registro de dibujo a la vez, con Claude al frente y el operador escribiéndome, mientras La Ola seguía
+  calculando. Es inofensivo (al volver a ATAS repinta). Para la mañana (07:29-11:53) no quedó guardada la geometría de las ventanas:
+  es lo más probable, no está medido. Detalle en `../la_ola_es_mes_2026-11-27/VERIFICACION.md`, sección 6.
 
 ## Lo comprobado (todo desde la cinta de la sonda `cinta-ESZ6-202611262300-202611271455.csv`, 144.484 órdenes)
 1. **Captura sincronizada** 11:54:05 AR (`captura_1154_sincronizada.png`, la cuenta tapada). La foto corresponde a UNA sola orden de la

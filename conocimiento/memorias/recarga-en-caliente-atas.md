@@ -8,6 +8,13 @@ metadata:
   modified: 2026-11-26T22:11:34.155Z
 ---
 
+**INCIDENTE 27-11-2026 14:30 (con el operador en la PC y ATAS MINIMIZADO):** el instalador busco 'botones sin nombre en la esquina'
+de una ventana minimizada (160x28 en -32000): 48 candidatos, y apreto el de mas a la izquierda = PART_LineLeftButton, la flecha
+izquierda del scroll horizontal del grafico MES (corre el grafico un paso atras). Sin ordenes ni paneles cerrados (log de ATAS limpio),
+pero NO recargo los indicadores. Arreglado en instalar_pythiaola / instalar_superindicador / instalar_en_caliente: no buscan en ventanas
+minimizadas o chicas y con mas de 3 candidatos NO aprietan nada (salida 5). Con el operador presente: copiar el DLL y que ATAS lo
+avise; el boton azul de la barra de estado (abajo a la derecha, a la izquierda del icono amarillo) y el OK los aprieta EL.
+
 Medido el 23-11-2026 instalando el Superindicador (3 veces, ~7 s cada una, sin reiniciar ni cortar Rithmic):
 
 1. Copiar el DLL a `%APPDATA%\ATAS\Indicators\`. El log dice `Created library` (nuevo) o `Changed library` (pisado) y

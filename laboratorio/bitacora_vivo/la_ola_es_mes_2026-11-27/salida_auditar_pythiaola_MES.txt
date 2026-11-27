@@ -1,0 +1,260 @@
+ola-MES-M1-20261127.csv | X 10.00 | en vivo | costura bufer | ordenes 329228 | pivotes 54, fotos 2154 (1076 tomadas), campos 41304 | difs 224 | 1.1 s
+    DIF la cinta (2026-11-26 23:00:00 a 2026-11-27 16:48:00 UTC) no cubre la ola (2026-11-26 23:00:00 a 2026-11-27 16:56:26.485000)
+    DIF ordenes: el indicador tiene 329228 y la cinta 323222 en el mismo tramo
+    DIF ola-MES-M1-20261127.csv X pivotes fila 49 campo t_extremo: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X pivotes fila 49 campo precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X pivotes fila 49 campo cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo n: C# 323920, referencia 323222
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo t_ultima: C# '2026-11-27T16:48:59.863', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo ultimo: C# 7297.5, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo cum: C# 8328.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo extremo_t: C# '2026-11-27T16:48:49.452', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo extremo_precio: C# 7298.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo extremo_cum: C# 8406.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo delta_pierna: C# 1236.0, referencia 864.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo retroceso: C# 1.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo faltan: C# 8.75, referencia 5.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo raya: C# 7288.75, referencia 7287.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1068 campo recorrido: C# 19.5, referencia 18.25
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo n: C# 324490, referencia 323222
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo t_ultima: C# '2026-11-27T16:49:59.764', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo ultimo: C# 7297.5, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo cum: C# 8339.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo extremo_t: C# '2026-11-27T16:48:49.452', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo extremo_precio: C# 7298.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo extremo_cum: C# 8406.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo delta_pierna: C# 1247.0, referencia 864.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo retroceso: C# 1.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo faltan: C# 8.75, referencia 5.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo raya: C# 7288.75, referencia 7287.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1069 campo recorrido: C# 19.5, referencia 18.25
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo n: C# 325134, referencia 323222
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo t_ultima: C# '2026-11-27T16:50:59.925', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo ultimo: C# 7301.75, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo cum: C# 8862.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo extremo_t: C# '2026-11-27T16:50:59.761', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo extremo_precio: C# 7302.0, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo extremo_cum: C# 8859.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo delta_pierna: C# 1770.0, referencia 864.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo retroceso: C# 0.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo faltan: C# 9.75, referencia 5.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo raya: C# 7292.0, referencia 7287.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1070 campo recorrido: C# 22.75, referencia 18.25
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo n: C# 325882, referencia 323222
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo t_ultima: C# '2026-11-27T16:51:59.972', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo ultimo: C# 7303.25, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo cum: C# 9108.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo extremo_t: C# '2026-11-27T16:51:55.676', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo extremo_precio: C# 7304.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo extremo_cum: C# 9175.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo delta_pierna: C# 2016.0, referencia 864.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo retroceso: C# 1.5, referencia 4.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo faltan: C# 8.5, referencia 5.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo raya: C# 7294.75, referencia 7287.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1071 campo recorrido: C# 25.5, referencia 18.25
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo n: C# 326463, referencia 323222
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo t_ultima: C# '2026-11-27T16:52:59.948', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo ultimo: C# 7301.0, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo cum: C# 8879.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo extremo_t: C# '2026-11-27T16:51:55.676', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo extremo_precio: C# 7304.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo extremo_cum: C# 9175.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo delta_pierna: C# 1787.0, referencia 864.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo retroceso: C# 3.75, referencia 4.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo faltan: C# 6.25, referencia 5.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo raya: C# 7294.75, referencia 7287.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1072 campo recorrido: C# 25.5, referencia 18.25
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo n: C# 327365, referencia 323222
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo t_ultima: C# '2026-11-27T16:53:59.946', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo ultimo: C# 7305.5, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo cum: C# 9107.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo extremo_t: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo extremo_precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo extremo_cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo delta_pierna: C# 2015.0, referencia 864.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo retroceso: C# 2.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo faltan: C# 7.75, referencia 5.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo raya: C# 7297.75, referencia 7287.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1073 campo recorrido: C# 28.5, referencia 18.25
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo n: C# 328035, referencia 323222
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo t_ultima: C# '2026-11-27T16:54:59.994', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo ultimo: C# 7305.0, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo cum: C# 9014.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo extremo_t: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo extremo_precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo extremo_cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo delta_pierna: C# 1922.0, referencia 864.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo retroceso: C# 2.75, referencia 4.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo faltan: C# 7.25, referencia 5.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo raya: C# 7297.75, referencia 7287.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1074 campo recorrido: C# 28.5, referencia 18.25
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo n: C# 328917, referencia 323222
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo t_ultima: C# '2026-11-27T16:55:59.928', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo ultimo: C# 7299.25, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo cum: C# 8386.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo extremo_t: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo extremo_precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo extremo_cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo delta_pierna: C# 1294.0, referencia 864.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo retroceso: C# 8.5, referencia 4.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo faltan: C# 1.5, referencia 5.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo raya: C# 7297.75, referencia 7287.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1075 campo recorrido: C# 28.5, referencia 18.25
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo n: C# 329228, referencia 323222
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo t_ultima: C# '2026-11-27T16:56:26.485', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo ultimo: C# 7298.5, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo cum: C# 8521.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo extremo_t: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo extremo_precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo extremo_cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo delta_pierna: C# 1429.0, referencia 864.0
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo retroceso: C# 9.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo faltan: C# 0.75, referencia 5.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo raya: C# 7297.75, referencia 7287.5
+    DIF ola-MES-M1-20261127.csv X fotos fila 1076 campo recorrido: C# 28.5, referencia 18.25
+    DIF ola-MES-M1-20261127.csv 4X pivotes fila 3 campo t_extremo: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X pivotes fila 3 campo precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X pivotes fila 3 campo cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo n: C# 323920, referencia 323222
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo t_ultima: C# '2026-11-27T16:48:59.863', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo ultimo: C# 7297.5, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo cum: C# 8328.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo extremo_t: C# '2026-11-27T16:48:49.452', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo extremo_precio: C# 7298.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo extremo_cum: C# 8406.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo delta_pierna: C# 6813.0, referencia 6441.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo retroceso: C# 1.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo faltan: C# 38.75, referencia 35.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo raya: C# 7258.75, referencia 7257.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1068 campo recorrido: C# 76.0, referencia 74.75
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo n: C# 324490, referencia 323222
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo t_ultima: C# '2026-11-27T16:49:59.764', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo ultimo: C# 7297.5, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo cum: C# 8339.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo extremo_t: C# '2026-11-27T16:48:49.452', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo extremo_precio: C# 7298.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo extremo_cum: C# 8406.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo delta_pierna: C# 6824.0, referencia 6441.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo retroceso: C# 1.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo faltan: C# 38.75, referencia 35.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo raya: C# 7258.75, referencia 7257.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1069 campo recorrido: C# 76.0, referencia 74.75
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo n: C# 325134, referencia 323222
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo t_ultima: C# '2026-11-27T16:50:59.925', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo ultimo: C# 7301.75, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo cum: C# 8862.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo extremo_t: C# '2026-11-27T16:50:59.761', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo extremo_precio: C# 7302.0, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo extremo_cum: C# 8859.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo delta_pierna: C# 7347.0, referencia 6441.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo retroceso: C# 0.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo faltan: C# 39.75, referencia 35.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo raya: C# 7262.0, referencia 7257.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1070 campo recorrido: C# 79.25, referencia 74.75
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo n: C# 325882, referencia 323222
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo t_ultima: C# '2026-11-27T16:51:59.972', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo ultimo: C# 7303.25, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo cum: C# 9108.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo extremo_t: C# '2026-11-27T16:51:55.676', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo extremo_precio: C# 7304.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo extremo_cum: C# 9175.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo delta_pierna: C# 7593.0, referencia 6441.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo retroceso: C# 1.5, referencia 4.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo faltan: C# 38.5, referencia 35.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo raya: C# 7264.75, referencia 7257.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1071 campo recorrido: C# 82.0, referencia 74.75
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo n: C# 326463, referencia 323222
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo t_ultima: C# '2026-11-27T16:52:59.948', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo ultimo: C# 7301.0, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo cum: C# 8879.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo extremo_t: C# '2026-11-27T16:51:55.676', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo extremo_precio: C# 7304.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo extremo_cum: C# 9175.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo delta_pierna: C# 7364.0, referencia 6441.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo retroceso: C# 3.75, referencia 4.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo faltan: C# 36.25, referencia 35.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo raya: C# 7264.75, referencia 7257.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1072 campo recorrido: C# 82.0, referencia 74.75
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo n: C# 327365, referencia 323222
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo t_ultima: C# '2026-11-27T16:53:59.946', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo ultimo: C# 7305.5, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo cum: C# 9107.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo extremo_t: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo extremo_precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo extremo_cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo delta_pierna: C# 7592.0, referencia 6441.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo retroceso: C# 2.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo faltan: C# 37.75, referencia 35.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo raya: C# 7267.75, referencia 7257.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1073 campo recorrido: C# 85.0, referencia 74.75
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo n: C# 328035, referencia 323222
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo t_ultima: C# '2026-11-27T16:54:59.994', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo ultimo: C# 7305.0, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo cum: C# 9014.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo extremo_t: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo extremo_precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo extremo_cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo delta_pierna: C# 7499.0, referencia 6441.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo retroceso: C# 2.75, referencia 4.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo faltan: C# 37.25, referencia 35.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo raya: C# 7267.75, referencia 7257.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1074 campo recorrido: C# 85.0, referencia 74.75
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo n: C# 328917, referencia 323222
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo t_ultima: C# '2026-11-27T16:55:59.928', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo ultimo: C# 7299.25, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo cum: C# 8386.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo extremo_t: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo extremo_precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo extremo_cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo delta_pierna: C# 6871.0, referencia 6441.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo retroceso: C# 8.5, referencia 4.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo faltan: C# 31.5, referencia 35.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo raya: C# 7267.75, referencia 7257.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1075 campo recorrido: C# 85.0, referencia 74.75
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo n: C# 329228, referencia 323222
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo t_ultima: C# '2026-11-27T16:56:26.485', referencia '2026-11-27T16:47:59.741'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo ultimo: C# 7298.5, referencia 7293.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo cum: C# 8521.0, referencia 7956.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo extremo_t: C# '2026-11-27T16:53:51.270', referencia '2026-11-27T16:45:23.605'
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo extremo_precio: C# 7307.75, referencia 7297.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo extremo_cum: C# 9222.0, referencia 8365.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo delta_pierna: C# 7006.0, referencia 6441.0
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo retroceso: C# 9.25, referencia 4.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo faltan: C# 30.75, referencia 35.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo raya: C# 7267.75, referencia 7257.5
+    DIF ola-MES-M1-20261127.csv 4X fotos fila 1076 campo recorrido: C# 85.0, referencia 74.75
+  mediana por fuera con 10 ruedas previas: 126.5 (indicador 126.5) IGUAL
+  clima: 146 minutos cerrados en el csv, recalculados por fuera desde la cinta: 32 diferencias
+    DIF minuto 138 h: indicador 7298.75, por fuera 7297.5
+    DIF minuto 138 c: indicador 7297.5, por fuera 7293.0
+    DIF minuto 138 vw: indicador 7259.707676421711, por fuera 7259.563677158928
+    DIF minuto 138 rrn: indicador 0.7564693957127404, por fuera 0.744027464862202
+    DIF minuto 139 h: indicador 7298.75, por fuera 7297.5
+    DIF minuto 139 c: indicador 7297.5, por fuera 7293.0
+    DIF minuto 139 vw: indicador 7259.824763809602, por fuera 7259.563677158928
+    DIF minuto 139 rrn: indicador 0.7558155424974322, por fuera 0.7433843658116193
+    DIF minuto 140 h: indicador 7302.0, por fuera 7297.5
+    DIF minuto 140 c: indicador 7301.75, por fuera 7293.0
+    DIF minuto 140 vw: indicador 7259.977579078678, por fuera 7259.563677158928
+    DIF minuto 140 rrn: indicador 0.7866227632348467, por fuera 0.7419564864581046
+    DIF minuto 141 h: indicador 7304.75, por fuera 7297.5
+    DIF minuto 141 c: indicador 7303.25, por fuera 7293.0
+    DIF minuto 141 vw: indicador 7260.1360637321395, por fuera 7259.563677158928
+    DIF minuto 141 rrn: indicador 0.812358457713236, por fuera 0.740534081878834
+    DIF minuto 142 h: indicador 7304.75, por fuera 7297.5
+    DIF minuto 142 c: indicador 7301.0, por fuera 7293.0
+    DIF minuto 142 vw: indicador 7260.275019332416, por fuera 7259.563677158928
+    DIF minuto 142 rrn: indicador 0.8108040654589063, por fuera 0.7391171206469908
+    DIF minuto 143 h: indicador 7307.75, por fuera 7297.5
+    DIF minuto 143 c: indicador 7305.5, por fuera 7293.0
+    DIF minuto 143 vw: indicador 7260.522517770124, por fuera 7259.563677158928
+    DIF minuto 143 rrn: indicador 0.8388625228621501, por fuera 0.7377055715758319
+    DIF minuto 144 h: indicador 7307.75, por fuera 7297.5
+    DIF minuto 144 c: indicador 7305.0, por fuera 7293.0
+    DIF minuto 144 vw: indicador 7260.7141980489105, por fuera 7259.563677158928
+    DIF minuto 144 rrn: indicador 0.8372635359985803, por fuera 0.7362994037163986
+    DIF minuto 145 h: indicador 7307.75, por fuera 7297.5
+    DIF minuto 145 c: indicador 7299.25, por fuera 7293.0
+    DIF minuto 145 vw: indicador 7260.936269998954, por fuera 7259.563677158928
+    DIF minuto 145 rrn: indicador 0.8345054293736057, por fuera 0.7338738923020827
+RESULTADO: 256 diferencias

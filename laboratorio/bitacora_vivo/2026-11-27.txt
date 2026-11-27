@@ -1,0 +1,6 @@
+2026-11-27 15:16:53  jornada 2026-11-27: sesion CME 2026-11-26 23:00:00+00:00 a 2026-11-27 22:00:00+00:00 UTC | instrumento ESZ6 (contrato de la cinta: Z6)
+2026-11-27 15:16:53  OJO: todavia no son las 17:00 NY de esa jornada; la cinta va a quedar cortada en este momento
+2026-11-27 15:16:53  pedido a la sonda: cinta;2026-11-26T23:00:00;2026-11-27T22:00:00;1;1380 -> sonda-ESZ6.txt
+2026-11-27 15:16:54  la sonda tomo el pedido en 1 s; esperando el .listo (hasta 240 s)
+2026-11-27 15:17:14  cinta lista: cinta-ESZ6-202611262300-202611272200.csv, 293536 ordenes, 24.2 MB, en 21 s
+2026-11-27 15:17:14  nombre para el juez de la R21: cinta-ES-202611262300-202611272200.csv (enlace duro de cinta-ESZ6-202611262300-202611272200.csv)

@@ -1,0 +1,11 @@
+RONDA 26 - quien acompana al precio minuto a minuto (descriptivo, post hoc), tanda0: 3 ruedas
+   ES: correlacion de la variacion del precio del minuto con el delta del minuto (mediana de 3 ruedas [min; max])
+      total  +0.55  [+0.43; +0.64]
+      1-9    +0.16  [+0.14; +0.16]
+      10-49  +0.42  [+0.14; +0.53]
+      50+    +0.29  [+0.11; +0.37]
+   MES: correlacion de la variacion del precio del minuto con el delta del minuto (mediana de 3 ruedas [min; max])
+      total  +0.83  [+0.82; +0.83]
+      1-9    +0.68  [+0.67; +0.73]
+      10-49  +0.80  [+0.76; +0.81]
+      50+    +0.46  [+0.43; +0.48]

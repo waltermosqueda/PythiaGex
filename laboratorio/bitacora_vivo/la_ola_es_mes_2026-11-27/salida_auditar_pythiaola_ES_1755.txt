@@ -1,0 +1,29 @@
+c_es.csv | X 10.25 | en vivo | costura bufer | ordenes 275434 | pivotes 54, fotos 2272 (1135 tomadas), campos 43546 | difs 25 | 1.2 s
+    DIF la cinta (2026-11-26 23:00:00 a 2026-11-27 17:55:00 UTC) no cubre la ola (2026-11-26 23:00:00 a 2026-11-27 17:55:05.420000)
+    DIF actualizaciones viejas: 1
+    DIF ordenes: el indicador tiene 275434 y la cinta 275130 en el mismo tramo
+    DIF c_es.csv X pivotes fila 49 campo t_extremo: C# '2026-11-27T17:55:03.474', referencia '2026-11-27T17:54:33.032'
+    DIF c_es.csv X pivotes fila 49 campo precio: C# 7297.75, referencia 7297.5
+    DIF c_es.csv X pivotes fila 49 campo cum: C# -6312.0, referencia -5981.0
+    DIF c_es.csv X fotos fila 1135 campo n: C# 275434, referencia 275130
+    DIF c_es.csv X fotos fila 1135 campo t_ultima: C# '2026-11-27T17:55:05.420', referencia '2026-11-27T17:54:59.877'
+    DIF c_es.csv X fotos fila 1135 campo ultimo: C# 7295.75, referencia 7293.25
+    DIF c_es.csv X fotos fila 1135 campo cum: C# -6337.0, referencia -6549.0
+    DIF c_es.csv X fotos fila 1135 campo extremo_t: C# '2026-11-27T17:55:03.474', referencia '2026-11-27T17:54:33.032'
+    DIF c_es.csv X fotos fila 1135 campo extremo_precio: C# 7297.75, referencia 7297.5
+    DIF c_es.csv X fotos fila 1135 campo extremo_cum: C# -6312.0, referencia -5981.0
+    DIF c_es.csv X fotos fila 1135 campo delta_pierna: C# -885.0, referencia -1097.0
+    DIF c_es.csv X fotos fila 1135 campo retroceso: C# 2.0, referencia 4.25
+    DIF c_es.csv X fotos fila 1135 campo faltan: C# 8.25, referencia 6.0
+    DIF c_es.csv X fotos fila 1135 campo raya: C# 7287.5, referencia 7287.25
+    DIF c_es.csv X fotos fila 1135 campo recorrido: C# 16.0, referencia 15.75
+    DIF c_es.csv 4X fotos fila 1135 campo n: C# 275434, referencia 275130
+    DIF c_es.csv 4X fotos fila 1135 campo t_ultima: C# '2026-11-27T17:55:05.420', referencia '2026-11-27T17:54:59.877'
+    DIF c_es.csv 4X fotos fila 1135 campo ultimo: C# 7295.75, referencia 7293.25
+    DIF c_es.csv 4X fotos fila 1135 campo cum: C# -6337.0, referencia -6549.0
+    DIF c_es.csv 4X fotos fila 1135 campo delta_pierna: C# -5486.0, referencia -5698.0
+    DIF c_es.csv 4X fotos fila 1135 campo retroceso: C# 12.0, referencia 14.5
+    DIF c_es.csv 4X fotos fila 1135 campo faltan: C# 29.0, referencia 26.5
+  mediana por fuera con 10 ruedas previas: 126.625 (indicador 126.625) IGUAL
+  clima: 205 minutos cerrados en el csv, recalculados por fuera desde la cinta: 0 diferencias
+RESULTADO: 25 diferencias

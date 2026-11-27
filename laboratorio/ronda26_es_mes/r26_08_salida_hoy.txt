@@ -1,0 +1,6 @@
+OLA: giros confirmados en la jornada (desde 18:00 NY): ES 10,25 45 | MES 10,25 45 | MES 10,00 49;  con el extremo en la rueda hasta 11:48 NY: ES 29, MES 10,25 29, MES 10,00 33
+   ES 10,25 contra MES con 10,00 (lo que vio el operador): 138 minutos RTH; misma direccion 97.8 %; mismo color (con misma direccion) 66.7 %; ES sin y MES con 32.6 %
+   ES 10,25 contra MES con 10,25 (la misma X)            : 138 minutos RTH; misma direccion 100.0 %; mismo color (con misma direccion) 66.7 %; ES sin y MES con 31.9 %
+MAREA: giros confirmados en la jornada (desde 18:00 NY): ES 10,25 3 | MES 10,25 3 | MES 10,00 3;  con el extremo en la rueda hasta 11:48 NY: ES 1, MES 10,25 1, MES 10,00 1
+   ES 10,25 contra MES con 10,00 (lo que vio el operador): 138 minutos RTH; misma direccion 100.0 %; mismo color (con misma direccion) 69.6 %; ES sin y MES con 30.4 %
+   ES 10,25 contra MES con 10,25 (la misma X)            : 138 minutos RTH; misma direccion 100.0 %; mismo color (con misma direccion) 69.6 %; ES sin y MES con 30.4 %

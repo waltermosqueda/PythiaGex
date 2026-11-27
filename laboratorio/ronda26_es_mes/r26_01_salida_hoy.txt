@@ -1,0 +1,10 @@
+RONDA 26 - datos, hoy: 2026-11-27  (RAM libre 4723 MB)
+A. rangos RTH previos
+  control: rango ES (r16) - rango MES (velas 5 min) en 4 ruedas comunes (2026-09-08..2026-09-21): mediana +0.00, max |dif| 0.00
+
+B. 2026-11-27: X del ES = 10.25 (mediana 126.625 de 10 ruedas: 11-12 93.25 [r16-niveles], 11-13 124.25 [r16-niveles], 11-16 118.50 [cinta-ES], 11-17 129.00 [cinta-ES], 11-18 83.50 [cinta-ES], 11-19 244.50 [cinta-ES], 11-20 318.75 [cinta-ES], 11-23 146.25 [cinta-ES], 11-24 88.50 [cinta-ES], 11-25 231.50 [cinta-ES])
+   ES 2026-11-27: cinta-ESZ6-202611262300-202611271649.csv | ordenes 239064 (RTH 148723) | duplicados exactos 27 | fuera de orden 0 | RTH 09:30:00-11:47:59, hueco max 2 s | rango RTH 7222.75-7297.50 | pivotes X 45 / 4X 3 | identicos a test_ola.Maquina: X True, 4X True | 0.8 s
+   MES 2026-11-27: cinta-MES-202611262300-202611271648.csv | ordenes 323222 (RTH 195929) | duplicados exactos 9 | fuera de orden 0 | RTH 09:30:00-11:47:59, hueco max 1 s | rango RTH 7222.75-7297.50 | pivotes X 45 / 4X 3 | identicos a test_ola.Maquina: X True, 4X True | 1.1 s
+E. 2026-11-27 alineacion ES-MES: 8270 segundos, mediana +0.00, mediana |dif| 0.00, p95 |dif| 0.25, max 1.25 -> ALINEA
+
+Listo en 4 s (RAM libre 4696 MB)

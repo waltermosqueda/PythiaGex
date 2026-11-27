@@ -1,0 +1,13 @@
+RONDA 26 - la punta (descriptivo, Enmienda 2), tanda0: 3 ruedas 2026-11-13 2026-11-19 2026-11-23
+
+OLA (X): 373 piernas emparejadas
+   clase               n  | ES: en contra aguanta  a favor mueve  (vol. contra / favor por pierna) | MES: en contra aguanta  a favor mueve  a favor contra nivel en pie (vol. contra / favor, eq. ES)
+   ES con / MES con   330  |    14.5 % (med  13.7)    84.3 % (med  85.2)   (  5913 /   6579)        |    25.6 % (med  24.4)    70.2 % (med  71.3)    29.8 %   (   437 /    547)
+   ES sin / MES con    35  |    15.2 % (med  12.9)    85.3 % (med  85.1)   (  6839 /   6683)        |    23.1 % (med  21.5)    72.5 % (med  74.7)    27.5 %   (   477 /    575)
+   ES con / MES sin     7  |    14.2 % (med  12.1)    86.7 % (med  87.4)   (  3146 /   3521)        |    19.4 % (med  18.4)    80.1 % (med  79.2)    19.9 %   (   330 /    314)
+   ES sin / MES sin     1  |    10.2 % (med  10.2)    90.0 % (med  90.0)   (  5307 /   5065)        |    15.7 % (med  15.7)    80.7 % (med  80.7)    19.3 %   (   535 /    509)
+
+MAREA (4X): 23 piernas emparejadas
+   clase               n  | ES: en contra aguanta  a favor mueve  (vol. contra / favor por pierna) | MES: en contra aguanta  a favor mueve  a favor contra nivel en pie (vol. contra / favor, eq. ES)
+   ES con / MES con    18  |    16.2 % (med  14.9)    83.0 % (med  85.1)   (105244 / 109610)        |    28.4 % (med  26.5)    70.1 % (med  71.0)    29.9 %   (  8520 /   9208)
+   ES sin / MES con     5  |    15.2 % (med  14.3)    84.3 % (med  84.6)   ( 75549 /  74407)        |    27.8 % (med  28.5)    71.8 % (med  70.0)    28.2 %   (  5798 /   6093)

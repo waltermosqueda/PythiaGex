@@ -1,0 +1,29 @@
+RONDA 26 - contratos contra ordenes (descriptivo, Enmienda 4), tanda1: 14 ruedas 2026-09-08 2026-09-09 2026-09-11 2026-09-14 2026-09-15 2026-09-16 2026-09-17 2026-11-12 2026-11-16 2026-11-17 2026-11-18 2026-11-20 2026-11-24 2026-11-25
+
+OLA (X): 1291 piernas emparejadas (medias por pierna)
+   ES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con  1150 |    1420 /    1350 (1.05)          |     6376 /     5655 (1.13)           |   4.49 /  4.19              |      970 /     950 (1.02)                       |  0.538 / 0.548
+       ES sin / MES con   111 |    1668 /    1664 (1.00)          |     7039 /     7277 (0.97)           |   4.22 /  4.37              |     1179 /    1180 (1.00)                       |  0.562 / 0.557
+       ES con / MES sin    17 |    1199 /    1209 (0.99)          |     6647 /     6357 (1.05)           |   5.54 /  5.26              |      707 /     688 (1.03)                       |  0.462 / 0.438
+       ES sin / MES sin    13 |    1271 /    1190 (1.07)          |     6179 /     6414 (0.96)           |   4.86 /  5.39              |      771 /     756 (1.02)                       |  0.475 / 0.501
+       en las piernas SC: 51 % con MAS ordenes a favor que en contra; 59 % con MAS ordenes que corrieron la punta a favor
+   MES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con  1150 |    1526 /    1332 (1.15)          |     5575 /     4490 (1.24)           |   3.65 /  3.37              |      747 /     727 (1.03)                       |  0.401 / 0.444
+       ES sin / MES con   111 |    1687 /    1558 (1.08)          |     5837 /     5084 (1.15)           |   3.46 /  3.26              |      892 /     878 (1.02)                       |  0.436 / 0.463
+       ES con / MES sin    17 |    1027 /    1086 (0.95)          |     3753 /     4090 (0.92)           |   3.65 /  3.76              |      613 /     610 (1.00)                       |  0.483 / 0.459
+       ES sin / MES sin    13 |     917 /     904 (1.01)          |     3320 /     3428 (0.97)           |   3.62 /  3.79              |      542 /     553 (0.98)                       |  0.485 / 0.507
+       en las piernas SC: 86 % con MAS ordenes a favor que en contra; 63 % con MAS ordenes que corrieron la punta a favor
+
+MAREA (4X): 76 piernas emparejadas (medias por pierna)
+   ES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con    64 |   20349 /   20053 (1.01)          |    79330 /    75720 (1.05)           |   3.90 /  3.78              |    14694 /   14592 (1.01)                       |  0.556 / 0.558
+       ES sin / MES con    10 |   27834 /   27582 (1.01)          |   114632 /   116799 (0.98)           |   4.12 /  4.23              |    19814 /   19796 (1.00)                       |  0.562 / 0.565
+       ES con / MES sin     1 |   64112 /   62857 (1.02)          |   208373 /   205083 (1.02)           |   3.25 /  3.26              |    48637 /   48147 (1.01)                       |  0.574 / 0.574
+       ES sin / MES sin     1 |   27024 /   26957 (1.00)          |    75368 /    78494 (0.96)           |   2.79 /  2.91              |    20352 /   20967 (0.97)                       |  0.555 / 0.553
+       en las piernas SC: 60 % con MAS ordenes a favor que en contra; 50 % con MAS ordenes que corrieron la punta a favor
+   MES  clase               n | ordenes a favor / en contra (cociente) | contratos a favor / en contra (cociente) | contratos por orden a favor / en contra | ordenes que corrieron la punta a favor / en contra | impacto por orden (ticks) a favor / en contra
+       ES con / MES con    64 |   21637 /   20789 (1.04)          |    72813 /    67569 (1.08)           |   3.37 /  3.25              |    11553 /   11334 (1.02)                       |  0.432 / 0.439
+       ES sin / MES con    10 |   28460 /   28021 (1.02)          |    99104 /    95320 (1.04)           |   3.48 /  3.40              |    14630 /   14724 (0.99)                       |  0.426 / 0.434
+       ES con / MES sin     1 |   66389 /   68190 (0.97)          |   187203 /   190717 (0.98)           |   2.82 /  2.80              |    40005 /   41881 (0.96)                       |  0.483 / 0.488
+       ES sin / MES sin     1 |   30652 /   30392 (1.01)          |    80367 /    80553 (1.00)           |   2.62 /  2.65              |    19327 /   19662 (0.98)                       |  0.431 / 0.452
+       en las piernas SC: 80 % con MAS ordenes a favor que en contra; 50 % con MAS ordenes que corrieron la punta a favor

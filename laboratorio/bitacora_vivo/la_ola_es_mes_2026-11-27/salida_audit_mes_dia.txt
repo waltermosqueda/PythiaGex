@@ -1,0 +1,4 @@
+ola-MES-M1-20261127.csv | X 10.00 | en vivo | costura fin del historial; con tope en la ultima vela | ordenes 373020 | pivotes 62, fotos 2310 (1154 tomadas), campos 44324 | difs 0 | 2.1 s
+  mediana por fuera con 10 ruedas previas: 126.5 (indicador 126.5) IGUAL
+  clima: 224 minutos cerrados en el csv, recalculados por fuera desde la cinta: 0 diferencias
+RESULTADO: todo igual

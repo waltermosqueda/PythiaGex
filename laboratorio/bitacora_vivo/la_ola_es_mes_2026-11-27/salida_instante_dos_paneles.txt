@@ -1,0 +1,5 @@
+ES (X 10.25): ordenes de la cinta que dan EXACTO el panel de la captura: 1
+   orden 238231  13:46:31.075 AR  ultimo 7293.25 | marea (1, -2640, 36.75, 7256.5) | ola (1, -399, 6.0, 7287.25) | delta de la jornada -3491 (pantalla 'total' -3491) IGUAL
+MES (X 10.00): ordenes de la cinta que dan EXACTO el panel de la captura: 2
+   orden 322352  13:46:31.075 AR  ultimo 7293.25 | marea (1, 6553, 35.75, 7257.5) | ola (1, 976, 5.75, 7287.5) | delta de la jornada +8068 (pantalla 'total' +8068) IGUAL
+   orden 322392  13:46:33.789 AR  ultimo 7293.25 | marea (1, 6553, 35.75, 7257.5) | ola (1, 976, 5.75, 7287.5) | delta de la jornada +8068 (pantalla 'total' +8068) IGUAL

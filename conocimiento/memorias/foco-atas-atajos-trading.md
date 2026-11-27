@@ -8,6 +8,8 @@ metadata:
   modified: 2026-11-27T00:49:10.450Z
 ---
 
+**DECISION DEL OPERADOR 27-11-2026 ~14:45 AR (manda sobre la espera de 20 s):** "no esperes 20 segundos, saca esa regla; si yo te lo pido hacelo ahora, si yo te freno explicitamente es otro tema" y "hacelo vos todo, te di los permisos, yo quiero analizar el grafico". Desde ahi: instalar/recargar en caliente SIN esperar quietud (instalar_pythiaola.ps1 QuietoSeg 0 de fabrica), apretando yo el boton de recarga y el OK por UIA. Lo que SIGUE valiendo: nunca apretar un boton ambiguo (el 27-11 14:30, con ATAS minimizado, la busqueda vieja apreto el scroll del MES); devolver el foco a la ventana que lo tenia; y avisarle en una linea que va a aparecer un cartel de ATAS.
+
 16-11-2026 01:12-01:13 ART (log `app_20261116.log`): traje al frente mi ventana flotante de trabajo (`SetForegroundWindow`) para
 usar el dialogo Indicators mientras el operador escribia un mensaje en el chat. Sus teclas cayeron en el grafico: `[Hot-Key] Down
 'A'` -> `Trading manager: Buy Bid click`, 'D' -> Sell Ask, 'E' -> Cancel All, 'S' -> Sell market; 10 intentos, todos con

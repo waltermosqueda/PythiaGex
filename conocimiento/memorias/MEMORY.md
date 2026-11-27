@@ -1,5 +1,6 @@
+- [REGLA GENERAL: hacerlo YA, no patear (27-11)](hacerlo-ya-no-patear.md) — todo lo que pide, en el momento; esperar solo si el dato no existe o dice "no ahora".
 - [REGLA: baul de pistas (26-11)](baul-de-pistas-no-descartar.md) — lo que sobrevive pruebas va al BAUL_DE_PISTAS.md para fusionar; vale para todos los agentes.
-- [PELIGRO: foco en ATAS = atajos de trading (16-11, 26-11)](foco-atas-atajos-trading.md) — sus teclas mandan ordenes (26-11: 2 Buy Limit); nunca clic/arrastre con el en la PC. [Si opera, no tocar el mouse](no-mover-mouse-si-opera.md): solo capturas pasivas. [Modo cortes](modo-cortes-mouse.md): no acepta hover virtual.
+- [PELIGRO: foco en ATAS = atajos de trading (16-11, 26-11)](foco-atas-atajos-trading.md) — sus teclas mandan ordenes (26-11: 2 Buy Limit); 27-11: "hacelo vos todo ya": instalar sin esperar quietud, nunca un boton ambiguo. [Si opera, no tocar el mouse](no-mover-mouse-si-opera.md): solo capturas pasivas. [Modo cortes](modo-cortes-mouse.md): no acepta hover virtual.
 - [Level 2 caido = Lucid, error 13](lucid-level2-error13.md) — lo reactiva el soporte HUMANO de Lucid. [ATAS tildado y cortes de Rithmic](atas-lento-cortes-rithmic.md): memoria MBO + suscripciones.
 - [Noche vs dia (18-09)](patron-horario-noche-vs-dia.md) — 'caro a la mañana' no existe; la prima nocturna no gana tras costos.
 - [Salidas en ATAS](salidas-atas-tp-sl-trailing.md) — SL/TP en servidor, BE/trailing en la PC; ninguna salida cambia el signo.
@@ -9,7 +10,7 @@
 - [Gatillo 17-09](busqueda-gatillo-2026-09-17.md) — 9 familias + ML: nada en direccion; se sabe el TAMAÑO.
 - [La sonda: cinta historica](sonda-cinta-historica-atas.md) — cada agresora con bid/ask antes y despues; sin historia del libro.
 - [Flujo Claro](flujo-claro-cvd-superador.md) — v1.8, 4 velocimetros; describe, no anticipa.
-- [No terminar sin orden](no-terminar-sesion-sin-orden.md) — pantalla activa hasta "apagate pantalla". [Mirar ATAS siempre](mirar-pantalla-antes-de-responder-atas.md): captura antes de responder.
+- [No terminar sin orden](no-terminar-sesion-sin-orden.md) — pantalla activa hasta "apagate pantalla". [Mirar ATAS siempre](mirar-pantalla-antes-de-responder-atas.md): foto PASIVA antes de responder y decir de donde sale cada numero (27-11).
 - [Freeze del portapapeles](freeze-portapapeles-textinputhost.md) — vigia automatico; leer vigia.log.
 - [Como enseñarle trading](como-ensenarle-trading.md) — analogia primero, una idea por vez, sin tablas ni jerga. [Tecnico + criollo](nombrar-niveles-tecnico-y-criollo.md); [con capturas reales](ensenar-con-capturas-reales.md).
 - [Setup de ATAS](setup-atas-verificado.md) — Ultra vitalicia, Rithmic; el tablero de opciones no agrega GEX. [Plan gamma/GEX](plan-gamma-gex.md): gratis primero.
@@ -81,5 +82,5 @@
 - [REGLA: explicar el movimiento](explicar-el-movimiento-no-azar.md) — no 'nada le gana al azar': factores, cual pesa, en que zona.
 - [Ronda 17](ronda-17-anatomia-del-movimiento.md) — piernas con su delta 86-99 %. [Ronda 18](ronda-18-senal-ola-y-indicador-aparte.md): la ola en un indicador aparte.
 - [Salto de calidad: rondas 19-25 (27-11)](busqueda-salto-de-calidad-rondas-19-21.md) — R22: semaforo = geometria; R23: elastico = la vara; A3 67-74 % vs azar 63 % (juez vivo desde el 30-11); R24: A3 a 30 min en 2024-25 NO pasa; R25: la mañana no anticipa la tarde y 'pierde en dias de tendencia' era la etiqueta.
-- [La Ola 1.0 (27-11)](la-ola-1-0-instalada.md) — ESZ6 1m de pruebas; panel y clima = cinta (0 difs, 11:54 con rueda abierta); grafico congelado sin dibujar -> cambiar de pestaña por UIA.
+- [La Ola 1.0 (27-11)](la-ola-1-0-instalada.md) — ESZ6 1m de pruebas; panel y clima = cinta (0 difs, 11:54 con rueda abierta); grafico congelado sin dibujar -> cambiar de pestaña por UIA; ES/MES: divergencia de color = mercado; cortes de Rithmic le hacen perder ordenes en vivo hasta recargar; X de MES puede redondear distinto.
 - [Circuito diario de los jueces en vivo (27-11)](circuito-jueces-en-vivo.md) — cinta_y_jueces.py tras las 17:00 NY: sonda + enlace cinta-ES- (la R21 no ve 'ESZ6') + jueces R21 y R23; roll: contratos desde el 07-12, ESH7 tras el 18-12.
