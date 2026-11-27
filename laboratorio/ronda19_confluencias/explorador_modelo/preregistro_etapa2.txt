@@ -1,0 +1,31 @@
+RONDA 19 - explorador MODELO - ETAPA 2 (declarada el 27-11-2026 ~03:55 AR, ANTES de correrla con las etiquetas reales)
+
+Lo que mostro la etapa 1 (46 variantes, LORO con embargo +-1, fuera de pliegue):
+- Los modelos sobre los 71 rasgos (arboles, L1, RuleFit, destilados) NO generalizan entre ruedas: precision por evento fuera de pliegue
+  igual o PEOR que la base (L1: 16-20 % con 2R contra 31 % de base). Los rasgos de valor de VARIOS DIAS (VWAP semanal y mensual, POC de la
+  semana anterior, POC y cierre de ayer) dominan el tamizado: firmados por el lado, en la misma rueda separan largos de cortos, o sea que
+  eligen LADO por la posicion en el vaiven de varios dias; con 26 ruedas eso son pocos episodios y fuera de la rueda se da vuelta.
+- Lo unico estable entre pliegues: las busquedas de subgrupos SOLO con rasgos de la rueda (SG3intra) eligen casi siempre la misma familia,
+  "vuelta al valor": VWAP RTH o de la jornada lejos del lado de la ganancia (<= -1 desvio o <= -5 X) con retroceso profundo (> 2,2 X) o
+  pierna de marea corta, y para 1R grandes netos a favor (netbig > ~2,6 de su escala) con pocos grandes en contra. Fuera de pliegue:
+  S1 19 ops 42 % (+0,50 neto), S6 30 ops 60 % (+0,27 neto). Sin significancia.
+
+Etapa 2 (8 variantes, misma validacion, mismas salidas, misma simulacion, mismo placebo con las MISMAS semillas para poder tomar el maximo
+de toda la busqueda por replica):
+1. SGC2-S1 / SGC2-S6: conjuncion de UNA condicion de CONTEXTO y UNA de MOMENTO (confluencia contexto -> momento del pre-registro).
+2. SGC3-S1 / SGC3-S6: CONTEXTO + MOMENTO + UNA de LUGAR o ESTRUCTURA (haz de 500 pares).
+   Bloques (todo de la rueda, nada de varios dias):
+   CONTEXTO  = vwr_dist_X, vwr_dist_sd, vwj_dist_X, vwj_dist_sd, ext_vwr_sd, ext_sigma_favor, va_hacia, ib_ambas, extension_fuera_ruido,
+               a_favor_marea, marea_agr_favor
+   LUGAR     = n_niveles_zona, zona_vwap_bandas, zona_vwap_central, zona_dia_ant, zona_noche, zona_ib, zona_r50, barrida_fijo, barrida_vwap,
+               n_barridas, sig_nivel_R
+   MOMENTO   = F1, F2, F3, F4, F6, abs_pasivo_rel, netbig_favor_rel, big_favor_rel, big_contra_rel, icebergs_60, delta60_rel, delta60_ratio,
+               delta300_rel, imb_favor_3v, imb_contra_3v, apilados_favor_3v
+   ESTRUCTURA= prof_ret_X, pierna_marea_X, dur_ret_log, vel_ret_X, hora
+   Umbrales en deciles del entrenamiento; criterio = cota inferior de Wilson (z 1,645) de la precision; soporte 1-6 eventos por rueda de
+   entrenamiento; esperanza neta de entrenamiento > 0 con costo 0,50.
+3. Plantillas sugeridas por las reglas de los pliegues de la etapa 1 (SESGO DE SELECCION DECLARADO: la forma la eligio mirar el diseno;
+   solo los umbrales se ajustan dentro de cada pliegue; las decide la confirmacion):
+   T1-S1 / T1-S6: prof_ret_X > a  &  vwr_dist_X <= b
+   T2-S1 / T2-S6: vwj_dist_sd <= a  &  netbig_favor_rel > b
+Total de variantes del explorador al terminar la etapa 2: 46 + 8 = 54 (mas las candidatas internas de cada busqueda, que se informan).

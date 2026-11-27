@@ -1,0 +1,15 @@
+chequeos totales 312 | fuera del ruido 132 (42 %)
+fuera del ruido, lado de la ruptura                     n  132 (21 ruedas) | 30 min -0.14 pts (52 % a favor) | 60 min -0.81 | al cierre -3.12 pts = -0.58 X (40 % a favor) | t por rueda al cierre -2.45
+  + marea a favor con agresores                         n   69 (20 ruedas) | 30 min +0.45 pts (57 % a favor) | 60 min -0.37 | al cierre +0.15 pts = +0.25 X (45 % a favor) | t por rueda al cierre -1.60
+  + marea NO a favor                                    n   63 (17 ruedas) | 30 min -0.80 pts (48 % a favor) | 60 min -1.30 | al cierre -6.71 pts = -1.49 X (35 % a favor) | t por rueda al cierre -2.54
+  + VWAP a favor                                        n  130 (21 ruedas) | 30 min -0.31 pts (52 % a favor) | 60 min -0.96 | al cierre -3.28 pts = -0.62 X (40 % a favor) | t por rueda al cierre -2.50
+  + marea y VWAP a favor                                n   69 (20 ruedas) | 30 min +0.45 pts (57 % a favor) | 60 min -0.37 | al cierre +0.15 pts = +0.25 X (45 % a favor) | t por rueda al cierre -1.60
+  hora 10:00:00                                         n   13 (13 ruedas) | 30 min +0.83 pts (46 % a favor) | 60 min -0.81 | al cierre +0.87 pts = +0.73 X (46 % a favor) | t por rueda al cierre +0.11
+  hora 10:30:00                                         n    9 ( 9 ruedas) | 30 min -1.06 pts (67 % a favor) | 60 min -0.86 | al cierre +5.69 pts = +1.66 X (67 % a favor) | t por rueda al cierre +0.65
+  hora 11:00:00                                         n   12 (12 ruedas) | 30 min +3.31 pts (67 % a favor) | 60 min +3.88 | al cierre -0.85 pts = +0.33 X (50 % a favor) | t por rueda al cierre -0.10
+  hora 12:00:00                                         n   13 (13 ruedas) | 30 min -2.85 pts (46 % a favor) | 60 min +0.29 | al cierre -7.10 pts = -1.44 X (38 % a favor) | t por rueda al cierre -1.05
+  hora 13:00:00                                         n   11 (11 ruedas) | 30 min +0.16 pts (55 % a favor) | 60 min -0.39 | al cierre -5.20 pts = -1.35 X (45 % a favor) | t por rueda al cierre -1.07
+  hora 14:00:00                                         n   11 (11 ruedas) | 30 min -2.95 pts (36 % a favor) | 60 min -0.80 | al cierre -4.32 pts = -0.91 X (55 % a favor) | t por rueda al cierre -1.21
+  hora 15:00:00                                         n   10 (10 ruedas) | 30 min +3.33 pts (50 % a favor) | 60 min -4.88 | al cierre -4.88 pts = -1.28 X (30 % a favor) | t por rueda al cierre -1.76
+  hora 15:30:00                                         n   10 (10 ruedas) | 30 min -8.20 pts (0 % a favor) | 60 min -8.20 | al cierre -8.20 pts = -2.19 X (0 % a favor) | t por rueda al cierre -3.10
+dentro del ruido: n 180 | |retorno al cierre| medio 14.81 pts

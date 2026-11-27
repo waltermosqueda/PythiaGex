@@ -1,0 +1,34 @@
+fade desde la cinta contra el derivado de S6: 220 eventos, iguales en pts y segundo de salida: 220 (100.0 %)
+E4-S6      mio: n  36 acierto  58.3 % neto +0.153 t +0.20 | declarado: n 36 acierto 58.3 neto 0.153 t 0.2
+E4-S1      mio: n  30 acierto  50.0 % neto +1.608 t +1.29 | declarado: n 30 acierto 50.0 neto 1.608 t 1.29
+E5b-S1     mio: n  36 acierto  47.2 % neto +1.188 t +1.09 | declarado: n 36 acierto 47.2 neto 1.188 t 1.09
+Z-C1-S6    mio: n  70 acierto  70.0 % neto +1.364 t +2.34 | declarado: n 70 acierto 70.0 neto 1.364 t 2.339
+Z-C1-S1    mio: n  69 acierto  49.3 % neto +1.656 t +2.05 | declarado: n 69 acierto 49.3 neto 1.656 t 2.052
+Z-C2-S6    mio: n  47 acierto  70.2 % neto +1.346 t +2.20 | declarado: n 47 acierto 70.2 neto 1.35 t 2.2
+Z-C3-S6    mio: n  56 acierto  73.2 % neto +1.674 t +2.43 | declarado: n 56 acierto 73.2 neto 1.67 t 2.43
+Z-C4-S6    mio: n  44 acierto  75.0 % neto +1.847 t +2.74 | declarado: n 44 acierto 75.0 neto 1.85 t 2.73
+Z-C4-S1    mio: n  44 acierto  56.8 % neto +2.699 t +2.45 | declarado: n None acierto 56.8 neto 2.7 t 2.45
+D-w6-S6m   mio: n  78 acierto  70.5 % neto +1.215 t +2.27 | declarado: n 78 acierto 70.5 neto 1.22 t 2.27
+D-w1-S6m   mio: n  79 acierto  70.9 % neto +1.035 t +2.02 | declarado: n 79 acierto 70.9 neto 1.03 t 2.02
+D-a2-S6m   mio: n  48 acierto  68.8 % neto +0.823 t +1.96 | declarado: n 48 acierto 68.8 neto 0.82 t 1.96
+D-a3-S6m   mio: n  44 acierto  68.2 % neto +1.023 t +2.16 | declarado: n 44 acierto 68.2 neto 1.02 t 2.16
+M-A-S6     mio: n  32 acierto  90.6 % neto +3.133 t +4.57 | declarado: n 38 acierto 68.4 neto 1.16 t 1.87
+M-B-S1     mio: n  14 acierto  78.6 % neto +4.786 t +2.58 | declarado: n 22 acierto 54.5 neto 1.45 t 0.94
+
+solapamiento de eventos entre candidatas (% del menor):
+          E4-S6  E4-S1  E5b-S1  Z-C1-S6  Z-C1-S1  Z-C2-S6  Z-C3-S6  Z-C4-S6  Z-C4-S1  D-w6-S6m  D-w1-S6m  D-a2-S6m  D-a3-S6m  M-A-S6  M-B-S1
+E4-S6     100.0  100.0    83.0      3.0      3.0      3.0      3.0      3.0      3.0       6.0       8.0       3.0       0.0    28.0    29.0
+E4-S1     100.0  100.0   100.0      3.0      3.0      3.0      3.0      3.0      3.0       7.0      10.0       3.0       0.0    23.0    29.0
+E5b-S1     83.0  100.0   100.0      3.0      3.0      3.0      3.0      3.0      3.0       6.0       8.0       3.0       0.0    22.0    29.0
+Z-C1-S6     3.0    3.0     3.0    100.0    100.0     47.0    100.0    100.0    100.0       6.0       3.0       2.0       7.0     6.0     7.0
+Z-C1-S1     3.0    3.0     3.0    100.0    100.0     47.0    100.0    100.0    100.0       6.0       3.0       2.0       7.0     6.0     7.0
+Z-C2-S6     3.0    3.0     3.0     47.0     47.0    100.0     40.0     32.0     32.0       9.0       2.0       2.0       9.0     6.0    21.0
+Z-C3-S6     3.0    3.0     3.0    100.0    100.0     40.0    100.0     89.0     89.0       5.0       4.0       2.0       5.0     6.0     7.0
+Z-C4-S6     3.0    3.0     3.0    100.0    100.0     32.0     89.0    100.0    100.0       2.0       5.0       2.0       0.0     3.0     7.0
+Z-C4-S1     3.0    3.0     3.0    100.0    100.0     32.0     89.0    100.0    100.0       2.0       5.0       2.0       0.0     3.0     7.0
+D-w6-S6m    6.0    7.0     6.0      6.0      6.0      9.0      5.0      2.0      2.0     100.0      58.0      21.0      84.0     0.0     0.0
+D-w1-S6m    8.0   10.0     8.0      3.0      3.0      2.0      4.0      5.0      5.0      58.0     100.0      85.0      18.0     3.0     0.0
+D-a2-S6m    3.0    3.0     3.0      2.0      2.0      2.0      2.0      2.0      2.0      21.0      85.0     100.0      18.0     3.0     0.0
+D-a3-S6m    0.0    0.0     0.0      7.0      7.0      9.0      5.0      0.0      0.0      84.0      18.0      18.0     100.0     0.0     0.0
+M-A-S6     28.0   23.0    22.0      6.0      6.0      6.0      6.0      3.0      3.0       0.0       3.0       3.0       0.0   100.0    14.0
+M-B-S1     29.0   29.0    29.0      7.0      7.0     21.0      7.0      7.0      7.0       0.0       0.0       0.0       0.0    14.0   100.0

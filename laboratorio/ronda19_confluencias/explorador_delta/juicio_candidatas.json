@@ -1,0 +1,423 @@
+{
+ "N_total": 332,
+ "por_archivo": {
+  "registro_variantes_delta.csv": 263,
+  "registro_variantes.csv": 69
+ },
+ "t_bonferroni": 4.193252729904561,
+ "w6": {
+  "regla": "FADE si (apilados a favor >= 1 o (F3 divergencia y extremo en nivel)) y la vuelta tardo <= 107 s",
+  "n": 78,
+  "ruedas": 26,
+  "ops_por_rueda": 3.0,
+  "acierto_pct": 70.5,
+  "gana_media": 4.327,
+  "pierde_media": -4.533,
+  "bruto_op": 1.715,
+  "bruto_R": 0.353,
+  "neto_op_c050": 1.215,
+  "neto_op_c100": 0.715,
+  "t_rueda_c050": 2.27,
+  "t_rueda_c100": 1.39,
+  "ruedas_positivas_c050": 16,
+  "ruedas_con_ops": 23,
+  "racha_perdedora": 3,
+  "caida_max_c050": 17.5,
+  "sharpe_diario_c050": 0.4458,
+  "mejor_rueda": 22.5,
+  "peor_rueda": -8.25,
+  "dia_mejor": "2026-09-28",
+  "dia_peor": "2026-09-14",
+  "neto_total_c050": 94.75,
+  "R_medio": 4.49,
+  "sharpe": 0.4457766624146332,
+  "dsr": 0.027327805561508052,
+  "pasa_bonferroni": false,
+  "t_sin_mejor_rueda": 1.9626061282342206,
+  "acierto_mitad1": 62.2,
+  "n_mitad1": 45,
+  "neto_mitad1": 0.31,
+  "acierto_mitad2": 81.8,
+  "n_mitad2": 33,
+  "neto_mitad2": 2.45,
+  "placeboA": {
+   "p_neto": 0.0,
+   "neto": -0.6280464743589743,
+   "acierto": 49.95961538461538,
+   "p_acierto": 0.0,
+   "p_t": 0.0005
+  },
+  "placeboF": {
+   "firma": {
+    "p_neto": 0.0,
+    "neto": -0.3366169263476379,
+    "acierto": 54.23670427597351,
+    "p_acierto": 0.002,
+    "p_t": 0.006,
+    "n_medio": null
+   },
+   "firma+velocidad": {
+    "p_neto": 0.0,
+    "neto": -0.49262415791840075,
+    "acierto": 52.701148600174825,
+    "p_acierto": 0.001,
+    "p_t": 0.0,
+    "n_medio": null
+   }
+  },
+  "placeboH": {
+   "p_neto": 0.001,
+   "neto": -0.6411275134174568,
+   "acierto": 49.74882571966411,
+   "p_acierto": 0.0
+  },
+  "por_lado": {
+   "-1": {
+    "n": 35,
+    "acierto": 74.3
+   },
+   "1": {
+    "n": 43,
+    "acierto": 67.4
+   }
+  },
+  "motivos": {
+   "objetivo": 55,
+   "stop": 23
+  },
+  "gana_pts": 4.33,
+  "pierde_pts": -4.53
+ },
+ "w1": {
+  "regla": "FADE si (apilados a favor de la vuelta >= 1 o retroceso sin agresores) y la vuelta tardo <= 107 s",
+  "n": 79,
+  "ruedas": 26,
+  "ops_por_rueda": 3.04,
+  "acierto_pct": 70.9,
+  "gana_media": 4.129,
+  "pierde_media": -4.783,
+  "bruto_op": 1.535,
+  "bruto_R": 0.357,
+  "neto_op_c050": 1.035,
+  "neto_op_c100": 0.535,
+  "t_rueda_c050": 2.02,
+  "t_rueda_c100": 1.06,
+  "ruedas_positivas_c050": 14,
+  "ruedas_con_ops": 23,
+  "racha_perdedora": 3,
+  "caida_max_c050": 27.0,
+  "sharpe_diario_c050": 0.397,
+  "mejor_rueda": 18.0,
+  "peor_rueda": -8.75,
+  "dia_mejor": "2026-09-28",
+  "dia_peor": "2026-09-16",
+  "neto_total_c050": 81.75,
+  "R_medio": 4.42,
+  "sharpe": 0.3970321757785293,
+  "dsr": 0.020851238976591788,
+  "pasa_bonferroni": false,
+  "t_sin_mejor_rueda": 1.7073670576484978,
+  "acierto_mitad1": 67.4,
+  "n_mitad1": 46,
+  "neto_mitad1": 0.48,
+  "acierto_mitad2": 75.8,
+  "n_mitad2": 33,
+  "neto_mitad2": 1.81,
+  "placeboA": {
+   "p_neto": 0.0005,
+   "neto": -0.626761075949367,
+   "acierto": 50.01075949367089,
+   "p_acierto": 0.0005,
+   "p_t": 0.002
+  },
+  "placeboF": {
+   "firma": {
+    "p_neto": 0.003,
+    "neto": -0.33114466590762764,
+    "acierto": 54.34809208582329,
+    "p_acierto": 0.001,
+    "p_t": 0.004,
+    "n_medio": null
+   },
+   "firma+velocidad": {
+    "p_neto": 0.0,
+    "neto": -0.501798795650261,
+    "acierto": 52.651541718221125,
+    "p_acierto": 0.0,
+    "p_t": 0.0,
+    "n_medio": null
+   }
+  },
+  "placeboH": {
+   "p_neto": 0.0,
+   "neto": -0.618358989870708,
+   "acierto": 50.028071792528564,
+   "p_acierto": 0.0
+  },
+  "por_lado": {
+   "-1": {
+    "n": 34,
+    "acierto": 73.5
+   },
+   "1": {
+    "n": 45,
+    "acierto": 68.9
+   }
+  },
+  "motivos": {
+   "objetivo": 56,
+   "stop": 23
+  },
+  "gana_pts": 4.13,
+  "pierde_pts": -4.78
+ },
+ "a2": {
+  "regla": "FADE si retroceso sin agresores y la vuelta tardo <= 107 s",
+  "n": 48,
+  "ruedas": 26,
+  "ops_por_rueda": 1.85,
+  "acierto_pct": 68.8,
+  "gana_media": 4.053,
+  "pierde_media": -4.683,
+  "bruto_op": 1.323,
+  "bruto_R": 0.312,
+  "neto_op_c050": 0.823,
+  "neto_op_c100": 0.323,
+  "t_rueda_c050": 1.96,
+  "t_rueda_c100": 0.76,
+  "ruedas_positivas_c050": 14,
+  "ruedas_con_ops": 20,
+  "racha_perdedora": 3,
+  "caida_max_c050": 21.75,
+  "sharpe_diario_c050": 0.3838,
+  "mejor_rueda": 9.0,
+  "peor_rueda": -9.75,
+  "dia_mejor": "2026-10-02",
+  "dia_peor": "2026-09-14",
+  "neto_total_c050": 39.5,
+  "R_medio": 4.34,
+  "sharpe": 0.38379081716088537,
+  "dsr": 0.04112254441599251,
+  "pasa_bonferroni": false,
+  "t_sin_mejor_rueda": 1.6362945868075265,
+  "acierto_mitad1": 63.0,
+  "n_mitad1": 27,
+  "neto_mitad1": 0.05,
+  "acierto_mitad2": 76.2,
+  "n_mitad2": 21,
+  "neto_mitad2": 1.82,
+  "placeboA": {
+   "p_neto": 0.012,
+   "neto": -0.6154713541666667,
+   "acierto": 50.123958333333334,
+   "p_acierto": 0.0065,
+   "p_t": 0.004
+  },
+  "placeboF": {
+   "firma": {
+    "p_neto": 0.028,
+    "neto": -0.3899741620931756,
+    "acierto": 53.734299792618195,
+    "p_acierto": 0.017,
+    "p_t": 0.008,
+    "n_medio": null
+   },
+   "firma+velocidad": {
+    "p_neto": 0.015,
+    "neto": -0.4472526985859455,
+    "acierto": 53.23039021939034,
+    "p_acierto": 0.01,
+    "p_t": 0.004,
+    "n_medio": null
+   }
+  },
+  "placeboH": {
+   "p_neto": 0.015,
+   "neto": -0.6104933896469008,
+   "acierto": 50.165735892552256,
+   "p_acierto": 0.004
+  },
+  "por_lado": {
+   "-1": {
+    "n": 20,
+    "acierto": 80.0
+   },
+   "1": {
+    "n": 28,
+    "acierto": 60.7
+   }
+  },
+  "motivos": {
+   "objetivo": 33,
+   "stop": 15
+  },
+  "gana_pts": 4.05,
+  "pierde_pts": -4.68
+ },
+ "a3": {
+  "regla": "FADE si F3 divergencia y extremo en nivel y la vuelta tardo <= 107 s",
+  "n": 44,
+  "ruedas": 26,
+  "ops_por_rueda": 1.69,
+  "acierto_pct": 68.2,
+  "gana_media": 4.375,
+  "pierde_media": -4.589,
+  "bruto_op": 1.523,
+  "bruto_R": 0.307,
+  "neto_op_c050": 1.023,
+  "neto_op_c100": 0.523,
+  "t_rueda_c050": 2.16,
+  "t_rueda_c100": 1.18,
+  "ruedas_positivas_c050": 13,
+  "ruedas_con_ops": 18,
+  "racha_perdedora": 4,
+  "caida_max_c050": 23.0,
+  "sharpe_diario_c050": 0.4243,
+  "mejor_rueda": 9.25,
+  "peor_rueda": -6.25,
+  "dia_mejor": "2026-09-15",
+  "dia_peor": "2026-09-18",
+  "neto_total_c050": 45.0,
+  "R_medio": 4.53,
+  "sharpe": 0.4242946190243492,
+  "dsr": 0.038472358669424986,
+  "pasa_bonferroni": false,
+  "t_sin_mejor_rueda": 1.8533695213926085,
+  "acierto_mitad1": 65.2,
+  "n_mitad1": 23,
+  "neto_mitad1": 0.62,
+  "acierto_mitad2": 71.4,
+  "n_mitad2": 21,
+  "neto_mitad2": 1.46,
+  "placeboA": {
+   "p_neto": 0.007,
+   "neto": -0.6242869318181818,
+   "acierto": 50.04204545454546,
+   "p_acierto": 0.0105,
+   "p_t": 0.003
+  },
+  "placeboF": {
+   "firma": {
+    "p_neto": 0.011,
+    "neto": -0.39465578625299713,
+    "acierto": 53.51159930563219,
+    "p_acierto": 0.017,
+    "p_t": 0.003,
+    "n_medio": null
+   },
+   "firma+velocidad": {
+    "p_neto": 0.014,
+    "neto": -0.3825984299341335,
+    "acierto": 53.775144483170756,
+    "p_acierto": 0.018,
+    "p_t": 0.004,
+    "n_medio": null
+   }
+  },
+  "placeboH": {
+   "p_neto": 0.006,
+   "neto": -0.668670521610645,
+   "acierto": 49.55408701716132,
+   "p_acierto": 0.008
+  },
+  "por_lado": {
+   "-1": {
+    "n": 22,
+    "acierto": 72.7
+   },
+   "1": {
+    "n": 22,
+    "acierto": 63.6
+   }
+  },
+  "motivos": {
+   "objetivo": 30,
+   "stop": 14
+  },
+  "gana_pts": 4.38,
+  "pierde_pts": -4.59
+ },
+ "a1": {
+  "regla": "FADE si apilados a favor >= 1 y la vuelta tardo <= 107 s",
+  "n": 48,
+  "ruedas": 26,
+  "ops_por_rueda": 1.85,
+  "acierto_pct": 68.8,
+  "gana_media": 4.22,
+  "pierde_media": -4.617,
+  "bruto_op": 1.458,
+  "bruto_R": 0.317,
+  "neto_op_c050": 0.958,
+  "neto_op_c100": 0.458,
+  "t_rueda_c050": 1.52,
+  "t_rueda_c100": 0.74,
+  "ruedas_positivas_c050": 11,
+  "ruedas_con_ops": 19,
+  "racha_perdedora": 5,
+  "caida_max_c050": 26.75,
+  "sharpe_diario_c050": 0.2978,
+  "mejor_rueda": 13.5,
+  "peor_rueda": -8.25,
+  "dia_mejor": "2026-09-28",
+  "dia_peor": "2026-09-16",
+  "neto_total_c050": 46.0,
+  "R_medio": 4.44,
+  "sharpe": 0.2977827230593912,
+  "dsr": 0.005238768263923173,
+  "pasa_bonferroni": false,
+  "t_sin_mejor_rueda": 1.1710800875382399,
+  "acierto_mitad1": 63.6,
+  "n_mitad1": 33,
+  "neto_mitad1": 0.38,
+  "acierto_mitad2": 80.0,
+  "n_mitad2": 15,
+  "neto_mitad2": 2.23,
+  "placeboA": {
+   "p_neto": 0.008,
+   "neto": -0.5973177083333334,
+   "acierto": 50.33125,
+   "p_acierto": 0.009,
+   "p_t": 0.012
+  },
+  "placeboF": {
+   "firma": {
+    "p_neto": 0.011,
+    "neto": -0.3865908726846375,
+    "acierto": 54.111016686553704,
+    "p_acierto": 0.018,
+    "p_t": 0.02,
+    "n_medio": null
+   },
+   "firma+velocidad": {
+    "p_neto": 0.004,
+    "neto": -0.4902148242472348,
+    "acierto": 52.9051144518633,
+    "p_acierto": 0.005,
+    "p_t": 0.013,
+    "n_medio": null
+   }
+  },
+  "placeboH": {
+   "p_neto": 0.003,
+   "neto": -0.6327218345084084,
+   "acierto": 49.93607695999292,
+   "p_acierto": 0.004
+  },
+  "por_lado": {
+   "-1": {
+    "n": 23,
+    "acierto": 65.2
+   },
+   "1": {
+    "n": 25,
+    "acierto": 72.0
+   }
+  },
+  "motivos": {
+   "objetivo": 33,
+   "stop": 15
+  },
+  "gana_pts": 4.22,
+  "pierde_pts": -4.62
+ }
+}

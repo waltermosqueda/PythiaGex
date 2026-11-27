@@ -1,0 +1,24 @@
+== C1_banda_respetada+iceberg | extremo del retroceso entre X/2 antes y la banda de 2 sd del VWAP (RTH o jornada) del lado opuesto, sin perforarla + F2 iceberg del lado pasivo (recarga a <= X/2 del extremo, 60 s); entra en la vuelta de la ola (hacia el VWAP); stop extremo -/+ 2 ticks
+  Z9_C1_banda_respetada+iceberg      S1  n   69 (2.65/r) acierto  49.3 % bruto  +2.16 (+0.46R) neto050  +1.66 neto100  +1.16 t +2.05 mejor  +37.0 peor  -17.0
+  Z9_C1_banda_respetada+iceberg      S2  n   64 (2.46/r) acierto  39.1 % bruto  +2.36 (+0.50R) neto050  +1.86 neto100  +1.36 t +1.61 mejor  +42.8 peor  -19.5
+  Z9_C1_banda_respetada+iceberg      S3  n   69 (2.65/r) acierto  52.2 % bruto  +1.47 (+0.31R) neto050  +0.97 neto100  +0.47 t +1.33 mejor  +24.9 peor  -19.5
+  Z9_C1_banda_respetada+iceberg      S4  n    8 (0.31/r) acierto  37.5 % bruto  +2.53 (+0.62R) neto050  +2.03 neto100  +1.53 t +0.62 mejor  +19.8 peor   -6.0
+  Z9_C1_banda_respetada+iceberg      S4b n   61 (2.35/r) acierto  32.8 % bruto  +2.29 (+0.41R) neto050  +1.79 neto100  +1.29 t +1.15 mejor  +63.8 peor  -19.5
+  Z9_C1_banda_respetada+iceberg      S5  n   68 (2.62/r) acierto  42.6 % bruto  +1.41 (+0.28R) neto050  +0.91 neto100  +0.41 t +0.95 mejor  +33.5 peor  -19.5
+  Z9_C1_banda_respetada+iceberg      S6  n   70 (2.69/r) acierto  70.0 % bruto  +1.86 (+0.40R) neto050  +1.36 neto100  +0.86 t +2.34 mejor  +24.8 peor   -5.2
+== C2_banda_toque | extremo del retroceso a +-T (2 ticks) de la banda de 2 sd del VWAP (RTH o jornada) del lado opuesto; entra en la vuelta de la ola
+  Z9_C2_banda_toque                  S1  n   46 (1.77/r) acierto  50.0 % bruto  +2.41 (+0.50R) neto050  +1.91 neto100  +1.41 t +1.74 mejor  +25.8 peor  -16.5
+  Z9_C2_banda_toque                  S2  n   46 (1.77/r) acierto  39.1 % bruto  +2.97 (+0.56R) neto050  +2.47 neto100  +1.97 t +1.78 mejor  +42.0 peor  -16.5
+  Z9_C2_banda_toque                  S3  n   47 (1.81/r) acierto  51.1 % bruto  +1.08 (+0.22R) neto050  +0.58 neto100  +0.08 t +0.68 mejor  +16.5 peor  -16.5
+  Z9_C2_banda_toque                  S4  n    4 (0.15/r) acierto  75.0 % bruto +13.50 (+2.56R) neto050 +13.00 neto100 +12.50 t +1.66 mejor  +23.8 peor   +0.0
+  Z9_C2_banda_toque                  S4b n   42 (1.61/r) acierto  33.3 % bruto  +4.26 (+0.76R) neto050  +3.76 neto100  +3.26 t +1.53 mejor  +63.8 peor  -16.5
+  Z9_C2_banda_toque                  S5  n   47 (1.81/r) acierto  44.7 % bruto  +2.11 (+0.40R) neto050  +1.61 neto100  +1.11 t +1.41 mejor  +34.5 peor  -16.5
+  Z9_C2_banda_toque                  S6  n   47 (1.81/r) acierto  70.2 % bruto  +1.85 (+0.40R) neto050  +1.35 neto100  +0.85 t +2.20 mejor  +17.2 peor   -8.0
+== C3_banda_respetada+iceberg+recorrido | C1 + el VWAP RTH queda a >= 1,5 R a favor desde la entrada (recorrido para la reversion)
+  Z9_C3_banda_respetada+iceberg+reco S1  n   56 (2.15/r) acierto  50.0 % bruto  +2.31 (+0.48R) neto050  +1.81 neto100  +1.31 t +2.17 mejor  +29.5 peor  -17.0
+  Z9_C3_banda_respetada+iceberg+reco S2  n   54 (2.08/r) acierto  40.7 % bruto  +2.60 (+0.56R) neto050  +2.10 neto100  +1.60 t +1.91 mejor  +31.2 peor  -19.5
+  Z9_C3_banda_respetada+iceberg+reco S3  n   56 (2.15/r) acierto  51.8 % bruto  +1.61 (+0.33R) neto050  +1.11 neto100  +0.61 t +1.31 mejor  +24.9 peor  -19.5
+  Z9_C3_banda_respetada+iceberg+reco S4  n    5 (0.19/r) acierto  40.0 % bruto  +4.50 (+1.05R) neto050  +4.00 neto100  +3.50 t +0.79 mejor  +19.8 peor   -5.5
+  Z9_C3_banda_respetada+iceberg+reco S4b n   52 (2.00/r) acierto  36.5 % bruto  +3.61 (+0.68R) neto050  +3.11 neto100  +2.61 t +1.50 mejor  +63.8 peor  -19.5
+  Z9_C3_banda_respetada+iceberg+reco S5  n   54 (2.08/r) acierto  35.2 % bruto  +1.58 (+0.31R) neto050  +1.08 neto100  +0.58 t +0.97 mejor  +28.4 peor  -19.5
+  Z9_C3_banda_respetada+iceberg+reco S6  n   56 (2.15/r) acierto  73.2 % bruto  +2.17 (+0.46R) neto050  +1.67 neto100  +1.17 t +2.43 mejor  +24.8 peor   -5.2

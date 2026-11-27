@@ -1,0 +1,7 @@
+  Z9_C4_banda_respetada+iceberg_desd S2  n   44 (1.69/r) acierto  47.7 % bruto  +3.70 (+0.82R) neto050  +3.20 neto100  +2.70 t +2.11 mejor  +39.8 peor  -13.0
+  Z9_C4_banda_respetada+iceberg_desd S3  n   44 (1.69/r) acierto  59.1 % bruto  +2.22 (+0.48R) neto050  +1.72 neto100  +1.22 t +1.64 mejor  +29.9 peor  -12.8
+  Z9_C4_banda_respetada+iceberg_desd S4  n    4 (0.15/r) acierto  50.0 % bruto  +6.88 (+1.56R) neto050  +6.38 neto100  +5.88 t +1.04 mejor  +19.8 peor   -5.2
+  Z9_C4_banda_respetada+iceberg_desd S4b n   41 (1.58/r) acierto  43.9 % bruto  +4.62 (+0.93R) neto050  +4.12 neto100  +3.62 t +1.91 mejor  +63.8 peor  -12.8
+  Z9_C4_banda_respetada+iceberg_desd S5  n   44 (1.69/r) acierto  40.9 % bruto  +2.14 (+0.45R) neto050  +1.64 neto100  +1.14 t +1.25 mejor  +33.5 peor  -13.0
+  Z9_C4_banda_respetada+iceberg_desd S6  n   44 (1.69/r) acierto  75.0 % bruto  +2.35 (+0.50R) neto050  +1.85 neto100  +1.35 t +2.73 mejor  +14.8 peor   -5.2
+  Z9_C4_banda_respetada+iceberg_desd S1  n   44 (1.69/r) acierto  56.8 % bruto  +3.20 (+0.68R) neto050  +2.70 neto100  +2.20 t +2.45 mejor  +30.0 peor  -12.8

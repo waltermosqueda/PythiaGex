@@ -1,0 +1,21 @@
+== extremo vs VWAP RTH en desvios (firmado: negativo = del lado opuesto a la operacion)
+  (-9.00,-2.50]  evento: n   96 S6  46.9 % -0.06 R | S1  29.2 % -0.12 R || simulado S6 n  53  49.1 % neto -0.62 t -0.77 | S1  34.6 % neto -0.32 t -0.33
+  (-2.50,-2.25]  evento: n   43 S6  65.1 % +0.30 R | S1  41.9 % +0.23 R || simulado S6 n  41  63.4 % neto +0.49 t +0.69 | S1  41.5 % neto +0.27 t +0.33
+  (-2.25,-2.00]  evento: n   69 S6  50.7 % +0.01 R | S1  29.0 % -0.13 R || simulado S6 n  67  50.7 % neto -0.39 t -0.71 | S1  29.9 % neto -0.89 t -1.25
+  (-2.00,-1.75]  evento: n   97 S6  58.8 % +0.17 R | S1  39.2 % +0.16 R || simulado S6 n  82  59.8 % neto +0.44 t +0.88 | S1  40.7 % neto +0.60 t +0.78
+  (-1.75,-1.50]  evento: n  126 S6  47.6 % -0.05 R | S1  32.5 % -0.03 R || simulado S6 n  88  52.3 % neto -0.24 t -0.60 | S1  35.2 % neto -0.09 t -0.14
+  (-1.50,-1.00]  evento: n  246 S6  45.9 % -0.08 R | S1  31.3 % -0.07 R || simulado S6 n 106  43.4 % neto -1.22 t -2.47 | S1  31.1 % neto -0.89 t -1.32
+  (-1.00,-0.50]  evento: n  174 S6  42.0 % -0.16 R | S1  27.0 % -0.22 R || simulado S6 n  93  38.7 % neto -1.65 t -2.82 | S1  23.3 % neto -2.00 t -2.74
+  (-0.50, 0.00]  evento: n  152 S6  48.0 % -0.04 R | S1  33.6 % -0.04 R || simulado S6 n  79  43.0 % neto -1.16 t -2.00 | S1  30.1 % neto -1.13 t -1.41
+  ( 0.00, 0.50]  evento: n  191 S6  50.3 % +0.01 R | S1  31.4 % -0.05 R || simulado S6 n  95  53.7 % neto -0.20 t -0.56 | S1  33.3 % neto -0.66 t -1.29
+  ( 0.50, 9.00]  evento: n  499 S6  43.7 % -0.13 R | S1  28.9 % -0.13 R || simulado S6 n 120  45.0 % neto -0.86 t -2.25 | S1  28.4 % neto -1.07 t -2.18
+== pen del extremo respecto de la banda de 2 sd RTH del lado opuesto (en X; >0 = la perforo)
+  (-1.000,-0.500]  evento: n  106 S6  42.5 % -0.14 R | S1  29.2 % -0.12 R || simulado S6 n  77  46.8 % neto -0.87 t -2.07 | S1  28.9 % neto -1.14 t -1.30
+  (-0.500,-0.250]  evento: n   55 S6  63.6 % +0.27 R | S1  43.6 % +0.31 R || simulado S6 n  51  62.7 % neto +0.76 t +1.17 | S1  41.2 % neto +0.79 t +0.93
+  (-0.250,-0.125]  evento: n   15 S6  46.7 % -0.07 R | S1  33.3 % -0.09 R || simulado S6 n  15  46.7 % neto -0.93 t -0.71 | S1  33.3 % neto -1.03 t -0.74
+  (-0.125, 0.000]  evento: n   20 S6  75.0 % +0.50 R | S1  55.0 % +0.65 R || simulado S6 n  20  75.0 % neto +1.75 t +2.03 | S1  57.9 % neto +2.90 t +1.41
+  ( 0.000, 0.125]  evento: n   14 S6  57.1 % +0.14 R | S1  42.9 % +0.29 R || simulado S6 n  14  57.1 % neto +0.43 t +0.44 | S1  42.9 % neto +1.02 t +0.69
+  ( 0.125, 0.250]  evento: n   27 S6  40.7 % -0.18 R | S1  18.5 % -0.44 R || simulado S6 n  27  40.7 % neto -1.43 t -1.52 | S1  18.5 % neto -2.52 t -2.59
+  ( 0.250, 0.500]  evento: n   25 S6  52.0 % +0.04 R | S1  20.0 % -0.40 R || simulado S6 n  25  52.0 % neto -0.36 t -0.46 | S1  20.0 % neto -2.18 t -1.82
+  ( 0.500, 1.000]  evento: n   44 S6  63.6 % +0.27 R | S1  43.2 % +0.27 R || simulado S6 n  41  61.0 % neto +0.41 t +0.49 | S1  43.9 % neto +0.58 t +0.49
+  ( 1.000, 2.000]  evento: n   49 S6  55.1 % +0.10 R | S1  36.7 % +0.10 R || simulado S6 n  42  50.0 % neto -0.58 t -0.66 | S1  33.3 % neto -0.46 t -0.44

@@ -1,0 +1,442 @@
+{
+ "C1_banda_respetada+iceberg": {
+  "A": {
+   "S6": {
+    "real_neto050": 1.364,
+    "real_acierto": 70.0,
+    "real_n": 70,
+    "contrario_neto050": -2.764,
+    "contrario_acierto": 24.6,
+    "azar_neto050_media": -0.671,
+    "azar_neto050_p95": 0.152,
+    "azar_acierto_media": 47.5,
+    "p_neto": 0.0,
+    "p_acierto": 0.0
+   },
+   "S1": {
+    "real_neto050": 1.656,
+    "real_acierto": 49.3,
+    "real_n": 69,
+    "contrario_neto050": -3.117,
+    "contrario_acierto": 13.6,
+    "azar_neto050_media": -0.765,
+    "azar_neto050_p95": 0.265,
+    "azar_acierto_media": 31.2,
+    "p_neto": 0.0,
+    "p_acierto": 0.0
+   },
+   "S2": {
+    "real_neto050": 1.859,
+    "real_acierto": 39.1,
+    "real_n": 64,
+    "contrario_neto050": -2.715,
+    "contrario_acierto": 12.5,
+    "azar_neto050_media": -0.42,
+    "azar_neto050_p95": 0.797,
+    "azar_acierto_media": 25.9,
+    "p_neto": 0.0,
+    "p_acierto": 0.0
+   },
+   "S4b": {
+    "real_neto050": 1.787,
+    "real_acierto": 32.8,
+    "real_n": 61,
+    "contrario_neto050": -1.793,
+    "contrario_acierto": 10.3,
+    "azar_neto050_media": 0.785,
+    "azar_neto050_p95": 2.866,
+    "azar_acierto_media": 23.5,
+    "p_neto": 0.228,
+    "p_acierto": 0.002
+   }
+  },
+  "B": {
+   "S6": {
+    "real_neto": 1.364,
+    "real_acierto": 70.0,
+    "real_t": 2.339,
+    "real_n": 70,
+    "plac_neto_media": -0.621,
+    "plac_neto_p95": 0.351,
+    "plac_acierto_media": 49.0,
+    "plac_n_media": 52.6,
+    "plac_t_media": -1.06,
+    "p_neto": 0.0,
+    "p_acierto": 0.0,
+    "p_t": 0.0
+   },
+   "S1": {
+    "real_neto": 1.656,
+    "real_acierto": 49.3,
+    "real_t": 2.052,
+    "real_n": 69,
+    "plac_neto_media": -0.695,
+    "plac_neto_p95": 0.546,
+    "plac_acierto_media": 32.0,
+    "plac_n_media": 51.3,
+    "plac_t_media": -0.81,
+    "p_neto": 0.003,
+    "p_acierto": 0.0,
+    "p_t": 0.0
+   },
+   "S5": {
+    "real_neto": 0.911,
+    "real_acierto": 42.6,
+    "real_t": 0.952,
+    "real_n": 68,
+    "plac_neto_media": -0.813,
+    "plac_neto_p95": 0.923,
+    "plac_acierto_media": 30.4,
+    "plac_n_media": 48.7,
+    "plac_t_media": -0.8,
+    "p_neto": 0.053,
+    "p_acierto": 0.053,
+    "p_t": 0.023
+   },
+   "S4b": {
+    "real_neto": 1.787,
+    "real_acierto": 32.8,
+    "real_t": 1.149,
+    "real_n": 61,
+    "plac_neto_media": -0.466,
+    "plac_neto_p95": 1.879,
+    "plac_acierto_media": 23.6,
+    "plac_n_media": 47.1,
+    "plac_t_media": -0.46,
+    "p_neto": 0.06,
+    "p_acierto": 0.043,
+    "p_t": 0.027
+   }
+  }
+ },
+ "C2_banda_toque": {
+  "A": {
+   "S6": {
+    "real_neto050": 1.346,
+    "real_acierto": 70.2,
+    "real_n": 47,
+    "contrario_neto050": -2.473,
+    "contrario_acierto": 28.3,
+    "azar_neto050_media": -0.49,
+    "azar_neto050_p95": 0.615,
+    "azar_acierto_media": 50.1,
+    "p_neto": 0.004,
+    "p_acierto": 0.004
+   },
+   "S1": {
+    "real_neto050": 1.913,
+    "real_acierto": 50.0,
+    "real_n": 46,
+    "contrario_neto050": -2.756,
+    "contrario_acierto": 16.7,
+    "azar_neto050_media": -0.433,
+    "azar_neto050_p95": 1.017,
+    "azar_acierto_media": 33.5,
+    "p_neto": 0.002,
+    "p_acierto": 0.002
+   },
+   "S2": {
+    "real_neto050": 2.467,
+    "real_acierto": 39.1,
+    "real_n": 46,
+    "contrario_neto050": -1.939,
+    "contrario_acierto": 17.1,
+    "azar_neto050_media": 0.272,
+    "azar_neto050_p95": 2.063,
+    "azar_acierto_media": 28.4,
+    "p_neto": 0.022,
+    "p_acierto": 0.03
+   },
+   "S4b": {
+    "real_neto050": 3.756,
+    "real_acierto": 33.3,
+    "real_n": 42,
+    "contrario_neto050": -2.901,
+    "contrario_acierto": 13.2,
+    "azar_neto050_media": 0.497,
+    "azar_neto050_p95": 3.231,
+    "azar_acierto_media": 22.4,
+    "p_neto": 0.022,
+    "p_acierto": 0.026
+   }
+  },
+  "B": {
+   "S6": {
+    "real_neto": 1.346,
+    "real_acierto": 70.2,
+    "real_t": 2.2,
+    "real_n": 47,
+    "plac_neto_media": -0.557,
+    "plac_neto_p95": 0.531,
+    "plac_acierto_media": 49.3,
+    "plac_n_media": 47.7,
+    "plac_t_media": -0.81,
+    "p_neto": 0.0,
+    "p_acierto": 0.003,
+    "p_t": 0.0
+   },
+   "S1": {
+    "real_neto": 1.913,
+    "real_acierto": 50.0,
+    "real_t": 1.737,
+    "real_n": 46,
+    "plac_neto_media": -0.612,
+    "plac_neto_p95": 0.91,
+    "plac_acierto_media": 32.5,
+    "plac_n_media": 46.5,
+    "plac_t_media": -0.68,
+    "p_neto": 0.003,
+    "p_acierto": 0.01,
+    "p_t": 0.01
+   },
+   "S5": {
+    "real_neto": 1.609,
+    "real_acierto": 44.7,
+    "real_t": 1.413,
+    "real_n": 47,
+    "plac_neto_media": -0.452,
+    "plac_neto_p95": 1.144,
+    "plac_acierto_media": 34.3,
+    "plac_n_media": 43.6,
+    "plac_t_media": -0.47,
+    "p_neto": 0.03,
+    "p_acierto": 0.07,
+    "p_t": 0.017
+   },
+   "S4b": {
+    "real_neto": 3.756,
+    "real_acierto": 33.3,
+    "real_t": 1.531,
+    "real_n": 42,
+    "plac_neto_media": -0.239,
+    "plac_neto_p95": 2.003,
+    "plac_acierto_media": 25.4,
+    "plac_n_media": 43.6,
+    "plac_t_media": -0.32,
+    "p_neto": 0.01,
+    "p_acierto": 0.12,
+    "p_t": 0.017
+   }
+  }
+ },
+ "C3_banda_respetada+iceberg+recorrido": {
+  "A": {
+   "S6": {
+    "real_neto050": 1.674,
+    "real_acierto": 73.2,
+    "real_n": 56,
+    "contrario_neto050": -3.071,
+    "contrario_acierto": 21.4,
+    "azar_neto050_media": -0.656,
+    "azar_neto050_p95": 0.313,
+    "azar_acierto_media": 47.7,
+    "p_neto": 0.0,
+    "p_acierto": 0.0
+   },
+   "S1": {
+    "real_neto050": 1.812,
+    "real_acierto": 50.0,
+    "real_n": 56,
+    "contrario_neto050": -3.458,
+    "contrario_acierto": 11.3,
+    "azar_neto050_media": -0.727,
+    "azar_neto050_p95": 0.425,
+    "azar_acierto_media": 31.4,
+    "p_neto": 0.0,
+    "p_acierto": 0.002
+   },
+   "S2": {
+    "real_neto050": 2.097,
+    "real_acierto": 40.7,
+    "real_n": 54,
+    "contrario_neto050": -2.966,
+    "contrario_acierto": 11.5,
+    "azar_neto050_media": -0.267,
+    "azar_neto050_p95": 1.175,
+    "azar_acierto_media": 27.1,
+    "p_neto": 0.002,
+    "p_acierto": 0.004
+   },
+   "S4b": {
+    "real_neto050": 3.106,
+    "real_acierto": 36.5,
+    "real_n": 52,
+    "contrario_neto050": -2.065,
+    "contrario_acierto": 8.7,
+    "azar_neto050_media": 1.369,
+    "azar_neto050_p95": 4.045,
+    "azar_acierto_media": 24.6,
+    "p_neto": 0.144,
+    "p_acierto": 0.012
+   }
+  },
+  "B": {
+   "S6": {
+    "real_neto": 1.674,
+    "real_acierto": 73.2,
+    "real_t": 2.43,
+    "real_n": 56,
+    "plac_neto_media": -0.331,
+    "plac_neto_p95": 0.68,
+    "plac_acierto_media": 52.0,
+    "plac_n_media": 38.6,
+    "plac_t_media": -0.5,
+    "p_neto": 0.0,
+    "p_acierto": 0.003,
+    "p_t": 0.007
+   },
+   "S1": {
+    "real_neto": 1.812,
+    "real_acierto": 50.0,
+    "real_t": 2.175,
+    "real_n": 56,
+    "plac_neto_media": -0.42,
+    "plac_neto_p95": 1.092,
+    "plac_acierto_media": 33.6,
+    "plac_n_media": 37.7,
+    "plac_t_media": -0.44,
+    "p_neto": 0.02,
+    "p_acierto": 0.03,
+    "p_t": 0.003
+   },
+   "S5": {
+    "real_neto": 1.076,
+    "real_acierto": 35.2,
+    "real_t": 0.966,
+    "real_n": 54,
+    "plac_neto_media": -0.816,
+    "plac_neto_p95": 1.353,
+    "plac_acierto_media": 22.5,
+    "plac_n_media": 37.2,
+    "plac_t_media": -0.68,
+    "p_neto": 0.07,
+    "p_acierto": 0.04,
+    "p_t": 0.043
+   },
+   "S4b": {
+    "real_neto": 3.106,
+    "real_acierto": 36.5,
+    "real_t": 1.5,
+    "real_n": 52,
+    "plac_neto_media": -0.458,
+    "plac_neto_p95": 2.598,
+    "plac_acierto_media": 21.9,
+    "plac_n_media": 36.4,
+    "plac_t_media": -0.45,
+    "p_neto": 0.023,
+    "p_acierto": 0.027,
+    "p_t": 0.013
+   }
+  }
+ },
+ "C4_banda_respetada+iceberg_desde_10:30": {
+  "A": {
+   "S6": {
+    "real_neto050": 1.847,
+    "real_acierto": 75.0,
+    "real_n": 44,
+    "contrario_neto050": -3.216,
+    "contrario_acierto": 20.5,
+    "azar_neto050_media": -0.63,
+    "azar_neto050_p95": 0.472,
+    "azar_acierto_media": 48.2,
+    "p_neto": 0.0,
+    "p_acierto": 0.0
+   },
+   "S1": {
+    "real_neto050": 2.699,
+    "real_acierto": 56.8,
+    "real_n": 44,
+    "contrario_neto050": -3.708,
+    "contrario_acierto": 9.5,
+    "azar_neto050_media": -0.434,
+    "azar_neto050_p95": 0.983,
+    "azar_acierto_media": 33.8,
+    "p_neto": 0.0,
+    "p_acierto": 0.0
+   },
+   "S2": {
+    "real_neto050": 3.199,
+    "real_acierto": 47.7,
+    "real_n": 44,
+    "contrario_neto050": -3.732,
+    "contrario_acierto": 7.1,
+    "azar_neto050_media": -0.202,
+    "azar_neto050_p95": 1.441,
+    "azar_acierto_media": 27.9,
+    "p_neto": 0.0,
+    "p_acierto": 0.0
+   },
+   "S4b": {
+    "real_neto050": 4.122,
+    "real_acierto": 43.9,
+    "real_n": 41,
+    "contrario_neto050": -3.888,
+    "contrario_acierto": 7.5,
+    "azar_neto050_media": 0.822,
+    "azar_neto050_p95": 3.454,
+    "azar_acierto_media": 27.0,
+    "p_neto": 0.018,
+    "p_acierto": 0.0
+   }
+  },
+  "B": {
+   "S6": {
+    "real_neto": 1.847,
+    "real_acierto": 75.0,
+    "real_t": 2.735,
+    "real_n": 44,
+    "plac_neto_media": -0.646,
+    "plac_neto_p95": 0.409,
+    "plac_acierto_media": 48.7,
+    "plac_n_media": 40.9,
+    "plac_t_media": -0.94,
+    "p_neto": 0.0,
+    "p_acierto": 0.0,
+    "p_t": 0.0
+   },
+   "S1": {
+    "real_neto": 2.699,
+    "real_acierto": 56.8,
+    "real_t": 2.448,
+    "real_n": 44,
+    "plac_neto_media": -0.578,
+    "plac_neto_p95": 1.009,
+    "plac_acierto_media": 32.7,
+    "plac_n_media": 40.2,
+    "plac_t_media": -0.61,
+    "p_neto": 0.0,
+    "p_acierto": 0.0,
+    "p_t": 0.0
+   },
+   "S5": {
+    "real_neto": 1.636,
+    "real_acierto": 40.9,
+    "real_t": 1.248,
+    "real_n": 44,
+    "plac_neto_media": -0.647,
+    "plac_neto_p95": 1.271,
+    "plac_acierto_media": 29.8,
+    "plac_n_media": 38.7,
+    "plac_t_media": -0.6,
+    "p_neto": 0.017,
+    "p_acierto": 0.067,
+    "p_t": 0.013
+   },
+   "S4b": {
+    "real_neto": 4.122,
+    "real_acierto": 43.9,
+    "real_t": 1.906,
+    "real_n": 41,
+    "plac_neto_media": -0.095,
+    "plac_neto_p95": 2.782,
+    "plac_acierto_media": 25.3,
+    "plac_n_media": 36.5,
+    "plac_t_media": -0.23,
+    "p_neto": 0.01,
+    "p_acierto": 0.003,
+    "p_t": 0.0
+   }
+  }
+ }
+}

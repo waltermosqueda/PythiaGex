@@ -1,0 +1,4 @@
+  Z13_C1_desde_10:30                 S6  n   44 (1.69/r) acierto  75.0 % bruto  +2.35 (+0.50R) neto050  +1.85 neto100  +1.35 t +2.73 mejor  +14.8 peor   -5.2
+  Z13_C1_desde_10:30                 S1  n   44 (1.69/r) acierto  56.8 % bruto  +3.20 (+0.68R) neto050  +2.70 neto100  +2.20 t +2.45 mejor  +30.0 peor  -12.8
+  Z13_C1_banda_ancha                 S6  n   65 (2.50/r) acierto  70.8 % bruto  +1.92 (+0.41R) neto050  +1.42 neto100  +0.92 t +2.26 mejor  +24.8 peor   -5.2
+  Z13_C1_banda_ancha                 S1  n   65 (2.50/r) acierto  50.8 % bruto  +2.37 (+0.50R) neto050  +1.86 neto100  +1.36 t +2.17 mejor  +37.0 peor  -17.0

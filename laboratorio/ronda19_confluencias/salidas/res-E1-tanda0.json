@@ -1,0 +1,162 @@
+{
+ "etapa": "E1",
+ "muestra": "tanda0",
+ "res": {
+  "S1": {
+   "n": 22,
+   "ruedas": 5,
+   "ops_por_rueda": 4.4,
+   "acierto": 22.7,
+   "gana_media": 4.3,
+   "pierde_media": -1.92,
+   "bruto_op": -0.506,
+   "R_medio": 1.97,
+   "pts_en_R": -0.318,
+   "c050_neto_op": -1.006,
+   "c050_por_rueda": -4.42,
+   "c050_t": -4.22,
+   "c050_ruedas_pos": 0,
+   "c050_racha": 6,
+   "c050_caida": 28.12,
+   "c050_sharpe_d": -1.8874,
+   "_serie050": [
+    -6.25,
+    -5.0,
+    -6.125,
+    -4.25,
+    -0.5
+   ],
+   "c100_neto_op": -1.506,
+   "c100_por_rueda": -6.62,
+   "c100_t": -6.01,
+   "c100_ruedas_pos": 0,
+   "c100_racha": 6,
+   "c100_caida": 37.62,
+   "c100_sharpe_d": -2.6872
+  },
+  "S2": {
+   "n": 22,
+   "ruedas": 5,
+   "ops_por_rueda": 4.4,
+   "acierto": 22.7,
+   "gana_media": 6.45,
+   "pierde_media": -1.92,
+   "bruto_op": -0.017,
+   "R_medio": 1.97,
+   "pts_en_R": -0.091,
+   "c050_neto_op": -0.517,
+   "c050_por_rueda": -2.27,
+   "c050_t": -1.32,
+   "c050_ruedas_pos": 1,
+   "c050_racha": 6,
+   "c050_caida": 22.38,
+   "c050_sharpe_d": -0.5904,
+   "_serie050": [
+    -4.375,
+    -2.75,
+    -4.5,
+    -4.25,
+    4.5
+   ],
+   "c100_neto_op": -1.017,
+   "c100_por_rueda": -4.47,
+   "c100_t": -2.69,
+   "c100_ruedas_pos": 1,
+   "c100_racha": 6,
+   "c100_caida": 31.88,
+   "c100_sharpe_d": -1.2039
+  },
+  "S3": {
+   "n": 22,
+   "ruedas": 5,
+   "ops_por_rueda": 4.4,
+   "acierto": 22.7,
+   "gana_media": 5.92,
+   "pierde_media": -1.92,
+   "bruto_op": -0.138,
+   "R_medio": 1.97,
+   "pts_en_R": -0.161,
+   "c050_neto_op": -0.638,
+   "c050_por_rueda": -2.81,
+   "c050_t": -1.37,
+   "c050_ruedas_pos": 1,
+   "c050_racha": 6,
+   "c050_caida": 25.77,
+   "c050_sharpe_d": -0.6123,
+   "_serie050": [
+    -4.421314878770318,
+    -4.221745102086061,
+    -6.375,
+    -4.25,
+    5.2330391865334605
+   ],
+   "c100_neto_op": -1.138,
+   "c100_por_rueda": -5.01,
+   "c100_t": -2.48,
+   "c100_ruedas_pos": 1,
+   "c100_racha": 6,
+   "c100_caida": 35.27,
+   "c100_sharpe_d": -1.109
+  },
+  "S4": {
+   "n": 20,
+   "ruedas": 5,
+   "ops_por_rueda": 4.0,
+   "acierto": 10.0,
+   "gana_media": 17.38,
+   "pierde_media": -1.9,
+   "bruto_op": 0.025,
+   "R_medio": 1.92,
+   "pts_en_R": -0.07,
+   "c050_neto_op": -0.475,
+   "c050_por_rueda": -1.9,
+   "c050_t": -0.37,
+   "c050_ruedas_pos": 2,
+   "c050_racha": 14,
+   "c050_caida": 32.5,
+   "c050_sharpe_d": -0.1664,
+   "_serie050": [
+    -11.875,
+    -11.75,
+    3.125,
+    -4.25,
+    15.25
+   ],
+   "c100_neto_op": -0.975,
+   "c100_por_rueda": -3.9,
+   "c100_t": -0.74,
+   "c100_ruedas_pos": 2,
+   "c100_racha": 14,
+   "c100_caida": 40.75,
+   "c100_sharpe_d": -0.3324
+  }
+ },
+ "placeboA": {
+  "S1": {
+   "real_simetrica": -0.506,
+   "placebo_media": -0.393,
+   "placebo_p95": 0.398,
+   "p": 0.595
+  },
+  "S2": {
+   "real_simetrica": -0.017,
+   "placebo_media": -0.409,
+   "placebo_p95": 0.282,
+   "p": 0.195
+  },
+  "S3": {
+   "real_simetrica": -0.138,
+   "placebo_media": -0.43,
+   "placebo_p95": 0.513,
+   "p": 0.305
+  },
+  "S4": {
+   "real_simetrica": 0.025,
+   "placebo_media": -0.722,
+   "placebo_p95": 0.331,
+   "p": 0.31
+  }
+ },
+ "placeboB": null,
+ "seg": 0.5
+}

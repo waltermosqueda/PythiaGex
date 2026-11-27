@@ -1,0 +1,6 @@
+diseno    ruedas 26 | eficiencia del dia mediana 0.38 (dias de tendencia, e >= 0,6: 5) | ef10 < 0,465 ('va y vuelve' por el baul): 21 | rango RTH mediano 56.9 pts
+confirma  ruedas 21 | eficiencia del dia mediana 0.38 (dias de tendencia, e >= 0,6: 3) | ef10 < 0,465 ('va y vuelve' por el baul): 21 | rango RTH mediano 73.2 pts
+guardada  ruedas  8 | eficiencia del dia mediana 0.53 (dias de tendencia, e >= 0,6: 3) | ef10 < 0,465 ('va y vuelve' por el baul): 8 | rango RTH mediano 137.6 pts
+diseno    ruptura del ruido -> al cierre: -3.12 pts (-0.58 X), 40 % a favor de la ruptura, t por rueda -2.45 (21 ruedas) | con la marea ya vuelta: -6.71 pts
+confirma  ruptura del ruido -> al cierre: +0.03 pts (+0.25 X), 37 % a favor de la ruptura, t por rueda -1.42 (17 ruedas) | con la marea ya vuelta: -0.78 pts
+guardada  ruptura del ruido -> al cierre: +32.10 pts (+3.78 X), 71 % a favor de la ruptura, t por rueda +0.90 (7 ruedas) | con la marea ya vuelta: +33.35 pts

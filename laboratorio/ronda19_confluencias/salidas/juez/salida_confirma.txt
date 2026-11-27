@@ -1,0 +1,4 @@
+E4-S6        confirma  n  26 (1.24/rueda) acierto  50.0 % | +5.71/-5.69 | bruto +0.010 | neto c0,50 -0.490 (t -0.49, 6/21 ruedas +) | c1,00 -0.990 (t -0.90, 6/21 +) | placebo C -0.182 p 0.420
+Z-C1-S6      confirma  n  54 (2.57/rueda) acierto  46.3 % | +5.60/-5.28 | bruto -0.245 | neto c0,50 -0.745 (t -0.89, 7/21 ruedas +) | c1,00 -1.245 (t -1.46, 7/21 +) | placebo C -0.051 p 0.610
+D-w6-S6m     confirma  n  70 (3.33/rueda) acierto  51.4 % | +5.05/-5.49 | bruto -0.071 | neto c0,50 -0.571 (t -1.12, 8/21 ruedas +) | c1,00 -1.071 (t -2.02, 7/21 +) | placebo C -0.157 p 0.445
+M-A-S6       confirma  n  42 (2.00/rueda) acierto  47.6 % | +5.66/-5.27 | bruto -0.065 | neto c0,50 -0.565 (t -0.63, 8/21 ruedas +) | c1,00 -1.065 (t -1.16, 8/21 +) | placebo C -0.145 p 0.420
