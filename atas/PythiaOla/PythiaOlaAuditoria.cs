@@ -23,6 +23,7 @@ namespace PythiaLaOla
             public int Tramos, Rombos; public string TramoEnCurso = "";
             public decimal RayaOla, RayaMarea; public int RayaOlaY = int.MinValue, RayaMareaY = int.MinValue; public string RayaOlaTexto = "", RayaMareaTexto = "";
             public Rectangle Panel = Rectangle.Empty; public bool Live; public string Hora = "", Dia = "", Pie = "";
+            public bool Minimizado, PieVisible; public string Estilo = "", Pastilla = "";   // 1.0c: lo que se VIO del cuadro
             public string[] Textos = Array.Empty<string>();
         }
 
@@ -68,7 +69,9 @@ namespace PythiaLaOla
                   .Append("\",\"rayas\":").Append(_rayas ? "true" : "false").Append(",\"rombo\":").Append(_rombo ? "true" : "false").Append(",\"rombos\":").Append(p.Rombos)
                   .Append(",\"velas\":").Append(_velas ? "true" : "false").Append(",\"panel\":").Append(_panel ? "true" : "false").Append(",\"senales\":").Append(_senales ? "true" : "false").Append('}');
                 sb.Append(",\"panel\":{\"rect\":[").Append(p.Panel.X).Append(',').Append(p.Panel.Y).Append(',').Append(p.Panel.Width).Append(',').Append(p.Panel.Height)
-                  .Append("],\"pie\":\"").Append(J(p.Pie)).Append("\",\"textos\":[");
+                  .Append("],\"pie\":\"").Append(J(p.Pie)).Append("\",\"pie_visible\":").Append(p.PieVisible ? "true" : "false")
+                  .Append(",\"minimizado\":").Append(p.Minimizado ? "true" : "false").Append(",\"estilo\":\"").Append(J(p.Estilo))
+                  .Append("\",\"pastilla\":\"").Append(J(p.Pastilla)).Append("\",\"textos\":[");
                 for (int i = 0; i < p.Textos.Length; i++) { if (i > 0) sb.Append(','); sb.Append('"').Append(J(p.Textos[i])).Append('"'); }
                 sb.Append("]}}");
                 // ---- el estado completo de las cargas

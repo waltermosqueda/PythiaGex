@@ -10,7 +10,7 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>PythiaOla</AssemblyName>
     <RootNamespace>PythiaLaOla</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.6</Version>
     <Company>PythiaGex</Company>
     <Product>La Ola</Product>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -29,6 +29,9 @@
     <Compile Include="PythiaOlaCinta.cs" />
     <Compile Include="PythiaOlaDibujo.cs" />
     <Compile Include="PythiaOlaAuditoria.cs" />
+    <Compile Include="OlaCortes.cs" />
+    <Compile Include="PythiaOlaCortes.cs" />
+    <Compile Include="PythiaOlaMouse.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados. -->

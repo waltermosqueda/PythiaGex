@@ -29,7 +29,7 @@ namespace PythiaLaOla
             public FotoOla Ola, Marea;
             public bool HayClima; public MinutoClima Clima; public string MotivoClima = "";
             public bool Live, Atrasada, RecibeVivo, HayCarga;
-            public string FuenteX = "", EstadoCarga = "", Espera = ""; public int Usadas; public decimal Mediana; public double MedClima;
+            public string FuenteX = "", EstadoCarga = "", Espera = "", Corte = ""; public int Usadas; public decimal Mediana; public double MedClima;
             public int BarExtOla = -1, BarExtMarea = -1;
             public sbyte[] Fondo = Array.Empty<sbyte>();   // por vela visible: 0 sin pierna, 1 sube con agresores, 2 baja con agresores, 3 sin agresores
             public readonly List<Tramo> Tramos = new List<Tramo>();
@@ -45,7 +45,7 @@ namespace PythiaLaOla
             {
                 var g = OlaG();
                 s.Hay = g.AlMomento(m, out var fo, out var fm, out var po, out var pm, out decimal x, out string est, out var carga);
-                s.Estado = est ?? ""; s.X = x; s.Espera = _olaEspera ?? "";
+                s.Estado = est ?? ""; s.X = x; s.Espera = _olaEspera ?? ""; s.Corte = _cortes.Aviso ?? "";
                 if (carga != null)
                 {
                     s.HayCarga = true; s.Clave = carga.Clave; s.FuenteX = carga.FuenteX; s.Usadas = carga.Usadas; s.Mediana = carga.Mediana; s.MedClima = carga.MedClima;
@@ -117,6 +117,7 @@ namespace PythiaLaOla
         protected override void OnRender(RenderContext g, DrawingLayouts layout)
         {
             long t0 = System.Diagnostics.Stopwatch.GetTimestamp();
+            bool panelDibujado = false;   // 1.0c: si el cuadro no se dibuja, no toma clics
             try
             {
                 var pc = ChartInfo?.PriceChartContainer;
@@ -132,7 +133,7 @@ namespace PythiaLaOla
                 if (_linea) DibujarLinea(g, pc, reg, s, p);
                 if (_rombo) DibujarRombos(g, pc, reg, s, p);
                 if (_rayas) DibujarRayas(g, pc, reg, s, p);
-                if (_panel) DibujarPanel(g, reg, s, p);
+                if (_panel) { DibujarPanel(g, reg, s, p); panelDibujado = true; }
                 if (_registro && (DateTime.UtcNow - _ultAudit).TotalSeconds >= 60)
                 {
                     _ultAudit = DateTime.UtcNow;
@@ -143,6 +144,7 @@ namespace PythiaLaOla
             catch (Exception e) { Anotar(e); }
             finally
             {
+                if (!panelDibujado) PanelOculto();
                 double ms = (System.Diagnostics.Stopwatch.GetTimestamp() - t0) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
                 _msRender += ms; _nRender++; if (ms > _msRenderMax) _msRenderMax = ms;
             }
@@ -402,46 +404,46 @@ namespace PythiaLaOla
         // ------------------------------------------------------------------ panel
         private static readonly string[] DiasCortos = { "dom", "lun", "mar", "mie", "jue", "vie", "sab" };
 
-        /// <summary>
-        /// El panel, con el estilo del encabezado del Superindicador (variante E, la que eligio el operador): renglon 1 "● LIVE" (verde si es
-        /// la vela en curso y la jornada sigue en vivo; rojo apagado si es un momento pasado) y la hora de la PC (la de la ultima orden que
-        /// entro hasta el momento) a la derecha; renglon 2 el dia; una linea; despues CLIMA, MAREA y OLA, cada uno con su lectura y el dato
-        /// fino abajo; al pie la X y de donde sale el dato. Sin sombras; fondo gris oscuro como la columna del Superindicador.
-        /// </summary>
-        private void DibujarPanel(RenderContext g, Rectangle reg, Instante s, Pantalla p)
+        /// <summary>1.0c: los textos del cuadro (las mismas cuentas de la 1.0b), para los tres dibujos: compacto, clasico y la pastilla.</summary>
+        private sealed class TextosPanel
         {
-            var fLive = Fuente(7, true); var fHora = Fuente(7.5f, false); var fDia = Fuente(8.5f, true);
-            var fEt = Fuente(7, true); var fVal = Fuente(8.5f, true); var fDet = Fuente(7, false); var fPie = Fuente(6.5f, false);
-            Color cGris = Color.FromArgb(255, 154, 163, 174), cEt = Color.FromArgb(255, 138, 145, 156), cBlanco = Color.FromArgb(255, 236, 239, 244);
-            Color cAmbar = Color.FromArgb(245, 255, 214, 0);
-            Color cSube = D(_cSube), cBaja = D(_cBaja), cSin = D(_cSin);
+            public string Hora = "", Dia = "";
+            public string CVal = "", CDet = "", CDetCorto = ""; public Color CCol;
+            public string MVal = "", MDet = ""; public Color MCol;
+            public string OVal = "", ODet = ""; public Color OCol;
+            public string Pie = "", Senal = ""; public bool AvisoPie;
+        }
 
-            // renglones 1 y 2: LIVE, hora y dia (hora de la PC de la ultima orden que entro hasta el momento)
+        private TextosPanel LeerPanel(Instante s)
+        {
+            Color cGris = Color.FromArgb(255, 154, 163, 174), cAmbar = Color.FromArgb(245, 255, 214, 0);
+            Color cSube = D(_cSube), cBaja = D(_cBaja), cSin = D(_cSin);
+            var t = new TextosPanel();
+            // LIVE, hora y dia (hora de la PC de la ultima orden que entro hasta el momento)
             DateTime tDato = s.Hay && s.Ola.N > 0 ? s.Ola.T : DateTime.MinValue;
-            string hora = "", dia = "";
             if (tDato > DateTime.MinValue)
             {
                 var l = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(tDato, DateTimeKind.Utc), TimeZoneInfo.Local);
-                dia = DiasCortos[(int)l.DayOfWeek].ToUpperInvariant() + " " + l.ToString("dd/MM", CultureInfo.InvariantCulture);
-                hora = l.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+                t.Dia = DiasCortos[(int)l.DayOfWeek].ToUpperInvariant() + " " + l.ToString("dd/MM", CultureInfo.InvariantCulture);
+                t.Hora = l.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
             }
             // CLIMA
-            string cVal, cDet; Color cCol;
             if (s.HayClima)
             {
                 var mc = s.Clima;
-                cVal = mc.Tipo == 'N' ? "DUDOSO · esperar" : mc.Nombre();
-                cCol = mc.Tipo == 'T' ? (mc.LadoVwap > 0 ? cSube : cBaja) : mc.Tipo == 'R' ? Color.FromArgb(255, 100, 181, 246)
-                     : mc.Tipo == 'E' ? Color.FromArgb(255, 176, 184, 194) : cAmbar;
+                t.CVal = mc.Tipo == 'N' ? "DUDOSO · esperar" : mc.Nombre();
+                t.CCol = mc.Tipo == 'T' ? (mc.LadoVwap > 0 ? cSube : cBaja) : mc.Tipo == 'R' ? Color.FromArgb(255, 100, 181, 246)
+                       : mc.Tipo == 'E' ? Color.FromArgb(255, 176, 184, 194) : cAmbar;
                 var lm = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(mc.Fin.AddMinutes(-1), DateTimeKind.Utc), TimeZoneInfo.Local);
-                cDet = Formato.Uno(mc.Rrn) + "× lo normal a esta hora (" + lm.ToString("HH:mm", CultureInfo.InvariantCulture) + ")";
+                string hm = lm.ToString("HH:mm", CultureInfo.InvariantCulture);
+                t.CDet = Formato.Uno(mc.Rrn) + "× lo normal a esta hora (" + hm + ")";
+                t.CDetCorto = Formato.Uno(mc.Rrn) + "× lo normal (" + hm + ")";
             }
-            else { cVal = "—"; cCol = cGris; cDet = s.MotivoClima.Length > 0 ? s.MotivoClima : "sin dato"; }
+            else { t.CVal = "—"; t.CCol = cGris; t.CDet = t.CDetCorto = s.MotivoClima.Length > 0 ? s.MotivoClima : "sin dato"; }
             // MAREA y OLA
-            Lectura(s, s.Marea, "4X", cSube, cBaja, cSin, cGris, out string mVal, out Color mCol, out string mDet);
-            Lectura(s, s.Ola, "X", cSube, cBaja, cSin, cGris, out string oVal, out Color oCol, out string oDet);
+            Lectura(s, s.Marea, "4X", cSube, cBaja, cSin, cGris, out t.MVal, out t.MCol, out t.MDet);
+            Lectura(s, s.Ola, "X", cSube, cBaja, cSin, cGris, out t.OVal, out t.OCol, out t.ODet);
             // pie: X y de donde sale el dato
-            string pie; bool avisoPie;
             if (s.HayCarga)
             {
                 string fx = s.FuenteX == "auto" ? "auto, " + s.Usadas + " ruedas" : s.FuenteX;
@@ -449,14 +451,245 @@ namespace PythiaLaOla
                            : s.EstadoCarga.StartsWith("sin ", StringComparison.Ordinal) ? s.EstadoCarga          // "sin cinta: solo en vivo"
                            : s.EstadoCarga == "en cola" && s.Espera.Length > 0 ? "cinta en cola: " + s.Espera
                            : "cinta " + s.EstadoCarga;
-                pie = "X " + Formato.Puntos(s.X) + " (" + fx + ") · " + est;
-                avisoPie = s.Atrasada || !(s.EstadoCarga == "en vivo" || s.EstadoCarga == "completa") || s.FuenteX != "auto";
+                t.Pie = "X " + Formato.Puntos(s.X) + " (" + fx + ") · " + est;
+                t.AvisoPie = s.Atrasada || !(s.EstadoCarga == "en vivo" || s.EstadoCarga == "completa") || s.FuenteX != "auto";
             }
-            else { pie = "cinta: " + (s.Espera.Length > 0 ? s.Espera : s.Estado.Length > 0 ? s.Estado : "esperando las velas"); avisoPie = true; }
-            string senal = _senales ? "señales: en prueba, pendientes de validación (no dibuja)" : "";
+            else { t.Pie = "cinta: " + (s.Espera.Length > 0 ? s.Espera : s.Estado.Length > 0 ? s.Estado : "esperando las velas"); t.AvisoPie = true; }
+            if (s.Corte.Length > 0) { t.Pie = s.Corte; t.AvisoPie = true; }   // 1.0b: tras un corte de datos el pie avisa hasta la recarga del grafico
+            t.Senal = _senales ? "señales: en prueba, pendientes de validación (no dibuja)" : "";
+            return t;
+        }
+
+        /// <summary>
+        /// 1.0c: el cuadro segun su estado (pedido del operador: "tapa, molesta; deberia ser minimizable y que se pueda correr arrastrando
+        /// el mouse"): la PASTILLA si esta minimizado, el COMPACTO (de fabrica) o el CLASICO de la 1.0b. Deja su lugar para el mouse
+        /// (PythiaOlaMouse.cs) y lo que se vio para la auditoria; con el mouse encima, el cartelito con la X y de donde sale el dato.
+        /// </summary>
+        private void DibujarPanel(RenderContext g, Rectangle reg, Instante s, Pantalla p)
+        {
+            var t = LeerPanel(s);
+            var m = MousePanel();   // (-1, -1) si el mouse no esta sobre el grafico o se esta arrastrando
+            Rectangle caja, menos = Rectangle.Empty;
+            if (_panelMin) caja = DibujarPastilla(g, reg, s, p, t, m);
+            else if (_panelEstilo == EstiloPanel.Clasico) caja = DibujarPanelClasico(g, reg, s, p, t);
+            else caja = DibujarPanelCompacto(g, reg, s, p, t, m, out menos);
+            string zona = PanelDibujado(reg, caja, menos, _panelMin, m);
+            if (zona.Length > 0) CartelPanel(g, reg, caja, zona, t);
+            p.Panel = caja; p.Live = s.Live; p.Hora = t.Hora; p.Dia = t.Dia; p.Pie = t.Pie;
+            p.Minimizado = _panelMin; p.Estilo = _panelEstilo.ToString();
+            if (!_panelMin && _panelEstilo == EstiloPanel.Compacto) p.PieVisible = t.AvisoPie; else if (!_panelMin) p.PieVisible = true;
+        }
+
+        /// <summary>El lugar del cuadro: PoPanelX / PoPanelY desde la esquina de arriba a la izquierda del grafico (o el del arrastre en curso),
+        /// siempre entero adentro del grafico.</summary>
+        private void LugarPanel(Rectangle reg, int w, int h, out int x0, out int y0)
+        {
+            PresionPanel pr; lock (_llaveMouse) pr = _presionPanel;
+            bool arr = pr != null && pr.Movio;
+            // 1.0d: sin lugar elegido, debajo de la franja de arriba donde escribe ATAS (hasta ~112 px con el aviso de datos viejos)
+            int lx = _lugarX >= 0 ? _lugarX : 8, ly = _lugarY >= 0 ? _lugarY : 118;
+            x0 = reg.Left + (arr ? _arrPX : lx); y0 = reg.Top + (arr ? _arrPY : ly);
+            if (x0 + w > reg.Right - 4) x0 = reg.Right - 4 - w;
+            if (y0 + h > reg.Bottom - 4) y0 = reg.Bottom - 4 - h;
+            x0 = Math.Max(reg.Left, x0); y0 = Math.Max(reg.Top, y0);
+        }
+
+        /// <summary>
+        /// 1.0c COMPACTO: un renglon de cabecera ("● LIVE  VIE 27/11  14:51:47" y el "–" para minimizar) y un renglon por dato: CLIMA, MAREA y
+        /// OLA con la lectura en su color y el dato fino en gris a la derecha. El pie (en ambar apagado) solo aparece cuando hay algo que avisar
+        /// (cinta atrasada o cargando, corte de datos, X que no es la automatica); la X de siempre va en el cartelito del mouse. Las columnas
+        /// tienen un ancho minimo medido con los textos mas largos: el cuadro no cambia de ancho con cada orden.
+        /// </summary>
+        private Rectangle DibujarPanelCompacto(RenderContext g, Rectangle reg, Instante s, Pantalla p, TextosPanel t, Point m, out Rectangle rMenos)
+        {
+            var fLive = Fuente(7, true); var fCab = Fuente(7.5f, false);
+            var fEt = Fuente(7, true); var fVal = Fuente(8, true); var fDet = Fuente(7, false); var fPie = Fuente(6.5f, false);
+            Color cGris = Color.FromArgb(255, 154, 163, 174), cEt = Color.FromArgb(255, 128, 135, 147);
+            Color cAviso = Color.FromArgb(230, 222, 184, 82);   // ambar apagado: se lee, no grita
+            var filas = new[] { ("CLIMA", t.CVal, t.CCol, t.CDetCorto), ("MAREA", t.MVal, t.MCol, t.MDet), ("OLA", t.OVal, t.OCol, t.ODet) };
+            int wEt = 0;
+            int wVal = Math.Max(g.MeasureString("▲ con compradores", fVal).Width, g.MeasureString("DUDOSO · esperar", fVal).Width);
+            int wDet = Math.Max(g.MeasureString("Δ +88.888 · faltan 88,88", fDet).Width, g.MeasureString("8,8× lo normal (88:88)", fDet).Width);
+            foreach (var (et, val, _, det) in filas)
+            {
+                wEt = Math.Max(wEt, g.MeasureString(et, fEt).Width);
+                wVal = Math.Max(wVal, g.MeasureString(val, fVal).Width);
+                wDet = Math.Max(wDet, g.MeasureString(det, fDet).Width);
+            }
+            string cab = (t.Dia + "  " + t.Hora).Trim();
+            var szL = g.MeasureString("LIVE", fLive);
+            var szC = g.MeasureString(cab.Length > 0 ? cab : "VIE 00/00  00:00:00", fCab);
+            const int pad = 7, gap = 8, gap2 = 12, wMenos = 16;
+            int hVal = g.MeasureString("TENDENCIA", fVal).Height, hEt = g.MeasureString("OLA", fEt).Height;
+            int hDet = g.MeasureString("lo", fDet).Height, hPie = g.MeasureString("X", fPie).Height;
+            int hCab = Math.Max(szL.Height, szC.Height);
+            bool conPie = t.AvisoPie, conSenal = t.Senal.Length > 0;
+            int w = Math.Max(7 + 4 + szL.Width + 8 + szC.Width + 8 + wMenos - pad + 4, wEt + gap + wVal + gap2 + wDet);
+            if (conPie) w = Math.Max(w, g.MeasureString(t.Pie, fPie).Width);
+            if (conSenal) w = Math.Max(w, g.MeasureString(t.Senal, fPie).Width);
+            w += 2 * pad;
+            int hFila = hVal + 1;
+            int h = 5 + hCab + 6 + 3 * hFila + (conPie ? 5 + hPie : 0) + (conSenal ? hPie + 1 : 0) + 5;
+            LugarPanel(reg, w, h, out int x0, out int y0);
+            var caja = new Rectangle(x0, y0, w, h);
+            g.FillRectangle(Color.FromArgb(236, 34, 38, 46), caja, 4);
+            var linea = new RenderPen(Color.FromArgb(255, 52, 58, 68), 1);
+            int xi = x0 + pad, y = y0 + 5;
+
+            // (1) cabecera: punto + LIVE (verde = la vela en curso con la jornada en vivo; rojo apagado = un momento pasado), dia y hora en gris
+            Color cEstado = s.Live ? Color.FromArgb(255, 0, 230, 118) : Color.FromArgb(255, 142, 59, 63);
+            g.FillEllipse(cEstado, new Rectangle(xi, y + (hCab - 7) / 2, 7, 7));
+            g.DrawString("LIVE", fLive, cEstado, xi + 11, y + (hCab - szL.Height) / 2);
+            if (cab.Length > 0) g.DrawString(cab, fCab, cGris, xi + 11 + szL.Width + 8, y + (hCab - szC.Height) / 2);
+            // el "–" (solo si el mouse puede usarlo)
+            rMenos = Rectangle.Empty;
+            if (_panelMouse)
+            {
+                rMenos = new Rectangle(x0 + w - 4 - wMenos, y0 + 2, wMenos, hCab + 6);
+                bool hv = m.X >= 0 && rMenos.Contains(m);
+                if (hv) g.FillRectangle(Color.FromArgb(46, 255, 255, 255), rMenos, 3);
+                int cx = rMenos.X + rMenos.Width / 2, cy = rMenos.Y + rMenos.Height / 2;
+                g.FillRectangle(hv ? Color.FromArgb(255, 236, 239, 244) : Color.FromArgb(200, 140, 148, 160), new Rectangle(cx - 4, cy, 9, 2));
+            }
+            y += hCab + 3;
+            g.DrawLine(linea, x0 + 4, y, x0 + w - 4, y);
+            y += 3;
+
+            // (2) CLIMA, MAREA, OLA: etiqueta gris, lectura en su color y el dato fino en gris, en un renglon
+            int xv = xi + wEt + gap, xd = xv + wVal + gap2;
+            foreach (var (et, val, col, det) in filas)
+            {
+                g.DrawString(et, fEt, cEt, xi, y + (hVal - hEt + 1) / 2);
+                g.DrawString(val, fVal, col, xv, y);
+                g.DrawString(det, fDet, cGris, xd, y + (hVal - hDet + 1) / 2);
+                y += hFila;
+            }
+
+            // (3) el pie, solo con algo que avisar; y la linea de las senales si esta prendida
+            if (conPie)
+            {
+                y += 2;
+                g.DrawLine(linea, x0 + 4, y, x0 + w - 4, y);
+                y += 3;
+                g.DrawString(t.Pie, fPie, cAviso, xi, y);
+                y += hPie;
+            }
+            if (conSenal) { y += 1; g.DrawString(t.Senal, fPie, cAviso, xi, y); }
+
+            p.Textos = new[] { "CLIMA " + t.CVal + " | " + t.CDetCorto, "MAREA " + t.MVal + " | " + t.MDet, "OLA " + t.OVal + " | " + t.ODet };
+            return caja;
+        }
+
+        /// <summary>
+        /// 1.0c PASTILLA (cuadro minimizado): un renglon con el punto LIVE, la letra del clima en su color (T▲ / T▼ tendencia, R rotacion,
+        /// E estrecho, D dudoso; — sin dato), "MAREA ▲" y "OLA ▼" con los colores de siempre (verde con compradores, rojo con vendedores,
+        /// ambar sin agresores; · todavia arrancando) y, si hay algo que avisar, un punto ambar con una palabra. Un clic la abre.
+        /// </summary>
+        private Rectangle DibujarPastilla(RenderContext g, Rectangle reg, Instante s, Pantalla p, TextosPanel t, Point m)
+        {
+            var fLet = Fuente(8, true); var fEt = Fuente(7, true); var fFl = Fuente(8, true); var fTag = Fuente(7, false);
+            Color cGris = Color.FromArgb(255, 154, 163, 174), cEt = Color.FromArgb(255, 128, 135, 147);
+            Color cAviso = Color.FromArgb(240, 222, 184, 82);
+            string letra = "—"; Color cLet = cGris;
+            if (s.HayClima)
+            {
+                var mc = s.Clima;
+                letra = mc.Tipo == 'T' ? (mc.LadoVwap > 0 ? "T▲" : "T▼") : mc.Tipo == 'R' ? "R" : mc.Tipo == 'E' ? "E" : "D";
+                cLet = t.CCol;
+            }
+            string fm = FlechaPastilla(s, s.Marea), fo = FlechaPastilla(s, s.Ola), tag = AvisoCorto(s);
+            var szLet = g.MeasureString(letra, fLet); var szM = g.MeasureString("MAREA", fEt); var szO = g.MeasureString("OLA", fEt);
+            var szFm = g.MeasureString(fm, fFl); var szFo = g.MeasureString(fo, fFl);
+            var szTag = tag.Length > 0 ? g.MeasureString(tag, fTag) : Size.Empty;
+            const int pad = 7;
+            int H = Math.Max(18, Math.Max(szLet.Height, szFm.Height) + 4);
+            int w = pad + 7 + 6 + szLet.Width + 6 + 1 + 7 + szM.Width + 4 + szFm.Width + 10 + szO.Width + 4 + szFo.Width
+                  + (tag.Length > 0 ? 10 + 5 + 4 + szTag.Width : 0) + pad;
+            LugarPanel(reg, w, H, out int x0, out int y0);
+            var caja = new Rectangle(x0, y0, w, H);
+            bool hv = m.X >= 0 && caja.Contains(m);
+            g.FillRectangle(hv ? Color.FromArgb(244, 44, 49, 59) : Color.FromArgb(236, 34, 38, 46), caja, 4);
+            int x = x0 + pad, cy = y0 + H / 2;
+            Color cEstado = s.Live ? Color.FromArgb(255, 0, 230, 118) : Color.FromArgb(255, 142, 59, 63);
+            g.FillEllipse(cEstado, new Rectangle(x, cy - 3, 7, 7)); x += 7 + 6;
+            g.DrawString(letra, fLet, cLet, x, cy - szLet.Height / 2); x += szLet.Width + 6;
+            g.DrawLine(new RenderPen(Color.FromArgb(255, 62, 68, 80), 1), x, y0 + 5, x, y0 + H - 5); x += 1 + 7;
+            g.DrawString("MAREA", fEt, cEt, x, cy - szM.Height / 2); x += szM.Width + 4;
+            g.DrawString(fm, fFl, t.MCol, x, cy - szFm.Height / 2); x += szFm.Width + 10;
+            g.DrawString("OLA", fEt, cEt, x, cy - szO.Height / 2); x += szO.Width + 4;
+            g.DrawString(fo, fFl, t.OCol, x, cy - szFo.Height / 2); x += szFo.Width;
+            if (tag.Length > 0)
+            {
+                x += 10;
+                g.FillEllipse(cAviso, new Rectangle(x, cy - 2, 5, 5)); x += 5 + 4;
+                g.DrawString(tag, fTag, cAviso, x, cy - szTag.Height / 2);
+            }
+            p.Pastilla = "LIVE " + (s.Live ? "verde" : "rojo") + " | clima " + letra + " | MAREA " + fm + " | OLA " + fo + (tag.Length > 0 ? " | " + tag : "");
+            p.Textos = new[] { "CLIMA " + t.CVal + " | " + t.CDetCorto, "MAREA " + t.MVal + " | " + t.MDet, "OLA " + t.OVal + " | " + t.ODet };
+            return caja;
+        }
+
+        /// <summary>La flecha de la pastilla: ▲ / ▼ con pierna, · todavia arrancando, — sin dato (el color es el de Lectura).</summary>
+        private static string FlechaPastilla(Instante s, in FotoOla f) => !s.Hay ? "—" : !f.HayPierna ? "·" : f.Dir > 0 ? "▲" : "▼";
+
+        /// <summary>La palabra de aviso de la pastilla (la mas importante): corte de datos, cinta atrasada o cargando, X que no es la automatica.</summary>
+        private static string AvisoCorto(Instante s)
+        {
+            if (s.Corte.Length > 0) return "corte de datos";
+            if (s.Atrasada) return "cinta atrasada";
+            if (!s.HayCarga) return "esperando la cinta";
+            if (!(s.EstadoCarga == "en vivo" || s.EstadoCarga == "completa"))
+                return s.EstadoCarga.StartsWith("sin ", StringComparison.Ordinal) ? "sin cinta" : "cargando la cinta";
+            if (s.FuenteX != "auto") return s.FuenteX == "fija" ? "X fija" : "X " + s.FuenteX;
+            return "";
+        }
+
+        /// <summary>El cartelito con el mouse encima: en el cuadro, la X y de donde sale el dato (el pie de la 1.0b) y como se mueve; en el "–",
+        /// que minimiza; en la pastilla, que un clic la abre. Abajo del cuadro (arriba si no entra).</summary>
+        private void CartelPanel(RenderContext g, Rectangle reg, Rectangle caja, string zona, TextosPanel t)
+        {
+            var f = Fuente(7, false);
+            Color c1 = Color.FromArgb(255, 214, 219, 226), cTenue = Color.FromArgb(255, 140, 148, 160), cAviso = Color.FromArgb(240, 222, 184, 82);
+            string l1, l2 = ""; Color k1 = c1, k2 = cTenue;
+            switch (zona)
+            {
+                case "menos": l1 = "Minimizar el cuadro"; break;
+                case "pastilla": l1 = "Clic: abrir el cuadro  ·  arrastrar: mover"; l2 = t.Pie; k2 = t.AvisoPie ? cAviso : cTenue; break;
+                default:
+                    if (_panelEstilo == EstiloPanel.Clasico) { l1 = "Arrastrar: mover el cuadro"; break; }
+                    l1 = t.Pie; k1 = t.AvisoPie ? cAviso : c1;
+                    l2 = "Arrastrar: mover  ·  –: minimizar";
+                    break;
+            }
+            var s1 = g.MeasureString(l1, f); var s2 = l2.Length > 0 ? g.MeasureString(l2, f) : Size.Empty;
+            int wt = Math.Max(s1.Width, s2.Width) + 12, ht = s1.Height + (l2.Length > 0 ? s2.Height + 1 : 0) + 6;
+            int xt = Math.Max(reg.Left + 2, Math.Min(reg.Right - 2 - wt, caja.X));
+            int yt = caja.Bottom + 4;
+            if (yt + ht > reg.Bottom - 2) yt = caja.Top - 4 - ht;
+            yt = Math.Max(reg.Top + 2, yt);
+            var r = new Rectangle(xt, yt, wt, ht);
+            g.FillRectangle(Color.FromArgb(242, 14, 16, 21), r, 3);
+            g.DrawRectangle(new RenderPen(Color.FromArgb(255, 58, 64, 76), 1), r, 3);
+            g.DrawString(l1, f, k1, xt + 6, yt + 3);
+            if (l2.Length > 0) g.DrawString(l2, f, k2, xt + 6, yt + 3 + s1.Height + 1);
+        }
+
+        /// <summary>
+        /// El cuadro CLASICO de la 1.0b, sin cambios (con el estilo del encabezado del Superindicador, variante E): renglon 1 "● LIVE" (verde
+        /// si es la vela en curso y la jornada sigue en vivo; rojo apagado si es un momento pasado) y la hora de la PC (la de la ultima orden
+        /// que entro hasta el momento) a la derecha; renglon 2 el dia; una linea; despues CLIMA, MAREA y OLA, cada uno con su lectura y el
+        /// dato fino abajo; al pie la X y de donde sale el dato. Sin sombras; fondo gris oscuro como la columna del Superindicador.
+        /// </summary>
+        private Rectangle DibujarPanelClasico(RenderContext g, Rectangle reg, Instante s, Pantalla p, TextosPanel t)
+        {
+            var fLive = Fuente(7, true); var fHora = Fuente(7.5f, false); var fDia = Fuente(8.5f, true);
+            var fEt = Fuente(7, true); var fVal = Fuente(8.5f, true); var fDet = Fuente(7, false); var fPie = Fuente(6.5f, false);
+            Color cGris = Color.FromArgb(255, 154, 163, 174), cEt = Color.FromArgb(255, 138, 145, 156), cBlanco = Color.FromArgb(255, 236, 239, 244);
+            Color cAmbar = Color.FromArgb(245, 255, 214, 0);
+            string hora = t.Hora, dia = t.Dia, pie = t.Pie, senal = t.Senal; bool avisoPie = t.AvisoPie;
 
             // medidas
-            var filas = new[] { ("CLIMA", cVal, cCol, cDet), ("MAREA", mVal, mCol, mDet), ("OLA", oVal, oCol, oDet) };
+            var filas = new[] { ("CLIMA", t.CVal, t.CCol, t.CDet), ("MAREA", t.MVal, t.MCol, t.MDet), ("OLA", t.OVal, t.OCol, t.ODet) };
             int wEt = 0, wTxt = 0;
             foreach (var (et, val, _, det) in filas)
             {
@@ -474,9 +707,7 @@ namespace PythiaLaOla
             // los renglones de arriba se MIDEN (con la escala de Windows arriba de 100 % las letras crecen)
             int h1 = Math.Max(szL.Height, szH.Height) + 1, h2 = g.MeasureString("JUE 27/11", fDia).Height + 1;
             int h = pad + h1 + h2 + 6 + 3 * hFila + 5 + hPie + (senal.Length > 0 ? hPie + 1 : 0) + pad;
-            int x0 = reg.Left + _panelX, y0 = reg.Top + _panelY;
-            if (x0 + w > reg.Right - 4) x0 = Math.Max(reg.Left, reg.Right - 4 - w);
-            if (y0 + h > reg.Bottom - 4) y0 = Math.Max(reg.Top, reg.Bottom - 4 - h);
+            LugarPanel(reg, w, h, out int x0, out int y0);
             var caja = new Rectangle(x0, y0, w, h);
             g.FillRectangle(Color.FromArgb(236, 34, 38, 46), caja, 4);
             int xi = x0 + pad, xd = x0 + w - pad, y = y0 + pad;
@@ -508,8 +739,8 @@ namespace PythiaLaOla
             y += hPie + 1;
             if (senal.Length > 0) g.DrawString(senal, fPie, cAmbar, xi, y);
 
-            p.Panel = caja; p.Live = s.Live; p.Hora = hora; p.Dia = dia; p.Pie = pie;
-            p.Textos = new[] { "CLIMA " + cVal + " | " + cDet, "MAREA " + mVal + " | " + mDet, "OLA " + oVal + " | " + oDet };
+            p.Textos = new[] { "CLIMA " + t.CVal + " | " + t.CDet, "MAREA " + t.MVal + " | " + t.MDet, "OLA " + t.OVal + " | " + t.ODet };
+            return caja;
         }
 
         /// <summary>Una fila del panel para la marea (4X) o la ola (X): "▲ con compradores", "▼ con vendedores", "▲ sin agresores"... y abajo el

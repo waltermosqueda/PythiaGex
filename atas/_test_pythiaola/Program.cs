@@ -29,6 +29,7 @@ partial class Program
             if (args.Length > 0 && args[0] == "velocidad") { Velocidad_(args); return 0; }
             if (args.Length > 0 && args[0] == "flujo") return Flujo_(args);
             if (args.Length > 0 && args[0] == "r21") return R21_(args);
+            if (args.Length > 0 && args[0] == "cortes") return Cortes_(args);   // La Ola 1.0b: el detector de cortes de datos (ArnesCortes.cs)
             Console.WriteLine("modos: ola | x | velocidad | flujo | r21 (ver el encabezado de Program.cs)");
             return 2;
         }

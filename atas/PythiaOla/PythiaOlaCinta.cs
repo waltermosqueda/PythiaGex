@@ -167,6 +167,7 @@ namespace PythiaLaOla
                 }
                 OlaPedidos();
                 OlaVigilar();
+                OlaCortes();   // 1.0b: corte de datos -> re-pedir la jornada y avisar (PythiaOlaCortes.cs)
                 if (_registro) OlaCsv();
             }
             catch (Exception e) { Anotar(e); }
@@ -469,6 +470,9 @@ namespace PythiaLaOla
                           .Append((DateTime.UtcNow - _olaPedidoEn).TotalSeconds.ToString("0.0", Inv)).Append('}');
                     s.Append(",\"trabado\":").Append(_olaTrabado != null ? "true" : "false").Append(",\"espera\":\"")
                      .Append((_olaEspera ?? "").Replace("\"", "'")).Append('"');
+                    s.Append(",\"cortes\":{\"vistos\":").Append(_cortes.Vistos).Append(",\"repedidos\":").Append(_cortes.Repedidos)
+                     .Append(",\"ultimo\":\"").Append(Hu(_cortes.UltimoCorte)).Append("\",\"motivo\":\"").Append((_cortes.UltimoMotivo ?? "").Replace("\"", "'"))
+                     .Append("\",\"pendiente\":\"").Append(Hu(_cortes.Pendiente)).Append("\",\"aviso\":\"").Append((_cortes.Aviso ?? "").Replace("\"", "'")).Append("\"}");
                     s.Append(",\"ram_libre_mb\":").Append(double.IsNaN(_olaRamMb) ? "null" : _olaRamMb.ToString("0", Inv)).Append('}');
                 }
                 sb.Append(s.ToString());   // solo si se armo entera: un error a mitad no deja el renglon de la auditoria roto

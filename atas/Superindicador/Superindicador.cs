@@ -61,6 +61,10 @@ namespace PythiaSuper
     /// MOMENTO, como un footprint real; si todo queda estatico no sirve para analizar retrocediendo". Todo se suma hasta la vela del
     /// momento: la ultima a la vista (boton "al momento"; "en vivo" vuelve a la ultima vela). La jornada es la de esa vela, desde su
     /// comienzo hasta ella; si a esa hora la parte elegida no habia empezado (la RTH a las 8:00), la anterior completa.
+    ///
+    /// 1.9c (27-11-2026) BOTONERA MINIMALISTA (solo presentacion). Pedido: "son demasiados botones, hacelo mas profesional,
+    /// minimalista, que no moleste al analisis; que se pueda correr arrastrando el mouse". Plegada en una manija de 18 px; desplegada,
+    /// una tira plana con separadores finos; se arrastra desde la manija. Fuera de sus rectangulos no toma ningun evento del mouse.
     /// </summary>
     [DisplayName("PythiaGex - Superindicador (velas + delta + perfil)")]
     [Category("PythiaGex")]
@@ -69,7 +73,12 @@ namespace PythiaSuper
         // 1.9b (27-11-2026): vuelve a su funcion original (velas + delta + perfil + la sonda de cinta). La ola de la 2.0a (SuperOla.cs,
         // SuperOlaNucleo.cs y el motor de SuperCalculos.cs) se mudo a un indicador APARTE, La Ola 1.0 (atas/PythiaOla, PythiaOla.dll),
         // por pedido del operador: "este es delta, footprint y volumen; el de la ola es mas general".
-        public const string Version = "1.9b";
+        // 1.9c (27-11-2026): SOLO PRESENTACION de la botonera (ningun calculo cambia). Pedido del operador: "son demasiados botones,
+        // hacelo mas profesional, minimalista, que no moleste al analisis". De fabrica queda plegada en una manija chica (tres rayitas);
+        // un clic la despliega en una tira compacta y plana (velas/paleta | delta: periodo, dato, fila | perfil: periodo y AV | al
+        // momento/en vivo | jornada < > fijar | doble flecha para plegar), con el estado prendido marcado por un subrayado y un cartelito
+        // al posar el mouse. Arrastrando la manija se mueve (SpBotoneraDX/DY). La clasica de la 1.9b sigue en SpBotoneraEstilo.
+        public const string Version = "1.9c";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -154,6 +163,14 @@ namespace PythiaSuper
             [Display(Name = "Oculta (solo el dialogo de ajustes)")] Oculta
         }
 
+        // 1.9c: el aspecto de la botonera (propiedad NUEVA, SpBotoneraEstilo: su defecto vale aunque el .ws guarde la 1.9b)
+        public enum EstiloBotonera
+        {
+            [Display(Name = "Minimalista y plegable: una manija ☰ que se despliega con un clic")] Plegable,
+            [Display(Name = "Minimalista, siempre desplegada")] SiempreDesplegada,
+            [Display(Name = "Clasica (1.9b): botones grandes, siempre a la vista")] Clasica
+        }
+
         private sealed class DefPaleta
         {
             public readonly MColor Alc, Baj; public readonly string Corto;
@@ -191,6 +208,29 @@ namespace PythiaSuper
         [Display(Name = "Botonera en el grafico", GroupName = "1. Un clic", Order = 10,
             Description = "Botones sobre el grafico para prender/apagar velas, columna y perfil, cambiar paleta y ventanas con un clic.")]
         public LugarBotonera SpBotonera { get => _lugarBot; set { _lugarBot = value; Redibujar(); } }
+
+        // 1.9c (27-11-2026), pedido del operador: "son demasiados botones, hacelo mas profesional, minimalista, que no moleste al
+        // analisis". Propiedades NUEVAS (ATAS guarda los ajustes por nombre en el .ws: un defecto nuevo solo vale con un nombre nuevo).
+        private EstiloBotonera _botEstilo = EstiloBotonera.Plegable;
+        [Display(Name = "Estilo de la botonera", GroupName = "1. Un clic", Order = 11,
+            Description = "Minimalista y plegable (de fabrica): una manija chica; un clic la despliega, otro clic (o la doble flecha del final) la pliega, y arrastrandola se mueve. Siempre desplegada: igual pero sin plegarse. Clasica: la botonera de la 1.9b.")]
+        public EstiloBotonera SpBotoneraEstilo { get => _botEstilo; set { _botEstilo = value; Redibujar(); } }
+
+        private bool _botAbierta = false;
+        [Display(Name = "Botonera desplegada", GroupName = "1. Un clic", Order = 12,
+            Description = "Con el estilo plegable: desplegada o plegada en la manija. La cambia el clic en la manija.")]
+        public bool SpBotoneraDesplegada { get => _botAbierta; set { _botAbierta = value; Redibujar(); } }
+
+        private int _botDX = 0, _botDY = 0;
+        [Display(Name = "Botonera: corrimiento horizontal (px)", GroupName = "1. Un clic", Order = 13,
+            Description = "Desde su lugar de siempre (0 = el de siempre). Lo cambia arrastrar la manija; nunca queda afuera del grafico.")]
+        [Range(-4000, 4000)]
+        public int SpBotoneraDX { get => _botDX; set { _botDX = Math.Max(-4000, Math.Min(4000, value)); Redibujar(); } }
+
+        [Display(Name = "Botonera: corrimiento vertical (px, + hacia abajo)", GroupName = "1. Un clic", Order = 14,
+            Description = "Desde su lugar de siempre (0 = el de siempre). Lo cambia arrastrar la manija; nunca queda afuera del grafico.")]
+        [Range(-4000, 4000)]
+        public int SpBotoneraDY { get => _botDY; set { _botDY = Math.Max(-4000, Math.Min(4000, value)); Redibujar(); } }
 
         // 2. Velas
         private bool _velas = true;
@@ -505,6 +545,7 @@ namespace PythiaSuper
         {
             try
             {
+                RevisarPresion();   // 1.9c: un arrastre de la manija nunca queda colgado si ATAS no avisa que se solto el boton
                 // lupa: redibujar si el mouse cambio de fila o de boton aunque no entren ticks
                 if (_lupa || _lugarBot != LugarBotonera.Oculta)
                 {
@@ -1235,7 +1276,37 @@ namespace PythiaSuper
         }
 
         // ================================================================== botonera (un clic)
-        private void Boton(RenderContext g, string id, string texto, bool prendido, ref int x, int y, Color acento, MColor? c1 = null, MColor? c2 = null)
+        /// <summary>1.9c: la botonera segun su estilo (SpBotoneraEstilo). Las dos registran sus rectangulos con los mismos ids (Accion) y
+        /// los cambian DE UNA VEZ al final: un clic que llega en medio de un dibujo nunca encuentra la lista vacia (y se iria al grafico).</summary>
+        private void DibujarBotonera(RenderContext g, Rectangle reg)
+        {
+            var nuevos = new List<KeyValuePair<string, Rectangle>>();
+            try
+            {
+                if (_lugarBot == LugarBotonera.Oculta) return;
+                if (_botEstilo == EstiloBotonera.Clasica) DibujarBotoneraClasica(g, reg, nuevos);
+                else DibujarBotoneraMinimal(g, reg, nuevos);
+            }
+            finally { lock (_llaveUi) { _botones.Clear(); _botones.AddRange(nuevos); } }
+        }
+
+        /// <summary>El rotulo del boton de la jornada: "vie 27-11 completa (en curso)", "fija: ..." (1.5-1.7). La minimalista no dice "(en
+        /// curso)", el estado normal (el encabezado de la columna ya dice LIVE): asi la tira entra en un renglon en un grafico de ~620 px.</summary>
+        private string EtiquetaJornada(bool conEnCurso = true)
+        {
+            var e = _ej;
+            string etq = e.Clave > 0 ? Jornadas.Rotulo(e.Clave) + " " + Jornadas.NombreParte(e.Parte) : "sin jornadas";
+            if (e.NoCargada) etq += " (no cargada)";
+            else if (!e.Hay) etq += e.Parte == Jornadas.ParteRth ? " (todavia sin RTH)" : " (sin velas)";
+            else if (e.EnCurso) { if (conEnCurso) etq += " (en curso)"; }
+            else if (e.Recortada) { try { etq += " hasta " + HoraLocal(GetCandle(e.Hasta).Time); } catch { } }
+            if (_jorModo == ModoJornada.Fecha) etq = "fija: " + etq;
+            return etq;
+        }
+
+        // ------------------------------------------------------------------ la clasica (1.9b; solo se agrego el corrimiento SpBotoneraDX/DY)
+        private static void BotonClasico(RenderContext g, List<KeyValuePair<string, Rectangle>> nuevos, string id, string texto, bool prendido, ref int x, int y,
+                                         Color acento, MColor? c1 = null, MColor? c2 = null)
         {
             var f = Fuente(8, true);
             var sz = g.MeasureString(texto, f);
@@ -1251,62 +1322,56 @@ namespace PythiaSuper
                 tx += extra;
             }
             g.DrawString(texto, f, prendido ? Color.White : Color.FromArgb(200, 200, 205, 212), tx, r.Y + (18 - sz.Height) / 2);
-            lock (_llaveUi) _botones.Add(new KeyValuePair<string, Rectangle>(id, r));
+            nuevos.Add(new KeyValuePair<string, Rectangle>(id, r));
             x = r.Right + 4;
         }
 
-        private void DibujarBotonera(RenderContext g, Rectangle reg)
+        private void DibujarBotoneraClasica(RenderContext g, Rectangle reg, List<KeyValuePair<string, Rectangle>> nuevos)
         {
-            lock (_llaveUi) _botones.Clear();
-            if (_lugarBot == LugarBotonera.Oculta) return;
-            int y = _lugarBot == LugarBotonera.ArribaIzquierda ? reg.Top + 4 : reg.Bottom - 24;
-            int x = reg.Left + 6;
+            int y = (_lugarBot == LugarBotonera.ArribaIzquierda ? reg.Top + 4 : reg.Bottom - 24) + _botDY;
+            int x = reg.Left + 6 + _botDX;
+            x = Math.Max(reg.Left + 2, Math.Min(reg.Right - 60, x));
+            y = Math.Max(reg.Top + 2, Math.Min(reg.Bottom - 20, y));
+            int x0 = x;
             ColoresPaleta(out var alc, out var baj);
             Color acento = Color.FromArgb(46, 125, 190);
             string nomPal = _paleta == Paleta.Personalizada ? "Propia" : Paletas[_paleta].Corto;
-            Boton(g, "velas", "VELAS", _velas, ref x, y, acento);
-            Boton(g, "paleta", nomPal, true, ref x, y, Color.FromArgb(60, 64, 72), alc, baj);
+            BotonClasico(g, nuevos, "velas", "VELAS", _velas, ref x, y, acento);
+            BotonClasico(g, nuevos, "paleta", nomPal, true, ref x, y, Color.FromArgb(60, 64, 72), alc, baj);
             x += 6;
-            Boton(g, "columna", "DELTA", _columna, ref x, y, acento);
+            BotonClasico(g, nuevos, "columna", "DELTA", _columna, ref x, y, acento);
             string vc = _colVentana == VentanaColumna.VelaEnCurso ? "vela" : _colVentana == VentanaColumna.UltimasN ? _colVelas + " velas"
                       : _colVentana == VentanaColumna.Sesion ? "sesion" : _colVentana == VentanaColumna.Jornada ? "jornada" : "visible";
-            Boton(g, "colventana", vc, _columna, ref x, y, Color.FromArgb(60, 64, 72));
+            BotonClasico(g, nuevos, "colventana", vc, _columna, ref x, y, Color.FromArgb(60, 64, 72));
             string dc = _colDato == DatoColumna.Delta ? "delta" : _colDato == DatoColumna.Volumen ? "vol" : "VxC";
-            Boton(g, "coldato", dc, _columna, ref x, y, Color.FromArgb(60, 64, 72));
+            BotonClasico(g, nuevos, "coldato", dc, _columna, ref x, y, Color.FromArgb(60, 64, 72));
             int xFila = x;
-            Boton(g, "colticks", "fila " + Puntos(_colTicks), _columna, ref x, y, Color.FromArgb(60, 64, 72));
+            BotonClasico(g, nuevos, "colticks", "fila " + Puntos(_colTicks), _columna, ref x, y, Color.FromArgb(60, 64, 72));
             if (_columna && _colSinNumeros)   // 1.4: sin lugar para los numeros, el boton que lo arregla se marca en amarillo
                 g.DrawRectangle(new RenderPen(Color.FromArgb(240, 255, 214, 0), 2), new Rectangle(xFila - 1, y - 1, x - 4 - xFila + 2, 20), 3);
             x += 6;
-            Boton(g, "perfil", "PERFIL", _perfil, ref x, y, acento);
+            BotonClasico(g, nuevos, "perfil", "PERFIL", _perfil, ref x, y, acento);
             string vp = _perVentana == VentanaPerfil.Sesion ? "sesion" : _perVentana == VentanaPerfil.Rth ? "RTH"
                       : _perVentana == VentanaPerfil.UltimasN ? _perVelas + " velas" : _perVentana == VentanaPerfil.Jornada ? "jornada" : "visible";
             int pctAv = _perPct; if (pctAv <= 0) { PctPaso(out pctAv, out _); }
-            Boton(g, "perventana", vp + " - AV " + pctAv + "%", _perfil, ref x, y, Color.FromArgb(60, 64, 72));
+            BotonClasico(g, nuevos, "perventana", vp + " - AV " + pctAv + "%", _perfil, ref x, y, Color.FromArgb(60, 64, 72));
             // 1.7: hasta que vela se suma todo: "al momento" (la ultima a la vista: al correr el grafico se rebobina) o "en vivo"
             x += 6;
-            Boton(g, "hasta", _hasta == HastaVela.ElMomento ? "al momento" : "en vivo", _hasta == HastaVela.ElMomento, ref x, y, acento);
+            BotonClasico(g, nuevos, "hasta", _hasta == HastaVela.ElMomento ? "al momento" : "en vivo", _hasta == HastaVela.ElMomento, ref x, y, acento);
 
             // 1.5: la jornada elegida, con un clic: < una mas vieja, > una mas nueva (al llegar a la ultima vuelve a la del momento),
             // el rotulo cambia la parte (completa / RTH / noche; con Mayus para atras) y "fijar" congela la que se esta viendo
             bool usaJornada = (_columna && _colVentana == VentanaColumna.Jornada) || (_perfil && _perVentana == VentanaPerfil.Jornada);
             if (!usaJornada) return;
             x += 6;
-            var e = _ej;
             Color gris = Color.FromArgb(60, 64, 72);
-            Boton(g, "jor_atras", " < ", true, ref x, y, gris);
-            string etq = e.Clave > 0 ? Jornadas.Rotulo(e.Clave) + " " + Jornadas.NombreParte(e.Parte) : "sin jornadas";
-            if (e.NoCargada) etq += " (no cargada)";
-            else if (!e.Hay) etq += e.Parte == Jornadas.ParteRth ? " (todavia sin RTH)" : " (sin velas)";
-            else if (e.EnCurso) etq += " (en curso)";
-            else if (e.Recortada) { try { etq += " hasta " + HoraLocal(GetCandle(e.Hasta).Time); } catch { } }
-            if (_jorModo == ModoJornada.Fecha) etq = "fija: " + etq;
+            BotonClasico(g, nuevos, "jor_atras", " < ", true, ref x, y, gris);
             int xEtq = x;
-            Boton(g, "jor_parte", etq, true, ref x, y, acento);
+            BotonClasico(g, nuevos, "jor_parte", EtiquetaJornada(), true, ref x, y, acento);
             if (_avisoBotonera.Length > 0)
                 g.DrawRectangle(new RenderPen(Color.FromArgb(240, 255, 214, 0), 2), new Rectangle(xEtq - 1, y - 1, x - 4 - xEtq + 2, 20), 3);
-            Boton(g, "jor_adelante", " > ", true, ref x, y, gris);
-            Boton(g, "jor_fijar", "fijar", _jorModo == ModoJornada.Fecha, ref x, y, acento);
+            BotonClasico(g, nuevos, "jor_adelante", " > ", true, ref x, y, gris);
+            BotonClasico(g, nuevos, "jor_fijar", "fijar", _jorModo == ModoJornada.Fecha, ref x, y, acento);
             if (_avisoBotonera.Length > 0)
             {
                 var fa = Fuente(8, true);
@@ -1315,11 +1380,280 @@ namespace PythiaSuper
                 int xa = x + 2, ya = y;
                 if (xa + sz.Width + 10 > reg.Right - 4)
                 {
-                    xa = reg.Left + 6;
+                    xa = x0;
                     ya = _lugarBot == LugarBotonera.ArribaIzquierda ? y + 22 : y - 22;
                 }
                 g.FillRectangle(Color.FromArgb(225, 20, 22, 28), new Rectangle(xa, ya, sz.Width + 10, 18), 3);
                 g.DrawString(_avisoBotonera, fa, Color.FromArgb(250, 255, 214, 0), xa + 5, ya + (18 - sz.Height) / 2);
+            }
+        }
+
+        // ------------------------------------------------------------------ la minimalista (1.9c)
+        // Plegada: una manija de 18 x 18 px semitransparente con tres rayitas, en el lugar de siempre (abajo o arriba a la izquierda) mas
+        // el corrimiento que dejo el arrastre. Desplegada: una tira plana de 18 px, letra chica y gris, con separadores finos entre los grupos
+        // (velas y paleta | delta: periodo, dato, fila | perfil: periodo y AV | al momento / en vivo | jornada < rotulo > fijar | plegar). Lo
+        // prendido se marca con un subrayado azul; lo apagado queda en gris tenue. Al posar el mouse: fondo apenas mas claro y un cartelito
+        // que dice que hace ese boton. Si la tira no entra a lo ancho, el grupo que sobra va a otro renglon (hacia el centro del grafico).
+        private enum TipoItem { Texto, Manija, Paleta, Izq, Der, Plegar }
+
+        private sealed class ItemBot
+        {
+            public string Id; public TipoItem Tipo; public string Texto = ""; public RenderFont Letra; public Size Medida;
+            public Color Color; public Color Raya;     // Raya: el subrayado (A = 0: sin subrayado)
+            public Color Sw1, Sw2; public bool Tenue;  // los dos colores de la paleta
+            public string Ayuda = ""; public int Ancho; public Rectangle R;
+        }
+
+        private const int BotAlto = 18, BotPaso = BotAlto + 3, BotPad = 4, BotSep = 9, UmbralArrastre = 3;
+        // del ultimo dibujo de la minimalista, para el arrastre: la region, el lugar de siempre, el origen dibujado (la esquina de la
+        // manija) y la caja de la botonera relativa a ese origen
+        private Rectangle _regBot = Rectangle.Empty, _botRel = Rectangle.Empty;
+        private Point _botBase, _botOrigen;
+
+        private static ItemBot ItemTexto(RenderContext g, string id, string texto, bool negrita, Color c, Color raya, string ayuda)
+        {
+            var f = Fuente(7.5f, negrita);
+            var sz = g.MeasureString(texto, f);
+            return new ItemBot { Id = id, Tipo = TipoItem.Texto, Texto = texto, Letra = f, Medida = sz, Color = c, Raya = raya, Ayuda = ayuda, Ancho = sz.Width + 2 * BotPad };
+        }
+
+        /// <summary>Corre (x, y), el origen de una caja relativa 'rel', para que la caja quede entera adentro del grafico (2 px de aire).</summary>
+        private static void Encajar(Rectangle reg, Rectangle rel, ref int x, ref int y)
+        {
+            int minX = reg.Left + 2 - rel.Left, maxX = reg.Right - 2 - rel.Right;
+            int minY = reg.Top + 2 - rel.Top, maxY = reg.Bottom - 2 - rel.Bottom;
+            if (maxX < minX) maxX = minX;
+            if (maxY < minY) maxY = minY;
+            x = Math.Max(minX, Math.Min(maxX, x));
+            y = Math.Max(minY, Math.Min(maxY, y));
+        }
+
+        private void DibujarBotoneraMinimal(RenderContext g, Rectangle reg, List<KeyValuePair<string, Rectangle>> nuevos)
+        {
+            bool plegable = _botEstilo == EstiloBotonera.Plegable;
+            bool abierta = !plegable || _botAbierta;
+            Color cOn = Color.FromArgb(255, 232, 235, 240), cOpc = Color.FromArgb(255, 168, 176, 188), cOff = Color.FromArgb(255, 104, 110, 121);
+            Color cAcento = Color.FromArgb(255, 86, 156, 214), cAmarillo = Color.FromArgb(255, 255, 214, 0), sin = Color.Empty;
+            string aviso = _avisoBotonera ?? "";
+
+            // el lugar: el de siempre + el corrimiento guardado (o el del arrastre en curso)
+            var bas = new Point(reg.Left + 6, _lugarBot == LugarBotonera.ArribaIzquierda ? reg.Top + 4 : reg.Bottom - 24);
+            Presion pr; lock (_llaveUi) pr = _presion;
+            bool arrastra = pr != null && pr.Movio;
+            int x = bas.X + (arrastra ? _arrDX : _botDX), y = bas.Y + (arrastra ? _arrDY : _botDY);
+
+            // los grupos (un grupo nunca se parte entre dos renglones)
+            var grupos = new List<List<ItemBot>>();
+            string ayMan = !plegable ? "Arrastrar: mover la botonera"
+                         : abierta ? "Clic: plegar  ·  arrastrar: mover" : "Clic: abrir la botonera  ·  arrastrar: mover";
+            grupos.Add(new List<ItemBot> { new ItemBot { Id = "manija", Tipo = TipoItem.Manija, Ancho = BotAlto, Ayuda = ayMan } });
+            if (abierta)
+            {
+                ColoresPaleta(out var alc, out var baj);
+                string nomPal = _paleta == Paleta.Personalizada ? "Propia" : Paletas[_paleta].Corto;
+                grupos.Add(new List<ItemBot>
+                {
+                    ItemTexto(g, "velas", "Velas", true, _velas ? cOn : cOff, _velas ? cAcento : sin, "Velas en dos colores: prender / apagar"),
+                    new ItemBot { Id = "paleta", Tipo = TipoItem.Paleta, Ancho = 15 + 2 * BotPad, Sw1 = D(alc), Sw2 = D(baj), Tenue = !_velas,
+                                  Ayuda = "Paleta: " + nomPal + "  ·  clic: la siguiente  ·  Mayus+clic: la anterior" }
+                });
+                Color cCol = _columna ? cOpc : cOff;
+                string vc = _colVentana == VentanaColumna.VelaEnCurso ? "vela" : _colVentana == VentanaColumna.UltimasN ? _colVelas + " velas"
+                          : _colVentana == VentanaColumna.Sesion ? "sesion" : _colVentana == VentanaColumna.Jornada ? "jornada" : "visible";
+                string dc = _colDato == DatoColumna.Delta ? "delta" : _colDato == DatoColumna.Volumen ? "vol" : "V×C";
+                bool sinNum = _columna && _colSinNumeros;
+                grupos.Add(new List<ItemBot>
+                {
+                    ItemTexto(g, "columna", "Delta", true, _columna ? cOn : cOff, _columna ? cAcento : sin, "Columna de order flow: prender / apagar"),
+                    ItemTexto(g, "colventana", vc, false, cCol, sin, "Periodo de la columna  ·  clic: el siguiente  ·  Mayus+clic: el anterior"),
+                    ItemTexto(g, "coldato", dc, false, cCol, sin, "Dato de la columna: delta, ventas × compras o volumen"),
+                    ItemTexto(g, "colticks", "fila " + Puntos(_colTicks), false, cCol, sinNum ? cAmarillo : sin,
+                              sinNum ? "Sin lugar para los numeros: subir la fila (clic) o acercar el grafico" : "Alto de cada fila de la columna (clic: el siguiente)")
+                });
+                int pctAv = _perPct; if (pctAv <= 0) PctPaso(out pctAv, out _);
+                string vp = _perVentana == VentanaPerfil.Sesion ? "sesion" : _perVentana == VentanaPerfil.Rth ? "RTH"
+                          : _perVentana == VentanaPerfil.UltimasN ? _perVelas + " velas" : _perVentana == VentanaPerfil.Jornada ? "jornada" : "visible";
+                grupos.Add(new List<ItemBot>
+                {
+                    ItemTexto(g, "perfil", "Perfil", true, _perfil ? cOn : cOff, _perfil ? cAcento : sin, "Perfil de volumen: prender / apagar"),
+                    ItemTexto(g, "perventana", vp + "  AV " + pctAv + "%", false, _perfil ? cOpc : cOff, sin,
+                              "Periodo del perfil (clic: el siguiente)  ·  AV: area de valor del " + pctAv + " %")
+                });
+                bool momento = _hasta == HastaVela.ElMomento;
+                grupos.Add(new List<ItemBot>
+                {
+                    ItemTexto(g, "hasta", momento ? "al momento" : "en vivo", false, cOpc, sin,
+                              momento ? "Suma hasta la ultima vela a la vista (al correr el grafico, como estaba)  ·  clic: en vivo"
+                                      : "Suma hasta la ultima vela del grafico  ·  clic: al momento")
+                });
+                bool usaJornada = (_columna && _colVentana == VentanaColumna.Jornada) || (_perfil && _perVentana == VentanaPerfil.Jornada);
+                if (usaJornada)
+                {
+                    bool fija = _jorModo == ModoJornada.Fecha;
+                    grupos.Add(new List<ItemBot>
+                    {
+                        new ItemBot { Id = "jor_atras", Tipo = TipoItem.Izq, Ancho = 14, Color = cOpc, Ayuda = "Jornada anterior (queda fija hasta que se mueva el grafico)" },
+                        ItemTexto(g, "jor_parte", EtiquetaJornada(false), false, cOpc, aviso.Length > 0 ? cAmarillo : sin,
+                                  "Parte de la jornada: completa, RTH o noche  ·  clic: la siguiente  ·  Mayus+clic: la anterior"),
+                        new ItemBot { Id = "jor_adelante", Tipo = TipoItem.Der, Ancho = 14, Color = cOpc, Ayuda = "Jornada siguiente (al llegar a la ultima vuelve a la del momento)" },
+                        ItemTexto(g, "jor_fijar", "fijar", false, fija ? cOn : cOpc, fija ? cAcento : sin,
+                                  fija ? "Jornada fija  ·  clic: soltarla" : "Fijar la jornada que se ve (se suelta al mover el grafico)")
+                    });
+                }
+                if (plegable) grupos.Add(new List<ItemBot> { new ItemBot { Id = "plegar", Tipo = TipoItem.Plegar, Ancho = 18, Color = cOpc, Ayuda = "Plegar la botonera" } });
+            }
+
+            // renglones: el primero lleva la manija; el grupo que no entra a lo ancho va a otro renglon, hacia arriba si la botonera esta en la
+            // mitad de abajo del grafico y hacia abajo si esta en la de arriba. Pegada al borde derecho se arma de 330 px y se corre a la izquierda.
+            int disp = reg.Right - 4 - x;
+            if (disp < 330) disp = Math.Min(330, reg.Width - 8);
+            var filas = new List<List<ItemBot>>();
+            var fila = new List<ItemBot>(); int wFila = 0;
+            foreach (var gr in grupos)
+            {
+                int wg = 0; foreach (var it in gr) wg += it.Ancho;
+                bool sep = fila.Count > 0;
+                if (sep && wFila + BotSep + wg > disp) { filas.Add(fila); fila = new List<ItemBot>(); wFila = 0; sep = false; }
+                if (sep) { fila.Add(null); wFila += BotSep; }   // null = separador fino
+                fila.AddRange(gr); wFila += wg;
+            }
+            filas.Add(fila);
+            bool haciaArriba = y + BotAlto / 2 > reg.Top + reg.Height / 2;
+            int dir = haciaArriba ? -1 : 1;
+            var anchos = new int[filas.Count]; int wMax = 0;
+            for (int i = 0; i < filas.Count; i++)
+            {
+                int w = 0; foreach (var it in filas[i]) w += it == null ? BotSep : it.Ancho;
+                anchos[i] = w; wMax = Math.Max(wMax, w);
+            }
+            int yMin = Math.Min(0, (filas.Count - 1) * BotPaso * dir), yMax = Math.Max(BotAlto, BotAlto + (filas.Count - 1) * BotPaso * dir);
+            var rel = new Rectangle(0, yMin, wMax, yMax - yMin);
+            Encajar(reg, rel, ref x, ref y);   // nunca afuera del grafico
+            lock (_llaveUi) { _regBot = reg; _botRel = rel; _botBase = bas; _botOrigen = new Point(x, y); }
+
+            // dibujo
+            var m = pr == null ? PosMouse() : new Point(-1, -1);   // mientras se aprieta la manija no hay cartelito
+            ItemBot bajo = null;
+            var barras = new List<Rectangle>();
+            var bloque = Rectangle.Empty;
+            var penSep = new RenderPen(Color.FromArgb(255, 62, 68, 80), 1);
+            var penBorde = new RenderPen(Color.FromArgb(150, 70, 76, 88), 1);
+            for (int i = 0; i < filas.Count; i++)
+            {
+                int ry = y + i * BotPaso * dir, rx = x;
+                var rFila = new Rectangle(x, ry, anchos[i], BotAlto);
+                bloque = bloque.IsEmpty ? rFila : Rectangle.Union(bloque, rFila);
+                if (abierta)
+                {
+                    g.FillRectangle(Color.FromArgb(222, 24, 27, 33), rFila, 3);
+                    g.DrawRectangle(penBorde, rFila, 3);
+                    barras.Add(rFila);
+                }
+                foreach (var it in filas[i])
+                {
+                    if (it == null) { int sx = rx + BotSep / 2; g.DrawLine(penSep, sx, ry + 4, sx, ry + BotAlto - 4); rx += BotSep; continue; }
+                    it.R = new Rectangle(rx, ry, it.Ancho, BotAlto);
+                    rx += it.Ancho;
+                    bool hover = m.X >= 0 && it.R.Contains(m);
+                    if (hover) bajo = it;
+                    DibujarItem(g, it, hover, !abierta, aviso.Length > 0, pr != null);
+                    nuevos.Add(new KeyValuePair<string, Rectangle>(it.Id, it.R));
+                }
+            }
+            // el fondo de la tira (entre botones) no hace nada, pero un clic ahi tampoco se va al grafico (va despues de los botones)
+            foreach (var b in barras) nuevos.Add(new KeyValuePair<string, Rectangle>("_barra", b));
+
+            // aviso en amarillo (la suma no es la jornada entera, fecha fija que no es la de la pantalla, velas sin footprint): siempre a la
+            // vista, tambien plegada (al lado de la manija, que ademas lleva un punto amarillo)
+            if (aviso.Length > 0)
+            {
+                var fa = Fuente(7.5f, true);
+                var sz = g.MeasureString(aviso, fa);
+                int wa = sz.Width + 12;
+                Rectangle ra;
+                if (!abierta)
+                {
+                    int xa = x + BotAlto + 4;
+                    if (xa + wa > reg.Right - 2) xa = x - 4 - wa;
+                    if (xa < reg.Left + 2) ra = new Rectangle(Math.Max(reg.Left + 2, Math.Min(x, reg.Right - 2 - wa)), y + BotPaso * dir, wa, BotAlto);
+                    else ra = new Rectangle(xa, y, wa, BotAlto);
+                }
+                else ra = new Rectangle(Math.Max(reg.Left + 2, Math.Min(x, reg.Right - 2 - wa)), y + filas.Count * BotPaso * dir, wa, BotAlto);
+                g.FillRectangle(Color.FromArgb(228, 20, 22, 28), ra, 3);
+                g.DrawString(aviso, fa, cAmarillo, ra.X + 6, ra.Y + (BotAlto - sz.Height) / 2);
+                bloque = Rectangle.Union(bloque, ra);
+            }
+
+            // cartelito del boton bajo el mouse, del lado de afuera de la botonera (hacia el centro del grafico)
+            if (bajo != null && bajo.Ayuda.Length > 0)
+            {
+                var ft = Fuente(7.5f, false);
+                var sz = g.MeasureString(bajo.Ayuda, ft);
+                int wt = sz.Width + 12, ht = sz.Height + 6;
+                int xt = Math.Max(reg.Left + 2, Math.Min(reg.Right - 2 - wt, bajo.R.X));
+                int yt = haciaArriba ? bloque.Top - ht - 4 : bloque.Bottom + 4;
+                yt = Math.Max(reg.Top + 2, Math.Min(reg.Bottom - 2 - ht, yt));
+                var rt = new Rectangle(xt, yt, wt, ht);
+                g.FillRectangle(Color.FromArgb(242, 14, 16, 21), rt, 3);
+                g.DrawRectangle(new RenderPen(Color.FromArgb(255, 58, 64, 76), 1), rt, 3);
+                g.DrawString(bajo.Ayuda, ft, Color.FromArgb(255, 214, 219, 226), xt + 6, yt + 3);
+            }
+        }
+
+        /// <summary>Un boton de la minimalista. 'suelta' = la manija sola (plegada): lleva su propio fondo semitransparente.</summary>
+        private static void DibujarItem(RenderContext g, ItemBot it, bool hover, bool suelta, bool aviso, bool apretada)
+        {
+            var r = it.R; int cy = r.Y + BotAlto / 2, cx = r.X + r.Width / 2;
+            if (hover && !suelta) g.FillRectangle(Color.FromArgb(40, 255, 255, 255), new Rectangle(r.X + 1, r.Y + 2, r.Width - 2, BotAlto - 4), 2);
+            Color c = hover ? Color.FromArgb(255, 240, 243, 247) : it.Color;
+            switch (it.Tipo)
+            {
+                case TipoItem.Manija:
+                    {
+                        if (suelta)
+                        {
+                            bool viva = hover || apretada;
+                            g.FillRectangle(viva ? Color.FromArgb(230, 44, 49, 58) : Color.FromArgb(150, 22, 25, 31), r, 3);
+                            g.DrawRectangle(new RenderPen(Color.FromArgb(viva ? 210 : 110, 92, 99, 112), 1), r, 3);
+                        }
+                        var cr = hover || apretada ? Color.FromArgb(255, 236, 239, 244) : Color.FromArgb(215, 178, 185, 196);
+                        for (int k = -1; k <= 1; k++) g.FillRectangle(cr, new Rectangle(cx - 4, cy + 3 * k, 9, 1));
+                        if (aviso && suelta) g.FillEllipse(Color.FromArgb(255, 255, 214, 0), new Rectangle(r.Right - 6, r.Y + 2, 4, 4));
+                        break;
+                    }
+                case TipoItem.Paleta:
+                    {
+                        int sx = r.X + BotPad, sy = r.Y + 4;
+                        g.FillRectangle(it.Tenue ? Alfa(it.Sw1, 90) : it.Sw1, new Rectangle(sx, sy, 7, 10));
+                        g.FillRectangle(it.Tenue ? Alfa(it.Sw2, 90) : it.Sw2, new Rectangle(sx + 8, sy, 7, 10));
+                        break;
+                    }
+                case TipoItem.Izq:
+                case TipoItem.Der:
+                    {
+                        var pen = new RenderPen(c, 1.4f);
+                        int s = it.Tipo == TipoItem.Izq ? 1 : -1;
+                        g.DrawLine(pen, cx + 2 * s, cy - 3, cx - 1 * s, cy);
+                        g.DrawLine(pen, cx - 1 * s, cy, cx + 2 * s, cy + 3);
+                        break;
+                    }
+                case TipoItem.Plegar:
+                    {
+                        var pen = new RenderPen(c, 1.4f);
+                        foreach (int ox in new[] { -2, 2 })
+                        {
+                            g.DrawLine(pen, cx + ox + 2, cy - 3, cx + ox - 1, cy);
+                            g.DrawLine(pen, cx + ox - 1, cy, cx + ox + 2, cy + 3);
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        int tx = r.X + BotPad;
+                        g.DrawString(it.Texto, it.Letra, c, tx, r.Y + (BotAlto - it.Medida.Height) / 2);
+                        if (it.Raya.A > 0) g.FillRectangle(it.Raya, new Rectangle(tx, r.Y + BotAlto - 3, it.Medida.Width, 2));
+                        break;
+                    }
             }
         }
 
@@ -1377,6 +1711,8 @@ namespace PythiaSuper
         {
             switch (id)
             {
+                case "_barra": return;   // 1.9c: el fondo de la tira no hace nada
+                case "plegar": SpBotoneraDesplegada = false; RaisePropertyChanged(nameof(SpBotoneraDesplegada)); break;   // 1.9c
                 case "velas": SpVelas = !_velas; RaisePropertyChanged(nameof(SpVelas)); break;
                 case "paleta":
                     {
@@ -1432,6 +1768,31 @@ namespace PythiaSuper
             Redibujar();
         }
 
+        // ================================================================== mouse
+        // 1.9c: los botones actuan al apretar (como en la 1.9b); la MANIJA espera a soltar: si el mouse se movio menos de 3 px es un clic
+        // (abre o pliega), si se movio mas es un arrastre (la botonera queda donde se suelta, adentro del grafico). Fuera de los rectangulos
+        // de la botonera NO se toma ningun evento (return base): el operador opera desde el grafico.
+        private sealed class Presion
+        {
+            public string Id; public Point Ini, IniPantalla; public bool HayPantalla; public int DX0, DY0;
+            public volatile bool Movio; public int Movimientos, Terminada; public DateTime SueltoDesde = DateTime.MinValue;
+        }
+        private Presion _presion;
+        private volatile int _arrDX, _arrDY;   // corrimiento en vivo mientras se arrastra
+        private DateTime _finPresion = DateTime.MinValue; private Point _finPresionEn;
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern short GetAsyncKeyState(int vKey);
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int nIndex);
+
+        /// <summary>El boton izquierdo LOGICO esta apretado (con los botones cambiados de mano, es el fisico derecho: SM_SWAPBUTTON).</summary>
+        private static bool BotonIzquierdoApretado()
+        {
+            try { int vk = GetSystemMetrics(23) != 0 ? 0x02 : 0x01; return (GetAsyncKeyState(vk) & 0x8000) != 0; }
+            catch { return false; }
+        }
+
         public override bool ProcessMouseDown(RenderControlMouseEventArgs e)
         {
             try
@@ -1439,6 +1800,18 @@ namespace PythiaSuper
                 if (e.Button == RenderControlMouseButtons.Left)
                 {
                     var id = BotonEn(e.X, e.Y);
+                    if (id == "manija")
+                    {
+                        Point bas, org; lock (_llaveUi) { bas = _botBase; org = _botOrigen; }
+                        // el arrastre arranca desde donde esta DIBUJADA (si el grafico se achico, el corrimiento guardado puede quedar afuera)
+                        var pr = new Presion { Id = id, Ini = new Point(e.X, e.Y), DX0 = org.X - bas.X, DY0 = org.Y - bas.Y };
+                        if (GetCursorPos(out var w)) { pr.IniPantalla = new Point(w.X, w.Y); pr.HayPantalla = true; }
+                        _arrDX = pr.DX0; _arrDY = pr.DY0;
+                        lock (_llaveUi) _presion = pr;
+                        Redibujar();
+                        return true;
+                    }
+                    if (id == "_barra") return true;   // el fondo de la tira: nada, pero tampoco va al grafico
                     if (id != null) { Accion(id, e.Shift); return true; }
                 }
             }
@@ -1448,25 +1821,52 @@ namespace PythiaSuper
 
         public override bool ProcessMouseUp(RenderControlMouseEventArgs e)
         {
-            try { if (BotonEn(e.X, e.Y) != null) return true; } catch { }
+            try
+            {
+                Presion pr; lock (_llaveUi) pr = _presion;
+                if (pr != null)
+                {
+                    int mx = e.X - pr.Ini.X, my = e.Y - pr.Ini.Y;
+                    if (!pr.Movio && (Math.Abs(mx) >= UmbralArrastre || Math.Abs(my) >= UmbralArrastre)) pr.Movio = true;
+                    TerminarPresion(pr, pr.DX0 + mx, pr.DY0 + my, new Point(e.X, e.Y), "suelta");
+                    return true;
+                }
+                if (BotonEn(e.X, e.Y) != null) return true;
+            }
+            catch (Exception ex) { Anotar(ex); }
             return base.ProcessMouseUp(e);
+        }
+
+        /// <summary>Un clic que ATAS arma con lo que ya se uso (en un boton, o el de la manija recien soltada) no llega al grafico.</summary>
+        private bool ClicNuestro(int x, int y)
+        {
+            if (BotonEn(x, y) != null) return true;
+            return (DateTime.UtcNow - _finPresion).TotalMilliseconds < 700 && Math.Abs(x - _finPresionEn.X) <= 12 && Math.Abs(y - _finPresionEn.Y) <= 12;
         }
 
         public override bool ProcessMouseClick(RenderControlMouseEventArgs e)
         {
-            try { if (BotonEn(e.X, e.Y) != null) return true; } catch { }
+            try { if (ClicNuestro(e.X, e.Y)) return true; } catch { }
             return base.ProcessMouseClick(e);
         }
 
         public override bool ProcessMouseDoubleClick(RenderControlMouseEventArgs e)
         {
-            try { if (BotonEn(e.X, e.Y) != null) return true; } catch { }
+            try { if (ClicNuestro(e.X, e.Y)) return true; } catch { }
             return base.ProcessMouseDoubleClick(e);
         }
 
         public override StdCursor GetCursor(RenderControlMouseEventArgs e)
         {
-            try { if (BotonEn(e.X, e.Y) != null) return StdCursor.Hand; } catch { }
+            try
+            {
+                Presion pr; lock (_llaveUi) pr = _presion;
+                if (pr != null) return StdCursor.SizeAll;   // mover
+                var id = BotonEn(e.X, e.Y);
+                if (id == "manija") return StdCursor.SizeAll;
+                if (id != null && id != "_barra") return StdCursor.Hand;
+            }
+            catch { }
             return base.GetCursor(e);
         }
 
@@ -1475,11 +1875,74 @@ namespace PythiaSuper
             try
             {
                 _mouseUlt = new Point(e.X, e.Y);
+                Presion pr; lock (_llaveUi) pr = _presion;
+                if (pr != null)
+                {
+                    pr.Movimientos++;
+                    int mx = e.X - pr.Ini.X, my = e.Y - pr.Ini.Y;
+                    if (!pr.Movio && (Math.Abs(mx) >= UmbralArrastre || Math.Abs(my) >= UmbralArrastre)) pr.Movio = true;
+                    if (pr.Movio) { _arrDX = pr.DX0 + mx; _arrDY = pr.DY0 + my; Redibujar(); }
+                    return true;   // mientras se aprieta la manija el grafico no se mueve
+                }
                 string h = HoverActual();
                 if (h != _hoverUlt) { _hoverUlt = h; Redibujar(); }
             }
             catch { }
             return base.ProcessMouseMove(e);
+        }
+
+        /// <summary>Fin de la presion sobre la manija (una sola vez aunque lleguen ProcessMouseUp y el latido): arrastre de 3 px o mas = la
+        /// botonera queda ahi (encajada adentro del grafico, y ese corrimiento se guarda en SpBotoneraDX/DY); si no, clic = abre o pliega.</summary>
+        private void TerminarPresion(Presion pr, int dx, int dy, Point en, string como)
+        {
+            if (System.Threading.Interlocked.Exchange(ref pr.Terminada, 1) == 1) return;
+            try
+            {
+                if (pr.Movio)
+                {
+                    Rectangle reg, rel; Point bas;
+                    lock (_llaveUi) { reg = _regBot; rel = _botRel; bas = _botBase; }
+                    if (!reg.IsEmpty && !rel.IsEmpty) { int x = bas.X + dx, y = bas.Y + dy; Encajar(reg, rel, ref x, ref y); dx = x - bas.X; dy = y - bas.Y; }
+                    SpBotoneraDX = dx; SpBotoneraDY = dy;
+                    RaisePropertyChanged(nameof(SpBotoneraDX)); RaisePropertyChanged(nameof(SpBotoneraDY));
+                    AnotarLinea("botonera movida (" + como + "): corrimiento " + dx + ", " + dy + " px desde su lugar de siempre");
+                }
+                else if (_botEstilo == EstiloBotonera.Plegable)
+                {
+                    SpBotoneraDesplegada = !_botAbierta; RaisePropertyChanged(nameof(SpBotoneraDesplegada));
+                    AnotarLinea("botonera " + (_botAbierta ? "desplegada" : "plegada") + " (" + como + ")");
+                }
+            }
+            catch (Exception ex) { Anotar(ex); }
+            finally
+            {
+                _finPresion = DateTime.UtcNow; _finPresionEn = en;
+                lock (_llaveUi) { if (ReferenceEquals(_presion, pr)) _presion = null; }
+                Redibujar();
+            }
+        }
+
+        /// <summary>Desde el latido (250 ms), por si ATAS no avisa: (1) si durante la presion no llego NINGUN ProcessMouseMove, la botonera
+        /// sigue al cursor de Windows; (2) si el boton ya se solto (dos latidos seguidos) y no llego ProcessMouseUp (por ejemplo, se solto
+        /// afuera del grafico), la presion se termina igual con lo ultimo visto. Nunca queda una botonera pegada al mouse.</summary>
+        private void RevisarPresion()
+        {
+            Presion pr; lock (_llaveUi) pr = _presion;
+            if (pr == null || pr.Terminada != 0) return;
+            if (pr.Movimientos == 0 && pr.HayPantalla && GetCursorPos(out var w))
+            {
+                int mx = w.X - pr.IniPantalla.X, my = w.Y - pr.IniPantalla.Y;
+                if (!pr.Movio && (Math.Abs(mx) >= UmbralArrastre || Math.Abs(my) >= UmbralArrastre)) pr.Movio = true;
+                if (pr.Movio) { _arrDX = pr.DX0 + mx; _arrDY = pr.DY0 + my; Redibujar(); }
+            }
+            if (BotonIzquierdoApretado()) { pr.SueltoDesde = DateTime.MinValue; return; }
+            var ahora = DateTime.UtcNow;
+            if (pr.SueltoDesde == DateTime.MinValue) { pr.SueltoDesde = ahora; return; }
+            if ((ahora - pr.SueltoDesde).TotalMilliseconds < 200) return;
+            int fx = _arrDX, fy = _arrDY; var en = _mouseUlt;
+            var disp = System.Windows.Application.Current?.Dispatcher;
+            if (disp != null) disp.BeginInvoke(new Action(() => TerminarPresion(pr, fx, fy, en, "latido")));
+            else TerminarPresion(pr, fx, fy, en, "latido");
         }
 
         // ================================================================== lupa
@@ -1661,7 +2124,10 @@ namespace PythiaSuper
                   .Append(",\"chartarea\":[").Append(area.X).Append(',').Append(area.Y).Append(',').Append(area.Width).Append(',').Append(area.Height).Append(']')
                   .Append(",\"xder\":").Append(xDer)
                   .Append(",\"visibles\":[").Append(FirstVisibleBarNumber).Append(',').Append(LastVisibleBarNumber).Append(']')
-                  .Append(",\"carga\":").Append(_carga);
+                  .Append(",\"carga\":").Append(_carga)
+                  // 1.9c: como estaba la botonera (lugar, estilo, desplegada y corrimiento)
+                  .Append(",\"botonera\":{\"lugar\":\"").Append(_lugarBot).Append("\",\"estilo\":\"").Append(_botEstilo).Append("\",\"desplegada\":")
+                  .Append(_botAbierta ? "true" : "false").Append(",\"dx\":").Append(_botDX).Append(",\"dy\":").Append(_botDY).Append('}');
                 // 1.5: la jornada elegida y la lista de jornadas con sus velas (para rehacer por fuera la division por jornada)
                 var ej = _ej;
                 sb.Append(",\"jornada\":{\"hasta_modo\":\"").Append(_hasta).Append("\",\"momento\":").Append(ej.Momento).Append(",\"recortada\":").Append(ej.Recortada ? "true" : "false").Append(",\"modo\":\"").Append(_jorModo).Append("\",\"fecha\":").Append(_jorFecha).Append(",\"parte\":\"").Append(_jorParte)

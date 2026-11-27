@@ -12,6 +12,8 @@
     <Compile Include="..\PythiaOla\OlaMotor.cs" />
     <Compile Include="..\PythiaOla\OlaNucleo.cs" />
     <Compile Include="..\PythiaOla\OlaClima.cs" />
+    <Compile Include="..\PythiaOla\OlaCortes.cs" />
+    <Compile Include="ArnesCortes.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="FlujoOla.cs" />
     <Compile Include="ArnesR21.cs" />

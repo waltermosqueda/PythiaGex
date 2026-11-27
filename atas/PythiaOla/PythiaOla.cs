@@ -31,6 +31,8 @@ namespace PythiaLaOla
     ///   - PANEL arriba a la izquierda (estilo del encabezado del Superindicador, variante E): punto LIVE verde (en vivo) o rojo apagado
     ///     (un momento pasado) y la hora de la PC; CLIMA (el semaforo D1 de la ronda 21, con su numero: "1,8x lo normal a esta hora");
     ///     MAREA y OLA (direccion, con o sin agresores, delta de la pierna y cuanto le falta al precio para la raya de giro).
+    ///     1.0c: compacto (un renglon por dato; el pie solo cuando hay algo que avisar; la X en el cartelito del mouse), se minimiza a una
+    ///     pastilla con el "–" y se mueve arrastrandolo (fuera del cuadro el mouse va siempre al grafico).
     ///   - SENALES: NO en esta version (ninguna regla paso la validacion; ronda 18 y 21). Hay una casilla "Senales (en prueba)" apagada
     ///     y sin implementar.
     ///
@@ -51,7 +53,10 @@ namespace PythiaLaOla
     [Category("PythiaGex")]
     public partial class PythiaOla : Indicator
     {
-        public const string Version = "1.0";
+        // 1.0b (27-11): cortes de datos -> re-pide la jornada y avisa (OlaCortes.cs, PythiaOlaCortes.cs)
+        // 1.0c (27-11): SOLO PRESENTACION del cuadro (ningun calculo cambia): compacto (un renglon por dato, pie solo con avisos y la X en el
+        // cartelito del mouse), minimizable a una pastilla y arrastrable (PythiaOlaMouse.cs). El de la 1.0b sigue en PoPanelEstilo.
+        public const string Version = "1.0d";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         /// <summary>Donde va el fondo de marea. ATAS tiene UNA sola llave por indicador para dibujar arriba o abajo de las velas
@@ -61,6 +66,13 @@ namespace PythiaLaOla
             [Display(Name = "Detrás de las velas (pinta alrededor de cada vela)")] DetrasDeLasVelas,
             [Display(Name = "Encima, parejo y transparente")] EncimaParejo,
             [Display(Name = "Todo el indicador detrás de las velas (panel y rayas incluidos)")] TodoDetras
+        }
+
+        /// <summary>1.0c: el aspecto del cuadro (propiedad nueva PoPanelEstilo).</summary>
+        public enum EstiloPanel
+        {
+            [Display(Name = "Compacto (1.0c): un renglón por dato, pie solo con avisos")] Compacto,
+            [Display(Name = "Clásico (1.0b): dos renglones por dato y pie siempre")] Clasico
         }
 
         private static MColor Hex(string h, byte a = 255)
@@ -148,16 +160,50 @@ namespace PythiaLaOla
         public int PoFondoOpacidad { get => _fondoOpac; set { _fondoOpac = Math.Max(3, Math.Min(60, value)); Redibujar(); } }
 
         // 4. Panel
+        // 1.0d (27-11): el cuadro arrancaba arriba a la izquierda, ENCIMA de lo que escribe ATAS (nombre del contrato, la linea O/H/L/C del
+        // mouse, el aviso "Last Market Data Update" y el recuadro "7 v"): el operador: "choca, se mezcla, compite con la data de ATAS". El lugar
+        // nuevo es PoLugarX / PoLugarY (nombres NUEVOS: ATAS guarda los ajustes por nombre y el 8/30 viejo quedaba pegado); -1 = automatico,
+        // debajo de esa franja de ATAS. PoPanelX / PoPanelY quedan ocultos y sin uso.
+        private int _lugarX = -1, _lugarY = -1;
+        [Display(Name = "Lugar del cuadro: desde la izquierda (px)", GroupName = "4. Panel", Order = 38,
+            Description = "-1 = automatico (a la izquierda, debajo de lo que escribe ATAS arriba). Lo cambia arrastrar el cuadro con el mouse.")]
+        [Range(-1, 4000)]
+        public int PoLugarX { get => _lugarX; set { _lugarX = Math.Max(-1, Math.Min(4000, value)); Redibujar(); } }
+
+        [Display(Name = "Lugar del cuadro: desde arriba (px)", GroupName = "4. Panel", Order = 39,
+            Description = "-1 = automatico (debajo del nombre del contrato, la linea O/H/L/C y los avisos de ATAS). Lo cambia arrastrar el cuadro.")]
+        [Range(-1, 4000)]
+        public int PoLugarY { get => _lugarY; set { _lugarY = Math.Max(-1, Math.Min(4000, value)); Redibujar(); } }
+
         private int _panelX = 8, _panelY = 30;
+        [Browsable(false)]
         [Display(Name = "Corrimiento a la derecha (px)", GroupName = "4. Panel", Order = 40,
-            Description = "Desde el borde izquierdo del gráfico.")]
+            Description = "Desde el borde izquierdo del gráfico. Lo cambia arrastrar el cuadro con el mouse.")]
         [Range(0, 2000)]
         public int PoPanelX { get => _panelX; set { _panelX = Math.Max(0, Math.Min(2000, value)); Redibujar(); } }
 
+        [Browsable(false)]
         [Display(Name = "Corrimiento hacia abajo (px)", GroupName = "4. Panel", Order = 41,
-            Description = "Desde el borde de arriba del gráfico (ATAS escribe ahí el nombre del instrumento y de los indicadores).")]
+            Description = "Desde el borde de arriba del gráfico (ATAS escribe ahí el nombre del instrumento y de los indicadores). Lo cambia arrastrar el cuadro con el mouse.")]
         [Range(0, 2000)]
         public int PoPanelY { get => _panelY; set { _panelY = Math.Max(0, Math.Min(2000, value)); Redibujar(); } }
+
+        // 1.0c (27-11-2026), pedido del operador: "el cuadro tapa, molesta: que sea minimizable y que se pueda correr solo arrastrando el
+        // mouse". Propiedades NUEVAS (ATAS guarda los ajustes por nombre en el .ws: un defecto nuevo solo vale con un nombre nuevo).
+        private EstiloPanel _panelEstilo = EstiloPanel.Compacto;
+        [Display(Name = "Estilo del cuadro", GroupName = "4. Panel", Order = 42,
+            Description = "Compacto (de fábrica): un renglón por dato y el pie solo cuando hay algo que avisar. Clásico: el cuadro de la 1.0b.")]
+        public EstiloPanel PoPanelEstilo { get => _panelEstilo; set { _panelEstilo = value; Redibujar(); } }
+
+        private bool _panelMin = false;
+        [Display(Name = "Cuadro minimizado", GroupName = "4. Panel", Order = 43,
+            Description = "Una pastilla de un renglón (LIVE, la letra del clima, MAREA y OLA con sus colores). El – de arriba a la derecha del cuadro lo minimiza y un clic en la pastilla lo abre.")]
+        public bool PoPanelMinimizado { get => _panelMin; set { _panelMin = value; Redibujar(); } }
+
+        private bool _panelMouse = true;
+        [Display(Name = "Mover y minimizar con el mouse", GroupName = "4. Panel", Order = 44,
+            Description = "Arrastrar el cuadro lo mueve; clic en el – lo minimiza; clic en la pastilla lo abre. Fuera del cuadro el mouse va siempre al gráfico. Apagado: el cuadro no toma ningún clic (como la 1.0b).")]
+        public bool PoPanelConMouse { get => _panelMouse; set { _panelMouse = value; Redibujar(); } }
 
         // 5. Avanzado
         private CapaFondo _capa = CapaFondo.DetrasDeLasVelas;
@@ -175,6 +221,11 @@ namespace PythiaLaOla
         [Display(Name = "Registro de auditoría", GroupName = "5. Avanzado", Order = 52,
             Description = "Escribe en %APPDATA%\\ATAS\\PythiaGex\\pythiaola lo que muestra la pantalla (una línea por minuto) y la ola, la marea y el clima (csv) para recalcularlos por fuera.")]
         public bool PoRegistro { get => _registro; set { _registro = value; } }
+
+        private bool _recargaTrasCorte = true;
+        [Display(Name = "Tras un corte de datos: recargar el gráfico solo", GroupName = "5. Avanzado", Order = 53,
+            Description = "1.0b (27-11): cuando el log de ATAS anota un corte de conexión (o la cinta se calla 20 s en la rueda) y los datos vuelven, aprieta por dentro el \"Reload all historical data\" de ESTE gráfico (sin mouse ni teclado): el gráfico queda en blanco unos 6-15 s y vuelve con las órdenes del hueco. Como máximo una vez cada 3 minutos. Apagado: La Ola se repone sola y el pie avisa que falta recargar el gráfico.")]
+        public bool PoRecargaTrasCorte { get => _recargaTrasCorte; set { _recargaTrasCorte = value; } }
 
         // ================================================================== estado
         // la serie 0 pinta las velas (como el Color Bar de fabrica); oculta en la lista de series
@@ -219,6 +270,7 @@ namespace PythiaLaOla
         protected override void OnRecalculate()
         {
             OlaReiniciarTodo("recarga de datos");   // los numeros de vela cambian: se rehace todo
+            CortesRecarga();                         // 1.0b: el grafico se recargo ("Reload all historical data"): se apaga el aviso de corte
             lock (_llavePintura) _pintadas.Clear();
             AnotarLinea("recarga de datos");
         }
@@ -243,6 +295,7 @@ namespace PythiaLaOla
             try
             {
                 OlaLatido();
+                PanelLatido();   // 1.0c: el arrastre del cuadro nunca queda colgado y el cartelito se borra si el mouse se fue
                 if (_velas && (DateTime.UtcNow - _ultCalculoPc).TotalSeconds > 2) Pintar();
                 if (_redibujarPedido) { _redibujarPedido = false; Redibujar(); }
             }
