@@ -1,0 +1,57 @@
+
+==== tau = 15 s: candidatos en pie y sin confirmar = 6826 (GIRO 2494, PAUSA 2393, MENOR 1939)
+P(GIRO) de base por tramo de retroceso ya hecho: 0-25: 31.2 % (n 641), 25-50: 26.6 % (n 3368), 50-100: 49.6 % (n 2817)
+        rasgo  con_%  P(GIRO|con)  P(GIRO|sin)  RR_MH IC90_ruedas  ruedas_arriba  ruedas        dif_pp_por_rueda
+         AGOT  23.53        31.26        38.16   0.88   0.82-0.93              0       6      -7 -1 -7 -10 -8 -6
+SUB_TERMINADA  38.49        33.96        38.15   0.94   0.85-1.01              1       6      +3 -2 -4 -13 -3 -0
+      SUB_SIN  61.50        38.14        33.98   1.06   0.99-1.17              5       6      -3 +2 +4 +13 +3 +0
+    BIG_FAVOR  61.85        36.24        37.02   0.95   0.89-1.01              3       6       -2 +3 -4 -7 +1 +3
+   BIG_CONTRA  40.98        38.22        35.37   1.03   0.97-1.12              4       6      -3 +0 -3 +12 +4 +4
+  REAC_CONTRA  75.48        38.72        29.81   1.17   1.14-1.21              6       6     +10 +7 +7 +11 +9 +9
+     REAC_OFI  90.16        38.35        19.94   1.82   1.66-1.95              6       6 +21 +18 +10 +20 +14 +22
+ REAC_OFI_PAS  86.07        38.31        25.55   1.49   1.32-1.67              6       6   +15 +11 +10 +8 +8 +22
+      VOL_PRE  12.26        35.24        36.72   0.92   0.84-0.99              3       6      -4 +8 -15 +1 +2 -1
+      ABS_PRE  11.78        36.19        36.58   0.96   0.87-1.04              2       6       -2 -5 -3 +8 -6 +3
+   EMPUJE_PRE   7.90        34.51        36.71   0.94   0.79-1.06              3       6     +0 +7 -14 -13 -3 +9
+FIRMA (AGOT + SUB_TERMINADA + REAC_CONTRA): con 12.8 % | P(GIRO|con) 33.5 % vs sin 37.0 % | RR_MH 0.95 (IC90 0.86-1.03) | ruedas arriba 2 de 6
+   tramo 0-25: P(GIRO|FIRMA) 38.4 % (n 125) vs sin 29.5 % (n 516)
+   tramo 25-50: P(GIRO|FIRMA) 21.8 % (n 450) vs sin 27.4 % (n 2918)
+   tramo 50-100: P(GIRO|FIRMA) 49.2 % (n 297) vs sin 49.6 % (n 2520)
+
+==== tau = 30 s: candidatos en pie y sin confirmar = 4433 (GIRO 1820, PAUSA 1740, MENOR 873)
+P(GIRO) de base por tramo de retroceso ya hecho: 0-25: 31.1 % (n 177), 25-50: 27.8 % (n 1654), 50-100: 50.2 % (n 2602)
+        rasgo  con_%  P(GIRO|con)  P(GIRO|sin)  RR_MH IC90_ruedas  ruedas_arriba  ruedas        dif_pp_por_rueda
+         AGOT  26.51        36.09        42.85   0.90   0.84-0.95              0       6      -2 -1 -8 -9 -10 -5
+SUB_TERMINADA  40.72        38.17        43.04   0.94   0.85-1.03              2       6      +6 +3 -4 -15 -7 -2
+      SUB_SIN  59.28        43.04        38.17   1.06   0.97-1.18              4       6      -6 -3 +4 +15 +7 +2
+    BIG_FAVOR  61.83        40.93        41.25   0.96   0.88-1.03              2       6       -2 +6 -8 -5 -2 +7
+   BIG_CONTRA  39.23        42.84        39.90   1.04   0.95-1.12              3       6      -2 -2 -7 +14 +3 +7
+  REAC_CONTRA  78.05        42.98        34.22   1.15   1.03-1.39              5       6    -1 +0 +9 +21 +15 +17
+     REAC_OFI  90.19        42.97        23.45   1.85   1.71-2.04              6       6 +18 +19 +13 +21 +21 +26
+ REAC_OFI_PAS  84.57        42.22        34.65   1.24   1.11-1.39              6       6      +6 +6 +5 +2 +9 +18
+      VOL_PRE  12.16        38.96        41.35   0.92   0.80-1.00              3       6      -4 +4 -17 +4 +1 -1
+      ABS_PRE  11.64        39.15        41.31   0.92   0.82-1.02              3       6      -9 -9 +1 +10 -8 +5
+   EMPUJE_PRE   8.23        38.08        41.32   0.94   0.77-1.08              2       6    -1 +7 -16 -14 -8 +14
+FIRMA (AGOT + SUB_TERMINADA + REAC_CONTRA): con 14.7 % | P(GIRO|con) 37.3 % vs sin 41.7 % | RR_MH 0.95 (IC90 0.88-1.01) | ruedas arriba 1 de 6
+   tramo 0-25: P(GIRO|FIRMA) 47.1 % (n 34) vs sin 27.3 % (n 143)
+   tramo 25-50: P(GIRO|FIRMA) 22.4 % (n 295) vs sin 29.0 % (n 1359)
+   tramo 50-100: P(GIRO|FIRMA) 50.0 % (n 322) vs sin 50.2 % (n 2280)
+
+==== tau = 60 s: candidatos en pie y sin confirmar = 2381 (GIRO 1078, PAUSA 996, MENOR 307)
+P(GIRO) de base por tramo de retroceso ya hecho: 0-25: 21.1 % (n 19), 25-50: 29.4 % (n 605), 50-100: 51.0 % (n 1757)
+        rasgo  con_%  P(GIRO|con)  P(GIRO|sin)  RR_MH IC90_ruedas  ruedas_arriba  ruedas        dif_pp_por_rueda
+         AGOT  30.58        40.80        47.25   0.93   0.85-1.00              2       6    +1 -1 -10 -10 -13 +1
+SUB_TERMINADA  43.34        43.02        47.00   0.96   0.86-1.08              2       6      +9 +6 -4 -15 -6 -4
+      SUB_SIN  56.66        47.00        43.02   1.04   0.93-1.16              4       6      -9 -6 +4 +15 +6 +4
+    BIG_FAVOR  61.49        45.08        45.58   0.99   0.92-1.05              3       6      +1 +1 -12 -1 -0 +8
+   BIG_CONTRA  39.19        44.69        45.65   0.97   0.89-1.04              2       6       -1 -8 -8 +8 -1 +3
+  REAC_CONTRA  77.99        47.66        36.83   1.24   1.08-1.49              6       6   +1 +15 +2 +30 +15 +10
+     REAC_OFI  89.63        47.28        27.94   1.71   1.49-1.98              6       6 +23 +21 +14 +31 +13 +17
+ REAC_OFI_PAS  82.86        48.50        29.66   1.65   1.55-1.77              6       6 +23 +12 +23 +20 +19 +20
+      VOL_PRE  13.02        45.16        45.29   0.96   0.81-1.07              4       6      -3 +4 -18 +8 +7 +2
+      ABS_PRE  10.84        42.25        45.64   0.90   0.77-1.02              3       6     -11 -20 +3 +5 -2 +5
+   EMPUJE_PRE   8.15        39.69        45.77   0.87   0.74-1.00              2       6     -7 +7 -15 -20 -3 +3
+FIRMA (AGOT + SUB_TERMINADA + REAC_CONTRA): con 16.8 % | P(GIRO|con) 44.0 % vs sin 45.5 % | RR_MH 1.02 (IC90 0.90-1.13) | ruedas arriba 3 de 6
+   tramo 0-25: P(GIRO|FIRMA) 33.3 % (n 3) vs sin 18.8 % (n 16)
+   tramo 25-50: P(GIRO|FIRMA) 32.1 % (n 137) vs sin 28.6 % (n 468)
+   tramo 50-100: P(GIRO|FIRMA) 50.4 % (n 260) vs sin 51.1 % (n 1497)

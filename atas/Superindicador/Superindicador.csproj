@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="SuperCalculos.cs" />
     <Compile Include="Superindicador.cs" />
+    <Compile Include="SuperSonda.cs" />
   </ItemGroup>
 
   <!-- Los ensamblados de ATAS no se copian: la plataforma ya los tiene cargados. -->

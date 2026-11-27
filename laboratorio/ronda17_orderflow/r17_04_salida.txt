@@ -1,0 +1,22 @@
+
+######## tanda0 (ES 2026-11-06, ES 2026-11-09, ES 2026-11-11, MES 2026-11-23, MES 2026-11-24, MES 2026-11-25)
+tau 15 (n 6826): REAC_CONTRA RR_MH(rueda x actual x maximo) 1.00 | REAC_OFI RR_MH(rueda x actual x maximo) 1.26 | REAC_OFI_PAS RR_MH(rueda x actual x maximo) 1.08
+   logistica con retroceso maximo y ACTUAL: REAC_CONTRA -0.02 (IC90 -0.10 a +0.07), REAC_OFI +0.22 (IC90 +0.07 a +0.38)
+   correlacion REAC_OFI con retroceso actual: 0.29 | P(GIRO) con retroceso actual >= 50 % de X: con OFI en contra 64.6 % (n 1303), sin 53.3 % (n 15)
+tau 30 (n 4433): REAC_CONTRA RR_MH(rueda x actual x maximo) 1.00 | REAC_OFI RR_MH(rueda x actual x maximo) 1.12 | REAC_OFI_PAS RR_MH(rueda x actual x maximo) 0.85
+   logistica con retroceso maximo y ACTUAL: REAC_CONTRA -0.01 (IC90 -0.20 a +0.25), REAC_OFI +0.19 (IC90 +0.02 a +0.33)
+   correlacion REAC_OFI con retroceso actual: 0.27 | P(GIRO) con retroceso actual >= 50 % de X: con OFI en contra 66.2 % (n 1188), sin 57.1 % (n 21)
+tau 60 (n 2381): REAC_CONTRA RR_MH(rueda x actual x maximo) 0.99 | REAC_OFI RR_MH(rueda x actual x maximo) 1.04 | REAC_OFI_PAS RR_MH(rueda x actual x maximo) 1.22
+   logistica con retroceso maximo y ACTUAL: REAC_CONTRA +0.05 (IC90 -0.18 a +0.28), REAC_OFI -0.01 (IC90 -0.20 a +0.22)
+   correlacion REAC_OFI con retroceso actual: 0.28 | P(GIRO) con retroceso actual >= 50 % de X: con OFI en contra 68.9 % (n 779), sin 65.2 % (n 23)
+
+######## tanda1 (ES 2026-11-02, ES 2026-11-03, ES 2026-11-04, ES 2026-11-10, ES 2026-11-12, ES 2026-11-13)
+tau 15 (n 6425): REAC_CONTRA RR_MH(rueda x actual x maximo) 1.03 | REAC_OFI RR_MH(rueda x actual x maximo) 1.13 | REAC_OFI_PAS RR_MH(rueda x actual x maximo) 0.97
+   logistica con retroceso maximo y ACTUAL: REAC_CONTRA +0.02 (IC90 -0.08 a +0.11), REAC_OFI +0.11 (IC90 -0.05 a +0.27)
+   correlacion REAC_OFI con retroceso actual: 0.30 | P(GIRO) con retroceso actual >= 50 % de X: con OFI en contra 65.7 % (n 971), sin 71.4 % (n 7)
+tau 30 (n 4488): REAC_CONTRA RR_MH(rueda x actual x maximo) 0.98 | REAC_OFI RR_MH(rueda x actual x maximo) 0.92 | REAC_OFI_PAS RR_MH(rueda x actual x maximo) 0.92
+   logistica con retroceso maximo y ACTUAL: REAC_CONTRA -0.03 (IC90 -0.09 a +0.04), REAC_OFI -0.20 (IC90 -0.33 a -0.02)
+   correlacion REAC_OFI con retroceso actual: 0.28 | P(GIRO) con retroceso actual >= 50 % de X: con OFI en contra 67.3 % (n 1043), sin 73.3 % (n 15)
+tau 60 (n 2544): REAC_CONTRA RR_MH(rueda x actual x maximo) 0.90 | REAC_OFI RR_MH(rueda x actual x maximo) 1.03 | REAC_OFI_PAS RR_MH(rueda x actual x maximo) 0.98
+   logistica con retroceso maximo y ACTUAL: REAC_CONTRA -0.18 (IC90 -0.46 a +0.10), REAC_OFI -0.25 (IC90 -0.69 a +0.21)
+   correlacion REAC_OFI con retroceso actual: 0.26 | P(GIRO) con retroceso actual >= 50 % de X: con OFI en contra 67.8 % (n 794), sin 86.7 % (n 15)

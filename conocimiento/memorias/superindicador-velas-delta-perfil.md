@@ -1,11 +1,11 @@
 ---
 name: superindicador-velas-delta-perfil
-description: "PythiaGex - Superindicador 1.8 (26-11-2026): velas 2 colores + columna de delta + perfil (area de valor de ATAS) + JORNADA hasta la VELA DEL MOMENTO (la ultima a la vista): al correr el grafico se rebobina como estaba; auditado contra ATAS, la cinta y el replay"
+description: "PythiaGex - Superindicador 1.9 (26-11-2026, 1.9 = sonda de cinta adentro): velas 2 colores + columna de delta + perfil (area de valor de ATAS) + JORNADA hasta la VELA DEL MOMENTO (la ultima a la vista): al correr el grafico se rebobina como estaba; auditado contra ATAS, la cinta y el replay"
 metadata:
   node_type: memory
   type: project
   originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
-  modified: 2026-11-27T01:10:59.322Z
+  modified: 2026-11-27T02:51:41.772Z
 ---
 
 Pedido 23-11-2026 con 4 reels (todos del mismo trader, 3 en NinjaTrader y 1 en ATAS): "grafico en dos colores con paletas, el
@@ -66,3 +66,9 @@ LIVE (verde oscuro con borde verde / rojo apagado), el dato en gris a la derecha
 varias preview y cuando te de ok hacelo"):** variante E = renglon 1 "● LIVE" (verde / rojo apagado) a la izquierda y la hora con
 segundos a la derecha; renglon 2 el dia en mayusculas grande ("JUE 26/11", 10 a 8 pt segun entre); linea; "total" + total a la
 derecha. Sin fondos ni sombras. Verificado 22:10:30 IGUAL. Para cambios de aspecto: bocetos primero (show_widget), instalar con su OK.
+**1.8d (26-11):** "algo mas chico el dia y la fecha": el dia baja a 8,5 pt (7,5 si no entra). Verificado 22:13:05 IGUAL.
+**1.9 (26-11, noche): la SONDA adentro** (`SuperSonda.cs`, clase parcial): escribir `cinta;desde;hasta;volmin;minutos` (UTC) en
+`%APPDATA%\ATAS\PythiaGex\flujo\sonda-<inst>.txt` y sale `cinta-<inst>-<desde>-<hasta>.csv` (+ `.listo`) con la cinta orden por orden
+y la punta antes/despues; pedir de a UNA sesion (1380 min desde las 23:00 UTC en horario de invierno). Con eso se bajaron MES 16-25-11
+(476 mil a 899 mil ordenes por rueda) para la [[ronda-17-anatomia-del-movimiento]]; no cambia nada de lo que se dibuja.
+**Proximo (esperando OK):** "la ola" de la ronda 17, previews A (renglon bajo la fecha), B (ola dibujada) y C (ola + marea).

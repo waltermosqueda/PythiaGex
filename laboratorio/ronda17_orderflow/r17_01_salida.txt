@@ -1,0 +1,13 @@
+V_min MES = 18.0 (percentil 0.227 de 30 en ES; mediana de celda ES 69.0, MES 39.2)
+ES 2026-11-06 RANGO X 5.00 giros 252 pausas 250 azar 297 | micro giros 1047 pausas 814
+ES 2026-11-09 TENDENCIA X 5.25 giros 86 pausas 75 azar 587 | micro giros 333 pausas 271
+ES 2026-11-11 MIXTA X 6.00 giros 42 pausas 45 azar 653 | micro giros 168 pausas 165
+MES 2026-11-23 RANGO X 9.75 giros 123 pausas 123 azar 513 | micro giros 503 pausas 442
+MES 2026-11-24 MIXTA X 9.75 giros 94 pausas 115 azar 519 | micro giros 408 pausas 369
+MES 2026-11-25 TENDENCIA X 9.75 giros 144 pausas 131 azar 434 | micro giros 532 pausas 513
+ES 2026-11-02 TENDENCIA X 4.75 giros 115 pausas 87 azar 523 | micro giros 361 pausas 340
+ES 2026-11-03 MIXTA X 5.00 giros 68 pausas 78 azar 577 | micro giros 324 pausas 238
+ES 2026-11-04 TENDENCIA X 4.75 giros 130 pausas 135 azar 471 | micro giros 524 pausas 473
+ES 2026-11-10 MIXTA X 5.75 giros 134 pausas 110 azar 498 | micro giros 473 pausas 389
+ES 2026-11-12 MIXTA X 6.25 giros 94 pausas 63 azar 580 | micro giros 296 pausas 234
+ES 2026-11-13 MIXTA X 6.75 giros 101 pausas 94 azar 524 | micro giros 371 pausas 346

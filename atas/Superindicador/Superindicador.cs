@@ -64,9 +64,9 @@ namespace PythiaSuper
     /// </summary>
     [DisplayName("PythiaGex - Superindicador (velas + delta + perfil)")]
     [Category("PythiaGex")]
-    public class SuperindicadorOF : Indicator
+    public partial class SuperindicadorOF : Indicator
     {
-        public const string Version = "1.8d";
+        public const string Version = "1.9";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -509,6 +509,7 @@ namespace PythiaSuper
                     if (h != _hoverUlt) { _hoverUlt = h; Redibujar(); }
                 }
                 if (_registro && (DateTime.UtcNow - _ultFlush).TotalSeconds >= 2) { _ultFlush = DateTime.UtcNow; VolcarCinta(); }
+                SondaLatido();   // 1.9: pedidos de cinta historica por archivo (SuperSonda.cs)
             }
             catch (Exception e) { Anotar(e); }
         }

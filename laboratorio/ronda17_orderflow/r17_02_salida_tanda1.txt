@@ -1,0 +1,310 @@
+ruedas: ES 2026-11-02, ES 2026-11-03, ES 2026-11-04, ES 2026-11-10, ES 2026-11-12, ES 2026-11-13
+clase   azar  giro  pausa
+escala                   
+4X      4474    34     30
+X       3173   642    567
+X/2     1327  2349   2020
+
+==== ENRIQUECIMIENTO escala X (giros contra pausas y contra momentos al azar; dif_pp_por_dia = giro - pausa por rueda)
+            factor  giros_%  n_giros  pausas_%  n_pausas  azar_%  n_azar  RR_vs_pausa  IC95_lo  IC95_hi  RR_vs_azar  IC95z_lo  IC95z_hi  dias_giro>pausa  dias_giro<pausa  dias_medibles          dif_pp_por_dia  SE_REPITE
+               ABS    15.11      642     16.93       567    9.86    3173         0.89     0.69     1.16        1.53      1.24      1.89                3                3              6       -6 +1 -8 +2 -4 +3      False
+               VOL    16.20      642     21.16       567    6.78    3173         0.77     0.60     0.97        2.39      1.92      2.97                1                5              6      -15 +3 -2 -2 -3 -9       True
+            EMPUJE    19.16      642     21.69       567    5.86    3173         0.88     0.71     1.10        3.27      2.65      4.04                3                3              6      -10 +5 -5 +0 +1 -3      False
+      DELTA_CONTRA    18.22      642     16.75       567   39.68    3173         1.09     0.85     1.39        0.46      0.39      0.54                4                2              6       -1 -8 +5 +3 +1 +4      False
+         DIV_SWING    25.64      312     28.30       265   34.54     663         0.91     0.69     1.19        0.74      0.60      0.92                2                4              6     +2 -20 -5 -1 -14 +8      False
+      DIV_VELA_PRE    12.31      642     10.58       567   43.15    3173         1.16     0.85     1.60        0.29      0.23      0.35                4                2              6       -2 -8 +2 +6 +9 +0      False
+          DIV_VELA    41.28      642     24.34       567   33.28    3173         1.70     1.43     2.01        1.24      1.12      1.38                6                0              6  +19 +12 +17 +28 +9 +10       True
+       AGOTAMIENTO    59.50      642     23.10       567     NaN       0         2.58     2.19     3.03         NaN       NaN       NaN                6                0              6 +44 +41 +35 +39 +24 +33       True
+     SUB_TERMINADA    59.66      642     42.50       567     NaN       0         1.40     1.25     1.57         NaN       NaN       NaN                6                0              6   +33 +5 +15 +26 +2 +14       True
+  SUB_SIN_TERMINAR    40.34      642     57.50       567     NaN       0         0.70     0.62     0.79         NaN       NaN       NaN                0                6              6   -33 -5 -15 -26 -2 -14       True
+        APIL_FAVOR     1.25      642      2.47       567    2.21    3173         0.50     0.21     1.19        0.56      0.27      1.17                3                2              5        -1 · -7 +1 +1 +1      False
+         BIG_FAVOR    57.63      642     75.66       567   69.62    3173         0.76     0.70     0.83        0.83      0.77      0.89                0                6              6 -23 -15 -20 -18 -13 -18       True
+        BIG_CONTRA    22.43      642     40.92       567   63.91    3173         0.55     0.46     0.65        0.35      0.30      0.41                0                6              6 -20 -15 -16 -23 -21 -16       True
+      BIG_FAVOR999    10.44      642     23.63       567   14.56    3173         0.44     0.34     0.58        0.72      0.56      0.91                0                6              6  -13 -3 -19 -14 -14 -12       True
+     BIG_CONTRA999     2.96      642      8.47       567   10.21    3173         0.35     0.21     0.59        0.29      0.18      0.46                0                6              6      -9 -5 -5 -10 -2 -1       True
+       BIG95_FAVOR    10.90      642     24.87       567   15.88    3173         0.44     0.34     0.57        0.69      0.54      0.87                0                6              6  -21 -4 -19 -11 -14 -12       True
+      BIG95_CONTRA     3.43      642      9.52       567   11.09    3173         0.36     0.22     0.58        0.31      0.20      0.47                0                6              6      -14 -5 -4 -9 -2 -2       True
+           BARRIDA    66.04      642     68.43       567   65.08    3173         0.97     0.89     1.04        1.01      0.95      1.08                2                4              6       +4 -8 -3 -3 -2 +2      False
+            L_AYER     8.57      642      6.88       567    6.97    3173         1.25     0.84     1.85        1.23      0.93      1.63                4                1              5        +1 -1 · +0 +5 +2      False
+           L_NOCHE     3.27      642      5.29       567    4.19    3173         0.62     0.36     1.07        0.78      0.50      1.23                2                4              6       +3 -7 -4 -2 -4 +1      False
+              L_IB     6.15      423      6.20       387    7.31    2899         0.99     0.58     1.70        0.84      0.57      1.25                3                2              5        +3 +4 -4 +2 -2 ·      False
+            L_VWAP    13.71      642     12.35       567   13.27    3173         1.11     0.83     1.49        1.03      0.83      1.28                4                2              6       -1 +8 +1 -6 +4 +2      False
+         L_REDONDO     7.32      642      4.59       567    6.24    3173         1.60     1.00     2.54        1.17      0.86      1.59                5                1              6       +9 +6 +2 +3 -5 +2       True
+          L_SEMANA     1.87      642      1.59       567    2.30    3173         1.18     0.50     2.77        0.81      0.44      1.49                2                2              4         -1 +6 -1 · +1 ·      False
+             L_MES     4.36      642      3.70       567    5.04    3173         1.18     0.68     2.05        0.86      0.58      1.28                4                1              5        +0 +6 · +1 +2 -5      False
+      L_IMPORTANTE    24.92      642     23.46       567   25.87    3173         1.06     0.87     1.30        0.96      0.83      1.12                3                3              6      +10 +6 -6 +4 -4 -0      False
+          ABS_REAC     7.48      642     12.17       567   10.05    3173         0.61     0.43     0.87        0.74      0.56      1.00                1                5              6      -5 -11 -6 -3 -7 +2       True
+AGRESION_CONTRARIA    26.95      642     11.82       567    3.59    3173         2.28     1.76     2.95        7.50      6.01      9.35                6                0              6  +20 +17 +21 +12 +3 +16       True
+       APIL_CONTRA     0.93      642      0.18       567    0.72    3173         5.30     0.64    43.88        1.29      0.53      3.15                3                0              3          +1 +3 · · +2 ·      False
+   BIG_CONTRA_REAC    88.01      642     85.71       567   68.86    3173         1.03     0.98     1.07        1.28      1.23      1.33                5                1              6       +6 +3 +5 -3 +2 +1      False
+
+---- continuos escala X
+    variable  mediana_giros  mediana_pausas  AUC_giro_vs_pausa_rangos                 AUC_por_rueda
+     abs_pre         35.000          40.000                     0.466 0.42 0.46 0.41 0.49 0.49 0.54
+     vol_pre       4405.000        4666.000                     0.464 0.40 0.51 0.43 0.48 0.49 0.50
+ delta_pre_s        215.500         242.000                     0.469 0.44 0.58 0.41 0.48 0.48 0.49
+    abs_reac         29.000          33.000                     0.455 0.39 0.45 0.44 0.45 0.49 0.52
+delta_reac_s       -160.000         -26.000                     0.304 0.31 0.32 0.24 0.31 0.38 0.30
+  agot_ratio          0.167           0.538                     0.281 0.25 0.26 0.28 0.24 0.32 0.34
+
+==== ENRIQUECIMIENTO escala X/2 (giros contra pausas y contra momentos al azar; dif_pp_por_dia = giro - pausa por rueda)
+            factor  giros_%  n_giros  pausas_%  n_pausas  azar_%  n_azar  RR_vs_pausa  IC95_lo  IC95_hi  RR_vs_azar  IC95z_lo  IC95z_hi  dias_giro>pausa  dias_giro<pausa  dias_medibles          dif_pp_por_dia  SE_REPITE
+               ABS    14.22     2349     14.80      2020    7.69    1327         0.96     0.83     1.11        1.85      1.50      2.29                2                4              6       +2 -7 -0 -2 +4 -1      False
+               VOL    18.26     2349     15.50      2020    5.20    1327         1.18     1.03     1.35        3.51      2.75      4.49                5                1              6       +7 +1 +2 -1 +7 +3       True
+            EMPUJE    13.03     2349     11.53      2020    4.75    1327         1.13     0.96     1.32        2.74      2.11      3.57                5                1              6       +5 +2 +1 -3 +4 +1      False
+      DELTA_CONTRA    32.91     2349     31.73      2020   41.82    1327         1.04     0.95     1.13        0.79      0.72      0.86                4                2              6       +5 +1 +2 +1 -2 -2      False
+         DIV_SWING    26.85     1121     24.25       965   22.36     237         1.11     0.96     1.28        1.20      0.93      1.55                4                2              6      -7 +12 +6 -3 +4 +5      False
+      DIV_VELA_PRE    23.58     2349     24.06      2020   42.95    1327         0.98     0.88     1.09        0.55      0.50      0.60                2                4              6       -1 +3 -1 +0 -2 -2      False
+          DIV_VELA    45.21     2349     31.53      2020   28.79    1327         1.43     1.33     1.55        1.57      1.43      1.73                6                0              6   +21 +18 +14 +16 +3 +8       True
+       AGOTAMIENTO    32.65     2349      6.24      2020     NaN       0         5.23     4.38     6.26         NaN       NaN       NaN                6                0              6 +30 +28 +21 +27 +31 +25       True
+     SUB_TERMINADA    41.81     2349     18.61      2020     NaN       0         2.25     2.03     2.49         NaN       NaN       NaN                6                0              6 +21 +21 +24 +23 +24 +25       True
+  SUB_SIN_TERMINAR    58.19     2349     81.39      2020     NaN       0         0.72     0.69     0.74         NaN       NaN       NaN                0                6              6 -21 -21 -24 -23 -24 -25       True
+        APIL_FAVOR     1.06     2349      2.97      2020    2.49    1327         0.36     0.23     0.57        0.43      0.26      0.72                0                6              6       -3 -2 -3 -1 -1 -1       True
+         BIG_FAVOR    61.35     2349     77.38      2020   68.35    1327         0.79     0.76     0.83        0.90      0.85      0.94                0                6              6 -18 -21 -16 -13 -16 -13       True
+        BIG_CONTRA    38.10     2349     53.71      2020   64.96    1327         0.71     0.66     0.76        0.59      0.55      0.63                0                6              6 -10 -23 -13 -19 -15 -13       True
+      BIG_FAVOR999    13.84     2349     21.19      2020   11.61    1327         0.65     0.57     0.74        1.19      1.00      1.43                0                6              6      -8 -7 -6 -12 -4 -4       True
+     BIG_CONTRA999     8.17     2349     11.24      2020    9.95    1327         0.73     0.61     0.87        0.82      0.67      1.01                0                6              6       -3 -1 -1 -6 -1 -6       True
+       BIG95_FAVOR    14.94     2349     23.47      2020   12.13    1327         0.64     0.56     0.72        1.23      1.03      1.47                0                6              6     -13 -7 -8 -12 -4 -5       True
+      BIG95_CONTRA     9.20     2349     11.93      2020   10.47    1327         0.77     0.65     0.92        0.88      0.72      1.07                0                6              6       -3 -1 -1 -6 -1 -2       True
+           BARRIDA    86.89     2349     88.42      2020   89.22    1327         0.98     0.96     1.00        0.97      0.95      1.00                1                5              6       -2 +0 -3 -2 -1 -1      False
+            L_AYER     7.32     2349      6.93      2020    6.41    1327         1.06     0.85     1.31        1.14      0.89      1.47                3                2              5        -1 +1 · +1 -1 +1      False
+           L_NOCHE     4.47     2349      3.71      2020    3.01    1327         1.20     0.90     1.61        1.48      1.04      2.12                5                1              6       +1 -1 +1 +0 +2 +1      False
+              L_IB     7.00     1572      6.10      1427    7.17    1297         1.15     0.87     1.51        0.98      0.75      1.27                3                2              5        +2 +1 +3 -3 -0 ·      False
+            L_VWAP    14.18     2349     13.47      2020   13.26    1327         1.05     0.91     1.22        1.07      0.90      1.27                3                3              6       +7 -0 +2 -6 -3 +2      False
+         L_REDONDO     6.13     2349      5.45      2020    5.88    1327         1.13     0.88     1.43        1.04      0.80      1.36                3                3              6       +2 +3 -0 -1 -1 +0      False
+          L_SEMANA     1.75     2349      1.78      2020    2.41    1327         0.98     0.63     1.53        0.72      0.46      1.14                2                3              5        -1 +1 -0 · +1 -1      False
+             L_MES     3.75     2349      3.66      2020    5.43    1327         1.02     0.76     1.39        0.69      0.51      0.94                2                3              5        -2 +1 · -0 -3 +3      False
+      L_IMPORTANTE    24.69     2349     22.38      2020   24.11    1327         1.10     0.99     1.23        1.02      0.91      1.15                5                1              6       +2 +3 +2 -2 +0 +4      False
+          ABS_REAC     9.83     2349      9.95      2020   10.78    1327         0.99     0.83     1.18        0.91      0.75      1.11                1                5              6       +3 -1 -1 -1 -0 -1      False
+AGRESION_CONTRARIA    21.20     2349      8.12      2020    2.94    1327         2.61     2.21     3.08        7.21      5.24      9.92                6                0              6  +18 +16 +12 +14 +8 +11       True
+       APIL_CONTRA     1.32     2349      0.84      2020    0.60    1327         1.57     0.87     2.82        2.19      1.01      4.75                4                2              6       +2 +1 +0 -0 -0 +0      False
+   BIG_CONTRA_REAC    86.89     2349     81.63      2020   66.09    1327         1.06     1.04     1.09        1.31      1.26      1.37                6                0              6      +11 +9 +6 +1 +2 +4       True
+
+---- continuos escala X/2
+    variable  mediana_giros  mediana_pausas  AUC_giro_vs_pausa_rangos                 AUC_por_rueda
+     abs_pre         34.000          32.000                     0.513 0.55 0.49 0.51 0.50 0.55 0.49
+     vol_pre       4461.000        4337.500                     0.523 0.54 0.51 0.53 0.52 0.54 0.50
+ delta_pre_s        118.000         120.000                     0.498 0.48 0.47 0.50 0.48 0.54 0.51
+    abs_reac         30.000          31.000                     0.500 0.50 0.48 0.51 0.50 0.52 0.49
+delta_reac_s       -101.500          44.000                     0.326 0.27 0.30 0.32 0.34 0.37 0.35
+  agot_ratio          0.452           0.703                     0.323 0.29 0.30 0.35 0.31 0.31 0.35
+
+==== ENRIQUECIMIENTO escala 4X (movimientos principales; n chico, descriptivo)
+            factor  giros_%  n_giros  pausas_%  n_pausas  azar_%  RR_vs_pausa  IC95_lo  IC95_hi  dif_pp_por_dia
+               ABS    17.65       34     33.33        30   10.06         0.53     0.22     1.28  +13 · · -5 · ·
+               VOL     8.82       34     40.00        30    8.99         0.22     0.07     0.71  -3 · · -30 · ·
+            EMPUJE    23.53       34     40.00        30    6.50         0.59     0.28     1.24   -3 · · +3 · ·
+      DELTA_CONTRA     8.82       34     10.00        30   44.17         0.88     0.19     4.05 -20 · · -12 · ·
+         DIV_SWING    38.46       13     40.00        10   22.47         0.96     0.35     2.68     · · · · · ·
+      DIV_VELA_PRE     8.82       34      3.33        30   45.55         2.65     0.29    24.11   · · · -12 · ·
+          DIV_VELA    38.24       34     40.00        30   42.42         0.96     0.52     1.76 -10 · · -42 · ·
+       AGOTAMIENTO    67.65       34     73.33        30     NaN         0.92     0.67     1.27 +43 · · -28 · ·
+     SUB_TERMINADA    55.88       34     63.33        30     NaN         0.88     0.59     1.32 +47 · · -15 · ·
+  SUB_SIN_TERMINAR    44.12       34     36.67        30     NaN         1.20     0.66     2.20 -47 · · +15 · ·
+        APIL_FAVOR     0.00       34      0.00        30    1.77         0.89     0.02    43.32     · · · · · ·
+         BIG_FAVOR    64.71       34     86.67        30   71.61         0.75     0.56     0.99 -50 · · +25 · ·
+        BIG_CONTRA    26.47       34     26.67        30   65.40         0.99     0.44     2.25 +13 · · -18 · ·
+      BIG_FAVOR999    11.76       34     20.00        30   15.87         0.59     0.18     1.89 -20 · · +40 · ·
+     BIG_CONTRA999     2.94       34      3.33        30   12.11         0.88     0.06    13.50     · · · · · ·
+       BIG95_FAVOR     8.82       34     23.33        30   17.03         0.38     0.11     1.33 -23 · · +20 · ·
+      BIG95_CONTRA     2.94       34      3.33        30   13.61         0.88     0.06    13.50     · · · · · ·
+           BARRIDA    11.76       34     13.33        30   14.77         0.88     0.24     3.22  -3 · · -12 · ·
+            L_AYER     2.94       34     23.33        30    6.84         0.13     0.02     0.97 -20 · · -25 · ·
+           L_NOCHE     2.94       34      0.00        30    4.27         2.66     0.11    62.88     · · · · · ·
+              L_IB     0.00       22      4.76        21    7.15         0.32     0.01     7.42     · · · · · ·
+            L_VWAP     8.82       34      6.67        30   13.90         1.32     0.24     7.40 +17 · · +20 · ·
+         L_REDONDO     5.88       34      3.33        30    5.79         1.76     0.17    18.50   +17 · · · · ·
+          L_SEMANA     2.94       34      0.00        30    2.08         2.66     0.11    62.88     · · · · · ·
+             L_MES     2.94       34      3.33        30    4.81         0.88     0.06    13.50     · · · · · ·
+      L_IMPORTANTE    17.65       34     30.00        30   25.21         0.59     0.24     1.46  -3 · · -25 · ·
+          ABS_REAC     0.00       34     13.33        30   10.19         0.10     0.01     1.76   -20 · · · · ·
+AGRESION_CONTRARIA    38.24       34     43.33        30    8.29         0.88     0.49     1.59 -27 · · -10 · ·
+       APIL_CONTRA     0.00       34      3.33        30    1.18         0.30     0.01     6.99   -20 · · · · ·
+   BIG_CONTRA_REAC    91.18       34    100.00        30   73.78         0.91     0.82     1.01   +0 · · +0 · ·
+
+==== COMBINACIONES (escala X; giros y pausas; en lugar importante y fuera)
+                                                                   combo  giro  pausa  giros_%  pausas_%  lugar_importante  n_giros_total  n_pausas_total
+                             AGOTAMIENTO+SUB_TERMINADA+BARRIDA+BIG_FAVOR    18      8     11.2       6.0              True            160             133
+                                                     AGOTAMIENTO+BARRIDA     9      2      5.6       1.5              True            160             133
+                                               AGOTAMIENTO+SUB_TERMINADA     7      1      4.4       0.8              True            160             133
+                                       AGOTAMIENTO+SUB_TERMINADA+BARRIDA     6      0      3.8       0.0              True            160             133
+                    AGOTAMIENTO+SUB_TERMINADA+BARRIDA+AGRESION_CONTRARIA     6      2      3.8       1.5              True            160             133
+                                                                 BARRIDA     5     11      3.1       8.3              True            160             133
+      ABS+AGOTAMIENTO+SUB_TERMINADA+BARRIDA+BIG_FAVOR+AGRESION_CONTRARIA     4      0      2.5       0.0              True            160             133
+      AGOTAMIENTO+SUB_TERMINADA+DIV_SWING+BARRIDA+BIG_FAVOR+DELTA_CONTRA     4      0      2.5       0.0              True            160             133
+                                                  BIG_FAVOR+DELTA_CONTRA     4      3      2.5       2.3              True            160             133
+AGOTAMIENTO+SUB_TERMINADA+DIV_SWING+BARRIDA+BIG_FAVOR+AGRESION_CONTRARIA     4      0      2.5       0.0              True            160             133
+                                         SUB_TERMINADA+BARRIDA+BIG_FAVOR     4     11      2.5       8.3              True            160             133
+                                                 SUB_TERMINADA+BIG_FAVOR     4      7      2.5       5.3              True            160             133
+                                       AGOTAMIENTO+SUB_TERMINADA+BARRIDA    38     12      7.9       2.8             False            482             434
+                             AGOTAMIENTO+SUB_TERMINADA+BARRIDA+BIG_FAVOR    31     16      6.4       3.7             False            482             434
+                                                       BARRIDA+BIG_FAVOR    28     52      5.8      12.0             False            482             434
+                                     AGOTAMIENTO+SUB_TERMINADA+BIG_FAVOR    19      3      3.9       0.7             False            482             434
+                                                                 BARRIDA    15     17      3.1       3.9             False            482             434
+                                               AGOTAMIENTO+SUB_TERMINADA    15      5      3.1       1.2             False            482             434
+                                         SUB_TERMINADA+BARRIDA+BIG_FAVOR    15     34      3.1       7.8             False            482             434
+          AGOTAMIENTO+SUB_TERMINADA+BARRIDA+BIG_FAVOR+AGRESION_CONTRARIA    14      3      2.9       0.7             False            482             434
+                                                               (ninguno)    13      5      2.7       1.2             False            482             434
+                                                               BIG_FAVOR    11     42      2.3       9.7             False            482             434
+                                                     AGOTAMIENTO+BARRIDA    10      2      2.1       0.5             False            482             434
+                                           AGOTAMIENTO+BARRIDA+BIG_FAVOR     9      9      1.9       2.1             False            482             434
+
+==== MODELO giro contra pausa, escala X, visibles: n 1209 (giros 642) | AUC dejando una rueda afuera: logistica 0.735, arbol 0.730
+coeficientes (estandarizados): AGOTAMIENTO +0.76, BIG_CONTRA -0.32, BIG_FAVOR -0.30, BARRIDA -0.20, DIV_aplica +0.20, DIV_SWING0 -0.15, DIV_VELA_PRE +0.14, DELTA_CONTRA +0.14, SUB_SIN_TERMINAR -0.05, SUB_TERMINADA +0.05, L_VWAP +0.05, VOL -0.05, L_IMPORTANTE -0.04, APIL_FAVOR -0.04, EMPUJE +0.04, ABS +0.03
+importancia del arbol: AGOTAMIENTO 0.72, BIG_CONTRA 0.16, BIG_FAVOR 0.07, DELTA_CONTRA 0.02, BARRIDA 0.02, DIV_VELA_PRE 0.01
+|--- AGOTAMIENTO <= 0.50
+|   |--- BIG_CONTRA <= 0.50
+|   |   |--- BIG_FAVOR <= 0.50
+|   |   |   |--- class: 1
+|   |   |--- BIG_FAVOR >  0.50
+|   |   |   |--- class: 0
+|   |--- BIG_CONTRA >  0.50
+|   |   |--- DIV_VELA_PRE <= 0.50
+|   |   |   |--- class: 0
+|   |   |--- DIV_VELA_PRE >  0.50
+|   |   |   |--- class: 0
+|--- AGOTAMIENTO >  0.50
+|   |--- BARRIDA <= 0.50
+|   |   |--- DELTA_CONTRA <= 0.50
+|   |   |   |--- class: 1
+|   |   |--- DELTA_CONTRA >  0.50
+|   |   |   |--- class: 1
+|   |--- BARRIDA >  0.50
+|   |   |--- DELTA_CONTRA <= 0.50
+|   |   |   |--- class: 1
+|   |   |--- DELTA_CONTRA >  0.50
+|   |   |   |--- class: 1
+
+
+==== MODELO giro contra pausa, escala X, con_reaccion: n 1209 (giros 642) | AUC dejando una rueda afuera: logistica 0.750, arbol 0.720
+coeficientes (estandarizados): AGOTAMIENTO +0.72, AGRESION_CONTRARIA +0.37, BIG_CONTRA -0.36, BIG_FAVOR -0.30, DIV_aplica +0.20, BARRIDA -0.20, DIV_SWING0 -0.16, DIV_VELA_PRE +0.15, ABS_REAC -0.14, BIG_CONTRA_REAC +0.13, DELTA_CONTRA +0.11, APIL_CONTRA +0.10, L_IMPORTANTE -0.07, VOL -0.06, EMPUJE +0.05, SUB_TERMINADA +0.04, SUB_SIN_TERMINAR -0.04, L_VWAP +0.04, APIL_FAVOR -0.02, ABS +0.01
+importancia del arbol: AGOTAMIENTO 0.68, BIG_CONTRA 0.15, AGRESION_CONTRARIA 0.12, L_VWAP 0.02, ABS_REAC 0.01, BIG_FAVOR 0.01
+|--- AGOTAMIENTO <= 0.50
+|   |--- BIG_CONTRA <= 0.50
+|   |   |--- AGRESION_CONTRARIA <= 0.50
+|   |   |   |--- class: 0
+|   |   |--- AGRESION_CONTRARIA >  0.50
+|   |   |   |--- class: 1
+|   |--- BIG_CONTRA >  0.50
+|   |   |--- ABS_REAC <= 0.50
+|   |   |   |--- class: 0
+|   |   |--- ABS_REAC >  0.50
+|   |   |   |--- class: 0
+|--- AGOTAMIENTO >  0.50
+|   |--- AGRESION_CONTRARIA <= 0.50
+|   |   |--- BIG_FAVOR <= 0.50
+|   |   |   |--- class: 1
+|   |   |--- BIG_FAVOR >  0.50
+|   |   |   |--- class: 1
+|   |--- AGRESION_CONTRARIA >  0.50
+|   |   |--- L_VWAP <= 0.50
+|   |   |   |--- class: 1
+|   |   |--- L_VWAP >  0.50
+|   |   |   |--- class: 1
+
+
+==== MODELO giro contra pausa, escala X/2, visibles: n 4369 (giros 2349) | AUC dejando una rueda afuera: logistica 0.720, arbol 0.689
+coeficientes (estandarizados): AGOTAMIENTO +0.67, BIG_FAVOR -0.27, SUB_TERMINADA +0.18, SUB_SIN_TERMINAR -0.18, VOL +0.17, BIG_CONTRA -0.17, BARRIDA -0.12, APIL_FAVOR -0.11, DELTA_CONTRA +0.11, DIV_aplica -0.08, EMPUJE +0.07, ABS -0.02, L_VWAP +0.02, L_IMPORTANTE -0.01, DIV_VELA_PRE +0.00, DIV_SWING0 +0.00
+importancia del arbol: AGOTAMIENTO 0.74, SUB_SIN_TERMINAR 0.14, BIG_FAVOR 0.11, BIG_CONTRA 0.01, DIV_VELA_PRE 0.01
+
+==== MODELO giro contra pausa, escala X/2, con_reaccion: n 4369 (giros 2349) | AUC dejando una rueda afuera: logistica 0.738, arbol 0.686
+coeficientes (estandarizados): AGOTAMIENTO +0.64, AGRESION_CONTRARIA +0.30, BIG_FAVOR -0.29, BIG_CONTRA_REAC +0.25, BIG_CONTRA -0.25, SUB_TERMINADA +0.18, SUB_SIN_TERMINAR -0.18, VOL +0.14, APIL_FAVOR -0.11, BARRIDA -0.11, DIV_aplica -0.09, EMPUJE +0.08, DELTA_CONTRA +0.08, ABS -0.04, L_IMPORTANTE -0.01, APIL_CONTRA +0.01, L_VWAP +0.01, DIV_SWING0 -0.01, ABS_REAC -0.00, DIV_VELA_PRE +0.00
+importancia del arbol: AGOTAMIENTO 0.72, AGRESION_CONTRARIA 0.14, BIG_FAVOR 0.09, SUB_TERMINADA 0.03, SUB_SIN_TERMINAR 0.02, BIG_CONTRA_REAC 0.01
+
+==== POR TIPO DE DIA (% de puntos con el factor, escala X)
+                  ABS  AGOTAMIENTO  SUB_TERMINADA  DIV_SWING  BARRIDA  BIG_FAVOR  DELTA_CONTRA  AGRESION_CONTRARIA  APIL_CONTRA  L_IMPORTANTE  L_VWAP   VOL  EMPUJE
+tipo_dia  clase                                                                                                                                                    
+MIXTA     giro   16.0         60.0           57.0       29.0     66.0       56.0          20.0                26.0          1.0          28.0    15.0  15.0    19.0
+          pausa  15.0         26.0           43.0       34.0     69.0       72.0          19.0                15.0          0.0          27.0    13.0  19.0    19.0
+TENDENCIA giro   13.0         58.0           64.0       20.0     65.0       60.0          16.0                28.0          1.0          20.0    12.0  18.0    19.0
+          pausa  19.0         18.0           41.0       22.0     67.0       81.0          14.0                 7.0          0.0          18.0    11.0  25.0    26.0
+
+==== PIERNAS escala 4X (sin la ultima sin cerrar)
+inst                        ES          
+tipo_dia                 MIXTA TENDENCIA
+piernas                  13.00     18.00
+pts_med                  39.00     30.38
+min_med                  33.23     13.29
+vel_med                   1.29      2.11
+delta_a_favor_pct        76.92     94.44
+ofi_a_favor_pct          84.62     94.44
+ofi_pas_a_favor_pct      76.92     83.33
+delta_vol_med             0.02      0.05
+pts_1000_med             11.41      7.10
+pts_raiz_med              0.09      0.11
+apil_favor_10             0.10      0.46
+apil_contra               0.46      0.17
+big_neto_favor_med      714.00   2650.50
+frac_vacio_med            0.03      0.06
+ratio_seg_vacio_med       0.68      0.58
+abs_contra_por_pierna     8.15      5.17
+fallan_pct               67.55     65.68
+abs_ep                  106.00     93.00
+abs_siguio               80.00     73.00
+ctrl_n                 2644.00   2162.00
+ctrl_siguio            2099.00   1786.00
+abs_siguio_%             75.47     78.49
+ctrl_siguio_%            79.39     82.61
+
+==== PIERNAS escala X (sin la ultima sin cerrar)
+inst                        ES          
+tipo_dia                 MIXTA TENDENCIA
+piernas                 398.00    244.00
+pts_med                   9.75      7.50
+min_med                   2.00      1.74
+vel_med                   5.48      4.69
+delta_a_favor_pct        90.70     93.85
+ofi_a_favor_pct          99.75     99.59
+ofi_pas_a_favor_pct      96.48     94.67
+delta_vol_med             0.05      0.07
+pts_1000_med             22.22     15.50
+pts_raiz_med              0.12      0.09
+apil_favor_10             0.05      0.12
+apil_contra               0.02      0.05
+big_neto_favor_med      178.00    175.50
+frac_vacio_med            0.00      0.00
+ratio_seg_vacio_med       0.85      0.50
+abs_contra_por_pierna     0.76      0.64
+fallan_pct               80.25     84.67
+abs_ep                  303.00    155.00
+abs_siguio              248.00    134.00
+ctrl_n                 6325.00   3210.00
+ctrl_siguio            5393.00   2683.00
+abs_siguio_%             81.85     86.45
+ctrl_siguio_%            85.26     83.58
+
+==== PIERNAS escala X/2 (sin la ultima sin cerrar)
+inst                        ES          
+tipo_dia                 MIXTA TENDENCIA
+piernas                1470.00    891.00
+pts_med                   5.00      4.25
+min_med                   0.58      0.47
+vel_med                   9.24      9.27
+delta_a_favor_pct        88.98     91.25
+ofi_a_favor_pct          99.39     98.54
+ofi_pas_a_favor_pct      97.89     96.52
+delta_vol_med             0.08      0.10
+pts_1000_med             28.02     18.91
+pts_raiz_med              0.11      0.09
+apil_favor_10             0.03      0.11
+apil_contra               0.01      0.06
+big_neto_favor_med       45.00     50.00
+frac_vacio_med            0.00      0.00
+ratio_seg_vacio_med       0.87      0.70
+abs_contra_por_pierna     0.30      0.29
+fallan_pct               85.16     89.24
+abs_ep                  437.00    260.00
+abs_siguio              373.00    232.00
+ctrl_n                 6920.00   3539.00
+ctrl_siguio            6017.00   3146.00
+abs_siguio_%             85.35     89.23
+ctrl_siguio_%            86.95     88.90
+
+==== giros y pausas por franja (escala X)
+clase     giro  pausa
+franja               
+APERTURA   219    180
+MANANA     189    165
+MEDIODIA   129    118
+TARDE       48     45
+ULTIMA      57     59

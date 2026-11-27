@@ -1,0 +1,26 @@
+sesiones con rueda completa: 263 2025-08-22 -> 2026-09-21
+bloques: 1: 2025-09-08 a 2025-12-08 | 2: 2025-12-09 a 2026-03-12 | 3: 2026-03-13 a 2026-06-11 | 4: 2026-06-12 a 2026-09-21
+
+==== PIERNAS 4X: n 1341, mediana 32.2 pts; delta a favor 90.1 % | por bloque 88 92 89 92 | por tipo MIXTA 89 %, RANGO 90 %, TENDENCIA 91 %
+   piernas lentas (>= mediana de velas) delta a favor 96.7 % / rapidas 83.1 %
+---- giros 1180 / pausas 956; cociente giro/pausa (IC 95 %) y por bloque (dif. en puntos porcentuales)
+   L_AYER             giros  13.2 % (n  1141) | pausas  13.1 % (n   929) | RR 1.01 (0.81-1.26) | bloques -0.9 +1.2 -0.3 +0.6
+   L_NOCHE            giros   6.3 % (n  1180) | pausas   5.3 % (n   956) | RR 1.18 (0.83-1.66) | bloques +4.4 -2.3 +2.5 -1.0
+   L_IB               giros   6.7 % (n   818) | pausas   5.6 % (n   710) | RR 1.19 (0.80-1.77) | bloques +1.9 +0.9 +1.8 -1.2
+   L_VWAP             giros  18.1 % (n  1180) | pausas  19.5 % (n   956) | RR 0.93 (0.78-1.11) | bloques -1.4 -2.9 -0.6 +1.1
+   L_REDONDO          giros   6.7 % (n  1180) | pausas   6.0 % (n   956) | RR 1.12 (0.81-1.56) | bloques -0.0 -0.4 +3.4 -0.2
+   L_SEMANA           giros   7.3 % (n  1027) | pausas   5.9 % (n   845) | RR 1.23 (0.87-1.74) | bloques -1.0 +3.5 -0.2 +4.8
+   L_MES              giros   4.6 % (n   520) | pausas   5.3 % (n   438) | RR 0.88 (0.50-1.54) | bloques +1.6 -0.6 -0.8 -2.3
+   DELTA_VELA_CONTRA  giros  45.0 % (n  1180) | pausas  35.7 % (n   956) | RR 1.26 (1.13-1.40) | bloques +12.9 +7.3 +10.0 +6.8
+
+==== PIERNAS 2X: n 4711, mediana 17.2 pts; delta a favor 78.3 % | por bloque 78 77 79 79 | por tipo MIXTA 76 %, RANGO 78 %, TENDENCIA 80 %
+   piernas lentas (>= mediana de velas) delta a favor 88.8 % / rapidas 62.0 %
+---- giros 4409 / pausas 2639; cociente giro/pausa (IC 95 %) y por bloque (dif. en puntos porcentuales)
+   L_AYER             giros  13.3 % (n  4285) | pausas  11.8 % (n  2591) | RR 1.13 (1.00-1.29) | bloques +1.5 +1.1 +3.9 -0.3
+   L_NOCHE            giros   5.7 % (n  4409) | pausas   6.0 % (n  2639) | RR 0.94 (0.78-1.15) | bloques +0.7 -0.5 +0.3 -1.6
+   L_IB               giros   6.5 % (n  3252) | pausas   7.2 % (n  2036) | RR 0.91 (0.74-1.11) | bloques -0.9 -0.4 -1.3 +0.3
+   L_VWAP             giros  19.8 % (n  4409) | pausas  20.7 % (n  2639) | RR 0.96 (0.87-1.06) | bloques -3.4 +2.3 -0.7 -1.9
+   L_REDONDO          giros   6.5 % (n  4409) | pausas   7.4 % (n  2639) | RR 0.87 (0.73-1.04) | bloques -0.4 -1.3 -1.4 -0.9
+   L_SEMANA           giros   7.5 % (n  3876) | pausas   8.4 % (n  2344) | RR 0.90 (0.75-1.07) | bloques -0.3 -1.6 -1.4 +0.3
+   L_MES              giros   5.1 % (n  1958) | pausas   4.0 % (n  1164) | RR 1.25 (0.89-1.76) | bloques +2.0 +1.2 -0.1 +1.3
+   DELTA_VELA_CONTRA  giros  43.1 % (n  4409) | pausas  26.4 % (n  2639) | RR 1.63 (1.52-1.75) | bloques +19.9 +15.9 +18.6 +12.0
