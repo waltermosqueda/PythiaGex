@@ -338,6 +338,25 @@ namespace PythiaSuper
             return AlaVista(js, primVis, ultVis, parte);
         }
 
+        /// <summary>1.7, pedido del operador ("al ir moviendo el grafico, el delta y el perfil tienen que mostrar como estaban EN ESE
+        /// MOMENTO, como un footprint real; si todo queda estatico no sirve para analizar retrocediendo"): la parte de jornada tal como
+        /// existia a la altura de la vela m. La jornada es la de la vela m; si esa parte ya habia empezado, va desde su comienzo hasta
+        /// m (o hasta su final si ya habia terminado); si todavia no habia empezado (por ejemplo la RTH a las 8:00), es la misma parte
+        /// de la jornada anterior mas reciente que la tenga, COMPLETA (la que se tenia a la vista en ese momento). false si no hay.</summary>
+        public static bool AlMomento(IList<Jornada> js, int m, int parte, out int indice, out int desde, out int hasta)
+        {
+            indice = desde = hasta = -1;
+            int j = -1;
+            for (int i = js.Count - 1; i >= 0; i--) if (js[i].Primera >= 0 && js[i].Primera <= m) { j = i; break; }
+            for (int i = j; i >= 0; i--)
+            {
+                if (!js[i].Rango(parte, out int d, out int h) || d > m) continue;
+                indice = i; desde = d; hasta = Math.Min(h, m);
+                return true;
+            }
+            return false;
+        }
+
         private static int Solape(int a0, int a1, int b0, int b1)
         {
             if (a0 < 0 || a1 < a0) return 0;

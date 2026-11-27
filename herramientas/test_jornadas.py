@@ -93,10 +93,26 @@ def con_borde(js, b0, b1, ult, parte):
     return a_la_vista(js, b0, b1, parte)
 
 
+def al_momento(utcs, m, parte):
+    """1.7, escrito de nuevo desde las horas: la jornada de la vela m; si su parte ya habia empezado a la altura de m, desde su
+    comienzo hasta m (o su final); si no, la misma parte de la jornada anterior mas reciente que la tenga, completa."""
+    marcas = [clave_y_tipo(u) for u in utcs]
+    def entra(t):
+        return True if parte == 0 else (t == 1 if parte == 1 else t == 0)
+    claves = sorted({d for d, _ in marcas})
+    cm = marcas[m][0]
+    for c in reversed([c for c in claves if c <= cm]):
+        barras = [b for b, (d, t) in enumerate(marcas) if d == c and entra(t)]
+        if not barras or barras[0] > m:
+            continue
+        return claves.index(c), barras[0], min(barras[-1], m)
+    return -1, -1, -1
+
+
 def main(ruta):
     casos = json.load(open(ruta, encoding="utf-8"))
-    malos = {"lista": 0, "vista": 0, "borde": 0, "atras": 0}
-    bordes = 0
+    malos = {"lista": 0, "vista": 0, "borde": 0, "momento": 0, "atras": 0}
+    bordes = momentos = 0
     velas = vistas = 0
     raras = 0
     for c in casos:
@@ -114,6 +130,12 @@ def main(ruta):
             bordes += 1
             if con_borde(mia, b0, b1, ult, parte) != cs:
                 malos["borde"] += 1
+        for m, parte, im, dm, hm in c.get("momento", []):
+            momentos += 1
+            if al_momento(utcs, m, parte) != (im, dm, hm):
+                malos["momento"] += 1
+                if malos["momento"] <= 3:
+                    print("  momento distinto semilla", c["semilla"], "m", m, "parte", parte, "py", al_momento(utcs, m, parte), "cs", (im, dm, hm))
         n = len(mia)
         esperado = [max(0, n - 1 - q) if n else -1 for q in range(n + 2)]
         if esperado != c["atras"]:
@@ -123,7 +145,7 @@ def main(ruta):
             if h.weekday() == 5 or (h.weekday() == 6 and h.time() < time(18, 0)) or time(17, 0) <= h.time() < time(18, 0):
                 raras += 1
     total = sum(malos.values())
-    print(f"casos {len(casos)} ({velas} velas, {raras} en horario cerrado a proposito, {vistas} consultas 'a la vista', {bordes} con la regla del borde): "
+    print(f"casos {len(casos)} ({velas} velas, {raras} en horario cerrado a proposito, {vistas} consultas 'a la vista', {bordes} con la regla del borde, {momentos} 'al momento'): "
           f"{'TODO IGUAL' if total == 0 else 'DIFERENCIAS'} {malos}")
     return 0 if total == 0 else 1
 

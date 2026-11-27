@@ -157,6 +157,16 @@ class Program
                 sb.Append('[').Append(b0).Append(',').Append(b1).Append(',').Append(ult).Append(',').Append(parte).Append(',')
                   .Append(Jornadas.AlaVistaConBorde(js, b0, b1, ult, parte)).Append(']');
             }
+            // 1.7: "al momento": la parte de jornada como estaba a la altura de una vela m cualquiera
+            sb.Append("],\"momento\":[");
+            for (int q = 0; q < 60; q++)
+            {
+                int n = horas.Count; if (n == 0) break;
+                int m = r.Next(n), parte = r.Next(3);
+                bool ok = Jornadas.AlMomento(js, m, parte, out int im, out int dm, out int hm);
+                if (q > 0) sb.Append(',');
+                sb.Append('[').Append(m).Append(',').Append(parte).Append(',').Append(ok ? im : -1).Append(',').Append(dm).Append(',').Append(hm).Append(']');
+            }
             sb.Append("],\"atras\":[");
             for (int q = 0; q <= js.Count + 1; q++) { if (q > 0) sb.Append(','); sb.Append(Jornadas.PorAtras(js, q)); }
             sb.Append("]}");

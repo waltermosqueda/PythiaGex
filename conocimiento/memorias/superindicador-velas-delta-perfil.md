@@ -1,6 +1,6 @@
-﻿---
+---
 name: superindicador-velas-delta-perfil
-description: "PythiaGex - Superindicador 1.6 (26-11-2026): velas 2 colores + columna de delta + perfil (area de valor de ATAS) + JORNADA (un solo dia: completa/RTH/noche) SINCRONIZADA con la vista; auditado contra ATAS, la cinta y el replay"
+description: "PythiaGex - Superindicador 1.7 (26-11-2026): velas 2 colores + columna de delta + perfil (area de valor de ATAS) + JORNADA hasta la VELA DEL MOMENTO (la ultima a la vista): al correr el grafico se rebobina como estaba; auditado contra ATAS, la cinta y el replay"
 metadata:
   node_type: memory
   type: project
@@ -42,3 +42,12 @@ Propiedades RENOMBRADAS para pisar lo guardado en el .ws: SpColPeriodo (antes Sp
 ATAS no expone desplazar el grafico en horizontal a un indicador (solo ScrollPrice/MoveChartUpAndDown): < > no puede llevar la vista.
 Verificado corriendo el grafico por la barra de desplazamiento: 24-11 a la vista (546 de 546 velas) +11.658, POC 7218, VAH 7230,50,
 VAL 7170,50; vuelta al borde 26-11 +1.529, POC 7250, VAH 7253, VAL 7227: todo igual al recalculo (auditor con control "a la vista").
+
+**1.7 (26-11, noche), pedido:** "no era lo que buscaba: al ir moviendo el grafico, el delta y el perfil tienen que mostrar como
+estaban EN ESE MOMENTO, como un footprint real; si todo queda estatico no sirve para analizar retrocediendo". Arreglo: TODO (columna
+y perfil, cualquier periodo salvo 'rango visible') se suma hasta la VELA DEL MOMENTO = la ultima a la vista (boton "al momento";
+"en vivo" = hasta la ultima vela). La jornada es la de esa vela desde su comienzo; si a esa hora la parte no habia empezado (RTH a
+las 8:00) va la anterior completa (`Jornadas.AlMomento`, 7.200 consultas contra Python iguales). Rotulo "jue 26-11 completa hasta
+07:33". "fijar" congela un dia completo (se suelta al mover el grafico). Propiedades nuevas: SpHasta, SpJornadaCual (renombrada).
+Verificado: rebobinado a 26-11 05:33 NY: +2.671, POC 7236, VAH 7242, VAL 7217,50 = recalculo (auditor con control AL MOMENTO).
+INCIDENTE en esa prueba: ver [[foco-atas-atajos-trading]] (2 Buy Limit reales por sus teclas; sin fill).

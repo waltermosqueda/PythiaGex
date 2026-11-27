@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -56,12 +56,17 @@ namespace PythiaSuper
     /// mal; tiene que ser dinamico, sincronizado segun la vista o la fecha". Por defecto columna y perfil siguen la MISMA jornada: la
     /// que se esta mirando (la que mas velas tiene en pantalla; con la ultima vela a la vista, la de hoy o la del replay). Una fecha
     /// fijada con &lt; &gt; se suelta sola en cuanto se mueve el grafico, y mientras no sea la de la pantalla lo dice en amarillo.
+    ///
+    /// 1.7 (26-11-2026) AL MOMENTO. Pedido: "al ir moviendo el grafico, el delta y el perfil tienen que mostrar como estaban EN ESE
+    /// MOMENTO, como un footprint real; si todo queda estatico no sirve para analizar retrocediendo". Todo se suma hasta la vela del
+    /// momento: la ultima a la vista (boton "al momento"; "en vivo" vuelve a la ultima vela). La jornada es la de esa vela, desde su
+    /// comienzo hasta ella; si a esa hora la parte elegida no habia empezado (la RTH a las 8:00), la anterior completa.
     /// </summary>
     [DisplayName("PythiaGex - Superindicador (velas + delta + perfil)")]
     [Category("PythiaGex")]
     public class SuperindicadorOF : Indicator
     {
-        public const string Version = "1.6";
+        public const string Version = "1.7";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -112,11 +117,18 @@ namespace PythiaSuper
             [Display(Name = "Solo la noche (18:00 a 9:30 NY)")] Noche
         }
 
+        // 1.7: la jornada es la DEL MOMENTO (la de la vela hasta la que se suma) o una fecha fija completa
         public enum ModoJornada
         {
-            [Display(Name = "La ultima (la de hoy, o la del replay)")] Ultima,
-            [Display(Name = "Una fecha fija (botones < >; si se mueve el grafico vuelve a seguir la vista)")] Fecha,
-            [Display(Name = "La que estoy mirando (sigue el grafico; en el borde derecho, la de hoy)")] AlaVista
+            [Display(Name = "La del momento: desde su comienzo hasta la vela del momento")] Momento,
+            [Display(Name = "Una fecha fija, completa (botones < >; se suelta al mover el grafico)")] Fecha
+        }
+
+        // 1.7: hasta que vela se suma TODO (columna y perfil, en cualquier periodo salvo 'rango visible')
+        public enum HastaVela
+        {
+            [Display(Name = "Hasta la vela del momento: la ultima a la vista (al correr el grafico, muestra como estaba)")] ElMomento,
+            [Display(Name = "Hasta la ultima vela (en vivo; no sigue la vista)")] EnVivo
         }
 
         public enum DatoColumna
@@ -322,21 +334,27 @@ namespace PythiaSuper
             Description = "Escribe en %APPDATA%\\ATAS\\PythiaGex\\superindicador lo dibujado, el footprint y la cinta para recalcular por fuera.")]
         public bool SpRegistro { get => _registro; set { _registro = value; } }
 
-        // 6. Jornada (1.5; 1.6: "a la vista" por defecto y propiedad renombrada, antes SpJornadaModo)
-        private ModoJornada _jorModo = ModoJornada.AlaVista;
+        // 6. Momento y jornada (1.5; 1.7: todo se suma hasta la vela del momento; propiedades renombradas para pisar lo guardado,
+        // antes SpJornadaModo / SpJornadaQue)
+        private HastaVela _hasta = HastaVela.ElMomento;
+        [Display(Name = "Hasta que vela suma", GroupName = "6. Momento y jornada", Order = 79,
+            Description = "La vela del momento (la ultima a la vista): al correr el grafico hacia atras, columna y perfil muestran como estaban en ese momento. O la ultima vela del grafico (en vivo).")]
+        public HastaVela SpHasta { get => _hasta; set { _hasta = value; Redibujar(); } }
+
+        private ModoJornada _jorModo = ModoJornada.Momento;
         private int _fechaFin = int.MinValue;   // velas entre la vista y el final cuando se fijo la fecha (si cambia, se movio el grafico)
-        [Display(Name = "Que jornada", GroupName = "6. Jornada a analizar (periodo 'Jornada elegida')", Order = 80,
-            Description = "La que estoy mirando (sigue el grafico; con la ultima vela a la vista, la de hoy o la del replay), la ultima, o una fecha fija con < > (se suelta al mover el grafico).")]
-        public ModoJornada SpJornadaQue { get => _jorModo; set { _jorModo = value; _fechaFin = int.MinValue; Redibujar(); } }
+        [Display(Name = "Que jornada", GroupName = "6. Momento y jornada", Order = 80,
+            Description = "La del momento (desde su comienzo hasta la vela del momento) o una fecha fija completa con < > (se suelta al mover el grafico).")]
+        public ModoJornada SpJornadaCual { get => _jorModo; set { _jorModo = value; _fechaFin = int.MinValue; Redibujar(); } }
 
         private int _jorFecha = 0;
-        [Display(Name = "Fecha (aaaammdd; la cambian los botones < >)", GroupName = "6. Jornada a analizar (periodo 'Jornada elegida')", Order = 81,
+        [Display(Name = "Fecha (aaaammdd; la cambian los botones < >)", GroupName = "6. Momento y jornada", Order = 81,
             Description = "Dia de la rueda de la jornada, por ejemplo 20261125. Solo cuenta si 'Que jornada' es 'La de la fecha elegida'.")]
         [Range(0, 99991231)]
         public int SpJornadaFecha { get => _jorFecha; set { _jorFecha = Math.Max(0, value); Redibujar(); } }
 
         private ParteJornada _jorParte = ParteJornada.Completa;
-        [Display(Name = "Parte", GroupName = "6. Jornada a analizar (periodo 'Jornada elegida')", Order = 82,
+        [Display(Name = "Parte", GroupName = "6. Momento y jornada", Order = 82,
             Description = "Completa (18:00 a 17:00 NY), solo RTH (9:30 a 16:00 NY) o solo la noche (18:00 a 9:30 NY). Para RTH exacta, velas que abran a horario (1, 5, 15 o 30 min).")]
         public ParteJornada SpJornadaParte { get => _jorParte; set { _jorParte = value; Redibujar(); } }
 
@@ -355,7 +373,8 @@ namespace PythiaSuper
         {
             public int Clave = -1, Parte, Indice = -1, Desde = -1, Hasta = -1, Total;
             public int VistaClave = -1;   // 1.6: la jornada que se ve en pantalla (para avisar si la fija es otra)
-            public bool Hay, Cortada, EnCurso, NoCargada; public DateTime PrimeraNy;
+            public int Momento = -1;      // 1.7: la vela hasta la que se suma
+            public bool Hay, Cortada, EnCurso, NoCargada, Recortada; public DateTime PrimeraNy;
         }
         private EstadoJornada _ej = new EstadoJornada();
 
@@ -618,41 +637,55 @@ namespace PythiaSuper
         private static DateTime HoraNyDe(IndicatorCandle c)
             => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(c.Time, DateTimeKind.Utc), Ny());
 
-        /// <summary>1.5: la jornada elegida (grupo 6) y su rango de velas de la parte pedida. Deja en _ej lo elegido para la botonera,
-        /// la lupa y la auditoria. false si esa jornada no tiene velas de esa parte (todavia no empezo la RTH, o el grafico no la cargo).</summary>
+        /// <summary>1.7: la vela del MOMENTO, hasta la que se suma todo: la ultima a la vista (al correr el grafico hacia atras el
+        /// momento retrocede y columna y perfil muestran como estaban ahi) o la ultima del grafico (en vivo).</summary>
+        private int Momento()
+        {
+            int ultima = CurrentBar - 1;
+            if (_hasta == HastaVela.EnVivo) return ultima;
+            try { int v = LastVisibleBarNumber; if (v >= 0) return Math.Min(ultima, v); } catch { }
+            return ultima;
+        }
+
+        private static string HoraLocal(DateTime utc)
+            => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), TimeZoneInfo.Local).ToString("HH:mm", Inv);
+
+        /// <summary>1.5/1.7: la jornada elegida (grupo 6) y su rango de velas de la parte pedida: la DEL MOMENTO (desde su comienzo hasta
+        /// la vela del momento) o una fecha fija completa. Deja en _ej lo elegido para la botonera, la lupa y la auditoria.</summary>
         private bool VentanaJornada(out int desde, out int hasta, out string nombre)
         {
             desde = hasta = -1;
             int ultima = CurrentBar - 1;
-            var e = new EstadoJornada { Parte = (int)_jorParte };
-            int primVis = Math.Max(0, FirstVisibleBarNumber), ultVis = Math.Min(ultima, LastVisibleBarNumber);
+            int m = Momento();
+            var e = new EstadoJornada { Parte = (int)_jorParte, Momento = m };
+            int ultVis = Math.Min(ultima, LastVisibleBarNumber);
             // 1.6: una fecha fijada con < > se SUELTA si despues se mueve el grafico (lo ultimo que hace el operador manda): si cambia
-            // la distancia entre la ultima vela a la vista y el final del grafico, vuelve a "a la vista". Las velas nuevas en vivo no
+            // la distancia entre la ultima vela a la vista y el final del grafico, vuelve a la del momento. Las velas nuevas en vivo no
             // la mueven (la vista corre junto con el final).
             if (_jorModo == ModoJornada.Fecha && _fechaFin != int.MinValue && Math.Abs((ultima - ultVis) - _fechaFin) > 2)
             {
-                _jorModo = ModoJornada.AlaVista; _fechaFin = int.MinValue;
-                AnotarLinea("se movio el grafico: la fecha fija " + _jorFecha + " se suelta y vuelve a 'a la vista'");
+                _jorModo = ModoJornada.Momento; _fechaFin = int.MinValue;
+                AnotarLinea("se movio el grafico: la fecha fija " + _jorFecha + " se suelta y vuelve a la del momento");
             }
             lock (_llave)
             {
                 e.Total = _jornadas.Count;
-                int iVista = Jornadas.AlaVistaConBorde(_jornadas, primVis, ultVis, ultima, e.Parte);
-                if (iVista >= 0) e.VistaClave = _jornadas[iVista].Clave;
-                int i = -1;
+                bool hayM = Jornadas.AlMomento(_jornadas, m, e.Parte, out int im, out int dm, out int hm);
+                if (hayM) e.VistaClave = _jornadas[im].Clave;
                 if (_jorModo == ModoJornada.Fecha && _jorFecha > 0)
                 {
+                    int i = -1;
                     for (int k = 0; k < _jornadas.Count; k++) if (_jornadas[k].Clave == _jorFecha) { i = k; break; }
                     if (i < 0) { e.Clave = _jorFecha; e.NoCargada = true; }
+                    else { e.Indice = i; e.Clave = _jornadas[i].Clave; e.Hay = _jornadas[i].Rango(e.Parte, out e.Desde, out e.Hasta); }
                 }
-                else if (_jorModo == ModoJornada.AlaVista) i = iVista;
-                if (i < 0 && !e.NoCargada) i = Jornadas.PorAtras(_jornadas, 0);
-                if (i >= 0)
+                else if (hayM)
                 {
-                    var j = _jornadas[i];
-                    e.Indice = i; e.Clave = j.Clave;
-                    e.Hay = j.Rango(e.Parte, out e.Desde, out e.Hasta);
+                    e.Indice = im; e.Clave = _jornadas[im].Clave; e.Hay = true; e.Desde = dm; e.Hasta = hm;
+                    _jornadas[im].Rango(e.Parte, out _, out int hEntera);
+                    e.Recortada = hm < hEntera;   // la parte sigue despues del momento: se muestra como estaba ahi
                 }
+                else if (_jornadas.Count > 0) { e.Indice = _jornadas.Count - 1; e.Clave = _jornadas[e.Indice].Clave; }
             }
             if (e.Hay)
             {
@@ -668,6 +701,7 @@ namespace PythiaSuper
                 catch { }
             }
             nombre = e.Clave > 0 ? Jornadas.Rotulo(e.Clave) + " " + Jornadas.NombreParte(e.Parte) : "sin jornadas";
+            if (e.Hay && e.Recortada) { try { nombre += " hasta " + HoraLocal(GetCandle(hasta).Time); } catch { } }
             _ej = e;
             return e.Hay;
         }
@@ -681,7 +715,7 @@ namespace PythiaSuper
             // 1.6: una jornada fija que no es la que se ve en pantalla se dice siempre (nunca un perfil de otro dia como si fuera este)
             if (esJornada && _jorModo == ModoJornada.Fecha && _ej.Clave > 0 && _ej.VistaClave > 0 && _ej.Clave != _ej.VistaClave)
                 partes.Add(corto ? "FIJA: otro dia" : "FIJA en " + Jornadas.Rotulo(_ej.Clave) + ", en pantalla " + Jornadas.Rotulo(_ej.VistaClave)
-                           + " (mover el grafico o 'a la vista' la suelta)");
+                           + " (mover el grafico o 'fijar' la suelta)");
             if (p != null && p.VelasSinDatos > 0) partes.Add(p.VelasSinDatos + (corto ? " sin footprint" : " velas sin footprint"));
             return string.Join(" | ", partes);
         }
@@ -717,11 +751,12 @@ namespace PythiaSuper
         {
             int ultima = CurrentBar - 1; desde = hasta = -1; nombre = "";
             if (ultima < 0) return false;
+            int m = Momento();   // 1.7: todo termina en la vela del momento (la ultima a la vista), salvo el rango visible
             switch (_colVentana)
             {
-                case VentanaColumna.VelaEnCurso: desde = hasta = ultima; nombre = "vela"; break;
-                case VentanaColumna.UltimasN: desde = Math.Max(0, ultima - _colVelas + 1); hasta = ultima; nombre = _colVelas + "v"; break;
-                case VentanaColumna.Sesion: desde = InicioSesion(ultima); hasta = ultima; nombre = "sesion"; break;
+                case VentanaColumna.VelaEnCurso: desde = hasta = m; nombre = "vela"; break;
+                case VentanaColumna.UltimasN: desde = Math.Max(0, m - _colVelas + 1); hasta = m; nombre = _colVelas + "v"; break;
+                case VentanaColumna.Sesion: desde = InicioSesion(m); hasta = m; nombre = "sesion"; break;
                 case VentanaColumna.Jornada: if (!VentanaJornada(out desde, out hasta, out nombre)) return false; break;
                 default:
                     desde = Math.Max(0, FirstVisibleBarNumber); hasta = Math.Min(ultima, LastVisibleBarNumber);
@@ -735,11 +770,12 @@ namespace PythiaSuper
         {
             int ultima = CurrentBar - 1; desde = hasta = -1; nombre = "";
             if (ultima < 0) return false;
+            int m = Momento();   // 1.7: todo termina en la vela del momento (la ultima a la vista), salvo el rango visible
             switch (_perVentana)
             {
-                case VentanaPerfil.Sesion: desde = InicioSesion(ultima); hasta = ultima; nombre = "sesion"; break;
-                case VentanaPerfil.Rth: if (!RangoRth(ultima, out desde, out hasta)) return false; nombre = "RTH"; break;
-                case VentanaPerfil.UltimasN: desde = Math.Max(0, ultima - _perVelas + 1); hasta = ultima; nombre = _perVelas + "v"; break;
+                case VentanaPerfil.Sesion: desde = InicioSesion(m); hasta = m; nombre = "sesion"; break;
+                case VentanaPerfil.Rth: if (!RangoRth(m, out desde, out hasta)) return false; nombre = "RTH"; break;
+                case VentanaPerfil.UltimasN: desde = Math.Max(0, m - _perVelas + 1); hasta = m; nombre = _perVelas + "v"; break;
                 case VentanaPerfil.Jornada: if (!VentanaJornada(out desde, out hasta, out nombre)) return false; break;
                 default:
                     desde = Math.Max(0, FirstVisibleBarNumber); hasta = Math.Min(ultima, LastVisibleBarNumber);
@@ -1204,9 +1240,12 @@ namespace PythiaSuper
                       : _perVentana == VentanaPerfil.UltimasN ? _perVelas + " velas" : _perVentana == VentanaPerfil.Jornada ? "jornada" : "visible";
             int pctAv = _perPct; if (pctAv <= 0) { PctPaso(out pctAv, out _); }
             Boton(g, "perventana", vp + " - AV " + pctAv + "%", _perfil, ref x, y, Color.FromArgb(60, 64, 72));
+            // 1.7: hasta que vela se suma todo: "al momento" (la ultima a la vista: al correr el grafico se rebobina) o "en vivo"
+            x += 6;
+            Boton(g, "hasta", _hasta == HastaVela.ElMomento ? "al momento" : "en vivo", _hasta == HastaVela.ElMomento, ref x, y, acento);
 
-            // 1.5: la jornada elegida, con un clic: < una mas vieja, > una mas nueva (al llegar a la ultima vuelve a "la ultima"),
-            // el rotulo cambia la parte (completa / RTH / noche; con Mayus para atras) y "a la vista" sigue lo que se mira
+            // 1.5: la jornada elegida, con un clic: < una mas vieja, > una mas nueva (al llegar a la ultima vuelve a la del momento),
+            // el rotulo cambia la parte (completa / RTH / noche; con Mayus para atras) y "fijar" congela la que se esta viendo
             bool usaJornada = (_columna && _colVentana == VentanaColumna.Jornada) || (_perfil && _perVentana == VentanaPerfil.Jornada);
             if (!usaJornada) return;
             x += 6;
@@ -1217,14 +1256,14 @@ namespace PythiaSuper
             if (e.NoCargada) etq += " (no cargada)";
             else if (!e.Hay) etq += e.Parte == Jornadas.ParteRth ? " (todavia sin RTH)" : " (sin velas)";
             else if (e.EnCurso) etq += " (en curso)";
-            if (_jorModo == ModoJornada.Ultima) etq = "ultima: " + etq;
-            else if (_jorModo == ModoJornada.Fecha) etq = "fija: " + etq;
+            else if (e.Recortada) { try { etq += " hasta " + HoraLocal(GetCandle(e.Hasta).Time); } catch { } }
+            if (_jorModo == ModoJornada.Fecha) etq = "fija: " + etq;
             int xEtq = x;
             Boton(g, "jor_parte", etq, true, ref x, y, acento);
             if (_avisoBotonera.Length > 0)
                 g.DrawRectangle(new RenderPen(Color.FromArgb(240, 255, 214, 0), 2), new Rectangle(xEtq - 1, y - 1, x - 4 - xEtq + 2, 20), 3);
             Boton(g, "jor_adelante", " > ", true, ref x, y, gris);
-            Boton(g, "jor_vista", "a la vista", _jorModo == ModoJornada.AlaVista, ref x, y, acento);
+            Boton(g, "jor_fijar", "fijar", _jorModo == ModoJornada.Fecha, ref x, y, acento);
             if (_avisoBotonera.Length > 0)
             {
                 var fa = Fuente(8, true);
@@ -1262,10 +1301,10 @@ namespace PythiaSuper
                 int n = Math.Max(0, Math.Min(total - 1, idx + paso));
                 clave = _jornadas[n].Clave; esUltima = n == total - 1;
             }
-            // 1.6: '>' hasta la ultima vuelve a seguir la vista; si no, queda FIJA hasta que se mueva el grafico
-            if (esUltima && paso > 0) SpJornadaQue = ModoJornada.AlaVista;
-            else { SpJornadaFecha = clave; SpJornadaQue = ModoJornada.Fecha; FijarAnclaVista(); }
-            RaisePropertyChanged(nameof(SpJornadaFecha)); RaisePropertyChanged(nameof(SpJornadaQue));
+            // 1.6/1.7: '>' hasta la ultima vuelve a la del momento; si no, queda FIJA (completa) hasta que se mueva el grafico
+            if (esUltima && paso > 0) SpJornadaCual = ModoJornada.Momento;
+            else { SpJornadaFecha = clave; SpJornadaCual = ModoJornada.Fecha; FijarAnclaVista(); }
+            RaisePropertyChanged(nameof(SpJornadaFecha)); RaisePropertyChanged(nameof(SpJornadaCual));
         }
 
         /// <summary>1.6: recuerda donde estaba la vista al fijar la fecha; si despues se mueve el grafico, la fecha se suelta.</summary>
@@ -1333,18 +1372,20 @@ namespace PythiaSuper
                         int n = Enum.GetValues(typeof(ParteJornada)).Length, i = (int)_jorParte;
                         SpJornadaParte = (ParteJornada)(atras ? (i - 1 + n) % n : (i + 1) % n); RaisePropertyChanged(nameof(SpJornadaParte)); break;
                     }
-                case "jor_vista":
-                    if (_jorModo == ModoJornada.AlaVista)
+                case "jor_fijar":
+                    if (_jorModo == ModoJornada.Momento)
                     {
-                        // se congela la que se estaba mirando (queda fija hasta que se mueva el grafico)
+                        // se congela la jornada que se esta viendo, completa (queda fija hasta que se mueva el grafico)
                         if (_ej.Clave > 0 && !_ej.NoCargada) { SpJornadaFecha = _ej.Clave; RaisePropertyChanged(nameof(SpJornadaFecha)); }
-                        SpJornadaQue = ModoJornada.Fecha; FijarAnclaVista();
+                        SpJornadaCual = ModoJornada.Fecha; FijarAnclaVista();
                     }
-                    else SpJornadaQue = ModoJornada.AlaVista;
-                    RaisePropertyChanged(nameof(SpJornadaQue)); break;
+                    else SpJornadaCual = ModoJornada.Momento;
+                    RaisePropertyChanged(nameof(SpJornadaCual)); break;
+                case "hasta":
+                    SpHasta = _hasta == HastaVela.ElMomento ? HastaVela.EnVivo : HastaVela.ElMomento; RaisePropertyChanged(nameof(SpHasta)); break;
             }
             AnotarLinea("boton " + id + (atras ? " (atras)" : "") + " -> velas " + _velas + ", paleta " + _paleta + ", columna " + _columna + " " + _colVentana + " " + _colTicks + "t"
-                        + " " + _colDato + ", perfil " + _perfil + " " + _perVentana + ", jornada " + _jorModo + " " + _jorFecha + " " + _jorParte);
+                        + " " + _colDato + ", perfil " + _perfil + " " + _perVentana + ", hasta " + _hasta + ", jornada " + _jorModo + " " + _jorFecha + " " + _jorParte);
             Redibujar();
         }
 
@@ -1580,7 +1621,7 @@ namespace PythiaSuper
                   .Append(",\"carga\":").Append(_carga);
                 // 1.5: la jornada elegida y la lista de jornadas con sus velas (para rehacer por fuera la division por jornada)
                 var ej = _ej;
-                sb.Append(",\"jornada\":{\"modo\":\"").Append(_jorModo).Append("\",\"fecha\":").Append(_jorFecha).Append(",\"parte\":\"").Append(_jorParte)
+                sb.Append(",\"jornada\":{\"hasta_modo\":\"").Append(_hasta).Append("\",\"momento\":").Append(ej.Momento).Append(",\"recortada\":").Append(ej.Recortada ? "true" : "false").Append(",\"modo\":\"").Append(_jorModo).Append("\",\"fecha\":").Append(_jorFecha).Append(",\"parte\":\"").Append(_jorParte)
                   .Append("\",\"clave\":").Append(ej.Clave).Append(",\"vista_clave\":").Append(ej.VistaClave).Append(",\"indice\":").Append(ej.Indice).Append(",\"hay\":").Append(ej.Hay ? "true" : "false")
                   .Append(",\"desde\":").Append(ej.Desde).Append(",\"hasta\":").Append(ej.Hasta).Append(",\"cortada\":").Append(ej.Cortada ? "true" : "false")
                   .Append(",\"en_curso\":").Append(ej.EnCurso ? "true" : "false").Append(",\"no_cargada\":").Append(ej.NoCargada ? "true" : "false")

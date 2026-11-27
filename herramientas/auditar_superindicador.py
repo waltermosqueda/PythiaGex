@@ -214,7 +214,35 @@ def auditar_jornada(au, velas, informe):
     entra = (lambda tipo: True) if parte == 0 else (lambda tipo: tipo == (1 if parte == 1 else 0))
     horas = sorted(velas)
     marca = {h: jornada_de(h) for h in horas}
-    sel = [h for h in horas if marca[h][0] == j["clave"] and entra(marca[h][1])]
+    # 1.7 "al momento": la ventana termina en la vela del momento (la ultima a la vista); se recalcula por fuera que jornada le
+    # toca: la de esa vela si la parte ya habia empezado, si no la anterior mas reciente con esa parte (completa)
+    m = j.get("momento") if j.get("modo") == "Momento" else None
+    if m is not None and m >= 0:
+        por_bar = {v["bar"]: h for h, v in velas.items()}
+        h_m = por_bar.get(m)
+        if h_m is None:
+            for _, w in ventanas:
+                if w.get("viva") and w["viva"]["bar"] == m:
+                    h_m = w["viva"]["hora"]
+        if h_m is not None:
+            if h_m not in marca:
+                marca[h_m] = jornada_de(h_m)
+            barras = {b: marca[h] for b, h in por_bar.items() if b <= m}
+            barras[m] = marca[h_m]
+            c_m = marca[h_m][0]
+            esperada = None
+            for c in sorted({cc for cc, _, _ in barras.values()}, reverse=True):
+                if c > c_m:
+                    continue
+                bs = sorted(b for b, (cc, t, _) in barras.items() if cc == c and entra(t))
+                if bs:
+                    esperada = (c, bs[0], min(bs[-1], m)); break
+            okm = esperada == (j["clave"], j["desde"], j["hasta"])
+            informe.append(f"   AL MOMENTO (vela {m}, {marca[h_m][2]:%d-%m %H:%M} NY): esperada {esperada} -> "
+                           f"{'IGUAL' if okm else 'DISTINTA de ' + str((j['clave'], j['desde'], j['hasta']))}")
+            if not okm:
+                return False
+    sel = [h for h in horas if marca[h][0] == j["clave"] and entra(marca[h][1]) and (m is None or velas[h]["bar"] <= m)]
     informe.append(f"JORNADA elegida: {j['clave']} {j['parte']} (modo {j['modo']}, fecha {j['fecha']}) -> velas {j['desde']}..{j['hasta']}"
                    f"{' EN CURSO' if j['en_curso'] else ''}{' CORTADA (el grafico no la cargo desde el comienzo)' if j['cortada'] else ''}"
                    f"{' aviso: ' + j['aviso'] if j.get('aviso') else ''} | jornadas cargadas: {len(j['lista'])}")
