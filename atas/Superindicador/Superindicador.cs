@@ -66,7 +66,7 @@ namespace PythiaSuper
     [Category("PythiaGex")]
     public class SuperindicadorOF : Indicator
     {
-        public const string Version = "1.8c";
+        public const string Version = "1.8d";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -1096,9 +1096,9 @@ namespace PythiaSuper
                 float fsH = 7.5f; RenderFont fH = Fuente(fsH, false);
                 while (fsH > 6.5f && wLive + 6 + g.MeasureString(hora, fH).Width > xd - xi) { fsH -= 0.5f; fH = Fuente(fsH, false); }
                 bool horaArriba = wLive + 6 + g.MeasureString(hora, fH).Width <= xd - xi;
-                // (2) el dia lo mas grande que entre (10 a 8 pt), en mayusculas
-                float fsD = 10f; RenderFont fD = Fuente(fsD, true);
-                while (fsD > 8f && g.MeasureString(dia, fD).Width > xd - xi) { fsD -= 0.5f; fD = Fuente(fsD, true); }
+                // (2) el dia en mayusculas (1.8d, pedido: "algo mas chico": 8,5 pt, o hasta 7,5 si no entra)
+                float fsD = 8.5f; RenderFont fD = Fuente(fsD, true);
+                while (fsD > 7.5f && g.MeasureString(dia, fD).Width > xd - xi) { fsD -= 0.5f; fD = Fuente(fsD, true); }
                 if (dia.Length > 0) g.DrawString(dia, fD, Color.FromArgb(255, 236, 239, 244), xi, ye + 13);
                 if (hora.Length > 0)
                 {
