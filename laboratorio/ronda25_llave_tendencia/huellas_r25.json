@@ -1,0 +1,27 @@
+{
+ "escrito_AR": "2026-11-27 10:08:52 (UTC-3, reloj del sistema)",
+ "nota": "RONDA 25: NO hay candidata congelada (ningun detector paso el diseno; F1, F3 y F5 fallan). Estas huellas son solo para auditar lo que se uso y lo que salio.",
+ "candidatas": {},
+ "registrados": {
+  "r25_comun.py": "b27c4aa02a1b40db4285dd6acc73c54e030e499177b0543c44b2480fdf6d5e24",
+  "r25_01_datos.py": "d8156458e3ad0b8a77b558b850354d38c037390169e277be4c93bfcafa5403e6",
+  "r25_rasgos.py": "f5c192e1246a5a2e2e517d6ce768472d62d648a3452b8d0f20fd2c621e76cbb1",
+  "r25_02_explorar.py": "e72fc0cabbcd3d3fd44d9f1100a74009ef8914268d2b481393751b5a1f9664ef",
+  "r25_03_clasificar.py": "61ef9f110e37302f89e6c947f56b065b5f8b49bccb5cdb58a84c40787348aa62",
+  "r25_05_a3f.py": "366c7f561a6e73978a944c79e00ab098c8681bf3965660467cb95df3e9390f18",
+  "r25_06_mecanica.py": "3f0ef006ea39675f0eb401bd0dc619f4afde36660e096eccdc0e0b10564455c2",
+  "r25_07_verificar.py": "36a2673c7859206c42b5fabb12835fb0469a6f3d06ae71ddfcbd73618f13f244",
+  "calendario_oficial.json": "fc407e604651331ec2077876672c6832caeb1ada35fd1758a5f8b3c7224db2cf",
+  "elegido_r25.json": "ad091d5378fc61daade82abe45a279acfabfeeda239ac6dceac00221494f99bb",
+  "PREREGISTRO_R25.md": "ca749ed74b0240f630245e04bcb52363e1fb5c5a39f7a58b172c5077c78837dc",
+  "salidas/clasificacion_diseno.txt": "af810efe3b2946524dff3d0b71ad4ab0db838e6d316620e162d9b2d3d6d83b17",
+  "salidas/a3f_tabla.csv": "6bbbec82add6c21bf362a11d0a51f6216e29d13dd1fbf63a4c79cffcda55c49f",
+  "salidas/mecanica.txt": "44ae26874179c7dc133ec9c4f4d9ffcfa5313feb61bebcd5efeabb451ec81f62",
+  "salidas/verificacion.txt": "1941743d6dfd0be73572a632af27bb8b07a72148aba8a39e015d5025fd3212af"
+ },
+ "insumos_de_otras_rondas_leidos_sin_tocar": {
+  "ronda23_diseno/historia_rangos_semilla.json": "f02a0834b6a28bd4c9a311da93c2eb435176d88f13df200529544331340c5200",
+  "ronda23_diseno/salidas/ops-cinta-A3.csv": "7a233a9d934583f012eee7f83c03e25b930be32e16948285913b49985b9105a1",
+  "ronda24_a3_30min/ops_prueba_2024_25.csv": "9fa0e7172b9e346037a7af8fe7950667550ed4357b5f048f405bff16e9d9221f"
+ }
+}

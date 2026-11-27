@@ -80,6 +80,6 @@
 - [Teoria dura y confluencia](teoria-dura-y-confluencia.md) — lo medido calibra, no veta. [De menor a mayor](de-menor-a-mayor-muestra.md): muestra chica primero.
 - [REGLA: explicar el movimiento](explicar-el-movimiento-no-azar.md) — no 'nada le gana al azar': factores, cual pesa, en que zona.
 - [Ronda 17](ronda-17-anatomia-del-movimiento.md) — piernas con su delta 86-99 %. [Ronda 18](ronda-18-senal-ola-y-indicador-aparte.md): la ola en un indicador aparte.
-- [Salto de calidad: rondas 19-25 (27-11)](busqueda-salto-de-calidad-rondas-19-21.md) — R22: semaforo = geometria; R23: elastico = la vara; A3 67-74 % vs azar 63 % (juez vivo desde el 30-11); R24: A3 a 30 min en 2024-25 NO pasa (pierde en dias de tendencia); R25 busca esa llave.
+- [Salto de calidad: rondas 19-25 (27-11)](busqueda-salto-de-calidad-rondas-19-21.md) — R22: semaforo = geometria; R23: elastico = la vara; A3 67-74 % vs azar 63 % (juez vivo desde el 30-11); R24: A3 a 30 min en 2024-25 NO pasa; R25: la mañana no anticipa la tarde y 'pierde en dias de tendencia' era la etiqueta.
 - [La Ola 1.0 (27-11)](la-ola-1-0-instalada.md) — ESZ6 1m de pruebas; panel = cinta (0 difs); clima sin comprobar.
 - [Circuito diario de los jueces en vivo (27-11)](circuito-jueces-en-vivo.md) — cinta_y_jueces.py tras las 17:00 NY: sonda + enlace cinta-ES- (la R21 no ve 'ESZ6') + jueces R21 y R23; roll: contratos desde el 07-12, ESH7 tras el 18-12.

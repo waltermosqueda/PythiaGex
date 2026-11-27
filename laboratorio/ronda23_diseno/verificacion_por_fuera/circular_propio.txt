@@ -1,0 +1,14 @@
+== A3 en MES 5 min, diseno + chequeo (mias) (231 operaciones)
+   tendencia real:  49 ops, acierto  55.1 %, neto -3.02 | azar:  24.2 % de las tardes, acierto  47.4 %, neto -4.80 | brecha real-azar +7.7 pts de acierto
+   mixto     real:  76 ops, acierto  71.1 %, neto +2.25 | azar:  35.8 % de las tardes, acierto  66.8 %, neto -0.28 | brecha real-azar +4.3 pts de acierto
+   balance   real: 106 ops, acierto  77.4 %, neto +3.02 | azar:  40.0 % de las tardes, acierto  68.7 %, neto +0.47 | brecha real-azar +8.7 pts de acierto
+   distancia balance - tendencia en acierto: real 22.3 pts, azar 21.3 pts
+== A3-30 en MES 30 min, 2024-25 (R24) (157 operaciones)
+   tendencia real:  47 ops, acierto  46.8 %, neto -4.32 | azar:  28.5 % de las tardes, acierto  47.4 %, neto -5.00 | brecha real-azar -0.6 pts de acierto
+   mixto     real:  65 ops, acierto  66.2 %, neto +1.35 | azar:  34.6 % de las tardes, acierto  64.1 %, neto -0.96 | brecha real-azar +2.0 pts de acierto
+   balance   real:  45 ops, acierto  64.4 %, neto -0.02 | azar:  36.9 % de las tardes, acierto  69.4 %, neto +0.69 | brecha real-azar -4.9 pts de acierto
+   distancia balance - tendencia en acierto: real 17.6 pts, azar 22.0 pts
+
+real	0m3.094s
+user	0m0.030s
+sys	0m0.015s

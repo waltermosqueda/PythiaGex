@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
-  modified: 2026-11-27T12:35:06.019Z
+  modified: 2026-11-27T13:12:47.589Z
 ---
 
 Textual (27-11 ~02:40-03:00 AR): "ampliar el estudio y cruzar mas variables hasta encontrar la evolucion ganadora: VWAP,
@@ -131,8 +131,15 @@ Potencia a las 60: 6-60 % segun el efecto: lo probable es "sin decidir". ES 2023
 29-04-2024..08-09-2025 (337 ruedas; de ese periodo la cache solo tiene 30 y 60 min). Pre-registrada 09:31 (SHA), corrida UNICA con candado: NO PASA.**
 Acierto 59,9 % vs azar 61,3 %, neto -0,74, ventaja +0,60 pts/op (t 0,44), 157 ops. Calibracion en el ano visto: A3-30 copia a A3 en el diseño (71 %
 +2,2) y se cae en el chequeo (48-52 %, -3,5/-4,4); A3 en 5 min mirando SOLO los cierres :00/:30 da en el chequeo 57,7 % -1,65 -> A3 es FRAGIL a que
-cierres se miran. Post hoc (tipo de dia ex post): tendencia 46,8 % vs azar 60,8, -4,32/op; balance +1,15 de ventaja; mixto +2,55. Lo que tumba la
-idea son los dias de tendencia (120 de 337). Expectativa del juez en vivo de A3: BAJA (2 de 4 muestras = azar). Baul #72.
-**RONDA 25 (lanzada 09:40, agente effort max, `laboratorio/ronda25_llave_tendencia/`):** detector del dia de tendencia con info de antes de las
-13:00 (Dalton: tipo de apertura, one-timeframing, extension, lado del VWAP, gap, calendario FOMC/CPI de fuente oficial) elegido con un objetivo
-independiente del P&L de A3; si alguno pasa, A3F congelada con juez r25_vivo.py (alfa 0,0125 por lectura). Baul desde la #73.
+cierres se miran. Expectativa del juez en vivo de A3: BAJA (2 de 4 muestras = azar). Baul #72. OJO: mi post hoc "pierde en los dias de
+tendencia, 46,8 vs azar 60,8" estaba MAL ARMADO (ver R25: etiqueta circular); se lo dije al operador y se corrigio (nota en RESULTADOS.md).
+**RONDA 25 (27-11 09:28-10:10, agente effort max, `laboratorio/ronda25_llave_tendencia/`): NO SE CONGELO NADA.** (1) Ninguna llave de la mañana:
+seis detectores de Dalton (apertura en un extremo, one-timeframing 5/6, VWAP sin tocar, fuera del rango de ayer, mañana ancha, dia de la Fed)
+contra TA = "la tarde se aleja del VWAP" (libre de geometria: con tardes al azar da 50 %): AUC 0,46-0,52 en 2024-25 y 0,44-0,52 en 2025-26.
+Recalculado por mi el one-timeframing (`ronda23_diseno/verificacion_por_fuera/otf_propio.py`): 0,527 y 0,503. (2) Ningun A3F mejora parejo; placebo
+p 0,18-0,98. (3) **CORRECCION: "A3 pierde en dias de tendencia" es la ETIQUETA** (el dia se llama tendencia mirando la misma tarde que decide la
+operacion). Mio (`circular_propio.py`): MES 5 min, tendencia real 55,1 % vs tardes al azar etiquetadas tendencia 47,4 %; distancia balance-tendencia
+real 22,3 vs azar 21,3 pts; 2024-25: 46,8 vs 47,4. La ventaja de A3 sobre el azar es positiva en los tres tipos de dia (2025-26 y cinta). Lo que
+daña es la TARDE de un solo sentido (24 % de las ops, 43 % de la perdida; la mitad en dias que terminan en balance) y la mañana no la anticipa: "la
+tarde es otra subasta". (4) Oct-nov 2026: la mañana si anticipo la tarde (OTF AUC 0,78), interruptor de regimen. Lo unico que anticipa la mañana es
+el TAMAÑO de la tarde (mañana ancha), no la direccion. A3 queda como esta; la info util esta DESPUES de las 13:00 (otra ronda). Baul #73-78.

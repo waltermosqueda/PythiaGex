@@ -1,0 +1,142 @@
+RONDA 25 - A3F (DESCRIPTIVO) 2026-11-27 09:59
+  control: A3 rehecha en diseno = 109 operaciones; las de la R23 = 109; IDENTICAS
+  control: A3 rehecha en chequeo = 123 operaciones; las de la R23 = 123; IDENTICAS
+  operaciones: diseno 109 (116 ruedas), diseno_30 64 (116 ruedas), chequeo 123 (126 ruedas), chequeo_30 70 (126 ruedas), cinta 62 (55 ruedas), cinta_30 34 (55 ruedas), a3_30_2425 157 (337 ruedas)
+
+A3 SIN FILTRO (referencia):
+  diseno A3 (MES 5m)         n 109 (0.94/r) | acierto  74.3 % (azar  62.9) | neto +2.49/op, +2.34/rueda (t  2.30) | ventaja +3.71 (t  3.86)
+  diseno solo :00/:30        n  64 (0.55/r) | acierto  71.9 % (azar  61.1) | neto +2.11/op, +1.17/rueda (t  1.50) | ventaja +3.29 (t  2.52)
+  chequeo A3 (MES 5m)        n 123 (0.98/r) | acierto  67.5 % (azar  62.8) | neto +0.66/op, +0.65/rueda (t  0.52) | ventaja +1.55 (t  1.24)
+  chequeo solo :00/:30       n  70 (0.56/r) | acierto  57.1 % (azar  61.3) | neto -1.80/op, -1.00/rueda (t -0.96) | ventaja -0.74 (t -0.40)
+  cinta ES (orden x orden)   n  62 (1.13/r) | acierto  74.2 % (azar  62.5) | neto +3.17/op, +3.57/rueda (t  2.17) | ventaja +4.13 (t  3.09)
+  cinta solo :00/:30 (5m)    n  34 (0.62/r) | acierto  73.5 % (azar  60.7) | neto +3.76/op, +2.32/rueda (t  2.17) | ventaja +4.99 (t  3.07)
+  A3-30 MES 2024-25          n 157 (0.47/r) | acierto  59.9 % (azar  61.3) | neto -0.74/op, -0.35/rueda (t -0.54) | ventaja +0.60 (t  0.44)
+
+== A3F-dia APE
+  diseno A3 (MES 5m)         marca  44 r | n  73 (0.63/r) | acierto  76.7 % (azar  61.4) | neto +3.16/op (A3 +2.49), +1.99/rueda (A3 +2.34) | ventaja +4.55 (t  4.15) | placebo p 0.177 | mitades +3.73/+2.79 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  44 r | n  38 (0.33/r) | acierto  76.3 % (azar  60.3) | neto +3.12/op (A3 +2.11), +1.02/rueda (A3 +1.17) | ventaja +4.31 (t  2.66) | placebo p 0.164 | mitades +5.23/+1.75 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  34 r | n  87 (0.69/r) | acierto  66.7 % (azar  62.0) | neto +0.61/op (A3 +0.66), +0.42/rueda (A3 +0.65) | ventaja +1.48 (t  0.94) | placebo p 0.527 | mitades +2.76/-1.58 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  34 r | n  51 (0.40/r) | acierto  56.9 % (azar  60.3) | neto -1.28/op (A3 -1.80), -0.52/rueda (A3 -1.00) | ventaja -0.20 (t -0.10) | placebo p 0.339 | mitades -0.52/-2.01 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  20 r | n  45 (0.82/r) | acierto  75.6 % (azar  62.6) | neto +3.69/op (A3 +3.17), +3.02/rueda (A3 +3.57) | ventaja +4.68 (t  3.01) | placebo p 0.310 | mitades +1.55/+4.87 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  20 r | n  24 (0.44/r) | acierto  79.2 % (azar  61.2) | neto +5.16/op (A3 +3.76), +2.25/rueda (A3 +2.32) | ventaja +6.49 (t  3.34) | placebo p 0.131 | mitades +2.22/+6.92 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca  98 r | n 101 (0.30/r) | acierto  56.4 % (azar  60.6) | neto -1.67/op (A3 -0.74), -0.50/rueda (A3 -0.35) | ventaja +0.06 (t  0.03) | placebo p 0.844 | mitades -2.38/-0.85 (A3 -1.40/-0.06)
+
+== A3F-dir APE
+  diseno A3 (MES 5m)         marca  44 r | n  90 (0.78/r) | acierto  73.3 % (azar  62.6) | neto +2.11/op (A3 +2.49), +1.64/rueda (A3 +2.34) | ventaja +3.41 (t  2.99) | placebo p   -   | mitades +2.41/+1.91 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  44 r | n  50 (0.43/r) | acierto  72.0 % (azar  60.2) | neto +1.80/op (A3 +2.11), +0.78/rueda (A3 +1.17) | ventaja +3.08 (t  1.93) | placebo p   -   | mitades +3.31/+0.72 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  34 r | n  98 (0.78/r) | acierto  68.4 % (azar  63.0) | neto +1.10/op (A3 +0.66), +0.86/rueda (A3 +0.65) | ventaja +1.91 (t  1.26) | placebo p   -   | mitades +2.29/+0.01 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  34 r | n  59 (0.47/r) | acierto  59.3 % (azar  61.1) | neto -0.89/op (A3 -1.80), -0.42/rueda (A3 -1.00) | ventaja +0.15 (t  0.08) | placebo p   -   | mitades -0.98/-0.81 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  20 r | n  53 (0.96/r) | acierto  71.7 % (azar  62.6) | neto +2.68/op (A3 +3.17), +2.59/rueda (A3 +3.57) | ventaja +3.61 (t  2.36) | placebo p   -   | mitades +0.17/+4.20 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  20 r | n  29 (0.53/r) | acierto  72.4 % (azar  60.4) | neto +3.62/op (A3 +3.76), +1.91/rueda (A3 +2.32) | ventaja +4.87 (t  2.54) | placebo p   -   | mitades +0.93/+5.26 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca  98 r | n 117 (0.35/r) | acierto  57.3 % (azar  60.9) | neto -0.95/op (A3 -0.74), -0.33/rueda (A3 -0.35) | ventaja +0.46 (t  0.27) | placebo p   -   | mitades -2.25/+0.52 (A3 -1.40/-0.06)
+
+== A3F-dia OTF
+  diseno A3 (MES 5m)         marca  50 r | n  73 (0.63/r) | acierto  72.6 % (azar  64.3) | neto +2.33/op (A3 +2.49), +1.47/rueda (A3 +2.34) | ventaja +3.61 (t  2.90) | placebo p 0.595 | mitades +2.99/+2.01 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  50 r | n  40 (0.34/r) | acierto  67.5 % (azar  63.7) | neto +0.97/op (A3 +2.11), +0.34/rueda (A3 +1.17) | ventaja +2.13 (t  1.33) | placebo p 0.839 | mitades +4.79/-0.66 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  51 r | n  79 (0.63/r) | acierto  70.9 % (azar  62.2) | neto +1.59/op (A3 +0.66), +1.00/rueda (A3 +0.65) | ventaja +2.49 (t  1.79) | placebo p 0.179 | mitades +2.94/+0.05 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  51 r | n  47 (0.37/r) | acierto  66.0 % (azar  60.1) | neto +0.74/op (A3 -1.80), +0.28/rueda (A3 -1.00) | ventaja +1.78 (t  0.84) | placebo p 0.049 | mitades +1.09/+0.43 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  23 r | n  45 (0.82/r) | acierto  73.3 % (azar  62.9) | neto +3.07/op (A3 +3.17), +2.51/rueda (A3 +3.57) | ventaja +3.84 (t  2.30) | placebo p 0.550 | mitades -0.47/+5.44 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  23 r | n  25 (0.45/r) | acierto  76.0 % (azar  61.2) | neto +3.96/op (A3 +3.76), +1.80/rueda (A3 +2.32) | ventaja +5.05 (t  2.32) | placebo p 0.447 | mitades -0.08/+6.23 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca 116 r | n 112 (0.33/r) | acierto  59.8 % (azar  62.8) | neto -0.42/op (A3 -0.74), -0.14/rueda (A3 -0.35) | ventaja +0.67 (t  0.39) | placebo p 0.385 | mitades -2.11/+1.16 (A3 -1.40/-0.06)
+
+== A3F-dir OTF
+  diseno A3 (MES 5m)         marca  50 r | n  87 (0.75/r) | acierto  73.6 % (azar  64.6) | neto +2.29/op (A3 +2.49), +1.72/rueda (A3 +2.34) | ventaja +3.51 (t  3.08) | placebo p   -   | mitades +2.60/+2.10 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  50 r | n  50 (0.43/r) | acierto  70.0 % (azar  62.5) | neto +1.41/op (A3 +2.11), +0.61/rueda (A3 +1.17) | ventaja +2.66 (t  1.77) | placebo p   -   | mitades +3.07/+0.39 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  51 r | n  94 (0.75/r) | acierto  71.3 % (azar  63.2) | neto +2.05/op (A3 +0.66), +1.53/rueda (A3 +0.65) | ventaja +2.91 (t  2.22) | placebo p   -   | mitades +2.53/+1.56 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  51 r | n  56 (0.44/r) | acierto  64.3 % (azar  60.9) | neto +0.82/op (A3 -1.80), +0.36/rueda (A3 -1.00) | ventaja +1.80 (t  0.96) | placebo p   -   | mitades +0.27/+1.26 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  23 r | n  54 (0.98/r) | acierto  74.1 % (azar  62.5) | neto +3.11/op (A3 +3.17), +3.05/rueda (A3 +3.57) | ventaja +3.98 (t  2.87) | placebo p   -   | mitades +0.30/+4.89 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  23 r | n  30 (0.55/r) | acierto  73.3 % (azar  60.3) | neto +3.42/op (A3 +3.76), +1.87/rueda (A3 +2.32) | ventaja +4.58 (t  2.46) | placebo p   -   | mitades +0.84/+4.92 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca 116 r | n 122 (0.36/r) | acierto  59.0 % (azar  62.5) | neto -0.34/op (A3 -0.74), -0.12/rueda (A3 -0.35) | ventaja +0.75 (t  0.46) | placebo p   -   | mitades -1.87/+1.09 (A3 -1.40/-0.06)
+
+== A3F-dia VWA
+  diseno A3 (MES 5m)         marca  41 r | n  74 (0.64/r) | acierto  75.7 % (azar  64.4) | neto +2.09/op (A3 +2.49), +1.34/rueda (A3 +2.34) | ventaja +3.42 (t  2.75) | placebo p 0.714 | mitades +2.08/+2.10 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  41 r | n  44 (0.38/r) | acierto  70.5 % (azar  62.9) | neto +1.12/op (A3 +2.11), +0.43/rueda (A3 +1.17) | ventaja +2.40 (t  1.42) | placebo p 0.839 | mitades +1.91/+0.76 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  29 r | n  91 (0.72/r) | acierto  68.1 % (azar  62.3) | neto +0.40/op (A3 +0.66), +0.29/rueda (A3 +0.65) | ventaja +1.23 (t  0.83) | placebo p 0.648 | mitades +2.49/-1.56 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  29 r | n  53 (0.42/r) | acierto  60.4 % (azar  60.7) | neto -0.87/op (A3 -1.80), -0.37/rueda (A3 -1.00) | ventaja +0.12 (t  0.06) | placebo p 0.204 | mitades -0.52/-1.14 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  13 r | n  55 (1.00/r) | acierto  76.4 % (azar  62.5) | neto +3.49/op (A3 +3.17), +3.49/rueda (A3 +3.57) | ventaja +4.46 (t  3.14) | placebo p 0.319 | mitades +0.18/+5.69 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  13 r | n  29 (0.53/r) | acierto  79.3 % (azar  61.0) | neto +4.64/op (A3 +3.76), +2.45/rueda (A3 +2.32) | ventaja +6.00 (t  3.40) | placebo p 0.156 | mitades +0.48/+7.57 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca 101 r | n 111 (0.33/r) | acierto  64.0 % (azar  62.6) | neto +0.24/op (A3 -0.74), +0.08/rueda (A3 -0.35) | ventaja +1.49 (t  0.86) | placebo p 0.130 | mitades -0.98/+1.32 (A3 -1.40/-0.06)
+
+== A3F-dir VWA
+  diseno A3 (MES 5m)         marca  41 r | n  88 (0.76/r) | acierto  75.0 % (azar  63.9) | neto +2.40/op (A3 +2.49), +1.82/rueda (A3 +2.34) | ventaja +3.60 (t  3.20) | placebo p   -   | mitades +2.38/+2.41 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  41 r | n  52 (0.45/r) | acierto  73.1 % (azar  61.4) | neto +1.85/op (A3 +2.11), +0.83/rueda (A3 +1.17) | ventaja +3.08 (t  2.06) | placebo p   -   | mitades +2.92/+1.18 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  29 r | n 103 (0.82/r) | acierto  68.9 % (azar  63.3) | neto +1.00/op (A3 +0.66), +0.82/rueda (A3 +0.65) | ventaja +1.78 (t  1.26) | placebo p   -   | mitades +2.00/+0.10 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  29 r | n  59 (0.47/r) | acierto  59.3 % (azar  61.2) | neto -0.83/op (A3 -1.80), -0.39/rueda (A3 -1.00) | ventaja +0.14 (t  0.07) | placebo p   -   | mitades -1.71/-0.14 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  13 r | n  58 (1.05/r) | acierto  74.1 % (azar  62.6) | neto +3.09/op (A3 +3.17), +3.25/rueda (A3 +3.57) | ventaja +4.02 (t  2.84) | placebo p   -   | mitades +0.18/+4.86 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  13 r | n  31 (0.56/r) | acierto  74.2 % (azar  60.9) | neto +3.73/op (A3 +3.76), +2.10/rueda (A3 +2.32) | ventaja +5.05 (t  2.82) | placebo p   -   | mitades +0.48/+5.79 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca 101 r | n 123 (0.36/r) | acierto  63.4 % (azar  62.9) | neto +0.52/op (A3 -0.74), +0.19/rueda (A3 -0.35) | ventaja +1.47 (t  0.90) | placebo p   -   | mitades -0.95/+1.88 (A3 -1.40/-0.06)
+
+== A3F-dia ACE
+  diseno A3 (MES 5m)         marca  10 r | n 106 (0.91/r) | acierto  74.5 % (azar  62.9) | neto +2.71/op (A3 +2.49), +2.47/rueda (A3 +2.34) | ventaja +3.89 (t  4.07) | placebo p 0.234 | mitades +3.44/+2.31 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  10 r | n  61 (0.53/r) | acierto  72.1 % (azar  61.1) | neto +2.43/op (A3 +2.11), +1.28/rueda (A3 +1.17) | ventaja +3.53 (t  2.66) | placebo p 0.216 | mitades +4.92/+1.21 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  13 r | n 106 (0.84/r) | acierto  66.0 % (azar  62.4) | neto +0.37/op (A3 +0.66), +0.31/rueda (A3 +0.65) | ventaja +1.30 (t  0.93) | placebo p 0.767 | mitades +0.55/+0.20 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  13 r | n  62 (0.49/r) | acierto  56.5 % (azar  61.6) | neto -2.13/op (A3 -1.80), -1.05/rueda (A3 -1.00) | ventaja -1.07 (t -0.54) | placebo p 0.702 | mitades -4.16/-0.56 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca   7 r | n  57 (1.04/r) | acierto  73.7 % (azar  62.9) | neto +3.18/op (A3 +3.17), +3.29/rueda (A3 +3.57) | ventaja +4.13 (t  2.87) | placebo p 0.526 | mitades -0.03/+5.19 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca   7 r | n  32 (0.58/r) | acierto  75.0 % (azar  60.7) | neto +4.35/op (A3 +3.76), +2.53/rueda (A3 +2.32) | ventaja +5.45 (t  3.39) | placebo p 0.172 | mitades +0.69/+6.86 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca  34 r | n 138 (0.41/r) | acierto  58.7 % (azar  60.8) | neto -0.40/op (A3 -0.74), -0.16/rueda (A3 -0.35) | ventaja +0.86 (t  0.59) | placebo p 0.216 | mitades -1.55/+0.81 (A3 -1.40/-0.06)
+
+== A3F-dir ACE
+  diseno A3 (MES 5m)         marca  10 r | n 109 (0.94/r) | acierto  74.3 % (azar  62.9) | neto +2.49/op (A3 +2.49), +2.34/rueda (A3 +2.34) | ventaja +3.71 (t  3.86) | placebo p   -   | mitades +2.71/+2.36 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  10 r | n  64 (0.55/r) | acierto  71.9 % (azar  61.1) | neto +2.11/op (A3 +2.11), +1.17/rueda (A3 +1.17) | ventaja +3.29 (t  2.52) | placebo p   -   | mitades +3.58/+1.35 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  13 r | n 110 (0.87/r) | acierto  66.4 % (azar  62.4) | neto +0.47/op (A3 +0.66), +0.41/rueda (A3 +0.65) | ventaja +1.40 (t  1.03) | placebo p   -   | mitades +0.99/-0.01 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  13 r | n  66 (0.52/r) | acierto  57.6 % (azar  61.4) | neto -1.77/op (A3 -1.80), -0.92/rueda (A3 -1.00) | ventaja -0.71 (t -0.38) | placebo p   -   | mitades -3.07/-0.74 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca   7 r | n  58 (1.05/r) | acierto  74.1 % (azar  62.9) | neto +3.24/op (A3 +3.17), +3.41/rueda (A3 +3.57) | ventaja +4.19 (t  2.96) | placebo p   -   | mitades +0.26/+5.19 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca   7 r | n  32 (0.58/r) | acierto  75.0 % (azar  60.7) | neto +4.35/op (A3 +3.76), +2.53/rueda (A3 +2.32) | ventaja +5.45 (t  3.39) | placebo p   -   | mitades +0.69/+6.86 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca  34 r | n 141 (0.42/r) | acierto  58.9 % (azar  60.8) | neto -0.37/op (A3 -0.74), -0.16/rueda (A3 -0.35) | ventaja +0.96 (t  0.67) | placebo p   -   | mitades -1.34/+0.64 (A3 -1.40/-0.06)
+
+== A3F-dia EXT
+  diseno A3 (MES 5m)         marca  44 r | n  62 (0.53/r) | acierto  67.7 % (azar  59.3) | neto +0.74/op (A3 +2.49), +0.40/rueda (A3 +2.34) | ventaja +2.11 (t  1.61) | placebo p 0.983 | mitades +0.83/+0.68 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  44 r | n  32 (0.28/r) | acierto  65.6 % (azar  57.8) | neto +0.20/op (A3 +2.11), +0.06/rueda (A3 +1.17) | ventaja +1.40 (t  0.75) | placebo p 0.961 | mitades +1.68/-0.57 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  38 r | n  80 (0.63/r) | acierto  68.8 % (azar  61.1) | neto +1.10/op (A3 +0.66), +0.70/rueda (A3 +0.65) | ventaja +1.98 (t  1.55) | placebo p 0.298 | mitades +3.48/-2.47 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  38 r | n  43 (0.34/r) | acierto  58.1 % (azar  58.8) | neto -0.84/op (A3 -1.80), -0.29/rueda (A3 -1.00) | ventaja +0.29 (t  0.14) | placebo p 0.223 | mitades +1.59/-4.22 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  26 r | n  33 (0.60/r) | acierto  78.8 % (azar  60.6) | neto +3.72/op (A3 +3.17), +2.23/rueda (A3 +3.57) | ventaja +4.66 (t  3.36) | placebo p 0.317 | mitades +1.65/+5.44 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  26 r | n  16 (0.29/r) | acierto  75.0 % (azar  60.4) | neto +3.53/op (A3 +3.76), +1.03/rueda (A3 +2.32) | ventaja +4.71 (t  1.90) | placebo p 0.548 | mitades +0.57/+5.83 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca  97 r | n  86 (0.26/r) | acierto  55.8 % (azar  60.0) | neto -2.09/op (A3 -0.74), -0.53/rueda (A3 -0.35) | ventaja -0.92 (t -0.79) | placebo p 0.932 | mitades -2.53/-1.59 (A3 -1.40/-0.06)
+
+== A3F-dia CAL
+  diseno A3 (MES 5m)         marca   4 r | n 102 (0.88/r) | acierto  74.5 % (azar  63.3) | neto +2.56/op (A3 +2.49), +2.25/rueda (A3 +2.34) | ventaja +3.74 (t  3.83) | placebo p 0.339 | mitades +2.01/+2.84 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca   4 r | n  62 (0.53/r) | acierto  71.0 % (azar  61.4) | neto +1.84/op (A3 +2.11), +0.98/rueda (A3 +1.17) | ventaja +3.02 (t  2.28) | placebo p 0.874 | mitades +2.89/+1.35 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca   4 r | n 112 (0.89/r) | acierto  66.1 % (azar  62.6) | neto +0.37/op (A3 +0.66), +0.33/rueda (A3 +0.65) | ventaja +1.20 (t  0.88) | placebo p 0.924 | mitades +0.82/-0.11 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca   4 r | n  65 (0.52/r) | acierto  56.9 % (azar  60.8) | neto -1.58/op (A3 -1.80), -0.82/rueda (A3 -1.00) | ventaja -0.54 (t -0.28) | placebo p 0.218 | mitades -3.48/+0.04 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca   2 r | n  57 (1.04/r) | acierto  71.9 % (azar  62.8) | neto +2.80/op (A3 +3.17), +2.90/rueda (A3 +3.57) | ventaja +3.74 (t  2.61) | placebo p 0.954 | mitades -0.02/+4.58 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca   2 r | n  34 (0.62/r) | acierto  73.5 % (azar  60.7) | neto +3.76/op (A3 +3.76), +2.32/rueda (A3 +2.32) | ventaja +4.99 (t  3.07) | placebo p 0.538 | mitades +0.69/+5.65 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca  11 r | n 155 (0.46/r) | acierto  59.4 % (azar  61.2) | neto -0.86/op (A3 -0.74), -0.39/rueda (A3 -0.35) | ventaja +0.52 (t  0.38) | placebo p 0.740 | mitades -1.40/-0.28 (A3 -1.40/-0.06)
+
+== ORACULO-dia (saltear los dias con TIPO = 1, ex post)
+  diseno A3 (MES 5m)         marca  37 r | n  89 (0.77/r) | acierto  76.4 % (azar  62.6) | neto +2.69/op (A3 +2.49), +2.06/rueda (A3 +2.34) | ventaja +3.97 (t  3.68) | placebo p 0.391 | mitades +2.62/+2.72 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  37 r | n  52 (0.45/r) | acierto  75.0 % (azar  60.5) | neto +2.36/op (A3 +2.11), +1.06/rueda (A3 +1.17) | ventaja +3.70 (t  2.53) | placebo p 0.399 | mitades +3.59/+1.76 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  44 r | n  94 (0.75/r) | acierto  73.4 % (azar  62.8) | neto +2.78/op (A3 +0.66), +2.07/rueda (A3 +0.65) | ventaja +3.58 (t  2.92) | placebo p 0.009 | mitades +4.26/+1.47 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  44 r | n  54 (0.43/r) | acierto  64.8 % (azar  60.6) | neto +1.56/op (A3 -1.80), +0.67/rueda (A3 -1.00) | ventaja +2.58 (t  1.36) | placebo p 0.009 | mitades +1.53/+1.57 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  11 r | n  59 (1.07/r) | acierto  74.6 % (azar  62.3) | neto +3.33/op (A3 +3.17), +3.57/rueda (A3 +3.57) | ventaja +4.29 (t  3.09) | placebo p 0.413 | mitades +0.50/+4.89 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  11 r | n  32 (0.58/r) | acierto  75.0 % (azar  60.7) | neto +4.03/op (A3 +3.76), +2.35/rueda (A3 +2.32) | ventaja +5.29 (t  3.11) | placebo p 0.350 | mitades +0.93/+5.65 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca 120 r | n 110 (0.33/r) | acierto  65.5 % (azar  61.6) | neto +0.79/op (A3 -0.74), +0.26/rueda (A3 -0.35) | ventaja +1.98 (t  1.12) | placebo p 0.069 | mitades +0.18/+1.50 (A3 -1.40/-0.06)
+
+== ORACULO-dia (saltear los dias con TA = 1, ex post)
+  diseno A3 (MES 5m)         marca  52 r | n  81 (0.70/r) | acierto  77.8 % (azar  63.4) | neto +3.26/op (A3 +2.49), +2.28/rueda (A3 +2.34) | ventaja +4.41 (t  4.00) | placebo p 0.197 | mitades +3.67/+3.05 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  52 r | n  50 (0.43/r) | acierto  72.0 % (azar  60.6) | neto +2.27/op (A3 +2.11), +0.98/rueda (A3 +1.17) | ventaja +3.50 (t  2.38) | placebo p 0.447 | mitades +2.97/+1.90 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  70 r | n  72 (0.57/r) | acierto  79.2 % (azar  62.5) | neto +4.52/op (A3 +0.66), +2.59/rueda (A3 +0.65) | ventaja +5.31 (t  4.66) | placebo p 0.001 | mitades +3.88/+5.33 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  70 r | n  37 (0.29/r) | acierto  73.0 % (azar  60.9) | neto +3.80/op (A3 -1.80), +1.12/rueda (A3 -1.00) | ventaja +4.75 (t  2.40) | placebo p 0.003 | mitades +1.25/+5.96 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  24 r | n  43 (0.78/r) | acierto  74.4 % (azar  61.8) | neto +3.99/op (A3 +3.17), +3.12/rueda (A3 +3.57) | ventaja +5.02 (t  3.07) | placebo p 0.236 | mitades +0.34/+6.15 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  24 r | n  25 (0.45/r) | acierto  76.0 % (azar  59.6) | neto +4.46/op (A3 +3.76), +2.03/rueda (A3 +2.32) | ventaja +5.84 (t  3.14) | placebo p 0.302 | mitades +2.53/+5.55 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca 190 r | n  82 (0.24/r) | acierto  75.6 % (azar  62.2) | neto +4.31/op (A3 -0.74), +1.05/rueda (A3 -0.35) | ventaja +5.30 (t  2.50) | placebo p 0.001 | mitades +1.91/+6.83 (A3 -1.40/-0.06)
+
+== ORACULO-dia (saltear los dias con ET = 1, ex post)
+  diseno A3 (MES 5m)         marca  23 r | n  84 (0.72/r) | acierto  78.6 % (azar  62.2) | neto +3.93/op (A3 +2.49), +2.85/rueda (A3 +2.34) | ventaja +5.18 (t  5.69) | placebo p 0.001 | mitades +4.29/+3.75 (A3 +2.71/+2.36)
+  diseno solo :00/:30        marca  23 r | n  47 (0.41/r) | acierto  80.9 % (azar  61.0) | neto +4.67/op (A3 +2.11), +1.89/rueda (A3 +1.17) | ventaja +5.75 (t  4.64) | placebo p 0.001 | mitades +6.72/+3.61 (A3 +3.58/+1.35)
+  chequeo A3 (MES 5m)        marca  42 r | n  90 (0.71/r) | acierto  71.1 % (azar  62.4) | neto +1.27/op (A3 +0.66), +0.90/rueda (A3 +0.65) | ventaja +2.23 (t  1.68) | placebo p 0.231 | mitades +1.99/+0.51 (A3 +1.01/+0.31)
+  chequeo solo :00/:30       marca  42 r | n  54 (0.43/r) | acierto  64.8 % (azar  61.0) | neto -0.17/op (A3 -1.80), -0.07/rueda (A3 -1.00) | ventaja +0.86 (t  0.42) | placebo p 0.112 | mitades -0.21/-0.12 (A3 -3.48/-0.38)
+  cinta ES (orden x orden)   marca  11 r | n  50 (0.91/r) | acierto  82.0 % (azar  62.9) | neto +4.92/op (A3 +3.17), +4.47/rueda (A3 +3.57) | ventaja +5.95 (t  4.97) | placebo p 0.002 | mitades +2.45/+6.44 (A3 +0.44/+4.89)
+  cinta solo :00/:30 (5m)    marca  11 r | n  28 (0.51/r) | acierto  78.6 % (azar  61.6) | neto +4.74/op (A3 +3.76), +2.41/rueda (A3 +2.32) | ventaja +6.05 (t  3.56) | placebo p 0.115 | mitades +1.45/+6.87 (A3 +0.69/+5.65)
+  A3-30 MES 2024-25          marca  99 r | n 107 (0.32/r) | acierto  62.6 % (azar  61.8) | neto -1.10/op (A3 -0.74), -0.35/rueda (A3 -0.35) | ventaja -0.04 (t -0.04) | placebo p 0.664 | mitades -0.67/-1.52 (A3 -1.40/-0.06)
+
+CRITERIOS DE CONGELAMIENTO (seccion 7; F1 fallo: ningun detector paso el diseno) - se informan igual:
+  APE-dia: F2 si | F3 NO (mejora el neto/op en 2 de 3; neto por rueda juntas +1.52 contra +1.85) | F5 NO (:00/:30 mejora; mitades 3 de 6)
+  APE-dir: F2 si | F3 NO (mejora el neto/op en 1 de 3; neto por rueda juntas +1.48 contra +1.85) | F5 NO (:00/:30 no mejora; mitades 1 de 6)
+  OTF-dia: F2 si | F3 NO (mejora el neto/op en 1 de 3; neto por rueda juntas +1.46 contra +1.85) | F5 NO (:00/:30 no mejora; mitades 3 de 6)
+  OTF-dir: F2 si | F3 NO (mejora el neto/op en 1 de 3; neto por rueda juntas +1.88 contra +1.85) | F5 NO (:00/:30 no mejora; mitades 1 de 6)
+  VWA-dia: F2 si | F3 NO (mejora el neto/op en 1 de 3; neto por rueda juntas +1.29 contra +1.85) | F5 NO (:00/:30 no mejora; mitades 2 de 6)
+  VWA-dir: F2 si | F3 NO (mejora el neto/op en 1 de 3; neto por rueda juntas +1.66 contra +1.85) | F5 NO (:00/:30 no mejora; mitades 2 de 6)
+  ACE-dia: F2 si | F3 NO (mejora el neto/op en 2 de 3; neto por rueda juntas +1.71 contra +1.85) | F5 NO (:00/:30 no mejora; mitades 2 de 6)
+  ACE-dir: F2 si | F3 NO (mejora el neto/op en 1 de 3; neto por rueda juntas +1.72 contra +1.85) | F5 NO (:00/:30 no mejora; mitades 2 de 6)
+  EXT-dia: F2 si | F3 NO (mejora el neto/op en 2 de 3; neto por rueda juntas +0.87 contra +1.85) | F5 NO (:00/:30 no mejora; mitades 2 de 6)
+  CAL-dia: F2 si | F3 NO (mejora el neto/op en 1 de 3; neto por rueda juntas +1.56 contra +1.85) | F5 NO (:00/:30 no mejora; mitades 1 de 6)

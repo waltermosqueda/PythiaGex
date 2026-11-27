@@ -1,0 +1,24 @@
+RONDA 25 - COMPROBACION DESDE EL CRUDO (codigo propio: csv + zoneinfo + math; sin numpy, pandas ni el motor)
+
+(a) CLASIFICACIONES (ruedas elegidas por regla: la primera marcada por cada detector y la primera del FOMC)
+  m30      2024-05-13 | s13 -1 APE q 0.043 marca 1 | OTF 5 marca 1 | VWA 6 marca 1 | ACE 0 | EXT 0.653 marca 0 | FOMC 0 || TA 1 D +0.18 TIPO 0 NV 0 ET 0 -> COINCIDE
+  m30      2024-05-01 | s13 -1 APE q 0.225 marca 0 | OTF 5 marca 1 | VWA 0 marca 0 | ACE 1 | EXT 0.323 marca 0 | FOMC 1 || TA 1 D +0.35 TIPO 0 NV 0 ET 0 -> COINCIDE
+  m30      2024-05-09 | s13 +1 APE q 0.254 marca 0 | OTF 5 marca 1 | VWA 6 marca 1 | ACE 0 | EXT 0.685 marca 0 | FOMC 0 || TA 1 D +3.00 TIPO 1 NV 1 ET 1 -> COINCIDE
+  m30      2024-05-15 | s13 +1 APE q 0.187 marca 0 | OTF 5 marca 1 | VWA 5 marca 1 | ACE 1 | EXT 1.049 marca 1 | FOMC 0 || TA 1 D +4.64 TIPO 1 NV 1 ET 1 -> COINCIDE
+  m5->30   2025-09-11 | s13 +1 APE q 0.136 marca 1 | OTF 5 marca 1 | VWA 6 marca 1 | ACE 0 | EXT 1.030 marca 1 | FOMC 0 || TA 1 D +1.31 TIPO 1 NV 1 ET 0 -> COINCIDE
+  m5->30   2025-10-20 | s13 +1 APE q 0.012 marca 1 | OTF 5 marca 1 | VWA 6 marca 1 | ACE 1 | EXT 0.644 marca 0 | FOMC 0 || TA 1 D +0.43 TIPO 1 NV 1 ET 0 -> COINCIDE
+  m5->30   2025-09-17 | s13 -1 APE q 0.262 marca 0 | OTF 5 marca 1 | VWA 6 marca 1 | ACE 0 | EXT 0.680 marca 0 | FOMC 1 || TA 0 D -2.75 TIPO 0 NV 0 ET 0 -> COINCIDE
+  cinta    2026-10-01 | s13 -1 APE q 0.152 marca 0 | OTF 4 marca 0 | VWA 4 marca 0 | ACE 0 | EXT 1.135 marca 1 | FOMC 0 || TA 0 D -6.74 TIPO 0 NV 0 ET 1 -> COINCIDE
+  cinta    2026-11-05 | s13 -1 APE q 0.017 marca 1 | OTF 5 marca 1 | VWA 6 marca 1 | ACE 0 | EXT 4.786 marca 1 | FOMC 0 || TA 1 D +8.05 TIPO 1 NV 1 ET 0 -> COINCIDE
+  -> clasificaciones: 9 de 9 coinciden
+
+(b) OPERACIONES DE A3 (velas de 5 min de MES, regla escrita de nuevo) y la marca del detector OTF de su dia
+  diseno  2025-09-10 13:20 COMPRA a 6544.75 stop 6536.25 -> stop 6536.25 = -8.50 | OTF 4/6 ese dia (A3F-dia la toma) -> COINCIDE
+  diseno  2025-09-12 15:20 VENTA a 6599.00 stop 6607.50 -> objetivo 6593.50 = +5.50 | OTF 4/6 ese dia (A3F-dia la toma) -> COINCIDE
+  diseno  2026-02-26 14:20 VENTA a 6917.25 stop 6964.50 -> fin 6921.50 = -4.25 | OTF 4/6 ese dia (A3F-dia la toma) -> COINCIDE
+  diseno  2026-02-27 14:50 COMPRA a 6857.50 stop 6838.00 -> objetivo 6868.00 = +10.50 | OTF 4/6 ese dia (A3F-dia la toma) -> COINCIDE
+  chequeo 2026-03-02 13:55 VENTA a 6881.50 stop 6902.25 -> stop 6902.25 = -20.75 | OTF 5/6 ese dia (A3F-dia la saltea) -> COINCIDE
+  chequeo 2026-03-02 15:10 VENTA a 6886.00 stop 6914.50 -> fin 6887.25 = -1.25 | OTF 5/6 ese dia (A3F-dia la saltea) -> COINCIDE
+  chequeo 2026-08-31 14:45 COMPRA a 7681.25 stop 7673.00 -> objetivo 7686.50 = +5.25 | OTF 3/6 ese dia (A3F-dia la toma) -> COINCIDE
+  chequeo 2026-08-31 15:25 VENTA a 7691.75 stop 7706.00 -> stop 7706.00 = -14.25 | OTF 3/6 ese dia (A3F-dia la toma) -> COINCIDE
+  -> operaciones de A3: 8 de 8 coinciden

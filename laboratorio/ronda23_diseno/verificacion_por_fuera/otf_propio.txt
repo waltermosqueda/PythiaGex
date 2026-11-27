@@ -1,0 +1,2 @@
+2024-04-29..2025-09-08 (diseno R25)      ruedas 337 | TA base 56.4 % | AUC OTF dia 0.527 | AUC OTF lado 0.523 | OTF >= 5 de 6 (dia): 121 ruedas, TA 57.0 %
+2025-09-09..2026-08-17 (validacion R25)  ruedas 234 | TA base 50.9 % | AUC OTF dia 0.503 | AUC OTF lado 0.502 | OTF >= 5 de 6 (dia): 101 ruedas, TA 49.5 %

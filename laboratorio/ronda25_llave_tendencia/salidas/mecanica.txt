@@ -1,0 +1,43 @@
+RONDA 25 - MECANICA (post hoc, descriptivo) 2026-11-27 10:01
+(1) LA ETIQUETA 'DIA DE TENDENCIA' CONTRA TARDES AL AZAR (cada operacion de A3 en 200 tardes reflejadas; simulador propio)
+  diseno                             | tend real  20 ops  65.0 %  +1.60 | azar 24.0 % de las tardes  48.2 %  -4.59 || mixt real  44 ops  75.0 %  +2.65 | azar 36.7 % de las tardes  69.2 %  +0.15 || bala real  45 ops  77.8 %  +2.72 | azar 39.4 % de las tardes  66.4 %  -0.51
+  chequeo                            | tend real  29 ops  48.3 %  -6.19 | azar 23.7 % de las tardes  47.2 %  -4.91 || mixt real  32 ops  65.6 %  +1.69 | azar 34.8 % de las tardes  65.4 %  -0.53 || bala real  62 ops  77.4 %  +3.34 | azar 41.6 % de las tardes  70.0 %  +1.25
+  cinta                              | tend real   3 ops  66.7 %  +0.08 | azar 20.6 % de las tardes  50.9 %  -3.91 || mixt real  28 ops  71.4 %  +2.92 | azar 36.2 % de las tardes  66.1 %  -0.20 || bala real  32 ops  78.1 %  +4.16 | azar 43.2 % de las tardes  62.7 %  -0.71
+  A3-30 2024-25                      | tend real  47 ops  46.8 %  -4.32 | azar 28.3 % de las tardes  47.9 %  -4.66 || mixt real  65 ops  66.2 %  +1.35 | azar 34.4 % de las tardes  64.3 %  -0.75 || bala real  45 ops  64.4 %  -0.02 | azar 37.3 % de las tardes  69.3 %  +0.69
+  A3 juntas (diseno+chequeo+cinta)   | tend real  52 ops  55.8 %  -2.83 | azar 23.1 % de las tardes  48.3 %  -4.60 || mixt real 104 ops  71.2 %  +2.43 | azar 35.8 % de las tardes  67.0 %  -0.20 || bala real 139 ops  77.7 %  +3.33 | azar 41.1 % de las tardes  67.1 %  +0.18
+  (lectura: si con tardes al azar el acierto tambien cae en los dias que el azar etiqueta 'tendencia', la etiqueta se arma con la misma
+   tarde que decide la operacion: una tarde que vuelve al VWAP achica |C - O| y el dia deja de ser 'tendencia'.)
+
+(2) A3 EN LOS DIAS MARCADOS por cada detector (parametro de teoria): n, acierto (azar), neto por operacion
+  APE  marcados: diseno  36 ops  69.4 % (azar 65.9)  +1.12 | chequeo  36 ops  69.4 % (azar 64.5)  +0.78 | cinta  17 ops  70.6 % (azar 62.4)  +1.79 | a3_30_2  56 ops  66.1 % (azar 62.6)  +0.93
+  OTF  marcados: diseno  36 ops  77.8 % (azar 60.0)  +2.81 | chequeo  44 ops  61.4 % (azar 63.7)  -1.00 | cinta  17 ops  76.5 % (azar 61.5)  +3.43 | a3_30_2  45 ops  60.0 % (azar 57.6)  -1.54
+  VWA  marcados: diseno  35 ops  71.4 % (azar 59.6)  +3.32 | chequeo  32 ops  65.6 % (azar 64.0)  +1.41 | cinta   7 ops  57.1 % (azar 62.7)  +0.68 | a3_30_2  46 ops  50.0 % (azar 58.4)  -3.12
+  ACE  marcados: diseno   3 ops  66.7 % (azar 63.0)  -5.17 | chequeo  17 ops  76.5 % (azar 65.0)  +2.49 | cinta   5 ops  80.0 % (azar 58.3)  +3.10 | a3_30_2  19 ops  68.4 % (azar 65.1)  -3.21
+  EXT  marcados: diseno  47 ops  83.0 % (azar 67.6)  +4.79 | chequeo  43 ops  65.1 % (azar 65.8)  -0.16 | cinta  29 ops  69.0 % (azar 64.8)  +2.54 | a3_30_2  71 ops  64.8 % (azar 63.0)  +0.89
+  CAL  marcados: diseno   7 ops  71.4 % (azar 56.1)  +1.43 | chequeo  11 ops  81.8 % (azar 64.5)  +3.68 | cinta   5 ops 100.0 % (azar 59.1)  +7.35 | a3_30_2   2 ops 100.0 % (azar 72.5)  +8.25
+
+(3) EL ARRASTRE DEL VWAP
+  diseno 2024-25  a las 13:00 ya paso el 63 % del volumen del dia (mediana) -> el VWAP de la tarde se mueve, por cada punto que el precio se mueve en la tarde: 0.46 (tardes que se alejan, n 112) / -0.02 (tardes que vuelven, n 97); distancia precio-VWAP: +1.79 X en las que se alejan, -5.06 X en las que vuelven
+  val1 2025-26    a las 13:00 ya paso el 67 % del volumen del dia (mediana) -> el VWAP de la tarde se mueve, por cada punto que el precio se mueve en la tarde: 0.39 (tardes que se alejan, n 66) / -0.07 (tardes que vuelven, n 74); distancia precio-VWAP: +1.70 X en las que se alejan, -4.27 X en las que vuelven
+  cinta 2026      a las 13:00 ya paso el 61 % del volumen del dia (mediana) -> el VWAP de la tarde se mueve, por cada punto que el precio se mueve en la tarde: 0.66 (tardes que se alejan, n 12) / 0.05 (tardes que vuelven, n 17); distancia precio-VWAP: +0.44 X en las que se alejan, -3.27 X en las que vuelven
+
+(4) DE DONDE SALEN LAS PERDIDAS DE A3 (diseno + chequeo + cinta; motor de 5 min para diseno y chequeo, orden por orden para la cinta)
+  294 operaciones: ganan 210 (media +9.11), pierden 84 (media -12.74); la perdida total viene 72 % de stops y 28 % de cierres de las 16:00
+  tarde de tendencia ET=1:  70 ops, acierto  55.7 %, neto  -2.02, stops 22.9 % | de ellas en dias que terminaron tendencia 16, mixtos 19, balance 35
+  tarde de tendencia ET=0: 224 ops, acierto  76.3 %, neto  +3.08, stops 12.1 % | de ellas en dias que terminaron tendencia 36, mixtos 85, balance 103
+  el 43 % de lo que pierden las perdedoras cae en tardes de tendencia (ET=1), que son el 24 % de las operaciones
+  TA=1 (la tarde se alejo del VWAP de las 13):  98 ops, acierto  59.2 %, neto  -2.17
+  TA=0 (la tarde volvio hacia el VWAP de las 13): 196 ops, acierto  77.6 %, neto  +3.89
+
+(5) EL REGIMEN: AUC contra TA por trimestre (todas las ruedas con s13 != 0; diseno, val1 y cinta)
+  2024T2  43 ruedas | TA 58.1 % | AUC TA: OTF 0.56  VWA 0.44  EXT 0.51  APE 0.41 | dias de tendencia 30.2 % | rango mediano 38 pts
+  2024T3  63 ruedas | TA 52.4 % | AUC TA: OTF 0.49  VWA 0.52  EXT 0.44  APE 0.46 | dias de tendencia 30.2 % | rango mediano 55 pts
+  2024T4  62 ruedas | TA 53.2 % | AUC TA: OTF 0.56  VWA 0.48  EXT 0.38  APE 0.57 | dias de tendencia 37.1 % | rango mediano 45 pts
+  2025T1  60 ruedas | TA 65.0 % | AUC TA: OTF 0.62  VWA 0.62  EXT 0.47  APE 0.59 | dias de tendencia 46.7 % | rango mediano 67 pts
+  2025T2  62 ruedas | TA 56.5 % | AUC TA: OTF 0.41  VWA 0.47  EXT 0.51  APE 0.41 | dias de tendencia 30.6 % | rango mediano 67 pts
+  2025T3  63 ruedas | TA 55.6 % | AUC TA: OTF 0.58  VWA 0.56  EXT 0.52  APE 0.53 | dias de tendencia 39.7 % | rango mediano 41 pts
+  2025T4  62 ruedas | TA 46.8 % | AUC TA: OTF 0.47  VWA 0.44  EXT 0.50  APE 0.48 | dias de tendencia 35.5 % | rango mediano 60 pts
+  2026T1  59 ruedas | TA 44.1 % | AUC TA: OTF 0.50  VWA 0.33  EXT 0.40  APE 0.58 | dias de tendencia 30.5 % | rango mediano 78 pts
+  2026T2  62 ruedas | TA 56.5 % | AUC TA: OTF 0.50  VWA 0.52  EXT 0.52  APE 0.44 | dias de tendencia 38.7 % | rango mediano 65 pts
+  2026T3  58 ruedas | TA 48.3 % | AUC TA: OTF 0.52  VWA 0.48  EXT 0.48  APE 0.48 | dias de tendencia 22.4 % | rango mediano 62 pts
+  2026T4  40 ruedas | TA 45.0 % | AUC TA: OTF 0.78  VWA 0.69  EXT 0.66  APE 0.54 | dias de tendencia 20.0 % | rango mediano 62 pts

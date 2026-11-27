@@ -49,3 +49,13 @@ muestras la idea se comportó como el azar (mar-ago 2026 en 5 minutos y 2024-25 
 - `PREREGISTRO.md`, `huellas_r24.json`, `PRUEBA_CORRIDA.lock`.
 - `calibracion.txt`, `r24_diagnostico.py` → `diagnostico.txt`.
 - `prueba.txt`, `resultado_prueba.json`, `ops_prueba_2024_25.csv`, `mecanica_posthoc.txt`.
+
+
+## Nota de correccion (27-11-2026 10:20 AR, despues de la ronda 25)
+La seccion "La mecanica" de arriba compara el acierto real en los dias que terminaron en tendencia (46,8 %) con el azar promediado sobre
+TODAS las tardes al azar (60,8 %). Esa comparacion esta mal armada: el dia se llama "de tendencia" mirando la misma tarde que decide la
+operacion (una tarde que vuelve al VWAP achica |cierre - apertura| y el dia deja de ser de tendencia). Con su propia etiqueta puesta a cada
+tarde al azar, A3-30 acierta 47,4 % en los dias de tendencia del azar (recalculado por mi en
+ronda23_diseno/verificacion_por_fuera/circular_propio.py; la R25 da 47,9 %): igual que el real. "Pierde en los dias de tendencia" no es una
+debilidad propia de la regla: es la etiqueta. El veredicto NO PASA no cambia. Lo que dana de verdad es la tarde de un solo sentido, y la
+manana no la anticipa (ronda 25: seis detectores con AUC 0,46-0,52).
