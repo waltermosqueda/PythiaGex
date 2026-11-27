@@ -1,0 +1,78 @@
+RONDA 22 - CALIBRACION de la traduccion a 5 min (2026-11-27 07:33)
+Curva f(m) congelada de la R21 verificada (SHA-256 72589182d153...).
+Control: el rango relativo por minuto recalculado desde la cinta difiere del de la R21 en 0 de 21450 minutos.
+
+(B) VELAS DE 5 MIN ARMADAS DESDE LA CINTA DE ES (57 ruedas, 2026-09-08 a 2026-11-25): efecto de la resolucion
+Orden dentro de la vela (que extremo llega primero), 15732 velas de 18:00 a 17:00:
+   regla 'color': acierta 87.9 %
+   regla 'cercano': acierta 82.7 %
+   -> ELEGIDA: 'color'
+Precio por vela para el VWAP (error contra el VWAP de la cinta al cierre de cada vela de la rueda):
+   hlc3  var_intra=False | VWAP rueda: mediana |err| 0.188 pts (p90 0.729) | jornada 0.115 | desvio rueda: mediana |err rel| 3.3 % | jornada 1.2 %
+   hlc3  var_intra=True  | VWAP rueda: mediana |err| 0.188 pts (p90 0.729) | jornada 0.115 | desvio rueda: mediana |err rel| 1.2 % | jornada 0.5 %
+   ohlc4 var_intra=False | VWAP rueda: mediana |err| 0.170 pts (p90 0.660) | jornada 0.111 | desvio rueda: mediana |err rel| 3.2 % | jornada 1.3 %
+   ohlc4 var_intra=True  | VWAP rueda: mediana |err| 0.170 pts (p90 0.660) | jornada 0.111 | desvio rueda: mediana |err rel| 0.9 % | jornada 0.5 %
+   hl2   var_intra=False | VWAP rueda: mediana |err| 0.134 pts (p90 0.455) | jornada 0.102 | desvio rueda: mediana |err rel| 2.8 % | jornada 1.2 %
+   hl2   var_intra=True  | VWAP rueda: mediana |err| 0.134 pts (p90 0.455) | jornada 0.102 | desvio rueda: mediana |err rel| 0.6 % | jornada 0.3 %
+   c     var_intra=False | VWAP rueda: mediana |err| 0.553 pts (p90 2.089) | jornada 0.363 | desvio rueda: mediana |err rel| 2.8 % | jornada 1.1 %
+   c     var_intra=True  | VWAP rueda: mediana |err| 0.553 pts (p90 2.089) | jornada 0.363 | desvio rueda: mediana |err rel| 3.6 % | jornada 1.3 %
+   -> ELEGIDO: precio 'hl2' (menor error del VWAP); varianza dentro de la vela = True (desvio: 0.4 % con, 1.6 % sin)
+Primer paso (L2: extremo nuevo + X/2 antes que el VWAP), contra la etiqueta de la R21 recalculada en el MISMO instante (cierre de cada vela):
+   VWAP de referencia 'inicio', empates 'camino': coincide 98.1 % de 3819 puntos | empates 0 | 'extiende' 5 min 36.9 % vs cinta 37.0 %
+   VWAP de referencia 'inicio', empates 'empate': coincide 98.1 % de 3819 puntos | empates 5 | 'extiende' 5 min 36.9 % vs cinta 37.0 %
+   VWAP de referencia 'fin', empates 'camino': coincide 99.5 % de 3819 puntos | empates 0 | 'extiende' 5 min 36.7 % vs cinta 37.0 %
+   VWAP de referencia 'fin', empates 'empate': coincide 99.4 % de 3819 puntos | empates 5 | 'extiende' 5 min 36.7 % vs cinta 37.0 %
+   -> ELEGIDO: referencia 'fin', empates 'camino'
+CONVENCIONES ELEGIDAS: {'precio': 'hl2', 'var_intra': True, 'camino': 'color', 'l2_vw': 'fin', 'l2_empate': 'camino'}
+
+Estado D1 cada 5 min (cierres 10:00-15:30; 67 puntos por rueda), 5 min contra la cinta en el MISMO instante (minuto 5k+4):
+   coincidencia del estado (T/R/E/N): 100.0 % de 3819 puntos (contra el minuto siguiente, los puntos de control de la R21: 98.5 %)
+   TENDENCIA si/no: coincide 100.0 %; de los puntos TENDENCIA de la cinta, el 5 min marca TENDENCIA en 100.0 %; de los TENDENCIA de 5 min, la cinta lo es en 100.0 %
+   matriz (filas cinta, columnas 5 min):
+      5min      E   N     R    T
+      cinta                     
+      E      1705   0     0    0
+      N         0  46     0    0
+      R         0   0  1406    0
+      T         0   0     0  662
+
+(A) VELAS DE MES 5 MIN (velas-MES-m5.csv) contra la cinta de ES: 2026-09-08, 2026-09-17, 2026-09-18, 2026-09-21
+   08-09: mediana de 10 con las velas de MES 44.38 (X 3.50) | la de la R19/R21 43.75 (X 3.50) | ruedas 08-24,08-25,08-26,08-27,08-28,08-31,09-01,09-02,09-03,09-04
+   2026-09-08: estado coincide 98.5 % | VWAP rueda mediana |err| 0.38 pts | X 3.50 (R21 3.50)
+   2026-09-17: estado coincide 100.0 % | VWAP rueda mediana |err| 0.10 pts | X 3.50 (R21 3.50)
+   2026-09-18: estado coincide 100.0 % | VWAP rueda mediana |err| 0.07 pts | X 3.25 (R21 3.25)
+   2026-09-21: estado coincide 100.0 % | VWAP rueda mediana |err| 0.53 pts | X 3.25 (R21 3.25)
+   (A) JUNTAS: estado D1 coincide 99.6 % de 268 puntos; TENDENCIA si/no 100.0 %
+   VWAP rueda (MES contra cinta ES): mediana |err| 0.281 pts, p90 0.709; jornada 1.232; desvio rel 2.0 %
+   delta de 5 min del MES contra el del ES (78 velas x 4 ruedas): mismo signo 72.4 %, correlacion media 0.60
+
+EVENTOS (vueltas de la ola 10:00-15:30): 5 min (entrada a stop) contra la cinta (eventos_r21), mismo lado, extremo a <= 2 ticks, +-1 vela
+  B (velas de la cinta): vueltas de la cinta 4510; con pareja en 5 min 53.4 %; vueltas de 5 min 2546, con pareja 94.6 %
+     estado TENDENCIA del lado                     coincide  99.5 % (si en cinta 11.7 %, si en 5 min 12.0 %; n 2409)
+     estado ROTACION                               coincide  98.5 % (si en cinta 39.8 %, si en 5 min 40.0 %; n 2409)
+     a favor de la marea                           coincide  96.2 % (si en cinta 44.5 %, si en 5 min 47.9 %; n 2409)
+     VWAP detras                                   coincide  99.6 % (si en cinta 47.6 %, si en 5 min 47.8 %; n 2409)
+     T1                                            coincide  98.2 % (si en cinta 30.9 %, si en 5 min 32.5 %; n 2409)
+     nivel en la zona                              coincide  94.7 % (si en cinta 37.7 %, si en 5 min 38.0 %; n 2409)
+     barrida                                       coincide  93.9 % (si en cinta 45.4 %, si en 5 min 45.7 %; n 2409)
+     delta 5 min a favor (vela previa vs 300 s)    coincide  72.0 % (si en cinta 43.5 %, si en 5 min 38.7 %; n 2409)
+     T7 (sin estado)                               coincide  95.4 % (si en cinta 23.5 %, si en 5 min 24.7 %; n 2409)
+     banda 2 sigma respetada                       coincide  96.8 % (si en cinta  7.3 %, si en 5 min  6.7 %; n 2409)
+     resultado 1R (gana/pierde)                    coincide  93.9 % (si en cinta 60.0 %, si en 5 min 58.0 %; n 2409)
+     resultado P1 (gana/pierde)                    coincide  93.9 % (si en cinta 60.0 %, si en 5 min 58.0 %; n 2409)
+     T7 en TENDENCIA: en la cinta 285 vueltas; de esas, con pareja que el 5 min tambien toma 85; el 5 min toma 114 (de las emparejadas)
+     R medio de las parejas: 5 min 5.68, cinta 5.63
+  A (velas de MES): vueltas de la cinta 152; con pareja en 5 min 82.2 %; vueltas de 5 min 131, con pareja 95.4 %
+     estado TENDENCIA del lado                     coincide 100.0 % (si en cinta 10.4 %, si en 5 min 10.4 %; n 125)
+     estado ROTACION                               coincide  97.6 % (si en cinta 44.8 %, si en 5 min 45.6 %; n 125)
+     a favor de la marea                           coincide  96.8 % (si en cinta 47.2 %, si en 5 min 48.8 %; n 125)
+     VWAP detras                                   coincide 100.0 % (si en cinta 48.8 %, si en 5 min 48.8 %; n 125)
+     T1                                            coincide  98.4 % (si en cinta 41.6 %, si en 5 min 43.2 %; n 125)
+     nivel en la zona                              coincide  90.4 % (si en cinta 35.2 %, si en 5 min 38.4 %; n 125)
+     barrida                                       coincide  88.0 % (si en cinta 37.6 %, si en 5 min 36.8 %; n 125)
+     delta 5 min a favor (vela previa vs 300 s)    coincide  55.2 % (si en cinta 48.8 %, si en 5 min 31.2 %; n 125)
+     T7 (sin estado)                               coincide  92.0 % (si en cinta 31.2 %, si en 5 min 26.4 %; n 125)
+     banda 2 sigma respetada                       coincide  92.0 % (si en cinta  8.8 %, si en 5 min 12.0 %; n 125)
+     resultado 1R (gana/pierde)                    coincide  93.6 % (si en cinta 47.2 %, si en 5 min 45.6 %; n 125)
+     resultado P1 (gana/pierde)                    coincide  93.6 % (si en cinta 47.2 %, si en 5 min 45.6 %; n 125)
+     T7 en TENDENCIA: en la cinta 6 vueltas; de esas, con pareja que el 5 min tambien toma 1; el 5 min toma 1 (de las emparejadas)

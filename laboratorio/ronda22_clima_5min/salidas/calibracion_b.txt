@@ -1,0 +1,32 @@
+RONDA 22 - CALIBRACION (b) con las convenciones {'precio': 'hl2', 'var_intra': True, 'camino': 'color', 'l2_vw': 'fin', 'l2_empate': 'camino'} (2026-11-27 07:41)
+(a) delta a favor: coincidencia con el signo del delta de los 300 s previos de la cinta (vueltas emparejadas, velas de la cinta):
+    previa                         71.6 % (n 2662)
+    dos_previas                    66.3 % (n 2662)
+    la_de_la_vuelta (no causal)    65.6 % (n 2662)
+Entradas a STOP CONSERVADORAS contra las vueltas de la cinta: 4510 vueltas de la cinta, con pareja 30.0 %; 1714 entradas de 5 min, con pareja 79.0 %
+   en las parejas: resultado 1R coincide 91.4 % (gana en la cinta 48.9 %, en 5 min 42.2 %); R medio 5 min 5.59, cinta 5.51; vela 5 min - vela de la vuelta: {-1.0: 27, 0.0: 952, 1.0: 375}
+   vueltas de la cinta SIN pareja: ganan a 1R el 48.0 % (con pareja 48.9 %)
+
+(b) LAS VARIANTES TRADUCIDAS, en las ruedas de la R21 (velas de 5 min armadas desde la cinta de ES; ya vistas):
+  T7-S6           diseno n 13 61.5 % +0.89 | confirma n 28 53.6 % +1.28 | guardada n 16 50.0 % +0.56 | juntas n 57 (1.04/rueda) 54.4 % neto c0,50 +0.987 c1,00 +0.487 t 0.33
+                  [entrada al cierre] cinta R21 (entrada en el segundo de la vuelta): 50,0 / 69,4 / 66,7 % ; juntas 86 ops 62,8 % +1,22 (c0,50)
+  T6-P1           diseno n 11 63.6 % +1.86 | confirma n 24 58.3 % -0.16 | guardada n 15 46.7 % -3.32 | juntas n 50 (0.91/rueda) 56.0 % neto c0,50 -0.662 c1,00 -1.163 t -0.25
+                  [entrada al cierre] cinta R21: 60,0 / 62,5 / 72,7 % ; juntas 74 ops 64,9 % +1,88
+  COMB-T7+V4e-S6  diseno n 32 59.4 % +0.40 | confirma n 42 59.5 % +1.87 | guardada n 20 50.0 % +0.78 | juntas n 94 (1.71/rueda) 57.4 % neto c0,50 +1.136 c1,00 +0.636 t 0.62
+                  [entrada al cierre] cinta R21 (con iceberg): 60,4 / 63,8 / 66,7 % ; juntas 122 ops 63,1 % +1,20
+                    parte T7: n 56 53.6 % +0.88
+                    parte V4e: n 38 63.2 % +1.51
+  V4e-S6          diseno n 21 61.9 % +0.94 | confirma n 14 71.4 % +3.05 | guardada n 4 50.0 % +1.62 | juntas n 39 (0.71/rueda) 64.1 % neto c0,50 +1.769 c1,00 +1.269 t 1.14
+                  [entrada al cierre] cinta R21 V4-S6-ROT (con iceberg): 75,0 / 56,2 / 75,0 % ; juntas 52 ops 69,2 % +1,72
+  T7-S6-camino    diseno n 13 92.3 % +3.13 | confirma n 33 81.8 % +2.90 | guardada n 21 90.5 % +6.73 | juntas n 67 (1.22/rueda) 86.6 % neto c0,50 +4.146 c1,00 +3.646 t 3.67
+                  (cota alta: stop dentro de la vela con el orden supuesto)
+  T6-P1-camino    diseno n 6 83.3 % +3.31 | confirma n 27 77.8 % +3.36 | guardada n 18 77.8 % +4.48 | juntas n 51 (0.93/rueda) 78.4 % neto c0,50 +3.748 c1,00 +3.248 t 3.10
+                  (cota alta)
+  COMB-camino     diseno n 38 84.2 % +2.54 | confirma n 50 76.0 % +2.26 | guardada n 28 75.0 % +3.97 | juntas n 116 (2.11/rueda) 78.4 % neto c0,50 +2.765 c1,00 +2.265 t 4.72
+                  (cota alta)
+                    parte T7: n 62 87.1 % +4.06
+                    parte V4e: n 54 68.5 % +1.27
+  T7-S6-stopc     diseno n 7 42.9 % -1.07 | confirma n 23 21.7 % -3.62 | guardada n 18 33.3 % -3.31 | juntas n 48 (0.87/rueda) 29.2 % neto c0,50 -3.130 c1,00 -3.630 t -2.94
+                  (cota baja: stop conservador)
+  T6-P1-stopc     diseno n 3 33.3 % -1.21 | confirma n 16 18.8 % -4.31 | guardada n 17 29.4 % -5.54 | juntas n 36 (0.65/rueda) 25.0 % neto c0,50 -4.635 c1,00 -5.135 t -2.92
+                  (cota baja)

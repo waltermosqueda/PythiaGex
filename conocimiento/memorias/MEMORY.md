@@ -134,5 +134,5 @@
 - [REGLA: explicar el movimiento, no 'nada le gana al azar' (26-11)](explicar-el-movimiento-no-azar.md) — anatomia mecanica de giros y piernas: factores, cual pesa, en que zona.
 - [Ronda 17: anatomia del movimiento (26-11)](ronda-17-anatomia-del-movimiento.md) — piernas con su delta 86-99 %; firma del giro llega despues; previews A/B/C de 'la ola' esperando OK.
 - [Ronda 18: señal de la ola + indicador aparte (27-11)](ronda-18-senal-ola-y-indicador-aparte.md) — la señal empata antes de costos y pierde 0,50/op; la ola va en un indicador nuevo, no en el Superindicador.
-- [Salto de calidad: rondas 19-21 (27-11)](busqueda-salto-de-calidad-rondas-19-21.md) — formula final chica, acierto alto Y esperanza > 0; R19 confluencias, R20 GEX contexto, R21 meta-etiquetado.
+- [Salto de calidad: rondas 19-22 (27-11)](busqueda-salto-de-calidad-rondas-19-21.md) — nada pasa fuera de muestra; R22 (242 ruedas 5 min): el semaforo D1 era sobre todo geometria (53,6 vs 41,3); corrige lo dicho a la noche.
 - [La Ola 1.0 instalada y verificada (27-11)](la-ola-1-0-instalada.md) — ESZ6 1m de pruebas; panel = cinta (0 difs); clima sin comprobar; trampas del auditor y de la pantalla apagada.

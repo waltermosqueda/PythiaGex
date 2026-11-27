@@ -1,0 +1,15 @@
+{
+ "congelada_AR": "2026-11-27 07:46",
+ "sha256": {
+  "ronda22_clima_5min/r22_comun.py": "532b917bdcd767b69c5a546f8d224b8c2a272d687f9a767d009d6da1994cc751",
+  "ronda22_clima_5min/r22_motor.py": "ff6f27d97c0be7adacbba33478fcb2433235b82a1429ec450c4b41b7e969ea72",
+  "ronda22_clima_5min/r22_02_corrida.py": "b5a6299223b83bbdd8359de27f44aa4ca76d296b84a847f7d82a7bcaab590500",
+  "ronda22_clima_5min/salidas/calibracion.json": "43e30771fec30e1d481d6bcce597c0ceada7800139c572a7b398217c209767ee",
+  "ronda21_regimen/curva_rango_por_minuto.json": "72589182d1533ccab0903e70469e8654dc7a201197d88064238dd1a2d7a6bc33"
+ },
+ "registrados_no_verificados": {
+  "ronda22_clima_5min/r22_00_inventario.py": "f052501dc5efaa384fd481cc1af622df15068c749da945aa31ae5848e2c9d338",
+  "ronda22_clima_5min/r22_01_calibracion.py": "6ac54004da6ec007bae17e0d99bf9069512a7dc6226977cda23eb029a04973f1",
+  "ronda22_clima_5min/r22_01b_calibracion_resultados.py": "9ce927da9fde3f30ee679f861b548af48463077825c46b95f3d7f2a40fc52dc4"
+ }
+}

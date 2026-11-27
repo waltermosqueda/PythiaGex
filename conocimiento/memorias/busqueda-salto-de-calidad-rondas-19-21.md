@@ -89,3 +89,16 @@ con CLIMA D1; sin señales (ninguna valido); Superindicador vuelve a 1.9b.
 acierto Y esperanza neta con costo, fuera de muestra, con correccion por la cantidad de variantes. Datos: 49 ruedas de ES
 (07-09 a 13-11) + MES 16-25-11; mas historia de cinta no hay sin pagar ([[databento-cuenta-y-costos]]).
 Ver [[ronda-18-senal-ola-y-indicador-aparte]], [[teoria-dura-y-confluencia]], [[explicar-el-movimiento-no-azar]].
+
+**RONDA 22 (27-11 07:47 AR, `laboratorio/ronda22_clima_5min/`): CORRIGE lo que le dije al operador a la noche.** Prueba pre-registrada (SHA,
+corrida unica) del semaforo D1 en 242 ruedas de MES de 5 min (09-09-2025..31-08-2026, nunca usadas para probar) + 325 de 30 min (2024-25):
+H1 NO PASA: TENDENCIA 53,6 % "extremo +X/2 antes que el VWAP" vs base 41,3 % (+12,2; vara >=55 y +15); 30 min 55,3 vs 40,9. Recalculado por
+mi con codigo propio: 53,5 vs 41,2 (+12,2), mismos 16.214 puntos. Con la GEOMETRIA controlada (misma distancia al extremo y al VWAP) el semaforo
+agrega +2,4 pts por trimestre: el "60-67 vs 37-40" de la R21 era sobre todo UBICACION DEL PRECIO, no clima. H2 (T7, T6-P1, COMB, V4 en 5 min,
+entrada al cierre de la vela de la vuelta) pierden todas: 42-48 %, -2,1 a -2,9 pts/op. Mecanica: el ELASTICO del VWAP (el precio vuelve 7-10 pts
+mas que el azar, tambien en dias "desatados"); la vara de 10 ruedas da falsas alarmas tras semanas calmas; la T7 en 5 min persigue (entra a 2X
+del extremo). Pistas post hoc al baul privado #58-64 (doble vara 10+60: 57,5 %; franja 11:00-12:25: 67 vs 50 %; ruptura de la banda 2 sigma
+despues de las 14 h: 64,5 % en 31). Muestras GASTADAS para el clima D1: m5 sep-2025..ago-2026 y m30 abr-2024..ago-2025. Calibracion: entrada a
+stop dentro de la vela de 5 min infla (86,6 %) o hunde (29,2 %) contra la cinta (62,8 %): con velas, entrar al CIERRE.
+**Para decirselo:** el panel CLIMA de La Ola describe cuanto recorrio el dia, no es una llave estable; la COMB congelada se sigue juzgando en vivo
+(su escala nativa no la juzga la R22) pero con expectativa baja.

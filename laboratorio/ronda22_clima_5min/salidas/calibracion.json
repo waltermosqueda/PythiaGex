@@ -1,0 +1,29 @@
+{
+ "conv": {
+  "precio": "hl2",
+  "var_intra": true,
+  "camino": "color",
+  "l2_vw": "fin",
+  "l2_empate": "camino"
+ },
+ "orden_vela": {
+  "color": [
+   13829,
+   15732
+  ],
+  "cercano": [
+   13004,
+   15732
+  ]
+ },
+ "sd_err": {
+  "False": 0.016496237777902212,
+  "True": 0.004108717746875601
+ },
+ "l2": {
+  "inicio|camino": 0.9808850484420005,
+  "inicio|empate": 0.980623199790521,
+  "fin|camino": 0.9945011783189317,
+  "fin|empate": 0.9942393296674522
+ }
+}

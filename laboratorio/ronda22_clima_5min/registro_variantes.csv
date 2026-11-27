@@ -1,0 +1,38 @@
+fecha_hora_AR,etapa,familia,variante,salida,parametros,muestra,corte,ruedas,n,ops_por_rueda,acierto_pct,neto_op_c050,neto_op_c100,t_rueda_c050,t_rueda_c100,t_bonferroni,ruedas_positivas_c100,placebo_p,pasa,nota
+2026-11-27 07:48,H2,esqueleto 5 min,T7-S6,S6,"entrada al cierre; D1 1,6/1,0; X 0,08 x med10",MES 5 min 2025-09-09 a 2026-08-31,todas,242,145,0.6,46.2,-1.624,-2.124,-1.53,-1.99,2.26,15,0.8395,False,pre-registrada (k = 4)
+2026-11-27 07:48,H2,esqueleto 5 min,T6-P1,P1,"entrada al cierre; D1 1,6/1,0; X 0,08 x med10",MES 5 min 2025-09-09 a 2026-08-31,todas,242,127,0.52,48.0,-2.37,-2.87,-2.11,-2.53,2.26,16,0.722,False,pre-registrada (k = 4)
+2026-11-27 07:48,H2,esqueleto 5 min,COMB-T7+V4e-S6,S6,"entrada al cierre; D1 1,6/1,0; X 0,08 x med10",MES 5 min 2025-09-09 a 2026-08-31,todas,242,333,1.38,43.2,-1.623,-2.123,-2.8,-3.61,2.26,42,0.9505,False,pre-registrada (k = 4)
+2026-11-27 07:48,H2,esqueleto 5 min,V4e-S6,S6,"entrada al cierre; D1 1,6/1,0; X 0,08 x med10",MES 5 min 2025-09-09 a 2026-08-31,todas,242,202,0.83,41.6,-1.697,-2.197,-2.93,-3.67,2.26,33,0.9285,False,pre-registrada (k = 4)
+2026-11-27 07:48,cota,descriptiva,T7-S6-stop-camino,,entrada a stop dentro de la vela,MES 5 min,todas,242,186,,66.7,1.058,0.558,2.57,1.43,,,,,no decide
+2026-11-27 07:48,cota,descriptiva,T7-S6-stop-conservador,,entrada a stop dentro de la vela,MES 5 min,todas,242,131,,17.6,-3.71,-4.21,-5.78,-5.93,,,,,no decide
+2026-11-27 07:48,cota,descriptiva,T6-P1-stop-camino,,entrada a stop dentro de la vela,MES 5 min,todas,242,156,,65.4,1.055,0.555,2.1,1.15,,,,,no decide
+2026-11-27 07:48,cota,descriptiva,T6-P1-stop-conservador,,entrada a stop dentro de la vela,MES 5 min,todas,242,87,,13.8,-4.175,-4.675,-4.95,-5.04,,,,,no decide
+2026-11-27 07:48,H1,clima,D1 5 min TENDENCIA: extremo +X/2 antes que el VWAP,,,MES 5 min 2025-09-09 a 2026-08-31,todas,242,1436,,53.6,,,,,,,,False,base 41.3; dif +12.2 IC +2.6 a +21.3; sigue al cierre 45.2 vs 46.9
+2026-11-27 07:48,robustez,clima,H1 con f sin su trimestre,,,MES 5 min 2025-09-09 a 2026-08-31,todas,242,1438,,53.3,,,,,,,,,base 41.3; dif +12.0 IC +2.5 a +21.2; sigue al cierre 45.3 vs 46.9
+2026-11-27 07:48,robustez,clima,H1 con f externa (30 min 2024-25),,,MES 5 min 2025-09-09 a 2026-08-31,todas,242,1939,,52.0,,,,,,,,,base 41.3; dif +10.7 IC +3.6 a +17.6; sigue al cierre 45.2 vs 46.9
+2026-11-27 07:48,robustez,esqueleto 5 min,T7-S6,,,MES 5 min,todas,242,147,,46.3,-1.638,-2.138,-1.55,-2.01,,,,,f sin su trimestre; no decide
+2026-11-27 07:48,robustez,esqueleto 5 min,T7-S6,,,MES 5 min,todas,242,203,,45.3,-1.844,-2.344,-2.18,-2.76,,,,,f externa (30 min 2024-25); no decide
+2026-11-27 07:48,robustez,esqueleto 5 min,T6-P1,,,MES 5 min,todas,242,130,,46.9,-2.557,-3.057,-2.31,-2.74,,,,,f sin su trimestre; no decide
+2026-11-27 07:48,robustez,esqueleto 5 min,T6-P1,,,MES 5 min,todas,242,175,,45.1,-2.719,-3.219,-2.97,-3.47,,,,,f externa (30 min 2024-25); no decide
+2026-11-27 07:48,robustez,esqueleto 5 min,COMB-T7+V4e-S6,,,MES 5 min,todas,242,339,,44.0,-1.409,-1.909,-2.42,-3.23,,,,,f sin su trimestre; no decide
+2026-11-27 07:48,robustez,esqueleto 5 min,COMB-T7+V4e-S6,,,MES 5 min,todas,242,413,,45.0,-1.462,-1.962,-2.85,-3.77,,,,,f externa (30 min 2024-25); no decide
+2026-11-27 07:48,robustez,esqueleto 5 min,V4e-S6,,,MES 5 min,todas,242,207,,42.5,-1.475,-1.975,-2.48,-3.22,,,,,f sin su trimestre; no decide
+2026-11-27 07:48,robustez,esqueleto 5 min,V4e-S6,,,MES 5 min,todas,242,228,,44.3,-1.209,-1.709,-2.26,-3.13,,,,,f externa (30 min 2024-25); no decide
+2026-11-27 07:48,H1b,clima,D1 30 min TENDENCIA,,,MES 30 min 2024-04-29 a 2025-08-20,todas,325,338,,55.3,,,,,,,,False,base 40.9; dif +14.4 IC +7.8 a +20.8
+2026-11-27 07:56,calibracion,fidelidad,"estado D1 5 min contra la cinta (B, velas de la cinta)",,,ES 08-09..25-11-2026 (57 ruedas),,,3819,,100.0,,,,,,,,,"% de coincidencia del estado en el mismo instante; 98,5 % contra el minuto siguiente"
+2026-11-27 07:56,calibracion,fidelidad,"estado D1 5 min contra la cinta (A, velas de MES)",,,MES 08/17/18/21-09-2026,,,268,,99.6,,,,,,,,,TENDENCIA si/no 100 %
+2026-11-27 07:56,calibracion,fidelidad,primer paso L2 5 min contra la cinta,,,ES 57 ruedas,,,3819,,99.5,,,,,,,,,"VWAP del cierre de la vela, empates por el camino"
+2026-11-27 07:56,calibracion,fidelidad,orden dentro de la vela regla por color,,,ES 57 ruedas,,,15732,,87.9,,,,,,,,,"cercano a la apertura 82,7 %"
+2026-11-27 07:56,calibracion,fidelidad,vueltas de la ola vistas en 5 min,,,ES 55 ruedas,,,4510,,53.4,,,,,,,,,"el 94,6 % de las vueltas de 5 min son reales"
+2026-11-27 07:56,calibracion,resultado en ruedas YA VISTAS (R21),T7-S6 entrada a stop con orden supuesto,,,ES 55 ruedas (velas de la cinta),,,67,,86.6,4.146,,,,,,,,"SESGADA hacia arriba (cinta 62,8 %): descartada como prueba"
+2026-11-27 07:56,calibracion,resultado en ruedas YA VISTAS (R21),T7-S6 entrada a stop conservadora,,,ES 55 ruedas (velas de la cinta),,,48,,29.2,-3.13,,,,,,,,SESGADA hacia abajo: descartada como prueba
+2026-11-27 07:56,calibracion,resultado en ruedas YA VISTAS (R21),T7-S6 entrada al cierre,,,ES 55 ruedas (velas de la cinta),,,57,,54.4,0.987,0.487,0.33,,,,,,la elegida para H2
+2026-11-27 07:56,calibracion,resultado en ruedas YA VISTAS (R21),T6-P1 entrada al cierre,,,ES 55 ruedas (velas de la cinta),,,50,,56.0,-0.662,-1.163,,,,,,,
+2026-11-27 07:56,calibracion,resultado en ruedas YA VISTAS (R21),COMB-T7+V4e-S6 entrada al cierre,,,ES 55 ruedas (velas de la cinta),,,94,,57.4,1.136,0.636,0.62,,,,,,
+2026-11-27 07:56,calibracion,resultado en ruedas YA VISTAS (R21),V4e-S6 entrada al cierre,,,ES 55 ruedas (velas de la cinta),,,39,,64.1,1.769,1.269,1.14,,,,,,
+2026-11-27 07:56,post hoc,clima,"H1 con la geometria controlada (por trimestre, ponderado)",,,MES 5 min 242 ruedas,,,1312,,,,,,,,,,,"TENDENCIA agrega +2,4 puntos sobre el resto con la misma distancia al extremo y al VWAP (R21: +8,4 / +10,2 / +6,1 por periodo); 30 min 2024 -8,1, 2025 +0,7"
+2026-11-27 07:56,post hoc,clima,extremo primero contra paseo al azar con la misma geometria,,,MES 5 min 242 ruedas,,,1436,,53.6,,,,,,,,,"paseo al azar 63,8 % en TENDENCIA; todos 41,3 vs 48,9; R21 TENDENCIA 62,7 vs 66,6 y todos 37,6 vs 47,4"
+2026-11-27 07:56,post hoc,clima,D1 con las dos varas (med10 y med60),,,MES 5 min 242 ruedas,,,1006,,57.5,,,,,,,,,"extiende 57,5 %, sigue 48,3 %; solo med10 44,4 / 37,9 (n 430); +5,4 sobre la misma geometria; NO probado"
+2026-11-27 07:56,post hoc,clima,TENDENCIA 11:00-12:25,,,MES 5 min,,,367,,67.3,,,,,,,,,"base de la franja 49,7 %; sigue 50,7 vs 47,5"
+2026-11-27 07:56,post hoc,esqueleto 5 min,"T7-S6 entrada a <= 1,5 X del extremo",,,MES 5 min,,,42,,52.4,,-0.52,,,,,,,"3 X o mas: 40,5 %, -4,41; persigue"
+2026-11-27 07:56,post hoc,esqueleto 5 min,"banda 2 sigma en ROTACION, espejo (seguir la ruptura con el mismo R)",,,MES 5 min,,,202,,53.0,,,,,,,,,"desvanecer 41,6 %; 12-14 h espejo 57,6 %, 14-16 h 64,5 % (n 31); NO probado"

@@ -1,0 +1,171 @@
+== m5: 74916 velas, 274 jornadas (2025-08-22 a 2026-09-21)
+   rueda completa: 260 | incompletas: 14
+   incompletas (rueda, dia, velas rth, ultima vela rth):
+     2025-08-27 Wed rth 77 ultima 15:55 velas 275 noche 186
+     2025-09-01 Mon rth 42 ultima 12:55 velas 228 noche 186
+     2025-11-27 Thu rth 42 ultima 12:55 velas 228 noche 186
+     2025-11-28 Fri rth 45 ultima 13:10 velas  99 noche  54
+     2025-12-24 Wed rth 45 ultima 13:10 velas 231 noche 186
+     2026-01-19 Mon rth 42 ultima 12:55 velas 228 noche 186
+     2026-02-16 Mon rth 42 ultima 12:55 velas 228 noche 186
+     2026-02-20 Fri rth 75 ultima 15:55 velas 273 noche 186
+     2026-03-19 Thu rth 73 ultima 15:55 velas 271 noche 186
+     2026-04-03 Fri rth  0 ultima  velas 183 noche 183
+     2026-05-25 Mon rth 42 ultima 12:55 velas 228 noche 186
+     2026-06-19 Fri rth 42 ultima 12:55 velas 228 noche 186
+     2026-07-03 Fri rth 42 ultima 12:55 velas 228 noche 186
+     2026-09-07 Mon rth 42 ultima 12:55 velas 228 noche 186
+   noche (18:00-9:30) esperado 186 velas; jornadas completas con noche < 90 %: 0
+   huecos > 30 min dentro de jornadas con rueda completa:
+   salto de apertura |o - c previo|: mediana 1.50, p95 36.40, max 106.00
+     SALTO 2025-08-25 (previa 2025-08-22): +8.50
+     SALTO 2025-09-15 (previa 2025-09-12): +56.75
+     SALTO 2025-10-13 (previa 2025-10-10): +80.75
+     SALTO 2025-10-20 (previa 2025-10-17): +9.75
+     SALTO 2025-10-27 (previa 2025-10-24): +49.75
+     SALTO 2025-10-30 (previa 2025-10-29): -10.25
+     SALTO 2025-11-10 (previa 2025-11-07): +21.00
+     SALTO 2025-11-24 (previa 2025-11-21): +23.00
+     SALTO 2025-12-12 (previa 2025-12-11): -9.50
+     SALTO 2025-12-15 (previa 2025-12-12): +58.00
+     SALTO 2025-12-22 (previa 2025-12-19): +12.50
+     SALTO 2026-01-05 (previa 2026-01-02): +10.50
+     SALTO 2026-01-19 (previa 2026-01-16): -37.00
+     SALTO 2026-01-26 (previa 2026-01-23): -24.75
+     SALTO 2026-02-02 (previa 2026-01-30): -21.75
+     SALTO 2026-02-05 (previa 2026-02-04): -12.00
+     SALTO 2026-02-09 (previa 2026-02-06): +14.00
+     SALTO 2026-02-26 (previa 2026-02-25): -9.00
+     SALTO 2026-03-02 (previa 2026-02-27): -46.50
+     SALTO 2026-03-09 (previa 2026-03-06): -41.00
+     SALTO 2026-03-16 (previa 2026-03-13): +36.00
+     SALTO 2026-03-23 (previa 2026-03-20): -68.00
+     SALTO 2026-03-30 (previa 2026-03-27): -18.00
+     SALTO 2026-04-06 (previa 2026-04-03): -13.50
+     SALTO 2026-04-08 (previa 2026-04-07): +13.75
+     SALTO 2026-04-13 (previa 2026-04-10): -70.25
+     SALTO 2026-04-20 (previa 2026-04-17): -60.75
+     SALTO 2026-04-27 (previa 2026-04-24): -11.00
+     SALTO 2026-05-04 (previa 2026-05-01): +27.50
+     SALTO 2026-05-08 (previa 2026-05-07): -12.75
+     SALTO 2026-05-11 (previa 2026-05-08): -17.25
+     SALTO 2026-05-25 (previa 2026-05-22): +34.25
+     SALTO 2026-06-15 (previa 2026-06-12): +106.00
+     SALTO 2026-06-22 (previa 2026-06-19): -13.25
+     SALTO 2026-07-13 (previa 2026-07-10): -18.75
+     SALTO 2026-07-20 (previa 2026-07-17): -10.50
+     SALTO 2026-07-27 (previa 2026-07-24): +45.00
+     SALTO 2026-08-03 (previa 2026-07-31): +47.25
+     SALTO 2026-08-27 (previa 2026-08-26): +12.00
+     SALTO 2026-09-17 (previa 2026-09-08): -54.50
+== m30: 27647 velas, 606 jornadas (2024-04-15 a 2026-08-17)
+   rueda completa: 581 | incompletas: 25
+   incompletas (rueda, dia, velas rth, ultima vela rth):
+     2024-05-27 Mon rth  7 ultima 12:30 velas  38 noche  31
+     2024-06-19 Wed rth  7 ultima 12:30 velas  38 noche  31
+     2024-07-03 Wed rth  8 ultima 13:00 velas  39 noche  31
+     2024-07-04 Thu rth  7 ultima 12:30 velas  38 noche  31
+     2024-09-02 Mon rth  7 ultima 12:30 velas  38 noche  31
+     2024-11-28 Thu rth  7 ultima 12:30 velas  38 noche  31
+     2024-11-29 Fri rth  8 ultima 13:00 velas  39 noche  31
+     2024-12-24 Tue rth  8 ultima 13:00 velas  39 noche  31
+     2025-01-09 Thu rth  0 ultima  velas  31 noche  31
+     2025-01-20 Mon rth  7 ultima 12:30 velas  38 noche  31
+     2025-02-17 Mon rth  7 ultima 12:30 velas  38 noche  31
+     2025-05-26 Mon rth  7 ultima 12:30 velas  38 noche  31
+     2025-06-19 Thu rth  7 ultima 12:30 velas  38 noche  31
+     2025-07-03 Thu rth  8 ultima 13:00 velas  39 noche  31
+     2025-07-04 Fri rth  7 ultima 12:30 velas  38 noche  31
+     2025-09-01 Mon rth  7 ultima 12:30 velas  38 noche  31
+     2025-11-27 Thu rth  7 ultima 12:30 velas  38 noche  31
+     2025-11-28 Fri rth  8 ultima 13:00 velas  18 noche  10
+     2025-12-24 Wed rth  8 ultima 13:00 velas  39 noche  31
+     2026-01-19 Mon rth  7 ultima 12:30 velas  38 noche  31
+     2026-02-16 Mon rth  7 ultima 12:30 velas  38 noche  31
+     2026-04-03 Fri rth  0 ultima  velas  31 noche  31
+     2026-05-25 Mon rth  7 ultima 12:30 velas  38 noche  31
+     2026-06-19 Fri rth  7 ultima 12:30 velas  38 noche  31
+     2026-07-03 Fri rth  7 ultima 12:30 velas  38 noche  31
+   noche (18:00-9:30) esperado 31 velas; jornadas completas con noche < 90 %: 0
+   huecos > 30 min dentro de jornadas con rueda completa:
+   salto de apertura |o - c previo|: mediana 1.00, p95 24.60, max 106.00
+     SALTO 2024-04-22 (previa 2024-04-19): +10.25
+     SALTO 2024-04-25 (previa 2024-04-24): -9.00
+     SALTO 2024-04-29 (previa 2024-04-26): +8.25
+     SALTO 2024-06-17 (previa 2024-06-14): +64.50
+     SALTO 2024-07-15 (previa 2024-07-12): +13.00
+     SALTO 2024-07-22 (previa 2024-07-19): +11.75
+     SALTO 2024-07-24 (previa 2024-07-23): -12.00
+     SALTO 2024-08-05 (previa 2024-08-02): -18.75
+     SALTO 2024-08-29 (previa 2024-08-28): -9.75
+     SALTO 2024-09-16 (previa 2024-09-13): +58.25
+     SALTO 2024-10-28 (previa 2024-10-25): +14.50
+     SALTO 2024-11-04 (previa 2024-11-01): -11.25
+     SALTO 2024-11-25 (previa 2024-11-22): +15.00
+     SALTO 2024-12-16 (previa 2024-12-13): +73.25
+     SALTO 2025-01-02 (previa 2024-12-31): +8.75
+     SALTO 2025-01-27 (previa 2025-01-24): -25.25
+     SALTO 2025-01-31 (previa 2025-01-30): +11.25
+     SALTO 2025-02-03 (previa 2025-01-31): -56.25
+     SALTO 2025-02-04 (previa 2025-02-03): +11.50
+     SALTO 2025-02-10 (previa 2025-02-07): -33.50
+     SALTO 2025-02-24 (previa 2025-02-21): +9.50
+     SALTO 2025-02-27 (previa 2025-02-26): -8.75
+     SALTO 2025-03-03 (previa 2025-02-28): +9.75
+     SALTO 2025-03-10 (previa 2025-03-07): -18.75
+     SALTO 2025-03-17 (previa 2025-03-14): +50.25
+     SALTO 2025-03-24 (previa 2025-03-21): +20.00
+     SALTO 2025-03-27 (previa 2025-03-26): -16.50
+     SALTO 2025-03-31 (previa 2025-03-28): -12.75
+     SALTO 2025-04-03 (previa 2025-04-02): -30.25
+     SALTO 2025-04-07 (previa 2025-04-04): -90.00
+     SALTO 2025-04-10 (previa 2025-04-09): -12.00
+     SALTO 2025-04-14 (previa 2025-04-11): +51.25
+     SALTO 2025-04-16 (previa 2025-04-15): -19.25
+     SALTO 2025-04-21 (previa 2025-04-17): -41.50
+     SALTO 2025-04-23 (previa 2025-04-22): +60.00
+     SALTO 2025-04-25 (previa 2025-04-24): +8.50
+     SALTO 2025-04-28 (previa 2025-04-25): -9.00
+     SALTO 2025-05-12 (previa 2025-05-09): +59.75
+     SALTO 2025-05-19 (previa 2025-05-16): -18.00
+     SALTO 2025-06-02 (previa 2025-05-30): -15.25
+     SALTO 2025-06-16 (previa 2025-06-13): +24.00
+     SALTO 2025-06-20 (previa 2025-06-19): +10.75
+     SALTO 2025-06-23 (previa 2025-06-20): -60.75
+     SALTO 2025-07-07 (previa 2025-07-04): +23.75
+     SALTO 2025-07-14 (previa 2025-07-11): -20.00
+     SALTO 2025-07-28 (previa 2025-07-25): +19.00
+     SALTO 2025-07-31 (previa 2025-07-30): +9.00
+     SALTO 2025-08-25 (previa 2025-08-22): +8.50
+     SALTO 2025-09-15 (previa 2025-09-12): +56.75
+     SALTO 2025-10-13 (previa 2025-10-10): +80.75
+     SALTO 2025-10-20 (previa 2025-10-17): +9.75
+     SALTO 2025-10-27 (previa 2025-10-24): +49.75
+     SALTO 2025-10-30 (previa 2025-10-29): -10.25
+     SALTO 2025-11-10 (previa 2025-11-07): +21.00
+     SALTO 2025-11-24 (previa 2025-11-21): +23.00
+     SALTO 2025-12-12 (previa 2025-12-11): -9.50
+     SALTO 2025-12-15 (previa 2025-12-12): +58.00
+     SALTO 2025-12-22 (previa 2025-12-19): +12.50
+     SALTO 2026-01-05 (previa 2026-01-02): +10.50
+     SALTO 2026-01-19 (previa 2026-01-16): -37.00
+     SALTO 2026-01-26 (previa 2026-01-23): -24.75
+     SALTO 2026-02-02 (previa 2026-01-30): -21.75
+     SALTO 2026-02-05 (previa 2026-02-04): -12.00
+     SALTO 2026-02-09 (previa 2026-02-06): +14.00
+     SALTO 2026-02-26 (previa 2026-02-25): -9.00
+     SALTO 2026-03-02 (previa 2026-02-27): -46.50
+     SALTO 2026-03-09 (previa 2026-03-06): -41.00
+     SALTO 2026-03-16 (previa 2026-03-13): +36.00
+     SALTO 2026-03-23 (previa 2026-03-20): -68.00
+     SALTO 2026-03-30 (previa 2026-03-27): -18.00
+     SALTO 2026-04-06 (previa 2026-04-03): -13.50
+     SALTO 2026-04-08 (previa 2026-04-07): +13.75
+     SALTO 2026-04-13 (previa 2026-04-10): -70.25
+     SALTO 2026-04-20 (previa 2026-04-17): -60.75
+     SALTO 2026-04-27 (previa 2026-04-24): -11.00
+     SALTO 2026-05-04 (previa 2026-05-01): +27.50
+     SALTO 2026-05-08 (previa 2026-05-07): -12.75
+     SALTO 2026-05-11 (previa 2026-05-08): -17.25
+     SALTO 2026-05-25 (previa 2026-05-22): +34.25
+     SALTO 2026-06-15 (previa 2026-06-12): +106.00

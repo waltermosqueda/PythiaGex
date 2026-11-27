@@ -1,0 +1,95 @@
+RONDA 22 - MECANICA (post hoc, descriptiva) 2026-11-27 07:52
+
+(A) H1: GEOMETRIA CONTRA CLIMA
+  base 5 min: extiende primero 41.3 %, vuelve primero 47.7 %, ninguno 11.0 %
+  MES 5 min, 242 ruedas: extiende primero segun la distancia al extremo del dia (en X), TENDENCIA contra el resto
+      0.0-0    X del extremo: TENDENCIA  84.5 % (n   161) | resto  77.2 % (n  2303) | % de los puntos TENDENCIA en este tramo 11.2 %
+      0.5-1    X del extremo: TENDENCIA  81.0 % (n   158) | resto  64.4 % (n  2256) | % de los puntos TENDENCIA en este tramo 11.0 %
+      1.0-2    X del extremo: TENDENCIA  63.9 % (n   285) | resto  42.7 % (n  3874) | % de los puntos TENDENCIA en este tramo 19.8 %
+      2.0-4    X del extremo: TENDENCIA  49.9 % (n   361) | resto  20.6 % (n  4234) | % de los puntos TENDENCIA en este tramo 25.1 %
+      4.0-+    X del extremo: TENDENCIA  30.4 % (n   471) | resto   8.4 % (n  2111) | % de los puntos TENDENCIA en este tramo 32.8 %
+  5 min estratificado (extremo x VWAP x franja): TENDENCIA 52.7 % contra el resto con la misma geometria 51.1 % (+1.7 puntos; 1312 puntos TENDENCIA en 42 casilleros)
+  30 min 2024-25 estratificado: TENDENCIA 54.7 % contra 56.2 % (-1.6 puntos; 300 puntos, 32 casilleros)
+  R21 (cinta de ES, 55 ruedas, sus puntos de control): TENDENCIA 18.1 % de los puntos, extiende primero 62.7 % contra base 37.6 %
+  R21 cinta ES: extiende primero segun la distancia al extremo del dia (en X), TENDENCIA contra el resto
+      0.0-0    X del extremo: TENDENCIA  90.7 % (n    86) | resto  76.8 % (n   327) | % de los puntos TENDENCIA en este tramo 12.9 %
+      0.5-1    X del extremo: TENDENCIA  86.9 % (n    84) | resto  62.2 % (n   352) | % de los puntos TENDENCIA en este tramo 12.6 %
+      1.0-2    X del extremo: TENDENCIA  75.2 % (n   133) | resto  43.0 % (n   610) | % de los puntos TENDENCIA en este tramo 19.9 %
+      2.0-4    X del extremo: TENDENCIA  53.6 % (n   168) | resto  18.5 % (n  1074) | % de los puntos TENDENCIA en este tramo 25.1 %
+      4.0-+    X del extremo: TENDENCIA  39.6 % (n   197) | resto   5.4 % (n   654) | % de los puntos TENDENCIA en este tramo 29.5 %
+  R21 estratificado: TENDENCIA 60.4 % contra el resto con la misma geometria 42.1 % (+18.3 puntos; 520 puntos TENDENCIA, 34 casilleros)
+     R21 diseno    TENDENCIA  56.6 % contra misma geometria  48.2 % (+8.4; n 122)
+     R21 confirma  TENDENCIA  51.6 % contra misma geometria  41.4 % (+10.2; n 182)
+     R21 guardada  TENDENCIA  66.1 % contra misma geometria  60.0 % (+6.1; n 124)
+  (ojo: el estratificado de la R21 'juntas' mezcla periodos con bases distintas; la comparacion limpia es periodo por periodo)
+     MES 2025Q3 TENDENCIA  28.6 % contra misma geometria  30.5 % (-1.9; n 21)
+     MES 2025Q4 TENDENCIA  46.7 % contra misma geometria  49.9 % (-3.1; n 383)
+     MES 2026Q1 TENDENCIA  55.5 % contra misma geometria  54.5 % (+1.0; n 373)
+     MES 2026Q2 TENDENCIA  56.5 % contra misma geometria  40.3 % (+16.2; n 255)
+     MES 2026Q3 TENDENCIA  39.7 % contra misma geometria  43.6 % (-3.9; n 126)
+     MES, promedio de los trimestres ponderado por puntos TENDENCIA: +2.4 puntos
+     30 min 2024 TENDENCIA  52.0 % contra misma geometria  60.1 % (-8.1; n 173)
+     30 min 2025 TENDENCIA  59.7 % contra misma geometria  58.9 % (+0.7; n 119)
+
+(B) EL CLIMA HEREDADO: la vara de 10 ruedas contra la de 60
+  tercil -1 (r = med10/med60 nan-nan; 9 ruedas): TENDENCIA  4.1 % de los puntos | rango del dia / med10 0.96, / med60 nan | ruedas con TENDENCIA: rango/med60 mediano nan, terminaron balance 2 de 2
+  tercil  0 (r = med10/med60 0.51-0.94; 78 ruedas): TENDENCIA 13.3 % de los puntos | rango del dia / med10 1.02, / med60 0.80 | ruedas con TENDENCIA: rango/med60 mediano 1.25, terminaron balance 8 de 26
+  tercil  1 (r = med10/med60 0.94-1.19; 77 ruedas): TENDENCIA  9.3 % de los puntos | rango del dia / med10 1.06, / med60 1.13 | ruedas con TENDENCIA: rango/med60 mediano 1.67, terminaron balance 6 de 23
+  tercil  2 (r = med10/med60 1.19-2.09; 78 ruedas): TENDENCIA  4.5 % de los puntos | rango del dia / med10 0.86, / med60 1.10 | ruedas con TENDENCIA: rango/med60 mediano 1.79, terminaron balance 4 de 18
+  POST HOC 'D1 con la mediana de 60' (rrn60 = rango / (med60 x f) >= 1,6; lado = el del VWAP): 14.3 % de los puntos | extiende primero 50.6 % | sigue al cierre 45.9 % (base 41.3 / 46.9)
+     TENDENCIA con las dos varas: n 1006, extiende 57.5 %, sigue 48.3 % | TENDENCIA solo con la de 10: n 430, extiende 44.4 %, sigue 37.9 % | solo con la de 60: n 1188, extiende 49.9 %, sigue 42.8 %
+     las dos varas, con la geometria controlada (por trimestre, ponderado): +5.4 puntos sobre el resto con la misma geometria
+
+(C) TENDENCIA segun como TERMINO el dia (ex post: explica, no se puede usar en vivo)
+  dia tendencia puntos TENDENCIA  567 | extiende primero  65.3 % | sigue al cierre  74.4 % | ruedas 24
+  dia mixto     puntos TENDENCIA  600 | extiende primero  52.5 % | sigue al cierre  33.3 % | ruedas 25
+  dia balance   puntos TENDENCIA  269 | extiende primero  31.2 % | sigue al cierre  10.0 % | ruedas 20
+
+(D) TENDENCIA segun el tamano del rango relativo (rrn) en el punto
+  rrn 1.6-2.0  puntos  857 (67 ruedas) | extiende  49.9 % | sigue  45.5 % | distancia mediana al extremo 2.30 X, al VWAP 5.58 X
+  rrn 2.0-2.5  puntos  376 (28 ruedas) | extiende  57.4 % | sigue  47.9 % | distancia mediana al extremo 3.27 X, al VWAP 7.76 X
+  rrn 2.5-3.5  puntos   93 (10 ruedas) | extiende  54.8 % | sigue  31.2 % | distancia mediana al extremo 2.06 X, al VWAP 12.18 X
+  rrn 3.5-+    puntos  110 (4 ruedas) | extiende  67.3 % | sigue  45.5 % | distancia mediana al extremo 3.60 X, al VWAP 15.01 X
+
+(E) TENDENCIA por franja horaria
+  10:00-10:55 puntos TENDENCIA  319 | extiende  54.5 % (base de la franja  43.9 %) | sigue  49.2 % (base  50.8 %)
+  11:00-12:25 puntos TENDENCIA  367 | extiende  67.3 % (base de la franja  49.7 %) | sigue  50.7 % (base  47.5 %)
+  12:30-13:55 puntos TENDENCIA  355 | extiende  53.8 % (base de la franja  42.5 %) | sigue  42.8 % (base  46.6 %)
+  14:00-15:30 puntos TENDENCIA  395 | extiende  39.7 % (base de la franja  30.6 %) | sigue  39.0 % (base  44.1 %)
+  por trimestre, TENDENCIA: extiende / sigue / distancia mediana al extremo
+     2025Q3 n   26 | extiende  23.1 % | sigue   0.0 % | 4.96 X del extremo | 3 ruedas
+     2025Q4 n  502 | extiende  54.0 % | sigue  52.2 % | 2.60 X del extremo | 20 ruedas
+     2026Q1 n  420 | extiende  54.3 % | sigue  37.4 % | 2.00 X del extremo | 21 ruedas
+     2026Q2 n  335 | extiende  59.7 % | sigue  58.5 % | 2.87 X del extremo | 19 ruedas
+     2026Q3 n  153 | extiende  41.8 % | sigue  22.2 % | 2.04 X del extremo | 6 ruedas
+
+(F) POR QUE PIERDE LA T7 CON ENTRADA AL CIERRE
+  n 145 | acierto 46.2 % | R medio 10.99 (2.54 X) | entrada a 2.00 X del extremo (mediana; la R21 entraba a ~1 X)
+     entrada a 0.0-1.5 X del extremo: n  42 acierto  52.4 % neto c1,00 -0.52
+     entrada a 1.5-2.0 X del extremo: n  30 acierto  43.3 % neto c1,00 -2.42
+     entrada a 2.0-3.0 X del extremo: n  31 acierto  48.4 % neto c1,00 -0.91
+     entrada a 3.0-+   X del extremo: n  42 acierto  40.5 % neto c1,00 -4.41
+     con nivel en la zona           n  49 acierto  46.9 % | sin: n  96 acierto  45.8 %
+     con barrida                    n  65 acierto  43.1 % | sin: n  80 acierto  48.8 %
+     con delta de la vela a favor   n 130 acierto  46.2 % | sin: n  15 acierto  46.7 %
+     dia que termino tendencia n  52 acierto  44.2 %
+     dia que termino mixto     n  63 acierto  49.2 %
+     dia que termino balance   n  30 acierto  43.3 %
+     perdedoras: llegaron a +0,5 R antes del stop 26.9 % | ganadoras: bajaron a -0,5 R antes del objetivo 31.3 %
+     lado contrario con el mismo R (espejo): acierto 52.4 %
+
+(G) LA BANDA DE 2 SIGMA (V4e) EN ROTACION, CONTRA SU ESPEJO
+  n 202 | desvanecer la banda (V4e) 41.6 % | seguir la ruptura con el mismo R (espejo) 53.0 % | R medio 7.25 (1.51 X)
+     rrn 1.0-1.2: n  97 desvanecer  41.2 % | espejo  54.6 %
+     rrn 1.2-1.4: n  71 desvanecer  40.8 % | espejo  53.5 %
+     rrn 1.4-1.6: n  34 desvanecer  44.1 % | espejo  47.1 %
+     dia que termino tendencia n  71 desvanecer  39.4 % | espejo  54.9 %
+     dia que termino mixto     n  62 desvanecer  38.7 % | espejo  54.8 %
+     dia que termino balance   n  69 desvanecer  46.4 % | espejo  49.3 %
+     10-12 h: n 112 desvanecer  47.3 % | espejo  47.3 %
+     12-14 h: n  59 desvanecer  37.3 % | espejo  57.6 %
+     14-16 h: n  31 desvanecer  29.0 % | espejo  64.5 %
+
+(H) EL MISMO ESQUELETO EN LAS RUEDAS DE LA R21 (velas armadas desde la cinta; de calibracion_b.txt): T7-S6 54,4 %, T6-P1 56,0 %, COMB 57,4 %, V4e 64,1 %.
+    En el ano independiente: T7-S6 46,2 %, T6-P1 48,0 %, COMB 43,2 %, V4e 41,6 %. Con la entrada a stop y el orden supuesto (cota alta): 86,6 % en las ruedas de
+    la R21 contra 66,7 % en el ano independiente.
