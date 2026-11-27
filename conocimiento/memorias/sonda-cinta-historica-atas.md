@@ -38,3 +38,8 @@ todo proceso que la importe; nunca correr varios Python pesados a la vez.
 **Why:** el cuello de botella de toda la investigacion de gatillos era no tener datos finos; estaban adentro de ATAS y gratis.
 **How to apply:** antes de pensar en pagar datos (Databento tiene limite de gasto puesto por el operador), pedirle a la sonda. Ver
 [[flujo-claro-cvd-superador]], [[gatillo-cientifico-2026-09-10]], [[fuentes-datos-historicos]].
+
+**13-11-2026 — cinta del ES por la sonda, medido:** "PythiaGex - Flujo Claro" (de PythiaGexNiveles.dll) agregado a la pestaña
+"ES 5m Chart" del panel izquierdo (pestaña mia, creada el 13-11; tambien tiene un la referencia SPX 0DTE). Pedido `sonda-ES.txt`.
+La cinta del ES llega por lo menos hasta el **08-09 (9+ semanas atras)**: 216-318 mil ordenes por rueda, 12-46 s y 18-26 MB
+cada una. Descargador: `laboratorio/ronda15/O_cinta/o00_bajar_cinta.py` (una rueda por pedido, saltea lo bajado, log al lado).

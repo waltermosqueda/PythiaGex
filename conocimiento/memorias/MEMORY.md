@@ -1,128 +1,138 @@
-- [Level 2 caido = Lucid, error 13 (25-09)](lucid-level2-error13.md) — 'Waiting for Level 2' + get_order_book error 13 tras renovar cuenta: lo reactiva el soporte HUMANO de Lucid; el bot culpa a ATAS.
-- [ATAS tildado y cortes de Rithmic (22-09)](atas-lento-cortes-rithmic.md) — internet sano (medido); era memoria (MBO DOM, 9-11 GB) + suscripciones; espacio 'MNQ liviano', un grafico; el Default aun trae MBO DOM.
-- [Patron horario noche vs dia (18-09)](patron-horario-noche-vs-dia.md) — 'caro a la mañana' no existe; la prima nocturna no le gana a mantener tras costos.
-- [Salidas en ATAS: TP/SL/BE/trailing](salidas-atas-tp-sl-trailing.md) — SL/TP en servidor, BE/trailing en la PC; ninguna salida cambia el signo; BE 10T/1T saca 92 % a +0,25.
-- [Gamma Hoy 2.0: el clon](gamma-hoy-2-0-clon.md) — prod (PythiaGexNiveles) no se toca; todo va a atas/PythiaGexDos; clonar_2_0.py --pisar borra el clon.
-- [REGLA ROJA: dominantes lejos de noche](regla-roja-roll-libro-vivo.md) — 4 veces tuvo razon el operador; mirar libro vivo, log 'roll:' y verdes_51/52 ANTES de opinar.
-- [Auditoria 16-09: 0DTE del roll y carga](auditoria-2026-09-16-0dte-pelotitas-carga.md) — listar con U6 tambien; ATAS persiste ajustes por nombre (renombrar para pisar); dias con hora NY.
-- [Busqueda del gatillo 17-09](busqueda-gatillo-2026-09-17.md) — 9 familias + ML, 34 ruedas: nada en direccion; se sabe el TAMAÑO del movimiento.
-- [La sonda: cinta historica](sonda-cinta-historica-atas.md) — cada agresora con bid/ask antes y despues, semanas atras, de a una sesion; sin historia del libro.
-- [Flujo Claro](flujo-claro-cvd-superador.md) — v1.8 tablero AHORA de 4 velocimetros; describe, no anticipa (medido); paridad C#/Python.
+- [REGLA: baul de pistas, no descartar (26-11)](baul-de-pistas-no-descartar.md) — lo que sobrevive pruebas va al BAUL_DE_PISTAS.md para fusionar; vale para todos los agentes.
+- [Level 2 caido = Lucid, error 13 (25-09)](lucid-level2-error13.md) — lo reactiva el soporte HUMANO de Lucid; el bot culpa a ATAS.
+- [ATAS tildado y cortes de Rithmic (22-09)](atas-lento-cortes-rithmic.md) — era memoria (MBO DOM 9-11 GB) + suscripciones; espacio 'MNQ liviano'.
+- [Patron horario noche vs dia (18-09)](patron-horario-noche-vs-dia.md) — 'caro a la mañana' no existe; la prima nocturna no gana tras costos.
+- [Salidas en ATAS: TP/SL/BE/trailing](salidas-atas-tp-sl-trailing.md) — SL/TP en servidor, BE/trailing en la PC; ninguna salida cambia el signo.
+- [Gamma Hoy 2.0: el clon](gamma-hoy-2-0-clon.md) — prod no se toca; todo va a atas/PythiaGexDos; --pisar borra el clon. Antes: [Gamma Hoy 1.9](gamma-hoy-1-9-2026-09-14.md), libro ETF por razon.
+- [REGLA ROJA: dominantes lejos de noche](regla-roja-roll-libro-vivo.md) — mirar libro vivo, log 'roll:' y verdes_51/52 ANTES de opinar.
+- [Auditoria 16-09: 0DTE del roll y carga](auditoria-2026-09-16-0dte-pelotitas-carga.md) — listar con U6; ATAS persiste ajustes por nombre. [Estela 15-09](auditoria-estela-2026-09-15.md): estela lejana de noche = libro flaco de mañana.
+- [Busqueda del gatillo 17-09](busqueda-gatillo-2026-09-17.md) — 9 familias + ML: nada en direccion; se sabe el TAMAÑO.
+- [La sonda: cinta historica](sonda-cinta-historica-atas.md) — cada agresora con bid/ask antes y despues; sin historia del libro.
+- [Flujo Claro](flujo-claro-cvd-superador.md) — v1.8 tablero de 4 velocimetros; describe, no anticipa.
 - [No terminar la sesion sin orden](no-terminar-sesion-sin-orden.md) — control de pantalla activo hasta "apagate pantalla".
 - [Mirar la pantalla de ATAS, siempre](mirar-pantalla-antes-de-responder-atas.md) — captura del grafico real antes de responder.
-- [Freeze del portapapeles](freeze-portapapeles-textinputhost.md) — hilo trabado en edgehtml al 97 %; vigia automatico (giro + cuelgue, cada 5 s) instalado 24-09 con su OK; leer vigia.log.
+- [Freeze del portapapeles](freeze-portapapeles-textinputhost.md) — edgehtml al 97 %; vigia automatico instalado 24-09; leer vigia.log.
 - [Como enseñarle trading](como-ensenarle-trading.md) — analogia primero, una idea por vez, cero tablas y cero jerga.
 - [Setup de ATAS verificado](setup-atas-verificado.md) — Ultra vitalicia, Rithmic; el tablero de opciones no agrega GEX.
 - [Plan para aprender gamma/GEX](plan-gamma-gex.md) — gratis primero, GEX Metrix despues, GEXbot al final.
 - [Paginas GEX auditadas](paginas-gex-auditadas.md) — solo Opensera refresca; un timestamp que avanza no prueba nada.
-- [Conversion SPX a ES](conversion-spx-a-es.md) — base = resta de dos forwards de la misma cadena; validar contra carry.
+- [Conversion SPX a ES](conversion-spx-a-es.md) — base = resta de dos forwards de la misma cadena.
 - [Calcular el GEX propio](calcular-gex-propio.md) — mejor que los cinco tableros; rehacer despues de las 8:00 ET.
 - [Rutas y APIs de GEX](rutas-y-apis-gex.md) — endpoints crudos de cada web.
 - [No frontear el panel del navegador](panel-navegador-no-frontear.md) — pestañas de fondo; tabs_select le congela la vista.
-- [Opciones de ES en ATAS](atas-opciones-es.md) — hay diarios y 0DTE con OI/gamma/volumen; filtro en "Regular".
+- [Opciones de ES en ATAS](atas-opciones-es.md) — diarios y 0DTE con OI/gamma/volumen; filtro en "Regular".
 - [Lecciones de order flow](lecciones-order-flow.md) — lo que ya domina; retomar desde ahi.
 - [Navegar ATAS sin pedir permiso](navegar-atas-sin-pedir-permiso.md) — pestañas y vistas si; nunca clic en el lienzo.
-- [CME Group: la fuente oficial](cme-quikstrike.md) — settlements despeja la IV; 22 productos de opciones de ES.
+- [CME Group: la fuente oficial](cme-quikstrike.md) — settlements despeja la IV; 22 productos de opciones de ES. [Settlements un dia atras](cme-settlements-un-dia-atras.md): sumarle el change.
 - [Widgets sin choque de UI](widgets-sin-choque-de-ui.md) — el numero que cambia en su propia linea.
-- [Nombres tecnicos + criollo](nombrar-niveles-tecnico-y-criollo.md) — nombre de experto arriba, traduccion debajo.
-- [Desplegables de ATAS](desplegables-atas-alt-flecha.md) — se abren con alt+Flecha abajo.
+- [Nombres tecnicos + criollo](nombrar-niveles-tecnico-y-criollo.md) — nombre de experto arriba, traduccion debajo. [Enseñar con capturas reales](ensenar-con-capturas-reales.md): paso a paso con imagenes de su pantalla.
+- [Desplegables de ATAS](desplegables-atas-alt-flecha.md) — se abren con alt+Flecha abajo. [Dialogo Indicators (06-10)](atas-dialogo-indicadores-clics.md): escala 1; Add/Apply/cerrar por UIA; Ctrl+I.
 - [Cambios en ATAS de a uno](cambios-atas-de-a-uno.md) — un indicador por vez; nada pesado con mercado abierto.
 - [Autonomia para abrir y buscar](autonomia-abrir-y-buscar.md) — abrir ATAS y consultar CME sin preguntar.
-- [Enseñar con capturas reales](ensenar-con-capturas-reales.md) — paso a paso con imagenes de su pantalla.
 - [Navegador propio y limite de CME](navegador-propio-y-limite-cme.md) — una sola descarga diaria o Akamai bloquea.
 - [Compilar indicadores de ATAS](compilar-indicadores-atas.md) — SDK, API por reflexion, "Add to chart" no es doble clic.
-- [VWAP anclado: PythiaVWAP](vwap-anclado-pythia.md) — ATAS trae VWAP anclado nativo; PythiaVWAP agrega lo que falta y mide su exactitud.
+- [VWAP anclado: PythiaVWAP](vwap-anclado-pythia.md) — ATAS trae VWAP anclado nativo; PythiaVWAP agrega lo que falta.
 - [Datos ocultos de ATAS](datos-ocultos-de-atas.md) — footprint por precio, delta, VWAP y value area por vela.
-- [Auditoria de punta a punta](auditoria-punta-a-punta.md) — recalcular desde la cadena cruda.
-- [Respaldo del conocimiento](respaldo-del-conocimiento.md) — memorias fuera del repo: respaldar.py; patrones de terceros en el PRIVADO (tachar_publico.json); rondas 8/9 (USD del operador) no van al publico.
+- [Auditoria de punta a punta](auditoria-punta-a-punta.md) — recalcular desde la cadena cruda. [Auditar varias veces](regla-auditar-varias-veces.md): nada por sentado; auditar_todo.py + captura + numeros.
+- [Respaldo del conocimiento](respaldo-del-conocimiento.md) — respaldar.py; terceros solo en el PRIVADO; rondas 8/9 no van al publico.
 - [El centinela](centinela-que-mide.md) — anota cada nivel y mide si paso; nada sin muestra.
 - [Autonomia por sesion](autonomia-por-sesion.md) — CBOE congelada de noche; bitacora solo con ATAS abierto.
-- [Clics que no llegan y loops](clics-que-no-llegan-y-loops.md) — dos intentos y cambiar de metodo; correr la ventana del chat.
-- [Verificar yo, no el usuario](verificar-yo-no-el-usuario.md) — reiniciar y medir en pantalla antes de entregar.
+- [Clics que no llegan y loops](clics-que-no-llegan-y-loops.md) — correr el chat ANTES de clickear; desplegable = flecha; lotes; agentes en paralelo.
+- [Verificar yo, no el usuario](verificar-yo-no-el-usuario.md) — reiniciar y medir en pantalla antes de entregar. [Instalar siempre y auditar la pantalla (09-10)](instalar-siempre-sin-preguntar.md): recalcular cada raya visible.
 - [El radar: dominantes y BigTrades](radar-dominantes-bigtrades.md) — grande, vence pronto y alcanzable.
-- [CBOE llega 902 s tarde](retraso-cboe-902s.md) — estructura si, gatillo en vivo nunca.
-- [Costo real del retraso](costo-real-del-retraso.md) — 0,29 pts en el zero, cero en los muros.
-- [Cadena de ES en vivo por Rithmic](cadena-es-en-vivo-rithmic.md) — 0DTE con puntas; PuenteRithmic.cs por la maquinaria privada.
+- [CBOE llega 902 s tarde](retraso-cboe-902s.md) — estructura si, gatillo en vivo nunca. [Costo real del retraso](costo-real-del-retraso.md): 0,29 pts en el zero, cero en los muros.
+- [Cadena de ES en vivo por Rithmic](cadena-es-en-vivo-rithmic.md) — 0DTE con puntas; PuenteRithmic.cs. [Volumen de opciones en vivo](volumen-opciones-en-vivo.md): SecuritySummaryChanged y NewTrades.
 - [Los puntitos van sobre las barras](dominantes-no-son-linea.md) — no cruzan el grafico; ojo velas naranjas.
 - [ChartArea mas alto que el visible](atas-chartarea-mas-alto.md) — lo anclado al fondo cae detras del eje.
-- [Settlements de CME un dia atras](cme-settlements-un-dia-atras.md) — sumarle el change.
-- [Volumen de opciones en vivo](volumen-opciones-en-vivo.md) — por SecuritySummaryChanged y NewTrades.
 - [NQ: el libro propio pesa](nq-libro-propio-pesa.md) — NDX es 2x NQ, no 10x.
-- [Las pelotitas son eventos](pelotitas-son-eventos.md) — operaciones grandes, no niveles.
+- [Las pelotitas son eventos](pelotitas-son-eventos.md) — operaciones grandes, no niveles. [Max Change medidas](pelotitas-max-change-medidas.md): 9 de 10 'adelantadas' no llegan.
 - [Formula del GEX auditada](gex-formula-auditada.md) — multiplicador y muros corregidos.
 - [Dos libros distintos](dos-libros-distintos.md) — SPX y ES no coinciden; alternar salta 23-33 pts.
 - [Laboratorio de formulas](laboratorio-formulas.md) — contra placebo solo ganan las del volumen de hoy.
-- [Que afirma la referencia](que-afirma-referencia.md) — dicen que se acelera el tape, no que rebote.
-- [Mover la ventana de ATAS](mover-ventana-atas-oft-platform.md) — OFT.Platform maximizada: restaurar antes de mover.
-- [Que reproduce el Market Replay](market-replay-que-reproduce.md) — la cinta si, la cadena no.
+- [Que afirma la referencia](que-afirma-referencia.md) — dicen que se acelera el tape, no que rebote. [Anatomia de la referencia](anatomia-referencia.md): Max Change = punta de la barra hace 15/5/1 min.
+- [Mover la ventana de ATAS](mover-ventana-atas-oft-platform.md) — OFT.Platform maximizada: restaurar antes de mover. [Pestañas por UIA y el eje](atas-tabs-por-uia-y-eje.md): SelectionItemPattern.
+- [Que reproduce el Market Replay](market-replay-que-reproduce.md) — 26-11: bar replay = vivo vela por vela (Ticks y Candles); por UIA; la cadena no.
 - [La muestra son niveles](la-muestra-son-niveles-no-minutos.md) — 105 min = 4 strikes.
 - [Un indicador que cuelga ATAS](indicador-que-cuelga-atas.md) — OnCalculate por cada vela; cerrado no corre.
-- [Retrospectiva 06-09](retrospectiva-2026-09-06.md) — centinela 13 % contra el "4 de 4" narrado.
-- [Produccion en vivo 06-09](produccion-en-vivo-2026-09-06.md) — siete errores con linea.
+- [Retrospectiva 06-09](retrospectiva-2026-09-06.md) — centinela 13 % contra el "4 de 4" narrado. [Produccion en vivo 06-09](produccion-en-vivo-2026-09-06.md): siete errores con linea.
 - [Como dibujan los pros](como-dibujan-los-pros.md) — 3-5 lineas, nombres estandar, etiqueta corta a la derecha.
-- [Pestañas por UIA y el eje](atas-tabs-por-uia-y-eje.md) — SelectionItemPattern; el lienzo no llega al eje.
 - [ES contra NQ: respeto](es-vs-nq-respeto.md) — NQ no le gana al placebo (62 vs 65 %).
-- [Anatomia de la referencia](anatomia-referencia.md) — Max Change = punta de la barra hace 15/5/1 min.
-- [Fuentes de datos historicos](fuentes-datos-historicos.md) — cache de ATAS decodificada (MES 5 min con delta, 276 sesiones); cinta ~7 semanas.
+- [Fuentes de datos historicos](fuentes-datos-historicos.md) — cache de ATAS decodificada (276 sesiones MES 5 min); cinta ~7 semanas. [Cache de velas podada (06-10)](cache-velas-atas-podada.md): ronda3/velas irremplazable.
 - [Databento: cuenta y costos](databento-cuenta-y-costos.md) — techo de 60 USD en el script; una rueda ~4,3.
 - [Rebobina: el simulador](rebobina-simulador.md) — Gamma Hoy afuera de ATAS con los mismos .cs.
-- [Archivo de cadenas](archivo-cadenas-y-respaldo.md) — rama cadenas cada minuto; viva solo con ATAS abierto.
+- [Archivo de cadenas](archivo-cadenas-y-respaldo.md) — CBOE da 403 a todo pedido automatico desde el 19-11 (no esquivar); queda la cadena ES de Rithmic.
 - [Medir videos con OpenCV](medir-videos-con-opencv.md) — analizar_guiones.py y sus trampas.
 - [Reiniciar ATAS sin pedir permiso](no-reiniciar-atas-con-posicion.md) — regla 10-09: reiniciar cuando haga falta.
-- [Si opera, no tocar el mouse (27-10)](no-mover-mouse-si-opera.md) — con posicion/ordenes/panel visibles: solo capturas pasivas; nada de mouse, reinicios ni instalaciones.
-- [Gatillos de order flow en la banda](gatillos-order-flow-banda.md) — el order flow solo es una moneda.
+- [Si opera, no tocar el mouse (27-10)](no-mover-mouse-si-opera.md) — con posicion/ordenes visibles: solo capturas pasivas. [Modo cortes (13-11)](modo-cortes-mouse.md): ATAS no acepta hover virtual.
+- [Gatillos de order flow en la banda](gatillos-order-flow-banda.md) — el order flow solo es una moneda. [Banco de gatillos y ML (10-09)](gatillo-cientifico-2026-09-10.md): ML en ES a 10 min 61 %.
 - [Vencimientos 0DTE auditados](vencimientos-0dte-auditados.md) — dias bien; arreglos del nucleo y del arranque.
-- [Traspaso 08-09](traspaso-2026-09-08.md) — estado al cortarse la cuota.
-- [Auditoria en vivo 09-09](auditoria-en-vivo-2026-09-09.md) — base rota por el roll y Max Change mal indexado: arreglados.
-- [Pelotitas del Max Change medidas](pelotitas-max-change-medidas.md) — 9 de 10 'adelantadas' no llegan.
-- [Banco de gatillos y techo con ML](gatillo-cientifico-2026-09-10.md) — ML en ES a 10 min 61 %; el REBOTE iguala al placebo.
+- [Traspaso 08-09](traspaso-2026-09-08.md) — estado al cortarse la cuota. [Auditoria en vivo 09-09](auditoria-en-vivo-2026-09-09.md): base rota por el roll y Max Change mal indexado, arreglados.
 - [Web Gamma Hoy en la nube](web-gamma-hoy-nube.md) — github.io + subir_vivo.py; contingencia con la PC apagada.
-- [Dominantes de noche por VOLUMEN](dominantes-de-noche-por-volumen.md) — ningun default que toque el grafico sin avisar y captura antes/despues.
-- [Dominantes de noche = resto de ayer](dominantes-de-noche-resto-de-ayer.md) — a las 16:00 vence el 82 % del volumen.
-- [Resguardo en la nube](resguardo-en-la-nube.md) — GitHub publico+privado; Inversiones SI sube por Google Drive (verificado 09-10); push habilitado.
+- [Dominantes de noche por VOLUMEN](dominantes-de-noche-por-volumen.md) — ningun default que toque el grafico sin avisar y captura. [Son el resto de ayer](dominantes-de-noche-resto-de-ayer.md): a las 16:00 vence el 82 %.
+- [Resguardo en la nube](resguardo-en-la-nube.md) — GitHub publico+privado; Inversiones por Google Drive; push habilitado.
 - [La referencia no se nombra](referencia-sin-nombre.md) — se llama 'la referencia'; transcripciones fuera de los repos.
-- [Formulas del NQ de la referencia](referencia-formulas-nq-medidas.md) — gamma x volumen NETO de QQQ 0DTE (R2 0,99).
+- [Formulas del NQ de la referencia](referencia-formulas-nq-medidas.md) — gamma x volumen NETO de QQQ 0DTE (R2 0,99). [En ES (14-09)](auditoria-2026-09-14-referencia-es.md): SPX/SPY 0DTE.
 - [La viva de NQ perdio el 0DTE](nq-rithmic-pierde-0dte.md) — 1.8j reintenta y rearma cada 5 min.
-- [Auditoria 14-09 referencia en ES](auditoria-2026-09-14-referencia-es.md) — SPX/SPY 0DTE gamma x volumen neto.
 - [La nube y el roll de Yahoo](nube-roll-yahoo-2026-09-14.md) — web corrida tras el roll: arreglado; relanzar el subidor.
-- [Perfil derecho de la referencia](referencia-perfil-derecho-2026-09-14.md) — NO tocar su codigo/API; izquierdo gamma x vol neto; derecho requiere flujo firmado.
-- [Gamma Hoy 1.9](gamma-hoy-1-9-2026-09-14.md) — libro ETF por razon; flujo firmado no le gana al placebo.
-- [Traspaso 15-09: capas NQ](traspaso-2026-09-15-capas-nq.md) — GammaHoyCapas.cs, 4 capas; pestañas ocultas no reciben OnCalculate.
+- [Perfil derecho de la referencia](referencia-perfil-derecho-2026-09-14.md) — NO tocar su codigo/API; derecho requiere flujo firmado.
+- [Traspaso 15-09: capas NQ](traspaso-2026-09-15-capas-nq.md) — GammaHoyCapas.cs; pestañas ocultas no reciben OnCalculate.
 - [APIs de datos de opciones](apis-datos-opciones-2026-09-15.md) — ThetaData 80 el mas completo; no pagar antes de la bitacora.
-- [Auditar varias veces](regla-auditar-varias-veces.md) — nada por sentado; auditar_todo.py + captura + numeros.
-- [Auditoria de la estela 15-09](auditoria-estela-2026-09-15.md) — estela lejana de noche = libro flaco de mañana.
 - [Semana del roll](roll-semana-weeklies-en-el-trimestre-viejo.md) — weeklies en el trimestre viejo; 1.10d las pide con U6.
 - [Libro DOM de MNQ (21-09)](libro-dom-mnq-armado.md) — plantillas Noche 50 / RTH 70; NUNCA WM_CLOSE a un panel flotante.
-- [Buscar estrategia sin parar](busqueda-estrategia-sin-parar.md) — pre-registro, muestra nueva, t>=3, prueba en vivo; solo sus herramientas.
-- [Estrategia ronda 1](estrategia-dom-ronda-1.md) — 0 de 8 reglas de DOM/heatmap sobreviven con costo 0,96.
-- [Estrategia ronda 2](estrategia-ronda-2.md) — 0 de 7; hilo comun: reversion al valor justo con stop ancho.
-- [Estrategia rondas 4-5](estrategia-ronda-4-5.md) — 0 de 25 reglas intradia en 117 sesiones de MES.
-- [Estrategia ronda 6](estrategia-ronda-6.md) — herramientas propias: nada sobrevive fuera de muestra.
-- [Estrategia ronda 7 evolutiva](estrategia-ronda-7.md) — 12.500 combinaciones: nada; grabador hacia adelante desde 23-09.
-- [Delta Vivo (ronda 11, 24-09)](delta-vivo-ronda-11.md) — rombos en el precio exacto para el delta por evento; ola y ola pura se dibujan, contrapie/traba/nido no existen o no se pueden ubicar; instalado.
-- [Absorcion Viva (ronda 10, 24-09)](absorcion-viva-ronda-10.md) — pelotitas en el precio exacto por OnCumulativeTrade; 4 familias medidas y las 4 tumbadas; instalado en ATAS; paridad 100 %.
-- [La pauta: canal de reels SP500/NQ (24-09)](pauta-canal-reels.md) — calce con el dia real (v1 04-09, v4 14-09, v9 HOY); reloj en hora argentina; EMA 200/30/~27 de 1 min; entradas en la apertura con limite en lineas; gamma no explica nada.
-- [Directriz: el script de los reels (23-09)](directriz-replica-tradingview.md) — codigo abierto de TradingView replicado exacto en ATAS (MNQZ6 5s); MNQ 5 s: 48,7 % vs 51,4 %, igual que una moneda.
-- [ATAS 8.0.15: API de opciones y cupo de 200 (06-10)](atas-8-0-15-api-opciones.md) — IOptionsDataProvider + OptionsSubscriptionService (512/instancia, 3000 total); la clasica y la 2.0 pegan contra 'refused' desde el 02-10; X-Ray cifrado con DPAPI: no leer.
-- [Cache de velas de ATAS podada (06-10)](cache-velas-atas-podada.md) — ronda3/velas (julio..21-09) es irremplazable; exportar a laboratorio/tres/datos/velas_cache_<fecha>/ y unir por t.
-- [Dialogo Indicators de ATAS con computer-use (06-10)](atas-dialogo-indicadores-clics.md) — capturar a escala 1 para clickear; Add to chart/Apply/cerrar solo por UIA; Ctrl+I abre el del grafico con foco; tacho solo tras hover.
-- [PythiaGex 3.0: estado (06-10)](pythiagex-3-0-estado.md) — atas/PythiaGexTres; 3.0.4 = regla Tres (clasica + histeresis V22, SIN VALIDAR, default avisado); fase 2: nada cumple el pre-registro, solo la histeresis mejora en las dos muestras; paridad_hist.py.
-- [Reconectar ATAS por UIA (06-10)](reconectar-atas-uia.md) — la conexion real es Rithmic 'lucid' (lucid2 = duplicado); Connections por UIA, fila_en_y.ps1 -Y 355, cerrar_ventana.ps1; clics del lado derecho no llegan.
-- [Profundidad 3.0 (07-10)](profundidad-3-0.md) — pagina local localhost:8765 con el libro de NQ en profundidad (escalera, matriz, griegas, tres libros, lectura sin direccion, noche); PythiaGex/profundidad; fase 5 (3.2.0) compilada sin instalar.
-- [la referencia sobre TQQQ](tqqq-referencia.md) — solo mirar su pestaña; sobre NQ indexa TQQQ con razon simple (3x lejos, abanico); lo correcto es NQ = 124,2 x K + c.
-- [PythiaGex 4.1.1 Familia (08-10)](pythiagex-4-0-familia.md) — UN indicador autocontenido en vivo en MNQZ6 1m; capa 3.0 NDX de noche: leer el origen de la base en el log; instalar_4_0.ps1 (pausa 30 s: Lucid).
-- [Un solo indicador, independiente (08-10)](indicador-unico-independiente.md) — toda dependencia se dice ANTES de construir; uno solo por funcion; NADA externo (ni cboe_local): el indicador baja CBOE solo.
-- [Instalar siempre y auditar la pantalla (09-10)](instalar-siempre-sin-preguntar.md) — instalar lo pedido sin preguntar; despues recalcular desde la cadena cruda cada numero/raya visible y compararlo.
-- [REGLA: comprobacion fehaciente en pantalla (09-10)](comprobacion-fehaciente-en-pantalla.md) — CUALQUIER tarea: captura real + cada numero/raya recalculado por fuera desde el dato crudo; ver que dibuja no alcanza.
-- [OBJETIVO de las dominantes (09-10)](objetivo-dominantes-extremo-que-aguanta.md) — raya en la punta del extremo, que la prueben y no la rompan, giro con maximo recorrido a la otra dominante; NO % de rebotes tras toques.
-- [Investigacion formula de extremos (09-10)](investigacion-formula-extremos-1009.md) — web + 19 noches pre-registrado: nada gira en la raya mas que el azar; conversion 4.1 correcta; faltan ~40-60 noches para 4-6 pp.
-- [Apagar por defecto = solo la casilla (09-10)](apagar-por-defecto-solo-casilla.md) — destildar en su .ws y el default; nunca sacar la serie del codigo (estamos investigando).
-- [Avisar PC al limite (09-10)](avisar-pc-al-limite.md) — si CPU >85 % o RAM libre <2 GB, avisarle que programas SUYOS cerrar; mis tareas son prioridad 1; nunca cerrarlos yo.
-- [Agentes con esfuerzo maximo (09-10)](agentes-esfuerzo-maximo.md) — siempre effort 'max' en constructores, revisores, verificadores e investigadores.
-- [Orden de los grupos en los ajustes de ATAS (09-10)](atas-orden-grupos-ajustes.md) — por el MENOR Order de sus casillas; negativos al final; grupo_arriba_415c.py; cambios en vivo sin Apply.
-- [Respaldar al terminar cada tanda (09-10)](respaldar-al-terminar.md) — estable = instalada+verificada+verde y sin agentes editando: push publico + privado + espejo Inversiones (Drive).
-- [Estudio toques EMA 9/20 en 45 s (15-10)](estudio-toques-ema-45s.md) — su grafico es MNQZ6 45 s; reglas v3 verificadas; reiniciar_atas.ps1 le borro el espacio (corregido)
-- [Arranque automatico de ATAS (16-10)](arranque-automatico-atas.md) — tarea \PythiaGex\ATAS - arranque lun-vie 10:00 AR; probada en vivo 58 s; log pythiagex-arranque.log
-- [PythiaGex 5.0 Gamma ES (27-10)](pythiagex-5-0-gamma-es.md) — 5.0.5 instalada: barras ES en franja del borde, sin solapes; izq SPX/SPY 15 min tarde, der ES vivo; rayas grises = PythiaVWAP; rebotes 28,7 % vs placebo 42,3 %
-- [la referencia sobre ES: formula (27-10)](la referencia-es-formula.md) — amarillos 2 dominantes x 2 instancias por minuto; izq gamma x vol neto; zero cambio de signo; derecha convexidad ABIERTA
-- [SPX en vivo y X-Ray (27-10)](fuentes-tiempo-real-y-xray.md) — sin fuente gratis < 15 min; X-Ray = OptionsDepth sobre SPX sin API; boton X-Ray web desconecta ATAS
+- [Buscar estrategia sin parar](busqueda-estrategia-sin-parar.md) — pre-registro, muestra nueva, t>=3, prueba en vivo.
+- Rondas de estrategia 1-7: [ronda 1](estrategia-dom-ronda-1.md) 0 de 8 de DOM/heatmap; [ronda 2](estrategia-ronda-2.md) 0 de 7; [rondas 4-5](estrategia-ronda-4-5.md) 0 de 25 en 117 sesiones MES; [ronda 6](estrategia-ronda-6.md) herramientas propias; [ronda 7](estrategia-ronda-7.md) 12.500 combinaciones.
+- [Delta Vivo (ronda 11, 24-09)](delta-vivo-ronda-11.md) — rombos del delta por evento; ola y ola pura se dibujan; instalado.
+- [Absorcion Viva (ronda 10, 24-09)](absorcion-viva-ronda-10.md) — 4 familias medidas y tumbadas; instalado; paridad 100 %.
+- [La pauta: canal de reels (24-09)](pauta-canal-reels.md) — calce con el dia real; EMA 200/30/~27 de 1 min. [Directriz: el script de los reels (23-09)](directriz-replica-tradingview.md): replicado en ATAS.
+- [ATAS 8.0.15: API de opciones (06-10)](atas-8-0-15-api-opciones.md) — IOptionsDataProvider, cupo 512/3000; X-Ray cifrado: no leer.
+- [PythiaGex 3.0: estado (06-10)](pythiagex-3-0-estado.md) — regla Tres SIN VALIDAR; solo la histeresis mejora en las dos muestras.
+- [Reconectar ATAS por UIA (06-10)](reconectar-atas-uia.md) — conexion real Rithmic 'lucid'; fila_en_y.ps1 -Y 355.
+- [Profundidad 3.0 (07-10)](profundidad-3-0.md) — pagina localhost:8765 con el libro de NQ; fase 5 compilada sin instalar.
+- [la referencia sobre TQQQ](tqqq-referencia.md) — solo mirar; lo correcto es NQ = 124,2 x K + c.
+- [PythiaGex 4.1.1 Familia (08-10)](pythiagex-4-0-familia.md) — un indicador autocontenido en MNQZ6 1m; instalar_4_0.ps1.
+- [Un solo indicador, independiente (08-10)](indicador-unico-independiente.md) — dependencias ANTES de construir; nada externo.
+- [REGLA: comprobacion fehaciente (09-10)](comprobacion-fehaciente-en-pantalla.md) — captura real + cada numero recalculado desde el crudo.
+- [OBJETIVO de las dominantes (09-10)](objetivo-dominantes-extremo-que-aguanta.md) — raya en el extremo que aguanta; NO % de rebotes.
+- [Investigacion formula de extremos (09-10)](investigacion-formula-extremos-1009.md) — 19 noches: nada gira mas que el azar.
+- [Apagar por defecto = solo la casilla (09-10)](apagar-por-defecto-solo-casilla.md) — destildar; nunca sacar la serie del codigo.
+- [Avisar PC al limite (09-10)](avisar-pc-al-limite.md) — CPU >85 % o RAM <2 GB: avisarle que cerrar; nunca cerrarlos yo.
+- [Agentes con esfuerzo maximo (09-10)](agentes-esfuerzo-maximo.md) — effort 'max' en constructores, revisores e investigadores.
+- [Orden de los grupos en ATAS (09-10)](atas-orden-grupos-ajustes.md) — por el MENOR Order de sus casillas; grupo_arriba_415c.py.
+- [Respaldar al terminar cada tanda (09-10)](respaldar-al-terminar.md) — push publico + privado; espejo Inversiones (Drive) SUSPENDIDO 26-11: Drive lleno.
+- [Toques EMA 9/20 en 45 s (15-10)](estudio-toques-ema-45s.md) — su grafico es MNQZ6 45 s; reglas v3 verificadas.
+- [Arranque automatico de ATAS (16-10)](arranque-automatico-atas.md) — tarea lun-vie 10:00 AR; log pythiagex-arranque.log.
+- [PythiaGex 5.0 Gamma ES (27-10)](pythiagex-5-0-gamma-es.md) — 5.0.5 instalada; izq 15 min tarde; rebotes 28,7 vs placebo 42,3 %.
+- [la referencia sobre ES: formula (27-10)](la referencia-es-formula.md) — amarillos 2 dominantes x 2 instancias; zero = cambio de signo; usa precios en vivo.
+- [SPX en vivo y X-Ray (27-10)](fuentes-tiempo-real-y-xray.md) — sin fuente gratis < 15 min; boton X-Ray web desconecta ATAS.
+- [Disco lleno y heatmap apagado (28-10)](disco-lleno-heatmap-2810.md) — umbral 10 GB; VM y Docker a decision suya.
+- [Estadistica Visible (28-10)](estadistica-visible.md) — un cuadro por vela; lupa 2.1c al costado; no tocar el zoom con la rueda.
+- [Tendencia: investigacion 29-10](tendencia-investigacion-2910.md) — ningun tunel anticipa; sirve lo mecanico (stop, tope).
+- [Corriente (29-10)](corriente-indicador.md) — 1.3: tramo vivo 4 pts acierto 76 vs 55 % (descriptivo, ver ronda 17); medir a la escala del scalper.
+- [X-Ray: historia medida (13-11)](xray-historia-medida.md) — relata, no anticipa: ni direccion NI tamaño (corregido 16-11, R3).
+- [PythiaBot 1.0 (13-11)](pythiabot-1-0.md) — guardian + autonomo solo DEMO/CRYPTO; reiniciar para que aparezca.
+- [Rondas 12-14 + la referencia original (13-11)](rondas-12-14-resultados.md) — ~80 mil variantes: nada pasa; sirve tamaño y gestion.
+- [la referencia: cartel de clave (13-11)](la referencia-cartel-clave-recargar.md) — clic en la temporalidad; claves nunca las escribo yo.
+- [Opciones desde cero (15/16-11)](opciones-desde-cero-1511.md) — X-Ray releido, 74 ruedas: nada pasa el placebo; dos sesgos a no repetir.
+- [ATAS 8.0.16: Connect AI agent (16-11)](atas-8-0-16-ai-connect.md) — MCP local 4823 con token (lo carga el operador); no da valores.
+- [PELIGRO: foco en ATAS = atajos de trading (16-11, 26-11)](foco-atas-atajos-trading.md) — sus teclas mandan ordenes: el 26-11 salieron 2 Buy Limit; nunca clic/arrastre con el en la PC.
+- [Zero de la referencia (16-11)](zero-gamma-la referencia-estudio.md) — toques 53,3 vs placebo 49,0; arboles NO se sostiene; C5 pre-registrada. [Fuera de muestra](la referencia-5-dias-candidatas.md): C1-C3 NO pasan; C4 pre-registrada.
+- [El straddle NO es el rango (16-11)](straddle-no-es-el-rango.md) — rango del dia ~1,9x el straddle de apertura (46 ruedas); error mio en vivo.
+- [Copy trading Pepperstone: metodo (20-11)](pepperstone-copytrading-metodo.md) — panel de Claude + dato crudo; Edge solo lectura; trampas del % y del drawdown.
+- [39 videos GEXBot + ATAS (20-11)](videos-trader-gexbot-2011.md) — usa State (84 % en pantalla); lista 50/150/250/350; demo gratis /tour; guia en _referencia.
+- [la referencia web vs GEXBot (20-11)](la referencia-web-vs-gexbot-2011.md) — mismos campos que Classic y Orderflow; PWA de Edge solo lectura: usar el panel; falta Options Profile.
+- [Cinta de opciones con agresor 5.0.8 (20-11)](cinta-opciones-agresor-5-0-8.md) — Prints directo: lado real; regla de cotizacion 96 %; X-Ray cohortes vacias.
+- [Directo al grano: ganar (20-11)](directo-al-grano-ganar.md) — nada de disco/RAM/archivos en el mensaje; por que se mueve el precio y como reaccionar. [Respuesta corta primero](respuesta-corta-primero.md): veredicto apenas medido.
+- [Informe diario ES 1.3 (17-11)](informe-diario-es.md) — informe_diario.py + verificador; niveles = placebo, tamaño = straddle x1,86 y factor por hora.
+- [Gestion fuera de muestra (21-11)](gestion-fuera-de-muestra-2111.md) — tope 3-4 y no promediar SI; stop 200 y reloj NO; ATAS RM sin tope de posicion.
+- [Usar la PC sin esperar (23-11)](usar-pc-sin-esperar.md) — mis tareas antes que su uso; sin umbral de inactividad; parar solo si lo dice.
+- [Probar en grafico limpio (23-11)](probar-en-grafico-limpio.md) — MES 1m vacio para mis pruebas; si todos llenos, abrir uno nuevo.
+- [Recarga en caliente de ATAS (23-11)](recarga-en-caliente-atas.md) — copiar DLL + boton azul de la barra de estado + OK cirilico; sin reiniciar.
+- [Superindicador 1.9 (26-11)](superindicador-velas-delta-perfil.md) — hasta la vela del momento (se rebobina) + encabezado LIVE con fecha y hora; 1.9 trae la sonda de cinta.
+- [TradingView: SPX-Fixed, ranking y ronda 2 (26-11)](tradingview-gex-spx-fixed.md) — nada pasa; las pistas (VWAP 3, put/call, AlgoAlpha) mueren en muestra nueva; vara limpia.
+- [Teoria dura y confluencia (26-11)](teoria-dura-y-confluencia.md) — disenar desde estudios y libros cruzando factores; lo medido calibra, no veta; validar en vivo.
+- [De menor a mayor (26-11)](de-menor-a-mayor-muestra.md) — muestra chica en profundidad primero, despues ampliar por tandas; nunca todos los dias de entrada.
+- [REGLA: explicar el movimiento, no 'nada le gana al azar' (26-11)](explicar-el-movimiento-no-azar.md) — anatomia mecanica de giros y piernas: factores, cual pesa, en que zona.
+- [Ronda 17: anatomia del movimiento (26-11)](ronda-17-anatomia-del-movimiento.md) — piernas con su delta 86-99 %; firma del giro llega despues; previews A/B/C de 'la ola' esperando OK.
+- [Ronda 18: señal de la ola + indicador aparte (27-11)](ronda-18-senal-ola-y-indicador-aparte.md) — la señal empata antes de costos y pierde 0,50/op; la ola va en un indicador nuevo, no en el Superindicador.
+- [Salto de calidad: rondas 19-21 (27-11)](busqueda-salto-de-calidad-rondas-19-21.md) — formula final chica, acierto alto Y esperanza > 0; R19 confluencias, R20 GEX contexto, R21 meta-etiquetado.
+- [La Ola 1.0 instalada y verificada (27-11)](la-ola-1-0-instalada.md) — ESZ6 1m de pruebas; panel = cinta (0 difs); clima sin comprobar; trampas del auditor y de la pantalla apagada.

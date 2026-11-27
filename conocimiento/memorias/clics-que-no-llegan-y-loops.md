@@ -1,11 +1,11 @@
 ---
 name: clics-que-no-llegan-y-loops
-description: "Mis clics en botones de ATAS a veces no llegan; cuando pasa, cambiar de método en vez de repetir el mismo clic."
+description: "REGLA PRIMERA (4 veces pedida, ultima 20-11, molesto): correr la ventana del chat ANTES de la primera interaccion con ATAS (no despues de fallar); desplegables de ajustes = clic en la FLECHA; lotes de clics; lo pesado a agentes en paralelo; nunca mas de 2 intentos iguales."
 metadata: 
   node_type: memory
   type: feedback
   originSessionId: a8062245-bc99-4fb7-b817-ef244a0b1012
-  modified: 2026-09-02T01:04:11.921Z
+  modified: 2026-11-20T21:21:11.968Z
 ---
 
 El 2026-09-01, instalando el indicador de VWAP anclado, apreté **cuatro veces** "Add to chart" en el diálogo de indicadores de ATAS. El contador `Added (N)` nunca subió. Yo lo leí como "ATAS rechaza el indicador" y me puse a buscar el error en mi código, en el log y en la API. **El indicador estaba perfecto: el clic nunca llegaba al botón.** Lo destrabó él apretándolo a mano.
@@ -108,3 +108,44 @@ funcionan es porque chocan con el chat: corre TU ventana y volve a intentar".
 No cerrar nada, no cambiar de metodo primero: mover la ventana del chat
 (Claude) fuera del area y repetir el clic. UIA (InvokePattern) sigue siendo
 el camino que no depende de eso.
+
+
+## 13-11-2026 — tercera vez que me lo pide: PRIMER paso obligatorio, sin excepcion
+
+Textual: "cuando no te funcione ningun click/interaccion, sea la situacion que sea, corre la ventana; chocan contra la
+ventana del chat; error conocido tuyo de interaccion y perdes muchos minutos". Ese dia perdi ~15 min con clics de
+dialogos de ATAS (Chart settings, Scrub, desplegables de la referencia) que caian sobre el chat.
+
+**Lo que hay que saber:** la ventana del chat (proceso `claude`, titulo "Claude") NO aparece en las capturas de
+computer-use (la filtran), asi que la pantalla se ve "limpia" y el clic igual cae en el chat. Su rectangulo real se lee
+con EnumWindows sobre los procesos `claude` (el que mide ~536x728, no el de 1600x900 que es la capa de captura).
+Ese dia estaba en x 1052..1588 fisico, justo encima de los dialogos y del eje derecho de ATAS.
+
+**Protocolo (en este orden):**
+1. ANTES de clickear en la mitad derecha de la pantalla o en cualquier dialogo: leer el rectangulo del chat y, si se
+   superpone, MoveWindow a un costado (ej. 1240,110,360,640 fisico) — el operador lo autorizo explicitamente.
+2. Si el clic igual no llega: UIA (InvokePattern / SelectionItemPattern; `herramientas/uia_invocar.ps1`).
+3. Teclas: si computer-use dice "Claude's own window still has keyboard focus", NO insistir: SetForegroundWindow a la
+   ventana de ATAS por PowerShell o usar el boton/menu equivalente.
+4. Desplegables del PropertyGrid de DevExpress (ajustes de indicadores): la seleccion por clic/teclado/UIA no confirmo
+   el 13-11 -> pedirle al operador ese ajuste en una linea (le cuesta 3 segundos).
+5. Nunca mas de 2 intentos iguales.
+
+## 20-11-2026 — cuarta vez, y dos mensajes molestos seguidos
+
+Textual: "ya te dije muchas veces si no te responde los clicks move la ventana y volve a intentar rapidamente, no podes
+perder mucho tiempo en esas acciones" y despues "no podes tardar tanto en los clicks, apura, se mas inteligente, busca mas
+ayuda agente, es tu punto debil". Ese dia probe F4, flecha abajo y clic en el texto del desplegable "Positioning" del
+Strike Profile de X-Ray antes de correr la ventana: minutos perdidos.
+
+**Lo que funciono a la primera, apenas corri la ventana:**
+- Mover el chat (proceso `claude`, MainWindowHandle) con MoveWindow a 1700,700 y `AppActivate` a OFT.Platform.
+- En el PropertyGrid del dialogo Indicators, el desplegable se abre con clic en la **FLECHA** del borde derecho de la celda
+  del valor (no en el texto, no con F4, no con flecha abajo: esas no cambian nada). Despues, clic en el item de la lista.
+  Esto corrige el punto 4 de arriba: los desplegables SI se pueden operar.
+- Encadenar en un solo `computer_batch`: abrir dialogo -> elegir indicador -> flecha -> item -> Apply -> zoom.
+- Al terminar: Alt + ShowWindow(3) + SetForegroundWindow al chat.
+
+**How to apply:** correr la ventana del chat es el PASO CERO de toda tanda de clics en ATAS, no el remedio. Lo que no es
+clic (leer logs, recalcular, buscar en el SDK, investigar) va a agentes en paralelo mientras yo hago los clics, para que el
+operador no me vea quieto.

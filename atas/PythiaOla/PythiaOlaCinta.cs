@@ -10,41 +10,28 @@ using System.Threading.Tasks;
 
 using ATAS.Indicators;
 
-namespace PythiaSuper
+namespace PythiaLaOla
 {
     /// <summary>
-    /// 2.0a (27-11-2026) LA OLA CONECTADA AL GRAFICO: SOLO LOS DATOS Y LA AUDITORIA, NO DIBUJA NADA. El motor de la ronda 17 (Ola,
-    /// OlaFotos en SuperCalculos.cs, probado con 0 diferencias en 17 ruedas) alimentado con la cinta de ATAS, una carga por jornada de CME:
-    /// la viva (la de la ultima vela) arma su historial con RequestForCumulativeTrades y sigue orden por orden con OnCumulativeTrade /
-    /// OnUpdateCumulativeTrade; las pasadas se piden enteras cuando la vela del momento cae en ellas (de a un pedido por vez, hasta 4 en
-    /// cache). La logica de cargas, costura, bufer y cortes esta en SuperOlaNucleo.cs (sin ATAS: la corre el arnes atas/_test_super);
-    /// aca solo va la union con ATAS: ajustes, eventos, pedidos, hilos, registro y auditoria.
+    /// LA OLA 1.0 (27-11-2026): LA CINTA DE ATAS. Mudado del Superindicador 2.0a (SuperOla.cs, probado en vivo el 27-11: 52.410 ordenes de
+    /// la jornada en 2,7 s, costura sin hueco, X 10,00 auto) a este indicador aparte. El motor de la ronda 17 (OlaMotor.cs) y el clima de
+    /// la ronda 21 (OlaClima.cs), alimentados con la cinta de ATAS, una carga por jornada de CME: la viva (la de la ultima vela) arma su
+    /// historial con RequestForCumulativeTrades y sigue orden por orden con OnCumulativeTrade / OnUpdateCumulativeTrade; las pasadas se
+    /// piden enteras cuando la vela del momento cae en ellas (de a un pedido por vez, hasta 4 en cache). La logica de cargas, costura,
+    /// bufer y cortes esta en OlaNucleo.cs (sin ATAS: la corre el arnes atas/_test_pythiaola); aca solo va la union con ATAS: eventos,
+    /// pedidos, hilos, registro y auditoria. Lo que cambio al mudarlo: la ola ya no tiene casilla (es el indicador entero), la X fija es el
+    /// ajuste PoXFija, la respuesta de la cinta llega directo (no hay sonda) y el csv lleva tambien el clima de cada minuto.
     /// HILOS: todo el motor bajo _llaveOla. El hilo de datos (OnCalculate, OnCumulativeTrade) solo pasa una vela o una orden (O(1)); el
     /// historial se procesa en un Task con motores locales y se integra bajo la llave; el registro se escribe desde el latido y los
-    /// archivos en un Task. OnRender no toca nada de esto (la auditoria de cada minuto copia unos contadores y dos fotos).
-    /// API para dibujar despues: OlaAlMomento (la foto de la jornada de una vela, la de ahora en la vela viva) y OlaBarDeHora (la vela de un
+    /// archivos en un Task. OnRender copia bajo la llave lo que va a dibujar y dibuja afuera.
+    /// API para dibujar: OlaAlMomento (la foto de la jornada de una vela, la de ahora en la vela viva) y OlaBarDeHora (la vela de un
     /// instante UTC, para ubicar los pivotes en el eje x).
-    /// AUDITORIA: seccion "ola" en auditoria-*.jsonl y, cada minuto, ola-&lt;inst&gt;-&lt;tf&gt;-&lt;clave&gt;.csv con los pivotes y la foto de cada vela de
-    /// la ola y la marea; herramientas/auditar_ola.py lo rehace desde una cinta de la sonda de la MISMA jornada.
+    /// AUDITORIA: seccion "ola" en auditoria-*.jsonl y, cada minuto, ola-&lt;inst&gt;-&lt;tf&gt;-&lt;clave&gt;.csv con los pivotes, la foto de cada vela
+    /// de la ola y la marea y el clima de cada minuto; herramientas/auditar_pythiaola.py lo rehace desde una cinta de la sonda de la MISMA
+    /// jornada.
     /// </summary>
-    public partial class SuperindicadorOF
+    public partial class PythiaOla
     {
-        // ================================================================== 7. La ola (ronda 17): nombres NUEVOS (ATAS guarda por nombre)
-        private bool _ola = true;
-        [Display(Name = "Calcular la ola y la marea (todavia no dibuja)", GroupName = "7. La ola (ronda 17)", Order = 90,
-            Description = "La ola de la ronda 17 (zigzag de X sobre la cinta orden por orden) y la marea (4X), por jornada de CME. Pide a ATAS la cinta de la jornada (una vez por jornada, de a un pedido) y sigue en vivo. Todavia no dibuja nada: escribe la auditoria (ola-*.csv).")]
-        public bool SpOla { get => _ola; set { if (_ola == value) return; _ola = value; OlaReiniciarCargas(value ? "ola prendida" : "ola apagada"); } }
-
-        private decimal _olaX = 0m;
-        [Display(Name = "X fija en puntos (0 = automatica)", GroupName = "7. La ola (ronda 17)", Order = 91,
-            Description = "0 = automatica: 0,08 x la mediana del rango RTH de las 10 ruedas completas anteriores (como la ronda 17), con piso de 4. Otro valor: esa X para todas las jornadas (la marea es 4X).")]
-        [Range(0, 1000)]
-        public decimal SpOlaX
-        {
-            get => _olaX;
-            set { decimal v = Math.Max(0m, Math.Min(1000m, value)); if (v == _olaX) return; _olaX = v; OlaReiniciarCargas("X fija " + v.ToString(Inv)); }
-        }
-
         // ================================================================== estado
         private const int OlaVencePedidoSeg = 180;
         private const double OlaRamMinimaMb = 2048;
@@ -59,7 +46,7 @@ namespace PythiaSuper
         private DateTime _olaUltCsv = DateTime.MinValue; private volatile bool _olaCsvYa;
         private DateTime _olaRamMirada = DateTime.MinValue; private double _olaRamMb = double.NaN; private bool _olaRamAvisada;
 
-        // un solo pedido de cinta a la vez en todo ATAS (dos graficos con el Superindicador no le piden juntos)
+        // un solo pedido de cinta a la vez en todo ATAS (dos graficos con La Ola no le piden juntos)
         private static readonly object _olaTurnoLlave = new object();
         private static object _olaTurnoDe; private static DateTime _olaTurnoEn;
 
@@ -81,7 +68,6 @@ namespace PythiaSuper
                                  out decimal x, out string estado)
         {
             ola = marea = default; pivOla = pivMarea = Array.Empty<PivoteOla>(); x = 0m;
-            if (!_ola) { estado = "apagada"; return false; }
             try { lock (_llaveOla) return OlaG().AlMomento(bar, out ola, out marea, out pivOla, out pivMarea, out x, out estado, out _); }
             catch (Exception e) { Anotar(e); estado = "error: " + e.Message; return false; }
         }
@@ -95,8 +81,7 @@ namespace PythiaSuper
         }
 
         // ================================================================== velas (desde OnCalculate)
-        /// <summary>Cada llamada de OnCalculate: apertura, ultima operacion, alto y bajo de la vela (O(1), bajo la llave). Se juntan aunque la
-        /// ola este apagada (es barato) para que al prenderla no haga falta recargar el grafico.</summary>
+        /// <summary>Cada llamada de OnCalculate: apertura, ultima operacion, alto y bajo de la vela (O(1), bajo la llave).</summary>
         private void OlaVela(int bar, IndicatorCandle c)
         {
             if (c == null) return;
@@ -121,12 +106,19 @@ namespace PythiaSuper
         // ================================================================== la cinta en vivo
         protected override void OnCumulativeTrade(CumulativeTrade trade)
         {
-            if (_ola && trade != null) OlaEvento(trade, true);
+            if (trade != null) OlaEvento(trade, true);
         }
 
         protected override void OnUpdateCumulativeTrade(CumulativeTrade trade)
         {
-            if (_ola && trade != null) OlaEvento(trade, false);
+            if (trade != null) OlaEvento(trade, false);
+        }
+
+        /// <summary>La respuesta de un pedido de cinta (en el Superindicador pasaba primero por la sonda; aca es solo de la ola).</summary>
+        protected override void OnCumulativeTradesResponse(CumulativeTradesRequest request, IEnumerable<CumulativeTrade> cumulativeTrades)
+        {
+            try { OlaRecibirCinta(request, cumulativeTrades); }
+            catch (Exception e) { Anotar(e); }
         }
 
         /// <summary>Hilo de datos (cientos por segundo): sin archivos ni LINQ; una llave corta y un paso del motor. La referencia del objeto
@@ -153,32 +145,29 @@ namespace PythiaSuper
         {
             try
             {
-                if (_ola)
+                int n = CurrentBar, m = -1;
+                try { m = Momento(); } catch { }
+                decimal tick = 0m; string tipo = "", marco = "";
+                try { if (InstrumentInfo != null) tick = InstrumentInfo.TickSize; } catch { }
+                try { tipo = ChartInfo?.ChartType ?? ""; marco = ChartInfo?.TimeFrame ?? ""; } catch { }
+                lock (_llaveOla)
                 {
-                    int n = CurrentBar, m = -1;
-                    try { m = Momento(); } catch { }
-                    decimal tick = 0m; string tipo = "", marco = "";
-                    try { if (InstrumentInfo != null) tick = InstrumentInfo.TickSize; } catch { }
-                    try { tipo = ChartInfo?.ChartType ?? ""; marco = ChartInfo?.TimeFrame ?? ""; } catch { }
-                    lock (_llaveOla)
+                    var g = OlaG();
+                    // la viva, en cuanto el grafico tiene todas sus velas (OnCalculate paso por la ultima)
+                    if (g.Viva == null && n > 0 && g.Velas >= n)
                     {
-                        var g = OlaG();
-                        // la viva, en cuanto el grafico tiene todas sus velas (OnCalculate paso por la ultima)
-                        if (g.Viva == null && n > 0 && g.Velas >= n)
-                        {
-                            if (tick > 0m) g.Tick = tick;
-                            g.XFija = _olaX;
-                            g.Declarado = PeriodoVelas.Declarado(tipo, marco, out bool noEsTiempo);
-                            g.NoEsTiempo = noEsTiempo;
-                            g.CrearViva();
-                        }
-                        // la vela del momento: si cae en una jornada sin carga, se pide
-                        if (g.Viva != null && m >= 0 && m < g.Velas) g.QuererMomento(m);
+                        if (tick > 0m) g.Tick = tick;
+                        g.XFija = _xFija;
+                        g.Declarado = PeriodoVelas.Declarado(tipo, marco, out bool noEsTiempo);
+                        g.NoEsTiempo = noEsTiempo;
+                        g.CrearViva();
                     }
-                    OlaPedidos();
-                    OlaVigilar();
-                    if (_registro) OlaCsv();
+                    // la vela del momento: si cae en una jornada sin carga, se pide
+                    if (g.Viva != null && m >= 0 && m < g.Velas) g.QuererMomento(m);
                 }
+                OlaPedidos();
+                OlaVigilar();
+                if (_registro) OlaCsv();
             }
             catch (Exception e) { Anotar(e); }
             while (_olaLog.TryDequeue(out var s)) AnotarLinea(s);
@@ -202,23 +191,43 @@ namespace PythiaSuper
         /// <summary>Desde OnDispose: libera el turno de pedidos (si no, otro grafico esperaria hasta que venza).</summary>
         private void OlaSoltar() { try { OlaSoltarTurno(); } catch { } }
 
-        /// <summary>Vence el pedido en vuelo (180 s) y pide la carga que sigue: la viva primero, despues la pasada del momento. De a un
-        /// pedido por vez; espera si otro grafico tiene el turno o si la RAM libre esta debajo de 2 GB.</summary>
+        // La Ola 1.0, arreglo de la revision del 27-11: ATAS admite UN solo pedido de cinta pendiente por indicador (RequestForCumulativeTrades
+        // tira ArgumentException si hay otro) y el pendiente solo sale cuando llega su respuesta. Un pedido vencido (180 s sin respuesta)
+        // sigue pendiente adentro de ATAS: mientras tanto no se pide otro (se reintenta cada 60 s por si ATAS lo solto) y el pie del panel
+        // lo dice. Y con el indicador oculto (el ojo de ATAS) ATAS guarda el pedido hasta que se vea: oculto no se pide y el reloj del
+        // vencimiento no corre.
+        private const int OlaReintentoSeg = 60;
+        private CumulativeTradesRequest _olaTrabado;              // pedido vencido que ATAS todavia tiene pendiente
+        private DateTime _olaReintentoEn = DateTime.MinValue;     // no pedir antes de esta hora (despues de un pedido rechazado)
+        private DateTime _olaAvisoTrabadoEn = DateTime.MinValue, _olaUltPedidos = DateTime.MinValue;
+        private string _olaEspera = "";                           // por que no se pide (para el pie del panel); bajo _llaveOla
+
+        /// <summary>Vence el pedido en vuelo (180 s con el indicador a la vista) y pide la carga que sigue: la viva primero, despues la pasada
+        /// del momento. De a un pedido por vez; espera si otro grafico tiene el turno, si la RAM libre esta debajo de 2 GB, si el indicador
+        /// esta oculto o si ATAS todavia tiene un pedido viejo sin contestar.</summary>
         private void OlaPedidos()
         {
             CumulativeTradesRequest req = null; CargaOla c = null; bool soltar = false; string aviso = null;
             double ram = RamLibreMb();
+            bool visible = true;
+            try { visible = Visible; } catch { }
+            var ahora = DateTime.UtcNow;
+            var dt = _olaUltPedidos == DateTime.MinValue ? TimeSpan.Zero : ahora - _olaUltPedidos;
+            _olaUltPedidos = ahora;
             lock (_llaveOla)
             {
                 var g = OlaG();
-                if (_olaPedido != null && (DateTime.UtcNow - _olaPedidoEn).TotalSeconds > OlaVencePedidoSeg)
+                // oculto: ATAS no manda el pedido hasta que se vea; el reloj del vencimiento se frena (corre solo con el indicador a la vista)
+                if (_olaPedido != null && !visible && dt > TimeSpan.Zero) _olaPedidoEn = _olaPedidoEn.Add(dt);
+                if (_olaPedido != null && visible && (ahora - _olaPedidoEn).TotalSeconds > OlaVencePedidoSeg)
                 {
                     var pc = _olaPedidoCarga;
                     _olaVencidos.Add(_olaPedido.RequestId); if (_olaVencidos.Count > 20) _olaVencidos.RemoveAt(0);
+                    _olaTrabado = _olaPedido; _olaReintentoEn = ahora.AddSeconds(OlaReintentoSeg);
                     if (pc != null && _olaPedidoGen == g.Generacion && g.Conoce(pc) && pc.Estado == EstadoOla.Pedida)
                         g.SinRespuesta(pc, "ATAS no contesto el pedido en " + OlaVencePedidoSeg + " s");
                     aviso = "ola: el pedido de la jornada " + (pc != null ? pc.Clave.ToString(Inv) : "?") + " no contesto en " + OlaVencePedidoSeg + " s"
-                          + (pc != null && pc.RecibeVivo ? ": la viva sigue solo con lo que llega en vivo" : "");
+                          + (pc != null && pc.RecibeVivo ? ": la viva sigue solo con lo que llega en vivo" : "") + "; no se pide otro hasta que ATAS lo suelte";
                     _olaPedido = null; _olaPedidoCarga = null; soltar = true;
                 }
                 if (_olaPedido == null)
@@ -226,18 +235,25 @@ namespace PythiaSuper
                     var sig = g.SiguientePedido();
                     if (sig != null)
                     {
-                        if (!double.IsNaN(ram) && ram < OlaRamMinimaMb)
+                        if (!visible) _olaEspera = "indicador oculto: la cinta se pide cuando se vea";
+                        else if (ahora < _olaReintentoEn)
+                            _olaEspera = _olaTrabado != null ? "ATAS tiene un pedido de cinta sin contestar: reintento cada " + OlaReintentoSeg + " s"
+                                                             : "ATAS rechazo el pedido de cinta: reintento cada " + OlaReintentoSeg + " s";
+                        else if (!double.IsNaN(ram) && ram < OlaRamMinimaMb)
                         {
+                            _olaEspera = "RAM libre debajo de 2 GB: el pedido espera";
                             if (!_olaRamAvisada) { _olaRamAvisada = true; aviso = "ola: RAM libre " + ram.ToString("0", Inv) + " MB (< 2 GB): el pedido de la jornada " + sig.Clave + " espera"; }
                         }
                         else if (OlaTomarTurno())
                         {
-                            _olaRamAvisada = false;
+                            _olaRamAvisada = false; _olaEspera = "";
                             req = new CumulativeTradesRequest(sig.Desde, sig.Hasta, 1, 0);
                             g.MarcarPedida(sig, req);
-                            _olaPedido = req; _olaPedidoCarga = sig; _olaPedidoGen = g.Generacion; _olaPedidoEn = DateTime.UtcNow; c = sig;
+                            _olaPedido = req; _olaPedidoCarga = sig; _olaPedidoGen = g.Generacion; _olaPedidoEn = ahora; c = sig;
                         }
+                        else _olaEspera = "otro grafico esta pidiendo su cinta: espera el turno";
                     }
+                    else _olaEspera = "";
                 }
             }
             if (soltar && req == null) OlaSoltarTurno();
@@ -246,19 +262,30 @@ namespace PythiaSuper
             try
             {
                 RequestForCumulativeTrades(req);
+                lock (_llaveOla) _olaTrabado = null;   // ATAS lo acepto: ya no tenia pendiente el viejo
                 AnotarLinea("ola: pedida la jornada " + c.Clave + (c.RecibeVivo ? " (viva)" : " (pasada)") + " " + c.Desde.ToString("MM-dd HH:mm", Inv) + " a "
                             + c.Hasta.ToString("MM-dd HH:mm", Inv) + " UTC, X " + c.X.ToString(Inv) + " (" + c.FuenteX + "), " + c.Cortes + " cortes");
             }
             catch (Exception e)
             {
-                lock (_llaveOla) { if (ReferenceEquals(_olaPedido, req)) { _olaPedido = null; _olaPedidoCarga = null; } OlaG().VolverACola(c); }
+                lock (_llaveOla)
+                {
+                    if (ReferenceEquals(_olaPedido, req)) { _olaPedido = null; _olaPedidoCarga = null; }
+                    OlaG().VolverACola(c);
+                    _olaReintentoEn = DateTime.UtcNow.AddSeconds(OlaReintentoSeg);
+                    _olaEspera = "ATAS rechazo el pedido de cinta (" + e.GetType().Name + "): reintento cada " + OlaReintentoSeg + " s";
+                }
                 OlaSoltarTurno();
-                Anotar(e);
+                if ((DateTime.UtcNow - _olaAvisoTrabadoEn).TotalSeconds >= 60)
+                {
+                    _olaAvisoTrabadoEn = DateTime.UtcNow;
+                    AnotarLinea("ola: ATAS rechazo el pedido de la jornada " + c.Clave + " (" + e.GetType().Name + ": " + e.Message + "); reintento en " + OlaReintentoSeg + " s");
+                }
             }
         }
 
-        /// <summary>Desde OnCumulativeTradesResponse (SuperSonda.cs): true si el pedido es de la ola (la sonda no lo ve). Se copia la lista
-        /// (referencias, ~10 ms para una rueda) y se procesa en un Task con motores locales.</summary>
+        /// <summary>Desde OnCumulativeTradesResponse: true si el pedido es de la ola. Se copia la lista (referencias, ~10 ms para una rueda)
+        /// y se procesa en un Task con motores locales.</summary>
         private bool OlaRecibirCinta(CumulativeTradesRequest request, IEnumerable<CumulativeTrade> trades)
         {
             if (request == null) return false;
@@ -271,9 +298,11 @@ namespace PythiaSuper
                     if (!mio)
                     {
                         int i = _olaVencidos.IndexOf(request.RequestId);
-                        if (i < 0) return false;   // de la sonda
+                        if (i < 0) return false;   // no es de este indicador
                         _olaVencidos.RemoveAt(i);
-                        _olaLog.Enqueue("ola: llego tarde la respuesta de un pedido vencido: se descarta");
+                        // ATAS ya lo solto: se puede volver a pedir enseguida
+                        if (_olaTrabado != null && _olaTrabado.RequestId == request.RequestId) { _olaTrabado = null; _olaReintentoEn = DateTime.MinValue; }
+                        _olaLog.Enqueue("ola: llego tarde la respuesta de un pedido vencido: se descarta (ATAS ya lo solto)");
                         return true;
                     }
                     c = _olaPedidoCarga; gen = _olaPedidoGen; seg = (DateTime.UtcNow - _olaPedidoEn).TotalSeconds;
@@ -324,6 +353,7 @@ namespace PythiaSuper
             catch (Exception e) { r = null; Anotar(e); }
             _olaLog.Enqueue(r != null ? "ola: integrada " + r : "ola: el historial de la jornada " + t.Carga.Clave + " se descarto (se reinicio mientras se procesaba)");
             _olaCsvYa = true;
+            _redibujarPedido = true;   // con el mercado quieto no hay tick que redibuje: lo pide el latido
         }
 
         /// <summary>Anota las actualizaciones viejas (una orden que crecio cuando ya no era la ultima: el motor no la puede corregir) y los
@@ -374,15 +404,17 @@ namespace PythiaSuper
             {
                 foreach (var (c, s) in copias)
                 {
+                    string tmp = null;
                     try
                     {
                         s.Inst = inst; s.Marco = tf; s.VersionIndicador = Version;
-                        string ruta = Path.Combine(dir, "ola-" + inst + "-" + tf + "-" + s.Clave.ToString(Inv) + ".csv"), tmp = ruta + ".tmp";
-                        lock (_llaveArchivo)
-                        {
-                            using (var w = new StreamWriter(tmp, false, new UTF8Encoding(false), 1 << 16)) s.Escribir(w);
-                            File.Move(tmp, ruta, true);
-                        }
+                        // el archivo temporal se escribe SIN la llave (nombre unico): la llave solo cubre el cambio de nombre, asi el
+                        // registro del latido no espera lo que tarda en escribirse el csv
+                        string ruta = Path.Combine(dir, "ola-" + inst + "-" + tf + "-" + s.Clave.ToString(Inv) + ".csv");
+                        tmp = ruta + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                        using (var w = new StreamWriter(tmp, false, new UTF8Encoding(false), 1 << 16)) s.Escribir(w);
+                        lock (_llaveArchivo) File.Move(tmp, ruta, true);
+                        tmp = null;
                     }
                     catch (Exception e)
                     {
@@ -390,12 +422,13 @@ namespace PythiaSuper
                         lock (_llaveOla) c.VersionEscrita = -1;
                         _olaLog.Enqueue("ola: no se pudo escribir el csv de la jornada " + s.Clave + ": " + e.Message);
                     }
+                    finally { if (tmp != null) { try { File.Delete(tmp); } catch { } } }
                 }
             });
         }
 
         // ================================================================== reinicios
-        /// <summary>SpOla o SpOlaX cambiaron: las cargas se tiran (la X cambia) y se vuelven a pedir; las velas quedan.</summary>
+        /// <summary>PoXFija cambio: las cargas se tiran (la X cambia) y se vuelven a pedir; las velas quedan.</summary>
         private void OlaReiniciarCargas(string motivo)
         {
             bool habia;
@@ -425,15 +458,17 @@ namespace PythiaSuper
                 lock (_llaveOla)
                 {
                     var g = OlaG();
-                    s.Append(",\"ola\":{\"on\":").Append(_ola ? "true" : "false").Append(",\"x_fija\":").Append(F(_olaX))
+                    s.Append(",\"ola\":{\"x_fija\":").Append(F(_xFija))
                      .Append(",\"eventos_nuevos\":").Append(_olaEventosNuevos).Append(",\"eventos_act\":").Append(_olaEventosAct)
                      .Append(",\"errores_vivo\":").Append(Interlocked.Read(ref _olaErroresVivo))
                      .Append(",\"ultimo_evento_pc\":\"").Append(Hu(_olaUltEventoPc)).Append('"');
-                    g.AuditoriaJson(s, m);   // la carga del momento, su foto de la ola y de la marea, y la lista de cargas (SuperOlaNucleo.cs)
+                    g.AuditoriaJson(s, m);   // la carga del momento, su foto de la ola y de la marea, el clima y la lista de cargas (OlaNucleo.cs)
                     s.Append(",\"pedido\":");
                     if (_olaPedido == null) s.Append("null");
                     else s.Append("{\"clave\":").Append(_olaPedidoCarga != null ? _olaPedidoCarga.Clave : -1).Append(",\"en_vuelo_s\":")
                           .Append((DateTime.UtcNow - _olaPedidoEn).TotalSeconds.ToString("0.0", Inv)).Append('}');
+                    s.Append(",\"trabado\":").Append(_olaTrabado != null ? "true" : "false").Append(",\"espera\":\"")
+                     .Append((_olaEspera ?? "").Replace("\"", "'")).Append('"');
                     s.Append(",\"ram_libre_mb\":").Append(double.IsNaN(_olaRamMb) ? "null" : _olaRamMb.ToString("0", Inv)).Append('}');
                 }
                 sb.Append(s.ToString());   // solo si se armo entera: un error a mitad no deja el renglon de la auditoria roto

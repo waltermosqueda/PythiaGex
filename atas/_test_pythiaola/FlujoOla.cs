@@ -5,11 +5,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using PythiaSuper;
+using PythiaLaOla;
 
 // =========================================================================================================================
-// 27-11-2026 (2.0a) EL FLUJO DE LA OLA DEL INDICADOR, simulado sobre cintas REALES con el MISMO codigo que corre en ATAS
-// (SuperOlaNucleo.cs: GestorOla, CargaOla, TrabajoOla). Lo que hace ATAS se imita asi:
+// 27-11-2026 (2.0a del Superindicador; desde La Ola 1.0 vive en atas/_test_pythiaola) EL FLUJO DE LA OLA DEL INDICADOR, simulado
+// sobre cintas REALES con el MISMO codigo que corre en ATAS (atas/PythiaOla/OlaNucleo.cs: GestorOla, CargaOla, TrabajoOla). Lo que hace ATAS se imita asi:
 //   - el grafico arranca con las velas de lo que ya paso (la ultima a medias) y las velas nuevas aparecen cuando llega su primera orden
 //     (OnCalculate antes de la orden; en los escenarios "ticks" y "cambio", despues);
 //   - cada orden en vivo llega como OnCumulativeTrade con su primera version y, si tuvo varios prints, crece con OnUpdateCumulativeTrade
@@ -109,6 +109,7 @@ partial class Program
     sealed class Escenario
     {
         public string Nombre;
+        public string Inst = "MES";         // para el nombre del csv (La Ola 1.0: el modo r21 corre ES)
         public List<OrdenCinta> O;
         public List<Barra> Velas; public int[] Bdo;
         public bool Tiempo = true;
@@ -281,8 +282,8 @@ partial class Program
         {
             if (c == null) return;
             var s = G.Instantanea(c);
-            s.Inst = "MES"; s.Marco = _marco; s.VersionIndicador = "2.0a arnes " + E.Nombre;
-            string ruta = Path.Combine(_dir, "ola-MES-" + _marco + "-" + c.Clave + "-" + E.Nombre + sufijo + ".csv");
+            s.Inst = E.Inst; s.Marco = _marco; s.VersionIndicador = "1.0 arnes " + E.Nombre;
+            string ruta = Path.Combine(_dir, "ola-" + E.Inst + "-" + _marco + "-" + c.Clave + "-" + E.Nombre + sufijo + ".csv");
             using (var w = new StreamWriter(ruta, false, new UTF8Encoding(false), 1 << 16)) s.Escribir(w);
             Csvs.Add(ruta);
         }

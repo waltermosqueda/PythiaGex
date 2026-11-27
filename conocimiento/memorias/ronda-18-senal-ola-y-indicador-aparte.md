@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
-  modified: 2026-11-27T05:27:43.829Z
+  modified: 2026-11-27T05:28:32.511Z
 ---
 
 **Pedido (27-11 ~02:30 AR):** "una señal o figura que indique el mejor momento para entrar y salir, bien calculado, si no me
@@ -17,7 +17,7 @@ mareo". Se pre-registró y midió: `PythiaGex/laboratorio/ronda18_senal_ola/` (P
 - Mecánica: entra X después del giro y sale X antes del extremo; gana solo si la ola mide > 2X; mediana 1,68X → ruina del jugador.
 - Está en la demo (show_widget) como "señal en prueba" con sus números; NO presentarla como estrategia.
 
-**Decisión del operador (27-11 ~03:00 AR):** "mejor construir un indicador aparte, no lo mezcles con el Superindicador (ese es
+**Decisión del operador (27-11 ~02:25 AR):** "mejor construir un indicador aparte, no lo mezcles con el Superindicador (ese es
 delta, footprint y volumen; este es más general con más features)". Plan: indicador nuevo autocontenido (ver
 [[indicador-unico-independiente]]) con el motor de la ola (SuperCalculos: Ola/OlaFotos/EscalaOla/RangosRth + SuperOlaNucleo)
 copiado adentro; el Superindicador vuelve a 1.9 (con la sonda). En ATAS quedó instalado el 2.0a (la ola solo como datos, sin

@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 404dab2f-b5f6-48fa-ba08-3ab764cbbdd8
-  modified: 2026-10-27T22:37:16.520Z
+  modified: 2026-10-28T02:45:02.431Z
 ---
 
 Pedido 26-10 23:5x: "creame un indicador pythiagex gamma v5 como el de nq pero para es mes spx spy". `atas/PythiaGexCinco`
@@ -80,3 +80,8 @@ Bitacora de toques/rebotes (`herramientas/bitacora_reacciones_5_0.py`, 27-10 noc
 placebo corrido ±2,5/±5: los niveles NO se respetan mas que el azar (una sesion: ruido). Control cada 15 min armado con CronCreate (sesion).
 Trampa: el renglon naranja "◀ MM-dd HH:mmZ" que queda pegado tras mover el mouse con computer-use es artefacto del salto del cursor: pasar el mouse
 por el grafico y sacarlo por arriba.
+
+**5.0.6 INSTALADA 27-10 23:43 ART (git 7badaf6f5/ba9c51d6b, DLL 316DA52A…):** pedido "minimalista, una sola columna, borra o pone fusionados":
+SIN franja: barras ES pegadas al borde (8 % del ancho, 40-80 px) y cada renglon de texto termina 4 px antes de la barra ES de su altura (XDer);
+sin barrita de peso en las etiquetas; carga = "SPX 7.715 C1.4k P1.1k" (sin monto ni precio). Preferencia: minimalismo, nada de cajas vacias ni
+columnas separadas; todo lo de la derecha es UNA columna. 5.0.5b/c siguen: fondos recortados en velas, etiquetas que chocan se compactan (" +N").

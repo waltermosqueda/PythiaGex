@@ -83,7 +83,6 @@ namespace PythiaSuper
 
         protected override void OnCumulativeTradesResponse(CumulativeTradesRequest request, IEnumerable<CumulativeTrade> cumulativeTrades)
         {
-            if (OlaRecibirCinta(request, cumulativeTrades)) return;   // 2.0a: el pedido es de la ola (SuperOla.cs, por RequestId); si no, sigue la sonda
             try { SondaRecibirCinta(request, cumulativeTrades); }
             catch (Exception e) { Anotar(e); }
         }

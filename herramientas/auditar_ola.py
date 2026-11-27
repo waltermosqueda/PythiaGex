@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Auditoria POR FUERA de la ola del Superindicador (2.0a, 27-11-2026).
+"""Auditoria POR FUERA de la ola (27-11-2026; el 2.0a del Superindicador y, desde que se mudo, La Ola 1.0).
 
 Toma un ola-<inst>-<tf>-<clave>.csv (lo escribe el indicador cada minuto en %APPDATA%/ATAS/PythiaGex/superindicador, o el arnes
-atas/_test_super en modo 'flujo') y una cinta de la sonda de la MISMA jornada (%APPDATA%/ATAS/PythiaGex/flujo/cinta-<inst>-<desde>-<hasta>.csv).
+atas/_test_pythiaola en modo 'flujo' o 'r21'; La Ola 1.0 lo escribe en %APPDATA%/ATAS/PythiaGex/pythiaola) y una cinta de la sonda de la MISMA jornada (%APPDATA%/ATAS/PythiaGex/flujo/cinta-<inst>-<desde>-<hasta>.csv).
 Rehace la ola (X) y la marea (4X) con la referencia de test_ola.py (la clase Maquina copiada tal cual de ola_demo_datos.py, verificada en
 17 ruedas) manejada igual que alli, con las MISMAS horas de corte que trae el csv (una por vela), y compara sin tolerancias:
   - cada pivote confirmado y el extremo en curso (hora del extremo, precio, tipo, confirmado, hora y numero de orden de la confirmacion,

@@ -4,16 +4,21 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace PythiaSuper
+namespace PythiaLaOla
 {
     // =========================================================================================================================
-    // 2.0a (27-11-2026) LA OLA CONECTADA A LA CINTA DE ATAS, LA PARTE SIN NADA DE ATAS. El motor (Ola, OlaFotos, EscalaOla, RangosRth
-    // en SuperCalculos.cs) no se toca: esto es lo que lo alimenta. Una CARGA por jornada de CME (18:00 NY de la vispera a 17:00 NY):
-    // su X, sus cortes (uno por vela) y dos OlaFotos, la ola (X) y la marea (4X). La de la ultima vela es la VIVA: junta en un bufer las
-    // ordenes en vivo desde que arranca, pide el historial de la jornada a ATAS, lo pasa por motores LOCALES (en un Task, sin llave) y lo
-    // cose con el bufer en la COSTURA; desde ahi sigue orden por orden. Las pasadas se piden enteras cuando la vela del momento cae en
-    // ellas, de a una. Vive aparte de SuperOla.cs (la parte de ATAS) para que el arnes atas/_test_super corra EXACTAMENTE este codigo
-    // sobre cintas reales y herramientas/auditar_ola.py lo compare contra la referencia en Python (test_ola.py).
+    // LA OLA 1.0 (27-11-2026): LA OLA CONECTADA A LA CINTA DE ATAS, LA PARTE SIN NADA DE ATAS. Copia de SuperOlaNucleo.cs (el 2.0a del
+    // Superindicador, probado en vivo: 52.410 ordenes de la jornada en 2,7 s, costura sin hueco) que se MUDA a este indicador aparte.
+    // Lo que se le agrego: (1) el CLIMA de la rueda (OlaClima.cs, el semaforo D1 de la ronda 21) alimentado con las MISMAS ordenes, en el
+    // mismo orden y con la misma correccion que la ola y la marea; (2) la mediana de las ruedas previas se calcula SIEMPRE, tambien con
+    // la X fija (el clima la necesita); (3) la lectura del clima "al momento" de una vela y sus filas en la auditoria.
+    // El motor (Ola, OlaFotos, EscalaOla, RangosRth en OlaMotor.cs) no se toca: esto es lo que lo alimenta. Una CARGA por jornada de CME
+    // (18:00 NY de la vispera a 17:00 NY): su X, sus cortes (uno por vela), dos OlaFotos, la ola (X) y la marea (4X), y el clima. La de
+    // la ultima vela es la VIVA: junta en un bufer las ordenes en vivo desde que arranca, pide el historial de la jornada a ATAS, lo pasa
+    // por motores LOCALES (en un Task, sin llave) y lo cose con el bufer en la COSTURA; desde ahi sigue orden por orden. Las pasadas se
+    // piden enteras cuando la vela del momento cae en ellas, de a una. Vive aparte de la parte de ATAS (PythiaOlaCinta.cs) para que el
+    // arnes atas/_test_pythiaola corra EXACTAMENTE este codigo sobre cintas reales y herramientas/auditar_pythiaola.py lo compare contra
+    // la referencia en Python (la de la ola de test_ola.py y la de la ronda 21 para el clima).
     // Nada de esto es seguro entre hilos: el indicador lo usa adentro de su llave (_llaveOla); el Task del historial solo toca su
     // TrabajoOla, que no comparte nada con la carga hasta que se integra bajo la llave.
     // =========================================================================================================================
@@ -172,8 +177,10 @@ namespace PythiaSuper
         public bool Completa(int clave, TimeSpan periodo) => Cubierto(clave, periodo) >= Minimo;
 
         /// <summary>X de la jornada 'clave': EscalaOla.X con los rangos RTH de las ultimas 10 ruedas COMPLETAS anteriores (con menos, las que
-        /// haya). Sin ninguna: el piso de 4 (sinRuedas = true). excluidas: las ruedas anteriores incompletas (las ultimas 5, para el registro).</summary>
-        public decimal X(int clave, decimal tick, TimeSpan periodo, out decimal mediana, out int usadas, out bool sinRuedas, out List<int> excluidas)
+        /// haya). Sin ninguna: el piso de 4 (sinRuedas = true). excluidas: las ruedas anteriores incompletas (las ultimas 5, para el registro).
+        /// medianaDouble: la MISMA mediana calculada en double como numpy (np.median: con cantidad par, (a + b) / 2), para el clima.</summary>
+        public decimal X(int clave, decimal tick, TimeSpan periodo, out decimal mediana, out int usadas, out bool sinRuedas, out List<int> excluidas,
+                         out double medianaDouble)
         {
             var previos = new List<decimal>();
             excluidas = new List<int>();
@@ -184,9 +191,22 @@ namespace PythiaSuper
                 else { excluidas.Add(r.Clave); if (excluidas.Count > 5) excluidas.RemoveAt(0); }
             }
             usadas = Math.Min(EscalaOla.Ruedas, previos.Count);
+            medianaDouble = MedianaDouble(previos, EscalaOla.Ruedas);
             decimal x = EscalaOla.X(previos, tick, out mediana);
             sinRuedas = x <= 0m;
             return sinRuedas ? EscalaOla.Piso : x;
+        }
+
+        /// <summary>np.median de las ultimas 'cuantas' (en double; los rangos son multiplos del tick y la cuenta es exacta). 0 si no hay.</summary>
+        public static double MedianaDouble(IList<decimal> valores, int cuantas)
+        {
+            int n = valores?.Count ?? 0;
+            if (n == 0) return 0.0;
+            int k = Math.Min(cuantas, n);
+            var v = new double[k];
+            for (int i = 0; i < k; i++) v[i] = (double)valores[n - k + i];
+            Array.Sort(v);
+            return k % 2 == 1 ? v[k / 2] : (v[k / 2 - 1] + v[k / 2]) / 2.0;
         }
     }
 
@@ -222,12 +242,18 @@ namespace PythiaSuper
         public readonly bool XSinRuedas;
         public readonly string Excluidas;               // ruedas anteriores incompletas (las ultimas 5)
         public readonly TimeSpan Periodo;               // TimeSpan.Zero: el corte es la apertura de la vela siguiente
+        public readonly DateTime Rth0, Rth1;            // UTC: 9:30 y 16:00 NY del dia de la rueda (para el clima)
+        public readonly double MedClima;                // la mediana en double como numpy (el clima la usa; igual a Mediana)
         public int PrimerBar { get; internal set; } = -1;
         public bool RecibeVivo { get; internal set; }   // la viva (la de la ultima vela)
         public EstadoOla Estado { get; internal set; } = EstadoOla.EnCola;
         public string Motivo { get; internal set; } = "";   // por que quedo sin cinta / sin respuesta
         public OlaFotos Ola { get; private set; }
         public OlaFotos Marea { get; private set; }
+        /// <summary>El clima de la rueda (semaforo de la ronda 21), con las mismas ordenes que la ola y la marea.</summary>
+        public ClimaRueda Clima { get; private set; }
+        /// <summary>Sube cada vez que los motores se reemplazan (historial integrado, solo en vivo): para rehacer lo que se pinta por vela.</summary>
+        public long VersionMotores { get; private set; }
 
         private readonly List<DateTime> _cortes = new List<DateTime>();
         public int Cortes => _cortes.Count;
@@ -272,10 +298,10 @@ namespace PythiaSuper
         private long _snapVer = -1;
 
         public CargaOla(int clave, DateTime desde, DateTime hasta, decimal x, decimal mediana, int usadas, string fuenteX, bool sinRuedas,
-                        string excluidas, TimeSpan periodo, bool viva, DateTime ahora)
+                        string excluidas, TimeSpan periodo, bool viva, DateTime ahora, DateTime rth0, DateTime rth1, double medClima)
         {
             Clave = clave; Desde = desde; Hasta = hasta; X = x; Mediana = mediana; Usadas = usadas; FuenteX = fuenteX ?? ""; XSinRuedas = sinRuedas;
-            Excluidas = excluidas ?? ""; Periodo = periodo; RecibeVivo = viva; CreadaEn = ahora;
+            Excluidas = excluidas ?? ""; Periodo = periodo; RecibeVivo = viva; CreadaEn = ahora; Rth0 = rth0; Rth1 = rth1; MedClima = medClima;
         }
 
         public bool Bufereando => Estado == EstadoOla.EnCola || Estado == EstadoOla.Pedida || Estado == EstadoOla.Procesando;
@@ -396,6 +422,7 @@ namespace PythiaSuper
             int p1 = Ola.Ola.Pivotes.Count, p4 = Marea.Ola.Pivotes.Count;
             Ola.Orden(o.T, o.Primero, o.Ultimo, o.Vol, o.Lado);
             Marea.Orden(o.T, o.Primero, o.Ultimo, o.Vol, o.Lado);
+            Clima.Orden(o.T, o.Primero, o.Ultimo, o.Vol);
             if (Ola.Ola.Pivotes.Count != p1 || Marea.Ola.Pivotes.Count != p4) VersionPiv++;
             if (InicioMotor == DateTime.MinValue) InicioMotor = o.T;
             if (o.T == InicioMotor) NInicio++;
@@ -426,6 +453,7 @@ namespace PythiaSuper
         {
             Ola.CorregirUltima(o.T, o.Primero, o.Ultimo, o.Vol, o.Lado);
             Marea.CorregirUltima(o.T, o.Primero, o.Ultimo, o.Vol, o.Lado);
+            Clima.CorregirUltima(o.T, o.Primero, o.Ultimo, o.Vol);
             _ult = o; Correcciones++; VersionPiv++; Version++;
         }
 
@@ -447,7 +475,7 @@ namespace PythiaSuper
                 enTope = l.ToArray();
             }
             else tope = RecibeVivo && topeVela > DateTime.MinValue ? topeVela : DateTime.MaxValue;
-            return new TrabajoOla(this, generacion, Desde, Hasta, X, _cortes.ToArray(), conBufer, tope, enTope);
+            return new TrabajoOla(this, generacion, Desde, Hasta, X, _cortes.ToArray(), conBufer, tope, enTope, Rth0, Rth1, MedClima, Usadas);
         }
 
         /// <summary>Bajo la llave, con el Task terminado: los motores del trabajo pasan a ser los de la carga, entran los cortes que
@@ -465,7 +493,7 @@ namespace PythiaSuper
                 SoloEnVivo(EstadoOla.SinCinta, t.Recibidas == 0 ? "el historial volvio vacio" : "el historial no trajo ordenes de la jornada (" + t.Recibidas + " fuera de rango)");
                 return;
             }
-            Ola = t.Ola; Marea = t.Marea;
+            Ola = t.Ola; Marea = t.Marea; Clima = t.Clima; VersionMotores++;
             SincronizarCortes();   // los cortes de las velas que aparecieron mientras corria el Task
             InicioMotor = Desde;
             UltimaHist = t.UltimaT;
@@ -480,7 +508,7 @@ namespace PythiaSuper
             }
             _hayUlt = t.HayUltima; _ult = t.Ultima; _ultRef = t.UltimaRef; _ultDeHistorial = t.HayUltima;
             Repasar();   // el bufer, en su orden
-            if (!RecibeVivo) { Ola.TomarHasta(DateTime.MaxValue); Marea.TomarHasta(DateTime.MaxValue); }
+            if (!RecibeVivo) { Ola.TomarHasta(DateTime.MaxValue); Marea.TomarHasta(DateTime.MaxValue); Clima.TomarHasta(DateTime.MaxValue); }
             Estado = RecibeVivo ? EstadoOla.EnVivo : EstadoOla.Completa;
             VersionPiv++; Version++;
         }
@@ -493,6 +521,9 @@ namespace PythiaSuper
             CosturaTipo = estado == EstadoOla.SinRespuesta ? "sin respuesta" : "sin cinta";
             if (!RecibeVivo) { Estado = estado; _bufer.Clear(); _bufer.TrimExcess(); return; }
             Ola = new OlaFotos(X); Marea = new OlaFotos(4 * X);
+            // el clima arranca con la primera orden en vivo: si es de la rueda (despues de las 9:30), queda "incompleto" y no se muestra
+            Clima = new ClimaRueda(Rth0, Rth1, MedClima, Usadas);
+            VersionMotores++;
             Estado = estado;   // ya no bufferea: SincronizarCortes y Repasar van al motor
             SincronizarCortes();
             _hayUlt = false; _ultDeHistorial = false; _dedup = false;
@@ -514,8 +545,26 @@ namespace PythiaSuper
         public void Cerrar()
         {
             RecibeVivo = false;
-            if (Ola != null && !Bufereando) { Ola.TomarHasta(DateTime.MaxValue); Marea.TomarHasta(DateTime.MaxValue); Version++; }
+            if (Ola != null && !Bufereando) { Ola.TomarHasta(DateTime.MaxValue); Marea.TomarHasta(DateTime.MaxValue); Clima.TomarHasta(DateTime.MaxValue); Version++; }
             if (Estado == EstadoOla.EnVivo) Estado = EstadoOla.Completa;
+        }
+
+        /// <summary>El clima "al momento" de la vela k de la jornada (contada desde PrimerBar): el del ultimo minuto de la rueda que cerro
+        /// antes del corte de esa vela (en la vela en curso, el ultimo minuto cerrado). false si todavia no hay ninguno: motivo dice por que.</summary>
+        public bool ClimaAlCorte(int k, out MinutoClima mc, out string motivo)
+        {
+            mc = default;
+            if (Bufereando) { motivo = "cargando la cinta"; return false; }
+            if (Clima == null) { motivo = EstadoTexto(); return false; }   // una pasada sin cinta: lo mismo que dicen la marea y la ola
+            if (!Clima.Completo) { motivo = "sin la cinta desde las 9:30 no se mide"; return false; }
+            if (Clima.Med <= 0) { motivo = "sin ruedas previas para comparar"; return false; }
+            DateTime corte = k >= 0 && k < _cortes.Count && (k < Ola.Tomadas) ? _cortes[k] : DateTime.MaxValue;
+            int m = Clima.UltimoHasta(corte);
+            if (m < 0) { motivo = Clima.Cerrados == 0 ? "la rueda abre 9:30 NY" : "esperando el primer minuto"; return false; }
+            mc = Clima.Minuto(m);
+            if (!mc.HayRth) { motivo = "la rueda abre 9:30 NY"; return false; }
+            motivo = "";
+            return true;
         }
 
         // ------------------------------------------------------------------ lectura
@@ -558,6 +607,10 @@ namespace PythiaSuper
         private readonly List<(object Ref, OrdenOla O)> _enTope = new List<(object, OrdenOla)>();
 
         public OlaFotos Ola, Marea;
+        public ClimaRueda Clima;
+        private readonly DateTime _rth0, _rth1;
+        private readonly double _med;
+        private readonly int _usadasMed;
         public long Recibidas, Nulas, FueraDeRango, EnRango, Usadas, Descartadas, Desordenadas, EnTopeUsadas;
         public bool CosturaDudosa, SinSolape, HayUltima;
         public OrdenOla Ultima; public object UltimaRef;
@@ -567,15 +620,18 @@ namespace PythiaSuper
         public double Ms;
         private System.Diagnostics.Stopwatch _sw;
 
-        internal TrabajoOla(CargaOla c, int gen, DateTime desde, DateTime hasta, decimal x, DateTime[] cortes, bool conBufer, DateTime tope, OrdenOla[] enTope)
+        internal TrabajoOla(CargaOla c, int gen, DateTime desde, DateTime hasta, decimal x, DateTime[] cortes, bool conBufer, DateTime tope, OrdenOla[] enTope,
+                            DateTime rth0, DateTime rth1, double med, int usadasMed)
         {
             Carga = c; Generacion = gen; _desde = desde; _hasta = hasta; _x = x; _cortes = cortes; ConBufer = conBufer; Tope = tope; _enTopeBufer = enTope;
+            _rth0 = rth0; _rth1 = rth1; _med = med; _usadasMed = usadasMed;
         }
 
         public void Empezar()
         {
             _sw = System.Diagnostics.Stopwatch.StartNew();
             Ola = new OlaFotos(_x); Marea = new OlaFotos(4 * _x);
+            Clima = new ClimaRueda(_rth0, _rth1, _med, _usadasMed);
             foreach (var c in _cortes) { Ola.AgregarCorte(c); Marea.AgregarCorte(c); }
         }
 
@@ -596,6 +652,7 @@ namespace PythiaSuper
             if (HayUltima && o.T < Ultima.T) Desordenadas++;
             Ola.Orden(o.T, o.Primero, o.Ultimo, o.Vol, o.Lado);
             Marea.Orden(o.T, o.Primero, o.Ultimo, o.Vol, o.Lado);
+            Clima.Orden(o.T, o.Primero, o.Ultimo, o.Vol);
             Usadas++; Ultima = o; UltimaRef = r; HayUltima = true;
             if (o.T > UltimaT) { UltimaT = o.T; EnLaUltimaHora.Clear(); }
             if (o.T == UltimaT) EnLaUltimaHora.Add(o);
@@ -682,6 +739,14 @@ namespace PythiaSuper
             var h = Jornadas.Fecha(clave).AddHours(17);
             desde = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(d, DateTimeKind.Unspecified), _ny), DateTimeKind.Utc);
             hasta = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(h, DateTimeKind.Unspecified), _ny), DateTimeKind.Utc);
+        }
+
+        /// <summary>[9:30, 16:00) NY del dia de la rueda, en UTC (el clima).</summary>
+        public void RangoRth(int clave, out DateTime rth0, out DateTime rth1)
+        {
+            var d = Jornadas.Fecha(clave);
+            rth0 = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(d.Add(Jornadas.Rth0), DateTimeKind.Unspecified), _ny), DateTimeKind.Utc);
+            rth1 = DateTime.SpecifyKind(TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(d.Add(Jornadas.Rth1), DateTimeKind.Unspecified), _ny), DateTimeKind.Utc);
         }
 
         // ------------------------------------------------------------------ velas
@@ -777,16 +842,19 @@ namespace PythiaSuper
         private CargaOla NuevaCarga(int clave, bool viva)
         {
             DetectarPeriodo();
-            decimal x, med = 0m; int usadas = 0; string fuente; bool sinRuedas = false; string excl = "";
+            // La Ola 1.0: la mediana de las ruedas previas se calcula SIEMPRE (el clima la usa aunque la X sea fija)
+            decimal xAuto = _ruedas.X(clave, Tick, Periodo, out decimal med, out int usadas, out bool sinRuedas, out var ex, out double medD);
+            string excl = string.Join(" ", ex);
+            decimal x; string fuente;
             if (XFija > 0m) { x = XFija; fuente = "fija"; }
             else
             {
-                x = _ruedas.X(clave, Tick, Periodo, out med, out usadas, out sinRuedas, out var ex);
+                x = xAuto;
                 fuente = sinRuedas ? "piso: sin ruedas completas" : usadas >= EscalaOla.Ruedas ? "auto" : "auto con " + usadas + " ruedas";
-                excl = string.Join(" ", ex);
             }
             Rango(clave, out var desde, out var hasta);
-            var c = new CargaOla(clave, desde, hasta, x, med, usadas, fuente, sinRuedas, excl, Periodo, viva, Reloj()) { Acceso = ++_acceso };
+            RangoRth(clave, out var rth0, out var rth1);
+            var c = new CargaOla(clave, desde, hasta, x, med, usadas, fuente, sinRuedas, excl, Periodo, viva, Reloj(), rth0, rth1, medD) { Acceso = ++_acceso };
             if (BarrasDe(clave, out int p, out int u))
             {
                 c.PrimerBar = p;
@@ -977,6 +1045,39 @@ namespace PythiaSuper
             return true;
         }
 
+        /// <summary>La Ola 1.0: solo las dos fotos de la vela 'bar' (sin las listas de pivotes), para pintar el fondo y las velas de a una
+        /// por vela visible. Las mismas reglas que AlMomento: sin carga, cargando o atrasada (el grafico adelante de la cinta) da false.</summary>
+        public bool FotosDe(int bar, out FotoOla ola, out FotoOla marea)
+        {
+            ola = marea = default;
+            int clave = ClaveDe(bar);
+            if (clave < 0) return false;
+            var c = Buscar(clave);
+            if (c == null || !c.TieneMotor || c.PrimerBar < 0 || c.Bufereando) return false;
+            int k = bar - c.PrimerBar;
+            if (k < 0) return false;
+            if (k >= c.Ola.Tomadas && Atrasada(c, out _)) return false;
+            c.Acceso = ++_acceso;
+            ola = c.Ola.Foto(k); marea = c.Marea.Foto(k);
+            return true;
+        }
+
+        /// <summary>La Ola 1.0: el CLIMA de la jornada de la vela 'bar' al cierre de esa vela (en la vela en curso, el del ultimo minuto
+        /// cerrado de la rueda). false si no hay: motivo dice por que (sin carga, cargando, la rueda abre 9:30, sin ruedas previas...).</summary>
+        public bool ClimaAlMomento(int bar, out MinutoClima mc, out string motivo, out CargaOla carga)
+        {
+            mc = default; carga = null;
+            int clave = ClaveDe(bar);
+            if (clave < 0) { motivo = "sin vela"; return false; }
+            var c = Buscar(clave);
+            if (c == null) { motivo = "sin carga"; return false; }
+            carga = c;
+            if (c.PrimerBar < 0) { motivo = "sin velas"; return false; }
+            int k = bar - c.PrimerBar;
+            if (c.TieneMotor && !c.Bufereando && k >= c.Ola.Tomadas && Atrasada(c, out _)) { motivo = "atrasada: la cinta en vivo no llega"; return false; }
+            return c.ClimaAlCorte(k, out mc, out motivo);
+        }
+
         public const double ToleranciaAtrasoSeg = 5;
 
         /// <summary>La viva quedo atras del grafico: la ultima operacion de la ultima vela es mas de 5 s posterior a la ultima orden que entro
@@ -1022,7 +1123,17 @@ namespace PythiaSuper
                 s.PivMarea = Arreglo(c.Pivotes(true, int.MaxValue));
                 s.ActualOla = c.Ola.Actual; s.ActualMarea = c.Marea.Actual;
                 s.N = c.Ola.Ola.Ordenes; s.TUltima = c.Ola.Ola.UltimaHora;
+                // La Ola 1.0: el clima de cada minuto cerrado de la rueda
+                var cl = c.Clima;
+                s.HayClima = cl != null;
+                if (cl != null)
+                {
+                    s.ClimaCompleto = cl.Completo; s.ClimaPrimera = cl.PrimeraOrden; s.ClimaOrdenes = cl.Ordenes;
+                    s.Clima = new MinutoClima[cl.Cerrados];
+                    for (int m = 0; m < s.Clima.Length; m++) s.Clima[m] = cl.Minuto(m);
+                }
             }
+            s.Rth0 = c.Rth0; s.Rth1 = c.Rth1; s.MedClima = c.MedClima;
             return s;
         }
 
@@ -1055,6 +1166,8 @@ namespace PythiaSuper
             if (c != null)
             {
                 s.Append(",\"clave\":").Append(c.Clave).Append(",\"x\":").Append(Fd(c.X)).Append(",\"mediana\":").Append(Fd(c.Mediana))
+                 .Append(",\"med_clima\":").Append(ClimaRueda.D(c.MedClima)).Append(",\"rth0\":\"").Append(Hu(c.Rth0)).Append("\",\"clima_completo\":")
+                 .Append(c.Clima != null && c.Clima.Completo ? "true" : "false").Append(",\"clima_minutos\":").Append(c.Clima != null ? c.Clima.Cerrados : 0)
                  .Append(",\"ruedas_usadas\":").Append(c.Usadas).Append(",\"x_fuente\":\"").Append(J(c.FuenteX)).Append("\",\"excluidas\":\"").Append(J(c.Excluidas))
                  .Append("\",\"viva\":").Append(c.RecibeVivo ? "true" : "false").Append(",\"motivo\":\"").Append(J(c.Motivo))
                  .Append("\",\"desde\":\"").Append(Hu(c.Desde)).Append("\",\"hasta\":\"").Append(Hu(c.Hasta))
@@ -1081,6 +1194,10 @@ namespace PythiaSuper
                  .Append(",\"atraso_s\":").Append(c.RecibeVivo && c.TieneMotor && !c.Bufereando ? (UltimaHoraVela - uo).TotalSeconds.ToString("0.000", I) : "null");
             }
             if (hay) { s.Append(",\"foto\":{"); FotoJson(s, "ola", fo, po.Count); s.Append(','); FotoJson(s, "marea", fm, pm.Count); s.Append('}'); }
+            // La Ola 1.0: el clima de la vela del momento (el del ultimo minuto de la rueda cerrado antes de su corte)
+            bool hayC = ClimaAlMomento(momento, out var mc, out string motC, out _);
+            s.Append(",\"clima\":");
+            ClimaJson(s, hayC, mc, motC);
             s.Append(",\"cargas\":[");
             var todas = new List<CargaOla>();
             if (Viva != null) todas.Add(Viva);
@@ -1094,6 +1211,20 @@ namespace PythiaSuper
                  .Append(q.TieneMotor ? q.Marea.Ola.Pivotes.Count : 0).Append(']');
             }
             s.Append(']');
+        }
+
+        /// <summary>El clima para la auditoria: minuto de la rueda, estado, veces lo normal (rrn, con todos sus decimales), lados, maximo,
+        /// minimo, precio, VWAP, apertura, mediana y f(m); o el motivo si no hay.</summary>
+        public static void ClimaJson(StringBuilder s, bool hay, in MinutoClima mc, string motivo)
+        {
+            s.Append("{\"hay\":").Append(hay ? "true" : "false").Append(",\"motivo\":\"").Append(J(motivo)).Append('"');
+            if (hay)
+                s.Append(",\"m\":").Append(mc.M).Append(",\"fin\":\"").Append(Hu(mc.Fin)).Append("\",\"tipo\":\"").Append(mc.Tipo).Append("\",\"nombre\":\"").Append(J(mc.Nombre()))
+                 .Append("\",\"rrn\":").Append(ClimaRueda.D(mc.Rrn)).Append(",\"lado_vwap\":").Append(mc.LadoVwap).Append(",\"lado_apertura\":").Append(mc.LadoApertura)
+                 .Append(",\"h\":").Append(Fd(mc.H)).Append(",\"l\":").Append(Fd(mc.L)).Append(",\"c\":").Append(Fd(mc.C)).Append(",\"vw\":")
+                 .Append(double.IsNaN(mc.Vw) ? "null" : ClimaRueda.D(mc.Vw)).Append(",\"o\":").Append(Fd(mc.O)).Append(",\"med\":").Append(ClimaRueda.D(mc.Med))
+                 .Append(",\"fm\":").Append(ClimaRueda.D(mc.Fm)).Append(",\"n\":").Append(mc.N);
+            s.Append('}');
         }
 
         /// <summary>Una foto para la auditoria: dir, origen (hora y precio), extremo (hora y precio), delta de la pierna, con agresores,
@@ -1121,10 +1252,19 @@ namespace PythiaSuper
     ///     extremo_precio,extremo_cum,delta_pierna,con_agresores,retroceso,faltan,raya,recorrido        la foto de cada vela k
     /// esc = X (la ola) o 4X (la marea). Horas UTC yyyy-MM-ddTHH:mm:ss.fff. tomada = 0: la foto todavia no se tomo (vela en curso o mercado
     /// quieto) y vale el estado de ahora. corte vacio: la vela en curso de un grafico que no es de tiempo.
+    /// La Ola 1.0 agrega el CLIMA de cada minuto cerrado de la rueda (los double con todos sus decimales, "R"; nan si no hay):
+    ///   C,m,fin,n,hay_rth,h,l,c,o,vw,med,fm,rrn,tipo,lado_vwap,lado_apertura
+    /// y en las M: rth0, rth1, med_clima, clima_completo, clima_primera, clima_ordenes, curva_huella.
     /// </summary>
     public sealed class InstantaneaOla
     {
         private static readonly CultureInfo I = CultureInfo.InvariantCulture;
+
+        public bool HayClima, ClimaCompleto;
+        public DateTime Rth0, Rth1, ClimaPrimera;
+        public double MedClima;
+        public long ClimaOrdenes;
+        public MinutoClima[] Clima = Array.Empty<MinutoClima>();
 
         public string Inst = "", Marco = "", VersionIndicador = "";
         public int Clave, Usadas, PrimerBar, UltimoBar, BuferMax, CortesForzados, TomadasOla, TomadasMarea, CortesTardeOla, CortesTardeMarea;
@@ -1146,7 +1286,7 @@ namespace PythiaSuper
 
         public void Escribir(TextWriter w)
         {
-            w.Write("# ola del Superindicador " + Txt(VersionIndicador) + ": " + Txt(Inst) + " " + Txt(Marco) + " jornada " + Clave + ", generado " + H(Generado) + " UTC\n");
+            w.Write("# La Ola " + Txt(VersionIndicador) + ": " + Txt(Inst) + " " + Txt(Marco) + " jornada " + Clave + ", generado " + H(Generado) + " UTC\n");
             void M(string k, string v) { w.Write("M,"); w.Write(k); w.Write(','); w.Write(Txt(v)); w.Write('\n'); }
             M("inst", Inst); M("marco", Marco); M("version", VersionIndicador); M("clave", Clave.ToString(I)); M("estado", Estado); M("motivo", Motivo);
             M("recibe_vivo", RecibeVivo ? "1" : "0"); M("hay_motor", HayMotor ? "1" : "0");
@@ -1164,6 +1304,9 @@ namespace PythiaSuper
             M("vivo_desordenadas", VivoDesordenadas.ToString(I)); M("correcciones", Correcciones.ToString(I)); M("correcciones_costura", CorreccionesCostura.ToString(I));
             M("viejas", Viejas.ToString(I)); M("act_duplicadas", ActDuplicadas.ToString(I)); M("viejas_bufer", ViejasBufer.ToString(I)); M("correcciones_bufer", CorreccionesBufer.ToString(I));
             M("huerfanas_bufer", HuerfanasBufer.ToString(I)); M("fuera", Fuera.ToString(I)); M("bufer_max", BuferMax.ToString(I));
+            M("rth0", H(Rth0)); M("rth1", H(Rth1)); M("med_clima", ClimaRueda.D(MedClima)); M("hay_clima", HayClima ? "1" : "0");
+            M("clima_completo", ClimaCompleto ? "1" : "0"); M("clima_primera", H(ClimaPrimera)); M("clima_ordenes", ClimaOrdenes.ToString(I));
+            M("clima_minutos", Clima.Length.ToString(I)); M("curva_huella", CurvaRango.Huella);
             w.Write("#P,esc,k,t_extremo,precio,tipo,confirmado,t_conf,n_conf,cum\n");
             foreach (var (esc, piv, act) in new[] { ("X", PivOla, ActualOla), ("4X", PivMarea, ActualMarea) })
             {
@@ -1173,6 +1316,17 @@ namespace PythiaSuper
             w.Write("#F,esc,k,bar,corte,tomada,n,t_ultima,ultimo,cum,dir,pivotes,origen_t,origen_precio,origen_tipo,origen_cum,extremo_t,extremo_precio,extremo_cum,delta_pierna,con_agresores,retroceso,faltan,raya,recorrido\n");
             foreach (var (esc, fotos, tomadas) in new[] { ("X", FotosOla, TomadasOla), ("4X", FotosMarea, TomadasMarea) })
                 for (int k = 0; k < fotos.Length; k++) Foto(w, esc, k, PrimerBar + k, k < Cortes.Length ? Cortes[k] : DateTime.MinValue, k < tomadas, fotos[k]);
+            w.Write("#C,m,fin,n,hay_rth,h,l,c,o,vw,med,fm,rrn,tipo,lado_vwap,lado_apertura\n");
+            var sb = new System.Text.StringBuilder(160);
+            foreach (var x in Clima)
+            {
+                sb.Clear();
+                sb.Append("C,").Append(x.M).Append(',').Append(H(x.Fin)).Append(',').Append(x.N).Append(',').Append(x.HayRth ? '1' : '0').Append(',')
+                  .Append(F(x.H)).Append(',').Append(F(x.L)).Append(',').Append(F(x.C)).Append(',').Append(F(x.O)).Append(',').Append(ClimaRueda.D(x.Vw)).Append(',')
+                  .Append(ClimaRueda.D(x.Med)).Append(',').Append(ClimaRueda.D(x.Fm)).Append(',').Append(ClimaRueda.D(x.Rrn)).Append(',').Append(x.Tipo).Append(',')
+                  .Append(x.LadoVwap).Append(',').Append(x.LadoApertura).Append('\n');
+                w.Write(sb.ToString());
+            }
         }
 
         private static void Pivote(TextWriter w, string esc, int k, in PivoteOla p)

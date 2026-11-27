@@ -66,7 +66,10 @@ namespace PythiaSuper
     [Category("PythiaGex")]
     public partial class SuperindicadorOF : Indicator
     {
-        public const string Version = "2.0a";   // 2.0a: la ola conectada a la cinta, solo datos y auditoria (SuperOla.cs)
+        // 1.9b (27-11-2026): vuelve a su funcion original (velas + delta + perfil + la sonda de cinta). La ola de la 2.0a (SuperOla.cs,
+        // SuperOlaNucleo.cs y el motor de SuperCalculos.cs) se mudo a un indicador APARTE, La Ola 1.0 (atas/PythiaOla, PythiaOla.dll),
+        // por pedido del operador: "este es delta, footprint y volumen; el de la ola es mas general".
+        public const string Version = "1.9b";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -435,7 +438,6 @@ namespace PythiaSuper
         {
             try { if (_latido != null) UnsubscribeFromTimer(_periodo, _latido); } catch { }
             try { VolcarCinta(); } catch { }
-            OlaSoltar();   // 2.0a: libera el turno de pedidos de cinta
             base.OnDispose();
         }
 
@@ -448,7 +450,6 @@ namespace PythiaSuper
             }
             _cCol.Firma = null; _cPer.Firma = null;
             lock (_llaveArchivo) _velasVolcadas.Clear();
-            OlaReiniciarTodo("recarga de datos");   // 2.0a: las cargas de la ola se rehacen
             AnotarLinea("recarga de datos -> carga " + _carga);
         }
 
@@ -471,7 +472,6 @@ namespace PythiaSuper
                     if (bar == 0) { _jornadas.Clear(); _jornadaUltBar = -1; }
                     if (bar > _jornadaUltBar) { Jornadas.Agregar(_jornadas, bar, ny); _jornadaUltBar = bar; }
                 }
-                OlaVela(bar, c);   // 2.0a: apertura, rango RTH y corte de la vela para la ola (O(1), con su propia llave)
                 if (bar >= ultima)
                 {
                     long t0 = System.Diagnostics.Stopwatch.GetTimestamp();
@@ -513,7 +513,6 @@ namespace PythiaSuper
                 }
                 if (_registro && (DateTime.UtcNow - _ultFlush).TotalSeconds >= 2) { _ultFlush = DateTime.UtcNow; VolcarCinta(); }
                 SondaLatido();   // 1.9: pedidos de cinta historica por archivo (SuperSonda.cs)
-                OlaLatido();     // 2.0a: la ola (SuperOla.cs): pedidos de cinta, registro y csv de auditoria
             }
             catch (Exception e) { Anotar(e); }
         }
@@ -1720,7 +1719,6 @@ namespace PythiaSuper
                     }
                 sb.Append(",\"control\":{\"velas\":").Append(rev).Append(",\"delta_distinto\":").Append(difD).Append(",\"volumen_distinto\":").Append(difV)
                   .Append(",\"niveles_repetidos\":").Append(rep).Append(",\"volumen_sin_agresor\":").Append(F(entre)).Append('}');
-                AuditarOla(sb);   // 2.0a: seccion "ola" (SuperOla.cs)
                 sb.Append(",\"rendimiento\":{\"dibujos\":").Append(_nRender).Append(",\"ms_dibujo_prom\":").Append((_nRender > 0 ? _msRender / _nRender : 0).ToString("0.000", Inv))
                   .Append(",\"ms_dibujo_max\":").Append(_msRenderMax.ToString("0.000", Inv)).Append(",\"ticks_vivos\":").Append(_nVivo)
                   .Append(",\"ms_tick_prom\":").Append((_nVivo > 0 ? _msVivo / _nVivo : 0).ToString("0.000", Inv)).Append(",\"ms_tick_max\":").Append(_msVivoMax.ToString("0.000", Inv))

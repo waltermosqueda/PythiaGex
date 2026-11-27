@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Arnes de La Ola 1.0 SIN ATAS (27-11-2026): el mismo codigo del indicador (OlaMotor, OlaNucleo, OlaClima) sobre cintas reales.
+       Los modos de la ola (ola, x, velocidad, flujo) se mudaron aca desde atas/_test_super; el modo r21 es nuevo. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\PythiaOla\OlaMotor.cs" />
+    <Compile Include="..\PythiaOla\OlaNucleo.cs" />
+    <Compile Include="..\PythiaOla\OlaClima.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="FlujoOla.cs" />
+    <Compile Include="ArnesR21.cs" />
+  </ItemGroup>
+</Project>

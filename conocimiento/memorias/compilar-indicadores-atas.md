@@ -65,7 +65,7 @@ Si el diálogo está tan abajo que no se ven los botones, arrastrar la barra de 
 
 - **Sin `EnableCustomDrawing = true` y `SubscribeToDrawingEvents(DrawingLayouts.Final)` en el constructor (`: base(true)`), ATAS no llama a OnRender NUNCA.** El indicador arranca, baja datos, y la pantalla queda vacia sin error. Copiar el constructor de Gamma Vivo.
 - **Con el mercado cerrado no hay ticks y OnCalculate no corre**: si el calculo vive solo ahi, la pantalla queda vacia o vieja. Repreciar tambien desde el temporizador.
-- Recarga en caliente: al copiar el DLL, ATAS escribe `Changed library` y avisa "reload indicators in the status bar", pero por UI Automation no aparece ningun control de recarga en la barra de estado (solo Server, conectores, engranaje y version). Reiniciar sigue siendo el camino.
+- Recarga en caliente: **CORREGIDO el 23-11-2026: SI existe** (boton azul sin nombre a la izquierda del icono amarillo de la barra de estado, aparece solo con cambios pendientes; aviso con OK cirilico). Ver [[recarga-en-caliente-atas]] y herramientas/instalar_superindicador.ps1. Ya no hace falta reiniciar ATAS para instalar.
 - Agregar un indicador a un grafico sin clics: UI Automation sobre el boton "Indicators" del panel (Invoke), escribir el nombre en el buscador, seleccionar la fila, Invoke "Add to chart" y luego "Apply". Funciona aunque la ventana del chat tape los botones.
 
 **Reinicio de ATAS por script (2026-09-07):** CloseMainWindow -> dialogo "Save

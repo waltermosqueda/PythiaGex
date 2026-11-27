@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 6b882b35-31bc-4131-8cd4-4b099f670c25
-  modified: 2026-09-25T05:21:33.319Z
+  modified: 2026-11-16T17:02:36.240Z
 ---
 
 Diagnostico del 22-09 (operador en RTH con MNQ, ATAS 8.0.14.399, i3 de 8 hilos, 16 GB, Wi-Fi):
@@ -40,6 +40,17 @@ Diagnostico del 22-09 (operador en RTH con MNQ, ATAS 8.0.14.399, i3 de 8 hilos, 
   En el log, `get_order_book error : 13` en CADA suscripcion (Prints, Best, Quotes, Summary) desde las 23:57 del 24-09,
   justo cuando caduco la cuenta Lucid; 0 veces el 22 y el 23. La suscripcion que ATAS pide es la misma de siempre y el
   login Rithmic es el mismo (<login>): es el permiso de profundidad del login, no algo nuestro. Reclamo a Lucid.
+
+- 16-11 (en vivo): 0 cortes 10:01-11:31 AR; desde la apertura (11:31) "Connection lost" casi cada minuto, "Slow ticks" de
+  10,6 s, "No response to the options request within 120 s", ATAS en 5,9 GB con 2,6 GB libres; el operador reinicio ATAS
+  11:49 (volvio en 1,2 GB, prioridad Normal) y no hubo mas cortes. Coincidio con la apertura Y con un workflow mio pesado
+  (lo frene). El 13-11 hubo 22 cortes a la misma hora sin ese workflow: causa no aislada. Dos hallazgos firmes: (1) ATAS
+  lanzado por la tarea programada de las 10:00 corre en BelowNormal (prioridad de Task Scheduler); (2) los agentes que bajan
+  prioridad con ctypes SIN restype/argtypes quedan en Normal. Regla: nada pesado de 09:25 a 16:05 NY con ATAS abierto; si
+  hace falta, procesos en IDLE (0x40) con argtypes y un vigia que baja python.exe a Idle.
+  Correccion: el ATAS de las 11:49 se COLGO ("Application Hang" 11:52:29 en el visor) y arranco otro a las 11:52:33 (PID 1576).
+  Ese crecio de ~1 GB a 10,8 GB privados en 2 h (14:00 AR, 0,5-1,7 GB libres; sin cortes desde 11:52). Espacio activo
+  'MNQ liviano.ws' con heatmap OrderBookHistoryDepthHours 12, la referencia, PythiaGex 5, Gamma Hoy prod y Flujo Claro: culpable sin aislar.
 
 **Why:** el operador perdio la rueda con ATAS tildado y pregunto si era su internet; la respuesta con numeros es no.
 **How to apply:** ante "latencia"/"se tilda": medir primero RAM de ATAS y memoria libre, cortes por minuto en

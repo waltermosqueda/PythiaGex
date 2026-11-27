@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Prueba INDEPENDIENTE del MOTOR DE LA OLA del Superindicador (SuperCalculos.cs, 27-11-2026) contra la referencia en Python,
+"""Prueba INDEPENDIENTE del MOTOR DE LA OLA (27-11-2026; desde La Ola 1.0 vive en atas/PythiaOla/OlaMotor.cs) contra la referencia en Python,
 sobre cintas REALES de la sonda.
 
 Por cada cinta (MES 16 a 25-11 y las 9 ruedas de ES de la ronda 17):
-  1. corre el arnes de C# (atas/_test_super, modo 'ola'): la ola (X) y la marea (4X) en dos ventanas, la rueda COMPLETA desde las
+  1. corre el arnes de C# (atas/_test_pythiaola, modo 'ola'): la ola (X) y la marea (4X) en dos ventanas, la rueda COMPLETA desde las
      18:00 NY de la vispera hasta las 17:00 NY y la RTH 9:30-16:00 NY, cada una arrancada de cero, con fotos cada 30 s; y las mismas
      dos ventanas en modo VIVO: cada orden de varios prints entra creciendo (Orden + CorregirUltima, como OnUpdateCumulativeTrade
      de ATAS) y con fotos tomadas mientras crece, que CorregirUltima tiene que rehacer;
@@ -45,8 +45,10 @@ except Exception:
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
 FLUJO = os.path.join(os.environ.get("APPDATA", ""), "ATAS", "PythiaGex", "flujo")
-EXE = os.path.join(RAIZ, "atas", "_test_super", "bin", "Release", "net10.0", "_test_super.exe")
-FUENTES_CS = [os.path.join(RAIZ, "atas", "Superindicador", "SuperCalculos.cs"), os.path.join(RAIZ, "atas", "_test_super", "Program.cs")]
+# 27-11-2026: el motor de la ola se mudo del Superindicador (SuperCalculos.cs) a La Ola 1.0 (atas/PythiaOla/OlaMotor.cs, copia al pie de
+# la letra) y sus modos de prueba, de atas/_test_super a atas/_test_pythiaola.
+EXE = os.path.join(RAIZ, "atas", "_test_pythiaola", "bin", "Release", "net10.0", "_test_pythiaola.exe")
+FUENTES_CS = [os.path.join(RAIZ, "atas", "PythiaOla", "OlaMotor.cs"), os.path.join(RAIZ, "atas", "_test_pythiaola", "Program.cs")]
 R17 = os.path.join(RAIZ, "laboratorio", "ronda17_orderflow")
 DATOS_R17 = os.path.join(RAIZ, "datos", "ronda17")
 NY = ZoneInfo("America/New_York")
@@ -385,7 +387,7 @@ def main():
         original = cand[-1] if cand else None
     print(verificar_copia(original), flush=True)
     if not os.path.exists(EXE):
-        raise SystemExit("falta el arnes: dotnet build -c Release en atas/_test_super")
+        raise SystemExit("falta el arnes: dotnet build -c Release en atas/_test_pythiaola")
     viejo = [f for f in FUENTES_CS if os.path.getmtime(f) > os.path.getmtime(EXE)]
     if viejo:
         print("OJO: el arnes es mas viejo que " + ", ".join(os.path.basename(f) for f in viejo) + ": recompilar", flush=True)

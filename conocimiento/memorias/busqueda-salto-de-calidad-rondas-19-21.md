@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
-  modified: 2026-11-27T08:14:47.693Z
+  modified: 2026-11-27T08:28:25.427Z
 ---
 
 Textual (27-11 ~02:40-03:00 AR): "ampliar el estudio y cruzar mas variables hasta encontrar la evolucion ganadora: VWAP,
@@ -75,6 +75,15 @@ gamma negativa a las 9:59 -> rango 1,45x la mediana vs 0,95x (t 2,67; la mitad y
 llega mas seguido y antes al TENDENCIA del D1 (15/31 vs 3/18, minuto 55 vs 101). No rescata a las finalistas de la R19 ni a R1
 (33,7 vs 33,2 %). Mecanica: con gamma negativa hay el doble de piernas por rueda con el mismo largo ("subir el volumen de la radio").
 Tabla `scratchpad\r20\gex_minuto.parquet` (57 ruedas; sin cadena 20-25-11 por el corte de CBOE). Baul #54-57.
+
+**MNQ (27-11 05:24):** COMB-T7+V4 CONGELADA (SHA-256 dd8e18ad...) en MNQ 14-08..21-09 (25 ruedas): 52,2 %, -0,13/op; en las 18
+sin fechas de ES 40,7 %, -4,94; lo bueno (68 %) salio de los 7 dias que coinciden con el diseño de ES. Mecanica: el D1 compara con
+la mediana de 10 ruedas; si fueron de otro clima (fines de julio gigantes) lee mal. Bitacora en vivo con ES lista
+(`ronda21_regimen/r21_11_vivo.py`, desde el 30-11; 26 y 27-11 excluidos).
+**Datos independientes (cotizado gratis 27-11):** Databento GLBX.MDP3 tbbo ES.c.0: jun-ago 2026 USD 59,21 (~63 ruedas, 2,3 GB);
+mar-ago USD 125,25 (~125 ruedas). Ya gastado USD 41,30; la cuenta tenia tope/sin credito (402 el 08-09). COMPRA = decision suya.
+**La Ola 1.0** (indicador aparte, `atas/PythiaOla`) en construccion por un agente: fondo de marea + ola + rayas + rombos + panel
+con CLIMA D1; sin señales (ninguna valido); Superindicador vuelve a 1.9b.
 
 **La vara doble (decirsela siempre):** el % de acierto solo se infla con objetivo chico y stop grande y se pierde plata; se juzga
 acierto Y esperanza neta con costo, fuera de muestra, con correccion por la cantidad de variantes. Datos: 49 ruedas de ES
