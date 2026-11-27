@@ -1,0 +1,26 @@
+ola-ESZ6-M1-20261127_copia.csv | X 10.25 | en vivo | costura bufer | ordenes 143879 | pivotes 30, fotos 1910 (954 tomadas), campos 36500 | difs 0 | 0.7 s
+  mediana por fuera con 10 ruedas previas: 126.625 (indicador 126.625) IGUAL
+  clima: 24 minutos cerrados en el csv, recalculados por fuera desde la cinta: 0 diferencias
+  panel (jsonl): 30 valores mostrados comparados con el csv, 28 diferencias
+    DIF 2026-11-27T10:17:38.162: ola del panel (dir, raya, faltan, delta) (-1, 7328.5, 3.75, -139), csv (-1, 7328.5, 3.75, -144.0)
+    DIF 2026-11-27T10:17:38.162: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 22.75, 2815), csv (1, 7302.0, 22.75, 2810.0)
+    DIF 2026-11-27T10:18:38.167: ola del panel (dir, raya, faltan, delta) (-1, 7328.5, 4.25, -153), csv (-1, 7328.5, 4.75, -155.0)
+    DIF 2026-11-27T10:18:38.167: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 22.25, 2801), csv (1, 7302.0, 21.75, 2799.0)
+    DIF 2026-11-27T10:19:38.428: ola del panel (dir, raya, faltan, delta) (-1, 7328.5, 4.25, -137), csv (-1, 7328.5, 4.75, -136.0)
+    DIF 2026-11-27T10:19:38.428: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 22.25, 2817), csv (1, 7302.0, 21.75, 2818.0)
+    DIF 2026-11-27T10:20:38.451: ola del panel (dir, raya, faltan, delta) (-1, 7328.5, 3.75, -119), csv (-1, 7328.5, 3.75, -107.0)
+    DIF 2026-11-27T10:20:38.451: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 22.75, 2835), csv (1, 7302.0, 22.75, 2847.0)
+    DIF 2026-11-27T10:21:38.602: ola del panel (dir, raya, faltan, delta) (-1, 7328.5, 4.0, -96), csv (-1, 7328.5, 4.25, -164.0)
+    DIF 2026-11-27T10:21:38.602: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 22.5, 2858), csv (1, 7302.0, 22.25, 2790.0)
+    DIF 2026-11-27T10:22:38.969: ola del panel (dir, raya, faltan, delta) (-1, 7328.5, 2.5, -130), csv (-1, 7328.5, 1.25, -94.0)
+    DIF 2026-11-27T10:22:38.969: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 24.0, 2824), csv (1, 7302.0, 25.25, 2860.0)
+    DIF 2026-11-27T10:23:39.158: ola del panel (dir, raya, faltan, delta) (-1, 7328.5, 1.0, 9), csv (-1, 7328.5, 0.5, 14.0)
+    DIF 2026-11-27T10:23:39.158: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 25.5, 2963), csv (1, 7302.0, 26.0, 2968.0)
+    DIF 2026-11-27T10:24:39.164: ola del panel (dir, raya, faltan, delta) (1, 7318.75, 9.75, 278), csv (1, 7319.0, 9.5, 283.0)
+    DIF 2026-11-27T10:24:39.164: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 26.5, 3006), csv (1, 7302.0, 26.5, 3011.0)
+    DIF 2026-11-27T10:25:39.343: ola del panel (dir, raya, faltan, delta) (1, 7319.5, 8.0, 294), csv (1, 7319.5, 8.25, 309.0)
+    DIF 2026-11-27T10:25:39.343: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 25.5, 3022), csv (1, 7302.0, 25.75, 3037.0)
+    DIF 2026-11-27T10:26:39.456: ola del panel (dir, raya, faltan, delta) (1, 7319.5, 8.75, 321), csv (1, 7319.5, 7.5, 299.0)
+    DIF 2026-11-27T10:26:39.456: marea del panel (dir, raya, faltan, delta) (1, 7302.0, 26.25, 3049), csv (1, 7302.0, 25.0, 3027.0)
+RESULTADO: 28 diferencias
+fin 1

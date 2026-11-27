@@ -1,0 +1,18 @@
+csv: 955 velas con foto de marea; cambios de estado del fondo:
+   vela 25980 (de 20:00 a 20:01 AR): baja           -> empieza en x -587 | delta pierna 
+   vela 26160 (de 23:00 a 23:01 AR): sube           -> empieza en x -336 | delta pierna 1318
+   vela 26746 (de 08:46 a 08:47 AR): baja           -> empieza en x 481 | delta pierna -871
+   vela 26817 (de 09:57 a 09:58 AR): sin agresores  -> empieza en x 580 | delta pierna 217
+   vela 26888 (de 11:08 a 11:09 AR): baja           -> empieza en x 679 | delta pierna -115
+   vela 26890 (de 11:10 a 11:11 AR): sin agresores  -> empieza en x 682 | delta pierna 13
+   vela 26915 (de 11:35 a 11:36 AR): baja           -> empieza en x 716 | delta pierna -1574
+captura fila y=600: x31 verde | x486 rojo | x585 ambar | x685 rojo | x687 ambar | x705 rojo | x707 ambar | x719 ambar | x721 verde | x723 verde | x724 rojo
+captura fila y=620: x31 verde | x486 rojo | x585 ambar | x685 rojo | x687 ambar | x712 rojo | x714 ambar | x721 verde | x723 verde | x725 rojo
+   pixel (100, 600) = (18, 53, 51) -> verde
+   pixel (300, 600) = (18, 53, 51) -> verde
+   pixel (450, 600) = (18, 53, 51) -> verde
+   pixel (520, 600) = (52, 31, 43) -> rojo
+   pixel (560, 600) = (52, 31, 43) -> rojo
+   pixel (620, 600) = (54, 48, 33) -> ambar
+   pixel (700, 600) = (54, 48, 33) -> ambar
+   pixel (735, 600) = (52, 31, 43) -> rojo

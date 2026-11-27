@@ -1,0 +1,5 @@
+cinta cinta-ESZ6-202611262300-202611271455.csv ordenes 144484 columnas ['t', 'primero', 'ultimo', 'vol', 'lado', 'prints', 'abid', 'abidv', 'aask', 'aaskv', 'dbid', 'dbidv', 'dask', 'daskv']
+estado del JSONL (14:54:05.366) en n: [(143571, '14:54:05.265', 7240.0, -559.0), (143590, '14:54:06.259', 7240.0, -559.0), (143596, '14:54:06.594', 7240.0, -559.0), (143602, '14:54:06.927', 7240.0, -559.0)]
+estado de la FOTO en n: [(143573, '14:54:05.299', 7240.25, 'compra 3', -555.0)]
+primera orden RTH 2026-11-27T14:30:00.001 (ultimo 7287.00); ultima de la noche 2026-11-27T14:29:59.998 7286.00
+CLIMA m=23 (hasta 14:54:00 UTC): H 7288.50 L 7231.75 rango 56.75 | apertura 7287.00 | cierre 7238.50 | VWAP 7253.546091 | rrn 1.143706 -> ROTACIÓN, '1,1×' | lado VWAP -1, lado apertura -1

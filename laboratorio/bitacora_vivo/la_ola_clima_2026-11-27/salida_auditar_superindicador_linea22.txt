@@ -1,0 +1,22 @@
+AUDITORIA 2026-11-27T14:54:05.365 UTC (linea 22 de 32) v1.9b ESZ6 M1 tick 0.25 | carga 1 | velas en el volcado de esa carga: 964
+A) VELAS: 964 de 964 con delta y volumen de niveles == los de ATAS; volumen sin agresor 0
+   AL MOMENTO (vela 26934, 27-11 09:54 NY): esperada (20261127, 25980, 26934) -> IGUAL
+JORNADA elegida: 20261127 Completa (modo Momento, fecha 0) -> velas 25980..26934 EN CURSO | jornadas cargadas: 20
+   COLUMNA: 26-11 18:00 a 27-11 09:54 NY | comienzo OK (la anterior (26-11 12:59 NY) es de 20261126 tipo 1) | final OK | velas de otra jornada o parte adentro: 0
+   PERFIL: 26-11 18:00 a 27-11 09:54 NY | comienzo OK (la anterior (26-11 12:59 NY) es de 20261126 tipo 1) | final OK | velas de otra jornada o parte adentro: 0
+COLUMNA [vie 27-11 completa] 955 velas 2026-11-26T23:00:00..2026-11-27T14:54:00 UTC, K=4: filas 113 | distintas 0 | totales OK (compras 204889 ventas 205448 delta -559 vol 410337) | suma de deltas/volumenes de ATAS por vela IGUAL
+   textos de 113 filas dibujadas: todos iguales (0 sin numero por no entrar entero; numeros en pantalla: False, letra 0)
+   ENCABEZADO: LIVE verde (IGUAL a incluye la vela en curso) | dice 'VIE 27/11 11:54:05', ultima operacion sumada 27-11 11:54:05 hora local -> IGUAL
+PERFIL [vie 27-11 completa] 955 velas 2026-11-26T23:00:00..2026-11-27T14:54:00 UTC, K=1: filas 446 | distintas 0 | totales OK (compras 204889 ventas 205448 delta -559 vol 410337) | suma de deltas/volumenes de ATAS por vela IGUAL
+   textos de 446 filas dibujadas: todos iguales (0 sin numero por no entrar entero; numeros en pantalla: False, letra 0)
+   POC 7315.00 VAH 7342.50 VAL 7255.50 (AV 70 %, paso 2, 70.35 % del volumen) -> IGUAL al indicador
+AREA DE VALOR POR VELA (algoritmo de ATAS, 70 %, paso 2) contra la de ATAS en 964 velas: 961 iguales (99.69 %); POC igual en 959 de 964 (de ellas 31 con empate en el maximo)
+   2026-11-27T07:08:00: calc VAH 7315.75 VAL 7314.75 vs ATAS 7315.50 7315.00
+   2026-11-27T09:24:00: calc VAH 7339.75 VAL 7337.75 vs ATAS 7339.25 7337.25
+   2026-11-27T10:51:00: calc VAH 7334.50 VAL 7333.50 vs ATAS 7334.25 7333.25
+CINTA en vivo (296711 operaciones, 2026-11-27T07:03:35.942..2026-11-27T15:03:59.755 UTC) contra el footprint de ATAS: 479 velas enteramente cubiertas, 479 identicas nivel por nivel (0 salteadas por hueco de grabacion o borde)
+VELAS PINTADAS (TurquesaMagenta, doji Anterior): 14:50 7238.0->7247.25 #11CAEB, 14:51 7246.75->7244.5 #E22674, 14:52 7244.75->7243.75 #E22674, 14:53 7243.75->7238.5 #E22674, 14:54 7238.75->7240.0 #11CAEB
+RESULTADO JORNADA (velas de esa jornada y parte, ni una mas ni una menos): IGUAL
+RESULTADO LO DIBUJADO (A+B): TODO IGUAL
+RESULTADO CONTRA ATAS (C): DIFERENCIAS
+RESULTADO CINTA (D): IGUAL
