@@ -1,0 +1,3 @@
+fecha,estado,motivo,operaciones,acierto_dia,neto_c050_dia,contrato,X,mediana_10,ultima_orden_rth,hueco_rth_max_s,procesada_AR
+2026-11-26,excluida,"feriado de Accion de Gracias (sin rueda de contado) - excluida por regla antes de bajar la cinta (PREREGISTRO, enmienda 5)",0,,,,,,,,2026-11-27 05:22
+2026-11-27,excluida,"rueda corta: viernes de Accion de Gracias (cierre 13:15 NY) - excluida por regla antes de bajar la cinta (PREREGISTRO, enmienda 5)",0,,,,,,,,2026-11-27 05:22

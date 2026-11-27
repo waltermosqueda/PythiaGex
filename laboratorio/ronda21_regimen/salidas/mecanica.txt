@@ -1,0 +1,128 @@
+MECANICA (descriptiva, 55 ruedas, evento por evento): acierto y resultado en R por familia x estado x periodo
+== V3-S6
+   diseno    B n   14 acierto  42.9 % -0.143 R | D n  100 acierto  53.0 % +0.060 R | T n   38 acierto  50.0 % +0.000 R
+   confirma  B n   12 acierto  50.0 % +0.000 R | D n   62 acierto  43.5 % -0.129 R | T n  134 acierto  47.8 % -0.045 R
+   guardada  B n    2 acierto  50.0 % +0.000 R | D n   19 acierto  36.8 % -0.263 R | T n   65 acierto  41.5 % -0.169 R
+   todas     B n   28 acierto  46.4 % -0.071 R | D n  181 acierto  48.1 % -0.039 R | T n  237 acierto  46.4 % -0.072 R
+== V2-S6
+   diseno    B n    3 acierto  66.7 % +0.333 R | D n   35 acierto  51.4 % +0.029 R | T n   12 acierto  75.0 % +0.500 R
+   confirma  B n    6 acierto  66.7 % +0.333 R | D n   13 acierto  46.2 % -0.077 R | T n   79 acierto  45.6 % -0.089 R
+   guardada  B n    1 acierto 100.0 % +1.000 R | D n    6 acierto  16.7 % -0.667 R | T n   18 acierto  55.6 % +0.111 R
+   todas     B n   10 acierto  70.0 % +0.400 R | D n   54 acierto  46.3 % -0.074 R | T n  109 acierto  50.5 % +0.009 R
+== V1-S6
+   diseno    B n    2 acierto  50.0 % +0.000 R | D n   30 acierto  56.7 % +0.133 R | T n   12 acierto  75.0 % +0.500 R
+   confirma  B n    2 acierto  50.0 % +0.000 R | D n    9 acierto  66.7 % +0.333 R | T n   75 acierto  44.0 % -0.120 R
+   guardada  B n 0 | D n    4 acierto   0.0 % -1.000 R | T n   14 acierto  50.0 % +0.000 R
+   todas     B n    4 acierto  50.0 % +0.000 R | D n   43 acierto  53.5 % +0.070 R | T n  101 acierto  48.5 % -0.030 R
+== V4-S6
+   diseno    B n   33 acierto  66.7 % +0.333 R | D n   31 acierto  74.2 % +0.484 R | T n   11 acierto  72.7 % +0.455 R
+   confirma  B n   32 acierto  43.8 % -0.125 R | D n   19 acierto  57.9 % +0.158 R | T n   15 acierto  53.3 % +0.067 R
+   guardada  B n    6 acierto  33.3 % -0.333 R | D n    9 acierto  66.7 % +0.333 R | T n   29 acierto  37.9 % -0.241 R
+   todas     B n   71 acierto  53.5 % +0.070 R | D n   59 acierto  67.8 % +0.356 R | T n   55 acierto  49.1 % -0.018 R
+== V5-S6
+   diseno    B n    9 acierto  88.9 % +0.778 R | D n   13 acierto  92.3 % +0.846 R | T n    5 acierto 100.0 % +1.000 R
+   confirma  B n   15 acierto  46.7 % -0.067 R | D n   11 acierto  45.5 % -0.091 R | T n   23 acierto  39.1 % -0.217 R
+   guardada  B n    3 acierto  33.3 % -0.333 R | D n    6 acierto  33.3 % -0.333 R | T n   12 acierto  58.3 % +0.167 R
+   todas     B n   27 acierto  59.3 % +0.185 R | D n   30 acierto  63.3 % +0.267 R | T n   40 acierto  52.5 % +0.050 R
+== V6-S6mc
+   diseno    B n   30 acierto  60.0 % +0.138 R | D n   65 acierto  72.3 % +0.369 R | T n   10 acierto  50.0 % -0.061 R
+   confirma  B n   34 acierto  58.8 % +0.123 R | D n   31 acierto  58.1 % +0.108 R | T n   52 acierto  59.6 % +0.137 R
+   guardada  B n    6 acierto  50.0 % -0.025 R | D n   24 acierto  45.8 % -0.107 R | T n   30 acierto  53.3 % +0.037 R
+   todas     B n   70 acierto  58.6 % +0.117 R | D n  120 acierto  63.3 % +0.206 R | T n   92 acierto  56.5 % +0.083 R
+== T1-S6
+   diseno    B n  259 acierto  44.0 % -0.120 R | D n  249 acierto  47.0 % -0.060 R | T n   72 acierto  52.8 % +0.056 R
+   confirma  B n  167 acierto  47.3 % -0.054 R | D n  209 acierto  41.6 % -0.167 R | T n  262 acierto  53.8 % +0.076 R
+   guardada  B n   45 acierto  60.0 % +0.200 R | D n  101 acierto  45.5 % -0.089 R | T n  133 acierto  54.9 % +0.098 R
+   todas     B n  471 acierto  46.7 % -0.066 R | D n  559 acierto  44.7 % -0.106 R | T n  467 acierto  54.0 % +0.079 R
+== T1-P2
+   diseno    B n  259 acierto  44.0 % -0.144 R | D n  249 acierto  47.0 % +0.095 R | T n   72 acierto  52.8 % +0.237 R
+   confirma  B n  167 acierto  47.3 % -0.053 R | D n  209 acierto  41.6 % -0.204 R | T n  262 acierto  53.8 % +0.134 R
+   guardada  B n   45 acierto  60.0 % +0.815 R | D n  101 acierto  45.5 % -0.142 R | T n  133 acierto  54.9 % -0.002 R
+   todas     B n  471 acierto  46.7 % -0.020 R | D n  559 acierto  44.7 % -0.060 R | T n  467 acierto  54.0 % +0.111 R
+== T2-S6
+   diseno    B n  197 acierto  43.7 % -0.127 R | D n  212 acierto  45.3 % -0.094 R | T n   54 acierto  53.7 % +0.074 R
+   confirma  B n  141 acierto  45.4 % -0.092 R | D n  169 acierto  41.4 % -0.172 R | T n  182 acierto  56.0 % +0.121 R
+   guardada  B n   29 acierto  58.6 % +0.172 R | D n   60 acierto  45.0 % -0.100 R | T n   99 acierto  55.6 % +0.111 R
+   todas     B n  367 acierto  45.5 % -0.090 R | D n  441 acierto  43.8 % -0.125 R | T n  335 acierto  55.5 % +0.110 R
+== T3-S6
+   diseno    B n   88 acierto  54.5 % +0.091 R | D n   78 acierto  39.7 % -0.205 R | T n   21 acierto  61.9 % +0.238 R
+   confirma  B n   43 acierto  39.5 % -0.209 R | D n   53 acierto  45.3 % -0.094 R | T n   59 acierto  54.2 % +0.085 R
+   guardada  B n    4 acierto  75.0 % +0.500 R | D n   17 acierto  41.2 % -0.176 R | T n   27 acierto  55.6 % +0.111 R
+   todas     B n  135 acierto  50.4 % +0.007 R | D n  148 acierto  41.9 % -0.162 R | T n  107 acierto  56.1 % +0.121 R
+== T4-S6
+   diseno    B n   40 acierto  62.5 % +0.250 R | D n   79 acierto  53.2 % +0.063 R | T n    1 acierto 100.0 % +1.000 R
+   confirma  B n   36 acierto  50.0 % -0.000 R | D n   23 acierto  34.8 % -0.304 R | T n    4 acierto  75.0 % +0.500 R
+   guardada  B n    3 acierto  66.7 % +0.333 R | D n    4 acierto  50.0 % -0.000 R | T n    4 acierto 100.0 % +1.000 R
+   todas     B n   79 acierto  57.0 % +0.139 R | D n  106 acierto  49.1 % -0.019 R | T n    9 acierto  88.9 % +0.778 R
+== T4-S4
+   diseno    B n   40 acierto  20.0 % +0.394 R | D n   79 acierto  16.5 % -0.181 R | T n    1 acierto 100.0 % +3.636 R
+   confirma  B n   36 acierto  22.2 % +0.152 R | D n   23 acierto  13.0 % +0.001 R | T n    4 acierto  25.0 % -0.354 R
+   guardada  B n    3 acierto   0.0 % -0.709 R | D n    4 acierto   0.0 % -1.000 R | T n    4 acierto  75.0 % +1.502 R
+   todas     B n   79 acierto  20.3 % +0.242 R | D n  106 acierto  15.1 % -0.173 R | T n    9 acierto  55.6 % +0.914 R
+
+QUE SEPARA GANADORAS DE PERDEDORAS (salida 1R; cociente de acierto con/sin la pieza, IC 95 %; signo por periodo d/c/g)
+== V4-S6 en estado B: n 71, acierto 53.5 %
+   big trades a favor F6            con   18:  33.3 % | sin   53:  60.4 % | cociente 0.55 (IC 0.28-1.10) | periodos d/c/g --.
+   marea con agresores              con   57:  57.9 % | sin   14:  35.7 % | cociente 1.62 (IC 0.78-3.39) | periodos d/c/g -+.
+   dentro del valor de ayer         con   21:  71.4 % | sin   50:  46.0 % | cociente 1.55 (IC 1.04-2.33) | periodos d/c/g -+.
+   IB roto de los dos               con    8:  75.0 % | sin   63:  50.8 % | cociente 1.48 (IC 0.92-2.36) | periodos d/c/g +..
+   2+ cruces del VWAP en 60 min     con   61:  55.7 % | sin   10:  40.0 % | cociente 1.39 (IC 0.63-3.07) | periodos d/c/g +..
+   velocidad 30 min >= 1,5          con   14:  64.3 % | sin   57:  50.9 % | cociente 1.26 (IC 0.79-2.01) | periodos d/c/g -+.
+   despues de las 12:00             con   21:  61.9 % | sin   50:  50.0 % | cociente 1.24 (IC 0.80-1.91) | periodos d/c/g -+.
+   sin tocar el VWAP hace 60+ min   con    9:  44.4 % | sin   62:  54.8 % | cociente 0.81 (IC 0.38-1.74) | periodos d/c/g -..
+   IB roto de un lado               con   31:  48.4 % | sin   40:  57.5 % | cociente 0.84 (IC 0.54-1.32) | periodos d/c/g --.
+   nivel en la zona                 con   49:  51.0 % | sin   22:  59.1 % | cociente 0.86 (IC 0.55-1.34) | periodos d/c/g --.
+   barrida y vuelta                 con   38:  50.0 % | sin   33:  57.6 % | cociente 0.87 (IC 0.56-1.34) | periodos d/c/g +-.
+   delta 300 s a favor              con   36:  50.0 % | sin   35:  57.1 % | cociente 0.88 (IC 0.57-1.35) | periodos d/c/g --.
+== T1-S6 en estado T: n 467, acierto 54.0 %
+   fuera del ruido a favor          con  453:  53.4 % | sin   14:  71.4 % | cociente 0.75 (IC 0.53-1.05) | periodos d/c/g ..-
+   ruido sostenido (sost >= 0,8)    con  392:  51.8 % | sin   75:  65.3 % | cociente 0.79 (IC 0.66-0.96) | periodos d/c/g ---
+   dentro del valor de ayer         con   47:  44.7 % | sin  420:  55.0 % | cociente 0.81 (IC 0.58-1.13) | periodos d/c/g ---
+   icebergs en contra 60 s          con  440:  54.5 % | sin   27:  44.4 % | cociente 1.23 (IC 0.80-1.89) | periodos d/c/g -++
+   nivel en la zona                 con   82:  63.4 % | sin  385:  51.9 % | cociente 1.22 (IC 1.01-1.48) | periodos d/c/g +++
+   IB roto de los dos               con   19:  63.2 % | sin  448:  53.6 % | cociente 1.18 (IC 0.83-1.68) | periodos d/c/g +..
+   delta 300 s a favor              con  211:  58.8 % | sin  256:  50.0 % | cociente 1.18 (IC 0.99-1.39) | periodos d/c/g +++
+   IB roto de un lado               con  355:  52.1 % | sin  112:  59.8 % | cociente 0.87 (IC 0.73-1.04) | periodos d/c/g +--
+   barrida y vuelta                 con  111:  59.5 % | sin  356:  52.2 % | cociente 1.14 (IC 0.95-1.37) | periodos d/c/g +++
+   puntos de Dalton >= 2            con  444:  54.3 % | sin   23:  47.8 % | cociente 1.13 (IC 0.73-1.75) | periodos d/c/g .+-
+   retroceso con agresores          con  447:  53.7 % | sin   20:  60.0 % | cociente 0.89 (IC 0.62-1.29) | periodos d/c/g .-+
+   marea con agresores              con  335:  55.5 % | sin  132:  50.0 % | cociente 1.11 (IC 0.91-1.35) | periodos d/c/g +++
+== T3-S6 en estado T: n 107, acierto 56.1 %
+   velocidad 30 min >= 1,5          con   91:  60.4 % | sin   16:  31.2 % | cociente 1.93 (IC 0.92-4.08) | periodos d/c/g +++
+   marea con agresores              con   80:  62.5 % | sin   27:  37.0 % | cociente 1.69 (IC 1.00-2.84) | periodos d/c/g +++
+   ruido sostenido (sost >= 0,8)    con   84:  50.0 % | sin   23:  78.3 % | cociente 0.64 (IC 0.47-0.87) | periodos d/c/g -+-
+   big trades a favor F6            con   97:  57.7 % | sin   10:  40.0 % | cociente 1.44 (IC 0.66-3.14) | periodos d/c/g .++
+   IB roto de los dos               con    8:  75.0 % | sin   99:  54.5 % | cociente 1.38 (IC 0.89-2.13) | periodos d/c/g +..
+   agotamiento F4                   con   63:  61.9 % | sin   44:  47.7 % | cociente 1.30 (IC 0.90-1.87) | periodos d/c/g +++
+   despues de las 12:00             con   70:  51.4 % | sin   37:  64.9 % | cociente 0.79 (IC 0.57-1.10) | periodos d/c/g .--
+   IB roto de un lado               con   83:  53.0 % | sin   24:  66.7 % | cociente 0.80 (IC 0.56-1.13) | periodos d/c/g --.
+   absorcion F1                     con   45:  48.9 % | sin   62:  61.3 % | cociente 0.80 (IC 0.56-1.14) | periodos d/c/g +--
+   nivel en la zona                 con   18:  66.7 % | sin   89:  53.9 % | cociente 1.24 (IC 0.85-1.81) | periodos d/c/g -++
+   lejos del VWAP (|sd| >= 1,5)     con   63:  60.3 % | sin   44:  50.0 % | cociente 1.21 (IC 0.84-1.72) | periodos d/c/g .+-
+   retroceso profundo (>= 2 X)      con   35:  62.9 % | sin   72:  52.8 % | cociente 1.19 (IC 0.85-1.67) | periodos d/c/g ++-
+== V3-S6 en estado T: n 237, acierto 46.4 %
+   VWAP a >= 2R                     con  219:  44.7 % | sin   18:  66.7 % | cociente 0.67 (IC 0.47-0.96) | periodos d/c/g ---
+   big trades a favor F6            con   55:  61.8 % | sin  182:  41.8 % | cociente 1.48 (IC 1.13-1.94) | periodos d/c/g +++
+   delta 60 s a favor               con  149:  52.3 % | sin   88:  36.4 % | cociente 1.44 (IC 1.05-1.97) | periodos d/c/g +++
+   divergencia F3                   con   46:  58.7 % | sin  191:  43.5 % | cociente 1.35 (IC 1.01-1.81) | periodos d/c/g -++
+   sin tocar el VWAP hace 60+ min   con  203:  44.3 % | sin   34:  58.8 % | cociente 0.75 (IC 0.55-1.04) | periodos d/c/g ---
+   retroceso con agresores          con  210:  44.8 % | sin   27:  59.3 % | cociente 0.76 (IC 0.53-1.07) | periodos d/c/g .--
+   marea con agresores              con  216:  45.4 % | sin   21:  57.1 % | cociente 0.79 (IC 0.53-1.18) | periodos d/c/g .--
+   fuera del ruido en contra        con  216:  45.4 % | sin   21:  57.1 % | cociente 0.79 (IC 0.53-1.18) | periodos d/c/g ..-
+   icebergs en contra 60 s          con  223:  45.7 % | sin   14:  57.1 % | cociente 0.80 (IC 0.50-1.29) | periodos d/c/g +-.
+   iceberg F2                       con  180:  43.9 % | sin   57:  54.4 % | cociente 0.81 (IC 0.60-1.08) | periodos d/c/g +--
+   2+ cruces del VWAP en 60 min     con   25:  56.0 % | sin  212:  45.3 % | cociente 1.24 (IC 0.85-1.80) | periodos d/c/g ++-
+   vuelta rapida (<= 107 s)         con  224:  46.9 % | sin   13:  38.5 % | cociente 1.22 (IC 0.60-2.46) | periodos d/c/g +.+
+== T1-S6 en estado B: n 471, acierto 46.7 %
+   apilados en contra               con   15:  60.0 % | sin  456:  46.3 % | cociente 1.30 (IC 0.85-1.98) | periodos d/c/g +-.
+   nivel en la zona                 con  256:  41.8 % | sin  215:  52.6 % | cociente 0.80 (IC 0.66-0.96) | periodos d/c/g ---
+   2+ cruces del VWAP en 60 min     con  345:  49.0 % | sin  126:  40.5 % | cociente 1.21 (IC 0.95-1.53) | periodos d/c/g +--
+   iceberg F2                       con  238:  50.8 % | sin  233:  42.5 % | cociente 1.20 (IC 0.98-1.45) | periodos d/c/g +++
+   divergencia F3                   con   37:  40.5 % | sin  434:  47.2 % | cociente 0.86 (IC 0.57-1.28) | periodos d/c/g -+-
+   dentro del valor de ayer         con  143:  42.0 % | sin  328:  48.8 % | cociente 0.86 (IC 0.69-1.07) | periodos d/c/g ---
+   agotamiento F4                   con  369:  45.3 % | sin  102:  52.0 % | cociente 0.87 (IC 0.70-1.08) | periodos d/c/g ---
+   absorcion F1                     con   65:  52.3 % | sin  406:  45.8 % | cociente 1.14 (IC 0.88-1.47) | periodos d/c/g ++.
+   big trades a favor F6            con  123:  51.2 % | sin  348:  45.1 % | cociente 1.14 (IC 0.92-1.40) | periodos d/c/g +-+
+   sin tocar el VWAP hace 60+ min   con   99:  42.4 % | sin  372:  47.8 % | cociente 0.89 (IC 0.69-1.14) | periodos d/c/g -++
+   marea con agresores              con  367:  45.5 % | sin  104:  51.0 % | cociente 0.89 (IC 0.72-1.11) | periodos d/c/g ---
+   ruido sostenido (sost >= 0,8)    con   59:  42.4 % | sin  412:  47.3 % | cociente 0.90 (IC 0.65-1.23) | periodos d/c/g --.

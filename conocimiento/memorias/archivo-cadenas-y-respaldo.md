@@ -1,8 +1,11 @@
 ---
 name: archivo-cadenas-y-respaldo
-description: Donde se archiva la cadena (rama cadenas cada minuto, local, viva de Rithmic), que NO se puede grabar sin su ATAS, y el respaldo espejo a Inversiones
+description: "Donde se archiva la cadena (rama cadenas cada minuto, local, viva de Rithmic), que NO se puede grabar sin su ATAS, y el respaldo espejo a Inversiones"
 metadata:
+  node_type: memory
   type: project
+  originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
+  modified: 2026-11-27T08:14:41.583Z
 ---
 
 Pedido del operador (2026-09-07 noche): "todo minuto a minuto en git", la
@@ -50,5 +53,12 @@ nada). Sirve para probar en el laboratorio el libro que usa la referencia para N
 
 **How to apply:** los datos nuevos son propios desde hoy; Databento solo para
 antes del 2026-08-19. Ver [[rebobina-simulador]], [[databento-cuenta-y-costos]].
+
+**CORTE 19-11-2026 (verificado 27-11 05:30 AR):** cdn.cboe.com contesta HTTP 403 Forbidden a TODO pedido automatico: el workflow
+"Cadenas minuto a minuto" sigue en verde pero el log dice "ES: fallo (HTTP Error 403)" y no escribe nada (ultimo
+cadena-ES-2026-11-19 en la rama); desde la PC tambien 403 con el UA de navegador; cboe-local paro el 19-11. NO intentar esquivarlo
+(seria burlar su proteccion anti-robots). Lo que sigue andando: la cadena de ES por Rithmic (IOptionsDataProvider) de la 5.0, que
+graba en %APPDATA%\ATAS\PythiaGex5 mientras corre (ultimo log 23-11). Los niveles de Gamma Hoy que salgan de CBOE quedan VIEJOS
+desde el 19-11: decirselo antes de cualquier numero. Ver [[ronda-18-senal-ola-y-indicador-aparte]].
 
 **16-09:** ademas de la nube, `herramientas/cboe_local.py --bucle` (lanzado desde Inicio) baja CBOE cada 75 s en la rueda a %APPDATA%\ATAS\PythiaGex\cboe-local; Gamma Hoy 1.10q la prefiere si es mas fresca. La nube de GitHub corre cada 8-25 min, no cada minuto.

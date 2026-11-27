@@ -1,0 +1,15 @@
+{
+ "regla": "COMB-T7+V4",
+ "congelada_AR": "2026-11-27 05:14",
+ "sha256": {
+  "ronda21_regimen/regla_congelada_comb_t7_v4.py": "dd8e18ad534b4fcefbb61dd2826358bda318f8dcd1763c475b62f5791795cb8a",
+  "ronda21_regimen/curva_rango_por_minuto.json": "72589182d1533ccab0903e70469e8654dc7a201197d88064238dd1a2d7a6bc33",
+  "ronda21_regimen/r21_01_regimen.py": "28f081cc901f9b7a9ea049994a671709fbcb968321a9d36f693491a7de135f3b",
+  "ronda21_regimen/r21_comun.py": "bf0b10824ba648f1dc28d54aecc75c4b466d3e57c8d08a27f1f1d43b313d88e7",
+  "ronda19_confluencias/r19_comun.py": "a7d2056070d0eca89b26fea7aff0a73857c9ba52368d9d4bb7de44aec807e19d",
+  "ronda19_confluencias/r19_00_inventario.py": "8dac9c518b5ab712192feebcc81506b07b34cc930ebe8355955c1d7c9c9065ea",
+  "ronda19_confluencias/r19_01_rasgos.py": "006e4b6828d8419d0989778d80fca56098c2706bff59be71eac0c0302a1d164f",
+  "ronda19_confluencias/r19_02_motor.py": "f23ef1f834adec95c05b620c2f003c3593d1698d810690a591b58c9fb84e12a0",
+  "ronda19_confluencias/r19_08_eventos.py": "6ea788fa598c313a3ff7e5e113473878a53dadf9c215232f6cf7b9ef983418ae"
+ }
+}

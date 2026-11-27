@@ -1,0 +1,6 @@
+{
+ "nota": "Contrato de cada cinta de ES y spreads MEDIDOS entre contratos (no se inventan). Hasta el 2026-12-07 se asume Z6. Desde esa fecha cada jornada necesita su contrato en 'confirmados' (mirando el precio de la cinta contra ESZ6 y ESH7 a la misma hora); si cambia de contrato, 'cambios' necesita el spread medido: {'desde': primer dia del contrato nuevo, 'contrato': 'H7', 'spread_sobre_anterior': H7 - Z6 en pts}. Sin eso la jornada queda afuera.",
+ "inicial": "Z6",
+ "confirmados": {},
+ "cambios": []
+}

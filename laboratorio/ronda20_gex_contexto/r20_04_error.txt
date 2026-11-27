@@ -1,0 +1,2 @@
+C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\ronda20_gex_contexto\r20_04_finalistas.py:33: FutureWarning: DataFrameGroupBy.apply operated on the grouping columns. This behavior is deprecated, and in a future version of pandas the grouping columns will be excluded from the operation. Either pass `include_groups=False` to exclude the groupings or explicitly select the grouping columns after groupby to silence this warning.
+  print(op.groupby(["muestra"]).apply(lambda g: "%d ops, con regimen %d" % (len(g), g.neg_total.notna().sum())).to_string())

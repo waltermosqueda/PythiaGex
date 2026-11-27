@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
-  modified: 2026-11-27T07:32:32.058Z
+  modified: 2026-11-27T08:14:47.693Z
 ---
 
 Textual (27-11 ~02:40-03:00 AR): "ampliar el estudio y cruzar mas variables hasta encontrar la evolucion ganadora: VWAP,
@@ -58,6 +58,23 @@ el REGIMEN, no la huella. La regla de regimen del baul (#19) llega tarde. Base c
 **SIGUIENTE (lanzado 27-11 ~04:40):** R21 = el REGIMEN como llave (que familia operar segun el clima del dia): GEX (R20 retomada) +
 estructura del dia en tiempo real; validacion dejando un PERIODO afuera (diseño / confirmacion / guardada) y juez final EN VIVO.
 Toda la data disponible ya fue vista: decirlo siempre.
+
+**RESULTADO R21 (27-11 05:06 AR, `ronda21_regimen/RESULTADOS.md`):** detector D1 "cuentakilometros" = rango de la rueda
+hasta ahora / (mediana del rango de 10 ruedas x fraccion tipica a esa hora; curva fija de MES antes del 08-09); TENDENCIA si >= 1,6
+(precio del mismo lado del VWAP y de la apertura), ROTACION 1,0-1,6, ESTRECHO <= 1,0 (esperar). En vivo: con TENDENCIA el extremo
+nuevo llega antes que el VWAP 60-66 % vs base 37-40 %. Lo PRE-REGISTRADO no llego (53,8 %, +0,05). La evolucion POST HOC
+COMB-T7+V4 (TENDENCIA -> continuacion T7: ola a favor de la marea del lado de la tendencia, VWAP detras, + nivel o barrida o delta
+5 min a favor; ROTACION -> C1 banda 2σ + iceberg; 1R) da 60,4 / 63,8 / 66,7 % por periodo, juntas 63,1 % +1,20/op t 2,12, 2,2 ops
+por rueda; elegida mirando las 55 ruedas, filo de cuchillo, Bonferroni 3,45 no pasa -> CANDIDATA para juez en vivo, no probada.
+Alternativa T6-P1 (solo tendencia, mitad a 1R y resto a 2R con stop a la entrada): 64,9 % +1,88 t 2,28. Baul #47-53.
+Siguiente: congelar (SHA-256) y probar en MNQ 28-07..13-09 (33 ruedas, otro instrumento y periodo anterior); bitacora en vivo con
+cintas de ES desde el lunes 30-11 (27-11 media rueda excluida).
+
+**RESULTADO R20 (GEX, 27-11 ~05:25):** el GEX (SPX, CBOE con retraso real) anticipa el ANCHO de la rueda, no si tiende o vuelve:
+gamma negativa a las 9:59 -> rango 1,45x la mediana vs 0,95x (t 2,67; la mitad ya esta en el rango de los primeros 30 min);
+llega mas seguido y antes al TENDENCIA del D1 (15/31 vs 3/18, minuto 55 vs 101). No rescata a las finalistas de la R19 ni a R1
+(33,7 vs 33,2 %). Mecanica: con gamma negativa hay el doble de piernas por rueda con el mismo largo ("subir el volumen de la radio").
+Tabla `scratchpad\r20\gex_minuto.parquet` (57 ruedas; sin cadena 20-25-11 por el corte de CBOE). Baul #54-57.
 
 **La vara doble (decirsela siempre):** el % de acierto solo se infla con objetivo chico y stop grande y se pierde plata; se juzga
 acierto Y esperanza neta con costo, fuera de muestra, con correccion por la cantidad de variantes. Datos: 49 ruedas de ES

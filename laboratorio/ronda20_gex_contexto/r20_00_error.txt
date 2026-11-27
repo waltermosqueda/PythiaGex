@@ -1,0 +1,8 @@
+C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\ronda20_gex_contexto\r20_00_inventario.py:51: RuntimeWarning: All-NaN slice encountered
+  "hueco_max_min": float(np.nanmax(gaps) / 60) if len(gaps) else np.nan,
+C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\ronda20_gex_contexto\r20_00_inventario.py:52: RuntimeWarning: All-NaN slice encountered
+  "hueco_mediano_s": float(np.nanmedian(gaps)) if len(gaps) else np.nan,
+C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\ronda20_gex_contexto\r20_00_inventario.py:51: RuntimeWarning: All-NaN slice encountered
+  "hueco_max_min": float(np.nanmax(gaps) / 60) if len(gaps) else np.nan,
+C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\ronda20_gex_contexto\r20_00_inventario.py:52: RuntimeWarning: All-NaN slice encountered
+  "hueco_mediano_s": float(np.nanmedian(gaps)) if len(gaps) else np.nan,

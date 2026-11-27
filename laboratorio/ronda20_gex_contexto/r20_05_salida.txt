@@ -1,0 +1,70 @@
+2026-09-08 X 3.50 R1  19 ops bruto  -21.75
+2026-09-09 X 3.75 R1  35 ops bruto  -31.50
+2026-09-10 X 3.75 R1  63 ops bruto  -75.25
+2026-09-11 X 3.75 R1  25 ops bruto   +9.25
+2026-09-14 X 3.50 R1  35 ops bruto   +3.00
+2026-09-15 X 3.50 R1  33 ops bruto  -36.75
+2026-09-16 X 3.50 R1  96 ops bruto  +42.25
+2026-09-17 X 3.50 R1  33 ops bruto  -19.50
+2026-09-18 X 3.25 R1  29 ops bruto  -12.00
+2026-09-21 X 3.25 R1  27 ops bruto  +24.25
+2026-09-22 X 3.50 R1  19 ops bruto  -20.25
+2026-09-23 X 3.25 R1  43 ops bruto   -9.75
+2026-09-24 X 3.50 R1  70 ops bruto  +26.75
+2026-09-25 X 4.00 R1  53 ops bruto  -12.00
+2026-09-28 X 4.75 R1  40 ops bruto  +10.00
+2026-09-29 X 4.75 R1   8 ops bruto   -1.25
+2026-09-30 X 4.75 R1  22 ops bruto   -9.25
+2026-10-01 X 4.75 R1  46 ops bruto  -45.00
+2026-10-02 X 5.00 R1  38 ops bruto  -68.50
+2026-10-05 X 5.00 R1   9 ops bruto  +18.75
+2026-10-06 X 5.00 R1   9 ops bruto   -5.75
+2026-10-07 X 5.00 R1  20 ops bruto  -24.75
+2026-10-08 X 4.75 R1  33 ops bruto   +0.50
+2026-10-09 X 5.00 R1  14 ops bruto   -3.00
+2026-10-12 X 4.75 R1   6 ops bruto  -13.25
+2026-10-13 X 4.00 R1  15 ops bruto   -6.75
+2026-10-14 X 4.00 R1  26 ops bruto   -5.75
+2026-10-15 X 4.00 R1  54 ops bruto   -0.50
+2026-10-16 X 4.00 R1  64 ops bruto  +52.50
+2026-10-19 X 4.50 R1  33 ops bruto  -39.50
+2026-10-20 X 3.50 R1  58 ops bruto  -12.00
+2026-10-21 X 4.50 R1  27 ops bruto   +8.50
+2026-10-22 X 5.25 R1  26 ops bruto  -17.00
+2026-10-23 X 5.00 R1  42 ops bruto  -80.00
+2026-10-26 X 5.00 R1  28 ops bruto  +36.75
+2026-10-27 X 5.25 R1  13 ops bruto   +5.75
+2026-10-28 X 5.25 R1  25 ops bruto  -18.00
+2026-10-29 X 5.00 R1  35 ops bruto  -43.25
+2026-10-30 X 4.75 R1  28 ops bruto  +12.25
+2026-11-02 X 4.75 R1  46 ops bruto  +10.75
+2026-11-03 X 5.00 R1  21 ops bruto  -11.50
+2026-11-04 X 4.75 R1  53 ops bruto   -5.75
+2026-11-05 X 5.00 R1 181 ops bruto +129.00
+2026-11-06 X 5.00 R1  88 ops bruto   -2.25
+2026-11-09 X 5.25 R1  28 ops bruto  +13.75
+2026-11-10 X 5.75 R1  44 ops bruto  -28.00
+2026-11-11 X 6.00 R1  19 ops bruto   -7.00
+2026-11-12 X 6.25 R1  40 ops bruto  -36.00
+2026-11-13 X 6.75 R1  43 ops bruto   +2.50
+2026-11-16 X 6.75 R1  34 ops bruto  -66.75
+2026-11-17 X 6.75 R1  65 ops bruto   -6.00
+2026-11-18 X 8.50 R1  20 ops bruto  +18.50
+2026-11-19 X 8.50 R1  59 ops bruto   -0.50
+2026-11-20 X 8.50 R1  70 ops bruto  +67.00
+2026-11-23 X 9.75 R1  32 ops bruto   -6.25
+2026-11-24 X 9.75 R1  29 ops bruto  +59.25
+2026-11-25 X 9.75 R1  50 ops bruto  +29.00
+
+== R1 por regimen en la entrada, reg_total (primaria) (costo 0,50) ==
+  diseno    todas n  920 acierto 32.5 % neto/op -0.81 | NEG n  458 (19 r) acierto 34.1 % bruto/op -0.14 neto/op -0.64 (t rueda -2.87) ola 1.67 X (>2X 34 %) | POS n  238 (19 r) acierto 32.4 % bruto/op -0.50 neto/op -1.00 (t rueda -2.46) ola 1.62 X (>2X 32 %) | dif NEG-POS neto +0.36 (t agr +0.88), ola +0.07 X (t agr +0.68)
+  confirma  todas n  942 acierto 35.0 % neto/op -0.53 | NEG n  684 (18 r) acierto 33.8 % bruto/op -0.20 neto/op -0.70 (t rueda -3.89) ola 1.65 X (>2X 33 %) | POS n  151 ( 8 r) acierto 34.4 % bruto/op -0.09 neto/op -0.59 (t rueda -0.99) ola 1.67 X (>2X 34 %) | dif NEG-POS neto -0.10 (t agr -0.19), ola -0.02 X (t agr -0.17)
+  guardada  todas n  359 acierto 36.2 % neto/op -0.24 | NEG n  156 ( 4 r) acierto 32.7 % bruto/op -0.17 neto/op -0.67 (t rueda -2.56) ola 1.67 X (>2X 33 %) | POS n 0 | dif NEG-POS neto +nan (t agr +nan), ola +nan X (t agr +nan)
+  todo      todas n 2221 acierto 34.2 % neto/op -0.60 | NEG n 1298 (41 r) acierto 33.7 % bruto/op -0.17 neto/op -0.67 (t rueda -5.30) ola 1.65 X (>2X 34 %) | POS n  389 (27 r) acierto 33.2 % bruto/op -0.34 neto/op -0.84 (t rueda -2.54) ola 1.64 X (>2X 33 %) | dif NEG-POS neto +0.17 (t agr +0.53), ola +0.04 X (t agr +0.51)
+
+== R1 por regimen en la entrada, reg_estructural (sin 0DTE) (costo 0,50) ==
+  diseno    todas n  920 acierto 32.5 % neto/op -0.81 | NEG n  481 (18 r) acierto 34.1 % bruto/op -0.19 neto/op -0.69 (t rueda -3.23) ola 1.64 X (>2X 34 %) | POS n  215 (16 r) acierto 32.1 % bruto/op -0.42 neto/op -0.92 (t rueda -2.02) ola 1.63 X (>2X 32 %) | dif NEG-POS neto +0.24 (t agr +0.52), ola +0.03 X (t agr +0.31)
+  confirma  todas n  942 acierto 35.0 % neto/op -0.53 | NEG n  711 (20 r) acierto 34.0 % bruto/op -0.18 neto/op -0.68 (t rueda -3.75) ola 1.64 X (>2X 34 %) | POS n  124 ( 6 r) acierto 33.1 % bruto/op -0.15 neto/op -0.65 (t rueda -0.90) ola 1.67 X (>2X 33 %) | dif NEG-POS neto -0.04 (t agr -0.06), ola +0.01 X (t agr +0.04)
+  guardada  todas n  359 acierto 36.2 % neto/op -0.24 | NEG n  156 ( 4 r) acierto 32.7 % bruto/op -0.17 neto/op -0.67 (t rueda -2.56) ola 1.67 X (>2X 33 %) | POS n 0 | dif NEG-POS neto +nan (t agr +nan), ola +nan X (t agr +nan)
+  todo      todas n 2221 acierto 34.2 % neto/op -0.60 | NEG n 1348 (42 r) acierto 33.9 % bruto/op -0.18 neto/op -0.68 (t rueda -5.50) ola 1.64 X (>2X 34 %) | POS n  339 (22 r) acierto 32.4 % bruto/op -0.32 neto/op -0.82 (t rueda -2.18) ola 1.65 X (>2X 32 %) | dif NEG-POS neto +0.14 (t agr +0.39), ola +0.03 X (t agr +0.37)
+exit 0

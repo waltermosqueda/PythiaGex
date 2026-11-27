@@ -1,0 +1,88 @@
+
+=== 2026-10-21 minuto 90 (11:00 NY) | foto 14:59:18 UTC (cboe-local) | dato 10:43:29 NY | edad a mano 991 s, tabla 991 s
+  S (SPX) = spot_es 7776.00 - base 41.315 = 7734.685
+  GEX neto   a mano +9.5500 mil M | tabla +9.5500
+  GEX 0DTE   a mano +8.1556 mil M | tabla +8.1556
+  flip (SPX) a mano 7726.911 (1 raices) -> ES 7768.226 | tabla 7768.226 (1 cruces)
+  muro call  a mano 7800 -> ES 7841.32 | tabla 7841.32
+  muro put   a mano 7700 -> ES 7741.32 | tabla 7741.32
+  OI maximo  a mano 7850 -> ES 7891.32 | tabla 7891.32
+  volumen    a mano calls 437311 puts 506029 | tabla 437311 / 506029
+  regimen    a mano pos | tabla pos | dist al flip 1.73 X (a mano 1.73)
+  RONDA 14 mismo minuto: S 7734.31 base 41.94 | zero_oi 7726.63 (yo 7726.91) | mayor + 7800 (yo 7800) | mayor - 7700 (yo 7700) | OI calls max 7850 (yo 7850) | OI puts max 7700 (yo 7700) | signo +1 (yo pos)
+
+=== 2026-10-14 minuto 200 (12:50 NY) | foto 16:48:54 UTC (cboe-local) | dato 12:33:28 NY | edad a mano 992 s, tabla 992 s
+  S (SPX) = spot_es 7774.75 - base 48.620 = 7726.130
+  GEX neto   a mano -51.5171 mil M | tabla -51.5171
+  GEX 0DTE   a mano -27.3977 mil M | tabla -27.3977
+  flip (SPX) a mano 7767.558 (1 raices) -> ES 7816.178 | tabla 7816.177 (1 cruces)
+  muro call  a mano 7800 -> ES 7848.62 | tabla 7848.62
+  muro put   a mano 7700 -> ES 7748.62 | tabla 7748.62
+  OI maximo  a mano 8000 -> ES 8048.62 | tabla 8048.62
+  volumen    a mano calls 1089582 puts 1340903 | tabla 1089582 / 1340903
+  regimen    a mano neg | tabla neg | dist al flip -10.36 X (a mano -10.36)
+  RONDA 14 mismo minuto: S 7726.66 base 48.09 | zero_oi 7772.53 (yo 7767.56) | mayor + 7800 (yo 7800) | mayor - 7700 (yo 7700) | OI calls max 8000 (yo 8000) | OI puts max 8000 (yo 7500) | signo -1 (yo neg)
+
+=== 2026-11-17 minuto 60 (10:30 NY) | foto 15:29:45 UTC (cboe) | dato 10:14:21 NY | edad a mano 939 s, tabla 939 s
+  S (SPX) = spot_es 7405.00 - base 20.640 = 7384.360
+  GEX neto   a mano -55.8842 mil M | tabla -55.8842
+  GEX 0DTE   a mano -10.1351 mil M | tabla -10.1351
+  flip (SPX) a mano 7594.654 (1 raices) -> ES 7615.294 | tabla 7615.295 (1 cruces)
+  muro call  a mano 7700 -> ES 7720.64 | tabla 7720.64
+  muro put   a mano 7350 -> ES 7370.64 | tabla 7370.64
+  OI maximo  a mano 7500 -> ES 7520.64 | tabla 7520.64
+  volumen    a mano calls 306422 puts 318919 | tabla 306422 / 318919
+  regimen    a mano neg | tabla neg | dist al flip -31.15 X (a mano -31.15)
+
+Base causal - base archivada (forward-forward), mediana por rueda: mediana 0.85, p10 -0.85, p90 2.01, max abs 2.84 (n ruedas 50)
+dia
+2026-09-08   -0.69
+2026-09-09    0.09
+2026-09-14   -0.46
+2026-09-15    1.37
+2026-09-16    1.66
+2026-09-17    0.38
+2026-09-18   -2.29
+2026-09-21    0.25
+2026-09-22    0.92
+2026-09-24    0.88
+2026-09-25   -0.63
+2026-09-28    1.31
+2026-09-29    0.74
+2026-09-30    0.54
+2026-10-01    0.46
+2026-10-02   -1.20
+2026-10-05   -0.80
+2026-10-06   -0.37
+2026-10-07    0.27
+2026-10-08    0.47
+2026-10-09   -1.69
+2026-10-12    0.93
+2026-10-13    0.93
+2026-10-14    2.37
+2026-10-15    1.45
+2026-10-16    0.82
+2026-10-19    0.75
+2026-10-20    1.05
+2026-10-21    1.02
+2026-10-22    2.56
+2026-10-23    0.53
+2026-10-26    1.16
+2026-10-27    1.15
+2026-10-28    1.25
+2026-10-29    2.00
+2026-10-30    2.01
+2026-11-02    2.62
+2026-11-03    1.16
+2026-11-04    1.78
+2026-11-05    2.84
+2026-11-06   -1.13
+2026-11-09   -0.77
+2026-11-10   -0.82
+2026-11-11   -0.71
+2026-11-12   -0.56
+2026-11-13   -1.79
+2026-11-16    1.04
+2026-11-17    0.98
+2026-11-18    1.14
+2026-11-19    1.28

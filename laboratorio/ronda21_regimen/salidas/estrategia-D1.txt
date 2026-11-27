@@ -1,0 +1,184 @@
+ETAPA 2 - estrategia por regimen | detector D1 | 20778 candidatas (variante x evento) | 55 ruedas
+Variantes: BALANCE ['V1-P3', 'V1-S1', 'V1-S5', 'V1-S6', 'V2-P3', 'V2-S1', 'V2-S5', 'V2-S6', 'V3-P3', 'V3-S1', 'V3-S5', 'V3-S6', 'V4-P3', 'V4-S1', 'V4-S5', 'V4-S6', 'V5-P3', 'V5-S1', 'V5-S5', 'V5-S6', 'V6-S6mc'] | TENDENCIA ['T1-P1', 'T1-P2', 'T1-S1', 'T1-S4', 'T1-S6', 'T2-P1', 'T2-P2', 'T2-S1', 'T2-S4', 'T2-S6', 'T3-P1', 'T3-P2', 'T3-S1', 'T3-S4', 'T3-S6', 'T4-P1', 'T4-P2', 'T4-S1', 'T4-S4', 'T4-S6']
+
+== LOPO: diseno AFUERA (26 ruedas de prueba; entrenamiento 29 ruedas) | corte del detector (1.6, 1.0)
+  BALANCE - entrenamiento (cada variante sola, en su estado):
+     V2-P3     n   7 (0.24/rueda) acierto  71.4 % | +8.01/-5.50 | bruto +4.148 (+0.588 R) | neto c0,50 +3.648 t +1.25 (4/29 +) racha 1 caida 6.0 | c1,00 +3.148 t +1.14
+     V2-S6     n   7 (0.24/rueda) acierto  71.4 % | +6.20/-5.50 | bruto +2.857 (+0.429 R) | neto c0,50 +2.357 t +1.23 (4/29 +) racha 1 caida 6.0 | c1,00 +1.857 t +1.03
+     V2-S1     n   7 (0.24/rueda) acierto  57.1 % | +13.25/-5.17 | bruto +5.357 (+0.714 R) | neto c0,50 +4.857 t +1.23 (3/29 +) racha 2 caida 11.0 | c1,00 +4.357 t +1.14
+     V2-S5     n   7 (0.24/rueda) acierto  57.1 % | +14.00/-5.17 | bruto +5.788 (+0.793 R) | neto c0,50 +5.288 t +1.20 (3/29 +) racha 2 caida 11.0 | c1,00 +4.788 t +1.13
+     V6-S6mc   n  34 (1.17/rueda) acierto  55.9 % | +5.83/-6.30 | bruto +0.478 (+0.071 R) | neto c0,50 -0.022 t -0.03 (7/29 +) racha 3 caida 27.0 | c1,00 -0.522 t -0.66
+     V1-P3     n   2 (0.07/rueda) acierto  50.0 % | +2.62/-5.50 | bruto -1.438 (-0.250 R) | neto c0,50 -1.938 t -0.60 (1/29 +) racha 1 caida 6.0 | c1,00 -2.438 t -0.72
+     V1-S1     n   2 (0.07/rueda) acierto  50.0 % | +10.50/-5.50 | bruto +2.500 (+0.500 R) | neto c0,50 +2.000 t +0.34 (1/29 +) racha 1 caida 6.0 | c1,00 +1.500 t +0.26
+     V1-S5     n   2 (0.07/rueda) acierto  50.0 % | +6.95/-5.50 | bruto +0.723 (+0.162 R) | neto c0,50 +0.223 t +0.05 (1/29 +) racha 1 caida 6.0 | c1,00 -0.277 t -0.06
+     V1-S6     n   2 (0.07/rueda) acierto  50.0 % | +5.25/-5.50 | bruto -0.125 (+0.000 R) | neto c0,50 -0.625 t -0.16 (1/29 +) racha 1 caida 6.0 | c1,00 -1.125 t -0.29
+     V3-P3     n  14 (0.48/rueda) acierto  50.0 % | +7.25/-6.00 | bruto +0.623 (+0.080 R) | neto c0,50 +0.123 t +0.09 (5/29 +) racha 2 caida 19.5 | c1,00 -0.377 t -0.28
+     V3-S6     n  14 (0.48/rueda) acierto  50.0 % | +5.96/-6.00 | bruto -0.018 (+0.000 R) | neto c0,50 -0.518 t -0.55 (3/29 +) racha 2 caida 16.8 | c1,00 -1.018 t -1.04
+     V5-S6     n  17 (0.59/rueda) acierto  47.1 % | +5.53/-5.83 | bruto -0.485 (-0.059 R) | neto c0,50 -0.985 t -0.67 (3/29 +) racha 6 caida 39.5 | c1,00 -1.485 t -1.04
+     V5-P3     n  15 (0.52/rueda) acierto  46.7 % | +5.70/-5.88 | bruto -0.471 (-0.047 R) | neto c0,50 -0.971 t -0.53 (3/29 +) racha 6 caida 42.6 | c1,00 -1.471 t -0.80
+     V3-S1     n  14 (0.48/rueda) acierto  35.7 % | +12.70/-5.78 | bruto +0.821 (+0.071 R) | neto c0,50 +0.321 t +0.15 (4/29 +) racha 5 caida 32.8 | c1,00 -0.179 t -0.09
+     V3-S5     n  14 (0.48/rueda) acierto  35.7 % | +13.33/-5.78 | bruto +1.045 (+0.112 R) | neto c0,50 +0.545 t +0.23 (4/29 +) racha 5 caida 32.8 | c1,00 +0.045 t +0.02
+     V4-P3     n  31 (1.07/rueda) acierto  35.5 % | +5.49/-5.90 | bruto -1.859 (-0.308 R) | neto c0,50 -2.359 t -2.85 (3/29 +) racha 4 caida 77.8 | c1,00 -2.859 t -3.30
+     V4-S6     n  31 (1.07/rueda) acierto  35.5 % | +5.98/-5.90 | bruto -1.685 (-0.290 R) | neto c0,50 -2.185 t -2.78 (3/29 +) racha 4 caida 71.8 | c1,00 -2.685 t -3.28
+     V4-S5     n  31 (1.07/rueda) acierto  32.3 % | +6.28/-5.98 | bruto -2.024 (-0.319 R) | neto c0,50 -2.524 t -2.13 (3/29 +) racha 7 caida 83.6 | c1,00 -3.024 t -2.52
+     V5-S5     n  13 (0.45/rueda) acierto  30.8 % | +11.55/-5.69 | bruto -0.387 (-0.034 R) | neto c0,50 -0.887 t -0.39 (2/29 +) racha 4 caida 34.6 | c1,00 -1.387 t -0.62
+     V5-S1     n  14 (0.48/rueda) acierto  28.6 % | +11.12/-5.60 | bruto -0.821 (-0.143 R) | neto c0,50 -1.321 t -0.61 (2/29 +) racha 7 caida 44.0 | c1,00 -1.821 t -0.85
+     V4-S1     n  31 (1.07/rueda) acierto  19.4 % | +11.42/-5.98 | bruto -2.613 (-0.419 R) | neto c0,50 -3.113 t -2.64 (3/29 +) racha 12 caida 105.0 | c1,00 -3.613 t -2.96
+  TENDENCIA - entrenamiento (cada variante sola, en su estado):
+     T4-P1     n   6 (0.21/rueda) acierto  83.3 % | +5.19/-2.25 | bruto +3.947 (+0.750 R) | neto c0,50 +3.447 t +1.16 (4/29 +) racha 1 caida 2.8 | c1,00 +2.947 t +1.05
+     T4-S6     n   6 (0.21/rueda) acierto  83.3 % | +4.29/-2.25 | bruto +3.201 (+0.667 R) | neto c0,50 +2.701 t +1.33 (4/29 +) racha 1 caida 2.8 | c1,00 +2.201 t +1.18
+     T4-P2     n   5 (0.17/rueda) acierto  80.0 % | +4.81/-2.25 | bruto +3.396 (+0.524 R) | neto c0,50 +2.896 t +1.00 (4/29 +) racha 1 caida 2.8 | c1,00 +2.396 t +0.85
+     T1-S6     n  65 (2.24/rueda) acierto  72.3 % | +6.72/-6.92 | bruto +2.946 (+0.446 R) | neto c0,50 +2.446 t +2.43 (11/29 +) racha 3 caida 33.8 | c1,00 +1.946 t +2.04   <- ELEGIDA
+     T2-S6     n  62 (2.14/rueda) acierto  71.0 % | +6.82/-6.92 | bruto +2.831 (+0.419 R) | neto c0,50 +2.331 t +2.23 (10/29 +) racha 3 caida 33.8 | c1,00 +1.831 t +1.85
+     T1-P1     n  64 (2.21/rueda) acierto  70.3 % | +7.20/-6.88 | bruto +3.018 (+0.477 R) | neto c0,50 +2.518 t +2.39 (12/29 +) racha 3 caida 33.8 | c1,00 +2.018 t +2.01
+     T2-P1     n  62 (2.14/rueda) acierto  69.4 % | +7.18/-6.88 | bruto +2.873 (+0.444 R) | neto c0,50 +2.373 t +2.19 (11/29 +) racha 3 caida 33.8 | c1,00 +1.873 t +1.82
+     T4-S1     n   6 (0.21/rueda) acierto  66.7 % | +9.10/-2.75 | bruto +5.152 (+1.000 R) | neto c0,50 +4.652 t +1.12 (3/29 +) racha 1 caida 3.8 | c1,00 +4.152 t +1.04
+     T3-P1     n  40 (1.38/rueda) acierto  65.0 % | +5.88/-6.18 | bruto +1.659 (+0.250 R) | neto c0,50 +1.159 t +0.76 (5/29 +) racha 3 caida 37.8 | c1,00 +0.659 t +0.44
+     T1-P2     n  57 (1.97/rueda) acierto  64.9 % | +7.26/-6.67 | bruto +2.371 (+0.385 R) | neto c0,50 +1.871 t +2.10 (11/29 +) racha 3 caida 34.2 | c1,00 +1.371 t +1.60
+     T2-P2     n  53 (1.83/rueda) acierto  64.2 % | +7.69/-6.59 | bruto +2.571 (+0.404 R) | neto c0,50 +2.071 t +2.08 (10/29 +) racha 4 caida 33.8 | c1,00 +1.571 t +1.65
+     T3-S6     n  41 (1.41/rueda) acierto  63.4 % | +6.70/-6.27 | bruto +1.957 (+0.268 R) | neto c0,50 +1.457 t +1.10 (7/29 +) racha 3 caida 31.5 | c1,00 +0.957 t +0.74
+     T3-P2     n  38 (1.31/rueda) acierto  63.2 % | +4.61/-6.14 | bruto +0.651 (+0.069 R) | neto c0,50 +0.151 t +0.12 (5/29 +) racha 4 caida 45.1 | c1,00 -0.349 t -0.28
+     T1-S1     n  62 (2.14/rueda) acierto  51.6 % | +12.50/-7.11 | bruto +3.012 (+0.548 R) | neto c0,50 +2.512 t +2.21 (12/29 +) racha 6 caida 59.2 | c1,00 +2.012 t +1.86
+     T2-S1     n  60 (2.07/rueda) acierto  50.0 % | +12.67/-7.11 | bruto +2.779 (+0.500 R) | neto c0,50 +2.279 t +1.98 (11/29 +) racha 6 caida 59.2 | c1,00 +1.779 t +1.63
+     T2-S4     n  45 (1.55/rueda) acierto  42.2 % | +25.05/-6.32 | bruto +6.928 (+1.187 R) | neto c0,50 +6.428 t +1.96 (9/29 +) racha 5 caida 42.2 | c1,00 +5.928 t +1.84
+     T3-S1     n  39 (1.34/rueda) acierto  41.0 % | +12.84/-6.53 | bruto +1.417 (+0.231 R) | neto c0,50 +0.917 t +0.62 (6/29 +) racha 7 caida 56.2 | c1,00 +0.417 t +0.29
+     T4-S4     n   5 (0.17/rueda) acierto  40.0 % | +13.50/-2.86 | bruto +3.683 (+0.364 R) | neto c0,50 +3.183 t +0.69 (2/29 +) racha 3 caida 10.1 | c1,00 +2.683 t +0.59
+     T1-S4     n  51 (1.76/rueda) acierto  39.2 % | +24.29/-6.27 | bruto +5.711 (+0.997 R) | neto c0,50 +5.211 t +1.91 (9/29 +) racha 6 caida 61.2 | c1,00 +4.711 t +1.77
+     T3-S4     n  35 (1.21/rueda) acierto  17.1 % | +31.46/-6.47 | bruto +0.036 (+0.089 R) | neto c0,50 -0.464 t -0.16 (3/29 +) racha 12 caida 124.8 | c1,00 -0.964 t -0.33
+  ELEGIDAS: BALANCE None | TENDENCIA T1-S6
+  PRUEBA (diseno, una sola vez): n  30 (1.15/rueda) acierto  56.7 % | +4.16/-4.27 | bruto +0.508 (+0.133 R) | neto c0,50 +0.008 t +0.01 (3/26 +) racha 3 caida 19.8 | c1,00 -0.492 t -0.55
+     placebo PR (estado sorteado entre ruedas): p neto 0.085, p acierto 0.055 (neto medio del placebo -1.356) | placebo PD (lado al azar, salidas simetricas): real 0.508 contra -0.145, p 0.18, p acierto 0.19
+     META (acierto >= 60 % y neto > 0): no cumple
+  familia B: no opera (ninguna variante elegible en entrenamiento)
+  T1-S6 dentro de la combinada: n  30 (1.15/rueda) acierto  56.7 % | +4.16/-4.27 | bruto +0.508 (+0.133 R) | neto c0,50 +0.008 t +0.01 (3/26 +) racha 3 caida 19.8 | c1,00 -0.492 t -0.55
+     T1-S6 sola CON la llave: n  30 (1.15/rueda) acierto  56.7 % | +4.16/-4.27 | bruto +0.508 (+0.133 R) | neto c0,50 +0.008 t +0.01 (3/26 +) racha 3 caida 19.8 | c1,00 -0.492 t -0.55
+     T1-S6 sola SIN la llave: n 130 (5.00/rueda) acierto  45.4 % | +4.55/-4.55 | bruto -0.417 (-0.092 R) | neto c0,50 -0.917 t -2.76 (7/26 +) racha 5 caida 136.0 | c1,00 -1.417 t -4.27
+
+== LOPO: confirma AFUERA (21 ruedas de prueba; entrenamiento 34 ruedas) | corte del detector (1.6, 1.0)
+  BALANCE - entrenamiento (cada variante sola, en su estado):
+     V1-S1     n   1 (0.03/rueda) acierto 100.0 % | +10.50/0.00 | bruto +10.500 (+2.000 R) | neto c0,50 +10.000 t +1.00 (1/34 +) racha 0 caida 0.0 | c1,00 +9.500 t +1.00
+     V1-S5     n   1 (0.03/rueda) acierto 100.0 % | +11.89/0.00 | bruto +11.886 (+2.264 R) | neto c0,50 +11.386 t +1.00 (1/34 +) racha 0 caida 0.0 | c1,00 +10.886 t +1.00
+     V2-S1     n   3 (0.09/rueda) acierto 100.0 % | +12.17/0.00 | bruto +12.167 (+2.000 R) | neto c0,50 +11.667 t +1.58 (3/34 +) racha 0 caida 0.0 | c1,00 +11.167 t +1.57
+     V2-S5     n   3 (0.09/rueda) acierto 100.0 % | +11.63/0.00 | bruto +11.632 (+1.791 R) | neto c0,50 +11.132 t +1.52 (3/34 +) racha 0 caida 0.0 | c1,00 +10.632 t +1.50
+     V2-P3     n   4 (0.12/rueda) acierto  75.0 % | +6.88/-5.50 | bruto +3.782 (+0.514 R) | neto c0,50 +3.282 t +0.87 (2/34 +) racha 1 caida 6.0 | c1,00 +2.782 t +0.75
+     V2-S6     n   4 (0.12/rueda) acierto  75.0 % | +6.08/-5.50 | bruto +3.188 (+0.500 R) | neto c0,50 +2.688 t +1.09 (2/34 +) racha 1 caida 6.0 | c1,00 +2.188 t +0.92
+     V5-P3     n  12 (0.35/rueda) acierto  75.0 % | +4.54/-6.17 | bruto +1.864 (+0.433 R) | neto c0,50 +1.364 t +0.92 (5/34 +) racha 2 caida 17.4 | c1,00 +0.864 t +0.62
+     V5-S6     n  12 (0.35/rueda) acierto  75.0 % | +5.06/-6.17 | bruto +2.250 (+0.500 R) | neto c0,50 +1.750 t +1.07 (4/34 +) racha 2 caida 14.2 | c1,00 +1.250 t +0.82
+     V4-P3     n  38 (1.12/rueda) acierto  60.5 % | +4.64/-5.47 | bruto +0.653 (+0.206 R) | neto c0,50 +0.153 t +0.17 (7/34 +) racha 3 caida 38.3 | c1,00 -0.347 t -0.40
+     V4-S6     n  38 (1.12/rueda) acierto  60.5 % | +4.84/-5.47 | bruto +0.770 (+0.211 R) | neto c0,50 +0.270 t +0.39 (9/34 +) racha 3 caida 25.5 | c1,00 -0.230 t -0.35
+     V6-S6mc   n  35 (1.03/rueda) acierto  60.0 % | +5.19/-5.77 | bruto +0.807 (+0.143 R) | neto c0,50 +0.307 t +0.43 (9/34 +) racha 3 caida 17.2 | c1,00 -0.193 t -0.28
+     V4-S5     n  38 (1.12/rueda) acierto  57.9 % | +6.53/-5.64 | bruto +1.406 (+0.414 R) | neto c0,50 +0.906 t +0.71 (10/34 +) racha 8 caida 65.7 | c1,00 +0.406 t +0.33   <- ELEGIDA
+     V4-S1     n  37 (1.09/rueda) acierto  51.4 % | +8.57/-5.72 | bruto +1.615 (+0.506 R) | neto c0,50 +1.115 t +0.73 (9/34 +) racha 8 caida 61.2 | c1,00 +0.615 t +0.42
+     V1-P3     n   2 (0.06/rueda) acierto  50.0 % | +2.62/-5.50 | bruto -1.438 (-0.250 R) | neto c0,50 -1.938 t -1.00 (0/34 +) racha 1 caida 6.0 | c1,00 -2.438 t -1.00
+     V1-S6     n   2 (0.06/rueda) acierto  50.0 % | +5.25/-5.50 | bruto -0.125 (+0.000 R) | neto c0,50 -0.625 t -1.00 (0/34 +) racha 1 caida 6.0 | c1,00 -1.125 t -1.00
+     V3-P3     n  13 (0.38/rueda) acierto  46.2 % | +6.20/-4.68 | bruto +0.341 (-0.030 R) | neto c0,50 -0.159 t -0.15 (4/34 +) racha 3 caida 16.3 | c1,00 -0.659 t -0.62
+     V3-S6     n  13 (0.38/rueda) acierto  46.2 % | +5.33/-4.68 | bruto -0.058 (-0.077 R) | neto c0,50 -0.558 t -0.56 (3/34 +) racha 3 caida 16.8 | c1,00 -1.058 t -1.02
+     V3-S1     n  11 (0.32/rueda) acierto  45.5 % | +10.50/-4.58 | bruto +2.273 (+0.364 R) | neto c0,50 +1.773 t +0.91 (4/34 +) racha 3 caida 14.0 | c1,00 +1.273 t +0.67
+     V3-S5     n  11 (0.32/rueda) acierto  45.5 % | +8.92/-4.58 | bruto +1.555 (+0.164 R) | neto c0,50 +1.055 t +0.60 (4/34 +) racha 3 caida 14.0 | c1,00 +0.555 t +0.32
+     V5-S1     n  11 (0.32/rueda) acierto  45.5 % | +8.70/-5.25 | bruto +1.091 (+0.256 R) | neto c0,50 +0.591 t +0.25 (3/34 +) racha 3 caida 18.8 | c1,00 +0.091 t +0.04
+     V5-S5     n  11 (0.32/rueda) acierto  45.5 % | +8.70/-5.25 | bruto +1.091 (+0.258 R) | neto c0,50 +0.591 t +0.26 (3/34 +) racha 3 caida 18.8 | c1,00 +0.091 t +0.04
+  TENDENCIA - entrenamiento (cada variante sola, en su estado):
+     T4-P1     n   3 (0.09/rueda) acierto 100.0 % | +6.52/0.00 | bruto +6.519 (+1.167 R) | neto c0,50 +6.019 t +1.05 (2/34 +) racha 0 caida 0.0 | c1,00 +5.519 t +1.02
+     T4-P2     n   2 (0.06/rueda) acierto 100.0 % | +7.97/0.00 | bruto +7.968 (+1.309 R) | neto c0,50 +7.468 t +1.06 (2/34 +) racha 0 caida 0.0 | c1,00 +6.968 t +1.03
+     T4-S1     n   3 (0.09/rueda) acierto 100.0 % | +9.91/0.00 | bruto +9.914 (+2.000 R) | neto c0,50 +9.414 t +1.20 (2/34 +) racha 0 caida 0.0 | c1,00 +8.914 t +1.19
+     T4-S4     n   2 (0.06/rueda) acierto 100.0 % | +16.12/0.00 | bruto +16.125 (+3.437 R) | neto c0,50 +15.625 t +1.33 (2/34 +) racha 0 caida 0.0 | c1,00 +15.125 t +1.33
+     T4-S6     n   3 (0.09/rueda) acierto 100.0 % | +4.96/0.00 | bruto +4.957 (+1.000 R) | neto c0,50 +4.457 t +1.19 (2/34 +) racha 0 caida 0.0 | c1,00 +3.957 t +1.16
+     T3-P2     n  24 (0.71/rueda) acierto  79.2 % | +5.54/-7.40 | bruto +2.844 (+0.509 R) | neto c0,50 +2.344 t +1.37 (6/34 +) racha 2 caida 21.1 | c1,00 +1.844 t +1.12   <- ELEGIDA
+     T3-P1     n  31 (0.91/rueda) acierto  67.7 % | +6.20/-5.70 | bruto +2.363 (+0.339 R) | neto c0,50 +1.863 t +1.13 (6/34 +) racha 2 caida 21.1 | c1,00 +1.363 t +0.85
+     T1-P1     n  55 (1.62/rueda) acierto  63.6 % | +7.07/-6.03 | bruto +2.307 (+0.336 R) | neto c0,50 +1.807 t +1.45 (7/34 +) racha 3 caida 33.8 | c1,00 +1.307 t +1.09
+     T3-S6     n  33 (0.97/rueda) acierto  63.6 % | +6.87/-5.73 | bruto +2.288 (+0.273 R) | neto c0,50 +1.788 t +1.24 (7/34 +) racha 3 caida 25.2 | c1,00 +1.288 t +0.93
+     T2-P2     n  38 (1.12/rueda) acierto  63.2 % | +7.33/-6.62 | bruto +2.188 (+0.299 R) | neto c0,50 +1.688 t +1.15 (6/34 +) racha 4 caida 33.8 | c1,00 +1.188 t +0.83
+     T1-P2     n  43 (1.26/rueda) acierto  62.8 % | +7.07/-6.59 | bruto +1.985 (+0.303 R) | neto c0,50 +1.485 t +1.21 (7/34 +) racha 3 caida 34.2 | c1,00 +0.985 t +0.82
+     T1-S6     n  55 (1.62/rueda) acierto  61.8 % | +6.65/-6.18 | bruto +1.755 (+0.236 R) | neto c0,50 +1.255 t +1.19 (7/34 +) racha 3 caida 33.8 | c1,00 +0.755 t +0.75
+     T2-P1     n  49 (1.44/rueda) acierto  59.2 % | +7.48/-5.97 | bruto +1.987 (+0.235 R) | neto c0,50 +1.487 t +1.06 (6/34 +) racha 4 caida 41.8 | c1,00 +0.987 t +0.72
+     T2-S6     n  49 (1.44/rueda) acierto  57.1 % | +7.11/-6.13 | bruto +1.434 (+0.143 R) | neto c0,50 +0.934 t +0.77 (6/34 +) racha 4 caida 42.5 | c1,00 +0.434 t +0.37
+     T3-S1     n  28 (0.82/rueda) acierto  50.0 % | +13.04/-6.89 | bruto +3.071 (+0.500 R) | neto c0,50 +2.571 t +1.74 (6/34 +) racha 3 caida 30.2 | c1,00 +2.071 t +1.49
+     T1-S1     n  52 (1.53/rueda) acierto  44.2 % | +12.39/-6.35 | bruto +1.938 (+0.327 R) | neto c0,50 +1.438 t +1.11 (8/34 +) racha 6 caida 59.2 | c1,00 +0.938 t +0.76
+     T2-S1     n  46 (1.35/rueda) acierto  41.3 % | +13.18/-6.44 | bruto +1.663 (+0.239 R) | neto c0,50 +1.163 t +0.83 (6/34 +) racha 7 caida 59.2 | c1,00 +0.663 t +0.49
+     T2-S4     n  30 (0.88/rueda) acierto  33.3 % | +24.75/-6.03 | bruto +4.233 (+0.568 R) | neto c0,50 +3.733 t +1.10 (5/34 +) racha 6 caida 43.0 | c1,00 +3.233 t +0.97
+     T1-S4     n  37 (1.09/rueda) acierto  32.4 % | +22.25/-6.09 | bruto +3.101 (+0.443 R) | neto c0,50 +2.601 t +1.08 (6/34 +) racha 6 caida 61.2 | c1,00 +2.101 t +0.89
+     T3-S4     n  22 (0.65/rueda) acierto  27.3 % | +19.54/-7.38 | bruto -0.034 (+0.214 R) | neto c0,50 -0.534 t -0.19 (4/34 +) racha 8 caida 89.2 | c1,00 -1.034 t -0.35
+  ELEGIDAS: BALANCE V4-S5 | TENDENCIA T3-P2
+  PRUEBA (confirma, una sola vez): n  48 (2.29/rueda) acierto  45.8 % | +4.82/-5.19 | bruto -0.604 (-0.122 R) | neto c0,50 -1.104 t -1.32 (4/21 +) racha 6 caida 72.7 | c1,00 -1.604 t -1.89
+     placebo PR (estado sorteado entre ruedas): p neto 0.535, p acierto 0.145 (neto medio del placebo -0.976) | placebo PD (lado al azar, salidas simetricas): real -0.789 contra -0.264, p 0.73, p acierto 0.75
+     META (acierto >= 60 % y neto > 0): no cumple
+  V4-S5 dentro de la combinada: n  25 (1.19/rueda) acierto  40.0 % | +6.28/-5.20 | bruto -0.609 (-0.155 R) | neto c0,50 -1.109 t -1.00 (3/21 +) racha 4 caida 33.1 | c1,00 -1.609 t -1.44
+     V4-S5 sola CON la llave: n  25 (1.19/rueda) acierto  40.0 % | +6.28/-5.20 | bruto -0.609 (-0.155 R) | neto c0,50 -1.109 t -1.00 (3/21 +) racha 4 caida 33.1 | c1,00 -1.609 t -1.44
+     V4-S5 sola SIN la llave: n  52 (2.48/rueda) acierto  28.8 % | +12.35/-5.24 | bruto -0.168 (-0.059 R) | neto c0,50 -0.668 t -0.51 (6/21 +) racha 9 caida 90.6 | c1,00 -1.168 t -0.89
+  T3-P2 dentro de la combinada: n  23 (1.10/rueda) acierto  52.2 % | +3.60/-5.18 | bruto -0.598 (-0.086 R) | neto c0,50 -1.098 t -0.89 (3/21 +) racha 4 caida 45.1 | c1,00 -1.598 t -1.20
+     T3-P2 sola CON la llave: n  23 (1.10/rueda) acierto  52.2 % | +3.60/-5.18 | bruto -0.598 (-0.086 R) | neto c0,50 -1.098 t -0.89 (3/21 +) racha 4 caida 45.1 | c1,00 -1.598 t -1.20
+     T3-P2 sola SIN la llave: n  75 (3.57/rueda) acierto  49.3 % | +4.53/-5.48 | bruto -0.542 (-0.076 R) | neto c0,50 -1.042 t -1.21 (8/21 +) racha 8 caida 117.1 | c1,00 -1.542 t -1.75
+
+== LOPO: guardada AFUERA (8 ruedas de prueba; entrenamiento 47 ruedas) | corte del detector (1.6, 1.0)
+  BALANCE - entrenamiento (cada variante sola, en su estado):
+     V1-S1     n   3 (0.06/rueda) acierto  66.7 % | +10.50/-5.50 | bruto +5.167 (+1.000 R) | neto c0,50 +4.667 t +0.91 (2/47 +) racha 1 caida 6.0 | c1,00 +4.167 t +0.83
+     V1-S5     n   3 (0.06/rueda) acierto  66.7 % | +9.42/-5.50 | bruto +4.444 (+0.862 R) | neto c0,50 +3.944 t +0.82 (2/47 +) racha 1 caida 6.0 | c1,00 +3.444 t +0.73
+     V2-P3     n   9 (0.19/rueda) acierto  66.7 % | +5.19/-5.50 | bruto +1.624 (+0.357 R) | neto c0,50 +1.124 t +0.64 (4/47 +) racha 1 caida 9.9 | c1,00 +0.624 t +0.38
+     V2-S6     n   9 (0.19/rueda) acierto  66.7 % | +4.88/-5.50 | bruto +1.417 (+0.333 R) | neto c0,50 +0.917 t +0.82 (4/47 +) racha 1 caida 7.2 | c1,00 +0.417 t +0.39
+     V5-P3     n  21 (0.45/rueda) acierto  66.7 % | +5.32/-5.21 | bruto +1.812 (+0.357 R) | neto c0,50 +1.312 t +0.92 (8/47 +) racha 5 caida 29.8 | c1,00 +0.812 t +0.59   <- ELEGIDA
+     V5-S6     n  23 (0.49/rueda) acierto  65.2 % | +5.15/-5.25 | bruto +1.533 (+0.304 R) | neto c0,50 +1.033 t +0.80 (7/47 +) racha 5 caida 29.8 | c1,00 +0.533 t +0.44
+     V2-S1     n   8 (0.17/rueda) acierto  62.5 % | +9.90/-5.17 | bruto +4.250 (+0.875 R) | neto c0,50 +3.750 t +1.31 (4/47 +) racha 2 caida 11.0 | c1,00 +3.250 t +1.20
+     V2-S5     n   8 (0.17/rueda) acierto  62.5 % | +10.36/-5.17 | bruto +4.539 (+0.877 R) | neto c0,50 +4.039 t +1.19 (4/47 +) racha 2 caida 11.0 | c1,00 +3.539 t +1.09
+     V6-S6mc   n  57 (1.21/rueda) acierto  59.6 % | +4.77/-5.16 | bruto +0.763 (+0.135 R) | neto c0,50 +0.263 t +0.48 (14/47 +) racha 3 caida 23.8 | c1,00 -0.237 t -0.44
+     V4-S5     n  57 (1.21/rueda) acierto  56.1 % | +6.45/-4.83 | bruto +1.503 (+0.313 R) | neto c0,50 +1.003 t +1.19 (13/47 +) racha 4 caida 42.9 | c1,00 +0.503 t +0.61
+     V4-P3     n  57 (1.21/rueda) acierto  52.6 % | +5.05/-5.06 | bruto +0.263 (+0.075 R) | neto c0,50 -0.237 t -0.34 (10/47 +) racha 4 caida 57.6 | c1,00 -0.737 t -1.07
+     V4-S6     n  57 (1.21/rueda) acierto  52.6 % | +4.85/-5.06 | bruto +0.158 (+0.053 R) | neto c0,50 -0.342 t -0.57 (12/47 +) racha 4 caida 55.2 | c1,00 -0.842 t -1.43
+     V1-P3     n   4 (0.09/rueda) acierto  50.0 % | +2.62/-5.50 | bruto -1.438 (-0.250 R) | neto c0,50 -1.938 t -1.04 (1/47 +) racha 1 caida 9.9 | c1,00 -2.438 t -1.18
+     V1-S6     n   4 (0.09/rueda) acierto  50.0 % | +5.25/-5.50 | bruto -0.125 (+0.000 R) | neto c0,50 -0.625 t -0.32 (1/47 +) racha 1 caida 7.2 | c1,00 -1.125 t -0.55
+     V3-P3     n  23 (0.49/rueda) acierto  47.8 % | +5.30/-4.56 | bruto +0.157 (-0.010 R) | neto c0,50 -0.343 t -0.35 (7/47 +) racha 3 caida 20.0 | c1,00 -0.843 t -0.85
+     V3-S6     n  23 (0.49/rueda) acierto  47.8 % | +4.89/-4.56 | bruto -0.043 (-0.043 R) | neto c0,50 -0.543 t -0.68 (6/47 +) racha 3 caida 20.5 | c1,00 -1.043 t -1.27
+     V5-S5     n  20 (0.43/rueda) acierto  45.0 % | +9.97/-5.11 | bruto +1.673 (+0.320 R) | neto c0,50 +1.173 t +0.66 (5/47 +) racha 2 caida 20.4 | c1,00 +0.673 t +0.39
+     V4-S1     n  56 (1.19/rueda) acierto  44.6 % | +9.25/-5.08 | bruto +1.317 (+0.316 R) | neto c0,50 +0.817 t +0.80 (12/47 +) racha 6 caida 56.8 | c1,00 +0.317 t +0.32
+     V5-S1     n  21 (0.45/rueda) acierto  42.9 % | +9.78/-5.08 | bruto +1.286 (+0.229 R) | neto c0,50 +0.786 t +0.44 (5/47 +) racha 5 caida 29.8 | c1,00 +0.286 t +0.16
+     V3-S1     n  21 (0.45/rueda) acierto  38.1 % | +9.50/-4.58 | bruto +0.786 (+0.143 R) | neto c0,50 +0.286 t +0.18 (6/47 +) racha 4 caida 22.2 | c1,00 -0.214 t -0.13
+     V3-S5     n  21 (0.45/rueda) acierto  38.1 % | +9.02/-4.58 | bruto +0.602 (+0.070 R) | neto c0,50 +0.102 t +0.06 (6/47 +) racha 4 caida 22.2 | c1,00 -0.398 t -0.23
+  TENDENCIA - entrenamiento (cada variante sola, en su estado):
+     T4-P1     n   5 (0.11/rueda) acierto  80.0 % | +2.28/-2.25 | bruto +1.375 (+0.400 R) | neto c0,50 +0.875 t +0.83 (4/47 +) racha 1 caida 2.8 | c1,00 +0.375 t +0.38
+     T4-P2     n   5 (0.11/rueda) acierto  80.0 % | +1.51/-2.25 | bruto +0.758 (+0.200 R) | neto c0,50 +0.258 t +0.37 (4/47 +) racha 1 caida 2.8 | c1,00 -0.242 t -0.35
+     T4-S6     n   5 (0.11/rueda) acierto  80.0 % | +3.02/-2.25 | bruto +1.967 (+0.600 R) | neto c0,50 +1.467 t +1.28 (4/47 +) racha 1 caida 2.8 | c1,00 +0.967 t +0.93
+     T1-S6     n  70 (1.49/rueda) acierto  67.1 % | +4.92/-4.60 | bruto +1.793 (+0.343 R) | neto c0,50 +1.293 t +1.70 (10/47 +) racha 5 caida 30.5 | c1,00 +0.793 t +1.09   <- ELEGIDA
+     T1-P1     n  69 (1.47/rueda) acierto  63.8 % | +5.59/-4.85 | bruto +1.808 (+0.391 R) | neto c0,50 +1.308 t +1.91 (11/47 +) racha 5 caida 25.5 | c1,00 +0.808 t +1.24
+     T2-S6     n  61 (1.30/rueda) acierto  62.3 % | +4.95/-4.55 | bruto +1.365 (+0.246 R) | neto c0,50 +0.865 t +0.99 (8/47 +) racha 5 caida 53.8 | c1,00 +0.365 t +0.43
+     T4-S1     n   5 (0.11/rueda) acierto  60.0 % | +5.89/-2.75 | bruto +2.434 (+0.800 R) | neto c0,50 +1.934 t +0.92 (3/47 +) racha 1 caida 3.8 | c1,00 +1.434 t +0.71
+     T3-P2     n  32 (0.68/rueda) acierto  59.4 % | +4.26/-5.00 | bruto +0.500 (+0.177 R) | neto c0,50 +0.000 t +0.00 (7/47 +) racha 4 caida 45.1 | c1,00 -0.500 t -0.43
+     T1-P2     n  54 (1.15/rueda) acierto  59.3 % | +6.22/-4.80 | bruto +1.731 (+0.372 R) | neto c0,50 +1.231 t +1.75 (10/47 +) racha 3 caida 26.5 | c1,00 +0.731 t +1.06
+     T2-P1     n  61 (1.30/rueda) acierto  59.0 % | +5.57/-4.81 | bruto +1.316 (+0.279 R) | neto c0,50 +0.816 t +1.09 (9/47 +) racha 5 caida 52.0 | c1,00 +0.316 t +0.44
+     T3-P1     n  41 (0.87/rueda) acierto  56.1 % | +4.67/-4.75 | bruto +0.534 (+0.159 R) | neto c0,50 +0.034 t +0.04 (7/47 +) racha 3 caida 37.8 | c1,00 -0.466 t -0.52
+     T3-S6     n  42 (0.89/rueda) acierto  54.8 % | +4.57/-4.72 | bruto +0.363 (+0.095 R) | neto c0,50 -0.137 t -0.17 (6/47 +) racha 3 caida 29.0 | c1,00 -0.637 t -0.75
+     T2-P2     n  45 (0.96/rueda) acierto  53.3 % | +7.08/-4.81 | bruto +1.531 (+0.332 R) | neto c0,50 +1.031 t +1.25 (8/47 +) racha 4 caida 38.0 | c1,00 +0.531 t +0.65
+     T1-S1     n  68 (1.45/rueda) acierto  51.5 % | +9.49/-4.94 | bruto +2.485 (+0.544 R) | neto c0,50 +1.985 t +2.15 (12/47 +) racha 6 caida 31.2 | c1,00 +1.485 t +1.69
+     T2-S1     n  60 (1.28/rueda) acierto  48.3 % | +9.57/-4.93 | bruto +2.079 (+0.450 R) | neto c0,50 +1.579 t +1.63 (9/47 +) racha 7 caida 49.0 | c1,00 +1.079 t +1.18
+     T3-S1     n  37 (0.79/rueda) acierto  43.2 % | +8.81/-4.75 | bruto +1.115 (+0.297 R) | neto c0,50 +0.615 t +0.42 (6/47 +) racha 7 caida 49.8 | c1,00 +0.115 t +0.08
+     T4-S4     n   5 (0.11/rueda) acierto  40.0 % | +7.38/-2.86 | bruto +1.233 (+0.444 R) | neto c0,50 +0.733 t +0.30 (2/47 +) racha 3 caida 10.1 | c1,00 +0.233 t +0.10
+     T2-S4     n  43 (0.91/rueda) acierto  34.9 % | +22.83/-4.51 | bruto +5.029 (+1.033 R) | neto c0,50 +4.529 t +1.54 (8/47 +) racha 8 caida 47.2 | c1,00 +4.029 t +1.39
+     T1-S4     n  52 (1.11/rueda) acierto  34.6 % | +20.65/-4.48 | bruto +4.221 (+0.869 R) | neto c0,50 +3.721 t +1.52 (9/47 +) racha 6 caida 44.0 | c1,00 +3.221 t +1.34
+     T3-S4     n  29 (0.62/rueda) acierto  27.6 % | +21.62/-4.69 | bruto +2.569 (+0.579 R) | neto c0,50 +2.069 t +0.65 (5/47 +) racha 8 caida 48.0 | c1,00 +1.569 t +0.50
+  ELEGIDAS: BALANCE V5-P3 | TENDENCIA T1-S6
+  PRUEBA (guardada, una sola vez): n  26 (3.25/rueda) acierto  65.4 % | +8.98/-9.03 | bruto +2.745 (+0.288 R) | neto c0,50 +2.245 t +1.13 (4/8 +) racha 3 caida 33.8 | c1,00 +1.745 t +0.92
+     placebo PR (estado sorteado entre ruedas): p neto 0.13, p acierto 0.165 (neto medio del placebo 0.23) | placebo PD (lado al azar, salidas simetricas): real 2.745 contra -0.461, p 0.03, p acierto 0.05
+     META (acierto >= 60 % y neto > 0): CUMPLE
+  V5-P3 dentro de la combinada: n   3 (0.38/rueda) acierto  33.3 % | +3.12/-7.25 | bruto -3.792 (-0.500 R) | neto c0,50 -4.292 t -1.50 (0/8 +) racha 1 caida 12.9 | c1,00 -4.792 t -1.51
+     V5-P3 sola CON la llave: n   3 (0.38/rueda) acierto  33.3 % | +3.12/-7.25 | bruto -3.792 (-0.500 R) | neto c0,50 -4.292 t -1.50 (0/8 +) racha 1 caida 12.9 | c1,00 -4.792 t -1.51
+     V5-P3 sola SIN la llave: n  21 (2.62/rueda) acierto  47.6 % | +5.96/-8.64 | bruto -1.686 (-0.190 R) | neto c0,50 -2.186 t -1.13 (1/8 +) racha 3 caida 56.9 | c1,00 -2.686 t -1.39
+  T1-S6 dentro de la combinada: n  23 (2.88/rueda) acierto  69.6 % | +9.34/-9.54 | bruto +3.598 (+0.391 R) | neto c0,50 +3.098 t +1.45 (4/8 +) racha 3 caida 33.8 | c1,00 +2.598 t +1.27
+     T1-S6 sola CON la llave: n  25 (3.12/rueda) acierto  68.0 % | +9.15/-9.28 | bruto +3.250 (+0.360 R) | neto c0,50 +2.750 t +1.40 (4/8 +) racha 3 caida 33.8 | c1,00 +2.250 t +1.19
+     T1-S6 sola SIN la llave: n  40 (5.00/rueda) acierto  55.0 % | +8.91/-9.19 | bruto +0.762 (+0.100 R) | neto c0,50 +0.263 t +0.18 (4/8 +) racha 3 caida 52.0 | c1,00 -0.237 t -0.16
+
+LOPO JUNTAS (55 ruedas, cada una juzgada por el procedimiento entrenado sin su periodo): n 104 (1.89/rueda) acierto  53.8 % | +5.88/-5.66 | bruto +0.554 (+0.054 R) | neto c0,50 +0.054 t +0.08 (11/55 +) racha 6 caida 85.6 | c1,00 -0.446 t -0.65
+   t de Bonferroni: k = 3 pliegues 2.18 | 63 variantes de la ronda 3.33 (una cola 5 %, gl 54)
+   META en los 3 cortes: NO (cortes que cumplen: ['guardada'])
+
+== LODO con embargo +-2 ruedas (55 pliegues; detector y variantes elegidos sin la rueda y sus vecinas)
+  LODO diseno    n  46 (1.77/rueda) acierto  58.7 % | +4.39/-4.50 | bruto +0.720 (+0.145 R) | neto c0,50 +0.220 t +0.33 (9/26 +) racha 3 caida 28.0 | c1,00 -0.280 t -0.41
+       familia B: n  17 (0.65/rueda) acierto  64.7 % | +4.69/-5.00 | bruto +1.272 (+0.215 R) | neto c0,50 +0.772 t +0.76 (7/26 +) racha 2 caida 11.5 | c1,00 +0.272 t +0.27
+       familia T: n  29 (1.12/rueda) acierto  55.2 % | +4.19/-4.27 | bruto +0.397 (+0.103 R) | neto c0,50 -0.103 t -0.12 (3/26 +) racha 3 caida 23.0 | c1,00 -0.603 t -0.67
+  LODO confirma  n  51 (2.43/rueda) acierto  56.9 % | +4.98/-5.56 | bruto +0.436 (+0.088 R) | neto c0,50 -0.064 t -0.07 (9/21 +) racha 4 caida 55.6 | c1,00 -0.564 t -0.60
+       familia B: n  15 (0.71/rueda) acierto  46.7 % | +5.23/-5.75 | bruto -0.625 (-0.133 R) | neto c0,50 -1.125 t -0.88 (4/21 +) racha 5 caida 34.8 | c1,00 -1.625 t -1.24
+       familia T: n  36 (1.71/rueda) acierto  61.1 % | +4.90/-5.45 | bruto +0.878 (+0.181 R) | neto c0,50 +0.378 t +0.29 (5/21 +) racha 2 caida 34.9 | c1,00 -0.122 t -0.09
+  LODO guardada  n  26 (3.25/rueda) acierto  61.5 % | +9.09/-8.95 | bruto +2.154 (+0.212 R) | neto c0,50 +1.654 t +1.04 (4/8 +) racha 3 caida 33.8 | c1,00 +1.154 t +0.76
+       familia B: n   3 (0.38/rueda) acierto  33.3 % | +3.12/-7.25 | bruto -3.792 (-0.500 R) | neto c0,50 -4.292 t -1.50 (0/8 +) racha 1 caida 12.9 | c1,00 -4.792 t -1.51
+       familia T: n  23 (2.88/rueda) acierto  65.2 % | +9.49/-9.38 | bruto +2.929 (+0.304 R) | neto c0,50 +2.429 t +1.43 (4/8 +) racha 3 caida 33.8 | c1,00 +1.929 t +1.20
+  LODO todas     n 123 (2.24/rueda) acierto  58.5 % | +5.68/-5.83 | bruto +0.905 (+0.136 R) | neto c0,50 +0.405 t +0.71 (22/55 +) racha 5 caida 55.6 | c1,00 -0.095 t -0.17
+       familia B: n  35 (0.64/rueda) acierto  54.3 % | +4.81/-5.66 | bruto +0.025 (+0.005 R) | neto c0,50 -0.475 t -0.60 (11/55 +) racha 6 caida 47.6 | c1,00 -0.975 t -1.22
+       familia T: n  88 (1.60/rueda) acierto  60.2 % | +5.99/-5.91 | bruto +1.256 (+0.188 R) | neto c0,50 +0.756 t +0.99 (12/55 +) racha 5 caida 42.1 | c1,00 +0.256 t +0.34
+  elecciones LODO (variante B / T): {'B:V5-P3 T:T1-S6': 19, 'B:V6-S6mc T:T1-S6': 16, 'B:V5-P3 T:T3-P2': 7, 'B:V5-S6 T:T1-S6': 4, 'B:V5-P3 T:T1-P1': 4, 'B:V6-S6mc T:T1-P1': 3, 'B:V3-S1 T:T1-S6': 1, 'B:V5-S6 T:T1-P1': 1}

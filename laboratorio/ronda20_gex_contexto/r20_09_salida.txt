@@ -1,0 +1,4 @@
+  diseno    | NEG 11 ruedas: llega a TENDENCIA  5 ( 45 %), primer minuto mediano 93; de esas, ruptura al cierre -2.21 X | POS 13 ruedas: llega a TENDENCIA  1 (  8 %), primer minuto mediano 140; de esas, ruptura al cierre +6.09 X
+  confirma  | NEG 16 ruedas: llega a TENDENCIA  8 ( 50 %), primer minuto mediano 30; de esas, ruptura al cierre +0.59 X | POS  5 ruedas: llega a TENDENCIA  2 ( 40 %), primer minuto mediano 66; de esas, ruptura al cierre -3.62 X
+  guardada  | NEG  4 ruedas: llega a TENDENCIA  2 ( 50 %), primer minuto mediano 64; de esas, ruptura al cierre +3.05 X | POS 0 ruedas
+  juntas    | NEG 31 ruedas: llega a TENDENCIA 15 ( 48 %), primer minuto mediano 55; de esas, ruptura al cierre -0.02 X | POS 18 ruedas: llega a TENDENCIA  3 ( 17 %), primer minuto mediano 101; de esas, ruptura al cierre -0.38 X

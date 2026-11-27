@@ -1,0 +1,65 @@
+filas 22230, ruedas 57, con cadena 21407 (96.3 %), validas (dato <= 60 min) 19054 (85.7 %)
+columnas: ts_utc, dia, muestra, minuto, hora_ny, X, spot_es, base, base_n, hay_cadena, gex_neto, gex_0dte, gex_sin_mensual, gex_bruto, gex_norm, mensual_en_ventana, n_vencs, hay_0dte, muro_call_spx, muro_call_gex, muro_put_spx, muro_put_gex, mayor_pos_spx, mayor_pos_gex, mayor_neg_spx, mayor_neg_gex, oi_max_spx, oi_max, oi_call_max_spx, oi_call_max, oi_put_max_spx, oi_put_max, oi_call, oi_put, oi_call_0dte, oi_put_0dte, vol_call, vol_put, vol_call_0dte, vol_put_0dte, chequeo_barrido, n_cruces, flip_spx, flip_abajo_spx, flip_arriba_spx, gex_barrido_min, gex_barrido_max, fuente, foto_gen_utc, dato_utc, edad_s, edad_publicacion_s, base_arch, spot_spx, flip_es, flip_abajo_es, flip_arriba_es, muro_call_es, muro_put_es, mayor_pos_es, mayor_neg_es, oi_max_es, oi_call_max_es, oi_put_max_es, dist_flip_pts, dist_flip_X, dist_muro_call_X, dist_muro_put_X, dist_oi_max_X, regimen, cobertura_es_por_X, vol_call_frac, vol_call_frac_30, valido, foto_hoy
+             muestra     X  con_cadena  validas  edad_med_s  edad_max_min  base_med  base_arch_med  cruces_med fuente
+dia                                                                                                                  
+2026-09-08    diseno  3.50        95.0     95.0      1298.0         43.47      4.93           5.65         1.0    git
+2026-09-09    diseno  3.75       100.0     95.0      1298.5       1054.02      5.20           5.24         1.0    git
+2026-09-10    diseno  3.75       100.0     94.0      1296.5       1059.02      5.75            NaN         1.0    git
+2026-09-11    diseno  3.75       100.0     95.0      1294.5       1053.02      4.51            NaN         1.0    git
+2026-09-14    diseno  3.50        94.0     94.0      1352.0         53.45     70.82          71.19         1.0    git
+2026-09-15    diseno  3.50       100.0     94.0      1308.0       1056.02     70.99          69.56         1.0    git
+2026-09-16    diseno  3.50       100.0     94.0      1027.0       1056.02     70.73          68.92         1.0  local
+2026-09-17    diseno  3.50       100.0     95.0      1345.0       1055.02     69.09          68.77         1.0    git
+2026-09-18    diseno  3.25       100.0     95.0      1300.5       1052.02     65.53          67.75         1.0    git
+2026-09-21    diseno  3.25       100.0     95.0       964.0       3933.02     67.49          67.20         1.0  local
+2026-09-22    diseno  3.50       100.0     94.0       984.5       1056.02     66.26          65.27         1.0  local
+2026-09-23    diseno  3.25       100.0      0.0     73771.0       1424.02     66.41            NaN         1.0    git
+2026-09-24    diseno  3.50       100.0     35.0    152011.0       2728.02     66.41          62.67         1.0    git
+2026-09-25    diseno  4.00       100.0     94.0      1375.0       1057.02     61.13          61.63         1.0    git
+2026-09-28    diseno  4.75       100.0     95.0       970.0       3935.02     61.09          59.83         1.0  local
+2026-09-29    diseno  4.75       100.0     95.0       968.0       1055.02     59.36          58.54         1.0  local
+2026-09-30    diseno  4.75       100.0     95.0       981.0       1053.02     58.33          57.81         1.0  local
+2026-10-01    diseno  4.75       100.0     95.0       981.0       1053.02     56.29          55.73         1.0  local
+2026-10-02    diseno  5.00       100.0     95.0       962.0       1053.02     54.19          55.45         1.0  local
+2026-10-05    diseno  5.00       100.0     95.0       963.0       3932.02     52.44          53.26         1.0  local
+2026-10-06    diseno  5.00       100.0     96.0       957.0       1051.02     52.64          53.05         1.0  local
+2026-10-07    diseno  5.00       100.0     95.0       966.0       1052.02     52.28          52.01         1.0  local
+2026-10-08    diseno  4.75       100.0     95.0       966.0       1052.02     51.01          50.50         1.0  local
+2026-10-09    diseno  5.00       100.0     95.0       985.0       1053.02     49.24          50.31         1.0  local
+2026-10-12    diseno  4.75       100.0     96.0       962.0       3931.02     49.05          48.01         1.0  local
+2026-10-13    diseno  4.00       100.0     95.0       967.0       1053.02     48.36          47.37         1.0  local
+2026-10-14    diseno  4.00       100.0     95.0       958.0       1053.02     48.57          46.20         1.0  local
+2026-10-15    diseno  4.00       100.0     93.0      1050.5       1062.02     46.88          45.37         1.0  local
+2026-10-16  confirma  4.00       100.0     95.0       992.0       1053.02     44.29          43.50         1.0  local
+2026-10-19  confirma  4.50       100.0     95.0       961.5       3934.02     42.16          41.51         1.0  local
+2026-10-20  confirma  3.50       100.0     95.0       986.0       1055.02     41.96          40.78         1.0  local
+2026-10-21  confirma  4.50       100.0     95.0       989.0       1055.02     41.40          40.34         1.0  local
+2026-10-22  confirma  5.25       100.0     95.0       988.0       1053.02     40.22          37.72         1.0  local
+2026-10-23  confirma  5.00       100.0     95.0       998.0       1053.02     37.11          36.53         1.0  local
+2026-10-26  confirma  5.00       100.0     95.0       959.0       3933.02     36.42          35.25         1.0  local
+2026-10-27  confirma  5.25       100.0     96.0       985.0       1051.02     35.86          34.48         1.0  local
+2026-10-28  confirma  5.25       100.0     96.0       986.0       1050.02     34.88          33.56         1.0  local
+2026-10-29  confirma  5.00       100.0     96.0       987.0       1051.02     34.79          32.78         1.0  local
+2026-10-30  confirma  4.75       100.0     95.0       986.0       1052.02     32.05          30.01         1.0  local
+2026-11-02  confirma  4.75       100.0     96.0       988.0       3991.02     31.49          28.82         1.0  local
+2026-11-03  confirma  5.00       100.0     96.0       990.0       1051.02     28.93          27.80         1.0  local
+2026-11-04  confirma  4.75       100.0     96.0       989.0       1051.02     30.43          28.60         1.0  local
+2026-11-05  confirma  5.00       100.0     96.0       989.0       1051.02     27.64          24.58         0.0  local
+2026-11-06  confirma  5.00       100.0     95.0       991.0       1052.02     23.45          24.66         1.0  local
+2026-11-09  confirma  5.25       100.0     96.0       940.0       3931.02     23.03          23.89         1.0  local
+2026-11-10  confirma  5.75       100.0     96.0       988.0       1051.02     22.64          23.47         1.0  local
+2026-11-11  confirma  6.00       100.0     96.0       986.5       1051.02     23.14          23.77         1.0  local
+2026-11-12  confirma  6.25       100.0     96.0       987.0       1051.02     22.08          22.61         1.0  local
+2026-11-13  confirma  6.75       100.0     96.0       989.0       1051.02     20.18          21.92         1.0  local
+2026-11-16  guardada  6.75       100.0     95.0       985.0       3932.02     21.36          20.23         1.0     p5
+2026-11-17  guardada  6.75       100.0     96.0       950.5       1051.02     19.81          19.00         0.0     p5
+2026-11-18  guardada  8.50       100.0     96.0       988.0       1051.02     19.84          18.45         0.0  local
+2026-11-19  guardada  8.50       100.0     96.0       944.0       1051.02     18.89          17.71         1.0  local
+2026-11-20  guardada  8.50       100.0      0.0     73771.0       1424.02     19.44            NaN         0.0  local
+2026-11-23  guardada  9.75       100.0      0.0    332971.0       5744.02     19.44            NaN         0.0  local
+2026-11-24  guardada  9.75         0.0      0.0         NaN           NaN     19.44            NaN         NaN   None
+2026-11-25  guardada  9.75         0.0      0.0         NaN           NaN     19.44            NaN         NaN   None
+
+Edad del dato en minutos validos: mediana 988 s, p10 933, p90 1298, > 30 min 2.2 %
+Cruces del barrido (+-250 SPX): 0 5.7 %, 1 94.2 %, 2 0.0 %, 3+ 0.2 %
+Mensual/trimestral dentro de la ventana: 29.2 % de los minutos validos

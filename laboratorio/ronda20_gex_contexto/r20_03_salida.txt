@@ -1,0 +1,135 @@
+==============================================================================================================
+G1 (ANTES): regimen a las 9:59 (y 9:30) contra el tipo de rueda. Unidad = rueda. Se espera NEG > POS en las tres columnas.
+==============================================================================================================
+
+-- regimen por signo de gex_neto a las 09:59 --
+  diseno    ruedas 26 (neg 13, pos 13) | rango_rel neg 1.24 pos 0.93 dif +0.32 (t +1.54, p 0.070) | e neg 0.38 pos 0.38 dif -0.00 (t -0.00, p 0.500) | ruptura_cierre_X neg -2.20 pos -2.40 dif +0.20 (t +0.09, p 0.466)
+  confirma  ruedas 21 (neg 16, pos  5) | rango_rel neg 1.60 pos 1.02 dif +0.58 (t +1.89, p 0.096) | e neg 0.42 pos 0.37 dif +0.04 (t +0.51, p 0.370) | ruptura_cierre_X neg -1.21 pos -5.23 dif +4.02 (t +1.57, p 0.126)
+  guardada  ruedas  4 (neg  4, pos  0) | rango_rel neg 1.50 pos nan dif +nan (t +nan, p nan) | e neg 0.64 pos nan dif +nan (t +nan, p nan) | ruptura_cierre_X neg 2.49 pos nan dif +nan (t +nan, p nan)
+  juntas    ruedas 51 (neg 33, pos 18) | rango_rel neg 1.45 pos 0.95 dif +0.50 (t +2.67, p 0.023) | e neg 0.43 pos 0.38 dif +0.05 (t +0.79, p 0.412) | ruptura_cierre_X neg -1.27 pos -3.17 dif +1.90 (t +1.05, p 0.211)
+
+-- regimen por signo de gex_neto a las 09:30 --
+  diseno    ruedas 24 (neg 10, pos 14) | rango_rel neg 1.30 pos 0.92 dif +0.38 (t +1.59, p 0.058) | e neg 0.38 pos 0.37 dif +0.01 (t +0.13, p 0.440) | ruptura_cierre_X neg -2.40 pos -2.59 dif +0.19 (t +0.09, p 0.466)
+  confirma  ruedas 21 (neg 15, pos  6) | rango_rel neg 1.52 pos 1.31 dif +0.21 (t +0.51, p 0.441) | e neg 0.39 pos 0.46 dif -0.07 (t -0.72, p 0.735) | ruptura_cierre_X neg -2.00 pos -1.64 dif -0.36 (t -0.09, p 0.598)
+  guardada  ruedas  4 (neg  4, pos  0) | rango_rel neg 1.50 pos nan dif +nan (t +nan, p nan) | e neg 0.64 pos nan dif +nan (t +nan, p nan) | ruptura_cierre_X neg 2.49 pos nan dif +nan (t +nan, p nan)
+  juntas    ruedas 49 (neg 29, pos 20) | rango_rel neg 1.44 pos 1.04 dif +0.41 (t +1.90, p 0.102) | e neg 0.42 pos 0.40 dif +0.02 (t +0.35, p 0.619) | ruptura_cierre_X neg -1.64 pos -2.30 dif +0.66 (t +0.36, p 0.524)
+
+-- regimen por signo de gex_estr a las 09:59 --
+  diseno    ruedas 26 (neg 12, pos 14) | rango_rel neg 1.26 pos 0.93 dif +0.33 (t +1.54, p 0.065) | e neg 0.38 pos 0.39 dif -0.01 (t -0.09, p 0.535) | ruptura_cierre_X neg -2.24 pos -2.32 dif +0.08 (t +0.04, p 0.485)
+  confirma  ruedas 21 (neg 17, pos  4) | rango_rel neg 1.58 pos 0.97 dif +0.61 (t +2.04, p 0.107) | e neg 0.41 pos 0.38 dif +0.03 (t +0.34, p 0.413) | ruptura_cierre_X neg -1.49 pos -5.15 dif +3.66 (t +1.00, p 0.200)
+  guardada  ruedas  4 (neg  4, pos  0) | rango_rel neg 1.50 pos nan dif +nan (t +nan, p nan) | e neg 0.64 pos nan dif +nan (t +nan, p nan) | ruptura_cierre_X neg 2.49 pos nan dif +nan (t +nan, p nan)
+  juntas    ruedas 51 (neg 33, pos 18) | rango_rel neg 1.45 pos 0.94 dif +0.51 (t +2.75, p 0.020) | e neg 0.43 pos 0.38 dif +0.04 (t +0.67, p 0.481) | ruptura_cierre_X neg -1.39 pos -2.84 dif +1.45 (t +0.80, p 0.298)
+
+-- regimen por signo de gex_estr a las 09:30 --
+  diseno    ruedas 24 (neg 11, pos 13) | rango_rel neg 1.15 pos 1.01 dif +0.14 (t +0.58, p 0.277) | e neg 0.34 pos 0.40 dif -0.06 (t -0.63, p 0.739) | ruptura_cierre_X neg -4.17 pos -0.19 dif -3.98 (t -2.31, p 0.986)
+  confirma  ruedas 21 (neg 18, pos  3) | rango_rel neg 1.55 pos 0.93 dif +0.62 (t +2.10, p 0.123) | e neg 0.42 pos 0.31 dif +0.11 (t +1.49, p 0.220) | ruptura_cierre_X neg -1.51 pos -8.44 dif +6.93 (t +nan, p 0.115)
+  guardada  ruedas  4 (neg  4, pos  0) | rango_rel neg 1.50 pos nan dif +nan (t +nan, p nan) | e neg 0.64 pos nan dif +nan (t +nan, p nan) | ruptura_cierre_X neg 2.49 pos nan dif +nan (t +nan, p nan)
+  juntas    ruedas 49 (neg 33, pos 16) | rango_rel neg 1.41 pos 1.00 dif +0.41 (t +2.06, p 0.120) | e neg 0.42 pos 0.38 dif +0.04 (t +0.57, p 0.561) | ruptura_cierre_X neg -2.08 pos -1.11 dif -0.98 (t -0.57, p 0.854)
+
+Continua: rho de Spearman entre gex_norm a las 9:59 y cada resultado (se espera negativa)
+  diseno    rango_rel rho -0.29 (p 0.146, n 26) | e rho +0.02 (p 0.933, n 26) | ruptura_cierre_X rho +0.10 (p 0.666, n 21)
+  confirma  rango_rel rho -0.07 (p 0.750, n 21) | e rho +0.04 (p 0.867, n 21) | ruptura_cierre_X rho -0.13 (p 0.619, n 17)
+  guardada  rango_rel rho +nan (p nan, n 4) | e rho +nan (p nan, n 4) | ruptura_cierre_X rho +nan (p nan, n 3)
+  juntas    rango_rel rho -0.25 (p 0.075, n 51) | e rho -0.04 (p 0.786, n 51) | ruptura_cierre_X rho -0.02 (p 0.910, n 41)
+
+Por rueda (diseno/confirma/guardada): regimen 9:59, gex_norm, dist_flip_X, edad del dato, rango_rel, e, ruptura al cierre
+           dia   muestra  gex_neto_0959  gex_estr_0959  gex_norm_0959  dist_flip_X_0959  edad_s_0959  gex_neto_0930  rango_rel      e  ruptura_cierre_X  n_rupturas
+0   2026-09-08    diseno        -15.676         -7.316         -0.147            -4.294        939.0            NaN      1.040  0.670             2.702           6
+1   2026-09-09    diseno        -37.014        -18.533         -0.355           -10.096       1059.0        -34.613      0.773  0.441            -2.467           2
+2   2026-09-10    diseno        -52.397        -30.529         -0.624           -22.105       1181.0        -46.278      0.736  0.007            -3.200           1
+3   2026-09-11    diseno         13.176          0.935          0.038             4.113       1059.0          3.014      0.613  0.217            -5.933           1
+4   2026-09-14    diseno        -41.408        -22.742         -0.126           -12.311       1369.0            NaN      1.357  0.330            -3.198           9
+5   2026-09-15    diseno        -33.756        -19.479         -0.101            -9.986       1409.0        -30.348      1.027  0.638            -0.500          11
+6   2026-09-16    diseno        -12.179        -11.386         -0.036            -6.197       1032.0        -17.056      2.787  0.438            -4.857           2
+7   2026-09-17    diseno         -2.586        -12.988         -0.007            -1.197        939.0         10.675      0.803  0.168            -4.095           3
+8   2026-09-18    diseno        -22.115         -9.111         -0.199            -6.429       1126.0         -3.727      1.045  0.052            -7.446           5
+9   2026-09-21    diseno         50.595         22.578          0.451            16.771       1032.0         40.710      2.158  0.817             6.090          12
+10  2026-09-22    diseno         48.224         31.546          0.371            16.180       1099.0         48.507      0.605  0.229               NaN           0
+11  2026-09-23    diseno            NaN            NaN            NaN               NaN          NaN            NaN      1.698  0.737             2.212          12
+12  2026-09-24    diseno            NaN            NaN            NaN               NaN          NaN            NaN      1.343  0.536             0.119           9
+13  2026-09-25    diseno         26.773         10.608          0.164             4.930       1330.0         11.374      1.228  0.440            -0.031           2
+14  2026-09-28    diseno         -5.358          0.771         -0.039            -1.046       1114.0         -3.456      1.041  0.436            -1.702           3
+15  2026-09-29    diseno        -21.109        -12.512         -0.156            -3.827       1011.0         -4.679      0.781  0.541            -1.719           9
+16  2026-09-30    diseno         12.707          2.519          0.091             2.565       1632.0          2.039      1.228  0.533           -12.539           4
+17  2026-10-01    diseno        -30.728        -17.509         -0.321            -8.095       1187.0        -19.607      1.156  0.055            -6.609           7
+18  2026-10-02    diseno         37.400         12.832          0.313             8.545       1115.0         35.547      0.920  0.187               NaN           0
+19  2026-10-05    diseno         14.904         10.685          0.142             3.058        967.0         10.842      1.133  0.762             1.768          11
+20  2026-10-06    diseno         90.016         45.778          0.690            17.038        936.0         75.849      0.609  0.282            -2.950           4
+21  2026-10-07    diseno          3.355         11.533          0.026             0.763        933.0          9.488      0.716  0.309               NaN           0
+22  2026-10-08    diseno         11.485         16.517          0.087             2.075        935.0          2.998      1.131  0.149            -4.947           2
+23  2026-10-09    diseno         43.506         29.129          0.198             6.016        979.0         44.462      0.716  0.526            -0.667           3
+24  2026-10-12    diseno         44.998         36.759          0.207             6.451        995.0         48.295      0.408  0.284               NaN           0
+25  2026-10-13    diseno         36.278         27.268          0.177             6.319        999.0         31.843      0.561  0.235               NaN           0
+26  2026-10-14    diseno        -26.413         -8.317         -0.140            -5.224        959.0         -8.468      1.935  0.540             0.938          12
+27  2026-10-15    diseno        -73.709        -48.273         -0.387           -17.501       1205.0        -69.567      1.690  0.651             3.550          10
+28  2026-10-16  confirma        -16.838        -12.323         -0.124            -3.429       1017.0          1.626      2.545  0.780             8.031          12
+29  2026-10-19  confirma        -38.277        -28.173         -0.319           -10.925        963.0        -32.260      0.826  0.142            -7.278           1
+30  2026-10-20  confirma        -20.258        -16.702         -0.179            -5.977        982.0        -37.340      1.816  0.394            -1.621          10
+31  2026-10-21  confirma          5.630          0.803          0.049             1.149       1151.0          7.730      1.086  0.322            -8.444           1
+32  2026-10-22  confirma        -35.121        -16.282         -0.340            -7.891       1048.0        -36.166      1.025  0.346            -2.218           7
+33  2026-10-23  confirma        -48.221        -27.243         -0.421           -15.014       1143.0        -49.744      0.768  0.010            -5.238           4
+34  2026-10-26  confirma        -27.773        -26.950         -0.244            -8.982       1016.0        -32.061      0.984  0.496            -1.122           9
+35  2026-10-27  confirma        -19.826        -14.523         -0.158            -3.845        999.0         -9.135      0.940  0.390            -3.127           3
+36  2026-10-28  confirma         10.001          2.571          0.082             2.214       1000.0         16.347      0.667  0.234               NaN           0
+37  2026-10-29  confirma        -18.520        -12.138         -0.156            -3.910       1000.0        -18.710      0.679  0.155               NaN           0
+38  2026-10-30  confirma        -61.114        -22.754         -0.534           -17.661        953.0        -58.868      1.840  0.508            -0.732          10
+39  2026-11-02  confirma        -17.056        -20.240         -0.166            -6.411       1000.0        -22.328      2.025  0.593            -4.842           5
+40  2026-11-03  confirma        -42.082        -23.245         -0.454           -15.413       1001.0        -44.686      0.764  0.344            -2.675           8
+41  2026-11-04  confirma         22.156          4.972          0.231            10.390       1000.0          5.139      1.095  0.583            -1.856          11
+42  2026-11-05  confirma        -41.197        -23.011         -0.576           -23.537       1003.0         -5.345      5.462  0.973            15.750          12
+43  2026-11-06  confirma        -28.862        -18.446         -0.384           -38.526        940.0        -33.824      1.255  0.068            -9.250           5
+44  2026-11-09  confirma         -5.143        -13.641         -0.072            -5.542        939.0        -17.253      2.244  0.736             1.679          12
+45  2026-11-10  confirma        -12.648        -11.837         -0.165            -5.943        939.0        -19.745      1.021  0.290               NaN           0
+46  2026-11-11  confirma         12.827          1.512          0.143             4.564        940.0         14.555      1.042  0.383               NaN           0
+47  2026-11-12  confirma          1.471         -0.018          0.016             0.434        939.0        -15.215      1.201  0.343            -5.380           6
+48  2026-11-13  confirma        -33.459        -22.673         -0.232            -7.580        939.0          3.669      1.449  0.463            -4.292           8
+49  2026-11-16  guardada        -49.208        -36.172         -0.423           -16.190        940.0        -40.632      1.382  0.810             1.377           6
+50  2026-11-17  guardada        -50.495        -43.261         -0.460           -27.410       1000.0        -51.767      1.504  0.465            -2.859           5
+51  2026-11-18  guardada        -44.143        -39.380         -0.422               NaN       1000.0        -46.313      0.789  0.380               NaN           0
+52  2026-11-19  guardada        -12.861        -14.605         -0.203            -7.660       1000.0        -28.372      2.309  0.889             8.952          11
+53  2026-11-20  guardada            NaN            NaN            NaN               NaN          NaN            NaN      3.011  0.706             6.981          11
+54  2026-11-23  guardada            NaN            NaN            NaN               NaN          NaN            NaN      1.205  0.138            -1.436           1
+55  2026-11-24  guardada            NaN            NaN            NaN               NaN          NaN            NaN      0.729  0.421            -0.846           1
+56  2026-11-25  guardada            NaN            NaN            NaN               NaN          NaN            NaN      1.907  0.592            -1.154           7
+
+==============================================================================================================
+G2 (MIENTRAS): chequeos fuera del ruido, fc (cierre - precio) x lado de la ruptura, segun el regimen EN el chequeo.
+Se espera fc > 0 con NEG (sigue) y fc < 0 con POS (vuelve). t por rueda = medias por rueda; dif con t agrupada (CR1).
+==============================================================================================================
+chequeos fuera del ruido: 306 (con regimen valido: 269) | ruedas 47
+
+-- reg_total (signo del GEX neto, primaria) --
+  diseno     | NEG n  84 (15 r) fc -5.53 pts = -1.36 X, a favor 36 %, t rueda -2.80, f30 -1.15, f60 -2.50 | POS n  39 ( 9 r) fc -0.33 pts = +0.45 X, a favor 46 %, t rueda -1.25, f30 +1.22, f60 +2.33 | dif NEG-POS -1.81 X (t agrupada -0.72)
+  confirma   | NEG n  92 (15 r) fc +5.39 pts = +1.40 X, a favor 41 %, t rueda -0.64, f30 +4.28, f60 +5.66 | POS n  32 ( 6 r) fc -15.37 pts = -3.04 X, a favor 25 %, t rueda -1.74, f30 -3.88, f60 -4.30 | dif NEG-POS +4.43 X (t agrupada +1.69)
+  guardada   | NEG n  22 ( 3 r) fc +36.19 pts = +4.20 X, a favor 68 %, t rueda +0.72, f30 +3.20, f60 +8.90 | POS n 0 | dif NEG-POS +nan X (t agrupada +nan)
+  juntas     | NEG n 198 (33 r) fc +4.18 pts = +0.54 X, a favor 42 %, t rueda -1.43, f30 +1.85, f60 +2.56 | POS n  71 (15 r) fc -7.11 pts = -1.12 X, a favor 37 %, t rueda -2.13, f30 -1.08, f60 -0.66 | dif NEG-POS +1.66 X (t agrupada +0.82)
+  placebo (recorrido de regimen de otra rueda del mismo periodo, 2000 sorteos): dif obs +1.662 X, p una cola 0.368
+
+-- reg_estructural (sin 0DTE, secundaria) --
+  diseno     | NEG n  84 (15 r) fc -5.60 pts = -1.38 X, a favor 36 %, t rueda -2.74, f30 -1.09, f60 -2.49 | POS n  39 ( 8 r) fc -0.17 pts = +0.49 X, a favor 46 %, t rueda -1.02, f30 +1.08, f60 +2.29 | dif NEG-POS -1.87 X (t agrupada -0.74)
+  confirma   | NEG n 106 (16 r) fc +2.95 pts = +0.81 X, a favor 42 %, t rueda -1.17, f30 +3.15, f60 +4.51 | POS n  18 ( 3 r) fc -17.14 pts = -3.04 X, a favor 11 %, t rueda -2.02, f30 -3.57, f60 -5.29 | dif NEG-POS +3.85 X (t agrupada +1.57)
+  guardada   | NEG n  22 ( 3 r) fc +36.19 pts = +4.20 X, a favor 68 %, t rueda +0.72, f30 +3.20, f60 +8.90 | POS n 0 | dif NEG-POS +nan X (t agrupada +nan)
+  juntas     | NEG n 212 (34 r) fc +3.01 pts = +0.30 X, a favor 42 %, t rueda -1.87, f30 +1.48, f60 +2.19 | POS n  57 (11 r) fc -5.53 pts = -0.62 X, a favor 35 %, t rueda -1.60, f30 -0.39, f60 -0.10 | dif NEG-POS +0.92 X (t agrupada +0.42)
+  placebo (recorrido de regimen de otra rueda del mismo periodo, 2000 sorteos): dif obs +0.918 X, p una cola 0.532
+
+-- evolucion: fraccion de minutos negativos desde las 9:30 >= 0,5 (secundaria) --
+  diseno     | NEG n  84 (14 r) fc -5.18 pts = -1.30 X, a favor 36 %, t rueda -2.48, f30 -0.83, f60 -2.20 | POS n  39 ( 8 r) fc -1.08 pts = +0.33 X, a favor 46 %, t rueda -1.21, f30 +0.52, f60 +1.69 | dif NEG-POS -1.63 X (t agrupada -0.64)
+  confirma   | NEG n  98 (16 r) fc +3.20 pts = +0.92 X, a favor 40 %, t rueda -1.05, f30 +3.60, f60 +4.50 | POS n  26 ( 5 r) fc -11.90 pts = -2.24 X, a favor 27 %, t rueda -2.31, f30 -3.20, f60 -2.24 | dif NEG-POS +3.16 X (t agrupada +1.32)
+  guardada   | NEG n  22 ( 3 r) fc +36.19 pts = +4.20 X, a favor 68 %, t rueda +0.72, f30 +3.20, f60 +8.90 | POS n 0 | dif NEG-POS +nan X (t agrupada +nan)
+  juntas     | NEG n 204 (33 r) fc +3.31 pts = +0.36 X, a favor 41 %, t rueda -1.63, f30 +1.73, f60 +2.22 | POS n  65 (13 r) fc -5.41 pts = -0.70 X, a favor 38 %, t rueda -2.09, f30 -0.97, f60 +0.12 | dif NEG-POS +1.06 X (t agrupada +0.52)
+
+-- control: lado de la ruptura (las caidas caen debajo del flip mas seguido), reg_total, juntas --
+  ruptura arriba | NEG n  60 (11 r) fc -7.68 pts = -1.61 X, a favor 32 %, t rueda -1.65, f30 +1.46, f60 +0.49 | POS n  70 (14 r) fc -7.06 pts = -1.10 X, a favor 37 %, t rueda -2.02, f30 -1.23, f60 -0.69 | dif NEG-POS -0.52 X (t agrupada -0.26)
+  ruptura abajo | NEG n 138 (23 r) fc +9.34 pts = +1.48 X, a favor 46 %, t rueda -0.70, f30 +2.03, f60 +3.46 | POS n   1 ( 1 r) fc -10.00 pts = -2.86 X, a favor  0 %, t rueda +nan, f30 +9.25, f60 +1.25 | dif NEG-POS +4.33 X (t agrupada +2.52)
+
+-- control: tercios del tamano de la ruptura (|mov| / sigma), reg_total, juntas --
+  tercio 1   | NEG n  73 (28 r) fc -2.74 pts = -0.92 X, a favor 34 %, t rueda -0.65, f30 -0.31, f60 -1.01 | POS n  21 (10 r) fc -18.90 pts = -3.36 X, a favor 14 %, t rueda -0.19, f30 -0.11, f60 -0.77 | dif NEG-POS +2.44 X (t agrupada +1.00)
+  tercio 2   | NEG n  65 (26 r) fc +1.50 pts = -0.08 X, a favor 38 %, t rueda -0.08, f30 +0.58, f60 +0.61 | POS n  24 ( 8 r) fc +2.85 pts = +0.80 X, a favor 58 %, t rueda +0.26, f30 +0.02, f60 +3.44 | dif NEG-POS -0.88 X (t agrupada -0.60)
+  tercio 3   | NEG n  60 (20 r) fc +15.50 pts = +2.99 X, a favor 55 %, t rueda -0.31, f30 +5.87, f60 +9.01 | POS n  26 ( 7 r) fc -6.77 pts = -1.09 X, a favor 35 %, t rueda -1.64, f30 -2.88, f60 -4.36 | dif NEG-POS +4.08 X (t agrupada +1.08)
+
+-- dejar un periodo afuera (G2): umbral de gex_norm elegido en dos periodos (maxima separacion de fcX, >= 20 %% por lado), probado en el tercero --
+  afuera diseno    umbral -0.4102 (entrenado: dif +5.52 X) | prueba: bajo el umbral n 8 fc -5.44 X (a favor 0 %) | sobre n 115 fc -0.46 X (42 %) | dif -4.98 X
+  afuera confirma  umbral -0.4034 (entrenado: dif +1.45 X) | prueba: bajo el umbral n 44 fc +3.67 X (a favor 57 %) | sobre n 80 fc -1.63 X (26 %) | dif +5.30 X
+  afuera guardada  umbral -0.4087 (entrenado: dif +3.36 X) | prueba: bajo el umbral n 21 fc +3.63 X (a favor 67 %) | sobre n 1 fc +16.15 X (100 %) | dif -12.51 X
+
+Edad del dato en los chequeos con regimen: mediana 989 s, p90 1812 s, > 30 min: 9.8 %

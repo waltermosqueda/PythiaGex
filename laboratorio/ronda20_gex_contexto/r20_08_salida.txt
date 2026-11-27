@@ -1,0 +1,4 @@
+  diseno    ruedas 26 | NEG n 13 acuerdo de signo  38 % pendiente -0.087 corr -0.41 | POS n 12 acuerdo de signo  17 % pendiente -0.034 corr -0.11 | todas n 26 acuerdo de signo  27 % pendiente -0.085 corr -0.39
+  confirma  ruedas 21 | NEG n 15 acuerdo de signo  33 % pendiente -0.020 corr -0.13 | POS n  6 acuerdo de signo  17 % pendiente -0.182 corr -0.93 | todas n 21 acuerdo de signo  29 % pendiente -0.041 corr -0.31
+  guardada  ruedas  8 | NEG n  4 acuerdo de signo  25 % pendiente +0.021 corr +0.09 | POS n 0 | todas n  8 acuerdo de signo  25 % pendiente -0.033 corr -0.32
+  juntas    ruedas 55 | NEG n 32 acuerdo de signo  34 % pendiente -0.029 corr -0.18 | POS n 18 acuerdo de signo  17 % pendiente -0.091 corr -0.42 | todas n 55 acuerdo de signo  27 % pendiente -0.045 corr -0.33

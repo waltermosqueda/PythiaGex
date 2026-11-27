@@ -1,0 +1,91 @@
+operaciones 501 | con regimen valido 424 | sin cadena o dato viejo 77
+muestra
+confirma    192 ops, con regimen 191
+diseno      216 ops, con regimen 182
+guardada      93 ops, con regimen 51
+
+========================================================================================================================
+G3 reg_total (primaria): finalistas de la R19 por regimen en la entrada (costo 0,50). Se espera POS mejor que NEG.
+========================================================================================================================
+
+ D-w6-S6m
+   diseno    | POS n  23 (12 r) acierto 69.6 % neto/op +1.20 (t rueda +1.13) | NEG n  45 (13 r) acierto 73.3 % neto/op +1.46 (t rueda +2.49) | dif POS-NEG neto -0.27 (t agr -0.26), acierto -3.8 pp (t agr -0.35)
+   confirma  | POS n  16 ( 7 r) acierto 43.8 % neto/op -1.23 (t rueda -1.48) | NEG n  54 (15 r) acierto 53.7 % neto/op -0.38 (t rueda -0.66) | dif POS-NEG neto -0.86 (t agr -0.91), acierto -10.0 pp (t agr -1.12)
+   guardada  | POS n 0 | NEG n  15 ( 4 r) acierto 33.3 % neto/op -3.48 (t rueda -2.28) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n  39 (19 r) acierto 59.0 % neto/op +0.20 (t rueda +0.26) | NEG n 114 (32 r) acierto 58.8 % neto/op -0.06 (t rueda -0.12) | dif POS-NEG neto +0.26 (t agr +0.32), acierto +0.2 pp (t agr +0.03)
+
+ E4-S6
+   diseno    | POS n   6 ( 2 r) acierto 16.7 % neto/op -3.83 (t rueda +nan) | NEG n  22 (11 r) acierto 68.2 % neto/op +1.02 (t rueda +1.10) | dif POS-NEG neto -4.86 (t agr -4.03), acierto -51.5 pp (t agr -3.53)
+   confirma  | POS n  10 ( 5 r) acierto 70.0 % neto/op +1.75 (t rueda +2.47) | NEG n  16 ( 6 r) acierto 37.5 % neto/op -1.89 (t rueda -1.36) | dif POS-NEG neto +3.64 (t agr +2.37), acierto +32.5 pp (t agr +2.41)
+   guardada  | POS n 0 | NEG n  12 ( 3 r) acierto 33.3 % neto/op -3.21 (t rueda -1.20) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n  16 ( 7 r) acierto 50.0 % neto/op -0.34 (t rueda -0.27) | NEG n  50 (20 r) acierto 50.0 % neto/op -0.93 (t rueda -0.99) | dif POS-NEG neto +0.58 (t agr +0.39), acierto -0.0 pp (t agr -0.00)
+
+ M-A-S6
+   diseno    | POS n  12 ( 6 r) acierto 91.7 % neto/op +3.23 (t rueda +3.13) | NEG n  12 ( 8 r) acierto 91.7 % neto/op +3.38 (t rueda +4.08) | dif POS-NEG neto -0.15 (t agr -0.12), acierto -0.0 pp (t agr -0.00)
+   confirma  | POS n  13 ( 5 r) acierto 53.8 % neto/op -0.15 (t rueda -0.19) | NEG n  28 (12 r) acierto 46.4 % neto/op -0.58 (t rueda -0.43) | dif POS-NEG neto +0.43 (t agr +0.27), acierto +7.4 pp (t agr +0.52)
+   guardada  | POS n 0 | NEG n  12 ( 3 r) acierto 50.0 % neto/op -0.56 (t rueda -0.19) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n  25 (11 r) acierto 72.0 % neto/op +1.47 (t rueda +1.89) | NEG n  52 (23 r) acierto 57.7 % neto/op +0.34 (t rueda +0.35) | dif POS-NEG neto +1.13 (t agr +0.88), acierto +14.3 pp (t agr +1.20)
+
+ Z-C1-S6
+   diseno    | POS n  22 (13 r) acierto 63.6 % neto/op +0.99 (t rueda +1.43) | NEG n  40 (15 r) acierto 75.0 % neto/op +1.72 (t rueda +1.71) | dif POS-NEG neto -0.73 (t agr -0.62), acierto -11.4 pp (t agr -0.87)
+   confirma  | POS n  13 ( 5 r) acierto 46.2 % neto/op -0.88 (t rueda -0.44) | NEG n  41 (15 r) acierto 46.3 % neto/op -0.70 (t rueda -0.71) | dif POS-NEG neto -0.18 (t agr -0.09), acierto -0.2 pp (t agr -0.01)
+   guardada  | POS n 0 | NEG n  12 ( 4 r) acierto 41.7 % neto/op -1.96 (t rueda -1.39) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n  35 (18 r) acierto 57.1 % neto/op +0.29 (t rueda +0.35) | NEG n  93 (34 r) acierto 58.1 % neto/op +0.18 (t rueda +0.27) | dif POS-NEG neto +0.12 (t agr +0.10), acierto -0.9 pp (t agr -0.08)
+
+ JUNTAS
+   diseno    | POS n  63 (14 r) acierto 66.7 % neto/op +1.03 (t rueda +2.41) | NEG n 119 (16 r) acierto 74.8 % neto/op +1.66 (t rueda +3.10) | dif POS-NEG neto -0.63 (t agr -1.20), acierto -8.1 pp (t agr -1.43)
+   confirma  | POS n  52 ( 8 r) acierto 51.9 % neto/op -0.30 (t rueda -0.68) | NEG n 139 (19 r) acierto 48.2 % neto/op -0.69 (t rueda -1.31) | dif POS-NEG neto +0.38 (t agr +0.56), acierto +3.7 pp (t agr +0.57)
+   guardada  | POS n 0 | NEG n  51 ( 4 r) acierto 39.2 % neto/op -2.37 (t rueda -1.86) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n 115 (22 r) acierto 60.0 % neto/op +0.43 (t rueda +1.30) | NEG n 309 (39 r) acierto 57.0 % neto/op -0.06 (t rueda -0.14) | dif POS-NEG neto +0.49 (t agr +0.89), acierto +3.0 pp (t agr +0.57)
+
+ JUNTAS placebo (regimen de otra rueda del mismo periodo, 2000 sorteos): dif POS-NEG neto obs +0.490, p una cola 0.833
+
+========================================================================================================================
+G3 reg_estructural (sin 0DTE): finalistas de la R19 por regimen en la entrada (costo 0,50). Se espera POS mejor que NEG.
+========================================================================================================================
+
+ D-w6-S6m
+   diseno    | POS n  20 (11 r) acierto 65.0 % neto/op +0.90 (t rueda +0.68) | NEG n  48 (13 r) acierto 75.0 % neto/op +1.57 (t rueda +2.54) | dif POS-NEG neto -0.67 (t agr -0.49), acierto -10.0 pp (t agr -0.70)
+   confirma  | POS n  12 ( 4 r) acierto 58.3 % neto/op +0.25 (t rueda +0.40) | NEG n  58 (17 r) acierto 50.0 % neto/op -0.74 (t rueda -1.25) | dif POS-NEG neto +0.99 (t agr +1.23), acierto +8.3 pp (t agr +1.16)
+   guardada  | POS n 0 | NEG n  15 ( 4 r) acierto 33.3 % neto/op -3.48 (t rueda -2.28) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n  32 (15 r) acierto 62.5 % neto/op +0.66 (t rueda +0.78) | NEG n 121 (34 r) acierto 57.9 % neto/op -0.17 (t rueda -0.33) | dif POS-NEG neto +0.82 (t agr +0.87), acierto +4.6 pp (t agr +0.50)
+
+ E4-S6
+   diseno    | POS n   7 ( 3 r) acierto 14.3 % neto/op -4.11 (t rueda -4.79) | NEG n  21 (11 r) acierto 71.4 % neto/op +1.35 (t rueda +1.39) | dif POS-NEG neto -5.45 (t agr -4.20), acierto -57.1 pp (t agr -3.75)
+   confirma  | POS n   8 ( 3 r) acierto 62.5 % neto/op +0.78 (t rueda +1.02) | NEG n  18 ( 8 r) acierto 44.4 % neto/op -1.06 (t rueda -0.74) | dif POS-NEG neto +1.84 (t agr +1.25), acierto +18.1 pp (t agr +1.34)
+   guardada  | POS n 0 | NEG n  12 ( 3 r) acierto 33.3 % neto/op -3.21 (t rueda -1.20) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n  15 ( 6 r) acierto 40.0 % neto/op -1.50 (t rueda -1.29) | NEG n  51 (22 r) acierto 52.9 % neto/op -0.57 (t rueda -0.61) | dif POS-NEG neto -0.93 (t agr -0.66), acierto -12.9 pp (t agr -0.97)
+
+ M-A-S6
+   diseno    | POS n  12 ( 6 r) acierto 91.7 % neto/op +3.23 (t rueda +3.13) | NEG n  12 ( 8 r) acierto 91.7 % neto/op +3.38 (t rueda +4.08) | dif POS-NEG neto -0.15 (t agr -0.12), acierto -0.0 pp (t agr -0.00)
+   confirma  | POS n  10 ( 4 r) acierto 50.0 % neto/op -0.50 (t rueda -0.51) | NEG n  31 (13 r) acierto 48.4 % neto/op -0.43 (t rueda -0.35) | dif POS-NEG neto -0.07 (t agr -0.05), acierto +1.6 pp (t agr +0.12)
+   guardada  | POS n 0 | NEG n  12 ( 3 r) acierto 50.0 % neto/op -0.56 (t rueda -0.19) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n  22 (10 r) acierto 72.7 % neto/op +1.53 (t rueda +1.73) | NEG n  55 (24 r) acierto 58.2 % neto/op +0.37 (t rueda +0.41) | dif POS-NEG neto +1.16 (t agr +0.87), acierto +14.5 pp (t agr +1.18)
+
+ Z-C1-S6
+   diseno    | POS n  21 (11 r) acierto 61.9 % neto/op +0.81 (t rueda +1.47) | NEG n  41 (14 r) acierto 75.6 % neto/op +1.79 (t rueda +1.91) | dif POS-NEG neto -0.98 (t agr -0.99), acierto -13.7 pp (t agr -1.29)
+   confirma  | POS n  10 ( 5 r) acierto 30.0 % neto/op -2.62 (t rueda -1.12) | NEG n  44 (16 r) acierto 50.0 % neto/op -0.32 (t rueda -0.33) | dif POS-NEG neto -2.31 (t agr -1.24), acierto -20.0 pp (t agr -1.06)
+   guardada  | POS n 0 | NEG n  12 ( 4 r) acierto 41.7 % neto/op -1.96 (t rueda -1.39) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n  31 (16 r) acierto 51.6 % neto/op -0.30 (t rueda -0.33) | NEG n  97 (34 r) acierto 59.8 % neto/op +0.37 (t rueda +0.58) | dif POS-NEG neto -0.67 (t agr -0.61), acierto -8.2 pp (t agr -0.74)
+
+ JUNTAS
+   diseno    | POS n  60 (12 r) acierto 63.3 % neto/op +0.75 (t rueda +1.63) | NEG n 122 (15 r) acierto 76.2 % neto/op +1.78 (t rueda +3.48) | dif POS-NEG neto -1.03 (t agr -1.72), acierto -12.9 pp (t agr -2.03)
+   confirma  | POS n  40 ( 7 r) acierto 50.0 % neto/op -0.55 (t rueda -0.94) | NEG n 151 (20 r) acierto 49.0 % neto/op -0.59 (t rueda -1.21) | dif POS-NEG neto +0.04 (t agr +0.06), acierto +1.0 pp (t agr +0.14)
+   guardada  | POS n 0 | NEG n  51 ( 4 r) acierto 39.2 % neto/op -2.37 (t rueda -1.86) | dif POS-NEG neto +nan (t agr +nan), acierto +nan pp (t agr +nan)
+   todo      | POS n 100 (19 r) acierto 58.0 % neto/op +0.23 (t rueda +0.60) | NEG n 324 (39 r) acierto 57.7 % neto/op +0.02 (t rueda +0.05) | dif POS-NEG neto +0.21 (t agr +0.35), acierto +0.3 pp (t agr +0.05)
+
+ JUNTAS placebo (regimen de otra rueda del mismo periodo, 2000 sorteos): dif POS-NEG neto obs +0.208, p una cola 0.924
+
+========================================================================================================================
+Dejar un periodo afuera: (a) filtro fijo 'solo POS' (no se entrena); (b) umbral de gex_norm y de dist_flip_X elegido en dos
+periodos (maximo neto/op conservando >= 30 % de las operaciones, operar si la variable >= umbral) y aplicado al tercero.
+========================================================================================================================
+  afuera diseno    todas: n 182 acierto 72.0 % neto/op +1.44 | solo POS: n 63 (2.7/rueda) acierto 66.7 % neto/op +1.03
+      gex_norm    umbral >= -0.1106 (entrenado: neto/op +0.13, n 73) -> prueba: n 94 acierto 71.3 % neto/op +1.35
+      dist_flip_X umbral >= -3.0049 (entrenado: neto/op +0.16, n 69) -> prueba: n 77 acierto 68.8 % neto/op +1.22
+  afuera confirma  todas: n 191 acierto 49.2 % neto/op -0.58 | solo POS: n 52 (2.5/rueda) acierto 51.9 % neto/op -0.30
+      gex_norm    umbral >= -0.3105 (entrenado: neto/op +1.43, n 158) -> prueba: n 103 acierto 52.4 % neto/op -0.25
+      dist_flip_X umbral >= -14.9071 (entrenado: neto/op +1.50, n 160) -> prueba: n 140 acierto 51.4 % neto/op -0.38
+  afuera guardada  todas: n 51 acierto 39.2 % neto/op -2.37 | solo POS: n 0 (0.0/rueda) acierto nan % neto/op +nan
+      gex_norm    umbral >= -0.2592 (entrenado: neto/op +0.84, n 246) -> prueba: n 2 acierto 50.0 % neto/op -1.75
+      dist_flip_X umbral >= -7.2714 (entrenado: neto/op +0.81, n 214) -> prueba: n 1 acierto 100.0 % neto/op +6.50

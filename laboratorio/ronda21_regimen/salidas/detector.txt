@@ -1,0 +1,94 @@
+ETAPA 1 - detector de regimen. Puntos de control cada 5 min 10:00-15:30 (67 por rueda), 55 ruedas.
+q = +y1 si TENDENCIA, -y1 si BALANCE, 0 si DUDOSO (y1 = lo que siguio el desplazamiento desde el VWAP hasta el cierre, en X).
+Base: el desplazamiento desde el VWAP siguio hasta el cierre en el 43.8 % de los puntos (diseno 41.7, confirmacion 43.1, guardada 52.4).
+
+== D0
+  diseno afuera | parametro elegido en entrenamiento None | entrenamiento t -0.83 q -0.656 X | PRUEBA t +0.46 q +0.209 X (17/26 ruedas +) placebo p 0.584 | D0 en prueba t +0.46
+     prueba: T 16 % de los puntos (sigue 28.1 %, y -1.38 X; L2 extiende primero 38.1 %) | B 81 % (vuelve 56.4 %, y -0.53 X; L2 vuelve primero 50.6 %) | D 3 % | base sigue 41.7 %, L2 vuelve 50.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '1/5', 'B_en_dias_balance': '8/11', 'T_en_dias_balance': '2/11', 'B_en_dias_tendencia': '4/5'} | a las 12:30 {'T_en_dias_tendencia': '1/5', 'B_en_dias_balance': '8/11', 'T_en_dias_balance': '2/11', 'B_en_dias_tendencia': '4/5'}
+  confirma afuera | parametro elegido en entrenamiento None | entrenamiento t -0.63 q -0.343 X | PRUEBA t -0.11 q -0.092 X (15/21 ruedas +) placebo p 1.000 | D0 en prueba t -0.11
+     prueba: T 0 % de los puntos (sigue None %, y None X; L2 extiende primero None %) | B 100 % (vuelve 56.8 %, y 0.09 X; L2 vuelve primero 51.2 %) | D 0 % | base sigue 43.1 %, L2 vuelve 51.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '0/3', 'B_en_dias_balance': '6/6', 'T_en_dias_balance': '0/6', 'B_en_dias_tendencia': '3/3'} | a las 12:30 {'T_en_dias_tendencia': '0/3', 'B_en_dias_balance': '6/6', 'T_en_dias_balance': '0/6', 'B_en_dias_tendencia': '3/3'}
+  guardada afuera | parametro elegido en entrenamiento None | entrenamiento t +0.16 q +0.075 X | PRUEBA t -1.23 q -2.138 X (5/8 ruedas +) placebo p 1.000 | D0 en prueba t -1.23
+     prueba: T 0 % de los puntos (sigue None %, y None X; L2 extiende primero None %) | B 100 % (vuelve 46.8 %, y 2.14 X; L2 vuelve primero 53.0 %) | D 0 % | base sigue 52.4 %, L2 vuelve 53.0 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '0/3', 'B_en_dias_balance': '1/1', 'T_en_dias_balance': '0/1', 'B_en_dias_tendencia': '3/3'} | a las 12:30 {'T_en_dias_tendencia': '0/3', 'B_en_dias_balance': '1/1', 'T_en_dias_balance': '0/1', 'B_en_dias_tendencia': '3/3'}
+  LOPO juntas (55 ruedas, cada una juzgada con el corte elegido sin ella): t -0.53 q -0.247 X (37/55 +) | T sigue 28.1 % (y -1.38 X) | B vuelve 55.0 % (y 0.16 X) | D 2 %
+  LODO (embargo +-2) diseno    t +0.46 q +0.209 X (17/26 +) | T 16 % sigue 28.1 % | B 81 % vuelve 56.4 % | D 3 %
+  LODO (embargo +-2) confirma  t -0.11 q -0.092 X (15/21 +) | T 0 % sigue None % | B 100 % vuelve 56.8 % | D 0 %
+  LODO (embargo +-2) guardada  t -1.23 q -2.138 X (5/8 +) | T 0 % sigue None % | B 100 % vuelve 46.8 % | D 0 %
+  LODO (embargo +-2) todas     t -0.53 q -0.247 X (37/55 +) | T 8 % sigue 28.1 % | B 91 % vuelve 55.0 % | D 2 %
+
+== D1
+  diseno afuera | parametro elegido en entrenamiento (1.6, 1.0) | entrenamiento t +1.42 q +0.933 X | PRUEBA t +1.89 q +0.388 X (16/26 ruedas +) placebo p 0.298 | D0 en prueba t +0.46
+     prueba: T 10 % de los puntos (sigue 49.1 %, y -0.02 X; L2 extiende primero 60.5 %) | B 55 % (vuelve 58.3 %, y -0.71 X; L2 vuelve primero 56.3 %) | D 36 % | base sigue 41.7 %, L2 vuelve 50.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '1/5', 'B_en_dias_balance': '7/11', 'T_en_dias_balance': '0/11', 'B_en_dias_tendencia': '1/5'} | a las 12:30 {'T_en_dias_tendencia': '1/5', 'B_en_dias_balance': '8/11', 'T_en_dias_balance': '0/11', 'B_en_dias_tendencia': '1/5'}
+  confirma afuera | parametro elegido en entrenamiento (1.6, 1.0) | entrenamiento t +1.94 q +0.713 X | PRUEBA t +0.83 q +0.614 X (13/21 ruedas +) placebo p 0.122 | D0 en prueba t -0.11
+     prueba: T 22 % de los puntos (sigue 48.9 %, y 1.85 X; L2 extiende primero 61.6 %) | B 36 % (vuelve 51.9 %, y -0.57 X; L2 vuelve primero 55.3 %) | D 42 % | base sigue 43.1 %, L2 vuelve 51.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '3/6', 'T_en_dias_balance': '1/6', 'B_en_dias_tendencia': '1/3'} | a las 12:30 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '4/6', 'T_en_dias_balance': '0/6', 'B_en_dias_tendencia': '0/3'}
+  guardada afuera | parametro elegido en entrenamiento (1.6, 1.0) | entrenamiento t +1.42 q +0.489 X | PRUEBA t +1.25 q +1.770 X (5/8 ruedas +) placebo p 0.072 | D0 en prueba t -1.23
+     prueba: T 36 % de los puntos (sigue 74.2 %, y 5.72 X; L2 extiende primero 66.5 %) | B 26 % (vuelve 48.9 %, y 1.17 X; L2 vuelve primero 73.7 %) | D 38 % | base sigue 52.4 %, L2 vuelve 53.0 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '0/1', 'T_en_dias_balance': '1/1', 'B_en_dias_tendencia': '0/3'} | a las 12:30 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '0/1', 'T_en_dias_balance': '0/1', 'B_en_dias_tendencia': '1/3'}
+  LOPO juntas (55 ruedas, cada una juzgada con el corte elegido sin ella): t +1.89 q +0.675 X (34/55 +) | T sigue 56.3 % (y 2.51 X) | B vuelve 55.5 % (y -0.51 X) | D 38 %
+  LODO (embargo +-2) diseno    t +1.89 q +0.388 X (16/26 +) | T 10 % sigue 49.1 % | B 55 % vuelve 58.3 % | D 36 %
+  LODO (embargo +-2) confirma  t +0.83 q +0.614 X (13/21 +) | T 22 % sigue 48.9 % | B 36 % vuelve 51.9 % | D 42 %
+  LODO (embargo +-2) guardada  t +1.25 q +1.770 X (5/8 +) | T 36 % sigue 74.2 % | B 26 % vuelve 48.9 % | D 38 %
+  LODO (embargo +-2) todas     t +1.89 q +0.675 X (34/55 +) | T 18 % sigue 56.3 % | B 44 % vuelve 55.5 % | D 38 %
+
+== D2
+  diseno afuera | parametro elegido en entrenamiento 1.0 | entrenamiento t +0.75 q +0.504 X | PRUEBA t +0.98 q +0.299 X (15/26 ruedas +) placebo p 0.178 | D0 en prueba t +0.46
+     prueba: T 32 % de los puntos (sigue 42.2 %, y -0.29 X; L2 extiende primero 46.9 %) | B 57 % (vuelve 57.4 %, y -0.68 X; L2 vuelve primero 59.6 %) | D 11 % | base sigue 41.7 %, L2 vuelve 50.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '4/5', 'B_en_dias_balance': '7/11', 'T_en_dias_balance': '1/11', 'B_en_dias_tendencia': '0/5'} | a las 12:30 {'T_en_dias_tendencia': '5/5', 'B_en_dias_balance': '9/11', 'T_en_dias_balance': '1/11', 'B_en_dias_tendencia': '0/5'}
+  confirma afuera | parametro elegido en entrenamiento 1.0 | entrenamiento t +1.63 q +0.477 X | PRUEBA t +0.33 q +0.294 X (8/21 ruedas +) placebo p 0.274 | D0 en prueba t -0.11
+     prueba: T 32 % de los puntos (sigue 40.0 %, y 1.07 X; L2 extiende primero 50.8 %) | B 52 % (vuelve 49.3 %, y 0.11 X; L2 vuelve primero 54.0 %) | D 15 % | base sigue 43.1 %, L2 vuelve 51.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '5/6', 'T_en_dias_balance': '0/6', 'B_en_dias_tendencia': '0/3'} | a las 12:30 {'T_en_dias_tendencia': '3/3', 'B_en_dias_balance': '6/6', 'T_en_dias_balance': '0/6', 'B_en_dias_tendencia': '0/3'}
+  guardada afuera | parametro elegido en entrenamiento 1.0 | entrenamiento t +0.69 q +0.297 X | PRUEBA t +1.41 q +1.057 X (6/8 ruedas +) placebo p 0.026 | D0 en prueba t -1.23
+     prueba: T 28 % de los puntos (sigue 78.3 %, y 4.84 X; L2 extiende primero 70.4 %) | B 59 % (vuelve 62.0 %, y 0.53 X; L2 vuelve primero 79.7 %) | D 13 % | base sigue 52.4 %, L2 vuelve 53.0 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '1/3', 'B_en_dias_balance': '1/1', 'T_en_dias_balance': '0/1', 'B_en_dias_tendencia': '1/3'} | a las 12:30 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '1/1', 'T_en_dias_balance': '0/1', 'B_en_dias_tendencia': '1/3'}
+  LOPO juntas (55 ruedas, cada una juzgada con el corte elegido sin ella): t +1.07 q +0.407 X (29/55 +) | T sigue 46.1 % (y 0.92 X) | B vuelve 55.2 % (y -0.21 X) | D 13 %
+  LODO (embargo +-2) diseno    t +0.98 q +0.299 X (15/26 +) | T 32 % sigue 42.2 % | B 57 % vuelve 57.4 % | D 11 %
+  LODO (embargo +-2) confirma  t +0.33 q +0.294 X (8/21 +) | T 32 % sigue 40.0 % | B 52 % vuelve 49.3 % | D 15 %
+  LODO (embargo +-2) guardada  t +1.41 q +1.057 X (6/8 +) | T 28 % sigue 78.3 % | B 59 % vuelve 62.0 % | D 13 %
+  LODO (embargo +-2) todas     t +1.07 q +0.407 X (29/55 +) | T 32 % sigue 46.1 % | B 56 % vuelve 55.2 % | D 13 %
+
+== D3
+  diseno afuera | parametro elegido en entrenamiento (4, -1) | entrenamiento t +1.11 q +0.717 X | PRUEBA t +1.34 q +0.344 X (15/26 ruedas +) placebo p 0.222 | D0 en prueba t +0.46
+     prueba: T 15 % de los puntos (sigue 53.6 %, y 1.02 X; L2 extiende primero 66.7 %) | B 46 % (vuelve 56.6 %, y -0.41 X; L2 vuelve primero 63.6 %) | D 39 % | base sigue 41.7 %, L2 vuelve 50.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '3/5', 'B_en_dias_balance': '6/11', 'T_en_dias_balance': '0/11', 'B_en_dias_tendencia': '0/5'} | a las 12:30 {'T_en_dias_tendencia': '2/5', 'B_en_dias_balance': '7/11', 'T_en_dias_balance': '0/11', 'B_en_dias_tendencia': '1/5'}
+  confirma afuera | parametro elegido en entrenamiento (4, -1) | entrenamiento t +1.92 q +0.704 X | PRUEBA t +0.37 q +0.278 X (6/21 ruedas +) placebo p 0.206 | D0 en prueba t -0.11
+     prueba: T 22 % de los puntos (sigue 47.0 %, y 2.05 X; L2 extiende primero 66.3 %) | B 30 % (vuelve 42.5 %, y 0.61 X; L2 vuelve primero 61.1 %) | D 48 % | base sigue 43.1 %, L2 vuelve 51.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '5/6', 'T_en_dias_balance': '1/6', 'B_en_dias_tendencia': '0/3'} | a las 12:30 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '5/6', 'T_en_dias_balance': '0/6', 'B_en_dias_tendencia': '0/3'}
+  guardada afuera | parametro elegido en entrenamiento (4, -1) | entrenamiento t +0.88 q +0.314 X | PRUEBA t +1.44 q +1.871 X (6/8 ruedas +) placebo p 0.044 | D0 en prueba t -1.23
+     prueba: T 35 % de los puntos (sigue 77.7 %, y 5.17 X; L2 extiende primero 72.3 %) | B 38 % (vuelve 57.4 %, y -0.16 X; L2 vuelve primero 78.4 %) | D 27 % | base sigue 52.4 %, L2 vuelve 53.0 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '1/3', 'B_en_dias_balance': '0/1', 'T_en_dias_balance': '0/1', 'B_en_dias_tendencia': '1/3'} | a las 12:30 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '0/1', 'T_en_dias_balance': '0/1', 'B_en_dias_tendencia': '1/3'}
+  LOPO juntas (55 ruedas, cada una juzgada con el corte elegido sin ella): t +1.50 q +0.541 X (27/55 +) | T sigue 56.8 % (y 2.45 X) | B vuelve 52.6 % (y -0.07 X) | D 41 %
+  LODO (embargo +-2) diseno    t +1.26 q +0.326 X (15/26 +) | T 15 % sigue 53.6 % | B 45 % vuelve 56.3 % | D 39 %
+  LODO (embargo +-2) confirma  t +0.37 q +0.278 X (6/21 +) | T 22 % sigue 47.0 % | B 30 % vuelve 42.5 % | D 48 %
+  LODO (embargo +-2) guardada  t +1.44 q +1.871 X (6/8 +) | T 35 % sigue 77.7 % | B 38 % vuelve 57.4 % | D 27 %
+  LODO (embargo +-2) todas     t +1.47 q +0.532 X (27/55 +) | T 21 % sigue 56.8 % | B 38 % vuelve 52.4 % | D 41 %
+
+== D4
+  diseno afuera | parametro elegido en entrenamiento 0.55 | entrenamiento t +1.83 q +1.214 X | PRUEBA t -0.07 q -0.025 X (14/26 ruedas +) placebo p 0.702 | D0 en prueba t +0.46
+     prueba: T 21 % de los puntos (sigue 35.4 %, y -1.01 X; L2 extiende primero 44.4 %) | B 52 % (vuelve 56.2 %, y -0.36 X; L2 vuelve primero 53.0 %) | D 27 % | base sigue 41.7 %, L2 vuelve 50.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '1/5', 'B_en_dias_balance': '8/11', 'T_en_dias_balance': '1/11', 'B_en_dias_tendencia': '2/5'} | a las 12:30 {'T_en_dias_tendencia': '2/5', 'B_en_dias_balance': '6/11', 'T_en_dias_balance': '1/11', 'B_en_dias_tendencia': '3/5'}
+  confirma afuera | parametro elegido en entrenamiento 0.55 | entrenamiento t +3.80 q +1.339 X | PRUEBA t +1.30 q +0.975 X (12/21 ruedas +) placebo p 0.022 | D0 en prueba t -0.11
+     prueba: T 34 % de los puntos (sigue 50.8 %, y 1.56 X; L2 extiende primero 54.2 %) | B 40 % (vuelve 64.0 %, y -1.1 X; L2 vuelve primero 62.7 %) | D 26 % | base sigue 43.1 %, L2 vuelve 51.2 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '2/6', 'T_en_dias_balance': '1/6', 'B_en_dias_tendencia': '0/3'} | a las 12:30 {'T_en_dias_tendencia': '2/3', 'B_en_dias_balance': '5/6', 'T_en_dias_balance': '0/6', 'B_en_dias_tendencia': '1/3'}
+  guardada afuera | parametro elegido en entrenamiento 0.6 | entrenamiento t +3.06 q +1.033 X | PRUEBA t -0.17 q -0.089 X (5/8 ruedas +) placebo p 0.096 | D0 en prueba t -1.23
+     prueba: T 2 % de los puntos (sigue 90.0 %, y 18.52 X; L2 extiende primero 90.0 %) | B 50 % (vuelve 55.8 %, y 0.87 X; L2 vuelve primero 55.0 %) | D 48 % | base sigue 52.4 %, L2 vuelve 53.0 %
+     tipo de dia (prueba): a las 11:00 {'T_en_dias_tendencia': '1/3', 'B_en_dias_balance': '1/1', 'T_en_dias_balance': '0/1', 'B_en_dias_tendencia': '1/3'} | a las 12:30 {'T_en_dias_tendencia': '0/3', 'B_en_dias_balance': '1/1', 'T_en_dias_balance': '0/1', 'B_en_dias_tendencia': '1/3'}
+  LOPO juntas (55 ruedas, cada una juzgada con el corte elegido sin ella): t +1.02 q +0.347 X (31/55 +) | T sigue 44.7 % (y 0.65 X) | B vuelve 58.6 % (y -0.41 X) | D 30 %
+  LODO (embargo +-2) diseno    t +1.48 q +0.487 X (20/26 +) | T 3 % sigue 36.4 % | B 49 % vuelve 61.6 % | D 48 %
+  LODO (embargo +-2) confirma  t +1.22 q +0.738 X (12/21 +) | T 15 % sigue 51.6 % | B 36 % vuelve 65.1 % | D 49 %
+  LODO (embargo +-2) guardada  t +1.61 q +0.446 X (6/8 +) | T 2 % sigue 92.3 % | B 40 % vuelve 63.3 % | D 57 %
+  LODO (embargo +-2) todas     t +2.08 q +0.577 X (38/55 +) | T 8 % sigue 50.5 % | B 42 % vuelve 62.9 % | D 50 %
+
+ELECCION (pre-registrada): mayor t de q LOPO juntas, ganandole a D0 y a su placebo (p < 0,05) en >= 2 de 3 pliegues.
+  D1: t LOPO juntas +1.89 | pliegues que le ganan a D0 y al placebo: 0 de 3
+  D2: t LOPO juntas +1.07 | pliegues que le ganan a D0 y al placebo: 1 de 3
+  D3: t LOPO juntas +1.50 | pliegues que le ganan a D0 y al placebo: 1 de 3
+  D4: t LOPO juntas +1.02 | pliegues que le ganan a D0 y al placebo: 1 de 3
+  ELEGIDO: D1 (rotulado 'no separa': ninguno cumplio la condicion)
+  estado LOPO diseno afuera: parametro (1.6, 1.0)
+  estado LOPO confirma afuera: parametro (1.6, 1.0)
+  estado LOPO guardada afuera: parametro (1.6, 1.0)
+  parametro con las 55 ruedas (para la especificacion en vivo): (1.6, 1.0)

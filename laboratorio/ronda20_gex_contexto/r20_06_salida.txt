@@ -1,0 +1,104 @@
+Piernas de la ola en la rueda con regimen valido: 4632 en 52 ruedas
+
+Por periodo y regimen (medianas): |cobertura teorica| por X, |delta| de la pierna por X, volumen por X, y los cocientes
+                 n  ruedas      cob_X  delta_por_X  vol_por_X  cob_sobre_delta  cob_sobre_vol  largo_X
+muestra  reg                                                                                          
+confirma neg  1882      19   6940.291      241.589   3824.700           25.408          1.627    1.688
+         pos   414       9   2893.261      332.401   5922.306            8.416          0.481    1.684
+diseno   neg  1227      19   4364.652      322.933   4616.723           12.908          0.850    1.643
+         pos   632      19   4818.908      513.917   7105.025            7.168          0.481    1.600
+guardada neg   477       4  14790.954      266.333   5530.268           51.297          2.506    1.667
+
+Por hora (todas las ruedas): mediana de |GEX neto|, parte 0DTE (|0DTE| / (|0DTE| + |resto|)) y % de minutos negativos
+      gex_abs  parte_0dte     neg     n
+hora                                   
+0      27.309       0.418  67.433  2088
+1      29.495       0.438  62.288  3060
+2      31.716       0.442  60.131  3060
+3      34.575       0.457  60.261  3060
+4      35.117       0.470  60.818  3106
+5      35.488       0.459  62.340  3120
+6      36.495       0.444  63.526  1560
+
+Por periodo: % de minutos con GEX neto < 0, mediana de gex_norm, de dist_flip_X, de cruces del barrido, de edad del dato
+              neg  neg_estr  gex_norm  dist_flip_X  cruces   edad  ruedas
+muestra                                                                  
+confirma   69.474       NaN    -0.190       -5.371     1.0  987.0      21
+diseno     50.297       NaN    -0.002       -0.113     1.0  992.0      27
+guardada  100.000       NaN    -0.553      -23.474     0.0  983.0       4
+muestra
+confirma     76.9
+diseno       54.4
+guardada    100.0
+
+Geometria de la ola por rueda segun el regimen a las 9:59: cantidad de piernas de X en la rueda, largo mediano en X y
+% de piernas > 2X. Para un paseo al azar el largo en X NO depende de la volatilidad (el zigzag solo mira el camino en precio):
+si la gamma negativa solo agrega volatilidad, cambia la CANTIDAD de piernas y no su largo; si agrega persistencia, cambia el largo.
+                   ruedas  piernas_por_rueda  largo_med_X  mas_2X
+muestra  neg_0959                                                
+confirma False          5             83.200        1.632   0.347
+         True          16            132.875        1.698   0.343
+diseno   False         13             57.462        1.550   0.329
+         True          13            105.308        1.643   0.316
+guardada True           4            131.750        1.675   0.335
+          ruedas  piernas_por_rueda  largo_med_X  mas_2X
+neg_0959                                                
+False         18             64.611        1.612   0.334
+True          33            121.879        1.688   0.331
+dif NEG-POS: piernas por rueda +57.3 (t +3.38) | largo mediano +0.047 X (t +1.38)
+
+Por rueda: % de minutos negativos (total y sin 0DTE) y GEX neto mediano
+             muestra  neg  neg_estr    gex_med  cruces
+dia                                                   
+2026-09-08    diseno  100       100 -23.255253     1.0
+2026-09-09    diseno  100       100 -44.833359     1.0
+2026-09-10    diseno  100       100 -48.721379     1.0
+2026-09-11    diseno    4        61  14.692765     1.0
+2026-09-14    diseno  100       100 -31.836209     1.0
+2026-09-15    diseno  100       100 -48.306064     1.0
+2026-09-16    diseno  100       100 -15.522270     1.0
+2026-09-17    diseno   24       100   4.821462     1.0
+2026-09-18    diseno   90       100 -20.951114     1.0
+2026-09-21    diseno    0         0  55.574694     1.0
+2026-09-22    diseno    0         0  49.711567     1.0
+2026-09-24    diseno   90        76  -5.811169     1.0
+2026-09-25    diseno    8        13  46.042612     1.0
+2026-09-28    diseno   96        92 -17.467942     1.0
+2026-09-29    diseno  100       100 -32.330839     1.0
+2026-09-30    diseno    2        28  19.768556     1.0
+2026-10-01    diseno  100       100 -31.823780     1.0
+2026-10-02    diseno    0         0  34.170401     1.0
+2026-10-05    diseno    0         0  51.046764     1.0
+2026-10-06    diseno    0         0  97.051063     1.0
+2026-10-07    diseno   10         0  19.805413     1.0
+2026-10-08    diseno   65        18 -11.134421     1.0
+2026-10-09    diseno    0         0  80.916775     1.0
+2026-10-12    diseno    0         0  40.698242     1.0
+2026-10-13    diseno    0         0  33.061511     1.0
+2026-10-14    diseno   99        98 -61.208607     1.0
+2026-10-15    diseno   98       100 -29.740706     1.0
+2026-10-16  confirma  100       100 -60.222979     1.0
+2026-10-19  confirma  100       100 -23.208341     1.0
+2026-10-20  confirma   81        99  -8.897556     1.0
+2026-10-21  confirma   11        14  29.543642     1.0
+2026-10-22  confirma  100       100 -48.076420     1.0
+2026-10-23  confirma  100       100 -51.642112     1.0
+2026-10-26  confirma  100       100 -15.569472     1.0
+2026-10-27  confirma   18        62  16.011921     1.0
+2026-10-28  confirma    0         4  14.347974     1.0
+2026-10-29  confirma  100       100 -22.343903     1.0
+2026-10-30  confirma  100       100 -76.949703     1.0
+2026-11-02  confirma   98       100 -26.350858     1.0
+2026-11-03  confirma  100       100 -38.783816     1.0
+2026-11-04  confirma    0         4  30.852419     1.0
+2026-11-05  confirma  100       100 -41.296570     0.0
+2026-11-06  confirma  100       100 -36.311774     1.0
+2026-11-09  confirma   16       100   7.340074     1.0
+2026-11-10  confirma  100       100 -23.581969     1.0
+2026-11-11  confirma    0         0  26.705249     1.0
+2026-11-12  confirma   35        32   6.519342     1.0
+2026-11-13  confirma  100       100 -43.898110     1.0
+2026-11-16  guardada  100       100 -63.356038     1.0
+2026-11-17  guardada  100       100 -60.145232     0.0
+2026-11-18  guardada  100       100 -51.407512     0.0
+2026-11-19  guardada  100       100 -35.307933     1.0
