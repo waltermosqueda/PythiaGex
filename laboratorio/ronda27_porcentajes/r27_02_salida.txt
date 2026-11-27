@@ -1,0 +1,27 @@
+A) contra las tablas auditadas de la R19 y la R21
+  ruedas 55, minutos 21395
+  X igual a la R19: 55/55; mediana de 10 igual: 55/55
+  clima igual a la R21 minuto a minuto: 21395/21395
+  precio, maximo y minimo iguales a la R21: 21395, 21395, 21395 de 21395
+  VWAP RTH: diferencia maxima con la R21 0.001129 pts; desvio 0.000598 (la R19 saca 44-ish duplicados exactos por rueda)
+  ola y marea (dir, extremo, origen) iguales a la R19: 21395/21395
+
+B) desde la cinta cruda, codigo propio (csv + test_ola.Maquina)
+  2026-09-10 cierre 09:31 | c 7598.75 ola +1 ext 7600.75 origen 7596.75 marea -1 ext 7595.00 | VWAP 7599.729 rrn 3.195 | y_X 0.0 pL -3.75 pS +3.75 | IGUAL
+  2026-09-10 cierre 10:30 | c 7606.25 ola -1 ext 7604.75 origen 7613.25 marea -1 ext 7604.75 | VWAP 7599.490 rrn 1.310 | y_X 1.0 pL +3.75 pS -3.75 | IGUAL
+  2026-09-10 cierre 12:01 | c 7608.75 ola +1 ext 7609.25 origen 7601.25 marea -1 ext 7601.25 | VWAP 7603.962 rrn 0.901 | y_X 0.0 pL -3.75 pS +3.75 | IGUAL
+  2026-09-10 cierre 13:31 | c 7604.00 ola -1 ext 7602.75 origen 7613.75 marea -1 ext 7602.75 | VWAP 7604.241 rrn 0.780 | y_X 0.0 pL -3.75 pS +3.75 | IGUAL
+  2026-09-10 cierre 15:01 | c 7595.50 ola -1 ext 7594.50 origen 7603.50 marea -1 ext 7591.75 | VWAP 7603.389 rrn 0.736 | y_X 1.0 pL +3.75 pS -3.75 | IGUAL
+  2026-10-27 cierre 09:31 | c 7735.00 ola +1 ext 7736.75 origen 7731.50 marea +1 ext 7749.25 | VWAP 7735.105 rrn 1.401 | y_X 1.0 pL +5.25 pS -5.25 | IGUAL
+  2026-10-27 cierre 10:30 | c 7727.50 ola +1 ext 7727.75 origen 7712.50 marea -1 ext 7712.50 | VWAP 7726.790 rrn 0.902 | y_X 1.0 pL +5.25 pS -5.25 | IGUAL
+  2026-10-27 cierre 12:01 | c 7771.25 ola +1 ext 7772.00 origen 7753.75 marea +1 ext 7772.00 | VWAP 7739.906 rrn 1.136 | y_X 0.0 pL -5.25 pS +5.25 | IGUAL
+  2026-10-27 cierre 13:31 | c 7756.50 ola +1 ext 7759.50 origen 7750.50 marea -1 ext 7750.50 | VWAP 7744.439 rrn 0.983 | y_X nan pL -3.75 pS +3.75 | IGUAL
+  2026-10-27 cierre 15:01 | c 7757.75 ola +1 ext 7758.50 origen 7750.75 marea -1 ext 7750.50 | VWAP 7745.915 rrn 0.928 | y_X 1.0 pL +5.25 pS -5.25 | IGUAL
+  2026-11-16 cierre 09:31 | c 7519.25 ola -1 ext 7518.25 origen 7541.75 marea -1 ext 7518.25 | VWAP 7529.203 rrn 5.729 | y_X 0.0 pL -6.75 pS +6.75 | IGUAL
+  2026-11-16 cierre 10:30 | c 7481.00 ola +1 ext 7484.50 origen 7473.00 marea -1 ext 7473.00 | VWAP 7507.384 rrn 1.365 | y_X 1.0 pL +6.75 pS -6.75 | IGUAL
+  2026-11-16 cierre 12:01 | c 7493.25 ola -1 ext 7491.25 origen 7498.00 marea -1 ext 7484.75 | VWAP 7503.545 rrn 0.938 | y_X 0.0 pL -6.75 pS +6.75 | IGUAL
+  2026-11-16 cierre 13:31 | c 7440.00 ola -1 ext 7440.00 origen 7477.75 marea -1 ext 7440.00 | VWAP 7495.297 rrn 1.220 | y_X 0.0 pL -6.75 pS +6.75 | IGUAL
+  2026-11-16 cierre 15:01 | c 7445.75 ola +1 ext 7448.75 origen 7420.25 marea +1 ext 7448.75 | VWAP 7481.554 rrn 1.382 | y_X 0.0 pL -6.75 pS +6.75 | IGUAL
+  minutos comprobados desde la cinta cruda: 15 de 15 iguales
+  pivotes de la ola del 2026-10-27: numba 76, referencia 76, iguales (precio, tipo, cum) 76
+  pivotes de la marea del 2026-10-27: numba 7, referencia 7, iguales (precio, tipo, cum) 7

@@ -1,0 +1,65 @@
+RONDA 27 - tabla de zonas (descriptiva; acierto = toca primero +-Y del lado de la zona; IC90 por bootstrap de ruedas)
+
+=== Y = X
+  -- diseno (33 ruedas)
+     Z1 voto T7 (seguir la tendencia en la vuelta de la ola)      274 min en 19 ruedas: 51.8 % (IC90 41.7-63.9) | ruedas con >= 20 min sobre 50 %: 3/6, t +0.20
+     Z2 voto V4 (banda 2 sd con iceberg en ROTACION)              136 min en 25 ruedas: 56.6 % (IC90 48.2-64.1) | ruedas con >= 20 min sobre 50 %: 0/0, t +nan
+     Z3 voto A3 (tarde, hacia el VWAP despues del giro)           877 min en 25 ruedas: 56.4 % (IC90 47.8-66.5) | ruedas con >= 20 min sobre 50 %: 10/16, t +0.91
+     Z4 TENDENCIA: seguir el lado de la tendencia                1517 min en 33 ruedas: 51.4 % (IC90 46.3-56.2) | ruedas con >= 20 min sobre 50 %: 4/9, t +0.33
+     Z5 TENDENCIA con ola y marea del lado de la tendencia        564 min en 23 ruedas: 51.2 % (IC90 42.3-58.6) | ruedas con >= 20 min sobre 50 %: 3/6, t -0.12
+     Z6 ROTACION y lejos del VWAP (>= 2X): volver al VWAP        2925 min en 28 ruedas: 53.3 % (IC90 48.3-58.4) | ruedas con >= 20 min sobre 50 %: 14/22, t +1.60
+     Z7 ESTRECHO y lejos del VWAP (>= 2X): volver al VWAP        2330 min en 29 ruedas: 48.5 % (IC90 41.3-56.4) | ruedas con >= 20 min sobre 50 %: 11/20, t +1.22
+     Z8 seguir la marea (todo el dia)                           12558 min en 33 ruedas: 51.5 % (IC90 49.2-54.0) | ruedas con >= 20 min sobre 50 %: 18/33, t +1.01
+     Z9 seguir la ola (todo el dia)                             12558 min en 33 ruedas: 49.2 % (IC90 46.9-51.5) | ruedas con >= 20 min sobre 50 %: 14/33, t -0.60
+  -- confirmacion (14 ruedas)
+     Z1 voto T7 (seguir la tendencia en la vuelta de la ola)      303 min en 10 ruedas: 58.7 % (IC90 51.8-64.6) | ruedas con >= 20 min sobre 50 %: 4/5, t +2.86
+     Z2 voto V4 (banda 2 sd con iceberg en ROTACION)               51 min en 10 ruedas: 54.9 % (IC90 35.7-72.6) | ruedas con >= 20 min sobre 50 %: 0/0, t +nan
+     Z3 voto A3 (tarde, hacia el VWAP despues del giro)           510 min en 11 ruedas: 56.3 % (IC90 44.7-67.4) | ruedas con >= 20 min sobre 50 %: 5/9, t +0.43
+     Z4 TENDENCIA: seguir el lado de la tendencia                1355 min en 13 ruedas: 51.4 % (IC90 47.3-53.2) | ruedas con >= 20 min sobre 50 %: 3/8, t -0.42
+     Z5 TENDENCIA con ola y marea del lado de la tendencia        527 min en 11 ruedas: 53.7 % (IC90 50.4-56.6) | ruedas con >= 20 min sobre 50 %: 5/7, t +1.24
+     Z6 ROTACION y lejos del VWAP (>= 2X): volver al VWAP        1352 min en 12 ruedas: 55.5 % (IC90 45.9-65.0) | ruedas con >= 20 min sobre 50 %: 7/9, t +1.13
+     Z7 ESTRECHO y lejos del VWAP (>= 2X): volver al VWAP         639 min en  8 ruedas: 52.0 % (IC90 36.6-64.6) | ruedas con >= 20 min sobre 50 %: 3/5, t +0.14
+     Z8 seguir la marea (todo el dia)                            5363 min en 14 ruedas: 51.1 % (IC90 47.9-54.3) | ruedas con >= 20 min sobre 50 %: 7/14, t +0.54
+     Z9 seguir la ola (todo el dia)                              5363 min en 14 ruedas: 50.6 % (IC90 48.9-52.4) | ruedas con >= 20 min sobre 50 %: 5/14, t +0.51
+  -- final (8 ruedas)
+     Z1 voto T7 (seguir la tendencia en la vuelta de la ola)      284 min en  8 ruedas: 46.1 % (IC90 40.7-51.1) | ruedas con >= 20 min sobre 50 %: 1/4, t -1.22
+     Z2 voto V4 (banda 2 sd con iceberg en ROTACION)               34 min en  6 ruedas: 52.9 % (IC90 36.0-63.2) | ruedas con >= 20 min sobre 50 %: 0/0, t +nan
+     Z3 voto A3 (tarde, hacia el VWAP despues del giro)            87 min en  4 ruedas: 60.9 % (IC90 43.9-80.0) | ruedas con >= 20 min sobre 50 %: 1/2, t +nan
+     Z4 TENDENCIA: seguir el lado de la tendencia                1113 min en  8 ruedas: 52.6 % (IC90 46.7-55.4) | ruedas con >= 20 min sobre 50 %: 4/6, t +0.02
+     Z5 TENDENCIA con ola y marea del lado de la tendencia        447 min en  8 ruedas: 45.9 % (IC90 39.4-50.1) | ruedas con >= 20 min sobre 50 %: 1/5, t -1.77
+     Z6 ROTACION y lejos del VWAP (>= 2X): volver al VWAP         583 min en  8 ruedas: 47.2 % (IC90 41.0-59.5) | ruedas con >= 20 min sobre 50 %: 3/7, t +0.93
+     Z7 ESTRECHO y lejos del VWAP (>= 2X): volver al VWAP         276 min en  7 ruedas: 51.8 % (IC90 19.0-64.0) | ruedas con >= 20 min sobre 50 %: 2/3, t -0.07
+     Z8 seguir la marea (todo el dia)                            3103 min en  8 ruedas: 48.0 % (IC90 45.9-50.2) | ruedas con >= 20 min sobre 50 %: 3/8, t -1.40
+     Z9 seguir la ola (todo el dia)                              3103 min en  8 ruedas: 50.5 % (IC90 48.6-52.8) | ruedas con >= 20 min sobre 50 %: 3/8, t +0.36
+
+=== Y = X2
+  -- diseno (33 ruedas)
+     Z1 voto T7 (seguir la tendencia en la vuelta de la ola)      259 min en 19 ruedas: 59.8 % (IC90 50.0-70.3) | ruedas con >= 20 min sobre 50 %: 4/5, t +2.15
+     Z2 voto V4 (banda 2 sd con iceberg en ROTACION)              127 min en 25 ruedas: 56.7 % (IC90 43.9-68.9) | ruedas con >= 20 min sobre 50 %: 0/0, t +nan
+     Z3 voto A3 (tarde, hacia el VWAP despues del giro)           597 min en 25 ruedas: 57.6 % (IC90 41.6-75.8) | ruedas con >= 20 min sobre 50 %: 8/15, t +0.85
+     Z4 TENDENCIA: seguir el lado de la tendencia                1439 min en 33 ruedas: 54.5 % (IC90 40.8-63.9) | ruedas con >= 20 min sobre 50 %: 5/9, t +0.41
+     Z5 TENDENCIA con ola y marea del lado de la tendencia        537 min en 23 ruedas: 57.5 % (IC90 42.3-68.3) | ruedas con >= 20 min sobre 50 %: 4/6, t +0.39
+     Z6 ROTACION y lejos del VWAP (>= 2X): volver al VWAP        2523 min en 27 ruedas: 53.9 % (IC90 44.3-64.3) | ruedas con >= 20 min sobre 50 %: 16/22, t +1.56
+     Z7 ESTRECHO y lejos del VWAP (>= 2X): volver al VWAP        1507 min en 29 ruedas: 50.3 % (IC90 37.9-63.4) | ruedas con >= 20 min sobre 50 %: 14/20, t +0.73
+     Z8 seguir la marea (todo el dia)                           10021 min en 33 ruedas: 52.3 % (IC90 48.2-56.5) | ruedas con >= 20 min sobre 50 %: 17/33, t +0.73
+     Z9 seguir la ola (todo el dia)                             10021 min en 33 ruedas: 48.8 % (IC90 47.0-50.6) | ruedas con >= 20 min sobre 50 %: 15/33, t -1.21
+  -- confirmacion (14 ruedas)
+     Z1 voto T7 (seguir la tendencia en la vuelta de la ola)      299 min en 10 ruedas: 61.5 % (IC90 47.4-69.9) | ruedas con >= 20 min sobre 50 %: 3/5, t +1.21
+     Z2 voto V4 (banda 2 sd con iceberg en ROTACION)               51 min en 10 ruedas: 54.9 % (IC90 37.8-70.0) | ruedas con >= 20 min sobre 50 %: 0/0, t +nan
+     Z3 voto A3 (tarde, hacia el VWAP despues del giro)           357 min en 11 ruedas: 51.5 % (IC90 32.8-65.2) | ruedas con >= 20 min sobre 50 %: 5/8, t -0.07
+     Z4 TENDENCIA: seguir el lado de la tendencia                1265 min en 13 ruedas: 54.2 % (IC90 41.7-60.1) | ruedas con >= 20 min sobre 50 %: 3/8, t -0.41
+     Z5 TENDENCIA con ola y marea del lado de la tendencia        481 min en 11 ruedas: 54.1 % (IC90 44.3-58.7) | ruedas con >= 20 min sobre 50 %: 3/7, t -0.53
+     Z6 ROTACION y lejos del VWAP (>= 2X): volver al VWAP        1090 min en 12 ruedas: 52.0 % (IC90 39.8-64.3) | ruedas con >= 20 min sobre 50 %: 6/8, t +0.74
+     Z7 ESTRECHO y lejos del VWAP (>= 2X): volver al VWAP         518 min en  8 ruedas: 46.9 % (IC90 17.9-71.9) | ruedas con >= 20 min sobre 50 %: 2/5, t -0.35
+     Z8 seguir la marea (todo el dia)                            4611 min en 14 ruedas: 52.5 % (IC90 47.2-57.4) | ruedas con >= 20 min sobre 50 %: 8/14, t +0.71
+     Z9 seguir la ola (todo el dia)                              4611 min en 14 ruedas: 51.0 % (IC90 49.1-52.8) | ruedas con >= 20 min sobre 50 %: 8/14, t +0.58
+  -- final (8 ruedas)
+     Z1 voto T7 (seguir la tendencia en la vuelta de la ola)      271 min en  8 ruedas: 43.5 % (IC90 36.8-49.4) | ruedas con >= 20 min sobre 50 %: 1/4, t -1.56
+     Z2 voto V4 (banda 2 sd con iceberg en ROTACION)               34 min en  6 ruedas: 50.0 % (IC90 26.3-74.2) | ruedas con >= 20 min sobre 50 %: 0/0, t +nan
+     Z3 voto A3 (tarde, hacia el VWAP despues del giro)            58 min en  4 ruedas: 96.6 % (IC90 84.6-100.0) | ruedas con >= 20 min sobre 50 %: 1/1, t +nan
+     Z4 TENDENCIA: seguir el lado de la tendencia                1070 min en  8 ruedas: 49.7 % (IC90 41.6-53.9) | ruedas con >= 20 min sobre 50 %: 2/6, t -1.01
+     Z5 TENDENCIA con ola y marea del lado de la tendencia        420 min en  8 ruedas: 42.9 % (IC90 33.3-48.0) | ruedas con >= 20 min sobre 50 %: 1/5, t -2.24
+     Z6 ROTACION y lejos del VWAP (>= 2X): volver al VWAP         552 min en  8 ruedas: 49.8 % (IC90 42.0-62.3) | ruedas con >= 20 min sobre 50 %: 4/7, t +0.95
+     Z7 ESTRECHO y lejos del VWAP (>= 2X): volver al VWAP         229 min en  7 ruedas: 54.1 % (IC90 2.2-79.6) | ruedas con >= 20 min sobre 50 %: 2/3, t +0.21
+     Z8 seguir la marea (todo el dia)                            2850 min en  8 ruedas: 46.2 % (IC90 42.9-49.6) | ruedas con >= 20 min sobre 50 %: 2/8, t -1.77
+     Z9 seguir la ola (todo el dia)                              2850 min en  8 ruedas: 48.5 % (IC90 45.9-51.2) | ruedas con >= 20 min sobre 50 %: 2/8, t -0.92

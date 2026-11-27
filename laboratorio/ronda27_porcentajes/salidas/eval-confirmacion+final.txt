@@ -1,0 +1,110 @@
+RONDA 27 - evaluacion fuera de muestra: confirmacion+final (generado 2026-11-27 15:27 AR)
+
+=== Y = X (ruedas 22; nada 1.1 %, empate 0.00 % de los minutos; t de Bonferroni con gl 21: 3.21)
+-- M0: n 8466 | P(arriba) real 0.479 | p media 0.499 sd 0.0077 [0.472, 0.527]
+   Brier skill -0.00142 (IC90 -0.00249 a -0.00046; t por rueda -2.21, 2/22 ruedas +; placebo P2 p 0.995, mediana +0.00020) | AUC 0.4774 (IC90 0.4587-0.4949; P2 p 0.996) | ECE 0.0241, ECE simetrizada 0.0148 (IC90 0.0072-0.0232) | pendiente -2.51
+   confiabilidad: 0.47-0.49 n1152 p0.486 paso 0.499 [0.469-0.539] | 0.49-0.51 n6396 p0.500 paso 0.487 [0.457-0.514] | 0.51-0.53 n918 p0.514 paso 0.394 [0.347-0.430]
+   por clima: E n2502 BS -0.0011 AUC 0.494 p 0.499 real 0.534 | N n144 BS -0.0004 AUC 0.478 p 0.499 real 0.514 | R n3352 BS -0.0016 AUC 0.469 p 0.500 real 0.444 | T n2468 BS -0.0015 AUC 0.479 p 0.499 real 0.468
+   por franja: 11:00-13:00 n2626 BS -0.0027 AUC 0.462 | 13:00-16:00 n3860 BS -0.0031 AUC 0.442 | 9:31-11:00 n1980 BS +0.0036 AUC 0.561
+   R-frec: 24 ops (1.09 por rueda; 5 compras, 19 ventas) acierto 58.3 % | R medio +0.167 | neto c0,50 +0.91 (t por rueda +0.56, 4 ruedas +) c1,00 +0.41 (t +0.26) | P1 p neto 0.132 acierto 0.159 (mediana 50.0 %) | caida max 28.2
+      por clima: R 9 ops 33 % -2.53 | T 15 ops 73 % +2.97 || por franja: 11:00-13:00 3 ops 67 % +3.58 | 13:00-15:30 4 ops 25 % -3.44 | 9:31-11:00 17 ops 65 % +1.46
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M1: n 8466 | P(arriba) real 0.479 | p media 0.500 sd 0.0000 [0.500, 0.500]
+   Brier skill +0.00000 (IC90 +0.00000 a +0.00000; t por rueda +0.00, 0/22 ruedas +; placebo P2 p 1.000, mediana +0.00000) | AUC 0.5000 (IC90 0.5000-0.5000; P2 p 1.000) | ECE 0.0210, ECE simetrizada 0.0000 (IC90 0.0000-0.0000) | pendiente nan
+   confiabilidad: 0.49-0.51 n8466 p0.500 paso 0.479 [0.455-0.502]
+   por clima: E n2502 BS +0.0000 AUC 0.500 p 0.500 real 0.534 | N n144 BS +0.0000 AUC 0.500 p 0.500 real 0.514 | R n3352 BS +0.0000 AUC 0.500 p 0.500 real 0.444 | T n2468 BS +0.0000 AUC 0.500 p 0.500 real 0.468
+   por franja: 11:00-13:00 n2626 BS +0.0000 AUC 0.500 | 13:00-16:00 n3860 BS +0.0000 AUC 0.500 | 9:31-11:00 n1980 BS +0.0000 AUC 0.500
+   R-frec: no opero (no opero (modelo nulo o sin p que pase tau))
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M2: n 8466 | P(arriba) real 0.479 | p media 0.500 sd 0.0000 [0.500, 0.500]
+   Brier skill +0.00000 (IC90 +0.00000 a +0.00000; t por rueda +0.00, 0/22 ruedas +; placebo P2 p 1.000, mediana +0.00000) | AUC 0.5000 (IC90 0.5000-0.5000; P2 p 1.000) | ECE 0.0210, ECE simetrizada 0.0000 (IC90 0.0000-0.0000) | pendiente nan
+   confiabilidad: 0.49-0.51 n8466 p0.500 paso 0.479 [0.455-0.502]
+   por clima: E n2502 BS +0.0000 AUC 0.500 p 0.500 real 0.534 | N n144 BS +0.0000 AUC 0.500 p 0.500 real 0.514 | R n3352 BS +0.0000 AUC 0.500 p 0.500 real 0.444 | T n2468 BS +0.0000 AUC 0.500 p 0.500 real 0.468
+   por franja: 11:00-13:00 n2626 BS +0.0000 AUC 0.500 | 13:00-16:00 n3860 BS +0.0000 AUC 0.500 | 9:31-11:00 n1980 BS +0.0000 AUC 0.500
+   R-frec: no opero (no opero (modelo nulo o sin p que pase tau))
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M3: n 8466 | P(arriba) real 0.479 | p media 0.499 sd 0.0081 [0.458, 0.541]
+   Brier skill +0.00064 (IC90 -0.00036 a +0.00166; t por rueda +1.02, 7/22 ruedas +; placebo P2 p 0.122, mediana +0.00002) | AUC 0.5084 (IC90 0.4985-0.5183; P2 p 0.114) | ECE 0.0230, ECE simetrizada 0.0025 (IC90 0.0009-0.0078) | pendiente 1.72
+   confiabilidad: 0.44-0.47 n118 p0.462 paso 0.449 [0.286-0.577] | 0.47-0.49 n351 p0.477 paso 0.453 [0.413-0.500] | 0.49-0.51 n7678 p0.500 paso 0.477 [0.451-0.504] | 0.51-0.53 n289 p0.522 paso 0.557 [0.431-0.654] | 0.53-0.56 n30 p0.537 paso 0.567 [0.429-0.692]
+   por clima: E n2502 BS +0.0004 AUC 0.509 p 0.499 real 0.534 | N n144 BS +0.0000 AUC 0.500 p 0.500 real 0.514 | R n3352 BS +0.0017 AUC 0.515 p 0.500 real 0.444 | T n2468 BS -0.0006 AUC 0.499 p 0.499 real 0.468
+   por franja: 11:00-13:00 n2626 BS -0.0006 AUC 0.496 | 13:00-16:00 n3860 BS +0.0016 AUC 0.514 | 9:31-11:00 n1980 BS +0.0004 AUC 0.512
+   R-frec: 50 ops (2.27 por rueda; 20 compras, 30 ventas) acierto 44.0 % | R medio -0.120 | neto c0,50 -1.19 (t por rueda -1.17, 4 ruedas +) c1,00 -1.69 (t -1.60) | P1 p neto 0.825 acierto 0.880 (mediana 50.0 %) | caida max 75.2
+      por clima: E 7 ops 57 % +0.21 | R 36 ops 42 % -1.50 | T 7 ops 43 % -0.96 || por franja: 11:00-13:00 4 ops 25 % -3.00 | 13:00-15:30 21 ops 52 % +0.35 | 9:31-11:00 25 ops 40 % -2.18
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M_deriva: n 8466 | P(arriba) real 0.479 | p media 0.493 sd 0.0039 [0.486, 0.500]
+   Brier skill +0.00069 (IC90 -0.00062 a +0.00202; t por rueda +0.82, 15/22 ruedas +; placebo P2 p 1.000, mediana +0.00069) | AUC 0.4920 (IC90 0.4658-0.5194; P2 p 1.000) | ECE 0.0138, ECE simetrizada 0.0027 (IC90 0.0004-0.0123) | pendiente 1.78
+   confiabilidad: 0.47-0.49 n2325 p0.488 paso 0.478 [0.446-0.509] | 0.49-0.51 n6141 p0.495 paso 0.479 [0.447-0.512]
+   por clima: E n2502 BS -0.0011 AUC 0.528 p 0.494 real 0.534 | N n144 BS -0.0060 AUC 0.302 p 0.490 real 0.514 | R n3352 BS +0.0012 AUC 0.425 p 0.493 real 0.444 | T n2468 BS +0.0022 AUC 0.518 p 0.491 real 0.468
+   por franja: 11:00-13:00 n2626 BS -0.0012 AUC 0.490 | 13:00-16:00 n3860 BS +0.0021 AUC 0.482 | 9:31-11:00 n1980 BS +0.0004 AUC 0.514
+
+=== Y = Xm (ruedas 22; nada 0.0 %, empate 0.00 % de los minutos; t de Bonferroni con gl 21: 3.21)
+-- M0: n 8555 | P(arriba) real 0.493 | p media 0.500 sd 0.0000 [0.500, 0.500]
+   Brier skill +0.00000 (IC90 +0.00000 a +0.00000; t por rueda +0.00, 0/22 ruedas +; placebo P2 p 1.000, mediana +0.00000) | AUC 0.5000 (IC90 0.5000-0.5000; P2 p 1.000) | ECE 0.0068, ECE simetrizada 0.0000 (IC90 0.0000-0.0000) | pendiente nan
+   confiabilidad: 0.49-0.51 n8555 p0.500 paso 0.493 [0.479-0.506]
+   por clima: E n2545 BS +0.0000 AUC 0.500 p 0.500 real 0.528 | N n144 BS +0.0000 AUC 0.500 p 0.500 real 0.500 | R n3394 BS +0.0000 AUC 0.500 p 0.500 real 0.477 | T n2472 BS +0.0000 AUC 0.500 p 0.500 real 0.479
+   por franja: 11:00-13:00 n2640 BS +0.0000 AUC 0.500 | 13:00-16:00 n3935 BS +0.0000 AUC 0.500 | 9:31-11:00 n1980 BS +0.0000 AUC 0.500
+   R-frec: no opero (no opero (modelo nulo o sin p que pase tau))
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M1: n 8555 | P(arriba) real 0.493 | p media 0.500 sd 0.0000 [0.500, 0.500]
+   Brier skill +0.00000 (IC90 +0.00000 a +0.00000; t por rueda +0.00, 0/22 ruedas +; placebo P2 p 1.000, mediana +0.00000) | AUC 0.5000 (IC90 0.5000-0.5000; P2 p 1.000) | ECE 0.0068, ECE simetrizada 0.0000 (IC90 0.0000-0.0000) | pendiente nan
+   confiabilidad: 0.49-0.51 n8555 p0.500 paso 0.493 [0.479-0.506]
+   por clima: E n2545 BS +0.0000 AUC 0.500 p 0.500 real 0.528 | N n144 BS +0.0000 AUC 0.500 p 0.500 real 0.500 | R n3394 BS +0.0000 AUC 0.500 p 0.500 real 0.477 | T n2472 BS +0.0000 AUC 0.500 p 0.500 real 0.479
+   por franja: 11:00-13:00 n2640 BS +0.0000 AUC 0.500 | 13:00-16:00 n3935 BS +0.0000 AUC 0.500 | 9:31-11:00 n1980 BS +0.0000 AUC 0.500
+   R-frec: no opero (no opero (modelo nulo o sin p que pase tau))
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M2: n 8555 | P(arriba) real 0.493 | p media 0.500 sd 0.0000 [0.500, 0.500]
+   Brier skill +0.00000 (IC90 +0.00000 a +0.00000; t por rueda +0.00, 0/22 ruedas +; placebo P2 p 1.000, mediana +0.00000) | AUC 0.5000 (IC90 0.5000-0.5000; P2 p 1.000) | ECE 0.0068, ECE simetrizada 0.0000 (IC90 0.0000-0.0000) | pendiente nan
+   confiabilidad: 0.49-0.51 n8555 p0.500 paso 0.493 [0.479-0.506]
+   por clima: E n2545 BS +0.0000 AUC 0.500 p 0.500 real 0.528 | N n144 BS +0.0000 AUC 0.500 p 0.500 real 0.500 | R n3394 BS +0.0000 AUC 0.500 p 0.500 real 0.477 | T n2472 BS +0.0000 AUC 0.500 p 0.500 real 0.479
+   por franja: 11:00-13:00 n2640 BS +0.0000 AUC 0.500 | 13:00-16:00 n3935 BS +0.0000 AUC 0.500 | 9:31-11:00 n1980 BS +0.0000 AUC 0.500
+   R-frec: no opero (no opero (modelo nulo o sin p que pase tau))
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M3: n 8555 | P(arriba) real 0.493 | p media 0.500 sd 0.0000 [0.500, 0.500]
+   Brier skill +0.00000 (IC90 +0.00000 a +0.00000; t por rueda +0.00, 0/22 ruedas +; placebo P2 p 1.000, mediana +0.00000) | AUC 0.5000 (IC90 0.5000-0.5000; P2 p 1.000) | ECE 0.0068, ECE simetrizada 0.0000 (IC90 0.0000-0.0000) | pendiente nan
+   confiabilidad: 0.49-0.51 n8555 p0.500 paso 0.493 [0.479-0.506]
+   por clima: E n2545 BS +0.0000 AUC 0.500 p 0.500 real 0.528 | N n144 BS +0.0000 AUC 0.500 p 0.500 real 0.500 | R n3394 BS +0.0000 AUC 0.500 p 0.500 real 0.477 | T n2472 BS +0.0000 AUC 0.500 p 0.500 real 0.479
+   por franja: 11:00-13:00 n2640 BS +0.0000 AUC 0.500 | 13:00-16:00 n3935 BS +0.0000 AUC 0.500 | 9:31-11:00 n1980 BS +0.0000 AUC 0.500
+   R-frec: no opero (no opero (modelo nulo o sin p que pase tau))
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M_deriva: n 8555 | P(arriba) real 0.493 | p media 0.496 sd 0.0011 [0.493, 0.498]
+   Brier skill +0.00005 (IC90 -0.00044 a +0.00052; t por rueda +0.18, 10/22 ruedas +; placebo P2 p 1.000, mediana +0.00005) | AUC 0.4887 (IC90 0.4719-0.5083; P2 p 1.000) | ECE 0.0024, ECE simetrizada 0.0000 (IC90 0.0000-0.0000) | pendiente 0.82
+   confiabilidad: 0.49-0.51 n8555 p0.496 paso 0.493 [0.479-0.506]
+   por clima: E n2545 BS -0.0013 AUC 0.489 p 0.495 real 0.528 | N n144 BS -0.0010 AUC 0.386 p 0.495 real 0.500 | R n3394 BS +0.0007 AUC 0.494 p 0.496 real 0.477 | T n2472 BS +0.0007 AUC 0.514 p 0.496 real 0.479
+   por franja: 11:00-13:00 n2640 BS -0.0005 AUC 0.487 | 13:00-16:00 n3935 BS +0.0002 AUC 0.482 | 9:31-11:00 n1980 BS +0.0004 AUC 0.505
+
+=== Y = X2 (ruedas 22; nada 12.8 %, empate 0.00 % de los minutos; t de Bonferroni con gl 21: 3.21)
+-- M0: n 7461 | P(arriba) real 0.480 | p media 0.500 sd 0.0125 [0.435, 0.559]
+   Brier skill -0.00549 (IC90 -0.00877 a -0.00249; t por rueda -2.76, 2/22 ruedas +; placebo P2 p 1.000, mediana +0.00088) | AUC 0.4458 (IC90 0.4141-0.4766; P2 p 1.000) | ECE 0.0323, ECE simetrizada 0.0317 (IC90 0.0128-0.0509) | pendiente -3.92
+   confiabilidad: 0.40-0.44 n1 p0.435 paso 0.000 [0.000-0.000] | 0.44-0.47 n74 p0.464 paso 0.622 [0.484-0.813] | 0.47-0.49 n1459 p0.483 paso 0.507 [0.453-0.571] | 0.49-0.51 n4481 p0.500 paso 0.499 [0.435-0.567] | 0.51-0.53 n1336 p0.517 paso 0.396 [0.328-0.478] | 0.53-0.56 n110 p0.537 paso 0.273 [0.197-0.305]
+   por clima: E n2027 BS -0.0040 AUC 0.460 p 0.500 real 0.569 | N n140 BS +0.0103 AUC 0.572 p 0.500 real 0.550 | R n2959 BS -0.0069 AUC 0.410 p 0.500 real 0.411 | T n2335 BS -0.0059 AUC 0.461 p 0.500 real 0.485
+   por franja: 11:00-13:00 n2367 BS -0.0069 AUC 0.423 | 13:00-16:00 n3162 BS -0.0124 AUC 0.365 | 9:31-11:00 n1932 BS +0.0074 AUC 0.593
+   R-frec: 34 ops (1.55 por rueda; 15 compras, 19 ventas) acierto 50.0 % | R medio +0.022 | neto c0,50 -1.44 (t por rueda -0.48, 5 ruedas +) c1,00 -1.94 (t -0.64) | P1 p neto 0.677 acierto 0.676 (mediana 50.0 %) | caida max 118.0
+      por clima: E 2 ops 0 % -6.75 | R 7 ops 29 % -7.43 | T 25 ops 60 % +0.66 || por franja: 11:00-13:00 9 ops 22 % -8.06 | 13:00-15:30 4 ops 0 % -17.88 | 9:31-11:00 21 ops 71 % +4.52
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M1: n 7461 | P(arriba) real 0.480 | p media 0.500 sd 0.0000 [0.500, 0.500]
+   Brier skill +0.00000 (IC90 +0.00000 a +0.00000; t por rueda +0.00, 0/22 ruedas +; placebo P2 p 1.000, mediana +0.00000) | AUC 0.5000 (IC90 0.5000-0.5000; P2 p 1.000) | ECE 0.0202, ECE simetrizada 0.0000 (IC90 0.0000-0.0000) | pendiente nan
+   confiabilidad: 0.49-0.51 n7461 p0.500 paso 0.480 [0.436-0.524]
+   por clima: E n2027 BS +0.0000 AUC 0.500 p 0.500 real 0.569 | N n140 BS +0.0000 AUC 0.500 p 0.500 real 0.550 | R n2959 BS +0.0000 AUC 0.500 p 0.500 real 0.411 | T n2335 BS +0.0000 AUC 0.500 p 0.500 real 0.485
+   por franja: 11:00-13:00 n2367 BS +0.0000 AUC 0.500 | 13:00-16:00 n3162 BS +0.0000 AUC 0.500 | 9:31-11:00 n1932 BS +0.0000 AUC 0.500
+   R-frec: no opero (no opero (modelo nulo o sin p que pase tau))
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M2: n 7461 | P(arriba) real 0.480 | p media 0.500 sd 0.0000 [0.500, 0.500]
+   Brier skill +0.00000 (IC90 +0.00000 a +0.00000; t por rueda +0.00, 0/22 ruedas +; placebo P2 p 1.000, mediana +0.00000) | AUC 0.5000 (IC90 0.5000-0.5000; P2 p 1.000) | ECE 0.0202, ECE simetrizada 0.0000 (IC90 0.0000-0.0000) | pendiente nan
+   confiabilidad: 0.49-0.51 n7461 p0.500 paso 0.480 [0.436-0.524]
+   por clima: E n2027 BS +0.0000 AUC 0.500 p 0.500 real 0.569 | N n140 BS +0.0000 AUC 0.500 p 0.500 real 0.550 | R n2959 BS +0.0000 AUC 0.500 p 0.500 real 0.411 | T n2335 BS +0.0000 AUC 0.500 p 0.500 real 0.485
+   por franja: 11:00-13:00 n2367 BS +0.0000 AUC 0.500 | 13:00-16:00 n3162 BS +0.0000 AUC 0.500 | 9:31-11:00 n1932 BS +0.0000 AUC 0.500
+   R-frec: no opero (no opero (modelo nulo o sin p que pase tau))
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M3: n 7461 | P(arriba) real 0.480 | p media 0.499 sd 0.0114 [0.443, 0.552]
+   Brier skill +0.00009 (IC90 -0.00146 a +0.00161; t por rueda +0.30, 7/22 ruedas +; placebo P2 p 0.290, mediana -0.00080) | AUC 0.5046 (IC90 0.4945-0.5150; P2 p 0.235) | ECE 0.0200, ECE simetrizada 0.0037 (IC90 0.0015-0.0093) | pendiente 0.58
+   confiabilidad: 0.44-0.47 n364 p0.456 paso 0.412 [0.262-0.524] | 0.47-0.49 n28 p0.474 paso 0.143 [0.050-0.333] | 0.49-0.51 n6891 p0.500 paso 0.487 [0.440-0.532] | 0.51-0.53 n22 p0.522 paso 0.727 [0.500-0.917] | 0.53-0.56 n156 p0.537 paso 0.346 [0.242-0.508]
+   por clima: E n2027 BS +0.0015 AUC 0.513 p 0.500 real 0.569 | N n140 BS +0.0000 AUC 0.500 p 0.500 real 0.550 | R n2959 BS +0.0011 AUC 0.510 p 0.499 real 0.411 | T n2335 BS -0.0025 AUC 0.491 p 0.497 real 0.485
+   por franja: 11:00-13:00 n2367 BS -0.0004 AUC 0.500 | 13:00-16:00 n3162 BS -0.0004 AUC 0.502 | 9:31-11:00 n1932 BS +0.0016 AUC 0.513
+   R-frec: 53 ops (2.41 por rueda; 22 compras, 31 ventas) acierto 64.2 % | R medio +0.284 | neto c0,50 +3.53 (t por rueda +1.67, 10 ruedas +) c1,00 +3.03 (t +1.45) | P1 p neto 0.069 acierto 0.079 (mediana 52.8 %) | caida max 53.5
+      por clima: E 2 ops 100 % +13.25 | R 23 ops 61 % +2.14 | T 28 ops 64 % +3.98 || por franja: 11:00-13:00 7 ops 57 % +1.43 | 13:00-15:30 8 ops 75 % +6.97 | 9:31-11:00 38 ops 63 % +3.20
+   R-60: no opero (no opero (modelo nulo o sin p que pase tau))
+-- M_deriva: n 7461 | P(arriba) real 0.480 | p media 0.497 sd 0.0057 [0.488, 0.510]
+   Brier skill -0.00127 (IC90 -0.00336 a +0.00077; t por rueda -1.07, 8/22 ruedas +; placebo P2 p 1.000, mediana -0.00127) | AUC 0.4687 (IC90 0.4171-0.5324; P2 p 1.000) | ECE 0.0290, ECE simetrizada 0.0081 (IC90 0.0021-0.0161) | pendiente -3.29
+   confiabilidad: 0.47-0.49 n694 p0.489 paso 0.553 [0.542-0.563] | 0.49-0.51 n6444 p0.497 paso 0.473 [0.419-0.526] | 0.51-0.53 n323 p0.510 paso 0.461 [0.461-0.461]
+   por clima: E n2027 BS -0.0033 AUC 0.462 p 0.499 real 0.569 | N n140 BS -0.0051 AUC 0.445 p 0.493 real 0.550 | R n2959 BS -0.0013 AUC 0.413 p 0.497 real 0.411 | T n2335 BS +0.0007 AUC 0.496 p 0.495 real 0.485
+   por franja: 11:00-13:00 n2367 BS -0.0046 AUC 0.382 | 13:00-16:00 n3162 BS +0.0002 AUC 0.506 | 9:31-11:00 n1932 BS +0.0005 AUC 0.514

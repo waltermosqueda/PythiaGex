@@ -1,0 +1,6 @@
+control 2026-11-27 (cinta-ESZ6-202611262300-202611271649.csv): X 10.25, ordenes 239641, ultima orden RTH 42540 s NY, hueco max 2 s
+  minutos con datos: 138; clima {'E': 92, 'R': 44, 'T': 2}
+  M0 Y X: p [0.5000, 0.5000]
+  M1 Y X: p [0.5000, 0.5000]
+  M2 Y X: p [0.5000, 0.5000]
+  M3 Y X: p [0.5000, 0.5346]

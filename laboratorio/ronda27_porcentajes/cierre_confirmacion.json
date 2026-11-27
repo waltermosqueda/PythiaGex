@@ -1,0 +1,20 @@
+{
+ "tramo": "confirmacion",
+ "hora_AR": "2026-11-27 15:18:52",
+ "nota": "antes de abrir la confirmacion (27-10 a 13-11): modelos M0-M3 y M_deriva, 3 Y, como en las secciones 5-7 y las enmiendas 1-4",
+ "sha256": {
+  "r27_01_tabla.py": "93533b545792f48d417f14b593c2181ccd002ad2a86c2da8d91ba426e518e872",
+  "r27_02_verificar.py": "ce529369d07b2ee11196b0deae8ebd2e428b243066aa35199a9c6eaed9613398",
+  "r27_03_modelos.py": "c880aacd94a3e6049d98f215c2a31b7a3fa62a5de17d194665724e4141a2bc02",
+  "r27_04_evaluar.py": "1b78f72ccaa0f5aa76ccdc3f298d375276d25a22277a99f038a98c62be6d6268",
+  "r27_05_explorar.py": "7c922b38568c6fc5ea074b8b86503cb08d63b2a3c713fe6d566bf0a1f0693d4d",
+  "r27_06_congelar.py": "ba4eda9032626c20b79aec17df8d00355fccf910bc7ced9306d6c7974b5f35d9",
+  "r27_07_zonas.py": "a3cd841216948fdc3e2655559bce4e2c69e9deedf4a59a3087fdc2a1bb7e1fc2",
+  "r27_08_mecanica.py": "8a470617a714cf6fa25013774e78b14abad2f64324c3586a50e595ba690f909f",
+  "r27_cierre.py": "41f94438a03dea6e0232318aec8a98182646220cc4f55e51841678021005859d",
+  "r27_comun.py": "e23961b741dbb98fa261f377e5c7979e9bfbd9980ddcb6ce1941563919f948a5",
+  "r27_vivo.py": "c224b9e0f7d6bc31d84f1309f162e03bdca838db7ec3626a5c5b479eb36fd6a7",
+  "tabla_minutos.parquet": "838cfc6a4107158a2d671460e16e706077ad4e1009d80bac8e4f0c2f88f4b59a",
+  "curva_rango_por_minuto.json": "72589182d1533ccab0903e70469e8654dc7a201197d88064238dd1a2d7a6bc33"
+ }
+}

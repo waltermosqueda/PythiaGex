@@ -1,0 +1,669 @@
+{
+ "version": "r27-1",
+ "generado_AR": "2026-11-27 15:30",
+ "ruedas": [
+  "2026-09-10",
+  "2026-11-25",
+  55
+ ],
+ "definicion": "P(arriba primero) del cierre de minuto con meta simetrica +-Y (Y = X/2, X, 2X), plazo 60 min o 16:00; modelos antisimetricos",
+ "rasgos": {
+  "M0": "o_dir, o_dir*o_ret, o_dir*o_lar, m_dir, m_dir*m_ret, m_dir*m_lar",
+  "M1": "m_dir, m_dir*[T], o_dir, o_dir*[T], lado_T, o_dir*o_ret, vw_X, vw_X*tarde, d5, d5*[T], med15, zona_o_s*[T]",
+  "M2": "o_dir, o_ret, o_lar, o_min, o_dnorm, m_dir, m_ret, m_lar, m_min, m_dnorm, rrn, tipo_n, lado_T, vw_X, ib_net, mins, d1, d5, d15, med5, med15, big5, ice1, zona_o_s",
+  "M3": "v_T7, v_V4, v_A3"
+ },
+ "impares_M2": [
+  "big5",
+  "d1",
+  "d15",
+  "d5",
+  "ib_net",
+  "ice1",
+  "lado_T",
+  "m_dir",
+  "m_dnorm",
+  "med15",
+  "med5",
+  "o_dir",
+  "o_dnorm",
+  "vw_X",
+  "zona_o_s"
+ ],
+ "monotonas_M2": {
+  "lado_T": 1
+ },
+ "regla": {
+  "desde_m": 4,
+  "hasta_m": 359,
+  "max_por_rueda": 5,
+  "senal": "compra si p >= tau y p > 0,5; venta si p <= 1 - tau y p < 0,5; una posicion por vez; bracket +-Y (objetivo pasado 1 tick, stop al tocar)"
+ },
+ "modelos": {
+  "M0_Xm": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "o_dir",
+    "o_dir*o_ret",
+    "o_dir*o_lar",
+    "m_dir",
+    "m_dir*m_ret",
+    "m_dir*m_lar"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "Xm",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693361
+    ],
+    [
+     "0.001",
+     0.693443
+    ],
+    [
+     "0.003",
+     0.693518
+    ],
+    [
+     "0.01",
+     0.693603
+    ],
+    [
+     "0.03",
+     0.693656
+    ],
+    [
+     "0.1",
+     0.693682
+    ],
+    [
+     "1.0",
+     0.693695
+    ]
+   ]
+  },
+  "M1_Xm": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "m_dir",
+    "m_dir*T",
+    "o_dir",
+    "o_dir*T",
+    "lado_T",
+    "o_dir*o_ret",
+    "vw_X",
+    "vw_X*tarde",
+    "d5",
+    "d5*T",
+    "med15",
+    "zona_o_s*T"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "Xm",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693684
+    ],
+    [
+     "0.001",
+     0.694113
+    ],
+    [
+     "0.003",
+     0.694443
+    ],
+    [
+     "0.01",
+     0.694639
+    ],
+    [
+     "0.03",
+     0.694714
+    ],
+    [
+     "0.1",
+     0.694743
+    ],
+    [
+     "1.0",
+     0.694755
+    ]
+   ]
+  },
+  "M2_Xm": {
+   "tipo": "xgboost",
+   "nulo": true,
+   "Y": "Xm",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 60, \"min_child_weight\": 50}",
+     0.694233
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 60, \"min_child_weight\": 200}",
+     0.694065
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 150, \"min_child_weight\": 50}",
+     0.695462
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 150, \"min_child_weight\": 200}",
+     0.695222
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 60, \"min_child_weight\": 50}",
+     0.694988
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 60, \"min_child_weight\": 200}",
+     0.694469
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 150, \"min_child_weight\": 50}",
+     0.696734
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 150, \"min_child_weight\": 200}",
+     0.695798
+    ]
+   ]
+  },
+  "M3_Xm": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "v_T7",
+    "v_V4",
+    "v_A3"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "Xm",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693278
+    ],
+    [
+     "0.001",
+     0.693373
+    ],
+    [
+     "0.003",
+     0.693427
+    ],
+    [
+     "0.01",
+     0.693451
+    ],
+    [
+     "0.03",
+     0.693459
+    ],
+    [
+     "0.1",
+     0.693462
+    ],
+    [
+     "1.0",
+     0.693463
+    ]
+   ]
+  },
+  "M0_X": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "o_dir",
+    "o_dir*o_ret",
+    "o_dir*o_lar",
+    "m_dir",
+    "m_dir*m_ret",
+    "m_dir*m_lar"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693353
+    ],
+    [
+     "0.001",
+     0.693504
+    ],
+    [
+     "0.003",
+     0.693648
+    ],
+    [
+     "0.01",
+     0.693828
+    ],
+    [
+     "0.03",
+     0.693934
+    ],
+    [
+     "0.1",
+     0.693992
+    ],
+    [
+     "1.0",
+     0.694017
+    ]
+   ]
+  },
+  "M1_X": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "m_dir",
+    "m_dir*T",
+    "o_dir",
+    "o_dir*T",
+    "lado_T",
+    "o_dir*o_ret",
+    "vw_X",
+    "vw_X*tarde",
+    "d5",
+    "d5*T",
+    "med15",
+    "zona_o_s*T"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.694794
+    ],
+    [
+     "0.001",
+     0.695918
+    ],
+    [
+     "0.003",
+     0.696704
+    ],
+    [
+     "0.01",
+     0.697146
+    ],
+    [
+     "0.03",
+     0.697306
+    ],
+    [
+     "0.1",
+     0.697364
+    ],
+    [
+     "1.0",
+     0.697388
+    ]
+   ]
+  },
+  "M2_X": {
+   "tipo": "xgboost",
+   "nulo": true,
+   "Y": "X",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 60, \"min_child_weight\": 50}",
+     0.694466
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 60, \"min_child_weight\": 200}",
+     0.695314
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 150, \"min_child_weight\": 50}",
+     0.696452
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 150, \"min_child_weight\": 200}",
+     0.697712
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 60, \"min_child_weight\": 50}",
+     0.695146
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 60, \"min_child_weight\": 200}",
+     0.696732
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 150, \"min_child_weight\": 50}",
+     0.698623
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 150, \"min_child_weight\": 200}",
+     0.700192
+    ]
+   ]
+  },
+  "M3_X": {
+   "tipo": "logistica",
+   "C": 0.0003,
+   "rasgos": [
+    "v_T7",
+    "v_V4",
+    "v_A3"
+   ],
+   "rms": [
+    0.20236896092788528,
+    0.10252705029707018,
+    0.2647835910250171
+   ],
+   "coef": [
+    0.012293816174455486,
+    0.014208492633768966,
+    0.0432845863681039
+   ],
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": false,
+   "Y": "X",
+   "tau_R_frec": 0.53,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.692822
+    ],
+    [
+     "0.001",
+     0.692872
+    ],
+    [
+     "0.003",
+     0.692948
+    ],
+    [
+     "0.01",
+     0.692992
+    ],
+    [
+     "0.03",
+     0.693006
+    ],
+    [
+     "0.1",
+     0.693012
+    ],
+    [
+     "1.0",
+     0.693014
+    ]
+   ]
+  },
+  "M0_X2": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "o_dir",
+    "o_dir*o_ret",
+    "o_dir*o_lar",
+    "m_dir",
+    "m_dir*m_ret",
+    "m_dir*m_lar"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X2",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693774
+    ],
+    [
+     "0.001",
+     0.694094
+    ],
+    [
+     "0.003",
+     0.694433
+    ],
+    [
+     "0.01",
+     0.694886
+    ],
+    [
+     "0.03",
+     0.695194
+    ],
+    [
+     "0.1",
+     0.695359
+    ],
+    [
+     "1.0",
+     0.695438
+    ]
+   ]
+  },
+  "M1_X2": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "m_dir",
+    "m_dir*T",
+    "o_dir",
+    "o_dir*T",
+    "lado_T",
+    "o_dir*o_ret",
+    "vw_X",
+    "vw_X*tarde",
+    "d5",
+    "d5*T",
+    "med15",
+    "zona_o_s*T"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X2",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.695932
+    ],
+    [
+     "0.001",
+     0.698407
+    ],
+    [
+     "0.003",
+     0.700427
+    ],
+    [
+     "0.01",
+     0.701678
+    ],
+    [
+     "0.03",
+     0.702147
+    ],
+    [
+     "0.1",
+     0.702333
+    ],
+    [
+     "1.0",
+     0.702407
+    ]
+   ]
+  },
+  "M2_X2": {
+   "tipo": "xgboost",
+   "nulo": true,
+   "Y": "X2",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 60, \"min_child_weight\": 50}",
+     0.695574
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 60, \"min_child_weight\": 200}",
+     0.695567
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 150, \"min_child_weight\": 50}",
+     0.69853
+    ],
+    [
+     "{\"max_depth\": 2, \"n_estimators\": 150, \"min_child_weight\": 200}",
+     0.699449
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 60, \"min_child_weight\": 50}",
+     0.700006
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 60, \"min_child_weight\": 200}",
+     0.697416
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 150, \"min_child_weight\": 50}",
+     0.707348
+    ],
+    [
+     "{\"max_depth\": 3, \"n_estimators\": 150, \"min_child_weight\": 200}",
+     0.704325
+    ]
+   ]
+  },
+  "M3_X2": {
+   "tipo": "logistica",
+   "C": 0.0003,
+   "rasgos": [
+    "v_T7",
+    "v_V4",
+    "v_A3"
+   ],
+   "rms": [
+    0.2177618048189987,
+    0.1101215644279765,
+    0.24059948771383377
+   ],
+   "coef": [
+    0.025853441150380227,
+    0.01297354271535363,
+    0.042442035126926146
+   ],
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": false,
+   "Y": "X2",
+   "tau_R_frec": 0.52,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.69288
+    ],
+    [
+     "0.001",
+     0.693013
+    ],
+    [
+     "0.003",
+     0.69317
+    ],
+    [
+     "0.01",
+     0.69326
+    ],
+    [
+     "0.03",
+     0.693291
+    ],
+    [
+     "0.1",
+     0.693302
+    ],
+    [
+     "1.0",
+     0.693307
+    ]
+   ]
+  }
+ }
+}

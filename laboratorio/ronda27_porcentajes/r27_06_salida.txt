@@ -1,0 +1,13 @@
+M0 Xm: hp null tau 0.500
+M1 Xm: hp null tau 0.500
+M2 Xm: hp null tau 0.500
+M3 Xm: hp null tau 0.500
+M0 X: hp null tau 0.500
+M1 X: hp null tau 0.500
+M2 X: hp null tau 0.500
+M3 X: hp 0.0003 tau 0.530
+M0 X2: hp null tau 0.500
+M1 X2: hp null tau 0.500
+M2 X2: hp null tau 0.500
+M3 X2: hp 0.0003 tau 0.520
+escrito C:\Users\wmx_7\OneDrive\Escritorio\ATAS nada\PythiaGex\laboratorio\ronda27_porcentajes\modelo_congelado.json y huellas_r27.json

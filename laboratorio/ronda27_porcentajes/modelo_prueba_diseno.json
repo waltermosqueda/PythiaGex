@@ -1,0 +1,542 @@
+{
+ "version": "r27-1",
+ "generado_AR": "2026-11-27 14:44",
+ "ruedas": [
+  "2026-09-10",
+  "2026-10-26",
+  33
+ ],
+ "definicion": "P(arriba primero) del cierre de minuto con meta simetrica +-Y (Y = X/2, X, 2X), plazo 60 min o 16:00; modelos antisimetricos",
+ "rasgos": {
+  "M0": "o_dir, o_dir*o_ret, o_dir*o_lar, m_dir, m_dir*m_ret, m_dir*m_lar",
+  "M1": "m_dir, m_dir*[T], o_dir, o_dir*[T], lado_T, o_dir*o_ret, vw_X, vw_X*tarde, d5, d5*[T], med15, zona_o_s*[T]",
+  "M2": "o_dir, o_ret, o_lar, o_min, o_dnorm, m_dir, m_ret, m_lar, m_min, m_dnorm, rrn, tipo_n, lado_T, vw_X, ib_net, mins, d1, d5, d15, med5, med15, big5, ice1, zona_o_s",
+  "M3": "v_T7, v_V4, v_A3"
+ },
+ "impares_M2": [
+  "big5",
+  "d1",
+  "d15",
+  "d5",
+  "ib_net",
+  "ice1",
+  "lado_T",
+  "m_dir",
+  "m_dnorm",
+  "med15",
+  "med5",
+  "o_dir",
+  "o_dnorm",
+  "vw_X",
+  "zona_o_s"
+ ],
+ "monotonas_M2": {
+  "lado_T": 1
+ },
+ "regla": {
+  "desde_m": 4,
+  "hasta_m": 359,
+  "max_por_rueda": 5,
+  "senal": "compra si p >= tau y p > 0,5; venta si p <= 1 - tau y p < 0,5; una posicion por vez; bracket +-Y (objetivo pasado 1 tick, stop al tocar)"
+ },
+ "modelos": {
+  "M0_Xm": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "o_dir",
+    "o_dir*o_ret",
+    "o_dir*o_lar",
+    "m_dir",
+    "m_dir*m_ret",
+    "m_dir*m_lar"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "Xm",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693501
+    ],
+    [
+     "0.001",
+     0.693705
+    ],
+    [
+     "0.003",
+     0.693906
+    ],
+    [
+     "0.01",
+     0.694141
+    ],
+    [
+     "0.03",
+     0.694317
+    ],
+    [
+     "0.1",
+     0.694415
+    ],
+    [
+     "1.0",
+     0.69445
+    ]
+   ]
+  },
+  "M1_Xm": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "m_dir",
+    "m_dir*T",
+    "o_dir",
+    "o_dir*T",
+    "lado_T",
+    "o_dir*o_ret",
+    "vw_X",
+    "vw_X*tarde",
+    "d5",
+    "d5*T",
+    "med15",
+    "zona_o_s*T"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "Xm",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693809
+    ],
+    [
+     "0.001",
+     0.694247
+    ],
+    [
+     "0.003",
+     0.69455
+    ],
+    [
+     "0.01",
+     0.694755
+    ],
+    [
+     "0.03",
+     0.694848
+    ],
+    [
+     "0.1",
+     0.69489
+    ],
+    [
+     "1.0",
+     0.694907
+    ]
+   ]
+  },
+  "M2_Xm": {
+   "tipo": "xgboost",
+   "nulo": true,
+   "Y": "Xm",
+   "tau_R_frec": 0.5,
+   "nota": "no ajustado (prueba de plomeria)"
+  },
+  "M3_Xm": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "v_T7",
+    "v_V4",
+    "v_A3"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "Xm",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693337
+    ],
+    [
+     "0.001",
+     0.693501
+    ],
+    [
+     "0.003",
+     0.693613
+    ],
+    [
+     "0.01",
+     0.69367
+    ],
+    [
+     "0.03",
+     0.693689
+    ],
+    [
+     "0.1",
+     0.693696
+    ],
+    [
+     "1.0",
+     0.693699
+    ]
+   ]
+  },
+  "M0_X": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "o_dir",
+    "o_dir*o_ret",
+    "o_dir*o_lar",
+    "m_dir",
+    "m_dir*m_ret",
+    "m_dir*m_lar"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693723
+    ],
+    [
+     "0.001",
+     0.694353
+    ],
+    [
+     "0.003",
+     0.695058
+    ],
+    [
+     "0.01",
+     0.695871
+    ],
+    [
+     "0.03",
+     0.696377
+    ],
+    [
+     "0.1",
+     0.696641
+    ],
+    [
+     "1.0",
+     0.696763
+    ]
+   ]
+  },
+  "M1_X": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "m_dir",
+    "m_dir*T",
+    "o_dir",
+    "o_dir*T",
+    "lado_T",
+    "o_dir*o_ret",
+    "vw_X",
+    "vw_X*tarde",
+    "d5",
+    "d5*T",
+    "med15",
+    "zona_o_s*T"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.695557
+    ],
+    [
+     "0.001",
+     0.697447
+    ],
+    [
+     "0.003",
+     0.698895
+    ],
+    [
+     "0.01",
+     0.699854
+    ],
+    [
+     "0.03",
+     0.700262
+    ],
+    [
+     "0.1",
+     0.700431
+    ],
+    [
+     "1.0",
+     0.700501
+    ]
+   ]
+  },
+  "M2_X": {
+   "tipo": "xgboost",
+   "nulo": true,
+   "Y": "X",
+   "tau_R_frec": 0.5,
+   "nota": "no ajustado (prueba de plomeria)"
+  },
+  "M3_X": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "v_T7",
+    "v_V4",
+    "v_A3"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693443
+    ],
+    [
+     "0.001",
+     0.693934
+    ],
+    [
+     "0.003",
+     0.694355
+    ],
+    [
+     "0.01",
+     0.694594
+    ],
+    [
+     "0.03",
+     0.694676
+    ],
+    [
+     "0.1",
+     0.694707
+    ],
+    [
+     "1.0",
+     0.694719
+    ]
+   ]
+  },
+  "M0_X2": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "o_dir",
+    "o_dir*o_ret",
+    "o_dir*o_lar",
+    "m_dir",
+    "m_dir*m_ret",
+    "m_dir*m_lar"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X2",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.693384
+    ],
+    [
+     "0.001",
+     0.694279
+    ],
+    [
+     "0.003",
+     0.695588
+    ],
+    [
+     "0.01",
+     0.697494
+    ],
+    [
+     "0.03",
+     0.699056
+    ],
+    [
+     "0.1",
+     0.700046
+    ],
+    [
+     "1.0",
+     0.700553
+    ]
+   ]
+  },
+  "M1_X2": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "m_dir",
+    "m_dir*T",
+    "o_dir",
+    "o_dir*T",
+    "lado_T",
+    "o_dir*o_ret",
+    "vw_X",
+    "vw_X*tarde",
+    "d5",
+    "d5*T",
+    "med15",
+    "zona_o_s*T"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X2",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.697464
+    ],
+    [
+     "0.001",
+     0.702173
+    ],
+    [
+     "0.003",
+     0.706662
+    ],
+    [
+     "0.01",
+     0.710023
+    ],
+    [
+     "0.03",
+     0.71149
+    ],
+    [
+     "0.1",
+     0.712095
+    ],
+    [
+     "1.0",
+     0.712355
+    ]
+   ]
+  },
+  "M2_X2": {
+   "tipo": "xgboost",
+   "nulo": true,
+   "Y": "X2",
+   "tau_R_frec": 0.5,
+   "nota": "no ajustado (prueba de plomeria)"
+  },
+  "M3_X2": {
+   "tipo": "logistica",
+   "C": null,
+   "rasgos": [
+    "v_T7",
+    "v_V4",
+    "v_A3"
+   ],
+   "rms": null,
+   "coef": null,
+   "formula": "p = 1 / (1 + exp(-sum(coef_i * x_i / rms_i)))",
+   "nulo": true,
+   "Y": "X2",
+   "tau_R_frec": 0.5,
+   "logloss_interna": [
+    [
+     "null",
+     0.693147
+    ],
+    [
+     "0.0003",
+     0.695187
+    ],
+    [
+     "0.001",
+     0.69778
+    ],
+    [
+     "0.003",
+     0.700194
+    ],
+    [
+     "0.01",
+     0.701767
+    ],
+    [
+     "0.03",
+     0.702357
+    ],
+    [
+     "0.1",
+     0.702584
+    ],
+    [
+     "1.0",
+     0.702675
+    ]
+   ]
+  }
+ }
+}

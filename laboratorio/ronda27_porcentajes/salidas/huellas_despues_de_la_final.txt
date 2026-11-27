@@ -1,0 +1,13 @@
+r27_01_tabla.py              igual
+r27_02_verificar.py          igual
+r27_03_modelos.py            igual
+r27_04_evaluar.py            igual
+r27_05_explorar.py           igual
+r27_06_congelar.py           igual
+r27_07_zonas.py              igual
+r27_08_mecanica.py           igual
+r27_cierre.py                igual
+r27_comun.py                 igual
+r27_vivo.py                  CAMBIO despues del cierre: b0e3db4e8ebbd619
+tabla_minutos.parquet        igual
+curva_rango_por_minuto.json  igual

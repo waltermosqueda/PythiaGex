@@ -1,0 +1,18 @@
+  diseno X M2 sel en 2026-09-24: hp null tau 0.500 (5 s)
+  diseno X M2 sel en 2026-10-01: hp null tau 0.500 (9 s)
+  diseno X M2 sel en 2026-10-08: hp null tau 0.500 (13 s)
+  diseno X M2 sel en 2026-10-15: hp null tau 0.500 (19 s)
+  diseno X M2 sel en 2026-10-22: hp null tau 0.500 (25 s)
+diseno X listo: 44735 filas | 25 s
+  diseno Xm M2 sel en 2026-09-24: hp null tau 0.500 (28 s)
+  diseno Xm M2 sel en 2026-10-01: hp null tau 0.500 (32 s)
+  diseno Xm M2 sel en 2026-10-08: hp null tau 0.500 (37 s)
+  diseno Xm M2 sel en 2026-10-15: hp null tau 0.500 (44 s)
+  diseno Xm M2 sel en 2026-10-22: hp null tau 0.500 (52 s)
+diseno Xm listo: 44735 filas | 52 s
+  diseno X2 M2 sel en 2026-09-24: hp null tau 0.500 (54 s)
+  diseno X2 M2 sel en 2026-10-01: hp null tau 0.500 (58 s)
+  diseno X2 M2 sel en 2026-10-08: hp null tau 0.500 (62 s)
+  diseno X2 M2 sel en 2026-10-15: hp null tau 0.500 (67 s)
+  diseno X2 M2 sel en 2026-10-22: hp null tau 0.500 (72 s)
+diseno X2 listo: 44735 filas | 72 s

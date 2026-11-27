@@ -1,0 +1,41 @@
+RONDA 27 - mecanica descriptiva (post hoc) sobre las 55 ruedas, por tramo
+
+=== Y = X
+  diseno       33 ruedas | arriba por rueda: media 0.494, desvio 0.099 (una moneda con esos minutos: 0.026; los minutos de una rueda van juntos) | oraculo del lado del dia 52.9 % | seguir el lado del dia hasta ahora 46.0 %
+  confirmacion 14 ruedas | arriba por rueda: media 0.493, desvio 0.074 (una moneda con esos minutos: 0.026; los minutos de una rueda van juntos) | oraculo del lado del dia 53.3 % | seguir el lado del dia hasta ahora 49.3 %
+  final         8 ruedas | arriba por rueda: media 0.455, desvio 0.066 (una moneda con esos minutos: 0.025; los minutos de una rueda van juntos) | oraculo del lado del dia 56.2 % | seguir el lado del dia hasta ahora 52.7 %
+  memoria: si el minuto resolvio arriba, el de 15 min despues resolvio arriba 53.4 % (abajo -> abajo 55.1 %), n 20047
+  memoria: si el minuto resolvio arriba, el de 60 min despues resolvio arriba 50.4 % (abajo -> abajo 52.2 %), n 17582
+  M1 con C 0,01 por tramo: cambio de P(arriba) por unidad RMS del rasgo (beta/4, en puntos de %%), IC90 por bootstrap de ruedas
+    m_dir        dise +2.54 [-0.08, +5.43] | conf +0.96 [-2.52, +4.64] | fina -2.97 [-4.79, -0.50]
+    m_dir*T      dise -0.33 [-2.51, +1.82] | conf -0.77 [-4.81, +2.66] | fina -0.11 [-4.09, +3.56]
+    o_dir        dise -0.12 [-2.98, +2.79] | conf -0.52 [-2.77, +1.07] | fina +0.43 [-1.27, +2.57]
+    o_dir*T      dise +0.29 [-0.85, +1.39] | conf +0.92 [-0.55, +1.86] | fina -4.87 [-6.57, -2.52]
+    lado_T       dise +1.45 [-0.30, +2.92] | conf +1.33 [-1.93, +5.99] | fina +0.53 [-1.29, +3.88]
+    o_dir*o_ret  dise -0.31 [-1.61, +1.00] | conf -1.19 [-3.27, +0.84] | fina +1.76 [+0.48, +2.87]
+    vw_X         dise -2.98 [-6.10, +1.34] | conf +0.79 [-3.37, +4.11] | fina +2.56 [-1.47, +5.48]
+    vw_X*tarde   dise +1.11 [-1.76, +4.14] | conf -2.08 [-6.68, +2.09] | fina -1.33 [-3.56, +0.20]
+    d5           dise -1.05 [-2.66, +0.63] | conf +3.62 [-0.74, +7.38] | fina +1.44 [-1.34, +3.54]
+    d5*T         dise -0.06 [-1.34, +1.23] | conf -0.38 [-3.36, +2.69] | fina -1.17 [-3.62, +1.58]
+    med15        dise +1.40 [-1.97, +4.36] | conf +0.42 [-3.07, +2.95] | fina -2.56 [-7.09, +1.19]
+    zona_o_s*T   dise -1.19 [-2.09, -0.09] | conf +1.35 [+0.45, +2.75] | fina +2.57 [-0.17, +4.43]
+
+=== Y = X2
+  diseno       33 ruedas | arriba por rueda: media 0.508, desvio 0.167 (una moneda con esos minutos: 0.029; los minutos de una rueda van juntos) | oraculo del lado del dia 57.1 % | seguir el lado del dia hasta ahora 46.4 %
+  confirmacion 14 ruedas | arriba por rueda: media 0.522, desvio 0.158 (una moneda con esos minutos: 0.028; los minutos de una rueda van juntos) | oraculo del lado del dia 57.8 % | seguir el lado del dia hasta ahora 48.3 %
+  final         8 ruedas | arriba por rueda: media 0.435, desvio 0.091 (una moneda con esos minutos: 0.027; los minutos de una rueda van juntos) | oraculo del lado del dia 59.3 % | seguir el lado del dia hasta ahora 52.9 %
+  memoria: si el minuto resolvio arriba, el de 15 min despues resolvio arriba 66.1 % (abajo -> abajo 68.1 %), n 15412
+  memoria: si el minuto resolvio arriba, el de 60 min despues resolvio arriba 52.7 % (abajo -> abajo 56.0 %), n 12775
+  M1 con C 0,01 por tramo: cambio de P(arriba) por unidad RMS del rasgo (beta/4, en puntos de %%), IC90 por bootstrap de ruedas
+    m_dir        dise +2.23 [-1.83, +6.82] | conf +1.58 [-3.68, +6.53] | fina -3.44 [-6.71, +0.71]
+    m_dir*T      dise +0.92 [-2.20, +3.68] | conf -0.48 [-4.67, +2.47] | fina -1.17 [-7.29, +3.97]
+    o_dir        dise -0.11 [-2.57, +2.43] | conf +1.09 [-0.95, +2.80] | fina -1.58 [-4.37, +1.69]
+    o_dir*T      dise +1.26 [-0.11, +2.39] | conf -0.17 [-1.54, +1.37] | fina -3.15 [-5.21, -0.95]
+    lado_T       dise +2.64 [-2.70, +7.82] | conf +1.17 [-5.07, +9.35] | fina -0.31 [-2.99, +4.85]
+    o_dir*o_ret  dise -0.97 [-2.46, +0.53] | conf -1.11 [-2.39, +0.14] | fina +0.45 [-1.78, +2.57]
+    vw_X         dise -0.19 [-5.95, +7.36] | conf +3.47 [-2.92, +9.62] | fina +3.04 [-4.27, +6.96]
+    vw_X*tarde   dise -2.59 [-7.52, +1.91] | conf -4.53 [-10.88, +0.71] | fina -2.07 [-5.21, -0.74]
+    d5           dise -0.91 [-3.06, +1.63] | conf +1.56 [-3.38, +6.60] | fina +2.87 [-0.10, +5.55]
+    d5*T         dise -0.61 [-1.84, +0.88] | conf -1.41 [-3.38, +1.17] | fina -2.37 [-5.47, +2.28]
+    med15        dise +1.65 [-3.55, +5.99] | conf -1.06 [-6.25, +4.39] | fina -1.25 [-7.97, +4.67]
+    zona_o_s*T   dise -2.97 [-4.90, -1.02] | conf +0.33 [-1.36, +2.03] | fina +3.39 [-1.10, +6.45]

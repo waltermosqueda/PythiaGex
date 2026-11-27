@@ -1,0 +1,33 @@
+RAM libre 2.40 GB < 2.5 GB: espero 30 s
+  final X M0 sel en 2026-11-16: hp 0.0003 tau 0.520 (33 s)
+  final X M0 sel en 2026-11-23: hp null tau 0.500 (33 s)
+  final X M1 sel en 2026-11-16: hp null tau 0.500 (33 s)
+  final X M1 sel en 2026-11-23: hp null tau 0.500 (34 s)
+  final X M2 sel en 2026-11-16: hp null tau 0.500 (44 s)
+RAM libre 2.45 GB < 2.5 GB: espero 30 s
+RAM libre 2.45 GB < 2.5 GB: espero 30 s
+RAM libre 2.40 GB < 2.5 GB: espero 30 s
+  final X M2 sel en 2026-11-23: hp null tau 0.500 (143 s)
+  final X M3 sel en 2026-11-16: hp 0.0003 tau 0.530 (144 s)
+  final X M3 sel en 2026-11-23: hp 0.0003 tau 0.525 (144 s)
+RAM libre 2.50 GB < 2.5 GB: espero 30 s
+final X listo: 15560 filas | 174 s
+  final Xm M0 sel en 2026-11-16: hp null tau 0.500 (174 s)
+  final Xm M0 sel en 2026-11-23: hp null tau 0.500 (175 s)
+  final Xm M1 sel en 2026-11-16: hp null tau 0.500 (175 s)
+  final Xm M1 sel en 2026-11-23: hp null tau 0.500 (175 s)
+  final Xm M2 sel en 2026-11-16: hp null tau 0.500 (184 s)
+  final Xm M2 sel en 2026-11-23: hp null tau 0.500 (194 s)
+RAM libre 2.47 GB < 2.5 GB: espero 30 s
+  final Xm M3 sel en 2026-11-16: hp null tau 0.500 (224 s)
+  final Xm M3 sel en 2026-11-23: hp null tau 0.500 (224 s)
+final Xm listo: 15560 filas | 224 s
+  final X2 M0 sel en 2026-11-16: hp 0.0003 tau 0.530 (225 s)
+  final X2 M0 sel en 2026-11-23: hp 0.003 tau 0.545 (225 s)
+  final X2 M1 sel en 2026-11-16: hp null tau 0.500 (225 s)
+  final X2 M1 sel en 2026-11-23: hp null tau 0.500 (226 s)
+  final X2 M2 sel en 2026-11-16: hp null tau 0.500 (233 s)
+  final X2 M2 sel en 2026-11-23: hp null tau 0.500 (241 s)
+  final X2 M3 sel en 2026-11-16: hp 0.0003 tau 0.525 (241 s)
+  final X2 M3 sel en 2026-11-23: hp 0.0003 tau 0.520 (242 s)
+final X2 listo: 15560 filas | 242 s
