@@ -1,0 +1,10 @@
+ruedas por tipo: {'tendencia': 120, 'mixto': 118, 'balance': 99}
+tipo       balance   ops  45 | acierto 64.4 % (azar 61.0) | neto -0.02 | ventaja +1.15 pts/op
+tipo       mixto     ops  65 | acierto 66.2 % (azar 61.9) | neto +1.35 | ventaja +2.55 pts/op
+tipo       tendencia ops  47 | acierto 46.8 % (azar 60.8) | neto -4.32 | ventaja -2.61 pts/op
+trim       2024Q2    ops  18 | acierto 50.0 % (azar 60.8) | neto -4.44 | ventaja -3.05 pts/op
+trim       2024Q3    ops  26 | acierto 65.4 % (azar 61.6) | neto +1.66 | ventaja +2.59 pts/op
+trim       2024Q4    ops  36 | acierto 58.3 % (azar 57.8) | neto -2.08 | ventaja -0.29 pts/op
+trim       2025Q1    ops  27 | acierto 55.6 % (azar 61.6) | neto -1.89 | ventaja -0.30 pts/op
+trim       2025Q2    ops  29 | acierto 62.1 % (azar 61.0) | neto +1.31 | ventaja +3.01 pts/op
+trim       2025Q3    ops  21 | acierto 66.7 % (azar 67.7) | neto +0.39 | ventaja +0.64 pts/op

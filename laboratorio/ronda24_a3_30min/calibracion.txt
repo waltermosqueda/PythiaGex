@@ -1,0 +1,10 @@
+velas de 30 nativas contra 5 agregadas: 242 ruedas en comun, diferencia maxima de precio 0.25 pts, de volumen 988
+A3-30 desde 5 min DISENO           ruedas 116 | ops  62 (0.53/r) | acierto 71.0 % (azar 62.2, formula 67.3) | neto +2.21 (azar -0.67) t rueda 1.64 | ventaja +2.88 pts/op t 2.21 | {'objetivo': 37, 'fin': 19, 'stop': 6}
+A3-30 desde 5 min CHEQUEO          ruedas 126 | ops  65 (0.52/r) | acierto 52.3 % (azar 58.6, formula 65.6) | neto -3.53 (azar -2.13) t rueda -1.63 | ventaja -1.40 pts/op t -0.76 | {'objetivo': 31, 'stop': 19, 'fin': 15}
+A3-30 nativa DISENO                ruedas 117 | ops  63 (0.54/r) | acierto 71.4 % (azar 62.4, formula 67.0) | neto +2.18 (azar -0.64) t rueda 1.64 | ventaja +2.83 pts/op t 2.19 | {'objetivo': 38, 'fin': 19, 'stop': 6}
+A3-30 nativa CHEQUEO (hasta 17-08) ruedas 117 | ops  59 (0.50/r) | acierto 47.5 % (azar 57.1, formula 65.1) | neto -4.43 (azar -2.32) t rueda -1.86 | ventaja -2.12 pts/op t -1.06 | {'objetivo': 25, 'stop': 19, 'fin': 15}
+referencia A3 en 5 min (R23, verificada por fuera): diseno 109 ops 74,3 % (azar 63,2) neto +2,49 ventaja +3,74; chequeo 122-123 ops 67,2-67,5 % (azar 62,6) neto +0,59/+0,66 ventaja +1,46
+
+real	0m4.261s
+user	0m0.015s
+sys	0m0.030s

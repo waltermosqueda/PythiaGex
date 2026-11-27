@@ -1,0 +1,10 @@
+A3 5 min (los 31 cierres)                    diseno   ops 109 | acierto 74.3 % | neto +2.49 | {'objetivo': 76, 'fin': 20, 'stop': 13}
+A3 5 min (los 31 cierres)                    chequeo  ops 122 | acierto 67.2 % | neto +0.59 | {'objetivo': 77, 'stop': 24, 'fin': 21}
+A3 5 min solo en los 6 cierres :00/:30       diseno   ops  64 | acierto 71.9 % | neto +2.11 | {'objetivo': 39, 'fin': 18, 'stop': 7}
+A3 5 min solo en los 6 cierres :00/:30       chequeo  ops  71 | acierto 57.7 % | neto -1.65 | {'objetivo': 37, 'stop': 17, 'fin': 17}
+A3-30 entradas, salida en 5 min              diseno   ops  61 | acierto 70.5 % | neto +2.02 | {'objetivo': 37, 'fin': 18, 'stop': 6}
+A3-30 entradas, salida en 5 min              chequeo  ops  65 | acierto 53.8 % | neto -2.82 | {'objetivo': 32, 'stop': 18, 'fin': 15}
+A3-30 entradas, salida 30 min conservadora   diseno   ops  62 | acierto 71.0 % | neto +2.21 | {'objetivo': 37, 'fin': 19, 'stop': 6}
+A3-30 entradas, salida 30 min conservadora   chequeo  ops  65 | acierto 52.3 % | neto -3.53 | {'objetivo': 31, 'stop': 19, 'fin': 15}
+A3-30 entradas, salida 30 min por camino OHLC diseno   ops  62 | acierto 71.0 % | neto +2.21 | {'objetivo': 37, 'fin': 19, 'stop': 6}
+A3-30 entradas, salida 30 min por camino OHLC chequeo  ops  65 | acierto 52.3 % | neto -3.53 | {'objetivo': 31, 'stop': 19, 'fin': 15}

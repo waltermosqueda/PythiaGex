@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
-  modified: 2026-11-27T12:20:19.946Z
+  modified: 2026-11-27T12:35:06.019Z
 ---
 
 Textual (27-11 ~02:40-03:00 AR): "ampliar el estudio y cruzar mas variables hasta encontrar la evolucion ganadora: VWAP,
@@ -126,3 +126,13 @@ cuenta en la historia de rangos: X 6,75 vs 7,00 el 24-03); azar propio 63,2 / 62
 hasta el 30-11). Decide a las 60 y 120 jornadas (acierto >= 60, neto > 0, t >= 2,00 / 1,98, >= 40 ops); futilidad 20 y 40; descriptiva a las 15.
 Potencia a las 60: 6-60 % segun el efecto: lo probable es "sin decidir". ES 2023 (si compra): mismo juez con --carpeta --estado
 --sembrar-desde-cintas, una lectura con alfa 0,05. A1 y A2 descartadas. Baul privado #65-71.
+
+**RONDA 24 (27-11 09:25-09:40 AR, mia, `laboratorio/ronda24_a3_30min/`): A3 llevada a velas de 30 min ("A3-30", sin parametros nuevos) en MES
+29-04-2024..08-09-2025 (337 ruedas; de ese periodo la cache solo tiene 30 y 60 min). Pre-registrada 09:31 (SHA), corrida UNICA con candado: NO PASA.**
+Acierto 59,9 % vs azar 61,3 %, neto -0,74, ventaja +0,60 pts/op (t 0,44), 157 ops. Calibracion en el ano visto: A3-30 copia a A3 en el diseño (71 %
++2,2) y se cae en el chequeo (48-52 %, -3,5/-4,4); A3 en 5 min mirando SOLO los cierres :00/:30 da en el chequeo 57,7 % -1,65 -> A3 es FRAGIL a que
+cierres se miran. Post hoc (tipo de dia ex post): tendencia 46,8 % vs azar 60,8, -4,32/op; balance +1,15 de ventaja; mixto +2,55. Lo que tumba la
+idea son los dias de tendencia (120 de 337). Expectativa del juez en vivo de A3: BAJA (2 de 4 muestras = azar). Baul #72.
+**RONDA 25 (lanzada 09:40, agente effort max, `laboratorio/ronda25_llave_tendencia/`):** detector del dia de tendencia con info de antes de las
+13:00 (Dalton: tipo de apertura, one-timeframing, extension, lado del VWAP, gap, calendario FOMC/CPI de fuente oficial) elegido con un objetivo
+independiente del P&L de A3; si alguno pasa, A3F congelada con juez r25_vivo.py (alfa 0,0125 por lectura). Baul desde la #73.
