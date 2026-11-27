@@ -9,6 +9,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Superindicador\SuperCalculos.cs" />
+    <Compile Include="..\Superindicador\SuperOlaNucleo.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="FlujoOla.cs" />
   </ItemGroup>
 </Project>
