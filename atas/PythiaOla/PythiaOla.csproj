@@ -10,7 +10,7 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>PythiaOla</AssemblyName>
     <RootNamespace>PythiaLaOla</RootNamespace>
-    <Version>1.0.6</Version>
+    <Version>1.0.8</Version>
     <Company>PythiaGex</Company>
     <Product>La Ola</Product>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

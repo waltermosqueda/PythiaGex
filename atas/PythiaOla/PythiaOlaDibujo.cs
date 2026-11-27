@@ -133,7 +133,7 @@ namespace PythiaLaOla
                 if (_linea) DibujarLinea(g, pc, reg, s, p);
                 if (_rombo) DibujarRombos(g, pc, reg, s, p);
                 if (_rayas) DibujarRayas(g, pc, reg, s, p);
-                if (_panel) { DibujarPanel(g, reg, s, p); panelDibujado = true; }
+                if (_panel) { DibujarPanel(g, reg, s, p); panelDibujado = true; } else RetirarCuadro();
                 if (_registro && (DateTime.UtcNow - _ultAudit).TotalSeconds >= 60)
                 {
                     _ultAudit = DateTime.UtcNow;
@@ -492,7 +492,16 @@ namespace PythiaLaOla
             if (x0 + w > reg.Right - 4) x0 = reg.Right - 4 - w;
             if (y0 + h > reg.Bottom - 4) y0 = reg.Bottom - 4 - h;
             x0 = Math.Max(reg.Left, x0); y0 = Math.Max(reg.Top, y0);
+            PublicarCuadro(x0 - reg.Left, y0 - reg.Top, w, h);   // 1.0e: la manija del Superindicador se pone debajo
         }
+
+        /// <summary>1.0e (27-11, pedido del operador: "por defecto arriba a la izquierda, debajo de la lista de indicadores de ATAS, y que no
+        /// compitan entre si, desplegados o minimizados"): el lugar del cuadro (o de la pastilla) queda en los datos del proceso, con una clave
+        /// por instrumento y marco, para que el Superindicador 1.9d ponga su manija justo debajo. Lo retira OnDispose o el panel apagado.</summary>
+        internal static string ClaveCuadro(string instrumento, string marco) => "PythiaGex.LaOla.cuadro|" + (instrumento ?? "").Replace("#", "").Trim() + "|" + (marco ?? "");
+        private string ClaveCuadroPropia() { try { return ClaveCuadro(InstrumentInfo?.Instrument, ChartInfo?.TimeFrame); } catch { return ClaveCuadro("", ""); } }
+        private void PublicarCuadro(int x, int y, int w, int h) { try { AppDomain.CurrentDomain.SetData(ClaveCuadroPropia(), new int[] { x, y, w, h, Environment.TickCount }); } catch { } }
+        private void RetirarCuadro() { try { AppDomain.CurrentDomain.SetData(ClaveCuadroPropia(), null); } catch { } }
 
         /// <summary>
         /// 1.0c COMPACTO: un renglon de cabecera ("● LIVE  VIE 27/11  14:51:47" y el "–" para minimizar) y un renglon por dato: CLIMA, MAREA y

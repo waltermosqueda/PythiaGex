@@ -56,7 +56,7 @@ namespace PythiaLaOla
         // 1.0b (27-11): cortes de datos -> re-pide la jornada y avisa (OlaCortes.cs, PythiaOlaCortes.cs)
         // 1.0c (27-11): SOLO PRESENTACION del cuadro (ningun calculo cambia): compacto (un renglon por dato, pie solo con avisos y la X en el
         // cartelito del mouse), minimizable a una pastilla y arrastrable (PythiaOlaMouse.cs). El de la 1.0b sigue en PoPanelEstilo.
-        public const string Version = "1.0d";
+        public const string Version = "1.0e";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         /// <summary>Donde va el fondo de marea. ATAS tiene UNA sola llave por indicador para dibujar arriba o abajo de las velas
@@ -162,18 +162,18 @@ namespace PythiaLaOla
         // 4. Panel
         // 1.0d (27-11): el cuadro arrancaba arriba a la izquierda, ENCIMA de lo que escribe ATAS (nombre del contrato, la linea O/H/L/C del
         // mouse, el aviso "Last Market Data Update" y el recuadro "7 v"): el operador: "choca, se mezcla, compite con la data de ATAS". El lugar
-        // nuevo es PoLugarX / PoLugarY (nombres NUEVOS: ATAS guarda los ajustes por nombre y el 8/30 viejo quedaba pegado); -1 = automatico,
+        // nuevo es PoCuadroX / PoCuadroY (nombres NUEVOS: ATAS guarda los ajustes por nombre y el 8/30 viejo quedaba pegado); -1 = automatico,
         // debajo de esa franja de ATAS. PoPanelX / PoPanelY quedan ocultos y sin uso.
         private int _lugarX = -1, _lugarY = -1;
         [Display(Name = "Lugar del cuadro: desde la izquierda (px)", GroupName = "4. Panel", Order = 38,
             Description = "-1 = automatico (a la izquierda, debajo de lo que escribe ATAS arriba). Lo cambia arrastrar el cuadro con el mouse.")]
         [Range(-1, 4000)]
-        public int PoLugarX { get => _lugarX; set { _lugarX = Math.Max(-1, Math.Min(4000, value)); Redibujar(); } }
+        public int PoCuadroX { get => _lugarX; set { _lugarX = Math.Max(-1, Math.Min(4000, value)); Redibujar(); } }
 
         [Display(Name = "Lugar del cuadro: desde arriba (px)", GroupName = "4. Panel", Order = 39,
             Description = "-1 = automatico (debajo del nombre del contrato, la linea O/H/L/C y los avisos de ATAS). Lo cambia arrastrar el cuadro.")]
         [Range(-1, 4000)]
-        public int PoLugarY { get => _lugarY; set { _lugarY = Math.Max(-1, Math.Min(4000, value)); Redibujar(); } }
+        public int PoCuadroY { get => _lugarY; set { _lugarY = Math.Max(-1, Math.Min(4000, value)); Redibujar(); } }
 
         private int _panelX = 8, _panelY = 30;
         [Browsable(false)]
@@ -264,6 +264,7 @@ namespace PythiaLaOla
         {
             try { if (_latido != null) UnsubscribeFromTimer(_periodo, _latido); } catch { }
             OlaSoltar();   // libera el turno de pedidos de cinta
+            RetirarCuadro();   // 1.0e: la manija del Superindicador vuelve a su lugar automatico
             base.OnDispose();
         }
 

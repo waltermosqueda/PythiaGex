@@ -78,7 +78,7 @@ namespace PythiaSuper
         // un clic la despliega en una tira compacta y plana (velas/paleta | delta: periodo, dato, fila | perfil: periodo y AV | al
         // momento/en vivo | jornada < > fijar | doble flecha para plegar), con el estado prendido marcado por un subrayado y un cartelito
         // al posar el mouse. Arrastrando la manija se mueve (SpBotoneraDX/DY). La clasica de la 1.9b sigue en SpBotoneraEstilo.
-        public const string Version = "1.9c";
+        public const string Version = "1.9d";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -222,6 +222,17 @@ namespace PythiaSuper
         public bool SpBotoneraDesplegada { get => _botAbierta; set { _botAbierta = value; Redibujar(); } }
 
         private int _botDX = 0, _botDY = 0;
+        // 1.9d (27-11, pedido del operador): de fabrica la manija va arriba a la izquierda, JUSTO DEBAJO del cuadro de La Ola (que publica su
+        // lugar en los datos del proceso) y lo sigue cuando se minimiza o se abre; sin La Ola, debajo de la franja donde escribe ATAS (8, 118).
+        // Nombres NUEVOS (ATAS guarda los ajustes por nombre): el corrimiento de ese modo es SpManijaDX / DY, no SpBotoneraDX / DY.
+        private bool _manijaBajoOla = true;
+        [Display(Name = "Botonera: debajo del cuadro de La Ola (arriba a la izquierda)", GroupName = "1. Un clic", Order = 9,
+            Description = "Si: la manija va justo debajo del cuadro de La Ola y lo sigue cuando se minimiza o se abre (sin La Ola, arriba a la izquierda debajo de lo que escribe ATAS). No: el lugar de Botonera en el grafico.")]
+        public bool SpManijaBajoLaOla { get => _manijaBajoOla; set { _manijaBajoOla = value; Redibujar(); } }
+        private int _manDX = 0, _manDY = 0;
+        [Browsable(false)] public int SpManijaDX { get => _manDX; set { _manDX = Math.Max(-4000, Math.Min(4000, value)); Redibujar(); } }
+        [Browsable(false)] public int SpManijaDY { get => _manDY; set { _manDY = Math.Max(-4000, Math.Min(4000, value)); Redibujar(); } }
+
         [Display(Name = "Botonera: corrimiento horizontal (px)", GroupName = "1. Un clic", Order = 13,
             Description = "Desde su lugar de siempre (0 = el de siempre). Lo cambia arrastrar la manija; nunca queda afuera del grafico.")]
         [Range(-4000, 4000)]
@@ -1437,10 +1448,11 @@ namespace PythiaSuper
             string aviso = _avisoBotonera ?? "";
 
             // el lugar: el de siempre + el corrimiento guardado (o el del arrastre en curso)
-            var bas = new Point(reg.Left + 6, _lugarBot == LugarBotonera.ArribaIzquierda ? reg.Top + 4 : reg.Bottom - 24);
+            var bas = _manijaBajoOla ? BaseBajoLaOla(reg) : new Point(reg.Left + 6, _lugarBot == LugarBotonera.ArribaIzquierda ? reg.Top + 4 : reg.Bottom - 24);
             Presion pr; lock (_llaveUi) pr = _presion;
             bool arrastra = pr != null && pr.Movio;
-            int x = bas.X + (arrastra ? _arrDX : _botDX), y = bas.Y + (arrastra ? _arrDY : _botDY);
+            int odx = _manijaBajoOla ? _manDX : _botDX, ody = _manijaBajoOla ? _manDY : _botDY;
+            int x = bas.X + (arrastra ? _arrDX : odx), y = bas.Y + (arrastra ? _arrDY : ody);
 
             // los grupos (un grupo nunca se parte entre dos renglones)
             var grupos = new List<List<ItemBot>>();
@@ -1903,8 +1915,8 @@ namespace PythiaSuper
                     Rectangle reg, rel; Point bas;
                     lock (_llaveUi) { reg = _regBot; rel = _botRel; bas = _botBase; }
                     if (!reg.IsEmpty && !rel.IsEmpty) { int x = bas.X + dx, y = bas.Y + dy; Encajar(reg, rel, ref x, ref y); dx = x - bas.X; dy = y - bas.Y; }
-                    SpBotoneraDX = dx; SpBotoneraDY = dy;
-                    RaisePropertyChanged(nameof(SpBotoneraDX)); RaisePropertyChanged(nameof(SpBotoneraDY));
+                    if (_manijaBajoOla) { SpManijaDX = dx; SpManijaDY = dy; RaisePropertyChanged(nameof(SpManijaDX)); RaisePropertyChanged(nameof(SpManijaDY)); }
+                    else { SpBotoneraDX = dx; SpBotoneraDY = dy; RaisePropertyChanged(nameof(SpBotoneraDX)); RaisePropertyChanged(nameof(SpBotoneraDY)); }
                     AnotarLinea("botonera movida (" + como + "): corrimiento " + dx + ", " + dy + " px desde su lugar de siempre");
                 }
                 else if (_botEstilo == EstiloBotonera.Plegable)
@@ -2055,6 +2067,19 @@ namespace PythiaSuper
             var d = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ATAS", "PythiaGex", "superindicador");
             Directory.CreateDirectory(d);
             return d;
+        }
+
+        /// <summary>1.9d: el punto de la manija debajo del cuadro de La Ola de ESTE grafico (misma clave que PythiaLaOla.PythiaOla.ClaveCuadro:
+        /// instrumento sin # y marco); sin La Ola, (8, 118) desde la esquina: debajo de lo que escribe ATAS arriba a la izquierda.</summary>
+        private Point BaseBajoLaOla(Rectangle reg)
+        {
+            try
+            {
+                string clave = "PythiaGex.LaOla.cuadro|" + (InstrumentInfo?.Instrument ?? "").Replace("#", "").Trim() + "|" + (ChartInfo?.TimeFrame ?? "");
+                if (AppDomain.CurrentDomain.GetData(clave) is int[] v && v.Length >= 4) return new Point(reg.Left + v[0], reg.Top + v[1] + v[3] + 6);
+            }
+            catch { }
+            return new Point(reg.Left + 8, reg.Top + 118);
         }
 
         private string Inst() { try { return (InstrumentInfo?.Instrument ?? "inst").Replace(' ', '_').Replace('/', '_'); } catch { return "inst"; } }

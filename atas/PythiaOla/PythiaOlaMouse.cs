@@ -235,8 +235,8 @@ namespace PythiaLaOla
                         px = Math.Max(0, Math.Min(reg.Width - 4 - caja.Width, px));
                         py = Math.Max(0, Math.Min(reg.Height - 4 - caja.Height, py));
                     }
-                    PoLugarX = px; PoLugarY = py;   // 1.0d: el lugar nuevo (PoPanelX / PoPanelY quedan sin uso)
-                    RaisePropertyChanged(nameof(PoLugarX)); RaisePropertyChanged(nameof(PoLugarY));
+                    PoCuadroX = px; PoCuadroY = py;   // 1.0d: el lugar nuevo (PoPanelX / PoPanelY quedan sin uso)
+                    RaisePropertyChanged(nameof(PoCuadroX)); RaisePropertyChanged(nameof(PoCuadroY));
                     AnotarLinea("panel: movido (" + como + ") a " + _lugarX + ", " + _lugarY + " px de la esquina del grafico");
                 }
                 else if (pr.Zona == "menos")
