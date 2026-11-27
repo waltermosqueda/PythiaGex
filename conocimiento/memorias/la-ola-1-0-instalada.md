@@ -78,6 +78,8 @@ ruta del comando sale en pythiaola.log ("comando de recarga encontrado: ...").
 
 **Instalada la 1.0b en vivo (27-11 14:44-14:48):** recarga del grafico por dentro PROBADA (prueba por archivo: comando del panel 'ESZ6 1m Chart', 'blank for 4920 ms', nota en el pie). Jornada entera 27-11 contra la cinta completa: csv de ES y MES TODO IGUAL (224 min de clima); el panel solo difirio en los cortes (12:48-13:36 ES, 14:08-14:17 ES y MES) y en 6 lineas con la ultima orden llenandose (1-5 contratos de delta). Foto de la camara 14:51:47 = cinta al milisegundo en los dos cuadros. Evidencia: `laboratorio/bitacora_vivo/la_ola_es_mes_2026-11-27/VERIFICACION.md` secciones 7-9.
 
+**1.0c/1.0d (27-11 15:40-15:44, instaladas en caliente):** cuadro compacto con "–" (pastilla de una linea), arrastrable desde cualquier parte (PROBADO por el operador: log "panel: movido (suelta) a 352, 11"); pie solo con avisos; lugar PoLugarX/PoLugarY (-1 = auto en 8,118, debajo de lo que escribe ATAS). Superindicador 1.9c: botonera plegada en "☰" (SpBotoneraEstilo Plegable/SiempreDesplegada/Clasica). Volver a lo viejo: PoPanelEstilo=Clasico, SpBotoneraEstilo=Clasica. Ver [[ui-minimal-no-chocar-atas]].
+
 **Trampas:**
 - La X del MES puede salir distinta de la del ES por el redondeo al tick: medianas 126,50 / 126,625 -> X 10,00 / 10,25 (limite
   126,5625); el 27-11 le dio al MES 2 giros de ola de mas. Con "X fija" 10,25 en el MES caen en los mismos minutos.

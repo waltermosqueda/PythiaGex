@@ -1,4 +1,6 @@
 - [REGLA GENERAL: hacerlo YA, no patear (27-11)](hacerlo-ya-no-patear.md) — todo lo que pide, en el momento; esperar solo si el dato no existe o dice "no ahora".
+- [UI: minimal y sin chocar con ATAS (27-11)](ui-minimal-no-chocar-atas.md) — cuadros minimizables/arrastrables; nada arriba-izq (datos de ATAS hasta ~112 px).
+- [Rondas 26-27 (27-11)](rondas-26-27-es-mes-y-porcentajes.md) — ES/MES describe, no anticipa; porcentajes largo/corto = 50/50 fuera de muestra; zona A3 56,6 %.
 - [REGLA: baul de pistas (26-11)](baul-de-pistas-no-descartar.md) — lo que sobrevive pruebas va al BAUL_DE_PISTAS.md para fusionar; vale para todos los agentes.
 - [PELIGRO: foco en ATAS = atajos de trading (16-11, 26-11)](foco-atas-atajos-trading.md) — sus teclas mandan ordenes (26-11: 2 Buy Limit); 27-11: "hacelo vos todo ya": instalar sin esperar quietud, nunca un boton ambiguo. [Si opera, no tocar el mouse](no-mover-mouse-si-opera.md): solo capturas pasivas. [Modo cortes](modo-cortes-mouse.md): no acepta hover virtual.
 - [Level 2 caido = Lucid, error 13](lucid-level2-error13.md) — lo reactiva el soporte HUMANO de Lucid. [ATAS tildado y cortes de Rithmic](atas-lento-cortes-rithmic.md): memoria MBO + suscripciones.
