@@ -1,3 +1,4 @@
+- [REGLA INQUEBRANTABLE: dos controles, backend + pantalla (27-11)](dos-controles-backend-y-pantalla.md) — nada terminado sin probarlo en su pantalla como un humano; clics solo en grafico con candado.
 - [REGLA GENERAL: hacerlo YA, no patear (27-11)](hacerlo-ya-no-patear.md) — todo lo que pide, en el momento; esperar solo si el dato no existe o dice "no ahora".
 - [UI: minimal y sin chocar con ATAS (27-11)](ui-minimal-no-chocar-atas.md) — cuadros minimizables/arrastrables; nada arriba-izq (datos de ATAS hasta ~112 px).
 - [Rondas 26-27 (27-11)](rondas-26-27-es-mes-y-porcentajes.md) — ES/MES describe, no anticipa; porcentajes largo/corto = 50/50 fuera de muestra; zona A3 56,6 %.
