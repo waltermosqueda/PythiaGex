@@ -66,7 +66,7 @@ namespace PythiaSuper
     [Category("PythiaGex")]
     public class SuperindicadorOF : Indicator
     {
-        public const string Version = "1.8b";
+        public const string Version = "1.8c";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -1059,7 +1059,7 @@ namespace PythiaSuper
                 // la vela en curso; rojo apagado = momento pasado) y el dato a la derecha en gris; (2) dia y hora con segundos, letra
                 // fina, de la ULTIMA operacion sumada (hora de la PC, la del eje); (3) "total" y el total grande alineado a la derecha
                 // como los numeros de las filas. Una linea fina lo separa de las filas.
-                string pre = _colDato == DatoColumna.Delta ? "DELTA" : _colDato == DatoColumna.Volumen ? "VOLUMEN" : "V x C";
+                
                 bool enVivo = p.Viva != null; d.Live = enVivo;
                 DateTime tDato = DateTime.MinValue;
                 try
@@ -1073,44 +1073,49 @@ namespace PythiaSuper
                           : Calculos.Numero(p.SumBid, false) + "x" + Calculos.Numero(p.SumAsk, false);
                 int ye = yEnc + 2;
                 if (yEnc < reg.Top) ye = reg.Top + 2;   // 1.4: encabezado FIJO arriba si la columna empieza por encima del borde
-                // banda del encabezado (tapa las filas que pasan por debajo cuando queda fijo arriba)
-                g.FillRectangle(Color.FromArgb(252, 24, 27, 33), new Rectangle(x0, ye - 2, ancho, altoEnc), 3);
+                // 1.8c, variante E elegida por el operador: (1) "● LIVE" a la izquierda (verde en vivo, rojo apagado en un momento
+                // pasado) y la hora exacta de la ultima operacion sumada a la derecha; (2) el DIA bien grande ("JUE 26/11"); linea fina;
+                // (3) "total" y el total grande a la derecha. Sin la palabra DELTA, sin fondos de color, sin sombras. Fondo = el gris de
+                // la columna (si el encabezado queda fijo arriba, tapa las filas que pasan por debajo).
+                if (yEnc < reg.Top) g.FillRectangle(Color.FromArgb(252, 34, 38, 46), new Rectangle(x0, ye - 2, ancho, altoEnc), 3);
                 int xi = x0 + 6, xd = x1 - 6;
-                // (1) pastilla LIVE
+                Color cEstado = enVivo ? Color.FromArgb(255, 0, 230, 118) : Color.FromArgb(255, 142, 59, 63);
                 var fL = Fuente(7, true);
                 var szL = g.MeasureString("LIVE", fL);
-                int hP = 14, wP = 6 + 6 + 4 + szL.Width + 6;
-                var rP = new Rectangle(xi - 1, ye + 1, wP, hP);
-                Color fondoP = enVivo ? Color.FromArgb(255, 14, 58, 40) : Color.FromArgb(255, 52, 30, 33);
-                Color bordeP = enVivo ? Color.FromArgb(170, 0, 200, 110) : Color.FromArgb(150, 140, 62, 66);
-                Color puntoP = enVivo ? Color.FromArgb(255, 0, 230, 118) : Color.FromArgb(255, 150, 58, 62);
-                Color textoP = enVivo ? Color.FromArgb(255, 176, 255, 210) : Color.FromArgb(255, 196, 124, 128);
-                g.FillRectangle(fondoP, rP, 7);
-                g.DrawRectangle(new RenderPen(bordeP, 1), rP, 7);
-                g.FillEllipse(puntoP, new Rectangle(rP.X + 6, rP.Y + (hP - 6) / 2, 6, 6));
-                g.DrawString("LIVE", fL, textoP, rP.X + 16, rP.Y + (hP - szL.Height) / 2);
-                var fD = Fuente(7, true);
-                var szD = g.MeasureString(pre, fD);
-                if (rP.Right + 4 + szD.Width <= xd) g.DrawString(pre, fD, Color.FromArgb(255, 138, 145, 156), xd - szD.Width, rP.Y + (hP - szD.Height) / 2);
-                // (2) dia y hora exacta del dato
+                int wLive = 7 + 4 + szL.Width;   // punto + aire + palabra
+                string dia = "", hora = "";
                 if (tDato > DateTime.MinValue)
                 {
                     var l = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(tDato, DateTimeKind.Utc), TimeZoneInfo.Local);
-                    string cuando = DiasCortos[(int)l.DayOfWeek] + " " + l.ToString("dd/MM  HH:mm:ss", Inv);
-                    float fs = 7.5f; RenderFont fc = Fuente(fs, false);
-                    while (g.MeasureString(cuando, fc).Width > xd - xi && fs > 6.5f) { fs -= 0.5f; fc = Fuente(fs, false); }
-                    if (g.MeasureString(cuando, fc).Width > xd - xi) cuando = l.ToString("dd/MM HH:mm:ss", Inv);
-                    g.DrawString(cuando, fc, Color.FromArgb(255, 196, 202, 211), xi, ye + 19);
-                    d.Cuando = cuando;
+                    dia = DiasCortos[(int)l.DayOfWeek].ToUpperInvariant() + " " + l.ToString("dd/MM", Inv);
+                    hora = l.ToString("HH:mm:ss", Inv);
                 }
+                // (1) punto + LIVE y la hora en el mismo renglon (la hora se achica hasta 6,5 pt; si ni asi entra, va debajo del dia)
+                g.FillEllipse(cEstado, new Rectangle(xi, ye + (szL.Height - 7) / 2, 7, 7));
+                g.DrawString("LIVE", fL, cEstado, xi + 11, ye);
+                float fsH = 7.5f; RenderFont fH = Fuente(fsH, false);
+                while (fsH > 6.5f && wLive + 6 + g.MeasureString(hora, fH).Width > xd - xi) { fsH -= 0.5f; fH = Fuente(fsH, false); }
+                bool horaArriba = wLive + 6 + g.MeasureString(hora, fH).Width <= xd - xi;
+                // (2) el dia lo mas grande que entre (10 a 8 pt), en mayusculas
+                float fsD = 10f; RenderFont fD = Fuente(fsD, true);
+                while (fsD > 8f && g.MeasureString(dia, fD).Width > xd - xi) { fsD -= 0.5f; fD = Fuente(fsD, true); }
+                if (dia.Length > 0) g.DrawString(dia, fD, Color.FromArgb(255, 236, 239, 244), xi, ye + 13);
+                if (hora.Length > 0)
+                {
+                    var szH = g.MeasureString(hora, fH);
+                    if (horaArriba) g.DrawString(hora, fH, Color.FromArgb(255, 154, 163, 174), xd - szH.Width, ye + Math.Max(0, (szL.Height - szH.Height) / 2));
+                    else g.DrawString(hora, fH, Color.FromArgb(255, 154, 163, 174), xd - szH.Width, ye + 13 + g.MeasureString(dia, fD).Height - szH.Height);
+                }
+                d.Cuando = (dia + " " + hora).Trim();
+                g.DrawLine(new RenderPen(Color.FromArgb(255, 62, 68, 78), 1), x0 + 4, ye + 32, x1 - 4, ye + 32);
                 // (3) total, alineado a la derecha como los numeros de las filas
                 decimal tot = p.SumAsk - p.SumBid;
                 Color c2 = _colDato == DatoColumna.Delta ? (tot >= 0 ? cAlc : cBaj) : cTxt;
                 var fT = Fuente(10, true);
                 var szT = g.MeasureString(t2, fT);
-                g.DrawString("total", Fuente(7, false), Color.FromArgb(255, 128, 135, 146), xi, ye + 35);
-                g.DrawString(t2, fT, c2, xd - szT.Width, ye + 32);
-                int yLin = ye + 50;
+                g.DrawString("total", Fuente(7, false), Color.FromArgb(255, 138, 145, 156), xi, ye + 38);
+                g.DrawString(t2, fT, c2, xd - szT.Width, ye + 35);
+                int yLin = ye + 52;
                 // sin alto para un numero legible: se dice cuanto subir la fila (el valor exacto sale igual con la lupa)
                 if (!numeros)
                 {
@@ -1124,7 +1129,7 @@ namespace PythiaSuper
                 }
                 // 1.5: la suma no es la jornada entera o falta footprint: se dice en amarillo (el detalle va en la botonera)
                 if (aviso.Length > 0) { g.DrawString(aviso, Fuente(7, true), Color.FromArgb(245, 255, 214, 0), xi, yLin); yLin += 13; }
-                g.DrawLine(new RenderPen(Color.FromArgb(255, 62, 68, 78), 1), x0 + 4, ye + altoEnc - 3, x1 - 4, ye + altoEnc - 3);
+                
             }            return d;
         }
 

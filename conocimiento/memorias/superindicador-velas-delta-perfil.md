@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
-  modified: 2026-11-27T01:00:54.201Z
+  modified: 2026-11-27T01:10:59.322Z
 ---
 
 Pedido 23-11-2026 con 4 reels (todos del mismo trader, 3 en NinjaTrader y 1 en ATAS): "grafico en dos colores con paletas, el
@@ -62,3 +62,7 @@ Instalador: ahora espera 20 s de teclado/mouse quietos y devuelve el foco a la v
 **1.8b (26-11, 22:00), "se ve feo, se profesional":** encabezado sobre banda oscura y sin sombras: pastilla redondeada con punto y
 LIVE (verde oscuro con borde verde / rojo apagado), el dato en gris a la derecha, fecha y hora en letra fina ("jue 26/11  22:00:05"),
 "total" y el total grande alineado a la derecha como las filas, linea fina de separacion. Verificado: encabezado y valores IGUALES.
+**1.8c (26-11, 22:10), ELEGIDA por el operador entre 5 bocetos (pidio: sin "DELTA", sin fondo verde, el dia mas grande; "mostrame
+varias preview y cuando te de ok hacelo"):** variante E = renglon 1 "● LIVE" (verde / rojo apagado) a la izquierda y la hora con
+segundos a la derecha; renglon 2 el dia en mayusculas grande ("JUE 26/11", 10 a 8 pt segun entre); linea; "total" + total a la
+derecha. Sin fondos ni sombras. Verificado 22:10:30 IGUAL. Para cambios de aspecto: bocetos primero (show_widget), instalar con su OK.
