@@ -19,6 +19,8 @@ usuario". Y al ver la 1.0c instalada con el cuadro arriba a la izquierda: "choca
   O/H/L/C del mouse, y el recuadro "7 v" de capas: hasta ~112 px de alto y ~330 px de ancho. Abajo a la izquierda va la caja de la
   cuenta. Nada nuestro de fabrica ahi: La Ola 1.0d arranca en (8, 118) (PoLugarX/PoLugarY = -1 automatico); el 27-11 el operador lo
   arrastro a (352, 11), la franja de arriba a la derecha de esos datos.
+- **Orden por defecto que pidio (27-11 16:00, con capturas):** arriba a la izquierda, DEBAJO de la lista de indicadores de ATAS ("7 v"): primero el cuadro de La Ola (1.0e: 8, 118; PoCuadroX/Y = -1) y justo debajo la manija "☰" del Superindicador (1.9d: SpManijaBajoLaOla), que sigue al cuadro cuando se minimiza o se abre ("que no compitan entre si, desplegados o minimizados"). La Ola publica su rect en AppDomain.SetData("PythiaGex.LaOla.cuadro|<instrumento sin #>|<marco>", int[] x,y,w,h,tick); el Superindicador lo lee.
+- Para verificar con ATAS tapado por Claude: cambiar de pestaña por UIA (Orders -> MES 1m Chart; ESZ6 Heatmap -> ESZ6 1m Chart) fuerza el dibujo sin foco; despues el jsonl dice la version y el rect dibujados.
 - Cuadros compactos, con "–" para minimizar a pastilla y arrastre desde cualquier parte; botoneras plegadas en una manija ("☰") que se
   abre con un clic; pies y avisos solo cuando hay algo que avisar.
 - Un default nuevo que cambia lo dibujado va con un nombre de propiedad NUEVO (ATAS guarda los ajustes por nombre) y con captura
