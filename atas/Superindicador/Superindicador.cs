@@ -66,7 +66,7 @@ namespace PythiaSuper
     [Category("PythiaGex")]
     public class SuperindicadorOF : Indicator
     {
-        public const string Version = "1.7";
+        public const string Version = "1.8";
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
         // ================================================================== enumeraciones de los ajustes
@@ -390,6 +390,7 @@ namespace PythiaSuper
         {
             public Perfil P; public Rectangle R; public List<FilaDibujada> Filas = new List<FilaDibujada>();
             public string Nombre = ""; public int Letra; public bool Numeros; public int YPoc = -1, YVah = -1, YVal = -1;
+            public bool Live; public string Cuando = "";   // 1.8: lo que dice el encabezado (para la auditoria)
         }
         private readonly object _llaveUi = new object();
         private Dibujo _dCol, _dPer;
@@ -941,6 +942,7 @@ namespace PythiaSuper
         }
 
         private string _avisoBotonera = "";
+        private static readonly string[] DiasCortos = { "dom", "lun", "mar", "mie", "jue", "vie", "sab" };
 
         private Dibujo DibujarColumna(RenderContext g, IChartContainer pc, Rectangle reg, int xTope, int xDer, Perfil p, string nombreVentana, string aviso)
         {
@@ -993,7 +995,8 @@ namespace PythiaSuper
             // panel gris (como el de los reels)
             BordesFila(pc, p, p.Filas - 1, out int yTop, out _);
             BordesFila(pc, p, 0, out _, out int yBot);
-            int lineasEnc = _colEncab ? (numeros ? 2 : 3) + (aviso.Length > 0 ? 1 : 0) : 0;
+            // 1.8: tres renglones fijos (LIVE, fecha y hora del dato, total) + la pista de la fila y el aviso cuando hacen falta
+            int lineasEnc = _colEncab ? (numeros ? 3 : 4) + (aviso.Length > 0 ? 1 : 0) : 0;
             int yEnc = yTop - lineasEnc * 14 - (lineasEnc > 0 ? 4 : 0);
             var fondo = new Rectangle(x0, Math.Max(reg.Top, yEnc), ancho, Math.Max(2, Math.Min(reg.Bottom, yBot + 2) - Math.Max(reg.Top, yEnc)));
             if (fondo.Height > 0) g.FillRectangle(cPanel, fondo, 3);
@@ -1050,17 +1053,19 @@ namespace PythiaSuper
 
             if (_colEncab)
             {
-                string pre = _colDato == DatoColumna.Delta ? "DELTA " : _colDato == DatoColumna.Volumen ? "VOL " : "V x C ";
-                string t1 = pre + nombreVentana;
-                // 1.6: el titulo entra en la columna (con la jornada era mas largo y se cortaba contra el eje): sin la parte, y si
-                // tampoco entra, solo el dato (la jornada completa esta en la botonera)
-                var f8 = Fuente(8, true);
-                if (g.MeasureString(t1, f8).Width > ancho - 8)
+                // 1.8, pedido del operador: "que diga la fecha y hora exacta a la que pertenece el dato mostrado, y un puntito con la
+                // palabra LIVE en verde luminoso, o rojo apagado si no es en vivo". Renglon 1: punto + LIVE (verde con halo si la suma
+                // incluye la vela en curso; rojo apagado si es un momento pasado) + el dato. Renglon 2: dia y hora con segundos (hora de
+                // la PC, la misma del eje del grafico) de la ULTIMA operacion que entro en la suma. Renglon 3: el total.
+                string pre = _colDato == DatoColumna.Delta ? "DELTA" : _colDato == DatoColumna.Volumen ? "VOL" : "V x C";
+                bool enVivo = p.Viva != null; d.Live = enVivo;
+                DateTime tDato = DateTime.MinValue;
+                try
                 {
-                    var tk = nombreVentana.Split(' ');
-                    t1 = tk.Length >= 2 ? pre + tk[0] + " " + tk[1] : pre.Trim();
-                    if (g.MeasureString(t1, f8).Width > ancho - 8) t1 = tk.Length >= 2 ? tk[0] + " " + tk[1] : pre.Trim();
+                    if (enVivo) tDato = p.Viva.HoraFin > p.Viva.Hora ? p.Viva.HoraFin : p.Viva.Hora;
+                    else { var cm = GetCandle(Math.Max(0, p.Hasta)); if (cm != null) tDato = cm.LastTime > cm.Time ? cm.LastTime : cm.Time; }
                 }
+                catch { }
                 string t2 = _colDato == DatoColumna.Delta ? Calculos.Numero(p.SumAsk - p.SumBid, true)
                           : _colDato == DatoColumna.Volumen ? Calculos.Numero(p.SumVol, false)
                           : Calculos.Numero(p.SumBid, false) + "x" + Calculos.Numero(p.SumAsk, false);
@@ -1073,10 +1078,30 @@ namespace PythiaSuper
                     g.FillRectangle(Color.FromArgb(250, 34, 38, 46), new Rectangle(x0, reg.Top, ancho, lineasEnc * 14 + 4), 3);
                     g.DrawLine(new RenderPen(Color.FromArgb(160, 120, 126, 136), 1), x0 + 3, reg.Top + lineasEnc * 14 + 4, x1 - 3, reg.Top + lineasEnc * 14 + 4);
                 }
-                Texto(g, t1, Fuente(8, true), Color.FromArgb(205, 200, 206, 216), x0 + 5, ye);
+                // renglon 1: el punto y LIVE
+                var f8 = Fuente(8, true);
+                Color cLive = enVivo ? Color.FromArgb(255, 0, 255, 118) : Color.FromArgb(230, 128, 48, 48);
+                int cy = ye + 7;
+                if (enVivo) g.FillEllipse(Color.FromArgb(70, 0, 255, 118), new Rectangle(x0 + 3, cy - 6, 12, 12));   // halo luminoso
+                g.FillEllipse(cLive, new Rectangle(x0 + 5, cy - 4, 8, 8));
+                var szLive = g.MeasureString("LIVE", f8);
+                g.DrawString("LIVE", f8, cLive, x0 + 17, ye);
+                if (x0 + 17 + szLive.Width + 4 + g.MeasureString(pre, Fuente(7, true)).Width <= x1 - 3)
+                    g.DrawString(pre, Fuente(7, true), Color.FromArgb(190, 200, 206, 216), x0 + 17 + szLive.Width + 4, ye + 1);
+                // renglon 2: fecha y hora exacta del dato (se achica la letra para que entre; si no, sin el dia de la semana)
+                if (tDato > DateTime.MinValue)
+                {
+                    var l = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(tDato, DateTimeKind.Utc), TimeZoneInfo.Local);
+                    string cuando = DiasCortos[(int)l.DayOfWeek] + " " + l.ToString("dd-MM HH:mm:ss", Inv);
+                    float fs = 7.5f; RenderFont fc = Fuente(fs, true);
+                    while (g.MeasureString(cuando, fc).Width > ancho - 8 && fs > 6.5f) { fs -= 0.5f; fc = Fuente(fs, true); }
+                    if (g.MeasureString(cuando, fc).Width > ancho - 8) cuando = l.ToString("dd-MM HH:mm:ss", Inv);
+                    Texto(g, cuando, fc, enVivo ? Color.FromArgb(235, 236, 239, 244) : Color.FromArgb(215, 214, 168, 168), x0 + 5, ye + 13);
+                    d.Cuando = cuando;
+                }
                 decimal tot = p.SumAsk - p.SumBid;
                 Color c2 = _colDato == DatoColumna.Delta ? (tot >= 0 ? cAlc : cBaj) : cTxt;
-                Texto(g, t2, Fuente(9, true), c2, x0 + 5, ye + 13);
+                Texto(g, t2, Fuente(9, true), c2, x0 + 5, ye + 26);
                 // sin alto para un numero legible: se dice cuanto subir la fila (el valor exacto sale igual con la lupa)
                 if (!numeros)
                 {
@@ -1085,11 +1110,11 @@ namespace PythiaSuper
                     foreach (int k in TicksFila) if (k > p.K && k * pxTick >= 13) { kSug = k; break; }
                     string pista = "subi a fila " + Puntos(kSug) + " o acerca";
                     if (g.MeasureString(pista, Fuente(7, false)).Width > ancho - 8) pista = "subi a fila " + Puntos(kSug);   // 1.6: que entre
-                    Texto(g, pista, Fuente(7, false), Color.FromArgb(230, 255, 214, 0), x0 + 5, ye + 28);
+                    Texto(g, pista, Fuente(7, false), Color.FromArgb(230, 255, 214, 0), x0 + 5, ye + 42);
                 }
                 // 1.5: la suma no es la jornada entera o falta footprint: se dice en amarillo (el detalle va en la botonera)
                 if (aviso.Length > 0)
-                    Texto(g, aviso, Fuente(7, true), Color.FromArgb(240, 255, 214, 0), x0 + 5, ye + (numeros ? 28 : 42));
+                    Texto(g, aviso, Fuente(7, true), Color.FromArgb(240, 255, 214, 0), x0 + 5, ye + (numeros ? 42 : 56));
             }
             return d;
         }
@@ -1718,7 +1743,7 @@ namespace PythiaSuper
             else
             {
                 var v = p.Viva;
-                sb.Append("{\"bar\":").Append(v.Bar).Append(",\"hora\":\"").Append(v.Hora.ToString("yyyy-MM-ddTHH:mm:ss", Inv)).Append("\",\"delta_atas\":")
+                sb.Append("{\"bar\":").Append(v.Bar).Append(",\"hora\":\"").Append(v.Hora.ToString("yyyy-MM-ddTHH:mm:ss", Inv)).Append("\",\"hora_fin\":\"").Append(v.HoraFin.ToString("yyyy-MM-ddTHH:mm:ss.fff", Inv)).Append("\",\"delta_atas\":")
                   .Append(F(v.DeltaAtas)).Append(",\"vol_atas\":").Append(F(v.VolAtas)).Append(",\"niveles\":[");
                 for (int i = 0, k = 0; i < v.Vol.Length; i++)
                 {
@@ -1735,7 +1760,7 @@ namespace PythiaSuper
               .Append(",\"sum_bid\":").Append(F(p.SumBid)).Append(",\"sum_ask\":").Append(F(p.SumAsk)).Append(",\"sum_vol\":").Append(F(p.SumVol))
               .Append(",\"sum_delta_atas\":").Append(F(p.SumDeltaAtas)).Append(",\"sum_vol_atas\":").Append(F(p.SumVolAtas))
               .Append(",\"rect\":[").Append(d.R.X).Append(',').Append(d.R.Y).Append(',').Append(d.R.Width).Append(',').Append(d.R.Height).Append(']')
-              .Append(",\"letra\":").Append(d.Letra).Append(",\"numeros\":").Append(d.Numeros ? "true" : "false");
+              .Append(",\"letra\":").Append(d.Letra).Append(",\"numeros\":").Append(d.Numeros ? "true" : "false").Append(",\"live\":").Append(d.Live ? "true" : "false").Append(",\"cuando\":\"").Append(d.Cuando).Append('"');
             if (p.Poc >= 0)
                 sb.Append(",\"poc\":").Append(p.Poc).Append(",\"vah\":").Append(p.Vah).Append(",\"val\":").Append(p.Val).Append(",\"vol_av\":").Append(F(p.VolAv))
                   .Append(",\"pct\":").Append(p.Pct).Append(",\"paso\":").Append(p.Paso)

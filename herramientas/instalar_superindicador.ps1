@@ -4,12 +4,27 @@
 # sin nombre para UIA) que recarga los indicadores: "yModulesManager: Trying to reload indicator types" + un aviso modal
 # "Indicators were updated successfully" cuyo boton dice "ОК" en letras CIRILICAS (por eso buscar "OK" no lo encuentra).
 # Las instancias que ya estan en los graficos pasan a la version nueva.
-param([string]$Dll = "", [int]$EsperaLog = 40)
+param([string]$Dll = "", [int]$EsperaLog = 40, [int]$QuietoSeg = 20, [int]$EsperaMaxSeg = 300)
 $ErrorActionPreference = "Continue"
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
 $A = [System.Windows.Automation.AutomationElement]; $TS = [System.Windows.Automation.TreeScope]
 function Paso($m) { Write-Output ("{0}  {1}" -f (Get-Date -Format "HH:mm:ss"), $m) }
+# 26-11-2026: el aviso modal de la recarga se lleva el foco a ATAS, y en ATAS cada letra es un atajo de trading (ese dia sus teclas
+# mandaron dos ordenes reales). Por eso: esperar a que teclado y mouse esten quietos $QuietoSeg segundos y, al terminar, devolver el
+# foco a la ventana que lo tenia.
+Add-Type -Namespace PyG -Name W32 -MemberDefinition @'
+[StructLayout(LayoutKind.Sequential)] public struct LII { public uint cbSize; public uint dwTime; }
+[DllImport("user32.dll")] public static extern bool GetLastInputInfo(ref LII p);
+[DllImport("user32.dll")] public static extern System.IntPtr GetForegroundWindow();
+[DllImport("user32.dll")] public static extern bool SetForegroundWindow(System.IntPtr h);
+'@
+function Quieto() { $l = New-Object PyG.W32+LII; $l.cbSize = 8; [void][PyG.W32]::GetLastInputInfo([ref]$l); return ([Environment]::TickCount - [int]$l.dwTime) / 1000.0 }
+$t0 = Get-Date
+while ((Quieto) -lt $QuietoSeg -and ((Get-Date) - $t0).TotalSeconds -lt $EsperaMaxSeg) { Start-Sleep -Seconds 1 }
+if ((Quieto) -lt $QuietoSeg) { Paso ("el teclado/mouse no estuvo quieto {0} s en {1} s: NO instalo (el aviso se llevaria el foco)" -f $QuietoSeg, $EsperaMaxSeg); exit 3 }
+$ventanaPrevia = [PyG.W32]::GetForegroundWindow()
+Paso ("teclado y mouse quietos {0:0} s: instalo" -f (Quieto))
 if ($Dll -eq "") { $Dll = Join-Path $PSScriptRoot "..\atas\Superindicador\bin\Release\PythiaSuperindicador.dll" }
 $dst = Join-Path $env:APPDATA "ATAS\Indicators\PythiaSuperindicador.dll"
 $log = Join-Path $env:APPDATA ("ATAS\Logs\app_" + (Get-Date -Format "yyyyMMdd") + ".log")
@@ -56,5 +71,7 @@ for ($i = 0; $i -lt 30 -and -not $ok; $i++) {
         }
     }
 }
+# 26-11: el foco vuelve a la ventana que lo tenia antes (nunca queda en ATAS)
+if ($ventanaPrevia -ne [IntPtr]::Zero) { Start-Sleep -Milliseconds 300; [void][PyG.W32]::SetForegroundWindow($ventanaPrevia); Paso "foco devuelto a la ventana anterior" }
 $nuevas = Get-Content $log -ErrorAction SilentlyContinue | Select-Object -Skip $lineas0
 $nuevas | Where-Object { $_ -match "reload indicator types|PythiaSuperindicador|Notification title 'Indicators'" } | ForEach-Object { "   log: " + $_.Substring(0, [Math]::Min(170, $_.Length)) }

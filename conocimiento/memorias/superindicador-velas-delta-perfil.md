@@ -1,6 +1,6 @@
 ---
 name: superindicador-velas-delta-perfil
-description: "PythiaGex - Superindicador 1.7 (26-11-2026): velas 2 colores + columna de delta + perfil (area de valor de ATAS) + JORNADA hasta la VELA DEL MOMENTO (la ultima a la vista): al correr el grafico se rebobina como estaba; auditado contra ATAS, la cinta y el replay"
+description: "PythiaGex - Superindicador 1.8 (26-11-2026): velas 2 colores + columna de delta + perfil (area de valor de ATAS) + JORNADA hasta la VELA DEL MOMENTO (la ultima a la vista): al correr el grafico se rebobina como estaba; auditado contra ATAS, la cinta y el replay"
 metadata:
   node_type: memory
   type: project
@@ -51,3 +51,11 @@ las 8:00) va la anterior completa (`Jornadas.AlMomento`, 7.200 consultas contra 
 07:33". "fijar" congela un dia completo (se suelta al mover el grafico). Propiedades nuevas: SpHasta, SpJornadaCual (renombrada).
 Verificado: rebobinado a 26-11 05:33 NY: +2.671, POC 7236, VAH 7242, VAL 7217,50 = recalculo (auditor con control AL MOMENTO).
 INCIDENTE en esa prueba: ver [[foco-atas-atajos-trading]] (2 Buy Limit reales por sus teclas; sin fill).
+
+**1.8 (26-11, noche), pedido:** "que diga la fecha y hora exacta a la que pertenece el dato mostrado, y un puntito LIVE verde luminoso
+o rojo apagado si no es en vivo". Encabezado de la columna: renglon 1 "● LIVE DELTA" (verde con halo si la suma incluye la vela en
+curso; rojo apagado si es un momento pasado), renglon 2 dia y hora con segundos (hora de la PC, como el eje) de la ULTIMA operacion
+sumada, renglon 3 el total. OJO: de noche la fecha es la del reloj ("jue 26-11 21:56") y la jornada es la de CME ("vie 27-11"): no es
+un error. Auditor: control ENCABEZADO (LIVE = incluye la vela en curso; la hora = ultima operacion, al segundo). Verificado en vivo
+21:56:54 IGUAL; el rojo (rebobinado) quedo sin mirar en pantalla porque el operador estaba en la PC (no se toca ATAS).
+Instalador: ahora espera 20 s de teclado/mouse quietos y devuelve el foco a la ventana anterior (el aviso modal se lleva el foco).

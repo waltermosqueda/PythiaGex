@@ -171,6 +171,20 @@ def auditar_ventana(nombre, w, velas, tick, informe):
     informe.append(f"   textos de {len(w['dibujadas']) - ocultos} filas dibujadas: {'todos iguales' if malos_txt == 0 else str(malos_txt) + ' distintos'}"
                    f" ({ocultos} sin numero por no entrar entero; numeros en pantalla: {w['numeros']}, letra {w['letra']})")
     ok = ok and malos_txt == 0 and tot_ok
+    # 1.8: el encabezado dice LIVE (verde) solo si la suma incluye la vela en curso, y la fecha y hora (hora de la PC, con segundos)
+    # de la ULTIMA operacion que entro en la suma: la ultima de la vela en curso o la de la ultima vela de la ventana
+    if nombre == "COLUMNA" and "live" in w:
+        live_ok = w["live"] == (viva is not None)
+        fin = (viva or {}).get("hora_fin") if viva is not None else velas.get(t1, {}).get("fin")
+        esperado_t = ""
+        if fin:
+            loc = datetime.fromisoformat(fin[:23]).replace(tzinfo=timezone.utc).astimezone()
+            esperado_t = loc.strftime("%d-%m %H:%M:%S")
+        t_ok = bool(esperado_t) and w.get("cuando", "").endswith(esperado_t)
+        informe.append(f"   ENCABEZADO: LIVE {'verde' if w['live'] else 'rojo apagado'} ({'IGUAL' if live_ok else 'DISTINTO'} a "
+                       f"{'incluye' if viva is not None else 'no incluye'} la vela en curso) | dice '{w.get('cuando', '')}', ultima operacion "
+                       f"sumada {esperado_t} hora local -> {'IGUAL' if t_ok else 'DISTINTA'}")
+        ok = ok and live_ok and t_ok
     if nombre == "PERFIL":
         volf = {f: c[2] for f, c in mio.items()}
         poc = poc_regla(volf)
