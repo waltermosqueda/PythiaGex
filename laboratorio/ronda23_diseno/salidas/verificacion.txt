@@ -1,0 +1,41 @@
+RONDA 23 - COMPROBACION DESDE EL CRUDO (codigo propio, sin el motor)
+
+(a) CINTA DE ES, orden por orden
+  A1 2026-09-10 14:20:00 COMPRA: mio COMPRA 7596.25 -> fin 7598.75 a las 15:59:59 (fin, +2.50) | script COMPRA 7596.25 -> fin 7598.75 a las 15:59:59 (+2.50) | COINCIDE
+      X 3.75 (mediana 10 46.88) | VWAP 7603.885 | maximo 7620.00 minimo 7585.50 | IB 7620.00-7585.50 | 2.04 X del VWAP | IB extendido 0.00 veces | P geometrica 0.625 | cumple la regla: True
+  A1 2026-11-24 14:25:00 VENTA: mio VENTA 7218.25 -> objetivo 7196.50 a las 14:52:06 (objetivo, +21.75) | script VENTA 7218.25 -> objetivo 7196.50 a las 14:52:06 (+21.75) | COINCIDE
+      X 9.75 (mediana 10 121.38) | VWAP 7195.848 | maximo 7240.75 minimo 7152.25 | IB 7240.75-7152.25 | 2.30 X del VWAP | IB extendido 0.00 veces | P geometrica 0.551 | cumple la regla: True
+  A2 2026-09-10 14:20:00 COMPRA: mio COMPRA 7596.25 -> fin 7598.75 a las 15:59:59 (fin, +2.50) | script COMPRA 7596.25 -> fin 7598.75 a las 15:59:59 (+2.50) | COINCIDE
+      X 3.75 (mediana 10 46.88) | VWAP 7603.885 | maximo 7620.00 minimo 7585.50 | IB 7620.00-7585.50 | 2.04 X del VWAP | IB extendido 0.00 veces | P geometrica 0.625 | cumple la regla: True
+  A2 2026-11-25 14:00:00 VENTA: mio VENTA 7184.25 -> fin 7196.75 a las 15:59:59 (fin, -12.50) | script VENTA 7184.25 -> fin 7196.75 a las 15:59:59 (-12.50) | COINCIDE
+      X 9.75 (mediana 10 121.38) | VWAP 7072.392 | maximo 7211.00 minimo 6982.50 | IB 7079.00-6982.50 | 11.47 X del VWAP | IB extendido 1.37 veces | P geometrica 0.600 | cumple la regla: True
+  A3 2026-09-10 13:00:00 VENTA: mio VENTA 7611.50 -> objetivo 7604.25 a las 13:30:06 (objetivo, +7.25) | script VENTA 7611.50 -> objetivo 7604.25 a las 13:30:06 (+7.25) | COINCIDE
+      X 3.75 (mediana 10 46.88) | VWAP 7603.756 | maximo 7620.00 minimo 7585.50 | IB 7620.00-7585.50 | 2.06 X del VWAP | IB extendido 0.00 veces | P geometrica 0.576 | cumple la regla: True
+  A3 2026-09-22 14:25:00 VENTA: mio VENTA 7839.25 -> objetivo 7833.75 a las 14:57:58 (objetivo, +5.50) | script VENTA 7839.25 -> objetivo 7833.75 a las 14:57:58 (+5.50) | COINCIDE
+      X 3.50 (mediana 10 43.38) | VWAP 7833.475 | maximo 7848.50 minimo 7822.25 | IB 7848.50-7831.50 | 1.65 X del VWAP | IB extendido 0.00 veces | P geometrica 0.656 | cumple la regla: True
+  A3 2026-10-01 13:20:00 VENTA: mio VENTA 7710.50 -> fin 7726.00 a las 15:59:59 (fin, -15.50) | script VENTA 7710.50 -> fin 7726.00 a las 15:59:59 (-15.50) | COINCIDE
+      X 4.75 (mediana 10 59.25) | VWAP 7698.155 | maximo 7740.00 minimo 7672.75 | IB 7740.00-7682.25 | 2.60 X del VWAP | IB extendido 0.00 veces | P geometrica 0.722 | cumple la regla: True
+  A3 2026-10-22 15:20:00 COMPRA: mio COMPRA 7691.00 -> objetivo 7702.25 a las 15:51:14 (objetivo, +11.25) | script COMPRA 7691.00 -> objetivo 7702.25 a las 15:51:14 (+11.25) | COINCIDE
+      X 5.25 (mediana 10 64.12) | VWAP 7703.287 | maximo 7742.50 minimo 7676.75 | IB 7742.50-7696.25 | 2.34 X del VWAP | IB extendido 0.42 veces | P geometrica 0.580 | cumple la regla: True
+  A3 2026-10-29 14:15:00 COMPRA: mio COMPRA 7736.75 -> objetivo 7746.00 a las 15:30:34 (objetivo, +9.25) | script COMPRA 7736.75 -> objetivo 7746.00 a las 15:30:34 (+9.25) | COINCIDE
+      X 5.00 (mediana 10 61.88) | VWAP 7747.747 | maximo 7767.25 minimo 7725.25 | IB 7758.75-7732.25 | 2.20 X del VWAP | IB extendido 0.26 veces | P geometrica 0.560 | cumple la regla: True
+  A3 2026-11-10 14:10:00 VENTA: mio VENTA 7533.50 -> objetivo 7524.00 a las 14:14:35 (objetivo, +9.50) | script VENTA 7533.50 -> objetivo 7524.00 a las 14:14:35 (+9.50) | COINCIDE
+      X 5.75 (mediana 10 71.75) | VWAP 7523.970 | maximo 7566.25 minimo 7493.00 | IB 7566.25-7514.50 | 1.66 X del VWAP | IB extendido 0.00 veces | P geometrica 0.790 | cumple la regla: True
+  A3 2026-11-24 13:10:00 VENTA: mio VENTA 7214.75 -> objetivo 7196.50 a las 14:52:06 (objetivo, +18.25) | script VENTA 7214.75 -> objetivo 7196.50 a las 14:52:06 (+18.25) | COINCIDE
+      X 9.75 (mediana 10 121.38) | VWAP 7193.342 | maximo 7240.75 minimo 7152.25 | IB 7240.75-7152.25 | 2.20 X del VWAP | IB extendido 0.00 veces | P geometrica 0.592 | cumple la regla: True
+  cinta: 11 de 11 coinciden
+
+(b) VELAS DE 5 MIN DE MES (regla conservadora)
+  A1 diseno  2025-09-17 14:10: entrada 6671.25 stop 6688.25 -> objetivo +7.00 en la vela de las 14:10 | motor +7.00 vela 14:10 | X 3.00 VWAP 6664.329 2.31 X IB 0.69 P 0.711 | COINCIDE
+  A1 diseno  2026-02-26 14:50: entrada 6923.75 stop 6964.50 -> fin +2.25 en la vela de las 15:55 | motor +2.25 vela 15:55 | X 6.75 VWAP 6907.306 2.44 X IB 0.00 P 0.712 | COINCIDE
+  A2 diseno  2025-09-09 14:00: entrada 6515.25 stop 6531.25 -> fin -6.00 en la vela de las 15:55 | motor -6.00 vela 15:55 | X 3.25 VWAP 6504.530 3.30 X IB 0.14 P 0.599 | COINCIDE
+  A2 diseno  2026-02-27 15:25: entrada 6883.75 stop 6907.00 -> fin -4.50 en la vela de las 15:55 | motor -4.50 vela 15:55 | X 7.00 VWAP 6868.330 2.20 X IB 0.21 P 0.601 | COINCIDE
+  A3 diseno  2025-09-10 13:20: entrada 6544.75 stop 6536.25 -> stop -8.50 en la vela de las 13:50 | motor -8.50 vela 13:50 | X 3.25 VWAP 6549.793 1.55 X IB 0.31 P 0.628 | COINCIDE
+  A3 diseno  2026-02-27 14:50: entrada 6857.50 stop 6838.00 -> objetivo +10.50 en la vela de las 15:10 | motor +10.50 vela 15:10 | X 7.00 VWAP 6868.140 1.52 X IB 0.00 P 0.647 | COINCIDE
+  A1 chequeo 2026-03-02 13:55: entrada 6881.50 stop 6902.25 -> stop -20.75 en la vela de las 14:15 | motor -20.75 vela 14:15 | X 6.75 VWAP 6866.139 2.28 X IB 0.28 P 0.575 | COINCIDE
+  A1 chequeo 2026-08-31 15:30: entrada 7694.00 stop 7706.00 -> stop -12.00 en la vela de las 15:55 | motor -12.00 vela 15:55 | X 3.25 VWAP 7686.544 2.29 X IB 0.00 P 0.617 | COINCIDE
+  A2 chequeo 2026-03-02 14:05: entrada 6881.00 stop 6903.00 -> stop -22.00 en la vela de las 14:20 | motor -22.00 vela 14:20 | X 6.75 VWAP 6866.365 2.17 X IB 0.28 P 0.601 | COINCIDE
+  A2 chequeo 2026-08-31 15:30: entrada 7694.00 stop 7706.00 -> stop -12.00 en la vela de las 15:55 | motor -12.00 vela 15:55 | X 3.25 VWAP 7686.544 2.29 X IB 0.00 P 0.617 | COINCIDE
+  A3 chequeo 2026-03-02 13:55: entrada 6881.50 stop 6902.25 -> stop -20.75 en la vela de las 14:15 | motor -20.75 vela 14:15 | X 6.75 VWAP 6866.139 2.28 X IB 0.28 P 0.575 | COINCIDE
+  A3 chequeo 2026-08-31 15:25: entrada 7691.75 stop 7706.00 -> stop -14.25 en la vela de las 15:55 | motor -14.25 vela 15:55 | X 3.25 VWAP 7686.475 1.62 X IB 0.00 P 0.730 | COINCIDE
+  velas: 12 de 12 coinciden

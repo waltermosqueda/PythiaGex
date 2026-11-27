@@ -1,0 +1,28 @@
+{
+ "escrito_AR": "2026-11-27 09:01:30 (UTC-3, reloj del sistema)",
+ "nota": "Huellas de lo CONGELADO de la ronda 23. r23_vivo.py verifica las tres de 'sha256' antes de correr y se niega si alguna cambio. 'registrados' son los scripts del diseno, el chequeo y la cinta (no los verifica el juez; quedan para auditar).",
+ "sha256": {
+  "cand_A3_tarde_giro_amplia.py": "7e4e8a0ea36908b748c33371b4117d53e417ce77f5f20ed66526808509b640c5",
+  "historia_rangos_semilla.json": "f02a0834b6a28bd4c9a311da93c2eb435176d88f13df200529544331340c5200",
+  "r23_vivo.py": "55dc6cfc4e36943fe60d4078df8766aba7ecae35ed698e3ba2e7bc03cce53945"
+ },
+ "candidatas": {
+  "A3": "cand_A3_tarde_giro_amplia.py"
+ },
+ "registrados": {
+  "r23_comun.py": "de63515233529f332ca73aacac6d4c005bb9460af38e267719d00102c002502b",
+  "r23_sim.py": "67f3cb0971ea76ce1b3274b083ab8a767db2ec56145b94c0ef06559f730815a3",
+  "r23_01_base5.py": "8fed81c9caa9de7dc7a18ea4b9aa91f8783ebcafa283cba92e6d306ace515f9c",
+  "r23_02_mapa.py": "e3f78c9592814d4dcdab2bb2b318f99300b03e01a771594d7d5c2c2149baa24d",
+  "r23_03_variantes.py": "f028c147f669155d110685bd9882808f1aff9e9b6316928bf6c40f19ff8288db",
+  "r23_04_cinta.py": "fd9d94accd7b76e77cf9b74408043c93d7b454333bb8b55844376212b5bb29f9",
+  "r23_05_posthoc.py": "00ca009f8c413df1bbe0b6af9c63caf8d4004140850ae5d1bdbe6434324d9464",
+  "r23_06_correccion_r22.py": "69e94bd3d52d756044b0850e097ea4e255919c2d118272f599701040527c1536",
+  "r23_07_verificar.py": "28e5253868f857ed9c70ac64bf76dbd58a588910e4371e0c325e374f88f504c6",
+  "r23_08_mecanica_a3.py": "cffb1e943554a7f696e5ea7f4d405c9b5afb59649ffdef9c7ab2c18b0a4dfec9",
+  "plantilla_candidata.py": "e696747168205acc846483ed5f772be7decb5e142dbbe3f347b2fcb29cc9ad3e",
+  "cand_A1_tarde_giro.py": "73fcad52d45d398a6c329f21b737978fdacca287ae6348e0aedfe3dc679987f4",
+  "cand_A2_tarde_estirado.py": "ba6faec8d9aed432ea5cf767275e10ea2fd86b49d1feb093a0d6b8533d32a602",
+  "elegidas_para_chequeo.json": "343e4cd89522b4e500b374ff61a17f82a1850f4f6d763ca7d734140c284e7b06"
+ }
+}

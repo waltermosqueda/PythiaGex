@@ -1,0 +1,2 @@
+# Archivos con huella SHA-256 (r23_vivo.py se niega a correr si cambian un byte): git guarda los bytes tal cual, sin tocar los saltos de linea.
+* -text

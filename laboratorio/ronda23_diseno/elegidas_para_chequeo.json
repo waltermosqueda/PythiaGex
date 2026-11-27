@@ -1,0 +1,53 @@
+{
+ "escrito_AR": "2026-11-27 08:23:15",
+ "regla_de_eleccion": "Elegidas en la mitad de DISENO (09-09-2025..27-02-2026) ANTES de abrir el CHEQUEO (02-03..31-08-2026): la familia A (elastico de la tarde) es la unica que pasa la vara en diseno; dentro de ella se toma el CENTRO de cada meseta del vecindario (no el mejor punto): geometria 'despues del giro' (stop natural X/2 detras del extremo, P geometrica >= 0,55) y geometria 'estirado' (stop >= 1,5 veces la distancia al VWAP). A3 es la version amplia de A1 (mas operaciones). Las familias B y C no pasan y no se chequean.",
+ "variantes": [
+  {
+   "id": "A1",
+   "familia": "A_elastico_tarde",
+   "desde": "13:30",
+   "hasta": "15:30",
+   "loc": [
+    "dv",
+    2.0
+   ],
+   "llave": [
+    "ib<=1",
+    "Pf>=0.55"
+   ],
+   "bracket": "F1",
+   "nombre": "A|13:30-15:30|dv2.0|ib<=1+Pf>=0.55|F1"
+  },
+  {
+   "id": "A2",
+   "familia": "A_elastico_tarde",
+   "desde": "14:00",
+   "hasta": "15:30",
+   "loc": [
+    "dv",
+    2.0
+   ],
+   "llave": [
+    "ib<=1.5"
+   ],
+   "bracket": "F3",
+   "nombre": "A|14:00-15:30|dv2.0|ib<=1.5|F3"
+  },
+  {
+   "id": "A3",
+   "familia": "A_elastico_tarde",
+   "desde": "13:00",
+   "hasta": "15:30",
+   "loc": [
+    "dv",
+    1.5
+   ],
+   "llave": [
+    "ib<=1",
+    "Pf>=0.55"
+   ],
+   "bracket": "F1",
+   "nombre": "A|13:00-15:30|dv1.5|ib<=1+Pf>=0.55|F1"
+  }
+ ]
+}

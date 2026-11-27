@@ -1,0 +1,59 @@
+RONDA 23 - POST HOC: MECANICA Y ROBUSTEZ 2026-11-27 08:36
+
+(1) EL ELASTICO DE TODO EL DIA (bracket F1: stop X/2 detras del extremo, objetivo el VWAP), punto por punto, 10:00-15:30
+  diseno   n  7772 (116 r) | llega antes al extremo+X/2 (stop): real 42.4 % | gana real 52.6 % contra azar 50.6 % y formula 49.9 % | pts real +0.53 azar -0.17 | borde +0.70 (ee 0.47)
+       10:00-11:00 gana real  51.0 % azar  52.2 % ( -1.2) | borde +0.09 (ee 0.39) n 1508
+       11:05-12:30 gana real  45.2 % azar  49.1 % ( -3.9) | borde -0.72 (ee 0.66) n 2088
+       12:35-13:00 gana real  49.9 % azar  48.3 % ( +1.5) | borde +0.48 (ee 0.94) n 696
+       13:05-14:00 gana real  54.2 % azar  50.9 % ( +3.4) | borde +0.94 (ee 1.01) n 1392
+       14:05-15:30 gana real  60.9 % azar  51.5 % ( +9.4) | borde +2.48 (ee 0.91) n 2088
+  chequeo  n  8442 (126 r) | llega antes al extremo+X/2 (stop): real 41.3 % | gana real 52.3 % contra azar 53.0 % y formula 52.3 % | pts real -0.27 azar -0.11 | borde -0.17 (ee 0.48)
+       10:00-11:00 gana real  52.5 % azar  55.2 % ( -2.7) | borde -0.50 (ee 0.47) n 1638
+       11:05-12:30 gana real  50.4 % azar  51.7 % ( -1.3) | borde -0.51 (ee 0.68) n 2268
+       12:35-13:00 gana real  51.1 % azar  52.5 % ( -1.5) | borde -0.27 (ee 1.07) n 756
+       13:05-14:00 gana real  54.8 % azar  52.1 % ( +2.7) | borde +0.44 (ee 0.94) n 1512
+       14:05-15:30 gana real  53.0 % azar  53.4 % ( -0.4) | borde +0.04 (ee 0.74) n 2268
+  cinta    n  3685 ( 55 r) | llega antes al extremo+X/2 (stop): real 38.3 % | gana real 55.0 % contra azar 52.5 % y formula 52.8 % | pts real -0.06 azar -0.14 | borde +0.08 (ee 1.14)
+       10:00-11:00 gana real  52.9 % azar  50.0 % ( +2.9) | borde +0.66 (ee 0.78) n 715
+       11:05-12:30 gana real  51.7 % azar  51.9 % ( -0.2) | borde -0.79 (ee 1.69) n 990
+       12:35-13:00 gana real  52.1 % azar  52.5 % ( -0.4) | borde -0.57 (ee 1.83) n 330
+       13:05-14:00 gana real  55.8 % azar  53.0 % ( +2.8) | borde -0.11 (ee 1.55) n 660
+       14:05-15:30 gana real  60.2 % azar  54.4 % ( +5.8) | borde +0.85 (ee 1.36) n 990
+  (la R22 comparo contra la formula sin el cierre de la rueda ni el VWAP que se mueve; aca la referencia es el mismo camino reflejado al azar)
+
+(2) VECINDARIO DE LA FAMILIA A EN LAS TRES MUESTRAS (cuantas de las 216 variantes pasan: acierto >= 60 %% y neto > 0 con costo 1,00)
+  F1pf: pasan en diseno 107, en chequeo 35, en cinta 54, en las tres 31 (de 108) | neto medio diseno +3.30 chequeo -0.57 cinta +0.80 | acierto medio 73.0 / 58.7 / 58.9 (azar 58.9 / 59.8 / 58.6)
+  F3: pasan en diseno 104, en chequeo 6, en cinta 34, en las tres 3 (de 108) | neto medio diseno +2.04 chequeo -1.34 cinta -0.79 | acierto medio 63.9 / 55.6 / 60.6 (azar 56.1 / 55.1 / 56.8)
+
+(3) ABLACIONES DE A3 (13:00-15:30, VWAP a >= 1,5 X, IB <= 1, P geometrica >= 0,55, stop X/2 detras del extremo)
+  A3 completa                                      | diseno n 109 (0.94/r)  74.3 % (azar  62.9)  +2.49 | chequeo n 123 (0.98/r)  67.5 % (azar  62.8)  +0.66 | cinta n  63 (1.15/r)  74.6 % (azar  62.4)  +3.41
+  sin la hora (10:00-15:30)                        | diseno n 263 (2.27/r)  66.2 % (azar  64.6)  -0.01 | chequeo n 283 (2.25/r)  63.6 % (azar  64.2)  -1.13 | cinta n 135 (2.45/r)  74.1 % (azar  64.7)  +1.17
+  solo la manana (10:00-12:55)                     | diseno n 187 (1.61/r)  63.6 % (azar  65.9)  -0.84 | chequeo n 201 (1.60/r)  62.2 % (azar  64.6)  -2.23 | cinta n  93 (1.69/r)  74.2 % (azar  65.7)  +0.70
+  sin la llave del IB                              | diseno n 130 (1.12/r)  70.8 % (azar  62.5)  +0.95 | chequeo n 149 (1.18/r)  67.1 % (azar  62.2)  +1.07 | cinta n  70 (1.27/r)  74.3 % (azar  62.1)  +2.99
+  solo dias de IB extendido > 1 (la llave al reves) | diseno n  25 (0.22/r)  56.0 % (azar  61.4)  -5.56 | chequeo n  27 (0.21/r)  66.7 % (azar  60.5)  +3.07 | cinta n   7 (0.13/r)  71.4 % (azar  59.4)  -0.79
+  sin la condicion geometrica (stop natural)       | diseno n 235 (2.03/r)  46.4 % (azar  42.7)  +0.34 | chequeo n 270 (2.14/r)  40.4 % (azar  41.3)  -1.30 | cinta n 105 (1.91/r)  53.3 % (azar  46.2)  +0.17
+  sin el corte de distancia (dv >= 0)              | diseno n 251 (2.16/r)  84.5 % (azar  77.5)  +0.53 | chequeo n 274 (2.17/r)  77.4 % (azar  76.3)  -0.39 | cinta n 116 (2.11/r)  79.3 % (azar  78.1)  +0.24
+  distancia >= 3 X                                 | diseno n  26 (0.22/r)  80.8 % (azar  56.6)  +6.23 | chequeo n  16 (0.13/r)  50.0 % (azar  59.6)  -2.69 | cinta n  10 (0.18/r)  40.0 % (azar  59.8)  -1.73
+
+(4) A3 POR TRAMOS (motor de 5 min)
+  diseno   total n 109 74.3 % +2.49 | sin dias de la Fed: n 102 74.5 % +2.56
+  chequeo  total n 123 67.5 % +0.66 | sin dias de la Fed: n 112 66.1 % +0.37
+  cinta    total n 63 74.6 % +3.41 | sin dias de la Fed: n 58 72.4 % +3.07
+     2025T3 n  12 acierto  75.0 % (azar  59.3) neto  +2.42 | ruedas 6
+     2025T4 n  45 acierto  71.1 % (azar  62.7) neto  +2.89 | ruedas 27
+     2026T1 n  75 acierto  74.7 % (azar  63.0) neto  +2.24 | ruedas 44
+     2026T2 n  62 acierto  62.9 % (azar  62.2) neto  -0.58 | ruedas 36
+     2026T3 n  58 acierto  72.4 % (azar  63.6) neto  +1.23 | ruedas 37
+     2026T4 n  43 acierto  76.7 % (azar  62.7) neto  +4.76 | ruedas 22
+     salida fin 16:00       n  54 (18.3 %) pts medio  -4.63
+     salida objetivo VWAP   n 198 (67.1 %) pts medio  +9.52
+     salida stop            n  43 (14.6 %) pts medio -17.97
+     entrada 13:00-14:00 n 156 acierto  69.9 % (azar  64.3) neto  +0.78
+     entrada 14:05-15:00 n  96 acierto  75.0 % (azar  62.6) neto  +3.58
+     entrada 15:05-15:30 n  43 acierto  69.8 % (azar  57.3) neto  +2.40
+     peor operacion -36.25 | percentil 5 -20.82 | ganancia media +9.16 | perdida media -12.74 | MFE medio de las perdedoras 4.64 pts
+
+(5) BORDE CONTRA EL AZAR EN LOS PUNTOS OPERADOS (A1, A2, A3; motor de 5 min; error agrupado por rueda)
+  A1: diseno +4.78 pts (ee 1.36, t 3.5) +14.7 pp | chequeo +0.82 pts (ee 2.00, t 0.4)  +1.3 pp | cinta +4.93 pts (ee 1.62, t 3.0)  +7.6 pp
+  A2: diseno +3.56 pts (ee 1.20, t 3.0) +11.1 pp | chequeo -0.57 pts (ee 1.58, t -0.4)  +0.2 pp | cinta +0.53 pts (ee 2.80, t 0.2)  +3.9 pp
+  A3: diseno +3.71 pts (ee 0.96, t 3.9) +11.5 pp | chequeo +1.55 pts (ee 1.25, t 1.2)  +4.7 pp | cinta +4.46 pts (ee 1.42, t 3.1) +12.2 pp

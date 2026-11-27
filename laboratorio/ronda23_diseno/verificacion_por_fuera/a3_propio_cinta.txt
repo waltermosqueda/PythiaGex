@@ -1,0 +1,6 @@
+jornadas con cinta en el periodo: 55
+control de rangos: 55 jornadas, distintas a la historia 0 []
+MIAS: n 62 | acierto pts>0 74.2 % | neto c1 +3.169 | motivos {'objetivo': 43, 'fin': 13, 'stop': 6}
+AGENTE: n 62 | acierto pts>0 74.2 % | neto>0 74.2 % | neto c1 +3.169
+entradas iguales 62 | solo mias 0 | solo del agente 0
+en las iguales: distintas en entrada/stop/salida/motivo: 0

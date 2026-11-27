@@ -1,0 +1,496 @@
+RONDA 23 - MAPA DEL ELASTICO (diseno) 2026-11-27 08:24 | 7076 puntos en 116 ruedas
+
+=== F1 {'lado': 'fade', 'stop': ('ext', 0.5), 'obj': ('vw', 0.0)}
+  TODOS: n 7076 | acierto real 51.3 % | azar 50.5 % | formula 49.8 % | pts real +0.307 azar -0.170 | borde +0.477 (ee 0.462) | W 26.8
+  por distancia al VWAP (X):
+    (0.0, 0.5]       n   746 (101 r) | acierto real  83.8 % azar  83.2 % ( +0.6) | pts real  -0.12 azar  -0.25 | borde +0.13 (ee 0.17) | W medio  20.2 pts
+    (0.5, 1.0]       n   796 (108 r) | acierto real  75.8 % azar  77.6 % ( -1.9) | pts real  -0.03 azar  -0.06 | borde +0.03 (ee 0.41) | W medio  20.1 pts
+    (1.0, 1.5]       n   772 (111 r) | acierto real  63.9 % azar  64.6 % ( -0.8) | pts real  +0.30 azar  -0.15 | borde +0.45 (ee 0.55) | W medio  20.1 pts
+    (1.5, 2.0]       n   715 (110 r) | acierto real  50.8 % azar  53.7 % ( -2.9) | pts real  -0.01 azar  -0.10 | borde +0.09 (ee 0.58) | W medio  20.4 pts
+    (2.0, 3.0]       n  1218 (110 r) | acierto real  43.7 % azar  46.0 % ( -2.3) | pts real  -0.21 azar  -0.12 | borde -0.09 (ee 0.60) | W medio  23.3 pts
+    (3.0, 4.0]       n   949 ( 97 r) | acierto real  43.7 % azar  38.5 % ( +5.2) | pts real  +1.11 azar  -0.22 | borde +1.32 (ee 0.81) | W medio  26.7 pts
+    (4.0, 6.0]       n  1049 ( 81 r) | acierto real  35.7 % azar  31.2 % ( +4.6) | pts real  +0.50 azar  -0.26 | borde +0.76 (ee 1.09) | W medio  32.7 pts
+    (6.0, 99.0]      n   831 ( 55 r) | acierto real  26.7 % azar  23.7 % ( +3.0) | pts real  +0.90 azar  -0.19 | borde +1.09 (ee 2.17) | W medio  48.5 pts
+  por distancia al extremo del dia (X):
+    (-0.01, 0.25]    n   532 (110 r) | acierto real  19.5 % azar  20.1 % ( -0.5) | pts real  -0.18 azar  -0.22 | borde +0.04 (ee 0.48) | W medio  23.8 pts
+    (0.25, 0.5]      n   689 (112 r) | acierto real  24.5 % azar  25.8 % ( -1.3) | pts real  +0.24 azar  -0.13 | borde +0.36 (ee 0.57) | W medio  24.9 pts
+    (0.5, 1.0]       n  1196 (113 r) | acierto real  34.6 % azar  35.3 % ( -0.7) | pts real  -0.24 azar  -0.27 | borde +0.03 (ee 0.56) | W medio  23.5 pts
+    (1.0, 2.0]       n  1856 (116 r) | acierto real  51.8 % azar  51.6 % ( +0.3) | pts real  +0.47 azar  -0.19 | borde +0.66 (ee 0.54) | W medio  23.2 pts
+    (2.0, 4.0]       n  1706 (109 r) | acierto real  67.6 % azar  64.1 % ( +3.5) | pts real  +0.96 azar  -0.14 | borde +1.10 (ee 0.67) | W medio  27.0 pts
+    (4.0, 99.0]      n  1097 ( 72 r) | acierto real  75.3 % azar  74.0 % ( +1.3) | pts real  -0.11 azar  -0.08 | borde -0.03 (ee 1.25) | W medio  38.8 pts
+  por desvios del VWAP (z):
+    (0.0, 0.5]       n  1350 (112 r) | acierto real  83.2 % azar  82.3 % ( +0.9) | pts real  +0.26 azar  -0.16 | borde +0.42 (ee 0.32) | W medio  25.3 pts
+    (0.5, 1.0]       n  1628 (116 r) | acierto real  64.8 % azar  64.9 % ( -0.1) | pts real  +0.00 azar  -0.07 | borde +0.07 (ee 0.75) | W medio  25.5 pts
+    (1.0, 1.5]       n  1907 (116 r) | acierto real  46.3 % azar  42.9 % ( +3.4) | pts real  +0.95 azar  -0.22 | borde +1.17 (ee 0.79) | W medio  27.2 pts
+    (1.5, 2.0]       n  1597 (116 r) | acierto real  28.5 % azar  28.6 % ( -0.1) | pts real  +0.18 azar  -0.21 | borde +0.38 (ee 0.62) | W medio  27.3 pts
+    (2.0, 2.5]       n   476 ( 92 r) | acierto real  20.2 % azar  22.8 % ( -2.6) | pts real  -0.43 azar  -0.22 | borde -0.21 (ee 0.69) | W medio  30.2 pts
+    (2.5, 99.0]      n   118 ( 50 r) | acierto real  14.4 % azar  16.9 % ( -2.5) | pts real  -0.69 azar  -0.17 | borde -0.52 (ee 0.91) | W medio  33.3 pts
+  por hora (cierre de la vela):
+    (599, 660]       n  1508 (116 r) | acierto real  51.0 % azar  52.3 % ( -1.3) | pts real  -0.02 azar  -0.10 | borde +0.08 (ee 0.38) | W medio  19.8 pts
+    (660, 750]       n  2088 (116 r) | acierto real  45.2 % azar  49.1 % ( -3.9) | pts real  -0.88 azar  -0.18 | borde -0.71 (ee 0.67) | W medio  25.6 pts
+    (750, 840]       n  2088 (116 r) | acierto real  52.8 % azar  50.1 % ( +2.7) | pts real  +0.54 azar  -0.24 | borde +0.77 (ee 0.87) | W medio  29.4 pts
+    (840, 901]       n  1392 (116 r) | acierto real  58.4 % azar  51.1 % ( +7.3) | pts real  +2.10 azar  -0.14 | borde +2.24 (ee 0.98) | W medio  32.0 pts
+  por estado D1 (0 E, 1 R, 2 T, 3 N):
+    (-0.5, 0.5]      n  3721 ( 87 r) | acierto real  52.5 % azar  54.3 % ( -1.7) | pts real  -0.22 azar  -0.18 | borde -0.04 (ee 0.41) | W medio  18.6 pts
+    (0.5, 1.5]       n  2414 ( 74 r) | acierto real  52.2 % azar  48.1 % ( +4.1) | pts real  +1.11 azar  -0.21 | borde +1.32 (ee 0.76) | W medio  31.2 pts
+    (1.5, 2.5]       n   851 ( 40 r) | acierto real  42.3 % azar  38.5 % ( +3.8) | pts real  +0.83 azar  -0.07 | borde +0.89 (ee 2.53) | W medio  47.2 pts
+    (2.5, 3.5]       n    90 ( 15 r) | acierto real  61.1 % azar  70.5 % ( -9.4) | pts real  -4.53 azar  +0.18 | borde -4.71 (ee 5.08) | W medio  53.5 pts
+  por minutos desde el ultimo toque del VWAP:
+    (-1, 10]         n  1852 (111 r) | acierto real  69.4 % azar  70.5 % ( -1.0) | pts real  -0.31 azar  -0.15 | borde -0.16 (ee 0.27) | W medio  21.9 pts
+    (10, 30]         n  1131 (116 r) | acierto real  50.8 % azar  49.6 % ( +1.3) | pts real  +0.68 azar  -0.16 | borde +0.84 (ee 0.47) | W medio  23.7 pts
+    (30, 60]         n  1082 (116 r) | acierto real  40.3 % azar  45.2 % ( -4.9) | pts real  -0.87 azar  -0.13 | borde -0.75 (ee 0.70) | W medio  25.4 pts
+    (60, 120]        n  1352 (110 r) | acierto real  36.8 % azar  39.6 % ( -2.8) | pts real  -0.62 azar  -0.21 | borde -0.41 (ee 0.87) | W medio  29.4 pts
+    (120, 999]       n  1659 ( 92 r) | acierto real  50.2 % azar  41.0 % ( +9.2) | pts real  +2.27 azar  -0.19 | borde +2.47 (ee 1.37) | W medio  33.1 pts
+  por toques del VWAP en el dia:
+    (-1, 2]          n  1148 ( 70 r) | acierto real  47.9 % azar  42.7 % ( +5.2) | pts real  +1.97 azar  -0.27 | borde +2.24 (ee 1.07) | W medio  27.7 pts
+    (2, 5]           n  1846 (107 r) | acierto real  50.8 % azar  48.3 % ( +2.5) | pts real  +0.52 azar  -0.17 | borde +0.69 (ee 0.99) | W medio  26.5 pts
+    (5, 10]          n  2264 ( 88 r) | acierto real  54.1 % azar  52.1 % ( +2.0) | pts real  +0.46 azar  -0.15 | borde +0.61 (ee 0.80) | W medio  26.5 pts
+    (10, 20]         n  1722 ( 56 r) | acierto real  50.2 % azar  55.0 % ( -4.8) | pts real  -1.08 azar  -0.14 | borde -0.94 (ee 0.85) | W medio  27.0 pts
+    (20, 99]         n    96 (  9 r) | acierto real  53.1 % azar  64.4 % (-11.2) | pts real  -2.25 azar  -0.09 | borde -2.16 (ee 2.91) | W medio  24.9 pts
+  por extension del balance inicial del lado del precio (IB):
+    (-0.01, 0.0001]  n  1711 (116 r) | acierto real  64.1 % azar  65.7 % ( -1.7) | pts real  -0.07 azar  -0.08 | borde +0.01 (ee 0.73) | W medio  25.2 pts
+    (0.0001, 0.5]    n  2824 (110 r) | acierto real  48.3 % azar  47.5 % ( +0.8) | pts real  +0.75 azar  -0.19 | borde +0.93 (ee 0.70) | W medio  23.0 pts
+    (0.5, 1.0]       n  1191 ( 63 r) | acierto real  49.6 % azar  40.7 % ( +8.9) | pts real  +2.67 azar  -0.24 | borde +2.91 (ee 1.53) | W medio  31.2 pts
+    (1.0, 2.0]       n   407 ( 27 r) | acierto real  35.4 % azar  40.7 % ( -5.3) | pts real  -1.41 azar  -0.36 | borde -1.05 (ee 2.28) | W medio  39.7 pts
+    (2.0, 99.0]      n   247 ( 11 r) | acierto real  32.8 % azar  35.6 % ( -2.8) | pts real  -9.09 azar  -0.04 | borde -9.04 (ee 4.97) | W medio  62.9 pts
+  por pendiente del VWAP en 30 min a favor del lado (X):
+    (-99.0, -0.5]    n   118 ( 60 r) | acierto real  70.3 % azar  69.5 % ( +0.8) | pts real  +0.23 azar  -0.06 | borde +0.29 (ee 0.78) | W medio  22.2 pts
+    (-0.5, 0.0]      n   580 ( 96 r) | acierto real  76.7 % azar  74.7 % ( +2.0) | pts real  +0.09 azar  -0.23 | borde +0.31 (ee 0.42) | W medio  22.9 pts
+    (0.0, 0.5]       n  4334 (116 r) | acierto real  53.8 % azar  51.8 % ( +2.0) | pts real  +0.72 azar  -0.17 | borde +0.89 (ee 0.52) | W medio  24.2 pts
+    (0.5, 1.0]       n  1062 (103 r) | acierto real  36.5 % azar  39.3 % ( -2.7) | pts real  -0.38 azar  -0.23 | borde -0.15 (ee 1.15) | W medio  32.5 pts
+    (1.0, 2.0]       n   570 ( 89 r) | acierto real  40.4 % azar  39.9 % ( +0.4) | pts real  -0.44 azar  -0.06 | borde -0.38 (ee 1.20) | W medio  35.2 pts
+    (2.0, 99.0]      n   296 ( 53 r) | acierto real  33.1 % azar  36.2 % ( -3.1) | pts real  -0.96 azar  -0.10 | borde -0.86 (ee 2.01) | W medio  40.7 pts
+  por cociente de varianzas de las 10 ruedas previas:
+    (0.0, 0.85]      n  1342 ( 22 r) | acierto real  49.6 % azar  49.6 % ( +0.0) | pts real  +0.52 azar  -0.28 | borde +0.80 (ee 0.74) | W medio  26.0 pts
+    (0.85, 0.95]     n  1769 ( 29 r) | acierto real  54.2 % azar  52.2 % ( +2.0) | pts real  +0.54 azar  -0.15 | borde +0.69 (ee 0.97) | W medio  25.4 pts
+    (0.95, 1.05]     n  1586 ( 26 r) | acierto real  49.1 % azar  49.9 % ( -0.8) | pts real  -0.31 azar  -0.15 | borde -0.16 (ee 1.23) | W medio  30.0 pts
+    (1.05, 1.2]      n  2013 ( 33 r) | acierto real  54.0 % azar  51.0 % ( +3.0) | pts real  +1.18 azar  -0.12 | borde +1.30 (ee 0.73) | W medio  23.6 pts
+    (1.2, 9.0]       n   366 (  6 r) | acierto real  37.7 % azar  44.9 % ( -7.2) | pts real  -3.70 azar  -0.20 | borde -3.50 (ee 2.24) | W medio  39.4 pts
+  por cociente de varianzas de HOY hasta la vela:
+    (0.0, 0.7]       n  2028 ( 72 r) | acierto real  53.1 % azar  54.5 % ( -1.4) | pts real  +0.01 azar  -0.13 | borde +0.14 (ee 0.62) | W medio  21.2 pts
+    (0.7, 0.9]       n  1082 ( 74 r) | acierto real  51.1 % azar  49.0 % ( +2.1) | pts real  +0.57 azar  -0.23 | borde +0.80 (ee 0.95) | W medio  23.5 pts
+    (0.9, 1.1]       n  1177 ( 65 r) | acierto real  53.6 % azar  45.9 % ( +7.7) | pts real  +1.34 azar  -0.29 | borde +1.63 (ee 1.15) | W medio  29.6 pts
+    (1.1, 1.4]       n  1005 ( 62 r) | acierto real  52.2 % azar  49.4 % ( +2.8) | pts real  +1.66 azar  -0.17 | borde +1.83 (ee 1.34) | W medio  32.1 pts
+    (1.4, 9.0]       n   972 ( 44 r) | acierto real  45.0 % azar  48.6 % ( -3.6) | pts real  -1.48 azar  -0.05 | borde -1.43 (ee 1.79) | W medio  40.2 pts
+  por fraccion de la rueda del lado del precio:
+    (0.0, 0.3]       n   565 ( 89 r) | acierto real  76.6 % azar  73.5 % ( +3.1) | pts real  +0.40 azar  -0.12 | borde +0.52 (ee 0.69) | W medio  28.1 pts
+    (0.3, 0.5]       n   856 ( 86 r) | acierto real  54.9 % azar  59.4 % ( -4.5) | pts real  -0.82 azar  -0.12 | borde -0.69 (ee 0.98) | W medio  25.9 pts
+    (0.5, 0.7]       n  1254 ( 92 r) | acierto real  49.0 % azar  51.5 % ( -2.4) | pts real  -0.35 azar  -0.21 | borde -0.14 (ee 0.92) | W medio  26.6 pts
+    (0.7, 0.9]       n  2324 (106 r) | acierto real  46.9 % azar  47.4 % ( -0.6) | pts real  -0.13 azar  -0.12 | borde -0.01 (ee 0.75) | W medio  26.0 pts
+    (0.9, 1.01]      n  2077 ( 80 r) | acierto real  49.2 % azar  43.2 % ( +5.9) | pts real  +1.63 azar  -0.23 | borde +1.87 (ee 1.03) | W medio  27.8 pts
+  por empuje de 15 min hacia el extremo (X):
+    (-99.0, -1.0]    n   829 (107 r) | acierto real  68.2 % azar  66.1 % ( +2.0) | pts real  +0.21 azar  -0.19 | borde +0.40 (ee 1.05) | W medio  33.1 pts
+    (-1.0, -0.25]    n  1102 (116 r) | acierto real  58.1 % azar  59.1 % ( -1.0) | pts real  +0.38 azar  -0.08 | borde +0.46 (ee 0.58) | W medio  24.6 pts
+    (-0.25, 0.25]    n  1241 (116 r) | acierto real  53.1 % azar  51.7 % ( +1.4) | pts real  +0.50 azar  -0.18 | borde +0.68 (ee 0.63) | W medio  23.9 pts
+    (0.25, 1.0]      n  1679 (116 r) | acierto real  49.9 % azar  48.0 % ( +1.9) | pts real  +0.63 azar  -0.16 | borde +0.79 (ee 0.45) | W medio  23.9 pts
+    (1.0, 2.0]       n  1192 (116 r) | acierto real  45.1 % azar  45.0 % ( +0.1) | pts real  +0.34 azar  -0.19 | borde +0.54 (ee 0.45) | W medio  25.9 pts
+    (2.0, 99.0]      n  1033 (105 r) | acierto real  37.7 % azar  37.4 % ( +0.2) | pts real  -0.48 azar  -0.22 | borde -0.25 (ee 0.57) | W medio  33.0 pts
+  por velas desde que se marco el extremo:
+    (-1, 0]          n  1317 (116 r) | acierto real  26.2 % azar  26.5 % ( -0.3) | pts real  -0.18 azar  -0.19 | borde +0.01 (ee 0.39) | W medio  28.2 pts
+    (0, 2]           n  1084 (116 r) | acierto real  43.0 % azar  42.8 % ( +0.2) | pts real  +0.07 azar  -0.19 | borde +0.26 (ee 0.52) | W medio  26.6 pts
+    (2, 6]           n  1260 (116 r) | acierto real  48.7 % azar  51.1 % ( -2.3) | pts real  -0.32 azar  -0.18 | borde -0.14 (ee 0.64) | W medio  26.3 pts
+    (6, 12]          n  1070 (114 r) | acierto real  57.3 % azar  56.6 % ( +0.6) | pts real  +0.08 azar  -0.23 | borde +0.31 (ee 0.94) | W medio  26.3 pts
+    (12, 99]         n  2345 (109 r) | acierto real  67.8 % azar  64.3 % ( +3.5) | pts real  +1.13 azar  -0.12 | borde +1.25 (ee 0.64) | W medio  26.6 pts
+  por rango relativo D1 (rrn):
+    (0.0, 0.8]       n  2570 ( 61 r) | acierto real  55.5 % azar  56.8 % ( -1.3) | pts real  +0.05 azar  -0.13 | borde +0.18 (ee 0.47) | W medio  17.0 pts
+    (0.8, 1.0]       n  1151 ( 66 r) | acierto real  45.8 % azar  48.6 % ( -2.8) | pts real  -0.81 azar  -0.28 | borde -0.54 (ee 0.72) | W medio  22.1 pts
+    (1.0, 1.3]       n  1566 ( 68 r) | acierto real  51.2 % azar  48.2 % ( +3.0) | pts real  +0.86 azar  -0.22 | borde +1.07 (ee 0.93) | W medio  29.8 pts
+    (1.3, 1.6]       n   848 ( 56 r) | acierto real  53.9 % azar  47.7 % ( +6.1) | pts real  +1.59 azar  -0.19 | borde +1.78 (ee 1.11) | W medio  33.9 pts
+    (1.6, 2.0]       n   530 ( 38 r) | acierto real  48.9 % azar  43.8 % ( +5.1) | pts real  +1.22 azar  +0.06 | borde +1.16 (ee 2.42) | W medio  37.5 pts
+    (2.0, 99.0]      n   411 ( 18 r) | acierto real  38.0 % azar  38.6 % ( -0.6) | pts real  -0.85 azar  -0.18 | borde -0.68 (ee 4.33) | W medio  61.1 pts
+
+=== F3 {'lado': 'fade', 'stop': ('extmult', 0.5, 1.5), 'obj': ('vw', 0.0)}
+  TODOS: n 7076 | acierto real 65.5 % | azar 64.6 % | formula 67.4 % | pts real +0.451 azar -0.063 | borde +0.514 (ee 0.891) | W 40.2
+  por distancia al VWAP (X):
+    (0.0, 0.5]       n   746 (101 r) | acierto real  83.8 % azar  83.2 % ( +0.6) | pts real  -0.12 azar  -0.25 | borde +0.13 (ee 0.17) | W medio  20.2 pts
+    (0.5, 1.0]       n   796 (108 r) | acierto real  76.0 % azar  77.8 % ( -1.8) | pts real  -0.03 azar  -0.07 | borde +0.04 (ee 0.41) | W medio  20.2 pts
+    (1.0, 1.5]       n   772 (111 r) | acierto real  67.9 % azar  68.3 % ( -0.4) | pts real  +0.36 azar  -0.12 | borde +0.48 (ee 0.64) | W medio  21.3 pts
+    (1.5, 2.0]       n   715 (110 r) | acierto real  61.5 % azar  63.9 % ( -2.3) | pts real  +0.25 azar  -0.07 | borde +0.32 (ee 0.76) | W medio  24.5 pts
+    (2.0, 3.0]       n  1218 (110 r) | acierto real  61.8 % azar  61.3 % ( +0.5) | pts real  +0.19 azar  -0.04 | borde +0.23 (ee 0.83) | W medio  31.5 pts
+    (3.0, 4.0]       n   949 ( 97 r) | acierto real  61.4 % azar  58.4 % ( +3.1) | pts real  +1.25 azar  -0.06 | borde +1.31 (ee 1.25) | W medio  41.3 pts
+    (4.0, 6.0]       n  1049 ( 81 r) | acierto real  58.6 % azar  57.2 % ( +1.5) | pts real  +0.93 azar  -0.05 | borde +0.98 (ee 2.03) | W medio  57.4 pts
+    (6.0, 99.0]      n   831 ( 55 r) | acierto real  59.2 % azar  54.0 % ( +5.2) | pts real  +0.53 azar  +0.11 | borde +0.43 (ee 5.67) | W medio  98.2 pts
+  por distancia al extremo del dia (X):
+    (-0.01, 0.25]    n   532 (110 r) | acierto real  56.4 % azar  57.3 % ( -0.9) | pts real  +0.39 azar  -0.09 | borde +0.48 (ee 1.34) | W medio  51.1 pts
+    (0.25, 0.5]      n   689 (112 r) | acierto real  56.9 % azar  57.9 % ( -1.0) | pts real  +0.29 azar  -0.00 | borde +0.29 (ee 1.28) | W medio  51.1 pts
+    (0.5, 1.0]       n  1196 (113 r) | acierto real  59.2 % azar  58.3 % ( +0.9) | pts real  +0.91 azar  -0.06 | borde +0.97 (ee 1.04) | W medio  43.1 pts
+    (1.0, 2.0]       n  1856 (116 r) | acierto real  63.5 % azar  63.6 % ( -0.1) | pts real  +0.75 azar  -0.04 | borde +0.79 (ee 0.90) | W medio  35.6 pts
+    (2.0, 4.0]       n  1706 (109 r) | acierto real  72.0 % azar  68.6 % ( +3.4) | pts real  +0.90 azar  -0.09 | borde +0.99 (ee 1.03) | W medio  34.4 pts
+    (4.0, 99.0]      n  1097 ( 72 r) | acierto real  75.6 % azar  74.8 % ( +0.8) | pts real  -1.12 azar  -0.09 | borde -1.03 (ee 1.84) | W medio  41.6 pts
+  por desvios del VWAP (z):
+    (0.0, 0.5]       n  1350 (112 r) | acierto real  83.2 % azar  82.3 % ( +0.9) | pts real  +0.26 azar  -0.16 | borde +0.42 (ee 0.32) | W medio  25.3 pts
+    (0.5, 1.0]       n  1628 (116 r) | acierto real  65.8 % azar  66.8 % ( -0.9) | pts real  -0.27 azar  -0.05 | borde -0.22 (ee 0.82) | W medio  27.6 pts
+    (1.0, 1.5]       n  1907 (116 r) | acierto real  60.1 % azar  58.5 % ( +1.6) | pts real  +0.38 azar  -0.08 | borde +0.46 (ee 1.57) | W medio  42.8 pts
+    (1.5, 2.0]       n  1597 (116 r) | acierto real  58.8 % azar  57.3 % ( +1.5) | pts real  +1.16 azar  -0.00 | borde +1.17 (ee 1.42) | W medio  53.2 pts
+    (2.0, 2.5]       n   476 ( 92 r) | acierto real  60.1 % azar  57.7 % ( +2.4) | pts real  +0.83 azar  -0.03 | borde +0.86 (ee 2.04) | W medio  63.2 pts
+    (2.5, 99.0]      n   118 ( 50 r) | acierto real  60.2 % azar  58.1 % ( +2.1) | pts real  +2.50 azar  +0.17 | borde +2.33 (ee 2.91) | W medio  72.7 pts
+  por hora (cierre de la vela):
+    (599, 660]       n  1508 (116 r) | acierto real  66.7 % azar  70.2 % ( -3.5) | pts real  -0.29 azar  -0.05 | borde -0.24 (ee 0.79) | W medio  28.8 pts
+    (660, 750]       n  2088 (116 r) | acierto real  63.7 % azar  65.8 % ( -2.1) | pts real  -1.05 azar  -0.08 | borde -0.96 (ee 1.39) | W medio  38.8 pts
+    (750, 840]       n  2088 (116 r) | acierto real  64.6 % azar  62.4 % ( +2.2) | pts real  +1.07 azar  -0.10 | borde +1.17 (ee 1.27) | W medio  44.5 pts
+    (840, 901]       n  1392 (116 r) | acierto real  68.5 % azar  60.1 % ( +8.4) | pts real  +2.58 azar  +0.02 | borde +2.57 (ee 1.21) | W medio  48.2 pts
+  por estado D1 (0 E, 1 R, 2 T, 3 N):
+    (-0.5, 0.5]      n  3721 ( 87 r) | acierto real  65.2 % azar  65.9 % ( -0.6) | pts real  +0.07 azar  -0.10 | borde +0.18 (ee 0.57) | W medio  25.6 pts
+    (0.5, 1.5]       n  2414 ( 74 r) | acierto real  66.0 % azar  63.7 % ( +2.3) | pts real  +1.42 azar  -0.06 | borde +1.48 (ee 1.26) | W medio  47.6 pts
+    (1.5, 2.5]       n   851 ( 40 r) | acierto real  65.7 % azar  60.9 % ( +4.8) | pts real  -0.16 azar  +0.08 | borde -0.24 (ee 5.50) | W medio  81.4 pts
+    (2.5, 3.5]       n    90 ( 15 r) | acierto real  63.3 % azar  72.1 % ( -8.8) | pts real  -4.16 azar  +0.13 | borde -4.29 (ee 5.33) | W medio  54.7 pts
+  por minutos desde el ultimo toque del VWAP:
+    (-1, 10]         n  1852 (111 r) | acierto real  75.5 % azar  75.7 % ( -0.1) | pts real  -0.15 azar  -0.13 | borde -0.01 (ee 0.31) | W medio  24.3 pts
+    (10, 30]         n  1131 (116 r) | acierto real  65.5 % azar  67.0 % ( -1.4) | pts real  -0.10 azar  +0.00 | borde -0.10 (ee 0.88) | W medio  33.4 pts
+    (30, 60]         n  1082 (116 r) | acierto real  58.6 % azar  64.3 % ( -5.7) | pts real  -1.88 azar  -0.06 | borde -1.82 (ee 1.29) | W medio  39.0 pts
+    (60, 120]        n  1352 (110 r) | acierto real  60.4 % azar  59.2 % ( +1.1) | pts real  +0.59 azar  -0.12 | borde +0.70 (ee 1.45) | W medio  49.1 pts
+    (120, 999]       n  1659 ( 92 r) | acierto real  63.1 % azar  55.3 % ( +7.8) | pts real  +2.90 azar  +0.01 | borde +2.89 (ee 1.98) | W medio  56.0 pts
+  por toques del VWAP en el dia:
+    (-1, 2]          n  1148 ( 70 r) | acierto real  67.7 % azar  63.2 % ( +4.4) | pts real  +3.21 azar  -0.13 | borde +3.34 (ee 1.31) | W medio  45.0 pts
+    (2, 5]           n  1846 (107 r) | acierto real  65.7 % azar  63.9 % ( +1.8) | pts real  +1.23 azar  -0.05 | borde +1.27 (ee 1.63) | W medio  40.0 pts
+    (5, 10]          n  2264 ( 88 r) | acierto real  66.8 % azar  64.7 % ( +2.1) | pts real  +0.14 azar  -0.04 | borde +0.18 (ee 1.63) | W medio  39.0 pts
+    (10, 20]         n  1722 ( 56 r) | acierto real  63.0 % azar  66.0 % ( -3.0) | pts real  -1.58 azar  -0.07 | borde -1.51 (ee 2.14) | W medio  39.3 pts
+    (20, 99]         n    96 (  9 r) | acierto real  54.2 % azar  70.0 % (-15.8) | pts real  -3.65 azar  +0.03 | borde -3.68 (ee 3.65) | W medio  29.1 pts
+  por extension del balance inicial del lado del precio (IB):
+    (-0.01, 0.0001]  n  1711 (116 r) | acierto real  71.1 % azar  71.6 % ( -0.4) | pts real  +0.43 azar  -0.06 | borde +0.49 (ee 0.69) | W medio  28.5 pts
+    (0.0001, 0.5]    n  2824 (110 r) | acierto real  65.7 % azar  63.9 % ( +1.8) | pts real  +1.29 azar  -0.10 | borde +1.39 (ee 0.96) | W medio  35.0 pts
+    (0.5, 1.0]       n  1191 ( 63 r) | acierto real  66.3 % azar  57.6 % ( +8.7) | pts real  +4.49 azar  -0.06 | borde +4.55 (ee 2.05) | W medio  52.9 pts
+    (1.0, 2.0]       n   407 ( 27 r) | acierto real  55.5 % azar  57.9 % ( -2.4) | pts real  +0.17 azar  +0.05 | borde +0.11 (ee 3.87) | W medio  67.5 pts
+    (2.0, 99.0]      n   247 ( 11 r) | acierto real  37.7 % azar  53.1 % (-15.5) | pts real -24.95 azar  +0.14 | borde -25.09 (ee 11.97) | W medio 113.4 pts
+  por pendiente del VWAP en 30 min a favor del lado (X):
+    (-99.0, -0.5]    n   118 ( 60 r) | acierto real  78.8 % azar  75.6 % ( +3.2) | pts real  +0.09 azar  -0.32 | borde +0.41 (ee 0.90) | W medio  25.3 pts
+    (-0.5, 0.0]      n   580 ( 96 r) | acierto real  80.5 % azar  77.9 % ( +2.6) | pts real  +0.29 azar  -0.18 | borde +0.47 (ee 0.48) | W medio  24.1 pts
+    (0.0, 0.5]       n  4334 (116 r) | acierto real  65.9 % azar  63.2 % ( +2.7) | pts real  +1.16 azar  -0.07 | borde +1.22 (ee 0.71) | W medio  34.4 pts
+    (0.5, 1.0]       n  1062 (103 r) | acierto real  58.3 % azar  61.4 % ( -3.2) | pts real  +0.50 azar  -0.06 | borde +0.56 (ee 1.83) | W medio  55.8 pts
+    (1.0, 2.0]       n   570 ( 89 r) | acierto real  63.5 % azar  64.2 % ( -0.7) | pts real  -0.62 azar  +0.04 | borde -0.67 (ee 3.01) | W medio  61.1 pts
+    (2.0, 99.0]      n   296 ( 53 r) | acierto real  56.4 % azar  65.2 % ( -8.7) | pts real  -7.03 azar  +0.13 | borde -7.16 (ee 6.45) | W medio  72.9 pts
+  por cociente de varianzas de las 10 ruedas previas:
+    (0.0, 0.85]      n  1342 ( 22 r) | acierto real  62.2 % azar  64.5 % ( -2.3) | pts real  +0.77 azar  -0.20 | borde +0.97 (ee 1.30) | W medio  38.7 pts
+    (0.85, 0.95]     n  1769 ( 29 r) | acierto real  64.2 % azar  65.0 % ( -0.8) | pts real  -1.11 azar  -0.02 | borde -1.09 (ee 2.30) | W medio  37.8 pts
+    (0.95, 1.05]     n  1586 ( 26 r) | acierto real  65.3 % azar  64.2 % ( +1.1) | pts real  -0.23 azar  -0.04 | borde -0.19 (ee 2.51) | W medio  45.9 pts
+    (1.05, 1.2]      n  2013 ( 33 r) | acierto real  71.0 % azar  65.2 % ( +5.8) | pts real  +2.70 azar  -0.03 | borde +2.73 (ee 0.76) | W medio  34.3 pts
+    (1.2, 9.0]       n   366 (  6 r) | acierto real  54.9 % azar  61.5 % ( -6.6) | pts real  -2.56 azar  -0.01 | borde -2.55 (ee 4.03) | W medio  64.9 pts
+  por cociente de varianzas de HOY hasta la vela:
+    (0.0, 0.7]       n  2028 ( 72 r) | acierto real  64.7 % azar  66.3 % ( -1.6) | pts real  +0.00 azar  -0.02 | borde +0.02 (ee 1.09) | W medio  30.3 pts
+    (0.7, 0.9]       n  1082 ( 74 r) | acierto real  69.0 % azar  62.4 % ( +6.6) | pts real  +1.31 azar  -0.15 | borde +1.45 (ee 1.05) | W medio  34.8 pts
+    (0.9, 1.1]       n  1177 ( 65 r) | acierto real  69.8 % azar  60.3 % ( +9.5) | pts real  +3.27 azar  -0.13 | borde +3.40 (ee 1.54) | W medio  46.8 pts
+    (1.1, 1.4]       n  1005 ( 62 r) | acierto real  68.8 % azar  64.3 % ( +4.4) | pts real  +3.46 azar  +0.01 | borde +3.45 (ee 1.96) | W medio  48.5 pts
+    (1.4, 9.0]       n   972 ( 44 r) | acierto real  54.7 % azar  64.1 % ( -9.4) | pts real  -5.29 azar  -0.06 | borde -5.24 (ee 3.97) | W medio  61.5 pts
+  por fraccion de la rueda del lado del precio:
+    (0.0, 0.3]       n   565 ( 89 r) | acierto real  78.8 % azar  75.8 % ( +3.0) | pts real  +0.55 azar  -0.16 | borde +0.70 (ee 0.70) | W medio  29.8 pts
+    (0.3, 0.5]       n   856 ( 86 r) | acierto real  63.8 % azar  69.2 % ( -5.4) | pts real  -1.71 azar  -0.10 | borde -1.61 (ee 1.48) | W medio  33.5 pts
+    (0.5, 0.7]       n  1254 ( 92 r) | acierto real  65.3 % azar  66.1 % ( -0.8) | pts real  -0.07 azar  -0.10 | borde +0.03 (ee 1.45) | W medio  39.6 pts
+    (0.7, 0.9]       n  2324 (106 r) | acierto real  63.3 % azar  64.0 % ( -0.7) | pts real  -0.68 azar  -0.03 | borde -0.65 (ee 1.58) | W medio  40.6 pts
+    (0.9, 1.01]      n  2077 ( 80 r) | acierto real  65.3 % azar  59.5 % ( +5.8) | pts real  +2.89 azar  -0.04 | borde +2.93 (ee 1.40) | W medio  45.7 pts
+  por empuje de 15 min hacia el extremo (X):
+    (-99.0, -1.0]    n   829 (107 r) | acierto real  70.0 % azar  69.5 % ( +0.4) | pts real  -0.63 azar  -0.17 | borde -0.45 (ee 1.55) | W medio  39.7 pts
+    (-1.0, -0.25]    n  1102 (116 r) | acierto real  65.0 % azar  66.1 % ( -1.2) | pts real  +0.65 azar  -0.04 | borde +0.69 (ee 0.71) | W medio  33.1 pts
+    (-0.25, 0.25]    n  1241 (116 r) | acierto real  63.7 % azar  62.5 % ( +1.1) | pts real  +0.76 azar  -0.08 | borde +0.84 (ee 0.80) | W medio  35.4 pts
+    (0.25, 1.0]      n  1679 (116 r) | acierto real  66.3 % azar  63.4 % ( +3.0) | pts real  +1.29 azar  -0.02 | borde +1.32 (ee 0.72) | W medio  36.9 pts
+    (1.0, 2.0]       n  1192 (116 r) | acierto real  64.3 % azar  63.8 % ( +0.4) | pts real  +0.67 azar  -0.06 | borde +0.73 (ee 0.87) | W medio  41.1 pts
+    (2.0, 99.0]      n  1033 (105 r) | acierto real  65.0 % azar  64.5 % ( +0.5) | pts real  -0.88 azar  -0.04 | borde -0.84 (ee 2.33) | W medio  58.1 pts
+  por velas desde que se marco el extremo:
+    (-1, 0]          n  1317 (116 r) | acierto real  59.5 % azar  60.2 % ( -0.7) | pts real  -0.01 azar  +0.05 | borde -0.06 (ee 1.62) | W medio  56.6 pts
+    (0, 2]           n  1084 (116 r) | acierto real  60.7 % azar  61.0 % ( -0.3) | pts real  +0.40 azar  -0.05 | borde +0.46 (ee 1.07) | W medio  44.7 pts
+    (2, 6]           n  1260 (116 r) | acierto real  61.1 % azar  63.2 % ( -2.1) | pts real  -0.32 azar  -0.12 | borde -0.20 (ee 1.00) | W medio  39.3 pts
+    (6, 12]          n  1070 (114 r) | acierto real  66.8 % azar  65.7 % ( +1.1) | pts real  -0.20 azar  -0.13 | borde -0.08 (ee 1.34) | W medio  36.3 pts
+    (12, 99]         n  2345 (109 r) | acierto real  72.9 % azar  69.0 % ( +3.9) | pts real  +1.45 azar  -0.07 | borde +1.52 (ee 0.68) | W medio  31.1 pts
+  por rango relativo D1 (rrn):
+    (0.0, 0.8]       n  2570 ( 61 r) | acierto real  66.8 % azar  66.7 % ( +0.1) | pts real  +0.34 azar  -0.10 | borde +0.43 (ee 0.61) | W medio  22.6 pts
+    (0.8, 1.0]       n  1151 ( 66 r) | acierto real  61.7 % azar  64.0 % ( -2.3) | pts real  -0.52 azar  -0.12 | borde -0.40 (ee 1.21) | W medio  32.4 pts
+    (1.0, 1.3]       n  1566 ( 68 r) | acierto real  64.8 % azar  63.4 % ( +1.4) | pts real  +1.23 azar  -0.08 | borde +1.30 (ee 1.39) | W medio  45.3 pts
+    (1.3, 1.6]       n   848 ( 56 r) | acierto real  68.4 % azar  64.4 % ( +4.0) | pts real  +1.79 azar  -0.03 | borde +1.81 (ee 1.98) | W medio  51.9 pts
+    (1.6, 2.0]       n   530 ( 38 r) | acierto real  72.3 % azar  63.3 % ( +9.0) | pts real  +3.09 azar  +0.00 | borde +3.09 (ee 3.80) | W medio  59.6 pts
+    (2.0, 99.0]      n   411 ( 18 r) | acierto real  56.7 % azar  60.2 % ( -3.5) | pts real  -5.22 azar  +0.20 | borde -5.42 (ee 9.67) | W medio 103.7 pts
+
+=== F5 {'lado': 'fade', 'stop': ('ext', 0.5), 'obj': ('frac', 0.5)}
+  TODOS: n 7076 | acierto real 59.4 % | azar 59.5 % | formula 62.2 % | pts real -0.037 azar -0.170 | borde +0.133 (ee 0.324) | W 19.6
+  por distancia al VWAP (X):
+    (0.0, 0.5]       n   746 (101 r) | acierto real  83.6 % azar  83.6 % ( +0.0) | pts real  -0.24 azar  -0.25 | borde +0.01 (ee 0.13) | W medio  19.6 pts
+    (0.5, 1.0]       n   796 (108 r) | acierto real  84.5 % azar  86.2 % ( -1.7) | pts real  -0.14 azar  -0.06 | borde -0.07 (ee 0.24) | W medio  18.2 pts
+    (1.0, 1.5]       n   772 (111 r) | acierto real  74.1 % azar  76.2 % ( -2.1) | pts real  -0.23 azar  -0.15 | borde -0.08 (ee 0.36) | W medio  17.0 pts
+    (1.5, 2.0]       n   715 (110 r) | acierto real  64.5 % azar  66.3 % ( -1.8) | pts real  -0.06 azar  -0.15 | borde +0.09 (ee 0.43) | W medio  16.2 pts
+    (2.0, 3.0]       n  1218 (110 r) | acierto real  55.7 % azar  58.0 % ( -2.4) | pts real  -0.33 azar  -0.11 | borde -0.23 (ee 0.48) | W medio  17.4 pts
+    (3.0, 4.0]       n   949 ( 97 r) | acierto real  52.1 % azar  48.7 % ( +3.3) | pts real  +0.61 azar  -0.27 | borde +0.87 (ee 0.63) | W medio  18.6 pts
+    (4.0, 6.0]       n  1049 ( 81 r) | acierto real  41.0 % azar  40.5 % ( +0.4) | pts real  -0.15 azar  -0.18 | borde +0.03 (ee 0.85) | W medio  21.3 pts
+    (6.0, 99.0]      n   831 ( 55 r) | acierto real  32.5 % azar  29.5 % ( +3.0) | pts real  +0.28 azar  -0.21 | borde +0.49 (ee 1.55) | W medio  28.8 pts
+  por distancia al extremo del dia (X):
+    (-0.01, 0.25]    n   532 (110 r) | acierto real  27.6 % azar  27.0 % ( +0.6) | pts real  -0.10 azar  -0.23 | borde +0.13 (ee 0.43) | W medio  13.6 pts
+    (0.25, 0.5]      n   689 (112 r) | acierto real  33.1 % azar  34.3 % ( -1.2) | pts real  +0.02 azar  -0.11 | borde +0.13 (ee 0.47) | W medio  14.7 pts
+    (0.5, 1.0]       n  1196 (113 r) | acierto real  46.1 % azar  46.0 % ( +0.0) | pts real  -0.01 azar  -0.20 | borde +0.19 (ee 0.46) | W medio  14.9 pts
+    (1.0, 2.0]       n  1856 (116 r) | acierto real  61.6 % azar  62.2 % ( -0.5) | pts real  +0.20 azar  -0.17 | borde +0.37 (ee 0.39) | W medio  16.4 pts
+    (2.0, 4.0]       n  1706 (109 r) | acierto real  73.7 % azar  72.7 % ( +1.1) | pts real  +0.22 azar  -0.19 | borde +0.42 (ee 0.48) | W medio  21.2 pts
+    (4.0, 99.0]      n  1097 ( 72 r) | acierto real  79.7 % azar  81.0 % ( -1.3) | pts real  -0.88 azar  -0.11 | borde -0.77 (ee 0.92) | W medio  34.0 pts
+  por desvios del VWAP (z):
+    (0.0, 0.5]       n  1350 (112 r) | acierto real  85.4 % azar  86.0 % ( -0.6) | pts real  -0.12 azar  -0.18 | borde +0.06 (ee 0.20) | W medio  23.9 pts
+    (0.5, 1.0]       n  1628 (116 r) | acierto real  74.3 % azar  76.2 % ( -1.9) | pts real  -0.45 azar  -0.11 | borde -0.34 (ee 0.55) | W medio  20.9 pts
+    (1.0, 1.5]       n  1907 (116 r) | acierto real  57.5 % azar  54.5 % ( +3.0) | pts real  +0.50 azar  -0.17 | borde +0.66 (ee 0.58) | W medio  18.7 pts
+    (1.5, 2.0]       n  1597 (116 r) | acierto real  36.4 % azar  37.5 % ( -1.1) | pts real  -0.08 azar  -0.21 | borde +0.13 (ee 0.48) | W medio  16.7 pts
+    (2.0, 2.5]       n   476 ( 92 r) | acierto real  28.2 % azar  30.3 % ( -2.1) | pts real  -0.35 azar  -0.23 | borde -0.12 (ee 0.71) | W medio  17.5 pts
+    (2.5, 99.0]      n   118 ( 50 r) | acierto real  23.7 % azar  23.8 % ( -0.1) | pts real  -0.19 azar  -0.23 | borde +0.04 (ee 0.73) | W medio  18.7 pts
+  por hora (cierre de la vela):
+    (599, 660]       n  1508 (116 r) | acierto real  61.9 % azar  62.0 % ( -0.1) | pts real  -0.08 azar  -0.12 | borde +0.04 (ee 0.25) | W medio  14.8 pts
+    (660, 750]       n  2088 (116 r) | acierto real  55.5 % azar  59.2 % ( -3.7) | pts real  -0.75 azar  -0.18 | borde -0.57 (ee 0.45) | W medio  18.6 pts
+    (750, 840]       n  2088 (116 r) | acierto real  59.9 % azar  58.8 % ( +1.1) | pts real  +0.19 azar  -0.22 | borde +0.41 (ee 0.54) | W medio  21.5 pts
+    (840, 901]       n  1392 (116 r) | acierto real  61.8 % azar  58.4 % ( +3.3) | pts real  +0.74 azar  -0.13 | borde +0.87 (ee 0.73) | W medio  23.6 pts
+  por estado D1 (0 E, 1 R, 2 T, 3 N):
+    (-0.5, 0.5]      n  3721 ( 87 r) | acierto real  62.5 % azar  63.8 % ( -1.3) | pts real  -0.22 azar  -0.18 | borde -0.04 (ee 0.27) | W medio  14.2 pts
+    (0.5, 1.5]       n  2414 ( 74 r) | acierto real  57.7 % azar  56.6 % ( +1.2) | pts real  +0.41 azar  -0.18 | borde +0.60 (ee 0.57) | W medio  22.8 pts
+    (1.5, 2.5]       n   851 ( 40 r) | acierto real  49.2 % azar  47.0 % ( +2.2) | pts real  -0.17 azar  -0.14 | borde -0.03 (ee 1.67) | W medio  31.6 pts
+    (2.5, 3.5]       n    90 ( 15 r) | acierto real  71.1 % azar  79.9 % ( -8.8) | pts real  -3.42 azar  +0.11 | borde -3.52 (ee 3.13) | W medio  48.6 pts
+  por minutos desde el ultimo toque del VWAP:
+    (-1, 10]         n  1852 (111 r) | acierto real  74.7 % azar  76.8 % ( -2.1) | pts real  -0.56 azar  -0.22 | borde -0.34 (ee 0.20) | W medio  19.2 pts
+    (10, 30]         n  1131 (116 r) | acierto real  63.0 % azar  61.3 % ( +1.7) | pts real  +0.39 azar  -0.12 | borde +0.51 (ee 0.28) | W medio  17.7 pts
+    (30, 60]         n  1082 (116 r) | acierto real  54.1 % azar  56.7 % ( -2.6) | pts real  -0.34 azar  -0.06 | borde -0.28 (ee 0.47) | W medio  18.1 pts
+    (60, 120]        n  1352 (110 r) | acierto real  45.6 % azar  49.8 % ( -4.2) | pts real  -0.62 azar  -0.23 | borde -0.39 (ee 0.60) | W medio  19.9 pts
+    (120, 999]       n  1659 ( 92 r) | acierto real  54.6 % azar  48.8 % ( +5.8) | pts real  +0.93 azar  -0.17 | borde +1.10 (ee 0.97) | W medio  22.2 pts
+  por toques del VWAP en el dia:
+    (-1, 2]          n  1148 ( 70 r) | acierto real  56.2 % azar  52.2 % ( +4.0) | pts real  +1.24 azar  -0.20 | borde +1.44 (ee 0.67) | W medio  19.2 pts
+    (2, 5]           n  1846 (107 r) | acierto real  58.2 % azar  57.8 % ( +0.4) | pts real  -0.05 azar  -0.16 | borde +0.11 (ee 0.66) | W medio  19.3 pts
+    (5, 10]          n  2264 ( 88 r) | acierto real  62.0 % azar  61.0 % ( +0.9) | pts real  +0.08 azar  -0.15 | borde +0.22 (ee 0.59) | W medio  19.6 pts
+    (10, 20]         n  1722 ( 56 r) | acierto real  59.6 % azar  63.5 % ( -3.9) | pts real  -0.86 azar  -0.19 | borde -0.68 (ee 0.64) | W medio  20.3 pts
+    (20, 99]         n    96 (  9 r) | acierto real  56.2 % azar  74.4 % (-18.2) | pts real  -2.90 azar  -0.21 | borde -2.69 (ee 2.23) | W medio  21.0 pts
+  por extension del balance inicial del lado del precio (IB):
+    (-0.01, 0.0001]  n  1711 (116 r) | acierto real  71.3 % azar  74.6 % ( -3.3) | pts real  -0.46 azar  -0.09 | borde -0.36 (ee 0.46) | W medio  21.4 pts
+    (0.0001, 0.5]    n  2824 (110 r) | acierto real  57.5 % azar  57.3 % ( +0.2) | pts real  +0.27 azar  -0.16 | borde +0.42 (ee 0.46) | W medio  16.7 pts
+    (0.5, 1.0]       n  1191 ( 63 r) | acierto real  54.2 % azar  49.0 % ( +5.3) | pts real  +1.41 azar  -0.26 | borde +1.67 (ee 1.07) | W medio  21.0 pts
+    (1.0, 2.0]       n   407 ( 27 r) | acierto real  45.7 % azar  48.1 % ( -2.4) | pts real  -0.39 azar  -0.31 | borde -0.08 (ee 1.72) | W medio  26.9 pts
+    (2.0, 99.0]      n   247 ( 11 r) | acierto real  40.5 % azar  43.0 % ( -2.6) | pts real  -6.54 azar  -0.19 | borde -6.35 (ee 3.79) | W medio  40.5 pts
+  por pendiente del VWAP en 30 min a favor del lado (X):
+    (-99.0, -0.5]    n   118 ( 60 r) | acierto real  72.9 % azar  75.2 % ( -2.3) | pts real  -0.50 azar  -0.25 | borde -0.25 (ee 0.56) | W medio  19.4 pts
+    (-0.5, 0.0]      n   580 ( 96 r) | acierto real  78.8 % azar  79.2 % ( -0.4) | pts real  -0.43 azar  -0.24 | borde -0.19 (ee 0.32) | W medio  20.9 pts
+    (0.0, 0.5]       n  4334 (116 r) | acierto real  61.7 % azar  61.3 % ( +0.4) | pts real  +0.17 azar  -0.16 | borde +0.33 (ee 0.38) | W medio  18.3 pts
+    (0.5, 1.0]       n  1062 (103 r) | acierto real  48.9 % azar  49.3 % ( -0.4) | pts real  +0.04 azar  -0.15 | borde +0.19 (ee 0.86) | W medio  21.7 pts
+    (1.0, 2.0]       n   570 ( 89 r) | acierto real  48.9 % azar  49.1 % ( -0.2) | pts real  -0.40 azar  -0.11 | borde -0.29 (ee 0.82) | W medio  23.4 pts
+    (2.0, 99.0]      n   296 ( 53 r) | acierto real  41.6 % azar  45.1 % ( -3.5) | pts real  -1.40 azar  -0.32 | borde -1.09 (ee 1.52) | W medio  26.4 pts
+  por cociente de varianzas de las 10 ruedas previas:
+    (0.0, 0.85]      n  1342 ( 22 r) | acierto real  57.1 % azar  58.5 % ( -1.4) | pts real  -0.05 azar  -0.24 | borde +0.18 (ee 0.53) | W medio  19.3 pts
+    (0.85, 0.95]     n  1769 ( 29 r) | acierto real  60.3 % azar  60.7 % ( -0.4) | pts real  -0.11 azar  -0.19 | borde +0.07 (ee 0.73) | W medio  18.8 pts
+    (0.95, 1.05]     n  1586 ( 26 r) | acierto real  57.1 % azar  58.4 % ( -1.4) | pts real  -0.33 azar  -0.17 | borde -0.15 (ee 0.89) | W medio  21.7 pts
+    (1.05, 1.2]      n  2013 ( 33 r) | acierto real  63.9 % azar  61.2 % ( +2.7) | pts real  +0.59 azar  -0.09 | borde +0.68 (ee 0.45) | W medio  17.6 pts
+    (1.2, 9.0]       n   366 (  6 r) | acierto real  48.4 % azar  53.2 % ( -4.8) | pts real  -1.82 azar  -0.27 | borde -1.56 (ee 1.73) | W medio  27.1 pts
+  por cociente de varianzas de HOY hasta la vela:
+    (0.0, 0.7]       n  2028 ( 72 r) | acierto real  61.1 % azar  63.4 % ( -2.3) | pts real  -0.35 azar  -0.19 | borde -0.16 (ee 0.46) | W medio  16.0 pts
+    (0.7, 0.9]       n  1082 ( 74 r) | acierto real  56.5 % azar  58.2 % ( -1.7) | pts real  -0.34 azar  -0.21 | borde -0.13 (ee 0.64) | W medio  17.2 pts
+    (0.9, 1.1]       n  1177 ( 65 r) | acierto real  60.2 % azar  54.8 % ( +5.3) | pts real  +0.96 azar  -0.20 | borde +1.16 (ee 0.82) | W medio  20.9 pts
+    (1.1, 1.4]       n  1005 ( 62 r) | acierto real  62.7 % azar  59.0 % ( +3.7) | pts real  +1.15 azar  -0.12 | borde +1.27 (ee 0.76) | W medio  23.6 pts
+    (1.4, 9.0]       n   972 ( 44 r) | acierto real  53.2 % azar  56.9 % ( -3.7) | pts real  -1.33 azar  -0.11 | borde -1.23 (ee 1.34) | W medio  29.4 pts
+  por fraccion de la rueda del lado del precio:
+    (0.0, 0.3]       n   565 ( 89 r) | acierto real  80.5 % azar  80.5 % ( +0.0) | pts real  -0.13 azar  -0.09 | borde -0.04 (ee 0.52) | W medio  25.2 pts
+    (0.3, 0.5]       n   856 ( 86 r) | acierto real  62.0 % azar  68.7 % ( -6.7) | pts real  -0.87 azar  -0.10 | borde -0.77 (ee 0.64) | W medio  20.7 pts
+    (0.5, 0.7]       n  1254 ( 92 r) | acierto real  59.4 % azar  61.1 % ( -1.7) | pts real  -0.20 azar  -0.20 | borde +0.01 (ee 0.46) | W medio  19.6 pts
+    (0.7, 0.9]       n  2324 (106 r) | acierto real  55.9 % azar  57.2 % ( -1.2) | pts real  -0.55 azar  -0.16 | borde -0.39 (ee 0.57) | W medio  18.5 pts
+    (0.9, 1.01]      n  2077 ( 80 r) | acierto real  56.4 % azar  51.7 % ( +4.7) | pts real  +0.99 azar  -0.22 | borde +1.21 (ee 0.70) | W medio  19.1 pts
+  por empuje de 15 min hacia el extremo (X):
+    (-99.0, -1.0]    n   829 (107 r) | acierto real  75.4 % azar  74.7 % ( +0.7) | pts real  -0.23 azar  -0.16 | borde -0.08 (ee 0.79) | W medio  27.1 pts
+    (-1.0, -0.25]    n  1102 (116 r) | acierto real  66.5 % azar  68.5 % ( -1.9) | pts real  +0.02 azar  -0.07 | borde +0.09 (ee 0.44) | W medio  19.0 pts
+    (-0.25, 0.25]    n  1241 (116 r) | acierto real  60.9 % azar  60.6 % ( +0.4) | pts real  +0.19 azar  -0.12 | borde +0.30 (ee 0.46) | W medio  17.6 pts
+    (0.25, 1.0]      n  1679 (116 r) | acierto real  58.4 % azar  57.1 % ( +1.3) | pts real  +0.33 azar  -0.19 | borde +0.52 (ee 0.34) | W medio  17.3 pts
+    (1.0, 2.0]       n  1192 (116 r) | acierto real  54.0 % azar  54.2 % ( -0.1) | pts real  -0.03 azar  -0.24 | borde +0.20 (ee 0.32) | W medio  18.5 pts
+    (2.0, 99.0]      n  1033 (105 r) | acierto real  44.9 % azar  46.7 % ( -1.7) | pts real  -0.82 azar  -0.24 | borde -0.58 (ee 0.41) | W medio  22.1 pts
+  por velas desde que se marco el extremo:
+    (-1, 0]          n  1317 (116 r) | acierto real  35.1 % azar  35.2 % ( -0.2) | pts real  -0.21 azar  -0.19 | borde -0.03 (ee 0.33) | W medio  16.9 pts
+    (0, 2]           n  1084 (116 r) | acierto real  52.3 % azar  51.9 % ( +0.4) | pts real  +0.06 azar  -0.27 | borde +0.34 (ee 0.43) | W medio  17.9 pts
+    (2, 6]           n  1260 (116 r) | acierto real  59.4 % azar  60.6 % ( -1.2) | pts real  -0.17 azar  -0.16 | borde -0.01 (ee 0.50) | W medio  19.1 pts
+    (6, 12]          n  1070 (114 r) | acierto real  64.9 % azar  66.2 % ( -1.4) | pts real  -0.68 azar  -0.15 | borde -0.54 (ee 0.74) | W medio  20.0 pts
+    (12, 99]         n  2345 (109 r) | acierto real  73.8 % azar  73.1 % ( +0.7) | pts real  +0.38 azar  -0.13 | borde +0.51 (ee 0.43) | W medio  22.2 pts
+  por rango relativo D1 (rrn):
+    (0.0, 0.8]       n  2570 ( 61 r) | acierto real  65.0 % azar  66.1 % ( -1.1) | pts real  -0.06 azar  -0.13 | borde +0.06 (ee 0.32) | W medio  13.3 pts
+    (0.8, 1.0]       n  1151 ( 66 r) | acierto real  56.9 % azar  58.6 % ( -1.7) | pts real  -0.57 azar  -0.28 | borde -0.28 (ee 0.46) | W medio  16.2 pts
+    (1.0, 1.3]       n  1566 ( 68 r) | acierto real  57.0 % azar  56.6 % ( +0.5) | pts real  +0.28 azar  -0.20 | borde +0.48 (ee 0.67) | W medio  21.8 pts
+    (1.3, 1.6]       n   848 ( 56 r) | acierto real  59.1 % azar  56.6 % ( +2.5) | pts real  +0.66 azar  -0.16 | borde +0.82 (ee 0.84) | W medio  24.7 pts
+    (1.6, 2.0]       n   530 ( 38 r) | acierto real  55.8 % azar  52.7 % ( +3.1) | pts real  +0.35 azar  -0.10 | borde +0.45 (ee 1.47) | W medio  26.5 pts
+    (2.0, 99.0]      n   411 ( 18 r) | acierto real  45.5 % azar  46.9 % ( -1.4) | pts real  -1.54 azar  -0.14 | borde -1.40 (ee 2.90) | W medio  41.9 pts
+
+=== P1 {'lado': 'puerta', 'stop': ('vw', 0.0), 'obj': ('ext', 0.5)}
+  TODOS: n 7076 | acierto real 46.6 % | azar 47.2 % | formula nan % | pts real -0.459 azar -0.092 | borde -0.367 (ee 0.463) | W nan
+  por distancia al VWAP (X):
+    (0.0, 0.5]       n   746 (101 r) | acierto real   6.4 % azar   7.2 % ( -0.8) | pts real  -0.16 azar  -0.10 | borde -0.06 (ee 0.16) | W medio   nan pts
+    (0.5, 1.0]       n   796 (108 r) | acierto real  22.2 % azar  20.5 % ( +1.7) | pts real  -0.17 azar  -0.20 | borde +0.03 (ee 0.40) | W medio   nan pts
+    (1.0, 1.5]       n   772 (111 r) | acierto real  33.3 % azar  33.5 % ( -0.2) | pts real  -0.63 azar  -0.12 | borde -0.50 (ee 0.54) | W medio   nan pts
+    (1.5, 2.0]       n   715 (110 r) | acierto real  47.7 % azar  44.4 % ( +3.2) | pts real  -0.18 azar  -0.18 | borde -0.00 (ee 0.59) | W medio   nan pts
+    (2.0, 3.0]       n  1218 (110 r) | acierto real  55.5 % azar  52.5 % ( +3.0) | pts real  +0.13 azar  -0.14 | borde +0.27 (ee 0.60) | W medio   nan pts
+    (3.0, 4.0]       n   949 ( 97 r) | acierto real  55.7 % azar  59.9 % ( -4.2) | pts real  -1.14 azar  -0.05 | borde -1.09 (ee 0.81) | W medio   nan pts
+    (4.0, 6.0]       n  1049 ( 81 r) | acierto real  63.2 % azar  67.8 % ( -4.6) | pts real  -0.60 azar  +0.04 | borde -0.64 (ee 1.09) | W medio   nan pts
+    (6.0, 99.0]      n   831 ( 55 r) | acierto real  72.9 % azar  75.4 % ( -2.5) | pts real  -0.98 azar  -0.01 | borde -0.96 (ee 2.17) | W medio   nan pts
+  por distancia al extremo del dia (X):
+    (-0.01, 0.25]    n   532 (110 r) | acierto real  78.8 % azar  78.1 % ( +0.6) | pts real  +0.02 azar  -0.02 | borde +0.04 (ee 0.48) | W medio   nan pts
+    (0.25, 0.5]      n   689 (112 r) | acierto real  74.2 % azar  72.6 % ( +1.6) | pts real  -0.44 azar  -0.10 | borde -0.34 (ee 0.59) | W medio   nan pts
+    (0.5, 1.0]       n  1196 (113 r) | acierto real  63.0 % azar  62.9 % ( +0.1) | pts real  -0.04 azar  +0.01 | borde -0.05 (ee 0.56) | W medio   nan pts
+    (1.0, 2.0]       n  1856 (116 r) | acierto real  46.8 % azar  46.1 % ( +0.7) | pts real  -0.59 azar  -0.11 | borde -0.48 (ee 0.55) | W medio   nan pts
+    (2.0, 4.0]       n  1706 (109 r) | acierto real  29.4 % azar  32.9 % ( -3.5) | pts real  -1.12 azar  -0.12 | borde -1.00 (ee 0.67) | W medio   nan pts
+    (4.0, 99.0]      n  1097 ( 72 r) | acierto real  22.2 % azar  23.2 % ( -1.1) | pts real  +0.10 azar  -0.15 | borde +0.25 (ee 1.26) | W medio   nan pts
+  por desvios del VWAP (z):
+    (0.0, 0.5]       n  1350 (112 r) | acierto real  11.0 % azar  12.0 % ( -0.9) | pts real  -0.44 azar  -0.13 | borde -0.31 (ee 0.31) | W medio   nan pts
+    (0.5, 1.0]       n  1628 (116 r) | acierto real  33.7 % azar  33.5 % ( +0.2) | pts real  -0.16 azar  -0.20 | borde +0.04 (ee 0.75) | W medio   nan pts
+    (1.0, 1.5]       n  1907 (116 r) | acierto real  52.5 % azar  55.6 % ( -3.1) | pts real  -1.07 azar  -0.04 | borde -1.03 (ee 0.79) | W medio   nan pts
+    (1.5, 2.0]       n  1597 (116 r) | acierto real  70.4 % azar  69.9 % ( +0.6) | pts real  -0.32 azar  -0.04 | borde -0.29 (ee 0.62) | W medio   nan pts
+    (2.0, 2.5]       n   476 ( 92 r) | acierto real  78.8 % azar  75.6 % ( +3.1) | pts real  +0.27 azar  -0.03 | borde +0.31 (ee 0.69) | W medio   nan pts
+    (2.5, 99.0]      n   118 ( 50 r) | acierto real  83.1 % azar  81.9 % ( +1.2) | pts real  +0.36 azar  -0.05 | borde +0.42 (ee 0.93) | W medio   nan pts
+  por hora (cierre de la vela):
+    (599, 660]       n  1508 (116 r) | acierto real  45.6 % azar  44.4 % ( +1.1) | pts real  -0.26 azar  -0.20 | borde -0.07 (ee 0.39) | W medio   nan pts
+    (660, 750]       n  2088 (116 r) | acierto real  53.4 % azar  48.8 % ( +4.6) | pts real  +0.78 azar  -0.09 | borde +0.86 (ee 0.66) | W medio   nan pts
+    (750, 840]       n  2088 (116 r) | acierto real  45.5 % azar  47.8 % ( -2.3) | pts real  -0.67 azar  -0.04 | borde -0.63 (ee 0.88) | W medio   nan pts
+    (840, 901]       n  1392 (116 r) | acierto real  39.1 % azar  46.9 % ( -7.8) | pts real  -2.21 azar  -0.07 | borde -2.14 (ee 0.98) | W medio   nan pts
+  por estado D1 (0 E, 1 R, 2 T, 3 N):
+    (-0.5, 0.5]      n  3721 ( 87 r) | acierto real  44.5 % azar  42.7 % ( +1.8) | pts real  +0.01 azar  -0.11 | borde +0.11 (ee 0.42) | W medio   nan pts
+    (0.5, 1.5]       n  2414 ( 74 r) | acierto real  46.6 % azar  50.2 % ( -3.6) | pts real  -1.23 azar  -0.04 | borde -1.19 (ee 0.76) | W medio   nan pts
+    (1.5, 2.5]       n   851 ( 40 r) | acierto real  57.1 % azar  60.7 % ( -3.6) | pts real  -0.85 azar  -0.13 | borde -0.73 (ee 2.53) | W medio   nan pts
+    (2.5, 3.5]       n    90 ( 15 r) | acierto real  34.4 % azar  24.5 % (+10.0) | pts real  +4.51 azar  -0.56 | borde +5.07 (ee 5.06) | W medio   nan pts
+  por minutos desde el ultimo toque del VWAP:
+    (-1, 10]         n  1852 (111 r) | acierto real  25.9 % azar  24.9 % ( +1.0) | pts real  +0.08 azar  -0.14 | borde +0.22 (ee 0.27) | W medio   nan pts
+    (10, 30]         n  1131 (116 r) | acierto real  47.2 % azar  48.4 % ( -1.2) | pts real  -0.87 azar  -0.13 | borde -0.75 (ee 0.47) | W medio   nan pts
+    (30, 60]         n  1082 (116 r) | acierto real  58.3 % azar  53.2 % ( +5.2) | pts real  +0.71 azar  -0.14 | borde +0.86 (ee 0.69) | W medio   nan pts
+    (60, 120]        n  1352 (110 r) | acierto real  62.4 % azar  59.1 % ( +3.2) | pts real  +0.49 azar  -0.04 | borde +0.53 (ee 0.88) | W medio   nan pts
+    (120, 999]       n  1659 ( 92 r) | acierto real  48.8 % azar  57.6 % ( -8.9) | pts real  -2.31 azar  -0.02 | borde -2.29 (ee 1.37) | W medio   nan pts
+  por toques del VWAP en el dia:
+    (-1, 2]          n  1148 ( 70 r) | acierto real  50.8 % azar  55.4 % ( -4.6) | pts real  -2.07 azar  +0.02 | borde -2.09 (ee 1.06) | W medio   nan pts
+    (2, 5]           n  1846 (107 r) | acierto real  47.7 % azar  49.4 % ( -1.6) | pts real  -0.62 azar  -0.11 | borde -0.51 (ee 0.99) | W medio   nan pts
+    (5, 10]          n  2264 ( 88 r) | acierto real  43.4 % azar  45.6 % ( -2.2) | pts real  -0.65 azar  -0.09 | borde -0.56 (ee 0.80) | W medio   nan pts
+    (10, 20]         n  1722 ( 56 r) | acierto real  46.7 % azar  42.2 % ( +4.6) | pts real  +0.89 azar  -0.14 | borde +1.03 (ee 0.86) | W medio   nan pts
+    (20, 99]         n    96 (  9 r) | acierto real  46.9 % azar  33.8 % (+13.1) | pts real  +2.25 azar  -0.15 | borde +2.40 (ee 2.88) | W medio   nan pts
+  por extension del balance inicial del lado del precio (IB):
+    (-0.01, 0.0001]  n  1711 (116 r) | acierto real  33.3 % azar  31.1 % ( +2.2) | pts real  -0.05 azar  -0.19 | borde +0.14 (ee 0.73) | W medio   nan pts
+    (0.0001, 0.5]    n  2824 (110 r) | acierto real  49.5 % azar  50.3 % ( -0.8) | pts real  -0.94 azar  -0.08 | borde -0.87 (ee 0.70) | W medio   nan pts
+    (0.5, 1.0]       n  1191 ( 63 r) | acierto real  49.4 % azar  57.8 % ( -8.4) | pts real  -2.71 azar  -0.00 | borde -2.71 (ee 1.53) | W medio   nan pts
+    (1.0, 2.0]       n   407 ( 27 r) | acierto real  63.9 % azar  58.2 % ( +5.7) | pts real  +1.36 azar  +0.15 | borde +1.21 (ee 2.28) | W medio   nan pts
+    (2.0, 99.0]      n   247 ( 11 r) | acierto real  66.8 % azar  63.7 % ( +3.1) | pts real  +9.09 azar  -0.14 | borde +9.23 (ee 4.95) | W medio   nan pts
+  por pendiente del VWAP en 30 min a favor del lado (X):
+    (-99.0, -0.5]    n   118 ( 60 r) | acierto real  25.4 % azar  25.9 % ( -0.5) | pts real  -0.43 azar  -0.24 | borde -0.19 (ee 0.78) | W medio   nan pts
+    (-0.5, 0.0]      n   580 ( 96 r) | acierto real  17.8 % azar  19.8 % ( -2.0) | pts real  -0.36 azar  -0.11 | borde -0.25 (ee 0.41) | W medio   nan pts
+    (0.0, 0.5]       n  4334 (116 r) | acierto real  44.1 % azar  46.1 % ( -2.0) | pts real  -0.88 azar  -0.09 | borde -0.79 (ee 0.51) | W medio   nan pts
+    (0.5, 1.0]       n  1062 (103 r) | acierto real  62.7 % azar  59.0 % ( +3.7) | pts real  +0.31 azar  -0.03 | borde +0.34 (ee 1.15) | W medio   nan pts
+    (1.0, 2.0]       n   570 ( 89 r) | acierto real  58.9 % azar  58.6 % ( +0.4) | pts real  +0.38 azar  -0.22 | borde +0.59 (ee 1.20) | W medio   nan pts
+    (2.0, 99.0]      n   296 ( 53 r) | acierto real  65.5 % azar  62.6 % ( +2.9) | pts real  +0.79 azar  -0.11 | borde +0.90 (ee 2.02) | W medio   nan pts
+  por cociente de varianzas de las 10 ruedas previas:
+    (0.0, 0.85]      n  1342 ( 22 r) | acierto real  48.5 % azar  48.2 % ( +0.3) | pts real  -0.65 azar  +0.01 | borde -0.67 (ee 0.73) | W medio   nan pts
+    (0.85, 0.95]     n  1769 ( 29 r) | acierto real  43.8 % azar  45.1 % ( -1.4) | pts real  -0.64 azar  -0.11 | borde -0.53 (ee 0.96) | W medio   nan pts
+    (0.95, 1.05]     n  1586 ( 26 r) | acierto real  48.7 % azar  47.9 % ( +0.8) | pts real  +0.17 azar  -0.11 | borde +0.28 (ee 1.23) | W medio   nan pts
+    (1.05, 1.2]      n  2013 ( 33 r) | acierto real  43.6 % azar  46.8 % ( -3.2) | pts real  -1.41 azar  -0.13 | borde -1.28 (ee 0.75) | W medio   nan pts
+    (1.2, 9.0]       n   366 (  6 r) | acierto real  60.9 % azar  53.1 % ( +7.9) | pts real  +3.61 azar  -0.10 | borde +3.71 (ee 2.24) | W medio   nan pts
+  por cociente de varianzas de HOY hasta la vela:
+    (0.0, 0.7]       n  2028 ( 72 r) | acierto real  44.3 % azar  42.8 % ( +1.6) | pts real  -0.17 azar  -0.15 | borde -0.02 (ee 0.62) | W medio   nan pts
+    (0.7, 0.9]       n  1082 ( 74 r) | acierto real  47.5 % azar  48.8 % ( -1.3) | pts real  -0.67 azar  -0.03 | borde -0.64 (ee 0.94) | W medio   nan pts
+    (0.9, 1.1]       n  1177 ( 65 r) | acierto real  44.3 % azar  52.0 % ( -7.7) | pts real  -1.53 azar  +0.06 | borde -1.60 (ee 1.15) | W medio   nan pts
+    (1.1, 1.4]       n  1005 ( 62 r) | acierto real  45.9 % azar  49.1 % ( -3.2) | pts real  -1.80 azar  -0.09 | borde -1.71 (ee 1.35) | W medio   nan pts
+    (1.4, 9.0]       n   972 ( 44 r) | acierto real  54.2 % azar  49.8 % ( +4.4) | pts real  +1.46 azar  -0.16 | borde +1.63 (ee 1.79) | W medio   nan pts
+  por fraccion de la rueda del lado del precio:
+    (0.0, 0.3]       n   565 ( 89 r) | acierto real  20.4 % azar  22.4 % ( -2.0) | pts real  -0.44 azar  -0.16 | borde -0.28 (ee 0.70) | W medio   nan pts
+    (0.3, 0.5]       n   856 ( 86 r) | acierto real  43.1 % azar  38.0 % ( +5.1) | pts real  +0.70 azar  -0.15 | borde +0.85 (ee 0.97) | W medio   nan pts
+    (0.5, 0.7]       n  1254 ( 92 r) | acierto real  47.1 % azar  45.9 % ( +1.2) | pts real  +0.06 azar  -0.07 | borde +0.14 (ee 0.93) | W medio   nan pts
+    (0.7, 0.9]       n  2324 (106 r) | acierto real  50.9 % azar  50.3 % ( +0.7) | pts real  -0.09 azar  -0.15 | borde +0.06 (ee 0.76) | W medio   nan pts
+    (0.9, 1.01]      n  2077 ( 80 r) | acierto real  50.0 % azar  55.1 % ( -5.1) | pts real  -1.67 azar  +0.01 | borde -1.67 (ee 1.03) | W medio   nan pts
+  por empuje de 15 min hacia el extremo (X):
+    (-99.0, -1.0]    n   829 (107 r) | acierto real  29.2 % azar  30.9 % ( -1.7) | pts real  -0.28 azar  -0.06 | borde -0.22 (ee 1.05) | W medio   nan pts
+    (-1.0, -0.25]    n  1102 (116 r) | acierto real  39.6 % azar  38.4 % ( +1.2) | pts real  -0.54 azar  -0.19 | borde -0.34 (ee 0.58) | W medio   nan pts
+    (-0.25, 0.25]    n  1241 (116 r) | acierto real  43.8 % azar  45.4 % ( -1.6) | pts real  -0.70 azar  -0.07 | borde -0.63 (ee 0.64) | W medio   nan pts
+    (0.25, 1.0]      n  1679 (116 r) | acierto real  48.2 % azar  49.9 % ( -1.7) | pts real  -0.78 azar  -0.10 | borde -0.69 (ee 0.45) | W medio   nan pts
+    (1.0, 2.0]       n  1192 (116 r) | acierto real  53.3 % azar  52.8 % ( +0.4) | pts real  -0.49 azar  -0.06 | borde -0.43 (ee 0.45) | W medio   nan pts
+    (2.0, 99.0]      n  1033 (105 r) | acierto real  61.1 % azar  60.9 % ( +0.2) | pts real  +0.33 azar  -0.06 | borde +0.39 (ee 0.58) | W medio   nan pts
+  por velas desde que se marco el extremo:
+    (-1, 0]          n  1317 (116 r) | acierto real  72.7 % azar  72.0 % ( +0.6) | pts real  -0.00 azar  -0.07 | borde +0.06 (ee 0.40) | W medio   nan pts
+    (0, 2]           n  1084 (116 r) | acierto real  55.1 % azar  55.1 % ( -0.0) | pts real  -0.25 azar  -0.06 | borde -0.19 (ee 0.53) | W medio   nan pts
+    (2, 6]           n  1260 (116 r) | acierto real  49.1 % azar  46.6 % ( +2.6) | pts real  +0.15 azar  -0.08 | borde +0.23 (ee 0.65) | W medio   nan pts
+    (6, 12]          n  1070 (114 r) | acierto real  41.4 % azar  41.3 % ( +0.1) | pts real  -0.13 azar  -0.01 | borde -0.11 (ee 0.94) | W medio   nan pts
+    (12, 99]         n  2345 (109 r) | acierto real  29.0 % azar  32.6 % ( -3.6) | pts real  -1.29 azar  -0.16 | borde -1.13 (ee 0.63) | W medio   nan pts
+  por rango relativo D1 (rrn):
+    (0.0, 0.8]       n  2570 ( 61 r) | acierto real  40.8 % azar  40.0 % ( +0.8) | pts real  -0.31 azar  -0.14 | borde -0.17 (ee 0.48) | W medio   nan pts
+    (0.8, 1.0]       n  1151 ( 66 r) | acierto real  52.7 % azar  48.8 % ( +4.0) | pts real  +0.71 azar  -0.03 | borde +0.74 (ee 0.74) | W medio   nan pts
+    (1.0, 1.3]       n  1566 ( 68 r) | acierto real  47.2 % azar  49.7 % ( -2.5) | pts real  -1.00 azar  -0.04 | borde -0.96 (ee 0.92) | W medio   nan pts
+    (1.3, 1.6]       n   848 ( 56 r) | acierto real  45.4 % azar  51.1 % ( -5.7) | pts real  -1.64 azar  -0.04 | borde -1.60 (ee 1.10) | W medio   nan pts
+    (1.6, 2.0]       n   530 ( 38 r) | acierto real  50.0 % azar  54.5 % ( -4.5) | pts real  -1.26 azar  -0.30 | borde -0.96 (ee 2.42) | W medio   nan pts
+    (2.0, 99.0]      n   411 ( 18 r) | acierto real  61.3 % azar  60.8 % ( +0.5) | pts real  +0.85 azar  -0.00 | borde +0.85 (ee 4.33) | W medio   nan pts
+
+=== P2 {'lado': 'puerta', 'stop': ('vwfijo', 0.5), 'obj': ('ext', 1.0)}
+  TODOS: n 7076 | acierto real 32.8 % | azar 32.7 % | formula 33.1 % | pts real -0.235 azar -0.153 | borde -0.082 (ee 0.373) | W 22.0
+  por distancia al VWAP (X):
+    (0.0, 0.5]       n   746 (101 r) | acierto real   2.8 % azar   2.6 % ( +0.2) | pts real  -0.10 azar  -0.12 | borde +0.02 (ee 0.11) | W medio  21.9 pts
+    (0.5, 1.0]       n   796 (108 r) | acierto real  10.4 % azar  10.1 % ( +0.4) | pts real  -0.21 azar  -0.22 | borde +0.02 (ee 0.24) | W medio  20.7 pts
+    (1.0, 1.5]       n   772 (111 r) | acierto real  18.9 % azar  18.3 % ( +0.6) | pts real  -0.34 azar  -0.20 | borde -0.14 (ee 0.35) | W medio  19.4 pts
+    (1.5, 2.0]       n   715 (110 r) | acierto real  28.8 % azar  26.5 % ( +2.3) | pts real  -0.11 azar  -0.13 | borde +0.02 (ee 0.56) | W medio  18.6 pts
+    (2.0, 3.0]       n  1218 (110 r) | acierto real  35.9 % azar  34.1 % ( +1.8) | pts real  +0.00 azar  -0.21 | borde +0.21 (ee 0.56) | W medio  19.7 pts
+    (3.0, 4.0]       n   949 ( 97 r) | acierto real  40.0 % azar  43.0 % ( -2.9) | pts real  -0.97 azar  -0.09 | borde -0.88 (ee 0.70) | W medio  20.9 pts
+    (4.0, 6.0]       n  1049 ( 81 r) | acierto real  52.0 % azar  51.2 % ( +0.7) | pts real  +0.30 azar  -0.14 | borde +0.45 (ee 0.97) | W medio  23.6 pts
+    (6.0, 99.0]      n   831 ( 55 r) | acierto real  60.5 % azar  63.2 % ( -2.7) | pts real  -0.57 azar  -0.08 | borde -0.49 (ee 1.86) | W medio  31.0 pts
+  por distancia al extremo del dia (X):
+    (-0.01, 0.25]    n   532 (110 r) | acierto real  59.6 % azar  58.5 % ( +1.0) | pts real  +0.03 azar  -0.08 | borde +0.12 (ee 0.56) | W medio  16.1 pts
+    (0.25, 0.5]      n   689 (112 r) | acierto real  54.3 % azar  54.0 % ( +0.3) | pts real  -0.27 azar  -0.14 | borde -0.14 (ee 0.58) | W medio  17.2 pts
+    (0.5, 1.0]       n  1196 (113 r) | acierto real  43.3 % azar  44.4 % ( -1.1) | pts real  -0.53 azar  -0.13 | borde -0.39 (ee 0.56) | W medio  17.3 pts
+    (1.0, 2.0]       n  1856 (116 r) | acierto real  31.7 % azar  30.9 % ( +0.8) | pts real  -0.39 azar  -0.22 | borde -0.17 (ee 0.44) | W medio  18.8 pts
+    (2.0, 4.0]       n  1706 (109 r) | acierto real  20.6 % azar  21.8 % ( -1.1) | pts real  -0.59 azar  -0.11 | borde -0.48 (ee 0.51) | W medio  23.4 pts
+    (4.0, 99.0]      n  1097 ( 72 r) | acierto real  15.7 % azar  14.3 % ( +1.4) | pts real  +0.80 azar  -0.17 | borde +0.97 (ee 0.96) | W medio  36.1 pts
+  por desvios del VWAP (z):
+    (0.0, 0.5]       n  1350 (112 r) | acierto real   6.1 % azar   5.7 % ( +0.4) | pts real  -0.21 azar  -0.14 | borde -0.07 (ee 0.16) | W medio  26.1 pts
+    (0.5, 1.0]       n  1628 (116 r) | acierto real  21.4 % azar  19.9 % ( +1.5) | pts real  +0.25 azar  -0.22 | borde +0.47 (ee 0.58) | W medio  23.2 pts
+    (1.0, 1.5]       n  1907 (116 r) | acierto real  35.6 % azar  38.5 % ( -2.9) | pts real  -0.79 azar  -0.15 | borde -0.64 (ee 0.67) | W medio  21.0 pts
+    (1.5, 2.0]       n  1597 (116 r) | acierto real  54.2 % azar  51.9 % ( +2.3) | pts real  -0.00 azar  -0.13 | borde +0.12 (ee 0.61) | W medio  19.0 pts
+    (2.0, 2.5]       n   476 ( 92 r) | acierto real  58.0 % azar  58.2 % ( -0.2) | pts real  -0.28 azar  -0.09 | borde -0.19 (ee 0.84) | W medio  19.9 pts
+    (2.5, 99.0]      n   118 ( 50 r) | acierto real  59.3 % azar  64.6 % ( -5.2) | pts real  -1.22 azar  -0.11 | borde -1.11 (ee 1.16) | W medio  21.1 pts
+  por hora (cierre de la vela):
+    (599, 660]       n  1508 (116 r) | acierto real  29.6 % azar  28.2 % ( +1.4) | pts real  -0.17 azar  -0.29 | borde +0.12 (ee 0.32) | W medio  17.1 pts
+    (660, 750]       n  2088 (116 r) | acierto real  35.9 % azar  33.0 % ( +2.8) | pts real  +0.42 azar  -0.12 | borde +0.54 (ee 0.53) | W medio  20.9 pts
+    (750, 840]       n  2088 (116 r) | acierto real  33.2 % azar  34.0 % ( -0.8) | pts real  -0.37 azar  -0.10 | borde -0.27 (ee 0.59) | W medio  23.9 pts
+    (840, 901]       n  1392 (116 r) | acierto real  31.0 % azar  35.3 % ( -4.2) | pts real  -1.09 azar  -0.14 | borde -0.96 (ee 0.81) | W medio  25.9 pts
+  por estado D1 (0 E, 1 R, 2 T, 3 N):
+    (-0.5, 0.5]      n  3721 ( 87 r) | acierto real  27.8 % azar  27.3 % ( +0.5) | pts real  -0.19 azar  -0.15 | borde -0.04 (ee 0.32) | W medio  16.6 pts
+    (0.5, 1.5]       n  2414 ( 74 r) | acierto real  36.5 % azar  36.5 % ( +0.0) | pts real  -0.46 azar  -0.14 | borde -0.33 (ee 0.68) | W medio  25.1 pts
+    (1.5, 2.5]       n   851 ( 40 r) | acierto real  45.1 % azar  47.7 % ( -2.5) | pts real  -0.09 azar  -0.19 | borde +0.09 (ee 1.80) | W medio  33.7 pts
+    (2.5, 3.5]       n    90 ( 15 r) | acierto real  23.3 % azar  16.0 % ( +7.3) | pts real  +2.66 azar  -0.20 | borde +2.86 (ee 2.55) | W medio  50.5 pts
+  por minutos desde el ultimo toque del VWAP:
+    (-1, 10]         n  1852 (111 r) | acierto real  15.7 % azar  13.9 % ( +1.7) | pts real  +0.16 azar  -0.17 | borde +0.33 (ee 0.22) | W medio  21.6 pts
+    (10, 30]         n  1131 (116 r) | acierto real  32.4 % azar  31.4 % ( +0.9) | pts real  -0.27 azar  -0.20 | borde -0.07 (ee 0.31) | W medio  20.0 pts
+    (30, 60]         n  1082 (116 r) | acierto real  38.7 % azar  35.9 % ( +2.9) | pts real  -0.04 azar  -0.27 | borde +0.23 (ee 0.56) | W medio  20.4 pts
+    (60, 120]        n  1352 (110 r) | acierto real  46.0 % azar  43.0 % ( +3.0) | pts real  +0.37 azar  -0.00 | borde +0.37 (ee 0.68) | W medio  22.2 pts
+    (120, 999]       n  1659 ( 92 r) | acierto real  37.6 % azar  44.2 % ( -6.6) | pts real  -1.26 azar  -0.14 | borde -1.12 (ee 1.07) | W medio  24.6 pts
+  por toques del VWAP en el dia:
+    (-1, 2]          n  1148 ( 70 r) | acierto real  35.7 % azar  39.3 % ( -3.6) | pts real  -1.46 azar  -0.18 | borde -1.27 (ee 0.70) | W medio  21.5 pts
+    (2, 5]           n  1846 (107 r) | acierto real  35.1 % azar  34.7 % ( +0.4) | pts real  -0.23 azar  -0.18 | borde -0.05 (ee 0.74) | W medio  21.5 pts
+    (5, 10]          n  2264 ( 88 r) | acierto real  30.0 % azar  31.3 % ( -1.3) | pts real  -0.25 azar  -0.16 | borde -0.10 (ee 0.71) | W medio  22.1 pts
+    (10, 20]         n  1722 ( 56 r) | acierto real  31.8 % azar  28.8 % ( +2.9) | pts real  +0.46 azar  -0.09 | borde +0.56 (ee 0.74) | W medio  22.6 pts
+    (20, 99]         n    96 (  9 r) | acierto real  38.5 % azar  20.2 % (+18.4) | pts real  +2.15 azar  -0.22 | borde +2.37 (ee 1.81) | W medio  23.1 pts
+  por extension del balance inicial del lado del precio (IB):
+    (-0.01, 0.0001]  n  1711 (116 r) | acierto real  22.3 % azar  18.9 % ( +3.4) | pts real  +0.21 azar  -0.19 | borde +0.40 (ee 0.46) | W medio  23.6 pts
+    (0.0001, 0.5]    n  2824 (110 r) | acierto real  34.9 % azar  34.4 % ( +0.5) | pts real  -0.38 azar  -0.14 | borde -0.25 (ee 0.52) | W medio  18.9 pts
+    (0.5, 1.0]       n  1191 ( 63 r) | acierto real  35.9 % azar  43.5 % ( -7.6) | pts real  -2.00 azar  -0.10 | borde -1.91 (ee 1.16) | W medio  23.5 pts
+    (1.0, 2.0]       n   407 ( 27 r) | acierto real  45.9 % azar  45.6 % ( +0.3) | pts real  -0.42 azar  -0.01 | borde -0.41 (ee 2.29) | W medio  29.3 pts
+    (2.0, 99.0]      n   247 ( 11 r) | acierto real  56.7 % azar  53.2 % ( +3.4) | pts real  +7.11 azar  +0.02 | borde +7.09 (ee 4.29) | W medio  42.8 pts
+  por pendiente del VWAP en 30 min a favor del lado (X):
+    (-99.0, -0.5]    n   118 ( 60 r) | acierto real  17.8 % azar  15.3 % ( +2.5) | pts real  +0.33 azar  -0.12 | borde +0.45 (ee 0.62) | W medio  21.7 pts
+    (-0.5, 0.0]      n   580 ( 96 r) | acierto real  11.4 % azar  10.4 % ( +1.0) | pts real  +0.13 azar  -0.15 | borde +0.28 (ee 0.35) | W medio  23.2 pts
+    (0.0, 0.5]       n  4334 (116 r) | acierto real  30.4 % azar  31.3 % ( -1.0) | pts real  -0.44 azar  -0.14 | borde -0.29 (ee 0.42) | W medio  20.6 pts
+    (0.5, 1.0]       n  1062 (103 r) | acierto real  44.7 % azar  43.1 % ( +1.7) | pts real  -0.20 azar  -0.13 | borde -0.07 (ee 1.08) | W medio  23.9 pts
+    (1.0, 2.0]       n   570 ( 89 r) | acierto real  44.6 % azar  44.0 % ( +0.6) | pts real  -0.00 azar  -0.22 | borde +0.22 (ee 0.96) | W medio  25.5 pts
+    (2.0, 99.0]      n   296 ( 53 r) | acierto real  50.3 % azar  47.6 % ( +2.8) | pts real  +1.03 azar  -0.12 | borde +1.15 (ee 1.69) | W medio  28.6 pts
+  por cociente de varianzas de las 10 ruedas previas:
+    (0.0, 0.85]      n  1342 ( 22 r) | acierto real  37.1 % azar  34.2 % ( +3.0) | pts real  -0.01 azar  -0.09 | borde +0.08 (ee 0.61) | W medio  21.2 pts
+    (0.85, 0.95]     n  1769 ( 29 r) | acierto real  33.1 % azar  31.7 % ( +1.5) | pts real  +0.14 azar  -0.11 | borde +0.25 (ee 0.79) | W medio  21.0 pts
+    (0.95, 1.05]     n  1586 ( 26 r) | acierto real  34.2 % azar  33.7 % ( +0.5) | pts real  +0.05 azar  -0.14 | borde +0.20 (ee 1.05) | W medio  24.3 pts
+    (1.05, 1.2]      n  2013 ( 33 r) | acierto real  26.7 % azar  30.8 % ( -4.1) | pts real  -1.16 azar  -0.22 | borde -0.94 (ee 0.47) | W medio  20.0 pts
+    (1.2, 9.0]       n   366 (  6 r) | acierto real  42.6 % azar  38.9 % ( +3.8) | pts real  +0.97 azar  -0.23 | borde +1.20 (ee 2.51) | W medio  30.0 pts
+  por cociente de varianzas de HOY hasta la vela:
+    (0.0, 0.7]       n  2028 ( 72 r) | acierto real  29.8 % azar  28.1 % ( +1.7) | pts real  +0.09 azar  -0.15 | borde +0.24 (ee 0.57) | W medio  18.4 pts
+    (0.7, 0.9]       n  1082 ( 74 r) | acierto real  33.6 % azar  34.1 % ( -0.5) | pts real  -0.15 azar  -0.06 | borde -0.09 (ee 0.70) | W medio  19.4 pts
+    (0.9, 1.1]       n  1177 ( 65 r) | acierto real  33.1 % azar  37.8 % ( -4.7) | pts real  -1.20 azar  -0.10 | borde -1.10 (ee 0.87) | W medio  23.3 pts
+    (1.1, 1.4]       n  1005 ( 62 r) | acierto real  32.7 % azar  35.1 % ( -2.3) | pts real  -1.43 azar  -0.20 | borde -1.24 (ee 0.87) | W medio  25.8 pts
+    (1.4, 9.0]       n   972 ( 44 r) | acierto real  41.2 % azar  37.0 % ( +4.1) | pts real  +1.41 azar  -0.12 | borde +1.53 (ee 1.53) | W medio  31.7 pts
+  por fraccion de la rueda del lado del precio:
+    (0.0, 0.3]       n   565 ( 89 r) | acierto real  13.8 % azar  12.6 % ( +1.2) | pts real  -0.06 azar  -0.23 | borde +0.17 (ee 0.54) | W medio  27.5 pts
+    (0.3, 0.5]       n   856 ( 86 r) | acierto real  32.4 % azar  24.4 % ( +7.9) | pts real  +0.84 azar  -0.18 | borde +1.01 (ee 0.65) | W medio  23.0 pts
+    (0.5, 0.7]       n  1254 ( 92 r) | acierto real  30.9 % azar  30.7 % ( +0.2) | pts real  -0.37 azar  -0.21 | borde -0.17 (ee 0.53) | W medio  22.0 pts
+    (0.7, 0.9]       n  2324 (106 r) | acierto real  35.8 % azar  34.9 % ( +0.9) | pts real  +0.28 azar  -0.13 | borde +0.41 (ee 0.66) | W medio  20.8 pts
+    (0.9, 1.01]      n  2077 ( 80 r) | acierto real  36.0 % azar  40.5 % ( -4.5) | pts real  -1.22 azar  -0.12 | borde -1.10 (ee 0.76) | W medio  21.3 pts
+  por empuje de 15 min hacia el extremo (X):
+    (-99.0, -1.0]    n   829 (107 r) | acierto real  20.0 % azar  20.2 % ( -0.1) | pts real  +0.17 azar  -0.14 | borde +0.31 (ee 0.84) | W medio  29.3 pts
+    (-1.0, -0.25]    n  1102 (116 r) | acierto real  26.5 % azar  25.5 % ( +1.0) | pts real  -0.32 azar  -0.22 | borde -0.10 (ee 0.51) | W medio  21.3 pts
+    (-0.25, 0.25]    n  1241 (116 r) | acierto real  29.7 % azar  31.2 % ( -1.4) | pts real  -0.57 azar  -0.17 | borde -0.39 (ee 0.50) | W medio  20.0 pts
+    (0.25, 1.0]      n  1679 (116 r) | acierto real  33.1 % azar  34.5 % ( -1.4) | pts real  -0.65 azar  -0.12 | borde -0.52 (ee 0.40) | W medio  19.6 pts
+    (1.0, 2.0]       n  1192 (116 r) | acierto real  37.6 % azar  36.8 % ( +0.8) | pts real  -0.17 azar  -0.10 | borde -0.07 (ee 0.39) | W medio  20.7 pts
+    (2.0, 99.0]      n  1033 (105 r) | acierto real  47.4 % azar  44.9 % ( +2.6) | pts real  +0.53 azar  -0.18 | borde +0.71 (ee 0.46) | W medio  24.3 pts
+  por velas desde que se marco el extremo:
+    (-1, 0]          n  1317 (116 r) | acierto real  54.6 % azar  53.9 % ( +0.7) | pts real  -0.10 azar  -0.16 | borde +0.06 (ee 0.45) | W medio  19.2 pts
+    (0, 2]           n  1084 (116 r) | acierto real  38.8 % azar  39.3 % ( -0.4) | pts real  -0.48 azar  -0.09 | borde -0.38 (ee 0.51) | W medio  20.2 pts
+    (2, 6]           n  1260 (116 r) | acierto real  32.0 % azar  31.9 % ( +0.1) | pts real  -0.26 azar  -0.16 | borde -0.10 (ee 0.60) | W medio  21.4 pts
+    (6, 12]          n  1070 (114 r) | acierto real  28.2 % azar  27.3 % ( +1.0) | pts real  +0.57 azar  -0.16 | borde +0.74 (ee 0.82) | W medio  22.3 pts
+    (12, 99]         n  2345 (109 r) | acierto real  20.3 % azar  20.8 % ( -0.5) | pts real  -0.56 azar  -0.17 | borde -0.39 (ee 0.42) | W medio  24.5 pts
+  por rango relativo D1 (rrn):
+    (0.0, 0.8]       n  2570 ( 61 r) | acierto real  24.6 % azar  24.8 % ( -0.2) | pts real  -0.42 azar  -0.16 | borde -0.26 (ee 0.36) | W medio  15.7 pts
+    (0.8, 1.0]       n  1151 ( 66 r) | acierto real  34.8 % azar  32.8 % ( +2.1) | pts real  +0.34 azar  -0.13 | borde +0.46 (ee 0.56) | W medio  18.4 pts
+    (1.0, 1.3]       n  1566 ( 68 r) | acierto real  37.0 % azar  35.9 % ( +1.1) | pts real  -0.20 azar  -0.14 | borde -0.06 (ee 0.77) | W medio  24.1 pts
+    (1.3, 1.6]       n   848 ( 56 r) | acierto real  35.7 % azar  37.6 % ( -1.9) | pts real  -0.95 azar  -0.14 | borde -0.81 (ee 1.08) | W medio  26.8 pts
+    (1.6, 2.0]       n   530 ( 38 r) | acierto real  37.0 % azar  41.1 % ( -4.2) | pts real  -0.83 azar  -0.22 | borde -0.61 (ee 1.70) | W medio  28.6 pts
+    (2.0, 99.0]      n   411 ( 18 r) | acierto real  50.9 % azar  49.1 % ( +1.7) | pts real  +1.45 azar  -0.15 | borde +1.61 (ee 3.03) | W medio  44.0 pts

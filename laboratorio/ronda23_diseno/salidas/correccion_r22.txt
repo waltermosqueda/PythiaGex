@@ -1,0 +1,34 @@
+RONDA 23 - CORRECCION A LA R22 (post hoc) 2026-11-27 08:40
+pregunta de la R22: desde cada cierre de vela (10:00-15:30), con el precio de un lado del VWAP, que llega antes: el extremo del dia + X/2 o el VWAP
+
+  diseno MES: 7772 puntos en 116 ruedas
+    REAL:  extremo+X/2 primero 42.4 % | VWAP primero 46.3 % | ninguno antes de las 16:00 11.3 %
+    AZAR (mismos caminos reflejados, mismo cierre, VWAP que se mueve): extremo primero 43.5 % | VWAP primero 45.7 % | ninguno 10.8 %
+    FORMULA de dos metas fijas sin cierre (la de la R22): extremo primero 50.1 %
+      10:00-11:30 real 49.6 % / azar 46.6 % / formula 48.1 % (extremo primero) | VWAP primero real 50.2 % / azar 53.2 %
+      11:35-13:00 real 50.8 % / azar 49.8 % / formula 52.7 % (extremo primero) | VWAP primero real 44.6 % / azar 47.2 %
+      13:05-15:30 real 32.8 % / azar 37.8 % / formula 49.7 % (extremo primero) | VWAP primero real 44.8 % / azar 40.1 %
+
+  chequeo MES: 8442 puntos en 126 ruedas
+    REAL:  extremo+X/2 primero 41.3 % | VWAP primero 47.7 % | ninguno antes de las 16:00 11.0 %
+    AZAR (mismos caminos reflejados, mismo cierre, VWAP que se mueve): extremo primero 40.5 % | VWAP primero 48.3 % | ninguno 11.1 %
+    FORMULA de dos metas fijas sin cierre (la de la R22): extremo primero 47.7 %
+      10:00-11:30 real 46.8 % / azar 44.6 % / formula 46.2 % (extremo primero) | VWAP primero real 52.4 % / azar 55.2 %
+      11:35-13:00 real 45.6 % / azar 45.4 % / formula 48.8 % (extremo primero) | VWAP primero real 51.5 % / azar 51.3 %
+      13:05-15:30 real 35.3 % / azar 35.1 % / formula 47.9 % (extremo primero) | VWAP primero real 42.4 % / azar 42.2 %
+
+  todo el ano MES (las 242 de la R22): 16214 puntos en 242 ruedas
+    REAL:  extremo+X/2 primero 41.9 % | VWAP primero 47.0 % | ninguno antes de las 16:00 11.1 %
+    AZAR (mismos caminos reflejados, mismo cierre, VWAP que se mueve): extremo primero 42.0 % | VWAP primero 47.1 % | ninguno 11.0 %
+    FORMULA de dos metas fijas sin cierre (la de la R22): extremo primero 48.8 %
+      10:00-11:30 real 48.2 % / azar 45.6 % / formula 47.1 % (extremo primero) | VWAP primero real 51.3 % / azar 54.3 %
+      11:35-13:00 real 48.1 % / azar 47.5 % / formula 50.6 % (extremo primero) | VWAP primero real 48.2 % / azar 49.4 %
+      13:05-15:30 real 34.1 % / azar 36.4 % / formula 48.8 % (extremo primero) | VWAP primero real 43.6 % / azar 41.2 %
+
+  cinta ES (velas de la cinta): 3685 puntos en 55 ruedas
+    REAL:  extremo+X/2 primero 38.3 % | VWAP primero 48.5 % | ninguno antes de las 16:00 13.2 %
+    AZAR (mismos caminos reflejados, mismo cierre, VWAP que se mueve): extremo primero 40.5 % | VWAP primero 48.6 % | ninguno 10.9 %
+    FORMULA de dos metas fijas sin cierre (la de la R22): extremo primero 47.2 %
+      10:00-11:30 real 47.2 % / azar 47.6 % / formula 49.1 % (extremo primero) | VWAP primero real 52.7 % / azar 52.3 %
+      11:35-13:00 real 44.0 % / azar 45.8 % / formula 48.3 % (extremo primero) | VWAP primero real 52.6 % / azar 51.8 %
+      13:05-15:30 real 29.2 % / azar 32.9 % / formula 45.3 % (extremo primero) | VWAP primero real 43.3 % / azar 44.4 %

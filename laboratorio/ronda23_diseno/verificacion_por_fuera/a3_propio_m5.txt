@@ -1,0 +1,11 @@
+ruedas completas: 260 2025-08-22 a 2026-09-21
+DISENO   ruedas 116 | ops 109 (0.94/r) | acierto 74.3 % | neto c1 +2.489 | t por rueda 2.30 | motivos {'objetivo': 76, 'fin': 20, 'stop': 13}
+     2025-09-09..2025-11-30 ops 39 acierto 71.8 % neto +2.71
+     2025-12-01..2026-02-27 ops 70 acierto 75.7 % neto +2.36
+CHEQUEO  ruedas 126 | ops 122 (0.97/r) | acierto 67.2 % | neto c1 +0.590 | t por rueda 0.47 | motivos {'objetivo': 77, 'stop': 24, 'fin': 21}
+     2026-03-02..2026-05-31 ops 61 acierto 67.2 % neto +0.87
+     2026-06-01..2026-08-31 ops 61 acierto 67.2 % neto +0.31
+  muestra del agente 2025-09-10 13:20 [{'lado': 1, 'entrada': 6544.75, 'motivo': 'stop', 'pts': -8.5}]
+  muestra del agente 2026-02-27 14:50 [{'lado': 1, 'entrada': 6857.5, 'motivo': 'objetivo', 'pts': 10.5}]
+  muestra del agente 2026-03-02 13:55 [{'lado': -1, 'entrada': 6881.5, 'motivo': 'stop', 'pts': -20.75}]
+  muestra del agente 2026-08-31 15:25 [{'lado': -1, 'entrada': 7691.75, 'motivo': 'stop', 'pts': -14.25}]

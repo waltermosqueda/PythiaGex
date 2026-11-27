@@ -1,0 +1,5 @@
+RONDA 23 - variantes en chequeo (126 ruedas) 2026-11-27 08:26
+ n_var                              variante   n  ops_por_rueda  acierto_pct  acierto_azar_pct  P_formula_pct  bruto_op  neto_op_c100  neto_azar_c100  t_rueda_c100  ruedas_pos_c100  R_medio  objetivo_medio  S1_acierto  S1_neto  S2_acierto  S2_neto  pasa_vara
+   579 A|13:30-15:30|dv2.0|ib<=1+Pf>=0.55|F1  56           0.44         62.5              61.2           64.8     0.987        -0.013          -0.830         -0.01               24    27.56           13.39        62.5   -1.094        62.5    0.797          0
+   580        A|14:00-15:30|dv2.0|ib<=1.5|F3 122           0.97         54.9              54.7           61.9    -0.535        -1.535          -0.962         -0.98               45    33.54           20.34        57.8   -1.094        51.7   -2.022          0
+   581 A|13:00-15:30|dv1.5|ib<=1+Pf>=0.55|F1 123           0.98         67.5              62.8           65.4     1.663         0.663          -0.890          0.52               42    22.82           11.16        67.7    1.008        67.2    0.311          1

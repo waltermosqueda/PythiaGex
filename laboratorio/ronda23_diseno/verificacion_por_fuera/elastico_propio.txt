@@ -1,0 +1,5 @@
+puntos: 13310 (ruedas evaluadas 242)
+todo el dia 10:00-15:30    puntos 13310 | E primero: real 44.6  reflejo 44.3  permuta 43.6  formula 48.9 | V primero: real 49.1  reflejo 50.1  permuta 50.6 | ninguna real 6.3 reflejo 5.7
+manana 10:00-11:30         puntos  4598 | E primero: real 47.7  reflejo 45.2  permuta 45.9  formula 47.1 | V primero: real 51.7  reflejo 54.6  permuta 54.0 | ninguna real 0.5 reflejo 0.2
+mediodia 11:35-13:00       puntos  4356 | E primero: real 48.0  reflejo 47.2  permuta 47.1  formula 50.6 | V primero: real 48.2  reflejo 49.7  permuta 50.0 | ninguna real 3.7 reflejo 3.0
+tarde 13:05-15:30          puntos  4356 | E primero: real 37.9  reflejo 40.3  permuta 37.8  formula 48.9 | V primero: real 47.2  reflejo 45.6  permuta 47.6 | ninguna real 14.9 reflejo 14.1

@@ -1,0 +1,49 @@
+RONDA 23 - ANATOMIA DE A3 (post hoc, descriptivo): 294 operaciones ({'chequeo': 123, 'diseno': 109, 'cinta': 62})
+  por hora de entrada:
+    (779, 810]     todas 106  68.9 % neto  +0.36 | dis  35  82.9 %  +2.64 | che  48  58.3 %  -2.51 | cin  23  69.6 %  +2.87
+    (810, 840]     todas  50  72.0 % neto  +1.65 | dis  17  64.7 %  +0.12 | che  24  79.2 %  +2.82 | cin   9  66.7 %  +1.39
+    (840, 870]     todas  56  73.2 % neto  +2.98 | dis  23  69.6 %  +2.84 | che  19  68.4 %  +2.24 | cin  14  85.7 %  +4.23
+    (870, 900]     todas  39  76.9 % neto  +4.09 | dis  17  76.5 %  +3.94 | che  14  78.6 %  +4.20 | cin   8  75.0 %  +4.22
+    (900, 931]     todas  43  69.8 % neto  +2.38 | dis  17  70.6 %  +2.62 | che  18  66.7 %  +1.83 | cin   8  75.0 %  +3.12
+  por distancia al VWAP (X):
+    (1.5, 2.0]     todas 157  72.6 % neto  +1.56 | dis  54  68.5 %  +0.36 | che  72  72.2 %  +1.95 | cin  31  80.6 %  +2.73
+    (2.0, 2.5]     todas  73  71.2 % neto  +1.84 | dis  28  82.1 %  +4.03 | che  27  63.0 %  -1.89 | cin  18  66.7 %  +4.01
+    (2.5, 3.0]     todas  35  62.9 % neto  +1.88 | dis  15  60.0 %  +0.13 | che  13  61.5 %  +2.35 | cin   7  71.4 %  +4.75
+    (3.0, 99.0]    todas  28  75.0 % neto  +3.46 | dis  12 100.0 % +11.42 | che  11  54.5 %  -3.48 | cin   5  60.0 %  -0.40
+  por distancia al extremo del dia (X):
+    (0.0, 1.5]     todas   3  66.7 % neto  +5.25 | dis   0   nan %   +nan | che   3  66.7 %  +5.25 | cin   0   nan %   +nan
+    (1.5, 2.0]     todas  32  71.9 % neto  +2.01 | dis  10  60.0 %  -1.57 | che  17  76.5 %  +4.04 | cin   5  80.0 %  +2.25
+    (2.0, 2.5]     todas  36  66.7 % neto  -0.09 | dis  15  66.7 %  +0.85 | che  14  64.3 %  -1.46 | cin   7  71.4 %  +0.64
+    (2.5, 3.0]     todas  39  82.1 % neto  +4.61 | dis   6 100.0 %  +8.50 | che  18  66.7 %  +0.49 | cin  15  93.3 %  +8.00
+    (3.0, 99.0]    todas 184  70.1 % neto  +1.59 | dis  78  75.6 %  +2.86 | che  71  66.2 %  +0.12 | cin  35  65.7 %  +1.74
+  por velas desde que se marco el extremo:
+    (-1, 3]        todas  25  68.0 % neto  +1.08 | dis   7  71.4 %  +2.61 | che  14  64.3 %  -0.12 | cin   4  75.0 %  +2.62
+    (3, 6]         todas  24  70.8 % neto  +3.09 | dis  10  60.0 %  +1.38 | che   9  66.7 %  +2.03 | cin   5 100.0 %  +8.45
+    (6, 12]        todas  29  69.0 % neto  +0.01 | dis   9 100.0 %  +8.08 | che  15  60.0 %  -3.77 | cin   5  40.0 %  -3.20
+    (12, 24]       todas  46  82.6 % neto  +4.03 | dis  24  87.5 %  +4.58 | che  19  78.9 %  +3.16 | cin   3  66.7 %  +5.08
+    (24, 99]       todas 170  69.4 % neto  +1.54 | dis  59  67.8 %  +0.96 | che  66  66.7 %  +0.93 | cin  45  75.6 %  +3.21
+  por movimiento de los ultimos 15 min (X; negativo = ya viene hacia el VWAP):
+    (-99.0, -1.5]  todas  45  64.4 % neto  -0.30 | dis  14  78.6 %  +5.80 | che  24  58.3 %  -3.73 | cin   7  57.1 %  -0.75
+    (-1.5, -0.75]  todas  34  64.7 % neto  +0.73 | dis  16  75.0 %  +2.92 | che  11  45.5 %  -3.41 | cin   7  71.4 %  +2.21
+    (-0.75, 0.0]   todas  39  71.8 % neto  +2.63 | dis  15  53.3 %  -2.30 | che  18  83.3 %  +5.14 | cin   6  83.3 %  +7.46
+    (0.0, 99.0]    todas 176  74.4 % neto  +2.47 | dis  64  78.1 %  +2.78 | che  70  70.0 %  +1.66 | cin  42  76.2 %  +3.37
+  por extension del IB del lado del precio:
+    (-0.01, 0.0001] todas 122  68.9 % neto  +1.32 | dis  44  68.2 %  +0.86 | che  44  68.2 %  +1.38 | cin  34  70.6 %  +1.83
+    (0.0001, 0.5]  todas 107  75.7 % neto  +3.02 | dis  45  77.8 %  +3.69 | che  46  73.9 %  +2.14 | cin  16  75.0 %  +3.67
+    (0.5, 1.01]    todas  65  69.2 % neto  +1.01 | dis  20  80.0 %  +3.38 | che  33  57.6 %  -2.34 | cin  12  83.3 %  +6.29
+  por rango del dia contra lo normal a esa hora (rrn):
+    (0.0, 1.0]     todas 150  70.7 % neto  +1.64 | dis  50  66.0 %  +0.14 | che  71  70.4 %  +1.93 | cin  29  79.3 %  +3.49
+    (1.0, 1.3]     todas  82  65.9 % neto  +1.04 | dis  28  71.4 %  +3.15 | che  33  60.6 %  -0.76 | cin  21  66.7 %  +1.05
+    (1.3, 1.6]     todas  37  86.5 % neto  +5.84 | dis  16 100.0 %  +7.88 | che  13  76.9 %  +2.37 | cin   8  75.0 %  +7.41
+    (1.6, 2.0]     todas  17  70.6 % neto  -0.16 | dis   9  88.9 %  +7.31 | che   4  25.0 % -20.62 | cin   4  75.0 %  +3.50
+    (2.0, 99.0]    todas   8  75.0 % neto  +0.69 | dis   6  66.7 %  -2.58 | che   2 100.0 % +10.50 | cin   0   nan %   +nan
+  por toques del VWAP en el dia hasta la entrada:
+    (-1, 3]        todas  27  74.1 % neto  +1.97 | dis  14  85.7 %  +5.73 | che  12  66.7 %  -1.71 | cin   1   0.0 %  -6.50
+    (3, 8]         todas  80  71.2 % neto  +1.26 | dis  36  77.8 %  +2.12 | che  32  68.8 %  +0.42 | cin  12  58.3 %  +0.88
+    (8, 15]        todas 124  70.2 % neto  +2.25 | dis  40  72.5 %  +3.08 | che  54  63.0 %  +0.56 | cin  30  80.0 %  +4.20
+    (15, 99]       todas  63  73.0 % neto  +1.85 | dis  19  63.2 %  -0.46 | che  25  76.0 %  +2.34 | cin  19  78.9 %  +3.50
+  por como TERMINO el dia (ex post: explica, no se puede usar en vivo):
+    balance    n 138 acierto  77.5 % neto  +3.24
+    mixto      n 104 acierto  71.2 % neto  +2.40
+    tendencia  n  52 acierto  55.8 % neto  -2.84
+  perdedoras: cuanto fueron a favor antes de perder (mfe, pts) mediana 4.25 | ganadoras: cuanto fueron en contra antes de ganar (mae) mediana 4.38

@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 233bf8d4-5113-4e95-a0d9-68bff726690d
-  modified: 2026-11-27T08:28:25.427Z
+  modified: 2026-11-27T12:20:19.946Z
 ---
 
 Textual (27-11 ~02:40-03:00 AR): "ampliar el estudio y cruzar mas variables hasta encontrar la evolucion ganadora: VWAP,
@@ -95,10 +95,34 @@ corrida unica) del semaforo D1 en 242 ruedas de MES de 5 min (09-09-2025..31-08-
 H1 NO PASA: TENDENCIA 53,6 % "extremo +X/2 antes que el VWAP" vs base 41,3 % (+12,2; vara >=55 y +15); 30 min 55,3 vs 40,9. Recalculado por
 mi con codigo propio: 53,5 vs 41,2 (+12,2), mismos 16.214 puntos. Con la GEOMETRIA controlada (misma distancia al extremo y al VWAP) el semaforo
 agrega +2,4 pts por trimestre: el "60-67 vs 37-40" de la R21 era sobre todo UBICACION DEL PRECIO, no clima. H2 (T7, T6-P1, COMB, V4 en 5 min,
-entrada al cierre de la vela de la vuelta) pierden todas: 42-48 %, -2,1 a -2,9 pts/op. Mecanica: el ELASTICO del VWAP (el precio vuelve 7-10 pts
-mas que el azar, tambien en dias "desatados"); la vara de 10 ruedas da falsas alarmas tras semanas calmas; la T7 en 5 min persigue (entra a 2X
+entrada al cierre de la vela de la vuelta) pierden todas: 42-48 %, -2,1 a -2,9 pts/op. Mecanica: el "ELASTICO del VWAP" (vuelve 7-10 pts mas que
+el azar) RESULTO SER LA VARA (ver R23 abajo: la formula de dos metas fijas; contra un azar bien hecho no hay elastico de todo el dia); la vara de 10 ruedas da falsas alarmas tras semanas calmas; la T7 en 5 min persigue (entra a 2X
 del extremo). Pistas post hoc al baul privado #58-64 (doble vara 10+60: 57,5 %; franja 11:00-12:25: 67 vs 50 %; ruptura de la banda 2 sigma
 despues de las 14 h: 64,5 % en 31). Muestras GASTADAS para el clima D1: m5 sep-2025..ago-2026 y m30 abr-2024..ago-2025. Calibracion: entrada a
 stop dentro de la vela de 5 min infla (86,6 %) o hunde (29,2 %) contra la cinta (62,8 %): con velas, entrar al CIERRE.
 **Para decirselo:** el panel CLIMA de La Ola describe cuanto recorrio el dia, no es una llave estable; la COMB congelada se sigue juzgando en vivo
 (su escala nativa no la juzga la R22) pero con expectativa baja.
+**Databento re-cotizado 27-11 08:05 (gratis, get_cost):** jun-ago 2026 YA NO es ciego (esos dias los vio la R22 en 5 min). Ciego = antes de
+2024-04-29 (la m30 de la H1b arranca ahi): ES.c.0 tbbo jun-ago 2023 USD 49,95 (1,9 GB, ~63 ruedas); mar-ago 2023 USD 103,04; todo 2023 USD 210,36.
+Hace falta un convertidor tbbo -> cinta (agrupar fills por orden agresora) validado con 1 dia que tambien tenga la sonda. Compra = decision suya.
+
+**RONDA 23 (27-11 08:09-09:10 AR, `laboratorio/ronda23_diseno/`): diseño SOBRE DATOS VISTOS -> 1 candidata congelada (A3) + juez en vivo.**
+**Corrige a la R22 (y a lo que le dije al operador a las 09:0x):** el elastico de todo el dia era la VARA: la formula de dos metas fijas
+d_V/(d_E+d_V) ignora el corte de las 16:00 y el VWAP que se mueve hacia el precio. Recalculado por mi con dos azares propios (reflejo y
+permutacion de velas, `ronda23_diseno/verificacion_por_fuera/elastico_propio.py`), 242 ruedas, 13.310 puntos: "extremo +X/2 primero" real 44,6 %
+vs azar 44,3 / 43,6 vs formula 48,9. Queda solo horario y chico: mañana estira (+2 sobre el azar), tarde vuelve (+1,6 contra el reflejo), no robusto.
+**A3 "elastico de la tarde despues del giro":** cierres de 5 min 13:00-15:30 NY; precio a >= 1,5 X del VWAP de la rueda; IB extendido <= 1 vez su
+ancho del lado del precio; P geometrica = d_stop/(d_stop + d_VWAP) >= 0,55 (ya volvio desde el extremo). Hacia el VWAP al cierre de la vela;
+stop X/2 tras el extremo del dia; objetivo limite en el VWAP que se corre cada 5 min (lleno con 1 tick mas alla); cierre 16:00; 1 a la vez, max 5.
+~1 op/rueda, objetivo ~10 pts, stop ~23 (NO captura piernas largas). Acierto 74,3 / 67,5 / 74,2 % (diseño MES 116 r / chequeo MES 126 r /
+cinta ES 55 r), neto +2,49 / +0,66 / +3,17 con costo 1,00, t por rueda 2,30 / 0,52 / 2,17. **El azar con la MISMA ubicacion acierta ~63 % y
+pierde ~1 pt/op**: casi todo el acierto es geometria (stop lejos, objetivo cerca); lo propio de la regla es +5 a +12 pts de acierto y +1,5 a +4,4
+pts/op. 272 variantes en diseño (Bonferroni 3,67 > mejor t 2,71): CANDIDATA, no probada; chequeo flojo (abr-jun 2026 = azar). Pierde en dias que
+terminan en tendencia (55,8 %, -2,84), gana en balance (77,5 %, +3,24): falta reconocer el dia de tendencia antes de las 13:00.
+**Verificado por mi desde el PREREGISTRO, sin el codigo del agente (`verificacion_por_fuera/`):** cinta 62 de 62 operaciones identicas (entrada,
+stop, salida, puntos); MES diseño identico (109, 74,3 %, +2,49); chequeo 122 vs 123 (la rueda 19-03-2026 tiene 5 velas faltantes y el agente la
+cuenta en la historia de rangos: X 6,75 vs 7,00 el 24-03); azar propio 63,2 / 62,6 / 61,7 % (agente 62,9 / 62,8 / 62,5). Huellas IGUAL.
+**Juez en vivo:** tras bajar la cinta del dia, `python -I r23_vivo.py` (carpeta de la ronda; estado en %LOCALAPPDATA%\PythiaGex_r23_vivo, vacio
+hasta el 30-11). Decide a las 60 y 120 jornadas (acierto >= 60, neto > 0, t >= 2,00 / 1,98, >= 40 ops); futilidad 20 y 40; descriptiva a las 15.
+Potencia a las 60: 6-60 % segun el efecto: lo probable es "sin decidir". ES 2023 (si compra): mismo juez con --carpeta --estado
+--sembrar-desde-cintas, una lectura con alfa 0,05. A1 y A2 descartadas. Baul privado #65-71.

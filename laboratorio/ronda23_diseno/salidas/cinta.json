@@ -1,0 +1,50 @@
+{
+ "A1": {
+  "n": 33,
+  "ruedas": 55,
+  "ops_por_rueda": 0.6,
+  "acierto": 66.7,
+  "bruto": 4.818,
+  "neto": 3.818,
+  "t": 2.14,
+  "ruedas_pos": 18,
+  "ruedas_con_op": 25,
+  "azar_acierto": 57.9,
+  "azar_neto": -1.178,
+  "P_formula": 65.7,
+  "acierto_5min": 66.7,
+  "neto_5min": 3.818
+ },
+ "A2": {
+  "n": 52,
+  "ruedas": 55,
+  "ops_por_rueda": 0.95,
+  "acierto": 59.6,
+  "bruto": 0.553,
+  "neto": -0.447,
+  "t": -0.16,
+  "ruedas_pos": 25,
+  "ruedas_con_op": 45,
+  "azar_acierto": 55.5,
+  "azar_neto": -0.988,
+  "P_formula": 63.7,
+  "acierto_5min": 59.6,
+  "neto_5min": -0.462
+ },
+ "A3": {
+  "n": 62,
+  "ruedas": 55,
+  "ops_por_rueda": 1.13,
+  "acierto": 74.2,
+  "bruto": 4.169,
+  "neto": 3.169,
+  "t": 2.17,
+  "ruedas_pos": 25,
+  "ruedas_con_op": 36,
+  "azar_acierto": 62.5,
+  "azar_neto": -0.962,
+  "P_formula": 66.6,
+  "acierto_5min": 74.2,
+  "neto_5min": 3.198
+ }
+}

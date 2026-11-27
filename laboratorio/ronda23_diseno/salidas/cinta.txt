@@ -1,0 +1,30 @@
+RONDA 23 - CANDIDATAS EN LA CINTA DE ES 2026-11-27 08:55
+cintas en el periodo: 55 (2026-09-10 a 2026-11-25); historia de rangos: 83 jornadas (2026-07-31 a 2026-11-25)
+control: rango de la rueda desde la cinta contra la historia de la R19: diferencia maxima 0.00 pts en 55 jornadas
+
+=== A1 (cand_A1_tarde_giro.py)
+  CINTA (orden por orden): n 33 (0.60 por rueda, 25 ruedas con operacion) | acierto 66.7 % | bruto +4.818 | neto c1,00 +3.818 | t por rueda 2.14 | ruedas + 18 de 55
+  referencia al azar con la misma ubicacion (5 min, mismos puntos): acierto 57.9 % | neto c1,00 -1.178 | formula P 65.7 %
+  las mismas entradas resueltas con velas de 5 min (regla conservadora): acierto 66.7 % | neto c1,00 +3.818
+  motivos: {'objetivo': 20, 'fin': 11, 'stop': 2} | stop medio 25.23 pts | objetivo medio 12.14 pts | X medio 5.05
+     R21-diseno    n  11 (0.42/r) acierto  45.5 % neto -2.000 t -0.69 | azar 57.4 %
+     R21-confirma  n  19 (0.90/r) acierto  73.7 % neto +4.961 t 2.55 | azar 58.2 %
+     R21-guardada  n   3 (0.38/r) acierto 100.0 % neto +17.917 t 2.02 | azar 58.0 %
+
+=== A2 (cand_A2_tarde_estirado.py)
+  CINTA (orden por orden): n 52 (0.95 por rueda, 45 ruedas con operacion) | acierto 59.6 % | bruto +0.553 | neto c1,00 -0.447 | t por rueda -0.16 | ruedas + 25 de 55
+  referencia al azar con la misma ubicacion (5 min, mismos puntos): acierto 55.5 % | neto c1,00 -0.988 | formula P 63.7 %
+  las mismas entradas resueltas con velas de 5 min (regla conservadora): acierto 59.6 % | neto c1,00 -0.462
+  motivos: {'fin': 27, 'objetivo': 21, 'stop': 4} | stop medio 38.16 pts | objetivo medio 22.42 pts | X medio 5.12
+     R21-diseno    n  21 (0.81/r) acierto  52.4 % neto +1.345 t 0.61 | azar 55.3 %
+     R21-confirma  n  24 (1.14/r) acierto  70.8 % neto +2.135 t 0.61 | azar 56.0 %
+     R21-guardada  n   7 (0.88/r) acierto  42.9 % neto -14.679 t -0.98 | azar 54.1 %
+
+=== A3 (cand_A3_tarde_giro_amplia.py)
+  CINTA (orden por orden): n 62 (1.13 por rueda, 36 ruedas con operacion) | acierto 74.2 % | bruto +4.169 | neto c1,00 +3.169 | t por rueda 2.17 | ruedas + 25 de 55
+  referencia al azar con la misma ubicacion (5 min, mismos puntos): acierto 62.5 % | neto c1,00 -0.962 | formula P 66.6 %
+  las mismas entradas resueltas con velas de 5 min (regla conservadora): acierto 74.2 % | neto c1,00 +3.198
+  motivos: {'objetivo': 43, 'fin': 13, 'stop': 6} | stop medio 23.06 pts | objetivo medio 10.45 pts | X medio 5.02
+     R21-diseno    n  24 (0.92/r) acierto  70.8 % neto +0.438 t 0.23 | azar 63.4 %
+     R21-confirma  n  33 (1.57/r) acierto  72.7 % neto +3.038 t 1.81 | azar 61.8 %
+     R21-guardada  n   5 (0.62/r) acierto 100.0 % neto +17.150 t 1.62 | azar 63.1 %
